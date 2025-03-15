@@ -1,0 +1,17 @@
+config_version=5
+
+[application]
+config/name="{{{projectName}}}"
+config/features=PackedStringArray("{{{editorVersion}}}")
+config/icon="res://assets/icon.svg"
+
+{{#mobile}}
+[rendering]
+renderer/rendering_method="mobile"
+{{/mobile}}
+
+{{#compatible}}
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+{{/compatible}}
