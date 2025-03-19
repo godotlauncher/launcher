@@ -1,0 +1,269 @@
+import { useState } from 'react';
+import logger from 'electron-log';
+
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
+
+import { IconAlert, IconCloseCircle, IconCopy, IconMoreVertical, IconOpenExternal, IconUnfoldMore } from '../components/icons';
+import { CreateProjectSubView } from './subViews/createProject.subview';
+import { usePreferences } from '../hooks/usePreferences';
+import { useRelease } from '../hooks/useRelease';
+import { useAlerts } from '../hooks/useAlerts';
+import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
+import { useProjects } from '../hooks/useProjects';
+import { useAppNavigation } from '../hooks/useAppNavigation';
+
+
+TimeAgo.addLocale(en);
+const timeAgo = new TimeAgo('en-US');
+
+export const ProjectsView: React.FC = () => {
+    const [textSearch, setTextSearch] = useState<string>('');
+    const [createOpen, setCreateOpen] = useState<boolean>(false);
+
+    const [changeEditorFor, setChangeEditorFor] = useState<ProjectDetails | null>();
+    const [addingProject, setAddingProject] = useState<boolean>(false);
+
+    const [busyProjects, setBusyProjects] = useState<string[]>([]);
+
+    const { addAlert } = useAlerts();
+
+    const { preferences } = usePreferences();
+    const { installedReleases, isInstalledRelease, loading: releaseLoading, checkAllReleasesValid } = useRelease();
+    const { projects, setProjectEditor, addProject, launchProject, loading, showProjectMenu } = useProjects();
+    const { setCurrentView, openExternalLink } = useAppNavigation();
+
+
+    const onProjectMoreOptions = (e: React.MouseEvent, project: ProjectDetails) => {
+        e.stopPropagation();
+        showProjectMenu(project);
+    };
+
+    const onAddProject = async () => {
+        if (addingProject) return;
+        setAddingProject(true);
+        const result = await window.electron.openFileDialog(preferences!.projects_location!, 'Select Project File', [{ name: 'Godot Project', extensions: ['godot'] }]);
+        setAddingProject(false);
+
+        if (!result.canceled) {
+            const projectPath = result.filePaths[0];
+
+            if (installedReleases.length === 0) {
+                addAlert('Error', 'You need at least a release installed to add a project', <IconAlert className="fill-error" />);
+                return;
+            }
+
+            const addResult = await addProject(projectPath);
+            logger.info(addResult);
+            if (!addResult.success) {
+                logger.error(addResult.error);
+                addAlert('Error', addResult.error || 'Something went wrong when adding project', <IconAlert className="fill-error" />);
+                return;
+            }
+            else {
+                if (addResult.additionalInfo && addResult.additionalInfo as EditorSettingsInfo) {
+                    const { settingsCreated, shouldReportOnSettings } = addResult.additionalInfo as EditorSettingsInfo;
+                    if (!settingsCreated && shouldReportOnSettings && addResult.newProject?.release.mono) {
+
+                        addAlert('Editor Settings', (
+                            <div className='flex flex-col gap-2'>
+                                <p>Editor settings for {addResult.newProject?.release.version} [.NET] already exists and no changes where made to protect your setup.</p>
+                                <p>If you are switching to a .NET version from GDScript, you can manually configure
+                                    External Editor from <strong>Editor Settings -&gt; Dotnent</strong> (advanced switch: true).</p>
+                                <button
+                                    onClick={() => openExternalLink(`https://docs.godotengine.org/en/${addResult.newProject?.release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
+                                    className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
+                                    Read More<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " />
+                                </button>
+                            </div>
+                        ), <IconAlert className="fill-warning" />);
+                    }
+                }
+            }
+        }
+    };
+
+    const onChangeProjectEditor = async (project: ProjectDetails, release: InstalledRelease) => {
+        setChangeEditorFor(null);
+        setBusyProjects([...busyProjects, project.path]);
+
+        try {
+            const result = await setProjectEditor(project, release);
+            if (!result.success) {
+                addAlert('Error', result.error || 'Something went wrong when setting project editor');
+                return;
+            }
+            else {
+                if (result.additionalInfo && result.additionalInfo as EditorSettingsInfo) {
+                    const { settingsCreated, shouldReportOnSettings } = result.additionalInfo as EditorSettingsInfo;
+                    if (!settingsCreated && shouldReportOnSettings && release.mono) {
+
+                        addAlert('Editor Settings', (
+                            <div className='flex flex-col gap-2'>
+                                <p>Editor settings for {release.version} [.NET] already exists and no changes where made to protect your setup.</p>
+                                <p>If you are switching to a .NET version from GDScript, you can manually configure
+                                    External Editor from <strong>Editor Settings -&gt; Dotnent</strong> (advanced switch: true).</p>
+                                <button
+                                    onClick={() => openExternalLink(`https://docs.godotengine.org/en/${release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
+                                    className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
+                                    Read More<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " />
+                                </button>
+                            </div>
+                        ), <IconAlert className="fill-warning" />);
+                    }
+                }
+            }
+        } finally {
+            setBusyProjects((prevValues) => prevValues.filter(p => p !== project.path));
+        }
+
+    };
+
+    const onLaunchProject = async (project: ProjectDetails) => {
+        if (isInstalledRelease(project.release.version, project.release.mono)) {
+            const result = await launchProject(project);
+            if (!result) {
+                await checkAllReleasesValid();
+                addAlert('Error', 'Project is not valid, please make sure the project and release are valid on your computer.');
+            }
+        }
+
+    };
+
+    const getFilteredRows = () => {
+        if (textSearch === '') return projects;
+        return projects.filter(row => row.name.toLowerCase().includes(textSearch.toLowerCase()));
+    };
+
+    return (
+        <>
+            {
+                addingProject &&
+                <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center">
+                    <p className="loading loading-infinity"></p><p>Waiting for dialog to add project...</p>
+                </div>
+            }
+
+            {changeEditorFor &&
+                <InstalledReleaseSelector
+                    title={changeEditorFor.name}
+                    currentRelease={changeEditorFor.release}
+                    onReleaseSelected={(release) => onChangeProjectEditor(changeEditorFor, release)}
+                    onClose={() => setChangeEditorFor(null)}
+                />
+            }
+            <div className="flex flex-col h-full w-full overflow-auto p-1">
+                <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-row justify-between items-start">
+                        <div className="flex flex-col gap-1">
+                            <h1 data-testid="projectsTitle" className="text-2xl">Projects</h1>
+                            <p className="badge text-base-content/50">{preferences?.projects_location}</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">Add</button>
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectCreate" className="btn btn-primary" onClick={() => setCreateOpen(true)}>New Project</button>
+                        </div>
+                    </div>
+                    <div className="flex flex-row justify-end my-2 items-center">
+                        <input
+                            type="text"
+                            placeholder="Search"
+                            className="input input-bordered w-full max-w-xs"
+                            onChange={(e) => setTextSearch(e.target.value)}
+                            value={textSearch}
+                        />
+                        {textSearch.length > 0 &&
+                            <button
+                                tabIndex={-1}
+                                onClick={() => setTextSearch('')}
+                                className="absolute right-4 w-6 h-6"><IconCloseCircle className="fill-current" /></button>
+                        }
+                    </div>
+                </div>
+                {(!releaseLoading && installedReleases.length < 1) && <div className="text-warning flex gap-2"><IconAlert className="fill-warning" />No releases installed.<a onClick={() => setCurrentView('installs')} className="underline cursor-pointer">Go to installs.</a></div>}
+                <div className="divider m-0"></div>
+                {loading && <div className="loading loading-dots loading-lg"></div>}
+                {!loading &&
+                    <div className="overflow-auto h-full">
+                        <table className="table table-sm">
+                            <thead className="sticky z-10 top-0 bg-base-200">
+                                <tr >
+                                    <th className="min-w-48 w-full">Name</th>
+                                    <th className="w-44 min-w-44">Modified</th>
+                                    <th className="w-60 min-w-60">Editor</th>
+                                    <th className=""></th>
+                                </tr>
+                            </thead>
+                            <tbody className="overflow-y-auto">
+                                {
+                                    getFilteredRows().map((row, index) => (
+                                        <tr key={index} className="relative hover:bg-base-content/5">
+                                            <td className="p-2 flex flex-col gap-1">
+                                                {busyProjects.includes(row.path) &&
+                                                    <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg "><div className="loading loading-bars"></div></div>
+                                                }
+                                                <div className="font-bold flex text-lg gap-2 items-center">
+                                                    {!row.valid && <span className="tooltip tooltip-right" data-tip="This project is invalid, check project and editor locations!">
+                                                        <IconAlert className="fill-warning" />
+                                                    </span>
+                                                    }
+                                                    <button onClick={() => onLaunchProject(row)} className="flex items-center hover:underline gap-2"> {row.name}
+                                                    </button>
+                                                    {row.release.mono && <p className="badge badge-outline text-xs text-base-content/50 ">.NET</p>}
+                                                    {row.release.prerelease && <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">prerelease</p>}
+                                                </div>
+                                                <div onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.navigator.clipboard.writeText(row.path);
+                                                }} className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary">
+                                                    <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis">{row.path}</p>
+                                                    <IconCopy className="fill-base-content/50 w-4 hover:fill-info active:fill-secondary" />
+                                                </div>
+                                            </td>
+
+                                            <td className="">
+                                                <p>{row.last_opened ? timeAgo.format(row.last_opened) : '-'}</p>
+                                            </td>
+                                            <td className="">
+                                                <div>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setChangeEditorFor(row); }}
+                                                        className="btn btn-ghost bg-base-content/5 pr-2 w-full justify-between">
+                                                        {
+                                                            !isInstalledRelease(row.release.version, row.release.mono)
+                                                                ? <div className="flex flex-row items-center gap-4">
+                                                                    <IconAlert className="fill-warning" />
+                                                                    <p className="line-through">{row.version} {row.release.mono && '(.NET)'}</p>
+                                                                </div>
+                                                                : <>
+                                                                    {row.version} {row.release.mono && '(.NET)'}
+                                                                </>
+                                                        }
+                                                        <IconUnfoldMore className="fill-base-content" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="p-0 pr-2">
+                                                <button
+                                                    onClick={(e) => onProjectMoreOptions(e, row)}
+                                                    className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"                        >
+                                                    <IconMoreVertical className="fill-current" />
+                                                </button >
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div >
+            {
+                createOpen &&
+                <CreateProjectSubView onClose={() => {
+                    setCreateOpen(false);
+                }} />
+            }
+        </>
+    );
+};
