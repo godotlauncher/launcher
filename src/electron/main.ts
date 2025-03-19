@@ -129,13 +129,16 @@ app.on('ready', async () => {
 
         if (process.platform === 'darwin') {
             if (app.getLoginItemSettings().wasOpenedAtLogin) {
-                const prefs = await getUserPreferences();
                 if (prefs.start_in_tray) {
                     logger.info('App was opened at login with prefs.start_in_tray, hiding window');
                     mainWindow.hide();
                     app.dock?.hide();
                 }
+            } else {
+                mainWindow.show();
+                app.dock?.show();
             }
+
         }
         else if (process.platform === 'win32') {
             // check if launch argument has been passed --hidden
