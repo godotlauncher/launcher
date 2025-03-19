@@ -1,0 +1,143 @@
+import { createContext, FC, PropsWithChildren, useContext, useEffect, useState } from 'react';
+
+
+interface ProjectsContext {
+    projects: ProjectDetails[];
+    loading: boolean;
+    addProject: (projectPath: string) => Promise<AddProjectToListResult>;
+    setProjectEditor: (project: ProjectDetails, release: InstalledRelease) => Promise<ChangeProjectEditorResult>;
+    openProjectFolder: (project: ProjectDetails) => Promise<void>;
+    showProjectMenu: (project: ProjectDetails) => Promise<void>;
+    openProjectEditorFolder: (project: ProjectDetails) => Promise<void>;
+    removeProject: (project: ProjectDetails) => Promise<void>;
+    launchProject: (project: ProjectDetails) => Promise<boolean>;
+    refreshProjects: () => Promise<void>;
+    checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
+    createProject: (name: string, release: InstalledRelease, renderer: RendererType[5], withVSCode: boolean, withGit: boolean) => Promise<CreateProjectResult>;
+}
+
+export const ProjectsContext = createContext<ProjectsContext>({} as ProjectsContext);
+
+export const useProjects = () => {
+    const context = useContext(ProjectsContext);
+    if (!context) {
+        throw new Error('useProjects must be used within a ProjectsProvider');
+    }
+    return context;
+};
+
+type ProjectsProviderProps = PropsWithChildren;
+
+export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
+
+    const [projects, setProjects] = useState<ProjectDetails[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const getProjects = async () => {
+        setLoading(true);
+        const projects = await window.electron.getProjectsDetails();
+        setProjects(projects);
+        setLoading(false);
+    };
+
+    const createProject = async (projectName: string, release: InstalledRelease, renderer: RendererType[5], withVSCode: boolean, withGit: boolean) => {
+        const result = await window.electron.createProject(
+            projectName,
+            release,
+            renderer,
+            withVSCode,
+            withGit);
+
+        if (result.success) {
+            await refreshProjects();
+        }
+
+        return result;
+    };
+
+    const addProject = async (projectPath: string) => {
+        const addResult = await window.electron.addProject(projectPath);
+        if (addResult.success) {
+            setProjects(addResult.projects!);
+        }
+        return addResult;
+    };
+
+    const setProjectEditor = async (project: ProjectDetails, release: InstalledRelease) => {
+        const result = await window.electron.setProjectEditor(project, release);
+        if (result.success) {
+            setProjects(result.projects!);
+        }
+
+        return result;
+    };
+
+    const openProjectFolder = async (project: ProjectDetails) => {
+        await window.electron.openShellFolder(project.path);
+    };
+
+    const openProjectEditorFolder = async (project: ProjectDetails) => {
+        await window.electron.openShellFolder(project.editor_settings_path);
+    };
+
+    const removeProject = async (project: ProjectDetails) => {
+        const result = await window.electron.removeProject(project);
+        setProjects(result);
+    };
+
+    const launchProject = async (project: ProjectDetails) => {
+        const all = await window.electron.checkAllProjectsValid();
+        setProjects(all);
+
+        const p = all.find(p => p.path === project.path);
+
+        if (p && p?.valid) {
+            await window.electron.launchProject(project);
+        }
+
+        return p?.valid ?? false;
+
+    };
+
+    const refreshProjects = async () => {
+        getProjects();
+    };
+
+    const checkProjectValid = (project: ProjectDetails) => {
+        const result = window.electron.checkProjectValid(project);
+        return result;
+    };
+
+    const showProjectMenu = async (project: ProjectDetails) => {
+        await window.electron.showProjectMenu(project);
+    };
+
+    useEffect(() => {
+        const off = window.electron.subscribeProjects(setProjects);
+        getProjects();
+
+        return () => {
+            off();
+        };
+    }, []);
+
+    return (
+        <ProjectsContext.Provider value={{
+            projects,
+            loading,
+            addProject,
+            setProjectEditor,
+            openProjectFolder,
+            openProjectEditorFolder,
+            removeProject,
+            launchProject,
+            refreshProjects,
+            checkProjectValid,
+            createProject,
+            showProjectMenu
+        }}>
+            {children}
+        </ProjectsContext.Provider>
+    );
+
+};
