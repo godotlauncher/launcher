@@ -1,0 +1,55 @@
+Copyright
+=========
+
+Godot Launcher
+--------------
+
+Author: Mario Debono
+License: MIT
+Full license details: https://godotlauncher.org/license
+
+The Godot Launcher project is distributed under the MIT license. See the LICENSE file for the full text of the license.
+
+Godot Launcher Logo
+-------------------
+
+Author: Jean Paul Grech
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+Full license details: https://godotlauncher.org/license
+
+The Godot Launcher logo is licensed under CC BY 4.0. For attribution requirements, see the link above.
+
+Third-Party Assets and Libraries
+================================
+
+Nunito Sans
+-----------
+
+Authors: Vernon Adams, Jacques Le Bailly, et al.
+License: SIL Open Font License (OFL)
+Source: https://fonts.google.com/specimen/Nunito+Sans
+
+Nunito Sans is used for UI text in Godot Launcher.
+
+Material Icons
+--------------
+
+Author: Google
+License: Apache License 2.0
+Source: https://github.com/google/material-design-icons
+
+Material Icons are used for UI elements in the Godot Launcher interface.
+
+Godot Engine Logo
+-----------------
+
+Author: Andrea Calabró
+License: Creative Commons Attribution 4.0 International (CC BY 4.0 International)
+Source: https://creativecommons.org/licenses/by/4.0/
+
+The Godot Engine logo is a registered trademark of its respective owners. 
+Godot Launcher is an independent project and is not affiliated with, sponsored by, or endorsed by the official Godot Engine team.
+
+------------------------------------------------------------
+
+For questions regarding licenses and attributions, please open an issue on the official GitHub repository.

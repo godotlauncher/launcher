@@ -1,0 +1,10 @@
+[gd_resource type="EditorSettings" format={{{editorConfigFormat}}}]
+
+[resource]
+text_editor/external/use_external_editor = {{{useExternalEditor}}}
+text_editor/external/exec_path = "{{{execPath}}}"
+text_editor/external/exec_flags = "{{execFlags}}"
+{{#isMono}}
+dotnet/editor/external_editor = 4
+dotnet/editor/custom_exec_path_args = "{file}"
+{{/isMono}}
