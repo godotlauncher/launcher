@@ -1,0 +1,45 @@
+@import './styles/buttons.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+/* @custom-variant dark (&:where(.dark, .dark *)); */
+
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('/assets/Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('/assets/Nunito_Sans/NunitoSans-Italic-VariableFont_YTLC,opsz,wdth,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  background-color: "#1d232a";
+
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 16px;
+
+  @apply select-none;
+  /* @apply bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100; */
+}
+
+/* *:focus {
+  user-select: none;
+  outline: none !important;
+
+} */

@@ -1,0 +1,120 @@
+import * as path from 'node:path';
+
+import { app, BrowserWindow, Menu, Tray } from 'electron';
+import { getAssetPath } from '../pathResolver.js';
+import { getStoredProjectsList } from '../utils/projects.utils.js';
+import { getConfigDir } from '../utils/prefs.utils.js';
+import { PROJECTS_FILENAME } from '../constants.js';
+import { launchProject } from '../commands/projects.js';
+
+let tray: Tray;
+let mainWindow: BrowserWindow;
+
+export async function createTray(window: BrowserWindow): Promise<Tray> {
+
+    mainWindow = window;
+
+    tray = new Tray(path.resolve(getAssetPath(), 'icons',
+        process.platform === 'darwin' ? 'darwin/trayIconTemplate.png' : 'default/trayIcon.png')
+    );
+
+    tray.setToolTip('Godot Launcher');
+
+    if (process.platform === 'darwin') {
+        tray.on('click', async () => {
+            await popMenu(tray, mainWindow);
+        });
+        tray.on('right-click', async () => {
+            await popMenu(tray, mainWindow);
+        });
+    }
+
+    if (process.platform === 'win32') {
+
+        tray.on('click', async () => {
+            mainWindow.show();
+            if (app.dock) {
+                app.dock.show();
+            }
+        });
+
+        tray.on('right-click', async () => {
+            await popMenu(tray, mainWindow);
+        });
+    }
+    if (process.platform === 'linux') {
+        await updateLinuxTray();
+    }
+
+    return tray;
+
+}
+
+export async function updateLinuxTray(): Promise<void> {
+    tray.setContextMenu(await updateMenu(tray, mainWindow));
+}
+
+export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise<Electron.Menu> {
+    const projectListFIle = path.resolve(await getConfigDir(), PROJECTS_FILENAME);
+
+    const projects = await getStoredProjectsList(projectListFIle);
+    const filteredProjects = projects.filter(p => p.valid && p.last_opened != null && p.last_opened.getTime() > 0)
+        .sort((a, b) => b.last_opened!.getTime() - a.last_opened!.getTime());
+
+    const last3 = filteredProjects.slice(0, 3);
+
+    let quickLaunchMenu: Array<(Electron.MenuItemConstructorOptions)> = [];
+
+    if (last3.length > 0) {
+        quickLaunchMenu = [
+            {
+                label: 'Recent Projects',
+                enabled: false
+            }
+        ];
+
+        last3.forEach(p => {
+            quickLaunchMenu.push({
+                label: p.name,
+                click: async () => {
+                    await launchProject(p);
+                }
+            });
+        });
+
+        quickLaunchMenu.push({
+            type: 'separator'
+        });
+    }
+
+
+    const menu = Menu.buildFromTemplate([
+        ...quickLaunchMenu,
+        {
+            label: 'Show Godot Launcher',
+            click: () => {
+                mainWindow.show();
+                if (app.dock) {
+                    app.dock.show();
+                }
+            },
+        },
+        { type: 'separator' },
+        {
+            label: 'Quit',
+            click: () => {
+                app.quit();
+            }
+        }
+    ]);
+    return menu;
+}
+
+
+async function popMenu(tray: Tray, mainWindow: BrowserWindow): Promise<void> {
+
+    const menu = await updateMenu(tray, mainWindow);
+
+    tray.popUpContextMenu(menu);
+
+}
