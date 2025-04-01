@@ -36,7 +36,7 @@ export async function addVSCodeSettings(
     const settingsPath = path.resolve(projectDir, '.vscode');
 
     if (!fs.existsSync(settingsPath)) {
-        await fs.promises.mkdir(settingsPath), { recursive: true };
+        await fs.promises.mkdir(settingsPath, { recursive: true });
     }
 
     const settingsFile = path.resolve(settingsPath, 'settings.json');
@@ -184,7 +184,7 @@ export async function addOrUpdateVSCodeRecommendedExtensions(projectDir: string,
     const settingsPath = path.resolve(projectDir, '.vscode');
 
     if (!fs.existsSync(settingsPath)) {
-        await fs.promises.mkdir(settingsPath), { recursive: true };
+        await fs.promises.mkdir(settingsPath, { recursive: true });
     }
 
     // add recommended extensions
