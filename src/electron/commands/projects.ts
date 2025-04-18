@@ -26,6 +26,14 @@ export async function getProjectsDetails(): Promise<ProjectDetails[]> {
     return projects;
 }
 
+export async function storeProjectsDetails(projects: ProjectDetails[]): Promise<ProjectDetails[]> {
+    const { configDir } = defaultDirs;
+    const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
+    const storedProjects = await storeProjectsList(projectListPath, projects);
+
+    return storedProjects;
+}
+
 export async function removeProject(project: ProjectDetails): Promise<ProjectDetails[]> {
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
@@ -64,11 +72,26 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
 
     // const stdio = ['ignore', 'inherit', 'inherit'];
 
+    if (process.platform === 'linux') {
+        // Linux, get the saved project as the tray does not update correctly
+        project = projects.find(p => p.path === project.path) || project;
+    }
+
     if (process.platform === 'darwin') {
-        editor = spawn('open', ['-a', command, '--args', '--path', project.path, '-e', '-w'], { detached: true, stdio: 'ignore' });
+        // macOS
+        const options = ['-a', command, '--args', '--path', project.path, '-e'];
+        if (project.open_windowed) {
+            options.push('-w');
+        }
+
+        editor = spawn('open', options, { detached: true, stdio: 'ignore' });
     }
     else {
-        editor = spawn(command, ['--path', project.path, '-e', '-w'], { detached: true, stdio: 'ignore' });
+        const options = ['--path', project.path, '-e'];
+        if (project.open_windowed) {
+            options.push('-w');
+        }
+        editor = spawn(command, options, { detached: true, stdio: 'ignore' });
     }
 
     editor.on('error', (err: Error) => {
@@ -106,4 +129,21 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
 
 export async function checkProjectIsValid(project: ProjectDetails): Promise<ProjectDetails> {
     return await checkProjectValid(project);
-} 
+}
+
+export async function setProjectWindowed(project: ProjectDetails, openWindowed: boolean): Promise<ProjectDetails> {
+
+    project.open_windowed = openWindowed;
+
+
+    const projects = await getProjectsDetails();
+    const projectIndex = projects.findIndex(p => p.path === project.path);
+
+    if (projectIndex !== -1) {
+        projects[projectIndex].open_windowed = openWindowed;
+        const updated = await storeProjectsDetails(projects);
+        ipcWebContentsSend('projects-updated', getMainWindow()?.webContents, updated);
+    }
+
+    return project;
+}
