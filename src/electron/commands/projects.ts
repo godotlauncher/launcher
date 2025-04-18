@@ -73,10 +73,20 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     // const stdio = ['ignore', 'inherit', 'inherit'];
 
     if (process.platform === 'darwin') {
-        editor = spawn('open', ['-a', command, '--args', '--path', project.path, '-e', '-w'], { detached: true, stdio: 'ignore' });
+        // macOS
+        const options = ['-a', command, '--args', '--path', project.path, '-e'];
+        if (project.open_windowed) {
+            options.push('-w');
+        }
+
+        editor = spawn('open', options, { detached: true, stdio: 'ignore' });
     }
     else {
-        editor = spawn(command, ['--path', project.path, '-e', '-w'], { detached: true, stdio: 'ignore' });
+        const options = ['--path', project.path, '-e'];
+        if (project.open_windowed) {
+            options.push('-w');
+        }
+        editor = spawn(command, options, { detached: true, stdio: 'ignore' });
     }
 
     editor.on('error', (err: Error) => {
