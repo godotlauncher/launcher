@@ -211,6 +211,7 @@ export const ProjectsView: React.FC = () => {
                                                     </button>
                                                     {row.release.mono && <p className="badge badge-outline text-xs text-base-content/50 ">.NET</p>}
                                                     {row.release.prerelease && <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">prerelease</p>}
+                                                    {row.open_windowed && <p className="badge badge-outline text-xs text-base-content/50">windowed</p>}
                                                 </div>
                                                 <div onClick={(e) => {
                                                     e.stopPropagation();
