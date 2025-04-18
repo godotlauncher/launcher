@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { dialog, Menu, shell } from 'electron';
 import { getMainWindow } from '../main.js';
 import { getThemedMenuIcon, ipcWebContentsSend } from '../utils.js';
-import { removeProject } from './projects.js';
+import { removeProject, setProjectWindowed } from './projects.js';
 import { getUserPreferences, setUserPreferences } from './userPreferences.js';
 import { removeRelease } from './removeRelease.js';
 import { openProjectManager } from './releases.js';
@@ -31,6 +31,19 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
             enabled: (project.editor_settings_path && project.editor_settings_path.length > 0) || false,
             click: () => {
                 shell.openPath(project.editor_settings_path);
+            }
+        },
+        {
+            type: 'separator'
+        },
+        {
+            icon: getThemedMenuIcon(project.open_windowed ? 'checkbox-checked' : 'checkbox'),
+            label: 'Open Windowed',
+            toolTip: 'When this option is checked, Godot will launch in windowed mode.',
+            type: 'normal',
+            checked: project.open_windowed,
+            click: async (menuItem) => {
+                project = await setProjectWindowed(project, !project.open_windowed);
             }
         },
         {
