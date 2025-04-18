@@ -97,12 +97,12 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     const currentMainWindow = getMainWindow();
 
     switch (prefs.post_launch_action) {
-        case 'minimize':
-            currentMainWindow?.minimize();
-            break;
-        case 'close_to_tray':
-            currentMainWindow?.close();
-            break;
+    case 'minimize':
+        currentMainWindow?.minimize();
+        break;
+    case 'close_to_tray':
+        currentMainWindow?.close();
+        break;
     }
 
     if (process.platform === 'linux') {
