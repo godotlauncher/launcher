@@ -42,7 +42,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
             toolTip: 'When this option is checked, Godot will launch in windowed mode.',
             type: 'normal',
             checked: project.open_windowed,
-            click: async (menuItem) => {
+            click: async () => {
                 project = await setProjectWindowed(project, !project.open_windowed);
             }
         },
