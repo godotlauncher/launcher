@@ -202,18 +202,32 @@ export const ProjectsView: React.FC = () => {
                                                 {busyProjects.includes(row.path) &&
                                                     <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg "><div className="loading loading-bars"></div></div>
                                                 }
-                                                <div className="font-bold flex text-lg gap-2 items-center">
+                                                <div className="font-bold flex text-lg gap-2 items-center justify-start">
                                                     {!row.valid && <span className="tooltip tooltip-right" data-tip="This project is invalid, check project and editor locations!">
                                                         <IconAlert className="fill-warning" />
                                                     </span>
                                                     }
                                                     <button onClick={() => onLaunchProject(row)} className="flex items-center hover:underline gap-2"> {row.name}
                                                     </button>
-                                                    {row.release.mono && <p className="badge badge-outline text-xs text-base-content/50 ">.NET</p>}
-                                                    {row.release.prerelease && <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">prerelease</p>}
-                                                    {row.open_windowed && <p className="badge badge-outline text-xs text-base-content/50">windowed</p>}
+
+                                                    {row.release.mono &&
+                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This is a .Net Project">
+                                                            <p className="badge badge-outline text-xs text-base-content/50 ">c#</p>
+                                                        </p>
+                                                    }
+                                                    {row.release.prerelease &&
+                                                        <p className='tooltip tooltip-right tooltip-secondary' data-tip="Using a pre-release Godot editor version">
+                                                            <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">pr</p>
+                                                        </p>
+                                                    }
+                                                    {row.open_windowed &&
+                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This project is open in windowed mode">
+                                                            <p className="badge badge-outline text-xs text-base-content/50">w</p>
+                                                        </p>
+                                                    }
+
                                                 </div>
-                                                <div onClick={(e) => {
+                                                <div role="button" onClick={(e) => {
                                                     e.stopPropagation();
                                                     window.navigator.clipboard.writeText(row.path);
                                                 }} className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary">
