@@ -1,4 +1,15 @@
 /** @type {import('tailwindcss').Config} */
+
+// *************
+// * Note on Menu Icon Colors
+// * The light and dark colours are set in the png files.
+// * the filenames _dark and _light represent the current theme not the icon Colour.
+// * The icon colours directly set in fonts.google.com/icons and downloaded as pngs.
+// * The icons size is 24px
+// * Light Colour: #1F2937
+// * Dark Colour: #A6ADBB
+// *************
+
 export default {
   content: [
     './index.html',
