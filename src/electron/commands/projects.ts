@@ -72,6 +72,11 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
 
     // const stdio = ['ignore', 'inherit', 'inherit'];
 
+    if (process.platform === 'linux') {
+        // Linux, get the saved project as the tray does not update correctly
+        project = projects.find(p => p.path === project.path) || project;
+    }
+
     if (process.platform === 'darwin') {
         // macOS
         const options = ['-a', command, '--args', '--path', project.path, '-e'];
@@ -107,12 +112,12 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     const currentMainWindow = getMainWindow();
 
     switch (prefs.post_launch_action) {
-    case 'minimize':
-        currentMainWindow?.minimize();
-        break;
-    case 'close_to_tray':
-        currentMainWindow?.close();
-        break;
+        case 'minimize':
+            currentMainWindow?.minimize();
+            break;
+        case 'close_to_tray':
+            currentMainWindow?.close();
+            break;
     }
 
     if (process.platform === 'linux') {
