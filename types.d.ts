@@ -61,6 +61,7 @@ type ProjectDetails = {
     editor_settings_path: string;
     editor_settings_file: string;
     last_opened: Date | null;
+    open_windowed?: boolean;
     release: InstalledRelease;
     launch_path: string;
     config_version: 4 | 5;
