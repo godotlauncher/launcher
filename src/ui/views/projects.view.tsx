@@ -211,17 +211,17 @@ export const ProjectsView: React.FC = () => {
                                                     </button>
 
                                                     {row.release.mono &&
-                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This is a .Net Project">
+                                                        <p className='tooltip tooltip-bottom tooltip-primary' data-tip="This is a .Net Project">
                                                             <p className="badge badge-outline text-xs text-base-content/50 ">c#</p>
                                                         </p>
                                                     }
                                                     {row.release.prerelease &&
-                                                        <p className='tooltip tooltip-right tooltip-secondary' data-tip="Using a pre-release Godot editor version">
+                                                        <p className='tooltip tooltip-bottom tooltip-secondary' data-tip="Using a pre-release Godot editor version">
                                                             <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">pr</p>
                                                         </p>
                                                     }
                                                     {row.open_windowed &&
-                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This project is open in windowed mode">
+                                                        <p className='tooltip tooltip-bottom tooltip-primary' data-tip="This project is open in windowed mode">
                                                             <p className="badge badge-outline text-xs text-base-content/50">w</p>
                                                         </p>
                                                     }
