@@ -2,20 +2,20 @@ import React, { useEffect } from 'react';
 
 import './App.css';
 
-import { IconProject, IconInstalls, IconSettings, IconHelp } from './components/icons';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
 
 import clsx from 'clsx';
-import { ProjectsView } from './views/projects.view';
-import { InstallsView } from './views/installs.view';
-import { SettingsView } from './views/settings.view';
-import { useRelease } from './hooks/useRelease';
-import { usePreferences } from './hooks/usePreferences';
-import { WelcomeView } from './views/welcome.view';
-import { useAppNavigation, View } from './hooks/useAppNavigation';
-import { useApp } from './hooks/useApp';
-import { HelpVIew } from './views/help.view';
+import { CircleHelp, HardDrive, Package, Settings } from "lucide-react";
 import { COMMUNITY_DISCORD_URL } from './constants';
+import { useApp } from './hooks/useApp';
+import { useAppNavigation, View } from './hooks/useAppNavigation';
+import { usePreferences } from './hooks/usePreferences';
+import { useRelease } from './hooks/useRelease';
+import { HelpVIew } from './views/help.view';
+import { InstallsView } from './views/installs.view';
+import { ProjectsView } from './views/projects.view';
+import { SettingsView } from './views/settings.view';
+import { WelcomeView } from './views/welcome.view';
 
 
 function App() {
@@ -62,14 +62,14 @@ function App() {
 
     const ShowView = () => {
         switch (currentView) {
-        case 'projects':
-            return <ProjectsView />;
-        case 'installs':
-            return <InstallsView />;
-        case 'settings':
-            return < SettingsView />;
-        case 'help':
-            return < HelpVIew />;
+            case 'projects':
+                return <ProjectsView />;
+            case 'installs':
+                return <InstallsView />;
+            case 'settings':
+                return < SettingsView />;
+            case 'help':
+                return < HelpVIew />;
         }
     };
 
@@ -88,8 +88,8 @@ function App() {
         <div className="flex h-full overflow-hidden">
             <div className="flex flex-col h-full w-56 border-r-2 border-solid border-base-200">
                 <ul className="menu rounded-box w-56 gap-2">
-                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><IconProject className="fill-current" /> Projects</a></li>
-                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <IconInstalls className="fill-current" />Installs</a>
+                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> Projects</a></li>
+                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />Installs</a>
                         {installedReleases.length < 1 &&
                             <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
                         }</li>
@@ -111,12 +111,12 @@ function App() {
 
                         <li>
                             <a data-testid="btnHelp" className={clsx('relative', { active: currentView === 'help' })} onClick={() => changeView('help')}>
-                                <IconHelp className="fill-base-content" />Help</a>
+                                <CircleHelp />Help</a>
                         </li>
 
                         <li className="">
                             <a data-testid="btnSettings" className={clsx('relative', { active: currentView === 'settings' })} onClick={() => changeView('settings')}>
-                                <IconSettings className="fill-current" />Settings
+                                <Settings />Settings
 
                             </a></li>
                     </ul>

@@ -1,6 +1,17 @@
+import { ExternalLink, MessageCircleQuestion } from "lucide-react";
 import IconDiscord from '../assets/icons/Discord-Symbol-Blurple.svg';
-import { IconHelp, IconOpenExternal } from '../components/icons';
-import { COMMUNITY_DISCORD_URL, COMMUNITY_PAGE_URL, GODOT_DOCS_URL, GODOT_PAGE_URL, LAUNCHER_CONTRIBUTE_URL, LAUNCHER_DOCS_URL, LAUNCHER_GITHUB_ISSUES_URL, LAUNCHER_GITHUB_PROPOSALS_URL, LAUNCHER_PAGE_URL, LAUNCHER_THIRD_PARTY_RAW_URL } from '../constants';
+import {
+    COMMUNITY_DISCORD_URL,
+    COMMUNITY_PAGE_URL,
+    GODOT_DOCS_URL,
+    GODOT_PAGE_URL,
+    LAUNCHER_CONTRIBUTE_URL,
+    LAUNCHER_DOCS_URL,
+    LAUNCHER_GITHUB_ISSUES_URL,
+    LAUNCHER_GITHUB_PROPOSALS_URL,
+    LAUNCHER_PAGE_URL,
+    LAUNCHER_THIRD_PARTY_RAW_URL
+} from '../constants';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 export const HelpVIew: React.FC = () => {
@@ -13,7 +24,7 @@ export const HelpVIew: React.FC = () => {
                 <div className="flex flex-col gap-2 w-full">
 
                     <div className="flex flex-row items-center gap-2">
-                        <IconHelp className="w-7 h-7 fill-base-content" />
+                        <MessageCircleQuestion className="w-7 h-7" />
                         <h1 data-testid="helpTitle" className="text-2xl">Help</h1>
                         <div className="flex flex-1 gap-2 justify-end">
                             <button
@@ -22,7 +33,7 @@ export const HelpVIew: React.FC = () => {
                                 aria-label="Third-party copyright notices"
                             >
                                 Third-party Notices
-                                <IconOpenExternal className="fill-current h-3 w-3" />
+                                <ExternalLink className="h-4" />
                             </button>
                         </div>
                     </div>
@@ -42,11 +53,11 @@ export const HelpVIew: React.FC = () => {
                                         <ul className="flex flex-col gap-0">
                                             <li>
                                                 <h3 className="font-bold">Home Page</h3>
-                                                <button onClick={() => openExternalLink(LAUNCHER_PAGE_URL)} className="btn btn-link gap-1">{LAUNCHER_PAGE_URL}<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " /></button>
+                                                <button onClick={() => openExternalLink(LAUNCHER_PAGE_URL)} className="btn btn-link gap-1">{LAUNCHER_PAGE_URL}<ExternalLink className="h-4 w-4 m-0 p-0" /></button>
                                             </li>
                                             <li>
                                                 <h3 className="font-bold">Launcher Docs</h3>
-                                                <button onClick={() => openExternalLink(LAUNCHER_DOCS_URL)} className="btn btn-link gap-1">{LAUNCHER_DOCS_URL}<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " /></button>
+                                                <button onClick={() => openExternalLink(LAUNCHER_DOCS_URL)} className="btn btn-link gap-1">{LAUNCHER_DOCS_URL}<ExternalLink className="h-4 w-4 m-0 p-0" /></button>
                                             </li>
                                         </ul>
                                     </div>
@@ -56,11 +67,11 @@ export const HelpVIew: React.FC = () => {
                                         <ul className="flex flex-col gap-0">
                                             <li>
                                                 <h3 className="font-bold">Godot Engine</h3>
-                                                <button onClick={() => openExternalLink(GODOT_PAGE_URL)} className="btn btn-link gap-1">{GODOT_PAGE_URL}<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " /></button>
+                                                <button onClick={() => openExternalLink(GODOT_PAGE_URL)} className="btn btn-link gap-1">{GODOT_PAGE_URL}<ExternalLink className="h-4 w-4 m-0 p-0" /></button>
                                             </li>
                                             <li>
                                                 <h3 className="font-bold">Godot Docs</h3>
-                                                <button onClick={() => openExternalLink(GODOT_DOCS_URL)} className="btn btn-link gap-1" >{GODOT_DOCS_URL}<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " /></button>
+                                                <button onClick={() => openExternalLink(GODOT_DOCS_URL)} className="btn btn-link gap-1" >{GODOT_DOCS_URL}<ExternalLink className="h-4 w-4 m-0 p-0" /></button>
                                             </li>
                                         </ul>
                                     </div>
@@ -70,7 +81,7 @@ export const HelpVIew: React.FC = () => {
                                         <h1 className="text-xl flex flex-row items-baseline gap-1">Community and Support
                                             <button
                                                 onClick={() => openExternalLink(COMMUNITY_PAGE_URL)}
-                                                className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " />
+                                                className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<ExternalLink className="h-4 w-4 m-0 p-0" />
                                             </button>
                                         </h1>
                                         <ul className="flex flex-row items-center justify-start px-4">
@@ -85,17 +96,17 @@ export const HelpVIew: React.FC = () => {
 
                                         <h1 className="text-xl flex flex-row items-baseline gap-1"
                                         >How to Contribute <button
-                                                onClick={() => openExternalLink(LAUNCHER_CONTRIBUTE_URL)}
-                                                className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " />
+                                            onClick={() => openExternalLink(LAUNCHER_CONTRIBUTE_URL)}
+                                            className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<ExternalLink className="h-4 w-4 m-0 p-0" />
                                             </button>
                                         </h1>
                                         <p>Report bugs or suggestions by submitting and issue on the official GitHub repository</p>
                                         <ul className="flex gap-2">
                                             <li>
-                                                <button onClick={() => openExternalLink(LAUNCHER_GITHUB_ISSUES_URL)} className="btn btn-link gap-1">I think I found a bug<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " /></button>
+                                                <button onClick={() => openExternalLink(LAUNCHER_GITHUB_ISSUES_URL)} className="btn btn-link gap-1">I think I found a bug<ExternalLink className="h-4 w-4 m-0 p-0" /></button>
                                             </li>
                                             <li>
-                                                <button onClick={() => openExternalLink(LAUNCHER_GITHUB_PROPOSALS_URL)} className="btn btn-link gap-1">I have a suggestion!<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " /></button>
+                                                <button onClick={() => openExternalLink(LAUNCHER_GITHUB_PROPOSALS_URL)} className="btn btn-link gap-1">I have a suggestion!<ExternalLink className="h-4 w-4 m-0 p-0" /></button>
                                             </li>
                                         </ul>
                                     </div>

@@ -2,9 +2,9 @@ import React, { PropsWithChildren } from 'react';
 
 export type ThemeMode = 'dark' | 'light' | 'auto';
 export type ThemeProviderContext = {
-  systemTheme: ThemeMode;
-  theme: ThemeMode | null;
-  setTheme: (theme: ThemeMode) => void;
+    systemTheme: ThemeMode;
+    theme: ThemeMode | null;
+    setTheme: (theme: ThemeMode) => void;
 };
 
 const getStoredTheme = () => {

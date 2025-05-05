@@ -1,6 +1,6 @@
+import { Folder } from "lucide-react";
 import { useState } from 'react';
 import { usePreferences } from '../../hooks/usePreferences';
-import { IconFolderFilled } from '../icons';
 
 export const ProjectsLocation: React.FC = () => {
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -22,9 +22,9 @@ export const ProjectsLocation: React.FC = () => {
         <>
             {
                 dialogOpen &&
-        <div className="absolute inset-0 z-10 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-            <p className="loading loading-infinity"></p><p>Waiting for dialog...</p>
-        </div>
+                <div className="absolute inset-0 z-10 w-full h-full bg-black/80 flex flex-col items-center justify-center">
+                    <p className="loading loading-infinity"></p><p>Waiting for dialog...</p>
+                </div>
             }
             <div className="flex flex-col gap-4 ">
 
@@ -39,8 +39,8 @@ export const ProjectsLocation: React.FC = () => {
                 >
                     <div className="flex flex-col flex-1 items-start">
                         <div className="flex flex-row  items-center gap-2 text-sm text-base-content/50">
-                            <IconFolderFilled className="fill-base-content/50 self-start" />
-              Default Location</div>
+                            <Folder className="fill-base-content/50 self-start stroke-none" />
+                            Default Location</div>
                         <div className="pl-0"> {preferences?.projects_location} </div>
                     </div>
                 </button>

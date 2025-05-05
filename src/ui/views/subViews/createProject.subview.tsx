@@ -1,11 +1,11 @@
 import clsx from 'clsx';
-import { IconClose, IconHelp } from '../../components/icons';
+import { CircleHelp, X } from "lucide-react";
 import { useEffect, useRef, useState } from 'react';
-import { useRelease } from '../../hooks/useRelease';
-import { sortReleases } from '../../releaseStoring.utils';
-import { useProjects } from '../../hooks/useProjects';
 import { useAlerts } from '../../hooks/useAlerts';
 import { usePreferences } from '../../hooks/usePreferences';
+import { useProjects } from '../../hooks/useProjects';
+import { useRelease } from '../../hooks/useRelease';
+import { sortReleases } from '../../releaseStoring.utils';
 
 type SubViewProps = {
     onClose: () => void;
@@ -68,19 +68,19 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     useEffect(() => {
         const all = installedReleases.concat(downloadingReleases.map(r =>
-            ({
-                version: r.version,
-                version_number: -1,
-                install_path: '',
-                mono: r.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: r.prerelease,
-                config_version: 5,
-                published_at: r.published_at,
-                valid: true,
-            })))
+        ({
+            version: r.version,
+            version_number: -1,
+            install_path: '',
+            mono: r.mono,
+            platform: '',
+            arch: '',
+            editor_path: '',
+            prerelease: r.prerelease,
+            config_version: 5,
+            published_at: r.published_at,
+            valid: true,
+        })))
             .sort(sortReleases);
 
         setAllReleases(all);
@@ -143,7 +143,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             <>
                 <p>Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the VS Code executable in the settings.</p>
             </>,
-            <IconHelp className="fill-current" />);
+            <CircleHelp />);
     };
 
     const getRendererType = (versionInt: number) => {
@@ -225,7 +225,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                     <div className="flex flex-row justify-between">
                         <h1 data-testid="settingsTitle" className="text-2xl">New Project</h1>
                         <div className="flex gap-2">
-                            <button onClick={onClose}><IconClose className="fill-current" /></button>
+                            <button onClick={onClose}><X /></button>
                         </div>
                     </div>
                 </div>
@@ -354,7 +354,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                     {
                                         !hasTool('VSCode') &&
                                         <>
-                                            <span> <button className="text-sm text-warning items-center flex flex-row gap-2" onClick={showVSCodeHelp}><IconHelp className="fill-warning" />Visual Studio Code is not installed on this computer</button></span>
+                                            <span> <button className="text-sm text-warning items-center flex flex-row gap-2" onClick={showVSCodeHelp}><CircleHelp className="stroke-warning" />Visual Studio Code is not installed on this computer</button></span>
 
                                         </>
                                     }

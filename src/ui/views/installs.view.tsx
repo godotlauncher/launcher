@@ -1,8 +1,8 @@
+import { CircleX, EllipsisVertical, TriangleAlert } from "lucide-react";
 import { useState } from 'react';
-import { IconAlert, IconCloseCircle, IconMoreVertical } from '../components/icons';
-import { InstallEditorSubView } from './subViews/installEditor.subview';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
+import { InstallEditorSubView } from './subViews/installEditor.subview';
 
 export const InstallsView: React.FC = () => {
     const [textSearch, setTextSearch] = useState<string>('');
@@ -18,19 +18,19 @@ export const InstallsView: React.FC = () => {
     const getFilteredRows = () => {
         // merge downloading and installed releases for proper display
         const all = installedReleases.concat(downloadingReleases.map(r =>
-            ({
-                version: r.version,
-                version_number: -1,
-                install_path: '',
-                mono: r.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: r.prerelease,
-                config_version: 5,
-                published_at: r.published_at,
-                valid: true
-            })));
+        ({
+            version: r.version,
+            version_number: -1,
+            install_path: '',
+            mono: r.mono,
+            platform: '',
+            arch: '',
+            editor_path: '',
+            prerelease: r.prerelease,
+            config_version: 5,
+            published_at: r.published_at,
+            valid: true
+        })));
 
         if (textSearch === '') return all.sort(sortReleases);
         const selection = all.filter(row => row.version.toLowerCase().includes(textSearch.toLowerCase()));
@@ -59,7 +59,7 @@ export const InstallsView: React.FC = () => {
                             <button
                                 tabIndex={-1}
                                 onClick={() => setTextSearch('')}
-                                className="absolute right-4 w-6 h-6"><IconCloseCircle className="fill-current" /></button>
+                                className="absolute right-4 w-6 h-6"><CircleX /></button>
                         }
                     </div>
                 </div>
@@ -67,7 +67,7 @@ export const InstallsView: React.FC = () => {
 
                 {
                     (installedReleases.length < 1 && downloadingReleases.length < 1)
-                        ? (<div className="text-warning flex gap-2"><IconAlert className="fill-warning" />No releases installed, yet.<a onClick={() => setInstallOpen(true)} className="underline cursor-pointer">Install.</a></div>)
+                        ? (<div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />No releases installed, yet.<a onClick={() => setInstallOpen(true)} className="underline cursor-pointer">Install.</a></div>)
                         : (
                             <div className="overflow-auto h-full">
                                 <table className="table table-sm">
@@ -105,7 +105,7 @@ export const InstallsView: React.FC = () => {
                                                             <button
                                                                 onClick={(e) => onOpenReleaseMoreOptions(e, row)}
                                                                 className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"                        >
-                                                                <IconMoreVertical className="fill-current" />
+                                                                <EllipsisVertical />
                                                             </button >
                                                         }
                                                     </td>

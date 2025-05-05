@@ -1,5 +1,5 @@
+import { ExternalLink } from "lucide-react";
 import { useAppNavigation } from '../../hooks/useAppNavigation';
-import { IconOpenExternal } from '../icons';
 
 
 
@@ -20,7 +20,7 @@ export const LinuxStep: React.FC = () => {
                     </li>
                     <li className="flex flex-row gap-1 font-bold">
                         NOTE: If you are working with .NET Editors, you will need to install the .NET SDK from
-                        <button className="flex flex-row hover:underline items-basleline text-info" onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}>Microsoft .NET website <IconOpenExternal className="fill-current w-4" /></button>
+                        <button className="flex flex-row hover:underline items-basleline text-info" onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}>Microsoft .NET website <ExternalLink className="w-4" /></button>
                     </li>
                 </ul>
             </div>

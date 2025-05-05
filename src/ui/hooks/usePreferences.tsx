@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, PropsWithChildren } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 interface AppPreferences {
     preferences: UserPreferences | null;

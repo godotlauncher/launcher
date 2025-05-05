@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { IconClose, IconCloseCircle, IconInstalls, IconRefresh } from '../../components/icons';
-import { useRelease } from '../../hooks/useRelease';
 import clsx from 'clsx';
-import { usePreferences } from '../../hooks/usePreferences';
-import { useAlerts } from '../../hooks/useAlerts';
+import { CircleX, HardDrive, RefreshCcw, X } from "lucide-react";
+import { useState } from 'react';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';
+import { useAlerts } from '../../hooks/useAlerts';
+import { usePreferences } from '../../hooks/usePreferences';
+import { useRelease } from '../../hooks/useRelease';
 
 type SubviewProps = {
     onClose: () => void;
@@ -105,7 +105,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 <p className="badge text-base-content/50">{preferences?.install_location}</p>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={onClose}><IconClose className="fill-current" /></button>
+                                <button onClick={onClose}><X /></button>
                             </div>
                         </div>
                     </div>
@@ -121,7 +121,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                             <button
                                 tabIndex={-1}
                                 onClick={() => setTextSearch('')}
-                                className="absolute right-8 w-6 h-6"><IconCloseCircle className="fill-current" /></button>
+                                className="absolute right-8 w-6 h-6"><CircleX /></button>
                         }
                     </div>
                     <div className="flex flex-row justify-between">
@@ -168,12 +168,12 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 <label className="swap swap-indeterminate">
                                     {/* this hidden checkbox controls the state */}
                                     <input type="checkbox" onChange={(e) => setFilterInstalled(e.target.checked)} />
-                                    <div className="swap-on  text-sm flex gap-2 items-center text-info"><IconInstalls className="fill-info" />Show installed only</div>
-                                    <div className="swap-off text-sm flex gap-2 items-center text-base-content"><IconInstalls className="fill-base-content" />Show installed only</div>
+                                    <div className="swap-on  text-sm flex gap-2 items-center text-info"><HardDrive className="stroke-info" />Show installed only</div>
+                                    <div className="swap-off text-sm flex gap-2 items-center text-base-content"><HardDrive />Show installed only</div>
                                 </label>
                             </span>
 
-                            <button onClick={refreshAvailableReleases} className="btn btn-sm" title="Reload Release List"><IconRefresh className="fill-base-content" /></button>
+                            <button onClick={refreshAvailableReleases} className="btn btn-sm" title="Reload Release List"><RefreshCcw className="w-4" /></button>
 
                         </div>
                     </div>

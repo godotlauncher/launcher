@@ -1,17 +1,17 @@
-import { useState } from 'react';
 import logger from 'electron-log';
+import { useState } from 'react';
 
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
-import { IconAlert, IconCloseCircle, IconCopy, IconMoreVertical, IconOpenExternal, IconUnfoldMore } from '../components/icons';
-import { CreateProjectSubView } from './subViews/createProject.subview';
-import { usePreferences } from '../hooks/usePreferences';
-import { useRelease } from '../hooks/useRelease';
-import { useAlerts } from '../hooks/useAlerts';
+import { ChevronsUpDown, CircleX, Copy, EllipsisVertical, ExternalLink, TriangleAlert } from "lucide-react";
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
-import { useProjects } from '../hooks/useProjects';
+import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
+import { usePreferences } from '../hooks/usePreferences';
+import { useProjects } from '../hooks/useProjects';
+import { useRelease } from '../hooks/useRelease';
+import { CreateProjectSubView } from './subViews/createProject.subview';
 
 
 TimeAgo.addLocale(en);
@@ -49,7 +49,7 @@ export const ProjectsView: React.FC = () => {
             const projectPath = result.filePaths[0];
 
             if (installedReleases.length === 0) {
-                addAlert('Error', 'You need at least a release installed to add a project', <IconAlert className="fill-error" />);
+                addAlert('Error', 'You need at least a release installed to add a project', <TriangleAlert className="stroke-error" />);
                 return;
             }
 
@@ -57,7 +57,7 @@ export const ProjectsView: React.FC = () => {
             logger.info(addResult);
             if (!addResult.success) {
                 logger.error(addResult.error);
-                addAlert('Error', addResult.error || 'Something went wrong when adding project', <IconAlert className="fill-error" />);
+                addAlert('Error', addResult.error || 'Something went wrong when adding project', <TriangleAlert className="stroke-error" />);
                 return;
             }
             else {
@@ -73,10 +73,10 @@ export const ProjectsView: React.FC = () => {
                                 <button
                                     onClick={() => openExternalLink(`https://docs.godotengine.org/en/${addResult.newProject?.release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
                                     className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
-                                    Read More<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " />
+                                    Read More<ExternalLink className="h-4 w-4 m-0 p-0 " />
                                 </button>
                             </div>
-                        ), <IconAlert className="fill-warning" />);
+                        ), <TriangleAlert className="stroke-warning" />);
                     }
                 }
             }
@@ -106,10 +106,10 @@ export const ProjectsView: React.FC = () => {
                                 <button
                                     onClick={() => openExternalLink(`https://docs.godotengine.org/en/${release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
                                     className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
-                                    Read More<IconOpenExternal className="fill-current h-4 w-4 m-0 p-0 " />
+                                    Read More<ExternalLink className="h-4 w-4 m-0 p-0 " />
                                 </button>
                             </div>
-                        ), <IconAlert className="fill-warning" />);
+                        ), <TriangleAlert className="stroke-warning" />);
                     }
                 }
             }
@@ -176,11 +176,11 @@ export const ProjectsView: React.FC = () => {
                             <button
                                 tabIndex={-1}
                                 onClick={() => setTextSearch('')}
-                                className="absolute right-4 w-6 h-6"><IconCloseCircle className="fill-current" /></button>
+                                className="absolute right-4 w-6 h-6"><CircleX /></button>
                         }
                     </div>
                 </div>
-                {(!releaseLoading && installedReleases.length < 1) && <div className="text-warning flex gap-2"><IconAlert className="fill-warning" />No releases installed.<a onClick={() => setCurrentView('installs')} className="underline cursor-pointer">Go to installs.</a></div>}
+                {(!releaseLoading && installedReleases.length < 1) && <div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />No releases installed.<a onClick={() => setCurrentView('installs')} className="underline cursor-pointer">Go to installs.</a></div>}
                 <div className="divider m-0"></div>
                 {loading && <div className="loading loading-dots loading-lg"></div>}
                 {!loading &&
@@ -204,7 +204,7 @@ export const ProjectsView: React.FC = () => {
                                                 }
                                                 <div className="font-bold flex text-lg gap-2 items-center justify-start">
                                                     {!row.valid && <span className="tooltip tooltip-right" data-tip="This project is invalid, check project and editor locations!">
-                                                        <IconAlert className="fill-warning" />
+                                                        <TriangleAlert className="stroke-warning" />
                                                     </span>
                                                     }
                                                     <button onClick={() => onLaunchProject(row)} className="flex items-center hover:underline gap-2"> {row.name}
@@ -232,7 +232,7 @@ export const ProjectsView: React.FC = () => {
                                                     window.navigator.clipboard.writeText(row.path);
                                                 }} className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary">
                                                     <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis">{row.path}</p>
-                                                    <IconCopy className="fill-base-content/50 w-4 hover:fill-info active:fill-secondary" />
+                                                    <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary" />
                                                 </div>
                                             </td>
 
@@ -247,14 +247,14 @@ export const ProjectsView: React.FC = () => {
                                                         {
                                                             !isInstalledRelease(row.release.version, row.release.mono)
                                                                 ? <div className="flex flex-row items-center gap-4">
-                                                                    <IconAlert className="fill-warning" />
+                                                                    <TriangleAlert className="stroke-warning" />
                                                                     <p className="line-through">{row.version} {row.release.mono && '(.NET)'}</p>
                                                                 </div>
                                                                 : <>
                                                                     {row.version} {row.release.mono && '(.NET)'}
                                                                 </>
                                                         }
-                                                        <IconUnfoldMore className="fill-base-content" />
+                                                        <ChevronsUpDown />
                                                     </button>
                                                 </div>
                                             </td>
@@ -262,7 +262,7 @@ export const ProjectsView: React.FC = () => {
                                                 <button
                                                     onClick={(e) => onProjectMoreOptions(e, row)}
                                                     className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"                        >
-                                                    <IconMoreVertical className="fill-current" />
+                                                    <EllipsisVertical />
                                                 </button >
                                             </td>
                                         </tr>

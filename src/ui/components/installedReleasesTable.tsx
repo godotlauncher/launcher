@@ -1,7 +1,7 @@
-import { IconInstalls } from './icons';
+import { HardDrive } from "lucide-react";
 
 type InstalledReleaseTableProps = {
-  releases: InstalledRelease[];
+    releases: InstalledRelease[];
 };
 
 export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ releases }) => {
@@ -26,23 +26,23 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ re
                                 {!row.mono && (
                                     <p className="tooltip tooltip-left flex items-center" data-tip={`Installed - ${row.version}`}>
                                         {(row.install_path.length > 0)
-                                            ? <IconInstalls className="fill-current" />
+                                            ? <HardDrive />
                                             : <><div className="loading loading-ring loading-sm"></div> downloading... </>
                                         }
                                     </p>
                                 )}
 
                                 {row.mono &&
-                  (
-                      <p className="tooltip tooltip-left flex items-center" data-tip={`Installed - ${row.version} .NET`}>
-                          <span className="flex flex-row items-center gap-1 text-xs">
-                              {(row.install_path.length > 0)
-                                  ? <p className="flex items-center gap-2"><IconInstalls className="fill-current" />(.NET)</p>
-                                  : <><div className="loading loading-ring loading-sm"></div> downloading (.NET)... </>
-                              }
-                          </span>
-                      </p>
-                  )}
+                                    (
+                                        <p className="tooltip tooltip-left flex items-center" data-tip={`Installed - ${row.version} .NET`}>
+                                            <span className="flex flex-row items-center gap-1 text-xs">
+                                                {(row.install_path.length > 0)
+                                                    ? <p className="flex items-center gap-2"><HardDrive />(.NET)</p>
+                                                    : <><div className="loading loading-ring loading-sm"></div> downloading (.NET)... </>
+                                                }
+                                            </span>
+                                        </p>
+                                    )}
                             </td>
                         </tr>
                     ))

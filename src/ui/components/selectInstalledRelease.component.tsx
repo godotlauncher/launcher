@@ -1,9 +1,9 @@
+import { TriangleAlert } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
-import { CloseButton } from './closeButton.component';
-import { IconAlert } from './icons';
 import { InstallEditorSubView } from '../views/subViews/installEditor.subview';
+import { CloseButton } from './closeButton.component';
 
 
 type InstalledReleaseSelectorProps = {
@@ -32,19 +32,19 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
         // merge downloading and installed releases for proper display
         const all = installedReleases.filter(r => parseInt(r.version_number.toString()) >= parseInt(currentRelease.version_number.toString()))
             .concat(downloadingReleases.map(r =>
-                ({
-                    version: r.version,
-                    version_number: -1,
-                    install_path: '',
-                    mono: r.mono,
-                    platform: '',
-                    arch: '',
-                    editor_path: '',
-                    prerelease: r.prerelease,
-                    config_version: 5,
-                    published_at: r.published_at,
-                    valid: true
-                })));
+            ({
+                version: r.version,
+                version_number: -1,
+                install_path: '',
+                mono: r.mono,
+                platform: '',
+                arch: '',
+                editor_path: '',
+                prerelease: r.prerelease,
+                config_version: 5,
+                published_at: r.published_at,
+                valid: true
+            })));
 
         return all.sort(sortReleases);
 
@@ -82,7 +82,7 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                                     filteredReleases.length === 0 && <tr>
                                         <td colSpan={2} className="">
                                             <div className="flex flex-row gap-2 text-warning items-center">
-                                                <IconAlert className="fill-warning" />
+                                                <TriangleAlert className="stroke-warning" />
                                                 No releases found, required editor version {parseInt(currentRelease.version_number.toString())}.x
                                             </div>
                                             <div><button className="btn btn-link" onClick={() => setShowInstallEditor(true)}>Install releases</button></div>

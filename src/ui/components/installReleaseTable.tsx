@@ -1,5 +1,5 @@
+import { HardDrive, HardDriveDownload } from "lucide-react";
 import { useRelease } from '../hooks/useRelease';
-import { IconDownload, IconInstalls } from './icons';
 
 type InstallReleaseTableProps = {
     releases: ReleaseSummary[];
@@ -34,7 +34,7 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
                                 {
                                     isInstalledRelease(row.version, false)
                                         ? (<p className="tooltip tooltip-left flex items-center text-info gap-1" data-tip={`Installed - ${row.version} (GDScript)`}>
-                                            <IconInstalls className="fill-current" /> (GDScript)
+                                            <HardDrive /> (GDScript)
                                         </p>)
                                         : isDownloadingRelease(row.version, false)
                                             ? <div className="flex items-center gap-1 text-info"><p className="loading loading-ring loading-sm text-current"></p>(GDScript) Installing...</div>
@@ -43,7 +43,7 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
                                                     className="flex items-center"
                                                     onClick={() => installReleaseRequest(row, false)}
                                                     aria-label={`download ${row.version} (GDScript)`}>
-                                                    <IconDownload className="fill-current" /> (GDScript)
+                                                    <HardDriveDownload /> (GDScript)
                                                 </button>
                                             </p>)
                                 }
@@ -53,12 +53,12 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
                                 {
                                     isInstalledRelease(row.version, true)
                                         ? (<p className="tooltip tooltip-left flex items-center gap-1 text-info" data-tip={`Installed - ${row.version} .NET`}>
-                                            <IconInstalls className="fill-current" />(.NET)
+                                            <HardDrive />(.NET)
                                         </p>)
                                         : isDownloadingRelease(row.version, true)
                                             ? <div className="flex items-center gap-1 text-info"><div className="loading loading-ring loading-sm text-current"></div>(.NET) Installing...</div>
                                             : (<p className="tooltip tooltip-left flex items-center" data-tip={`Download ${row.version} .NET`}>
-                                                <button data-testid={`btnDownload${row.version}-mono`} className="flex flex-row text-xs gap-1 items-center" onClick={() => installReleaseRequest(row, true)} aria-label={`download ${row.version} - .NET`} ><IconDownload className="fill-current" />(.NET)</button>
+                                                <button data-testid={`btnDownload${row.version}-mono`} className="flex flex-row text-xs gap-1 items-center" onClick={() => installReleaseRequest(row, true)} aria-label={`download ${row.version} - .NET`} ><HardDriveDownload />(.NET)</button>
                                             </p>)
                                 }
                             </td>

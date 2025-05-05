@@ -1,5 +1,5 @@
+import { Folder, X } from "lucide-react";
 import { MouseEvent, useEffect, useState } from 'react';
-import { IconDelete, IconFolderFilled } from '../icons';
 import { usePreferences } from '../../hooks/usePreferences';
 
 export const VSCodeToolSettings: React.FC = () => {
@@ -66,7 +66,9 @@ export const VSCodeToolSettings: React.FC = () => {
                         {
                             preferences?.vs_code_path && preferences?.vs_code_path.length > 0 &&
                             <span className="tooltip tooltip-left absolute right-2 top-2" data-tip="Clear Custom Path">
-                                <button onClick={(e) => clearCustomPath(e)} className="flex btn btn-xs"><IconDelete className="fill-base-content w-4 h-4" /> </button>
+                                <button onClick={(e) => clearCustomPath(e)} className="flex btn btn-xs ">
+                                    <X className="fill-base-content w-4 h-4" />
+                                </button>
                             </span>
                         }
                         <button
@@ -76,7 +78,7 @@ export const VSCodeToolSettings: React.FC = () => {
                         >
                             <div className="flex flex-col flex-1 items-start">
                                 <div className="flex flex-row items-center justify-start gap-2 text-sm text-base-content/50 w-full">
-                                    <IconFolderFilled className="fill-base-content/50 self-start" />
+                                    <Folder className="fill-base-content/50 self-start stroke-none" />
                                     <p className="flex  flex-grow flex-1">Visual Studio Code Path to Executable {(preferences?.vs_code_path?.length || 0) === 0 && (tool?.path != null && tool.path.length > 0) ? '(autodetected)' : ''}</p>
 
                                 </div>
