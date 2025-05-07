@@ -4,7 +4,7 @@ import { useState } from 'react';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
-import { ChevronsUpDown, CircleX, Copy, EllipsisVertical, ExternalLink, TriangleAlert } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronUp, CircleX, Copy, EllipsisVertical, ExternalLink, TriangleAlert } from 'lucide-react';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -25,6 +25,8 @@ export const ProjectsView: React.FC = () => {
     const [addingProject, setAddingProject] = useState<boolean>(false);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
+
+    const [sortData, setSortData] = useState<{ field: string, order: 'asc' | 'desc'; }>({ field: 'modified', order: 'desc' });
 
     const { addAlert } = useAlerts();
 
@@ -131,8 +133,41 @@ export const ProjectsView: React.FC = () => {
     };
 
     const getFilteredRows = () => {
-        if (textSearch === '') return projects;
-        return projects.filter(row => row.name.toLowerCase().includes(textSearch.toLowerCase()));
+
+        const sortFunction = (a: ProjectDetails, b: ProjectDetails) => {
+            if (sortData.field === 'name') {
+                if (sortData.order === 'asc') {
+                    return a.name.localeCompare(b.name);
+                }
+                else {
+                    return b.name.localeCompare(a.name);
+                }
+            }
+            else if (sortData.field === 'modified') {
+                if (sortData.order === 'asc') {
+                    return (a.last_opened?.getTime() || 0) - (b.last_opened?.getTime() || 0);
+                }
+                else {
+                    return (b.last_opened?.getTime() || 0) - (a.last_opened?.getTime() || 0);
+                }
+            }
+            return 0;
+        };
+
+        if (textSearch === '') return projects.sort(sortFunction);
+        return projects.filter(row => row.name.toLowerCase().includes(textSearch.toLowerCase()))
+            .sort(sortFunction);
+    };
+
+    const getSortIcon = (field: string) => {
+        console.log('sortData', sortData);
+        if (sortData.field !== field) return <></>;
+        else if (sortData.order === 'asc') {
+            return <ChevronUp className="w-4 h-4 ml-2 cursor-pointer" />;
+        }
+        else {
+            return <ChevronDown className="w-4 h-4 ml-2 cursor-pointer" />;
+        }
     };
 
     return (
@@ -188,8 +223,32 @@ export const ProjectsView: React.FC = () => {
                         <table className="table table-sm">
                             <thead className="sticky z-10 top-0 bg-base-200">
                                 <tr >
-                                    <th className="min-w-48 w-full">Name</th>
-                                    <th className="w-44 min-w-44">Modified</th>
+                                    <th className="min-w-48 w-full">
+                                        <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                            if (sortData.field === 'name') {
+                                                setSortData({ field: 'name', order: sortData.order === 'asc' ? 'desc' : 'asc' });
+                                            }
+                                            else {
+                                                setSortData({ field: 'name', order: 'asc' });
+                                            }
+                                        }}>
+                                            Name
+                                            {getSortIcon('name')}
+                                        </label>
+                                    </th>
+                                    <th className="w-44 min-w-44">
+                                        <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                            if (sortData.field === 'modified') {
+                                                setSortData({ field: 'modified', order: sortData.order === 'asc' ? 'desc' : 'asc' });
+                                            }
+                                            else {
+                                                setSortData({ field: 'modified', order: 'asc' });
+                                            }
+                                        }}>
+                                            Modified
+                                            {getSortIcon('modified')}
+                                        </label>
+                                    </th>
                                     <th className="w-60 min-w-60">Editor</th>
                                     <th className=""></th>
                                 </tr>
