@@ -160,7 +160,7 @@ export const ProjectsView: React.FC = () => {
     };
 
     const getSortIcon = (field: string) => {
-        console.log('sortData', sortData);
+
         if (sortData.field !== field) return <></>;
         else if (sortData.order === 'asc') {
             return <ChevronUp className="w-4 h-4 ml-2 cursor-pointer" />;
