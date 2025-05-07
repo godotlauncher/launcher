@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert } from 'lucide-react';
 import { usePreferences } from '../../hooks/usePreferences';
 
 

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CircleX, HardDrive, RefreshCcw, X } from "lucide-react";
+import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
 import { useState } from 'react';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';

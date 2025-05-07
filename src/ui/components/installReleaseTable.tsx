@@ -1,4 +1,4 @@
-import { HardDrive, HardDriveDownload } from "lucide-react";
+import { HardDrive, HardDriveDownload } from 'lucide-react';
 import { useRelease } from '../hooks/useRelease';
 
 type InstallReleaseTableProps = {

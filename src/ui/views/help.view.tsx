@@ -1,4 +1,4 @@
-import { ExternalLink, MessageCircleQuestion } from "lucide-react";
+import { ExternalLink, MessageCircleQuestion } from 'lucide-react';
 import IconDiscord from '../assets/icons/Discord-Symbol-Blurple.svg';
 import {
     COMMUNITY_DISCORD_URL,
@@ -96,8 +96,8 @@ export const HelpVIew: React.FC = () => {
 
                                         <h1 className="text-xl flex flex-row items-baseline gap-1"
                                         >How to Contribute <button
-                                            onClick={() => openExternalLink(LAUNCHER_CONTRIBUTE_URL)}
-                                            className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<ExternalLink className="h-4 w-4 m-0 p-0" />
+                                                onClick={() => openExternalLink(LAUNCHER_CONTRIBUTE_URL)}
+                                                className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<ExternalLink className="h-4 w-4 m-0 p-0" />
                                             </button>
                                         </h1>
                                         <p>Report bugs or suggestions by submitting and issue on the official GitHub repository</p>

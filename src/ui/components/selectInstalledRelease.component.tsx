@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
@@ -32,19 +32,19 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
         // merge downloading and installed releases for proper display
         const all = installedReleases.filter(r => parseInt(r.version_number.toString()) >= parseInt(currentRelease.version_number.toString()))
             .concat(downloadingReleases.map(r =>
-            ({
-                version: r.version,
-                version_number: -1,
-                install_path: '',
-                mono: r.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: r.prerelease,
-                config_version: 5,
-                published_at: r.published_at,
-                valid: true
-            })));
+                ({
+                    version: r.version,
+                    version_number: -1,
+                    install_path: '',
+                    mono: r.mono,
+                    platform: '',
+                    arch: '',
+                    editor_path: '',
+                    prerelease: r.prerelease,
+                    config_version: 5,
+                    published_at: r.published_at,
+                    valid: true
+                })));
 
         return all.sort(sortReleases);
 

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { X } from "lucide-react";
+import { X } from 'lucide-react';
 import React, { ComponentProps } from 'react';
 
 type CloseButtonProps = ComponentProps<'button'>;

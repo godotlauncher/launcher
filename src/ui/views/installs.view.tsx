@@ -1,4 +1,4 @@
-import { CircleX, EllipsisVertical, TriangleAlert } from "lucide-react";
+import { CircleX, EllipsisVertical, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
@@ -18,19 +18,19 @@ export const InstallsView: React.FC = () => {
     const getFilteredRows = () => {
         // merge downloading and installed releases for proper display
         const all = installedReleases.concat(downloadingReleases.map(r =>
-        ({
-            version: r.version,
-            version_number: -1,
-            install_path: '',
-            mono: r.mono,
-            platform: '',
-            arch: '',
-            editor_path: '',
-            prerelease: r.prerelease,
-            config_version: 5,
-            published_at: r.published_at,
-            valid: true
-        })));
+            ({
+                version: r.version,
+                version_number: -1,
+                install_path: '',
+                mono: r.mono,
+                platform: '',
+                arch: '',
+                editor_path: '',
+                prerelease: r.prerelease,
+                config_version: 5,
+                published_at: r.published_at,
+                valid: true
+            })));
 
         if (textSearch === '') return all.sort(sortReleases);
         const selection = all.filter(row => row.version.toLowerCase().includes(textSearch.toLowerCase()));

@@ -1,4 +1,4 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink } from 'lucide-react';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 

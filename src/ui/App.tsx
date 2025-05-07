@@ -5,7 +5,7 @@ import './App.css';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
 
 import clsx from 'clsx';
-import { CircleHelp, HardDrive, Package, Settings } from "lucide-react";
+import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
 import { COMMUNITY_DISCORD_URL } from './constants';
 import { useApp } from './hooks/useApp';
 import { useAppNavigation, View } from './hooks/useAppNavigation';
@@ -62,14 +62,14 @@ function App() {
 
     const ShowView = () => {
         switch (currentView) {
-            case 'projects':
-                return <ProjectsView />;
-            case 'installs':
-                return <InstallsView />;
-            case 'settings':
-                return < SettingsView />;
-            case 'help':
-                return < HelpVIew />;
+        case 'projects':
+            return <ProjectsView />;
+        case 'installs':
+            return <InstallsView />;
+        case 'settings':
+            return < SettingsView />;
+        case 'help':
+            return < HelpVIew />;
         }
     };
 

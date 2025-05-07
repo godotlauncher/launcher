@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CircleHelp, X } from "lucide-react";
+import { CircleHelp, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAlerts } from '../../hooks/useAlerts';
 import { usePreferences } from '../../hooks/usePreferences';
@@ -68,19 +68,19 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     useEffect(() => {
         const all = installedReleases.concat(downloadingReleases.map(r =>
-        ({
-            version: r.version,
-            version_number: -1,
-            install_path: '',
-            mono: r.mono,
-            platform: '',
-            arch: '',
-            editor_path: '',
-            prerelease: r.prerelease,
-            config_version: 5,
-            published_at: r.published_at,
-            valid: true,
-        })))
+            ({
+                version: r.version,
+                version_number: -1,
+                install_path: '',
+                mono: r.mono,
+                platform: '',
+                arch: '',
+                editor_path: '',
+                prerelease: r.prerelease,
+                config_version: 5,
+                published_at: r.published_at,
+                valid: true,
+            })))
             .sort(sortReleases);
 
         setAllReleases(all);

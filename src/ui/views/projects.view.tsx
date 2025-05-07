@@ -4,7 +4,7 @@ import { useState } from 'react';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
-import { ChevronsUpDown, CircleX, Copy, EllipsisVertical, ExternalLink, TriangleAlert } from "lucide-react";
+import { ChevronsUpDown, CircleX, Copy, EllipsisVertical, ExternalLink, TriangleAlert } from 'lucide-react';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';

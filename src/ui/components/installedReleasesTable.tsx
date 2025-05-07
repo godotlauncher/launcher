@@ -1,4 +1,4 @@
-import { HardDrive } from "lucide-react";
+import { HardDrive } from 'lucide-react';
 
 type InstalledReleaseTableProps = {
     releases: InstalledRelease[];

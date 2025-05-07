@@ -1,4 +1,4 @@
-import { Folder, X } from "lucide-react";
+import { Folder, X } from 'lucide-react';
 import { MouseEvent, useEffect, useState } from 'react';
 import { usePreferences } from '../../hooks/usePreferences';
 
