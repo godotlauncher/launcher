@@ -46,7 +46,8 @@
     "test:unit": "vitest src",
     "app:dir": "electron-builder --dir",
     "app:dist": "electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "changelog": "auto-changelog --ignore-commit-pattern \"changelog|update changelog|updated changelog|update CHANGELOG\""
   },
   "dependencies": {
     "clsx": "^2.1.1",
