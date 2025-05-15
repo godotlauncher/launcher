@@ -27,7 +27,9 @@ Godot Launcher includes third-party assets and libraries that are licensed under
 - Third-party Icons, Fonts, and Assets: Godot Launcher includes third-party assets that remain the intellectual property of their respective copyright holders and are used in compliance with their respective licenses. These include:
   - Nunito Sans (SIL Open Font License) – https://fonts.google.com/specimen/Nunito+Sans
   - Material Icons (Apache License 2.0) – https://github.com/google/material-design-icons
+  - Lucide Icons (ISC License) – https://lucide.dev / https://github.com/lucide-icons/lucide/blob/main/LICENSE
   - Godot Engine Logo (MIT, subject to Godot’s trademark policies) – https://godotengine.org/license
+
   
 For a complete list of third-party attributions and licenses, see https://github.com/godotlauncher/launcher/blob/main/COPYRIGHT.txt
 
@@ -56,4 +58,3 @@ Redistribution of Godot Launcher as part of a paid product or service is permitt
 - Support: Consult the official online documentation or join the official Discord community at https://discord.gg/Ju9jkFJGvz for additional assistance.
 
 By installing, copying, or otherwise using Godot Launcher, you confirm that you have read, understand, and agree to comply with all terms and conditions specified in this EULA.
-
