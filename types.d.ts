@@ -156,7 +156,6 @@ type EventChannelMapping = {
     'app-updates': AppUpdateMessage;
     'check-updates': Promise<void>;
 
-
     // ##### dialogs #####
     'open-file-dialog': Promise<Electron.OpenDialogReturnValue>;
     'open-directory-dialog': Promise<Electron.OpenDialogReturnValue>;
@@ -198,7 +197,7 @@ type EventChannelMapping = {
     'releases-updated': InstalledRelease[];
 
     'get-platform': Promise<string>;
-
+    'get-app-version': Promise<string>;
 };
 
 interface Window {
@@ -208,11 +207,22 @@ interface Window {
 
         getUserPreferences: () => Promise<UserPreferences>;
         setUserPreferences: (prefs: UserPreferences) => Promise<UserPreferences>;
-        setAutoStart: (autoStart: boolean, hidden: boolean) => Promise<SetAutoStartResult>;
+        setAutoStart: (
+            autoStart: boolean,
+            hidden: boolean
+        ) => Promise<SetAutoStartResult>;
         setAutoCheckUpdates: (enabled: boolean) => Promise<boolean>;
 
-        openFileDialog: (defaultPath: string, title: string, filters?: Electron.FileFilter[]) => Promise<Electron.OpenDialogReturnValue>;
-        openDirectoryDialog: (defaultPath: string, title: string, filters?: Electron.FileFilter[]) => Promise<Electron.OpenDialogReturnValue>;
+        openFileDialog: (
+            defaultPath: string,
+            title: string,
+            filters?: Electron.FileFilter[]
+        ) => Promise<Electron.OpenDialogReturnValue>;
+        openDirectoryDialog: (
+            defaultPath: string,
+            title: string,
+            filters?: Electron.FileFilter[]
+        ) => Promise<Electron.OpenDialogReturnValue>;
         openShellFolder: (pathToOpen: string) => Promise<void>;
 
         showProjectMenu: (project: ProjectDetails) => Promise<void>;
@@ -224,7 +234,10 @@ interface Window {
         getAvailablePrereleases: () => Promise<ReleaseSummary[]>;
         getInstalledReleases: () => Promise<InstalledRelease[]>;
 
-        installRelease: (release: ReleaseSummary, mono: boolean) => Promise<InstallReleaseResult>;
+        installRelease: (
+            release: ReleaseSummary,
+            mono: boolean
+        ) => Promise<InstallReleaseResult>;
         removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
 
         openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
@@ -233,10 +246,19 @@ interface Window {
         // ##### projects #####
 
         getProjectsDetails: () => Promise<ProjectDetails[]>;
-        createProject: (name: string, release: InstalledRelease, renderer: RendererType[4 | 5], withVSCode: boolean, withGit: boolean) => Promise<CreateProjectResult>;
+        createProject: (
+            name: string,
+            release: InstalledRelease,
+            renderer: RendererType[4 | 5],
+            withVSCode: boolean,
+            withGit: boolean
+        ) => Promise<CreateProjectResult>;
         removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
         addProject: (path: string) => Promise<AddProjectToListResult>;
-        setProjectEditor: (project: ProjectDetails, release: InstalledRelease) => Promise<ChangeProjectEditorResult>;
+        setProjectEditor: (
+            project: ProjectDetails,
+            release: InstalledRelease
+        ) => Promise<ChangeProjectEditorResult>;
         launchProject: (project: ProjectDetails) => Promise<void>;
         checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
         checkAllProjectsValid: () => Promise<ProjectDetails[]>;
@@ -245,12 +267,19 @@ interface Window {
         getInstalledTools: () => Promise<InstalledTool[]>;
 
         getPlatform: () => Promise<string>;
+        getAppVersion: () => Promise<string>;
 
         // ##### OTHER #####
-        subscribeProjects: (callback: (projects: ProjectDetails[]) => void) => UnsubscribeFunction;
-        subscribeReleases: (callback: (releases: InstallRelease[]) => void) => UnsubscribeFunction;
+        subscribeProjects: (
+            callback: (projects: ProjectDetails[]) => void
+        ) => UnsubscribeFunction;
+        subscribeReleases: (
+            callback: (releases: InstallRelease[]) => void
+        ) => UnsubscribeFunction;
 
-        subscribeAppUpdates: (callback: (message: AppUpdateMessage) => void) => UnsubscribeFunction;
+        subscribeAppUpdates: (
+            callback: (message: AppUpdateMessage) => void
+        ) => UnsubscribeFunction;
 
         openExternal: (url: string) => Promise<void>;
 

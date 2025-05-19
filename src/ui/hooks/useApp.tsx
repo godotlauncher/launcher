@@ -1,6 +1,7 @@
 import { createContext, FC, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 type AppContext = {
+    appVersion: string | undefined;
     updateAvailable: AppUpdateMessage | undefined;
     installAndRelaunch: () => void;
     checkForAppUpdates: () => void;
@@ -13,6 +14,7 @@ export const useApp = () => useContext(appContext);
 export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
 
     const [updateAvailable, setUpdateAvailable] = useState<AppUpdateMessage>();
+    const [appVersion, setAppVersion] = useState<string>();
 
     const installAndRelaunch = async () => {
         await window.electron.installUpdateAndRestart();
@@ -23,13 +25,16 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     };
     useEffect(() => {
 
+        // get app version
+        window.electron.getAppVersion().then(setAppVersion);
+
         const unsubscribeUpdates = window.electron.subscribeAppUpdates(setUpdateAvailable);
         return () => {
             unsubscribeUpdates();
         };
     }, []);
 
-    return <appContext.Provider value={{ updateAvailable, installAndRelaunch, checkForAppUpdates }}>
+    return <appContext.Provider value={{ appVersion, updateAvailable, installAndRelaunch, checkForAppUpdates }}>
         {children}
     </appContext.Provider>;
 };

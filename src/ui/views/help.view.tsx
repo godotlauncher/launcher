@@ -13,10 +13,18 @@ import {
     LAUNCHER_THIRD_PARTY_RAW_URL
 } from '../constants';
 import { useAppNavigation } from '../hooks/useAppNavigation';
+import { useApp } from '../hooks/useApp';
+
 
 export const HelpVIew: React.FC = () => {
 
     const { openExternalLink } = useAppNavigation();
+    const { appVersion } = useApp();
+
+    const openChangeLog = () => {
+        const url = `https://github.com/godotlauncher/launcher/blob/v${appVersion}/CHANGELOG.md`;
+        openExternalLink(url);
+    };
 
     return (
         <>
@@ -49,7 +57,12 @@ export const HelpVIew: React.FC = () => {
 
                                 <div className="flex flex-row gap-0">
                                     <div className="flex flex-col flex-1 gap-2">
-                                        <h1 className="text-xl">Godot Launcher</h1>
+                                        <h1 className="flex gap-1 items-baseline text-xl">Godot Launcher
+                                            <button
+                                                onClick={() => openChangeLog()}
+                                                className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Change Log<ExternalLink className="h-4 w-4 m-0 p-0" />
+                                            </button>
+                                        </h1>
                                         <ul className="flex flex-col gap-0">
                                             <li>
                                                 <h3 className="font-bold">Home Page</h3>
@@ -96,8 +109,8 @@ export const HelpVIew: React.FC = () => {
 
                                         <h1 className="text-xl flex flex-row items-baseline gap-1"
                                         >How to Contribute <button
-                                                onClick={() => openExternalLink(LAUNCHER_CONTRIBUTE_URL)}
-                                                className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<ExternalLink className="h-4 w-4 m-0 p-0" />
+                                            onClick={() => openExternalLink(LAUNCHER_CONTRIBUTE_URL)}
+                                            className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">Learn More<ExternalLink className="h-4 w-4 m-0 p-0" />
                                             </button>
                                         </h1>
                                         <p>Report bugs or suggestions by submitting and issue on the official GitHub repository</p>
