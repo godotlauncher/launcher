@@ -2,6 +2,73 @@ import { describe, it, expect, suite, vi } from "vitest";
 import { createAssetSummary, getPlatformAsset } from "./releases.utils";
 import { getReleases } from './github.utils';
 
+// Mock electron-updater
+vi.mock('electron-updater', () => ({
+    default: {
+        autoUpdater: {
+            on: vi.fn(),
+            logger: null,
+            channel: null,
+            checkForUpdates: vi.fn(),
+            checkForUpdatesAndNotify: vi.fn(),
+            downloadUpdate: vi.fn(),
+            quitAndInstall: vi.fn(),
+            setFeedURL: vi.fn(),
+            addAuthHeader: vi.fn(),
+            isUpdaterActive: vi.fn(),
+            currentVersion: '1.0.0'
+        }
+    },
+    UpdateCheckResult: {}
+}));
+
+// Define necessary types for the test file
+type ReleaseAsset = {
+    name: string;
+    browser_download_url: string;
+    [key: string]: any;
+};
+
+type AssetSummary = {
+    name: string;
+    download_url: string;
+    platform_tags: string[];
+    mono: boolean;
+    [key: string]: any;
+};
+
+// Mock electron
+vi.mock('electron', () => ({
+    Menu: {
+        setApplicationMenu: vi.fn()
+    },
+    app: {
+        getAppPath: vi.fn(() => '/app/path'),
+        isPackaged: false,
+        getName: vi.fn(),
+        getVersion: vi.fn(() => '1.0.0'),
+        getLocale: vi.fn(),
+        getPath: vi.fn(),
+        on: vi.fn(),
+        whenReady: vi.fn(),
+        quit: vi.fn(),
+        requestSingleInstanceLock: vi.fn(() => true),
+        dock: {
+            show: vi.fn(),
+            hide: vi.fn()
+        }
+    },
+    BrowserWindow: vi.fn(),
+    shell: {
+        showItemInFolder: vi.fn(),
+        openExternal: vi.fn()
+    },
+    dialog: {
+        showOpenDialog: vi.fn(),
+        showMessageBox: vi.fn()
+    }
+}));
+
 const allAssetNames = [
     "godot-4.3-stable.tar.xz",
     "godot-4.3-stable.tar.xz.sha256",
