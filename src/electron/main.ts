@@ -5,7 +5,7 @@ import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver.js';
 import logger from 'electron-log/main.js';
 import { createTray } from './helpers/tray.helper.js';
 import { createMenu } from './helpers/menu.helper.js';
-import { registerEvents as registerHandlers } from './app.js';
+import { registerHandlers, createDefaultFolder } from './app.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import { setAutoStart } from './utils/platform.utils.js';
@@ -96,6 +96,8 @@ app.on('ready', async () => {
         });
         return;
     }
+
+    await createDefaultFolder();
 
     logger.debug('App ready, checking projects and releases');
     await checkAndUpdateProjects();

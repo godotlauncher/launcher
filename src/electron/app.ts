@@ -59,9 +59,11 @@ async function createDefaultFolder() {
     }
 }
 
-createDefaultFolder();
+// createDefaultFolder(); // Commented out direct call
 
-export function registerEvents() {
+export { createDefaultFolder }; // Export the function
+
+export function registerHandlers() {
     // ##### user-preferences #####
 
     ipcMainHandler(
