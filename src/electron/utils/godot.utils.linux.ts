@@ -19,7 +19,7 @@ export async function removeProjectEditorLinux(
             const sharpDir = path.resolve(projectEditorPath, 'GodotSharp');
             if (fs.existsSync(sharpDir)) {
                 // On Linux, GodotSharp is a symlink to a directory,
-                await fs.promises.rm(sharpDir, { recursive: true, force: true });
+                await fs.promises.unlink(sharpDir);
             }
         }
     }
@@ -35,7 +35,7 @@ export async function setProjectEditorReleaseLinux(
         const baseFileName = path.basename(previousRelease.editor_path);
         const binPath = path.resolve(projectEditorPath, baseFileName);
         if (fs.existsSync(binPath)) {
-            await fs.promises.rm(binPath);
+            await fs.promises.unlink(binPath);
         }
 
         if (previousRelease.mono) {
