@@ -1,12 +1,13 @@
 import * as path from 'node:path';
 
-import { describe, expect, it, MockedObject, suite, vi } from 'vitest';
+import { describe, expect, it, MockedObject, suite, vi, beforeEach } from 'vitest';
 import { getConfigDir, getDefaultPrefs, getPrefsPath, readPrefsFromDisk, writePrefsToDisk } from './prefs.utils';
 
 import { APP_INTERNAL_NAME } from '../constants';
 import { getDefaultDirs } from "./platform.utils";
 
 import * as fs from "fs";
+import * as os from "os";
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({
@@ -81,10 +82,12 @@ const fsMock = fs as unknown as MockedObject<typeof fs>;
 const fsPromisesMock = fs.promises as unknown as MockedObject<typeof fs.promises>;
 
 suite('prefs.util', test => {
-    describe('should be able to get default data and config locations for platform ', async () => {
-
-        it('should return correct data and config locations', async () => {
-
+    describe('should be able to get default data and config locations for Windows', () => {
+        beforeEach(() => {
+            (os.platform as any).mockReturnValue('win32');
+            (os.homedir as any).mockReturnValue('/home/user');
+        });
+        it('should return correct data and config locations (Windows)', () => {
             const dirs = getDefaultDirs();
             expect(dirs).toEqual({
                 configDir: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}`),
@@ -95,77 +98,91 @@ suite('prefs.util', test => {
                 projectDir: path.win32.resolve(`/home/user/Godot/Projects`),
                 releaseCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/releases.json`)
             });
-
         });
+    });
 
-
-
-
-
-        it('should get default prefs path according to platform', async () => {
-
-            const configPath = await getPrefsPath();
-            expect(configPath).toBe(path.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`));
+    describe('should be able to get default data and config locations for Linux', () => {
+        beforeEach(() => {
+            (os.platform as any).mockReturnValue('linux');
+            (os.homedir as any).mockReturnValue('/home/user');
         });
-
-        it('should get default config path according to platform', async () => {
-
-            const configPath = await getConfigDir();
-            expect(configPath).toBe(path.resolve(`/home/user/.${APP_INTERNAL_NAME}`));
-        });
-
-        it('should get default prefs', async () => {
-
-            const defaultPrefs = getDefaultDirs();
-            const prefs = await getDefaultPrefs();
-            expect(prefs).toEqual({
-                prefs_version: 1,
-                install_location: defaultPrefs.dataDir,
-                config_location: defaultPrefs.configDir,
-                projects_location: defaultPrefs.projectDir,
-                auto_check_updates: true,
-                auto_start: true,
-                start_in_tray: true,
-                confirm_project_remove: true,
-                post_launch_action: "close_to_tray",
-                first_run: true,
-                vs_code_path: "",
+        it('should return correct data and config locations (Linux)', () => {
+            const dirs = getDefaultDirs();
+            expect(dirs).toEqual({
+                configDir: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}`),
+                dataDir: path.posix.resolve(`/home/user/Godot/Editors`),
+                prefsPath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`),
+                installedReleasesCachePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/installed-releases.json`),
+                prereleaseCachePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/prereleases.json`),
+                projectDir: path.posix.resolve(`/home/user/Godot/Projects`),
+                releaseCachePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/releases.json`)
             });
+        });
+    });
 
+    it('should get default prefs path according to platform', async () => {
+
+        const configPath = await getPrefsPath();
+        expect(configPath).toBe(path.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`));
+    });
+
+    it('should get default config path according to platform', async () => {
+
+        const configPath = await getConfigDir();
+        expect(configPath).toBe(path.resolve(`/home/user/.${APP_INTERNAL_NAME}`));
+    });
+
+    it('should get default prefs', async () => {
+
+        const defaultPrefs = getDefaultDirs();
+        const prefs = await getDefaultPrefs();
+        expect(prefs).toEqual({
+            prefs_version: 1,
+            install_location: defaultPrefs.dataDir,
+            config_location: defaultPrefs.configDir,
+            projects_location: defaultPrefs.projectDir,
+            auto_check_updates: true,
+            auto_start: true,
+            start_in_tray: true,
+            confirm_project_remove: true,
+            post_launch_action: "close_to_tray",
+            first_run: true,
+            vs_code_path: "",
         });
 
-        it('should read prefs from disk', async () => {
+    });
 
-            fsMock.existsSync.mockReturnValueOnce(true);
-            fsPromisesMock.readFile.mockResolvedValueOnce(JSON.stringify({ a: 1 }));
+    it('should read prefs from disk', async () => {
 
-            const prefsPath = "/home/user/.godot/prefs.json";
-            const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
-            expect(prefs).toEqual({ a: 1 });
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(JSON.stringify({ a: 1 }));
 
-        });
+        const prefsPath = "/home/user/.godot/prefs.json";
+        const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
+        expect(prefs).toEqual({ a: 1 });
 
-        it('should read default prefs when prefs file does not exist', async () => {
+    });
 
-            fsMock.existsSync.mockReturnValueOnce(false);
+    it('should read default prefs when prefs file does not exist', async () => {
 
-            const prefsPath = "/home/user/.godot/prefs.json";
-            const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
+        fsMock.existsSync.mockReturnValueOnce(false);
 
-            expect(fsMock.existsSync).toBeCalledWith(prefsPath);
-            expect(prefs).toEqual({ a: 1 });
+        const prefsPath = "/home/user/.godot/prefs.json";
+        const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
 
-        });
+        expect(fsMock.existsSync).toBeCalledWith(prefsPath);
+        expect(prefs).toEqual({ a: 1 });
 
-        it('should write prefs to disk', async () => {
+    });
+
+    it('should write prefs to disk', async () => {
 
 
-            const prefsPath = "/home/user/.godot/prefs.json";
-            const prefs = writePrefsToDisk(prefsPath, { a: 1 });
+        const prefsPath = "/home/user/.godot/prefs.json";
+        const prefs = writePrefsToDisk(prefsPath, { a: 1 });
 
-            expect(fsPromisesMock.writeFile).toBeCalledWith(prefsPath, JSON.stringify({ a: 1 }, null, 4), "utf-8");
-            expect(fsPromisesMock.writeFile).toHaveBeenCalledTimes(1);
+        expect(fsPromisesMock.writeFile).toBeCalledWith(prefsPath, JSON.stringify({ a: 1 }, null, 4), "utf-8");
+        expect(fsPromisesMock.writeFile).toHaveBeenCalledTimes(1);
 
-        });
     });
 });

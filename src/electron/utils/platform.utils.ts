@@ -27,15 +27,22 @@ export function getDefaultDirs(): {
     releaseCachePath: string,
     installedReleasesCachePath: string;
     prereleaseCachePath: string;
-    } {
+} {
+    // Select the correct path module based on the platform
+    // this is to make the function testable on all platforms
+    // by mocking the os.platform() function and the path module
 
-    const configDir = path.resolve(os.homedir(), `.${APP_INTERNAL_NAME}`);
-    const dataDir = path.resolve(os.homedir(), 'Godot', 'Editors');
-    const projectDir = path.resolve(os.homedir(), 'Godot', 'Projects');
-    const prefsPath = path.resolve(configDir, PREFS_FILENAME);
-    const releaseCachePath = path.resolve(configDir, RELEASES_FILENAME);
-    const prereleaseCachePath = path.resolve(configDir, PRERELEASES_FILENAME);
-    const installedReleasesCachePath = path.resolve(configDir, INSTALLED_RELEASES_FILENAME);
+    const platform = os.platform();
+    const pathModule = platform === 'win32' ? path.win32 : path.posix;
+    const homedir = os.homedir();
+
+    const configDir = pathModule.resolve(homedir, `.${APP_INTERNAL_NAME}`);
+    const dataDir = pathModule.resolve(homedir, 'Godot', 'Editors');
+    const projectDir = pathModule.resolve(homedir, 'Godot', 'Projects');
+    const prefsPath = pathModule.resolve(configDir, PREFS_FILENAME);
+    const releaseCachePath = pathModule.resolve(configDir, RELEASES_FILENAME);
+    const prereleaseCachePath = pathModule.resolve(configDir, PRERELEASES_FILENAME);
+    const installedReleasesCachePath = pathModule.resolve(configDir, INSTALLED_RELEASES_FILENAME);
 
     return {
         prefsPath,
