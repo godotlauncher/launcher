@@ -27,7 +27,7 @@ export function getDefaultDirs(): {
     releaseCachePath: string,
     installedReleasesCachePath: string;
     prereleaseCachePath: string;
-} {
+    } {
     // Select the correct path module based on the platform
     // this is to make the function testable on all platforms
     // by mocking the os.platform() function and the path module
