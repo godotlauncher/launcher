@@ -1,12 +1,12 @@
+import { app } from 'electron';
+import logger from 'electron-log';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import which from 'which';
-import { app } from 'electron';
-import logger from 'electron-log';
 
-import { APP_INTERNAL_NAME, INSTALLED_RELEASES_FILENAME, PREFS_FILENAME, PRERELEASES_FILENAME, RELEASES_FILENAME } from '../constants.js';
 import { exec } from 'child_process';
 import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
+import { APP_INTERNAL_NAME, INSTALLED_RELEASES_FILENAME, PREFS_FILENAME, PRERELEASES_FILENAME, RELEASES_FILENAME } from '../constants.js';
 import { isDev } from '../utils.js';
 
 
