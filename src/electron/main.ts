@@ -1,15 +1,15 @@
-import path from 'node:path';
-import { BrowserWindow, app, Menu, dialog } from 'electron';
-import { isDev } from './utils.js';
-import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver.js';
+import { BrowserWindow, Menu, app, dialog } from 'electron';
 import logger from 'electron-log/main.js';
-import { createTray } from './helpers/tray.helper.js';
-import { createMenu } from './helpers/menu.helper.js';
-import { registerHandlers, createDefaultFolder } from './app.js';
+import path from 'node:path';
+import { createDefaultFolder, registerHandlers } from './app.js';
+import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { getUserPreferences } from './commands/userPreferences.js';
+import { createMenu } from './helpers/menu.helper.js';
+import { createTray } from './helpers/tray.helper.js';
+import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver.js';
+import { isDev } from './utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
-import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 
 logger.initialize();
 
@@ -181,7 +181,6 @@ app.on('ready', async () => {
 });
 
 
-
 function handleCloseEvents(mainWindow: BrowserWindow) {
 
     // Hide the window instead of closing it
@@ -189,12 +188,10 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
 
     mainWindow.on('close', (e) => {
 
-
-
-        // close if no onboarding has been done
+        // close if onboarding has not been completed
         getUserPreferences().then(prefs => {
-            if (prefs.first_run && willClose === false) {
-                logger.debug('First run, quitting instead of hiding');
+            if (prefs.prefs_version == 1 || (prefs.first_run && willClose === false)) {
+                logger.debug('Incomplete onboarding, quitting instead of hiding');
                 app.quit();
             }
         });
