@@ -1,9 +1,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { getDefaultDirs } from './platform.utils.js';
-import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
+import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
+import { getDefaultDirs } from './platform.utils.js';
 
 const loadedPrefs: UserPreferences | null = null;
 
