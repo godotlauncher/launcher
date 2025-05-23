@@ -8,7 +8,7 @@ export const LinuxStep: React.FC = () => {
 
 
     return (
-        <div>
+        <div className='text-sm'>
             <h1 className="text-xl">Linux Note</h1>
             <p>Godot Launcher uses symbolic links for each project</p>
             <div className="pt-6 flex flex-col gap-2">

@@ -9,7 +9,7 @@ export const MacOSStep: React.FC = () => {
 
 
     return (
-        <div>
+        <div className='text-sm'>
             <h1 className="text-xl">macOS Note</h1>
             <p>The Godot Launcher creates a copy of the editor for each project.</p>
             <div className="pt-6 flex flex-col gap-2">
