@@ -1,7 +1,7 @@
-import { expect, vi, describe, it } from "vitest";
-import path, { posix, win32 } from "node:path";
+import * as os from "node:os";
+import path from "node:path";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_INTERNAL_NAME } from "../constants";
-import { beforeEach } from "node:test";
 import { getDefaultDirs } from "./platform.utils";
 
 // Mock electron-updater
@@ -57,26 +57,51 @@ vi.mock('electron', () => ({
 }));
 
 vi.mock("node:os", () => ({
-    homedir: vi.fn().mockReturnValue("/home/user"),
-    platform: vi.fn().mockReturnValue("win32")
+    // Provide default mocks, these will be overridden in beforeEach
+    homedir: vi.fn(() => "/home/user"),
+    platform: vi.fn(() => "linux"),
 }));
 
-
 describe("platform.utils", () => {
+    describe("Windows paths", () => {
+        beforeEach(() => {
+            (os.platform as any).mockReturnValue('win32');
+            (os.homedir as any).mockReturnValue('c:\\Users\\User');
+        });
 
-    it("should get default paths", async () => {
-
-        const dirs = getDefaultDirs();
-
-        expect(dirs).toEqual({
-            configDir: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}`),
-            dataDir: path.win32.resolve(`/home/user/Godot/Editors`),
-            prefsPath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`),
-            installedReleasesCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/installed-releases.json`),
-            prereleaseCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/prereleases.json`),
-            projectDir: path.win32.resolve(`/home/user/Godot/Projects`),
-            releaseCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/releases.json`)
+        it("should get default paths for Windows", () => {
+            const dirs = getDefaultDirs();
+            const expectedHomeDir = 'c:\\Users\\User';
+            expect(dirs).toEqual({
+                configDir: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`),
+                dataDir: path.win32.join(expectedHomeDir, 'Godot', 'Editors'),
+                prefsPath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prefs.json'),
+                installedReleasesCachePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'installed-releases.json'),
+                prereleaseCachePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prereleases.json'),
+                projectDir: path.win32.join(expectedHomeDir, 'Godot', 'Projects'),
+                releaseCachePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'releases.json')
+            });
         });
     });
 
+    describe("Linux paths", () => {
+        beforeEach(() => {
+            (os.platform as any).mockReturnValue('linux');
+            (os.homedir as any).mockReturnValue('/home/user');
+        });
+
+        it("should get default paths for Linux", () => {
+            const dirs = getDefaultDirs();
+            const expectedHomeDir = '/home/user';
+            expect(dirs).toEqual({
+                configDir: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`),
+                dataDir: path.posix.join(expectedHomeDir, 'Godot', 'Editors'),
+                prefsPath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prefs.json'),
+                installedReleasesCachePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'installed-releases.json'),
+                prereleaseCachePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prereleases.json'),
+                projectDir: path.posix.join(expectedHomeDir, 'Godot', 'Projects'),
+                releaseCachePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'releases.json')
+            });
+        });
+    });
 });
