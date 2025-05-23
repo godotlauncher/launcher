@@ -21,7 +21,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     const defaultPrefs = getDefaultDirs();
 
     return {
-        prefs_version: 1,
+        prefs_version: 2,
         install_location: path.resolve(defaultPrefs.dataDir),
         config_location: path.resolve(defaultPrefs.configDir),
         projects_location: path.resolve(defaultPrefs.projectDir),
