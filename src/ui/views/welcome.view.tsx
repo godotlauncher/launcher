@@ -86,7 +86,7 @@ export const WelcomeView: React.FC = () => {
 
         const maxSteps = getMaxSteps();
 
-        // if last step is reached, clear localstore and update preference first_run
+        // if last step is reached, clear localstorage and update preference first_run
         if (stepIndex >= maxSteps + 1) {
             setStepIndex(undefined);
             localStorage?.clear();
