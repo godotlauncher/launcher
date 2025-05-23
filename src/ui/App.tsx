@@ -17,6 +17,8 @@ import { ProjectsView } from './views/projects.view';
 import { SettingsView } from './views/settings.view';
 import { WelcomeView } from './views/welcome.view';
 
+import logo from './assets/logo.png';
+import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 
 function App() {
     const [loading, setLoading] = React.useState(true);
@@ -25,7 +27,7 @@ function App() {
     const { currentView, setCurrentView, openExternalLink } = useAppNavigation();
 
     const { installedReleases, loading: releaseLoading } = useRelease();
-    const { preferences } = usePreferences();
+    const { preferences, platform, updatePreferences } = usePreferences();
 
     const { updateAvailable, installAndRelaunch } = useApp();
     // set the title of the app
@@ -62,20 +64,21 @@ function App() {
 
     const ShowView = () => {
         switch (currentView) {
-        case 'projects':
-            return <ProjectsView />;
-        case 'installs':
-            return <InstallsView />;
-        case 'settings':
-            return < SettingsView />;
-        case 'help':
-            return < HelpVIew />;
+            case 'projects':
+                return <ProjectsView />;
+            case 'installs':
+                return <InstallsView />;
+            case 'settings':
+                return < SettingsView />;
+            case 'help':
+                return < HelpVIew />;
         }
     };
 
     if (loading) {
-        return <div className="flex items-center justify-center fixed inset-0 z-50 bg-base-100">
-            <span className="loading loading-bars loading-lg"></span>
+        return <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-base-100 gap-4">
+            <img src={logo} alt="Godot Launcher Logo" className="w-10 h-10 animate-pulse" />
+            <span className="">Getting things ready...</span>
         </div>;
     }
 
@@ -83,6 +86,21 @@ function App() {
         return <WelcomeView />;
     }
 
+    if (preferences?.prefs_version !== 2 && platform === 'win32') {
+        return (
+            <div className='flex flex-col items-center justify-start w-full h-full'>
+                <div className="flex flex-col h-[535px] w-[1008px] p-10">
+                    <WindowsStep />
+                    <div className='flex-1'></div>
+                    <div className='flex justify-center'>
+                        <button className="btn btn-primary" onClick={() => {
+                            updatePreferences({ prefs_version: 2 });
+                        }}>Continue</button>
+                    </div>
+                </div >
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-full overflow-hidden">
