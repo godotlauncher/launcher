@@ -1,23 +1,21 @@
-import * as path from 'node:path';
 import logger from 'electron-log';
+import * as path from 'node:path';
 
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { getStoredProjectsList, removeProjectFromList, storeProjectsList } from '../utils/projects.utils.js';
 import { getUserPreferences } from './userPreferences.js';
 
-import { getMainWindow } from '../main.js';
+import { ChildProcess, ChildProcessByStdio, spawn } from 'node:child_process';
 import { checkProjectValid } from '../checks.js';
 import { PROJECTS_FILENAME } from '../constants.js';
+import { updateLinuxTray } from '../helpers/tray.helper.js';
+import { getMainWindow } from '../main.js';
 import { ipcWebContentsSend } from '../utils.js';
 import { removeProjectEditor } from '../utils/godot.utils.js';
-import { ChildProcess, ChildProcessByStdio, spawn } from 'node:child_process';
-import { updateLinuxTray } from '../helpers/tray.helper.js';
 
-
-const defaultDirs = getDefaultDirs();
 
 export async function getProjectsDetails(): Promise<ProjectDetails[]> {
-
+    const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
 
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
@@ -27,6 +25,7 @@ export async function getProjectsDetails(): Promise<ProjectDetails[]> {
 }
 
 export async function storeProjectsDetails(projects: ProjectDetails[]): Promise<ProjectDetails[]> {
+    const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
     const storedProjects = await storeProjectsList(projectListPath, projects);
@@ -35,6 +34,7 @@ export async function storeProjectsDetails(projects: ProjectDetails[]): Promise<
 }
 
 export async function removeProject(project: ProjectDetails): Promise<ProjectDetails[]> {
+    const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
 
@@ -52,6 +52,7 @@ export async function removeProject(project: ProjectDetails): Promise<ProjectDet
 }
 
 export async function launchProject(project: ProjectDetails): Promise<void> {
+    const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
 
@@ -112,12 +113,12 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     const currentMainWindow = getMainWindow();
 
     switch (prefs.post_launch_action) {
-    case 'minimize':
-        currentMainWindow?.minimize();
-        break;
-    case 'close_to_tray':
-        currentMainWindow?.close();
-        break;
+        case 'minimize':
+            currentMainWindow?.minimize();
+            break;
+        case 'close_to_tray':
+            currentMainWindow?.close();
+            break;
     }
 
     if (process.platform === 'linux') {
