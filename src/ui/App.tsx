@@ -22,6 +22,7 @@ import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 
 function App() {
     const [loading, setLoading] = React.useState(true);
+    const [prefsLoading, setPrefsLoading] = React.useState(true);
     const [firstRun, setFirstRun] = React.useState(false);
 
     const { currentView, setCurrentView, openExternalLink } = useAppNavigation();
@@ -38,14 +39,19 @@ function App() {
     useEffect(() => {
         if (preferences) {
             setFirstRun(preferences.first_run || false);
+
+            // migrate from v1 to v2
+            // windows users need to be shown the windows step for changes
+            // the migration happens below after loading is done
+            if (preferences.prefs_version === 1 && platform !== 'win32') {
+                updatePreferences({ prefs_version: 2 });
+            }
+
+            setPrefsLoading(false);
         }
     }, [preferences]);
 
     useEffect(() => {
-
-        // handle loading state here
-        // set first run and installs first tab if no installs are found
-        // if (preferences || releaseLoading) return;
 
         if (!releaseLoading) {
             setLoading(false);
@@ -75,7 +81,7 @@ function App() {
         }
     };
 
-    if (loading) {
+    if (loading || prefsLoading) {
         return <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-base-100 gap-4">
             <img src={logo} alt="Godot Launcher Logo" className="w-10 h-10 animate-pulse" />
             <span className="">Getting things ready...</span>
@@ -86,7 +92,9 @@ function App() {
         return <WelcomeView />;
     }
 
-    if (preferences?.prefs_version !== 2 && platform === 'win32') {
+    // if the user is on windows and the prefs_version is 1, show the windows step
+    // this is a one time step, so we can just show it and then update the prefs_version
+    if (preferences?.prefs_version === 1 && platform === 'win32') {
         return (
             <div className='flex flex-col items-center justify-start w-full h-full'>
                 <div className="flex flex-col h-[535px] w-[1008px] p-10">
