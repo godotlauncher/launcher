@@ -18,14 +18,14 @@ export const CurrentSettingsStep: React.FC<CurrentSettingsStepProps> = ({ onSkip
 
     const getPostLaunchText = (action: UserPreferences['post_launch_action']) => {
         switch (action) {
-            case 'none':
-                return 'Nothing';
-            case 'minimize':
-                return 'Minimize';
-            case 'close_to_tray':
-                return 'Close to system tray';
-            default:
-                return 'Nothing';
+        case 'none':
+            return 'Nothing';
+        case 'minimize':
+            return 'Minimize';
+        case 'close_to_tray':
+            return 'Close to system tray';
+        default:
+            return 'Nothing';
         }
     };
     return (
