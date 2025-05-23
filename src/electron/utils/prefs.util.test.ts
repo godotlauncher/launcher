@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 
-import { describe, expect, it, MockedObject, suite, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, MockedObject, suite, vi } from 'vitest';
 import { getConfigDir, getDefaultPrefs, getPrefsPath, readPrefsFromDisk, writePrefsToDisk } from './prefs.utils';
 
 import { APP_INTERNAL_NAME } from '../constants';
@@ -85,18 +85,19 @@ suite('prefs.util', test => {
     describe('should be able to get default data and config locations for Windows', () => {
         beforeEach(() => {
             (os.platform as any).mockReturnValue('win32');
-            (os.homedir as any).mockReturnValue('/home/user');
+            (os.homedir as any).mockReturnValue('c:\\Users\\User');
         });
         it('should return correct data and config locations (Windows)', () => {
             const dirs = getDefaultDirs();
+            const mockedHomeDir = 'c:\\\\Users\\\\User';
             expect(dirs).toEqual({
-                configDir: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}`),
-                dataDir: path.win32.resolve(`/home/user/Godot/Editors`),
-                prefsPath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`),
-                installedReleasesCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/installed-releases.json`),
-                prereleaseCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/prereleases.json`),
-                projectDir: path.win32.resolve(`/home/user/Godot/Projects`),
-                releaseCachePath: path.win32.resolve(`/home/user/.${APP_INTERNAL_NAME}/releases.json`)
+                configDir: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`),
+                dataDir: path.win32.join(mockedHomeDir, 'Godot', 'Editors'),
+                prefsPath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'prefs.json'),
+                installedReleasesCachePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'installed-releases.json'),
+                prereleaseCachePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'prereleases.json'),
+                projectDir: path.win32.join(mockedHomeDir, 'Godot', 'Projects'),
+                releaseCachePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'releases.json')
             });
         });
     });
@@ -120,36 +121,74 @@ suite('prefs.util', test => {
         });
     });
 
-    it('should get default prefs path according to platform', async () => {
-
-        const configPath = await getPrefsPath();
-        expect(configPath).toBe(path.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`));
-    });
-
-    it('should get default config path according to platform', async () => {
-
-        const configPath = await getConfigDir();
-        expect(configPath).toBe(path.resolve(`/home/user/.${APP_INTERNAL_NAME}`));
-    });
-
-    it('should get default prefs', async () => {
-
-        const defaultPrefs = getDefaultDirs();
-        const prefs = await getDefaultPrefs();
-        expect(prefs).toEqual({
-            prefs_version: 1,
-            install_location: defaultPrefs.dataDir,
-            config_location: defaultPrefs.configDir,
-            projects_location: defaultPrefs.projectDir,
-            auto_check_updates: true,
-            auto_start: true,
-            start_in_tray: true,
-            confirm_project_remove: true,
-            post_launch_action: "close_to_tray",
-            first_run: true,
-            vs_code_path: "",
+    describe('prefs.util Windows', () => {
+        beforeEach(() => {
+            (os.platform as any).mockReturnValue('win32');
+            (os.homedir as any).mockReturnValue('c:\\Users\\User');
         });
 
+        it('should get default prefs path (Windows)', async () => {
+            const configPath = await getPrefsPath();
+            expect(configPath).toBe(path.win32.resolve(`c:\\Users\\User/.${APP_INTERNAL_NAME}/prefs.json`));
+        });
+
+        it('should get default config path (Windows)', async () => {
+            const configPath = await getConfigDir();
+            expect(configPath).toBe(path.win32.resolve(`c:\\Users\\User/.${APP_INTERNAL_NAME}`));
+        });
+
+        it('should get default prefs (Windows)', async () => {
+            const defaultDirs = getDefaultDirs();
+            const prefs = await getDefaultPrefs();
+            expect(prefs).toEqual({
+                prefs_version: 2,
+                install_location: defaultDirs.dataDir,
+                config_location: defaultDirs.configDir,
+                projects_location: defaultDirs.projectDir,
+                auto_check_updates: true,
+                auto_start: true,
+                start_in_tray: true,
+                confirm_project_remove: true,
+                post_launch_action: "close_to_tray",
+                first_run: true,
+                vs_code_path: "",
+            });
+        });
+    });
+
+    describe('prefs.util Linux', () => {
+        beforeEach(() => {
+            (os.platform as any).mockReturnValue('linux');
+            (os.homedir as any).mockReturnValue('/home/user');
+        });
+
+        it('should get default prefs path (Linux)', async () => {
+            const configPath = await getPrefsPath();
+            expect(configPath).toBe(path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`));
+        });
+
+        it('should get default config path (Linux)', async () => {
+            const configPath = await getConfigDir();
+            expect(configPath).toBe(path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}`));
+        });
+
+        it('should get default prefs (Linux)', async () => {
+            const defaultDirs = getDefaultDirs();
+            const prefs = await getDefaultPrefs();
+            expect(prefs).toEqual({
+                prefs_version: 2,
+                install_location: defaultDirs.dataDir,
+                config_location: defaultDirs.configDir,
+                projects_location: defaultDirs.projectDir,
+                auto_check_updates: true,
+                auto_start: true,
+                start_in_tray: true,
+                confirm_project_remove: true,
+                post_launch_action: "close_to_tray",
+                first_run: true,
+                vs_code_path: "",
+            });
+        });
     });
 
     it('should read prefs from disk', async () => {
