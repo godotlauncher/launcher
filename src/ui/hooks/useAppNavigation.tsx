@@ -10,10 +10,10 @@ type AppNavigationContext = {
 };
 
 
-const AppNavigationContext = createContext<AppNavigationContext>({} as AppNavigationContext);
+const appNavigationContext = createContext<AppNavigationContext>({} as AppNavigationContext);
 
 export const useAppNavigation = () => {
-    const context = useContext(AppNavigationContext);
+    const context = useContext(appNavigationContext);
     if (!context) {
         throw new Error('useAppNavigation must be used within a AppNavigationProvider');
     }
@@ -30,7 +30,7 @@ export const AppNavigationProvider: FC<AppNavigationProviderProps> = ({ children
         await window.electron.openExternal(url);
     };
 
-    return <AppNavigationContext.Provider value={{ currentView, setCurrentView, openExternalLink }} >
+    return <appNavigationContext.Provider value={{ currentView, setCurrentView, openExternalLink }} >
         {children}
-    </AppNavigationContext.Provider>;
+    </appNavigationContext.Provider>;
 };
