@@ -1,5 +1,6 @@
 import logger from 'electron-log';
-import { Notification } from 'electron';
+import { getMainWindow } from '../main.js';
+import { dialog } from 'electron';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -54,10 +55,12 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
         return { ...defaultPrefs, ...prefs };
     } catch (e) {
         logger.error('Could not parse user preferences, using defaults', e);
-        new Notification({
-            title: 'Preferences Error',
-            body: 'Could not load preferences. Reverting to default settings.'
-        }).show();
+        await dialog.showMessageBox(getMainWindow(), {
+            type: 'error',
+            title: 'Error reading preferences',
+            message: 'Could not parse user preferences. Using default preferences.',
+            buttons: ['OK'],
+        });
         return defaultPrefs;
     }
 }
