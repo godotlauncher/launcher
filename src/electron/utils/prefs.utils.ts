@@ -52,7 +52,7 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
         const prefs = JSON.parse(prefsData);
         return { ...defaultPrefs, ...prefs };
     } catch (e) {
-        logger.debug('Could not parse user preferences, using defaults', e);
+        logger.error('Could not parse user preferences, using defaults', e);
         return defaultPrefs;
     }
 }
