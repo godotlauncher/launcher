@@ -70,14 +70,14 @@ function App() {
 
     const ShowView = () => {
         switch (currentView) {
-        case 'projects':
-            return <ProjectsView />;
-        case 'installs':
-            return <InstallsView />;
-        case 'settings':
-            return < SettingsView />;
-        case 'help':
-            return < HelpVIew />;
+            case 'projects':
+                return <ProjectsView />;
+            case 'installs':
+                return <InstallsView />;
+            case 'settings':
+                return < SettingsView />;
+            case 'help':
+                return < HelpVIew />;
         }
     };
 

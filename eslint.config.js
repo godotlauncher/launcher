@@ -83,12 +83,14 @@ export default [
                 },
             ],
 
+
             // Your custom rules
             'linebreak-style': ['error', 'unix'],
             'no-console': 'warn',
             'quotes': ['error', 'single'],
             'semi': ['error', 'always'],
-            'indent': ['error', 4],
+            'indent': ['error', 4, { SwitchCase: 1 }],
+
 
             // Disable some strict rules that cause too many errors
             '@typescript-eslint/no-explicit-any': 'warn',

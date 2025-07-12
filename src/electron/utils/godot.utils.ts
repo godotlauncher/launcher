@@ -102,21 +102,21 @@ export async function createProjectFile<version extends keyof RendererType>(
     );
 
     switch (configVersion) {
-    // Godot 4.x
-    case 5: {
-        const rendered = mst.render(template, {
-            configVersion,
-            editorVersion,
-            projectName,
-            compatible: renderer === 'COMPATIBLE',
-            mobile: renderer === 'MOBILE',
-        });
+        // Godot 4.x
+        case 5: {
+            const rendered = mst.render(template, {
+                configVersion,
+                editorVersion,
+                projectName,
+                compatible: renderer === 'COMPATIBLE',
+                mobile: renderer === 'MOBILE',
+            });
 
-        return rendered;
-    }
+            return rendered;
+        }
 
-    default:
-        throw new Error(`Invalid config version ${configVersion}`);
+        default:
+            throw new Error(`Invalid config version ${configVersion}`);
     }
 }
 

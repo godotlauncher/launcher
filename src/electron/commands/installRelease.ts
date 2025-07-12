@@ -68,80 +68,80 @@ export async function installRelease(
         let editor_path: string;
 
         switch (path.extname(asset.name)) {
-        case '.zip': {
-            await decompress(
-                path.resolve(downloadPath, asset.name),
-                path.resolve(releasePath)
-            );
+            case '.zip': {
+                await decompress(
+                    path.resolve(downloadPath, asset.name),
+                    path.resolve(releasePath)
+                );
 
-            switch (os.platform()) {
-            case 'win32':
-                // the mono version has an extra folder
-                if (mono) {
-                    editor_path = path.resolve(
-                        releasePath,
-                        asset.name.replace('.zip', ''),
-                        asset.name.replace('.zip', '.exe'),
-                    );
-                    releasePath = path.resolve(releasePath, asset.name.replace('.zip', ''));
-                }
-                else {
-                    editor_path = path.resolve(
-                        releasePath,
-                        asset.name.replace('.zip', '')
-                    );
-                }
-                break;
-            case 'darwin':
-                if (mono) {
-                    editor_path = path.resolve(releasePath, 'Godot_mono.app');
-                }
-                else {
-                    editor_path = path.resolve(releasePath, 'Godot.app');
-                }
-                break;
-            case 'linux':
-                if (mono) {
-                    let ext: string;
+                switch (os.platform()) {
+                    case 'win32':
+                        // the mono version has an extra folder
+                        if (mono) {
+                            editor_path = path.resolve(
+                                releasePath,
+                                asset.name.replace('.zip', ''),
+                                asset.name.replace('.zip', '.exe'),
+                            );
+                            releasePath = path.resolve(releasePath, asset.name.replace('.zip', ''));
+                        }
+                        else {
+                            editor_path = path.resolve(
+                                releasePath,
+                                asset.name.replace('.zip', '')
+                            );
+                        }
+                        break;
+                    case 'darwin':
+                        if (mono) {
+                            editor_path = path.resolve(releasePath, 'Godot_mono.app');
+                        }
+                        else {
+                            editor_path = path.resolve(releasePath, 'Godot.app');
+                        }
+                        break;
+                    case 'linux':
+                        if (mono) {
+                            let ext: string;
 
-                    switch (os.arch()) {
-                    case 'x64':
-                        ext = 'x86_64';
-                        break;
-                    case 'arm':
-                        ext = 'arm32';
-                        break;
-                    case 'arm64':
-                        ext = 'arm64';
+                            switch (os.arch()) {
+                                case 'x64':
+                                    ext = 'x86_64';
+                                    break;
+                                case 'arm':
+                                    ext = 'arm32';
+                                    break;
+                                case 'arm64':
+                                    ext = 'arm64';
+                                    break;
+                                default:
+                                    ext = 'x86_32';
+                                    break;
+                            }
+
+                            editor_path = path.resolve(
+                                releasePath,
+                                asset.name.replace('.zip', ''),
+                                asset.name.replace(`_${ext}.zip`, `.${ext}`),
+                            );
+                            releasePath = path.resolve(releasePath, asset.name.replace('.zip', ''));
+                        }
+                        else {
+                            editor_path = path.resolve(
+                                releasePath,
+                                asset.name.replace('.zip', '')
+                            );
+                        }
                         break;
                     default:
-                        ext = 'x86_32';
-                        break;
-                    }
+                        throw new Error('Unsupported platform');
+                }
 
-                    editor_path = path.resolve(
-                        releasePath,
-                        asset.name.replace('.zip', ''),
-                        asset.name.replace(`_${ext}.zip`, `.${ext}`),
-                    );
-                    releasePath = path.resolve(releasePath, asset.name.replace('.zip', ''));
-                }
-                else {
-                    editor_path = path.resolve(
-                        releasePath,
-                        asset.name.replace('.zip', '')
-                    );
-                }
                 break;
-            default:
-                throw new Error('Unsupported platform');
             }
 
-            break;
-        }
-
-        default:
-            throw new Error('Unsupported file extension');
+            default:
+                throw new Error('Unsupported file extension');
         }
 
         const config = getProjectDefinition(release.version_number, DEFAULT_PROJECT_DEFINITION);

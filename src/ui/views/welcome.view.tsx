@@ -56,26 +56,26 @@ export const WelcomeView: React.FC = () => {
 
     const getMaxSteps = () => {
         switch (platform) {
-        case 'darwin':
-            return macSteps.length - 1;
-        case 'win32':
-            return winSteps.length - 1;
-        case 'linux':
-            return linuxSteps.length - 1;
-        default:
-            return winSteps.length - 1;
+            case 'darwin':
+                return macSteps.length - 1;
+            case 'win32':
+                return winSteps.length - 1;
+            case 'linux':
+                return linuxSteps.length - 1;
+            default:
+                return winSteps.length - 1;
         }
     };
     const getPlatformSteps = () => {
         switch (platform) {
-        case 'darwin':
-            return macSteps;
-        case 'win32':
-            return winSteps;
-        case 'linux':
-            return linuxSteps;
-        default:
-            return winSteps;
+            case 'darwin':
+                return macSteps;
+            case 'win32':
+                return winSteps;
+            case 'linux':
+                return linuxSteps;
+            default:
+                return winSteps;
         }
     };
     useEffect(() => {
