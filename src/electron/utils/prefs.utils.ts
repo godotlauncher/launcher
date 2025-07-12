@@ -1,4 +1,5 @@
 import logger from 'electron-log';
+import { Notification } from 'electron';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -53,6 +54,10 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
         return { ...defaultPrefs, ...prefs };
     } catch (e) {
         logger.error('Could not parse user preferences, using defaults', e);
+        new Notification({
+            title: 'Preferences Error',
+            body: 'Could not load preferences. Reverting to default settings.'
+        }).show();
         return defaultPrefs;
     }
 }
