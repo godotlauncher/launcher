@@ -1,3 +1,4 @@
+import logger from 'electron-log';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -47,8 +48,13 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
 
     // Read prefs from disk
     const prefsData = await fs.promises.readFile(prefsPath, 'utf-8');
-    const prefs = JSON.parse(prefsData);
-    return { ...defaultPrefs, ...prefs };
+    try {
+        const prefs = JSON.parse(prefsData);
+        return { ...defaultPrefs, ...prefs };
+    } catch (e) {
+        logger.debug('Could not parse user preferences, using defaults', e);
+        return defaultPrefs;
+    }
 }
 
 export async function writePrefsToDisk(prefsPath: string, prefs: UserPreferences): Promise<void> {
