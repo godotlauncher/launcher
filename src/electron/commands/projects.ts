@@ -92,6 +92,9 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
         if (project.open_windowed) {
             options.push('-w');
         }
+        if (process.platform === 'linux') {
+            options.push('--class', 'Godot');
+        }
         editor = spawn(command, options, { detached: true, stdio: 'ignore' });
     }
 
