@@ -16,10 +16,10 @@ interface ProjectsContext {
     createProject: (name: string, release: InstalledRelease, renderer: RendererType[5], withVSCode: boolean, withGit: boolean) => Promise<CreateProjectResult>;
 }
 
-export const ProjectsContext = createContext<ProjectsContext>({} as ProjectsContext);
+export const projectsContext = createContext<ProjectsContext>({} as ProjectsContext);
 
 export const useProjects = () => {
-    const context = useContext(ProjectsContext);
+    const context = useContext(projectsContext);
     if (!context) {
         throw new Error('useProjects must be used within a ProjectsProvider');
     }
@@ -122,7 +122,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     }, []);
 
     return (
-        <ProjectsContext.Provider value={{
+        <projectsContext.Provider value={{
             projects,
             loading,
             addProject,
@@ -137,7 +137,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             showProjectMenu
         }}>
             {children}
-        </ProjectsContext.Provider>
+        </projectsContext.Provider>
     );
 
 };

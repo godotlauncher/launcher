@@ -1,14 +1,14 @@
-import { useTheme } from '../hooks/useTheme';
-import { usePreferences } from '../hooks/usePreferences';
-import { useState } from 'react';
 import clsx from 'clsx';
-import { ProjectsLocation } from '../components/settings/projectsLocation.component';
-import { EditorsLocation } from '../components/settings/EditorLocation.component';
-import { ProjectLaunchAction } from '../components/settings/projectLaunchAction.component';
-import { CheckForUpdates } from '../components/settings/checkForUpdates.component';
+import { useState } from 'react';
 import { AutoStartSetting } from '../components/settings/AutoStartSetting.component';
+import { CheckForUpdates } from '../components/settings/checkForUpdates.component';
+import { EditorsLocation } from '../components/settings/EditorLocation.component';
 import { GitToolSettings } from '../components/settings/gitToolSettings.component';
+import { ProjectLaunchAction } from '../components/settings/projectLaunchAction.component';
+import { ProjectsLocation } from '../components/settings/projectsLocation.component';
 import { VSCodeToolSettings } from '../components/settings/vsCodeToolSettings.component';
+import { usePreferences } from '../hooks/usePreferences';
+import { useTheme } from '../hooks/useTheme';
 
 export const SettingsView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'projects' | 'installs' | 'appearance' | 'behavior' | 'tools' | 'updates'>('projects');

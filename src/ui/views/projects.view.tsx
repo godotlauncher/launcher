@@ -1,5 +1,5 @@
 import logger from 'electron-log';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -26,7 +26,23 @@ export const ProjectsView: React.FC = () => {
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
 
-    const [sortData, setSortData] = useState<{ field: string, order: 'asc' | 'desc'; }>({ field: 'modified', order: 'desc' });
+    // Initialize sortData from localStorage or use default
+    const [sortData, setSortData] = useState<{ field: string, order: 'asc' | 'desc'; }>(() => {
+        const saved = localStorage.getItem('projectsSortData');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch {
+                return { field: 'modified', order: 'desc' };
+            }
+        }
+        return { field: 'modified', order: 'desc' };
+    });
+
+    // Save sortData to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('projectsSortData', JSON.stringify(sortData));
+    }, [sortData]);
 
     const { addAlert } = useAlerts();
 
@@ -270,17 +286,17 @@ export const ProjectsView: React.FC = () => {
                                                     </button>
 
                                                     {row.release.mono &&
-                                                        <p className='tooltip tooltip-bottom tooltip-primary' data-tip="This is a .Net Project">
+                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This is a .Net Project">
                                                             <p className="badge badge-outline text-xs text-base-content/50 ">c#</p>
                                                         </p>
                                                     }
                                                     {row.release.prerelease &&
-                                                        <p className='tooltip tooltip-bottom tooltip-secondary' data-tip="Using a pre-release Godot editor version">
+                                                        <p className='tooltip tooltip-right right-0 tooltip-secondary' data-tip="Using a pre-release Godot editor version">
                                                             <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">pr</p>
                                                         </p>
                                                     }
                                                     {row.open_windowed &&
-                                                        <p className='tooltip tooltip-bottom tooltip-primary' data-tip="This project is open in windowed mode">
+                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This project is open in windowed mode">
                                                             <p className="badge badge-outline text-xs text-base-content/50">w</p>
                                                         </p>
                                                     }

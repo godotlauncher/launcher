@@ -142,14 +142,14 @@ export async function getProjectRendererFromParsed(parsedProject: GodotProjectFi
         const method = rawMethod.replaceAll('"', '').trim();
 
         switch (method) {
-        case 'Unknown':
-            return 'FORWARD_PLUS';
-        case 'mobile':
-            return 'MOBILE';
-        case 'gl_compatibility':
-            return 'COMPATIBLE';
-        default:
-            return 'Unknown';
+            case 'Unknown':
+                return 'FORWARD_PLUS';
+            case 'mobile':
+                return 'MOBILE';
+            case 'gl_compatibility':
+                return 'COMPATIBLE';
+            default:
+                return 'Unknown';
         }
 
     }

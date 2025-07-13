@@ -17,12 +17,12 @@ export async function getReleases(type: 'RELEASES' | 'BUILDS', since: Date = new
     let repo: 'godot' | 'godot-builds' = 'godot';
 
     switch (type) {
-    case 'RELEASES':
-        repo = 'godot';
-        break;
-    case 'BUILDS':
-        repo = 'godot-builds';
-        break;
+        case 'RELEASES':
+            repo = 'godot';
+            break;
+        case 'BUILDS':
+            repo = 'godot-builds';
+            break;
     }
 
     let latestPublishedDate = new Date(0);
