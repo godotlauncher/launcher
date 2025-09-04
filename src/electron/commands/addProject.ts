@@ -131,6 +131,13 @@ export async function addProject(
         )
         .sort(sortReleases) || [];
 
+    if (releases.length === 0) {
+        return {
+            success: false,
+            error: `No installed Stable releases found for Godot ${releaseBaseVersion}.x\nPlease install a stable release for Godot ${releaseBaseVersion}.x, then try adding the project again.`,
+        };
+    }
+
     if (hasDotNET && !releases.some((r) => r.mono)) {
     // no mono release available for this version
         return {
