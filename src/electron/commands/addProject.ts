@@ -139,18 +139,27 @@ export async function addProject(
     }
 
     if (hasDotNET && !releases.some((r) => r.mono)) {
-    // no mono release available for this version
+        // no mono release available for this version
         return {
             success: false,
             error:
-        'Project seems to be a .NET project but no Editor with .NET release found',
+                'Project seems to be a .NET project but no Editor with .NET release found',
         };
     }
 
-    release = releases.find((r) => r.mono === hasDotNET);
+    const compatibleReleases = releases.filter(
+        (r) => r.config_version >= configVersion
+    );
 
-    if (!release || release.config_version < configVersion) {
-        release = undefined;
+    release =
+        compatibleReleases.find((r) => r.mono === hasDotNET) ??
+        compatibleReleases[0];
+
+    if (!release) {
+        return {
+            success: false,
+            error: `No installed releases found for Godot ${releaseBaseVersion}.x that support config_version ${configVersion}.`,
+        };
     }
 
     let config: ProjectConfig | null = null;
