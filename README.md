@@ -44,8 +44,8 @@ The best way to get the latest installer is from [the Godot Launcher website](ht
 
 ### **Cross-Platform Availability**
 
-- **Windows:** Fully supported.
-- **Mac & Linux:** Coming soon to ensure you can use the same streamlined workflow on any machine.
+- **Windows, Mac, and Linux:** You can use the same streamlined workflow on any machine.
+
 
 ### **Free and Open Source**
 
