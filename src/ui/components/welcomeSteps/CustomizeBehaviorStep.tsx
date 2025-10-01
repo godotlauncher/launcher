@@ -3,6 +3,7 @@ import { ChangeEvent } from 'react';
 
 import { usePreferences } from '../../hooks/usePreferences';
 
+
 export const CustomizeBehaviorStep: React.FC = () => {
 
     const { preferences, updatePreferences, setAutoStart } = usePreferences();

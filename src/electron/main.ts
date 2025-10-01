@@ -190,7 +190,8 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
 
         // close if onboarding has not been completed
         getUserPreferences().then(prefs => {
-            if (prefs.prefs_version == 1 || (prefs.first_run && willClose === false)) {
+            const onboardingIncomplete = (prefs.first_run && willClose === false) || (process.platform === 'win32' && !prefs.windows_symlink_win_notify && willClose === false);
+            if (onboardingIncomplete) {
                 logger.debug('Incomplete onboarding, quitting instead of hiding');
                 app.quit();
             }

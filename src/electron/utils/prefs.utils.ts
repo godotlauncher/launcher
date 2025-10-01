@@ -38,6 +38,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         confirm_project_remove: true,
         first_run: true,
         windows_enable_symlinks: platform === 'win32',
+        windows_symlink_win_notify: platform === 'win32' ? false : true,
         vs_code_path: '',
 
     };

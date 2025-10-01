@@ -1,3 +1,4 @@
+import * as os from 'node:os';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { getDefaultPrefs, readPrefsFromDisk, writePrefsToDisk } from '../utils/prefs.utils.js';
 
@@ -7,6 +8,7 @@ function migrateUserPreferences(
 ): { updated: boolean; value: UserPreferences } {
     let updated = false;
     const nextPrefs: UserPreferences = { ...prefs };
+    const platform = os.platform();
 
     if (nextPrefs.prefs_version < 3) {
         nextPrefs.prefs_version = 3;
@@ -15,6 +17,12 @@ function migrateUserPreferences(
 
     if (typeof nextPrefs.windows_enable_symlinks === 'undefined') {
         nextPrefs.windows_enable_symlinks = defaultPrefs.windows_enable_symlinks;
+        updated = true;
+    }
+
+    if (typeof nextPrefs.windows_symlink_win_notify === 'undefined') {
+        const receivedWindowsPrefsUpgrade = platform === 'win32' && prefs.prefs_version < 3;
+        nextPrefs.windows_symlink_win_notify = receivedWindowsPrefsUpgrade ? false : defaultPrefs.windows_symlink_win_notify;
         updated = true;
     }
 

@@ -11,6 +11,7 @@ import { usePreferences } from '../hooks/usePreferences';
 import { MacOSStep } from '../components/welcomeSteps/macosStep';
 import { WindowsStep } from '../components/welcomeSteps/WindowsStep';
 import { LinuxStep } from '../components/welcomeSteps/linuxStep';
+import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
 
 interface StepDetails {
     title: string;
@@ -41,7 +42,8 @@ export const WelcomeView: React.FC = () => {
         { title: 'Windows', nextButton: 'Next: Current Settings', prevButton: 'Back: Welcome', component: <WindowsStep /> },
         { title: 'Current Settings', nextButton: 'Next: Set Locations', prevButton: 'Back: Windows', component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
         { title: 'Set Locations', nextButton: 'Next: Customize Behavior', prevButton: 'Back: Current Settings', component: <SetLocationStep /> },
-        { title: 'Customize Behavior', nextButton: 'Next: Ready', prevButton: 'Back: Customize Behavior', component: <CustomizeBehaviorStep /> },
+        { title: 'Customize Behavior', nextButton: 'Next: Ready', prevButton: 'Back: Set Locations', component: <CustomizeBehaviorStep /> },
+        { title: 'Windows Symlink', nextButton: 'Next: Ready', prevButton: 'Back: Customize Behavior', component: <WindowsSymlinkSetting /> },
         { title: 'Ready', nextButton: 'Start', prevButton: 'Back: Customize Behavior', component: <StartStep /> },
     ];
 
@@ -90,7 +92,11 @@ export const WelcomeView: React.FC = () => {
         if (stepIndex >= maxSteps + 1) {
             setStepIndex(undefined);
             localStorage?.clear();
-            updatePreferences({ first_run: false });
+            const updates: Partial<UserPreferences> = { first_run: false };
+            if (platform === 'win32') {
+                updates.windows_symlink_win_notify = true;
+            }
+            updatePreferences(updates);
 
             return;
         }

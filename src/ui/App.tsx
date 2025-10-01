@@ -40,12 +40,10 @@ function App() {
         if (preferences) {
             setFirstRun(preferences.first_run || false);
 
-            // migrate from v1 to v2
-            // windows users need to be shown the windows step for changes
-            // the migration happens below after loading is done
-            if (preferences.prefs_version === 1 && platform !== 'win32') {
-                updatePreferences({ prefs_version: 3 });
-            }
+            // migrate legacy preference versions for non-Windows users
+            // if (preferences.prefs_version < 3 && platform !== 'win32') {
+            //     updatePreferences({ prefs_version: 3 });
+            // }
 
             setPrefsLoading(false);
         }
@@ -92,9 +90,8 @@ function App() {
         return <WelcomeView />;
     }
 
-    // if the user is on windows and the prefs_version is 1, show the windows step
-    // this is a one time step, so we can just show it and then update the prefs_version
-    if (preferences?.prefs_version === 1 && platform === 'win32') {
+    // if the user is on windows and has not acknowledged the symlink change, show the windows step
+    if (platform === 'win32' && preferences && !preferences.windows_symlink_win_notify) {
         return (
             <div className='flex flex-col items-center justify-start w-full h-full'>
                 <div className="flex flex-col h-[535px] w-[1008px] p-10">
@@ -102,7 +99,10 @@ function App() {
                     <div className='flex-1'></div>
                     <div className='flex justify-center'>
                         <button className="btn btn-primary" onClick={() => {
-                            updatePreferences({ prefs_version: 3 });
+                            updatePreferences({
+                                windows_symlink_win_notify: true,
+                                prefs_version: Math.max(preferences.prefs_version ?? 3, 3)
+                            });
                         }}>Continue</button>
                     </div>
                 </div >
