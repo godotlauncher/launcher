@@ -65,7 +65,7 @@ export const WindowsSymlinkSetting: React.FC = () => {
     return (
         <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-                <h2 className="font-bold">Editor symlinks</h2>
+                <h2 className="font-bold">Editor symlinks <span className='badge badge-sm badge-info'>Windows only</span></h2>
                 <p className="text-sm text-base-content/80">
                     Choose whether project editors use symbolic links (recommended) or local copies.
                 </p>
