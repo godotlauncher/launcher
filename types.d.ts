@@ -34,6 +34,7 @@ type UserPreferences = {
     start_in_tray: boolean;
     confirm_project_remove: boolean;
     first_run: boolean;
+    windows_enable_symlinks: boolean;
     vs_code_path?: string;
 };
 

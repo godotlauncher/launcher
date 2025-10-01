@@ -27,7 +27,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     const pathModule = platform === 'win32' ? path.win32 : path.posix;
 
     return {
-        prefs_version: 2,
+        prefs_version: 3,
         install_location: pathModule.resolve(defaultPrefs.dataDir),
         config_location: pathModule.resolve(defaultPrefs.configDir),
         projects_location: pathModule.resolve(defaultPrefs.projectDir),
@@ -37,6 +37,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         start_in_tray: true,
         confirm_project_remove: true,
         first_run: true,
+        windows_enable_symlinks: platform === 'win32',
         vs_code_path: '',
 
     };

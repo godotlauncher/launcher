@@ -2,6 +2,40 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { SymlinkOptions, trySymlinkOrElevateAsync } from './fs.utils.js';
 import logger from 'electron-log';
+import { getUserPreferences } from '../commands/userPreferences.js';
+
+async function removeExistingTarget(targetPath: string) {
+    if (!fs.existsSync(targetPath)) {
+        return;
+    }
+
+    await fs.promises.rm(targetPath, { recursive: true, force: true });
+}
+
+async function copyReleaseArtifacts(
+    release: InstalledRelease,
+    srcExePath: string,
+    srcConsolePath: string,
+    srcSharpDir: string,
+    dstExePath: string,
+    dstConsolePath: string,
+    dstSharpDir: string
+) {
+    await removeExistingTarget(dstExePath);
+    await removeExistingTarget(dstConsolePath);
+
+    if (release.mono) {
+        await removeExistingTarget(dstSharpDir);
+    }
+
+    await fs.promises.cp(srcExePath, dstExePath);
+    await fs.promises.cp(srcConsolePath, dstConsolePath);
+
+    if (release.mono && fs.existsSync(srcSharpDir)) {
+        await fs.promises.mkdir(dstSharpDir, { recursive: true });
+        await fs.promises.cp(srcSharpDir, dstSharpDir, { recursive: true });
+    }
+}
 
 export async function removeProjectReleaseEditorWindows(
     projectEditorPath: string,
@@ -68,7 +102,10 @@ export async function setProjectEditorReleaseWindows(
     }
 
     logger.debug('Setting new editor');
-    // set dstination paths
+    // Preference determines whether we attempt symlink creation or copy files directly
+    const { windows_enable_symlinks } = await getUserPreferences();
+
+    // set destination paths
     const baseFileName = path.basename(release.editor_path);
     const dstExePath = path.resolve(projectEditorPath, baseFileName);
     const dstConsolePath = path.resolve(
@@ -89,7 +126,6 @@ export async function setProjectEditorReleaseWindows(
     if (fs.existsSync(srcExePath) && fs.existsSync(srcConsolePath)) {
         logger.debug('Source paths exist');
 
-        // combine links
         const links: SymlinkOptions[] = [
             { target: srcExePath, path: dstExePath, type: 'file' },
             { target: srcConsolePath, path: dstConsolePath, type: 'file' },
@@ -103,29 +139,40 @@ export async function setProjectEditorReleaseWindows(
             });
         }
 
-        try {
-            // try to symlink then use with elevated permissions
-            await trySymlinkOrElevateAsync(links);
-        } catch (error) {
-            // if symlink fails, try to remove any existing files
-            if (fs.existsSync(dstExePath)) {
-                await fs.promises.unlink(dstExePath);
-            }
-            if (fs.existsSync(dstConsolePath)) {
-                await fs.promises.unlink(dstConsolePath);
-            }
-            if (fs.existsSync(dstSharpDir)) {
-                await fs.promises.unlink(dstSharpDir);
-            }
-            // then copy the files
-            // this is a fallback for when symlinks are not supported
-            await fs.promises.cp(srcExePath, dstExePath);
-            await fs.promises.cp(srcConsolePath, dstConsolePath);
-            if (release.mono && fs.existsSync(srcSharpDir)) {
-                // copy the GodotSharp folder
-                // this is a fallback for when symlinks are not supported
-                await fs.promises.mkdir(dstSharpDir, { recursive: true });
-                await fs.promises.cp(srcSharpDir, dstSharpDir, { recursive: true });
+        const shouldUseSymlinks = Boolean(windows_enable_symlinks);
+
+        if (!shouldUseSymlinks) {
+            logger.info('Windows symlink preference disabled; copying editor files instead.');
+            await copyReleaseArtifacts(
+                release,
+                srcExePath,
+                srcConsolePath,
+                srcSharpDir,
+                dstExePath,
+                dstConsolePath,
+                dstSharpDir
+            );
+        } else {
+            try {
+                for (const link of links) {
+                    await removeExistingTarget(link.path);
+                }
+                // try to symlink then use with elevated permissions
+                await trySymlinkOrElevateAsync(links);
+            } catch (error) {
+                logger.warn(
+                    'Symlink creation failed, using copy fallback instead.',
+                    error
+                );
+                await copyReleaseArtifacts(
+                    release,
+                    srcExePath,
+                    srcConsolePath,
+                    srcSharpDir,
+                    dstExePath,
+                    dstConsolePath,
+                    dstSharpDir
+                );
             }
         }
     }

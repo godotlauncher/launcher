@@ -44,7 +44,7 @@ function App() {
             // windows users need to be shown the windows step for changes
             // the migration happens below after loading is done
             if (preferences.prefs_version === 1 && platform !== 'win32') {
-                updatePreferences({ prefs_version: 2 });
+                updatePreferences({ prefs_version: 3 });
             }
 
             setPrefsLoading(false);
@@ -102,7 +102,7 @@ function App() {
                     <div className='flex-1'></div>
                     <div className='flex justify-center'>
                         <button className="btn btn-primary" onClick={() => {
-                            updatePreferences({ prefs_version: 2 });
+                            updatePreferences({ prefs_version: 3 });
                         }}>Continue</button>
                     </div>
                 </div >

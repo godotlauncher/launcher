@@ -141,7 +141,7 @@ suite('prefs.util', test => {
             const defaultDirs = getDefaultDirs();
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
-                prefs_version: 2,
+                prefs_version: 3,
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -151,6 +151,7 @@ suite('prefs.util', test => {
                 confirm_project_remove: true,
                 post_launch_action: "close_to_tray",
                 first_run: true,
+                windows_enable_symlinks: true,
                 vs_code_path: "",
             });
         });
@@ -176,7 +177,7 @@ suite('prefs.util', test => {
             const defaultDirs = getDefaultDirs();
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
-                prefs_version: 2,
+                prefs_version: 3,
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -186,6 +187,7 @@ suite('prefs.util', test => {
                 confirm_project_remove: true,
                 post_launch_action: "close_to_tray",
                 first_run: true,
+                windows_enable_symlinks: false,
                 vs_code_path: "",
             });
         });

@@ -7,6 +7,7 @@ import { GitToolSettings } from '../components/settings/gitToolSettings.componen
 import { ProjectLaunchAction } from '../components/settings/projectLaunchAction.component';
 import { ProjectsLocation } from '../components/settings/projectsLocation.component';
 import { VSCodeToolSettings } from '../components/settings/vsCodeToolSettings.component';
+import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
 
@@ -125,6 +126,8 @@ export const SettingsView: React.FC = () => {
                                 <div className="divider"></div>
 
                                 <ProjectLaunchAction />
+                                <div className="divider"></div>
+                                <WindowsSymlinkSetting />
                                 <div className="divider"></div>
                                 <AutoStartSetting />
                             </div>
