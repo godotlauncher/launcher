@@ -151,7 +151,7 @@ suite('prefs.util', test => {
                 confirm_project_remove: true,
                 post_launch_action: "close_to_tray",
                 first_run: true,
-                windows_enable_symlinks: true,
+                windows_enable_symlinks: false,
                 windows_symlink_win_notify: false,
                 vs_code_path: "",
             });

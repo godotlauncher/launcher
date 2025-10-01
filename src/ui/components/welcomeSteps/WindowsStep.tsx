@@ -11,9 +11,9 @@ export const WindowsStep: React.FC = () => {
         <div className='text-sm'>
             <h1 className="text-xl">Windows Note</h1>
             <p>
-                Starting from version 1.4.0, Godot Launcher creates{' '}
+                Starting from version 1.4.0, Godot Launcher can create{' '}
                 <code className="bg-base-300 px-2 rounded text-warning">symlinks</code> to the editor for each project.
-                You can switch this off later in <strong>Settings → Behavior → Editor symlinks</strong> if you prefer local copies.
+                To keep setup simple, we now default to local copies. You can enable symlinks anytime from <strong>Settings → Behavior → Editor symlinks</strong> when you want lower disk usage.
             </p>
             <div className="pt-6 flex flex-col gap-2">
                 <h2 className="font-bold">What changed?</h2>
@@ -26,7 +26,7 @@ export const WindowsStep: React.FC = () => {
                         <code className="bg-base-300 px-2 rounded text-warning">Developer Mode</code> is not enabled.
                     </li>
                     <li>
-                        Prefer to avoid elevation prompts? Toggle off <strong>Editor symlinks</strong> in Settings and the launcher will copy the editor into each project instead.
+                        Ready to try symlinks? Toggle on <strong>Editor symlinks</strong> in Settings when you're prepared for the occasional elevation prompt.
                     </li>
                     <li className="flex flex-row gap-1 font-bold">
                         NOTE: If you are using .NET-based editors, you need to install the .NET SDK from{' '}
