@@ -286,18 +286,18 @@ export const ProjectsView: React.FC = () => {
                                                     </button>
 
                                                     {row.release.mono &&
-                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This is a .Net Project">
-                                                            <p className="badge badge-outline text-xs text-base-content/50 ">c#</p>
+                                                        <p className='tooltip tooltip-right tooltip-primary flex items-center' data-tip="This is a .Net Project">
+                                                            <span className="badge badge-outline text-xs text-base-content/50 ">c#</span>
                                                         </p>
                                                     }
                                                     {row.release.prerelease &&
-                                                        <p className='tooltip tooltip-right right-0 tooltip-secondary' data-tip="Using a pre-release Godot editor version">
-                                                            <p className="badge badge-secondary badge-outline text-xs text-base-content/50 ">pr</p>
+                                                        <p className='tooltip tooltip-right right-0 tooltip-secondary flex items-center' data-tip="Using a pre-release Godot editor version">
+                                                            <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">pr</span>
                                                         </p>
                                                     }
                                                     {row.open_windowed &&
-                                                        <p className='tooltip tooltip-right tooltip-primary' data-tip="This project is open in windowed mode">
-                                                            <p className="badge badge-outline text-xs text-base-content/50">w</p>
+                                                        <p className='tooltip tooltip-right tooltip-primary flex items-center' data-tip="This project is open in windowed mode">
+                                                            <span className="badge badge-outline text-xs text-base-content/50">w</span>
                                                         </p>
                                                     }
 
