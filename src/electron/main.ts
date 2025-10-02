@@ -13,6 +13,17 @@ import { setAutoStart } from './utils/platform.utils.js';
 
 logger.initialize();
 
+// --- sandbox flag passthrough (must be before app.whenReady / any windows) ---
+const userRequestedNoSandbox =
+  process.argv.includes('--no-sandbox') ||
+  process.argv.includes('--disable-sandbox') ||
+  process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1';
+
+// Only matters on Linux; do it early so all child Chromium processes inherit it.
+if (process.platform === 'linux' && userRequestedNoSandbox) {
+  app.commandLine.appendSwitch('no-sandbox');
+}
+
 if (isDev()) {
     logger.transports.file.level = 'debug';
     logger.transports.console.level = 'debug';
