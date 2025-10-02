@@ -1,6 +1,6 @@
 import logger from 'electron-log';
 import { useState, useEffect } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
@@ -18,6 +18,7 @@ TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
 export const ProjectsView: React.FC = () => {
+    const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState<string>('');
     const [createOpen, setCreateOpen] = useState<boolean>(false);
 
@@ -207,18 +208,18 @@ export const ProjectsView: React.FC = () => {
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between items-start">
                         <div className="flex flex-col gap-1">
-                            <h1 data-testid="projectsTitle" className="text-2xl">Projects</h1>
+                            <h1 data-testid="projectsTitle" className="text-2xl">{t('projects')}</h1>
                             <p className="badge text-base-content/50">{preferences?.projects_location}</p>
                         </div>
                         <div className="flex gap-2">
-                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">Add</button>
-                            <button disabled={installedReleases.length < 1} data-testid="btnProjectCreate" className="btn btn-primary" onClick={() => setCreateOpen(true)}>New Project</button>
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">{t('importProject')}</button>
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectCreate" className="btn btn-primary" onClick={() => setCreateOpen(true)}>{t('createProject')}</button>
                         </div>
                     </div>
                     <div className="flex flex-row justify-end my-2 items-center">
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder={t('search')}
                             className="input input-bordered w-full max-w-xs"
                             onChange={(e) => setTextSearch(e.target.value)}
                             value={textSearch}
@@ -248,7 +249,7 @@ export const ProjectsView: React.FC = () => {
                                                 setSortData({ field: 'name', order: 'asc' });
                                             }
                                         }}>
-                                            Name
+                                            {t('name')}
                                             {getSortIcon('name')}
                                         </label>
                                     </th>
@@ -261,11 +262,11 @@ export const ProjectsView: React.FC = () => {
                                                 setSortData({ field: 'modified', order: 'asc' });
                                             }
                                         }}>
-                                            Modified
+                                            {t('modified')}
                                             {getSortIcon('modified')}
                                         </label>
                                     </th>
-                                    <th className="w-60 min-w-60">Editor</th>
+                                    <th className="w-60 min-w-60">{t('editor')}</th>
                                     <th className=""></th>
                                 </tr>
                             </thead>

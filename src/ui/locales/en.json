@@ -1,4 +1,5 @@
 {
+  "name": "Name",
   "appearance": "Appearance",
   "theme": "Theme",
   "theme_introduction": "Customize the appearance of Godot Launcher",
@@ -8,6 +9,7 @@
   "dark": "Dark",
   "system": "System (Auto)",
   "installs": "Installs",
+  "editor": "Editor",
   "editor_installs": "Editor Installs",
   "install_editor": "Install Editor",
   "search": "Search",
@@ -43,5 +45,8 @@
   "jointhecommunity": "Join the community",
   "projectlocation": "Project Location",
   "projectlocation_note": "Choose a location for new projects. Existing projects will not be affected.",
-  "deafultlocation": "Default Location"
+  "deafultlocation": "Default Location",
+  "createProject": "Create new Project",
+  "importProject": "Import",
+  "modified": "Modified"
 }
