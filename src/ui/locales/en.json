@@ -16,6 +16,7 @@
   "installing": "Installing...",
   "prerelease": "prerelease",
   "projects": "Projects",
+  "project": "Project",
   "behavior": "Behavior",
   "tools": "Tools",
   "updates": "Updates",
@@ -47,6 +48,38 @@
   "projectlocation_note": "Choose a location for new projects. Existing projects will not be affected.",
   "deafultlocation": "Default Location",
   "createProject": "Create new Project",
-  "importProject": "Import",
-  "modified": "Modified"
+  "ProjectName": "Project Name",
+  "newProject": "New Project",
+  "import": "Import",
+  "modified": "Modified",
+  "GDLauncherNeedVSCodeNote": "Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the VS Code executable in the settings.",
+  "setupVSCodeAsTextEditor": "Set up VS Code as text editor",
+  "initialize_repository": "Initialize Git Repository",
+  "other_settings": "Other Settings",
+  "renderer": "Renderer",
+
+  "render.forwardplus.note.1": "Supports desktop platforms only.",
+  "render.forwardplus.note.2": "Advanced 3D graphics available.",
+  "render.forwardplus.note.3": "Can scale to large complex scenes.",
+  "render.forwardplus.note.4": "Uses RenderingDevice backend.",
+  "render.forwardplus.note.5": "Slower rendering of simple scenes.",
+
+  "render.mobile.note.1": "Supports desktop + mobile platforms.",
+  "render.mobile.note.2": "Less advanced 3D graphics.",
+  "render.mobile.note.3": "Less scalable for complex scenes.",
+  "render.mobile.note.4": "Uses RenderingDevice backend.",
+  "render.mobile.note.5": "Fast rendering of simple scenes.",
+
+  "render.compatible.note.1": "Supports desktop, mobile + web platforms.",
+  "render.compatible.note.2": "Least advanced 3D graphics (currently work-in-progress).",
+  "render.compatible.note.3": "Intended for low-end/older devices.",
+  "render.compatible.note.4": "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).",
+  "render.compatible.note.5": "Fastest rendering of simple scenes.",
+
+  "render.forwardplus": "Forward+",
+  "render.mobile": "Mobile",
+  "render.compatible": "Compatible",
+  "edit_now": "Edit Now",
+  "waitfordialogtoaddproject": "Waiting for dialog to add project...",
+  "releases.none_installed": "No Godot versions installed"
 }

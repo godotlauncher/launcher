@@ -192,7 +192,7 @@ export const ProjectsView: React.FC = () => {
             {
                 addingProject &&
                 <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p><p>Waiting for dialog to add project...</p>
+                    <p className="loading loading-infinity"></p><p>{t('waitfordialogtoaddproject')}...</p>
                 </div>
             }
 
@@ -212,7 +212,7 @@ export const ProjectsView: React.FC = () => {
                             <p className="badge text-base-content/50">{preferences?.projects_location}</p>
                         </div>
                         <div className="flex gap-2">
-                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">{t('importProject')}</button>
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">{t('import')}</button>
                             <button disabled={installedReleases.length < 1} data-testid="btnProjectCreate" className="btn btn-primary" onClick={() => setCreateOpen(true)}>{t('createProject')}</button>
                         </div>
                     </div>
