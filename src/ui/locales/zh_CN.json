@@ -1,0 +1,10 @@
+{
+  "appearance": "外观",
+  "theme": "主题",
+  "theme_introduction": "自定义 Godot Launcher 的外观",
+  "language": "语言",
+  "select_language_note": "选择 Godot Launcher 的语言（不改变 Godot 自身语言）",
+  "light": "浅色",
+  "dark": "深色",
+  "system": "跟随系统"
+}
