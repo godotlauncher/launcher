@@ -21,7 +21,7 @@ const userRequestedNoSandbox =
 
 // Only matters on Linux; do it early so all child Chromium processes inherit it.
 if (process.platform === 'linux' && userRequestedNoSandbox) {
-  app.commandLine.appendSwitch('no-sandbox');
+    app.commandLine.appendSwitch('no-sandbox');
 }
 
 if (isDev()) {
