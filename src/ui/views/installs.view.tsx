@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
+import { useTranslation } from 'react-i18next';
 
 export const InstallsView: React.FC = () => {
+    const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState<string>('');
     const [installOpen, setInstallOpen] = useState<boolean>(false);
 
@@ -42,15 +44,15 @@ export const InstallsView: React.FC = () => {
             <div className="flex flex-col h-full w-full overflow-auto p-1">
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between">
-                        <h1 data-testid="installsTitle" className="text-2xl">Editor Installs</h1>
+                        <h1 data-testid="installsTitle" className="text-2xl">{t('editor_installs')}</h1>
                         <div className="flex gap-2">
-                            <button data-testid="btnInstallEditor" className="btn btn-primary" onClick={() => setInstallOpen(true)}>Install Editor</button>
+                            <button data-testid="btnInstallEditor" className="btn btn-primary" onClick={() => setInstallOpen(true)}>{t('install_editor')}</button>
                         </div>
                     </div>
                     <div className="flex flex-row justify-end my-2 items-center">
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder={t('search')}
                             className="input input-bordered w-full max-w-xs"
                             onChange={(e) => setTextSearch(e.target.value)}
                             value={textSearch}
@@ -87,12 +89,12 @@ export const InstallsView: React.FC = () => {
                                                             <div className="flex flex-row gap-2">
                                                                 {row.version}
                                                                 {row.mono && <span className="badge">.NET</span>}
-                                                                {row.prerelease && <span className="badge badge-secondary">prerelease</span>}
+                                                                {row.prerelease && <span className="badge badge-secondary">{t('prerelease')}</span>}
                                                             </div>
                                                             <div className="text-xs text-base-content/50">
                                                                 {row.install_path || <div className="flex flex-row gap-2">
                                                                     <div className="loading loading-ring loading-sm"></div>
-                                                                    Installing...
+                                                                    {t('installing')}
                                                                 </div>
                                                                 }
                                                             </div>

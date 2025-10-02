@@ -11,7 +11,7 @@ import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSett
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import i18n from '../i18n'; // 路径根据你项目调整
+import i18n from '../i18n';
 
 export const SettingsView: React.FC = () => {
     const { t } = useTranslation();
@@ -28,7 +28,7 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-2 w-full">
 
                     <div className="flex flex-row justify-between">
-                        <h1 data-testid="settingsTitle" className="text-2xl">Settings</h1>
+                        <h1 data-testid="settingsTitle" className="text-2xl">{t('settings')}</h1>
                         <div className="flex gap-2">
                         </div>
                     </div>
@@ -38,12 +38,12 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-0 flex-1">
                     {/* Tabs */}
                     <div role="tablist" className="flex tabs tabs-lifted">
-                        <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>Projects</a>
-                        <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>Installs</a>
+                        <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>{t('projects')}</a>
+                        <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>{t('installs')}</a>
                         <a data-testid="tabAppearance" onClick={() => setActiveTab('appearance')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'appearance') })}>{t('appearance')}</a>
-                        <a data-testid="tabBehavior" onClick={() => setActiveTab('behavior')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'behavior') })}>Behavior</a>
-                        <a data-testid="tabTools" onClick={() => setActiveTab('tools')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'tools') })}>Tools</a>
-                        <a data-testid="tabUpdates" onClick={() => setActiveTab('updates')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'updates') })}>Updates</a>
+                        <a data-testid="tabBehavior" onClick={() => setActiveTab('behavior')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'behavior') })}>{t('behavior')}</a>
+                        <a data-testid="tabTools" onClick={() => setActiveTab('tools')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'tools') })}>{t('tools')}</a>
+                        <a data-testid="tabUpdates" onClick={() => setActiveTab('updates')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'updates') })}>{t('updates')}</a>
                     </div >
 
                     {/* Scrollable Content */}
@@ -95,6 +95,7 @@ export const SettingsView: React.FC = () => {
                                                 value={i18n.language}
                                                 onChange={(e) => i18n.changeLanguage(e.target.value)}
                                                 className="select select-bordered w-full max-w-xs">
+                                                <option value="en">English</option>
                                                 <option value="zh">简体中文</option>
                                             </select>
 

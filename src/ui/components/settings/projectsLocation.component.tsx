@@ -1,11 +1,11 @@
 import { Folder } from 'lucide-react';
 import { useState } from 'react';
 import { usePreferences } from '../../hooks/usePreferences';
-
+import { useTranslation } from 'react-i18next';
 export const ProjectsLocation: React.FC = () => {
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
     const { preferences, savePreferences } = usePreferences();
-
+    const { t } = useTranslation();
 
     const selectProjectDir = async (currentPath: string) => {
         setDialogOpen(true);
@@ -23,14 +23,14 @@ export const ProjectsLocation: React.FC = () => {
             {
                 dialogOpen &&
                 <div className="absolute inset-0 z-10 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p><p>Waiting for dialog...</p>
+                    <p className="loading loading-infinity"></p><p>{t('waitingfordialog')}</p>
                 </div>
             }
             <div className="flex flex-col gap-4 ">
 
                 <div className="flex flex-col">
-                    <h1 data-testid="projectLocationHeader" className="font-bold">Project Location</h1>
-                    <p data-testid="projectLocationSubHeader" className="text-sm">Select a location for new projects. Existing projects will not be affected.</p>
+                    <h1 data-testid="projectLocationHeader" className="font-bold">{t('projectlocation')}</h1>
+                    <p data-testid="projectLocationSubHeader" className="text-sm">{t('projectlocation_note')}</p>
                 </div>
                 <button
                     data-testid="btnSelectProjectDir"
@@ -40,7 +40,7 @@ export const ProjectsLocation: React.FC = () => {
                     <div className="flex flex-col flex-1 items-start">
                         <div className="flex flex-row  items-center gap-2 text-sm text-base-content/50">
                             <Folder className="fill-base-content/50 self-start stroke-none" />
-                            Default Location</div>
+                            {t('deafultlocation')}</div>
                         <div className="pl-0"> {preferences?.projects_location} </div>
                     </div>
                 </button>
