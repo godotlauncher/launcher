@@ -151,6 +151,7 @@ export async function downloadReleaseAsset(asset: AssetSummary, downloadPath: st
 export async function getStoredAvailableReleases(releasesCachePath: string): Promise<ReleaseSummaryCache> {
 
     try {
+        logger.debug(`Checking for cached releases at: ${releasesCachePath}`);
 
         if (fs.existsSync(releasesCachePath)) {
 

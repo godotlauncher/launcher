@@ -13,11 +13,22 @@ import { setAutoStart } from './utils/platform.utils.js';
 
 logger.initialize();
 
+logger.info('Starting Godot Launcher');
+logger.info(`Version: ${app.getVersion()}`);
+logger.info(`Electron: ${process.versions.electron}, Chrome: ${process.versions.chrome}, Node: ${process.versions.node}, V8: ${process.versions.v8}`);
+logger.info(`Platform: ${process.platform}, Arch: ${process.arch}`);
+logger.info(`isDev: ${isDev()}`);
+logger.info(`App path: ${app.getAppPath()}`);
+logger.info(`Debug flags: ${process.argv.includes('--debug')}`);
+if (process.platform === 'linux') {
+    logger.info(`sandbox disabled: ${process.argv.includes('--no-sandbox') || process.argv.includes('--disable-sandbox') || process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1'}`);
+}
+
 // --- sandbox flag passthrough (must be before app.whenReady / any windows) ---
 const userRequestedNoSandbox =
-  process.argv.includes('--no-sandbox') ||
-  process.argv.includes('--disable-sandbox') ||
-  process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1';
+    process.argv.includes('--no-sandbox') ||
+    process.argv.includes('--disable-sandbox') ||
+    process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1';
 
 // Only matters on Linux; do it early so all child Chromium processes inherit it.
 if (process.platform === 'linux' && userRequestedNoSandbox) {
