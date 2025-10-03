@@ -81,5 +81,10 @@
   "render.compatible": "兼容",
   "edit_now": "立即编辑",
   "waitfordialogtoaddproject": "等待对话框以添加项目...",
-  "releases.none_installed": "未安装任何 Godot 版本"
+  "releases.none_installed": "未安装任何 Godot 版本",
+  "InstallGodotEditor": "安装 Godot 编辑器",
+  "Released": "发行版",
+  "Prerelease": "预发行版",
+  "ShowInstalledOnly": "仅显示已安装"
+
 }

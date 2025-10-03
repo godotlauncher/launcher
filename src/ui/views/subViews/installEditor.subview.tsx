@@ -6,6 +6,7 @@ import { InstalledReleaseTable } from '../../components/installedReleasesTable';
 import { useAlerts } from '../../hooks/useAlerts';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useRelease } from '../../hooks/useRelease';
+import { useTranslation } from 'react-i18next';
 
 type SubviewProps = {
     onClose: () => void;
@@ -15,6 +16,7 @@ type SubviewProps = {
 
 export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
     const { preferences } = usePreferences();
+    const { t } = useTranslation();
     const [textSearch, setTextSearch] = useState<string>('');
     const [tab, setTab] = useState<'RELEASE' | 'PRERELEASE' | 'INSTALLED'>('RELEASE');
     const [filterInstalled, setFilterInstalled] = useState<boolean>(false);
@@ -101,7 +103,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
                         <div className="flex flex-row justify-between items-start">
                             <div className="flex flex-col gap-1">
-                                <h1 data-testid="settingsTitle" className="text-2xl">Install Godot Editor</h1>
+                                <h1 data-testid="settingsTitle" className="text-2xl">{t('InstallGodotEditor')}</h1>
                                 <p className="badge text-base-content/50">{preferences?.install_location}</p>
                             </div>
                             <div className="flex gap-2">
@@ -112,7 +114,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                     <div className="flex flex-row justify-end my-2 pr-1 items-center">
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder={t('search')}
                             className="input input-bordered w-full max-w-xs"
                             onChange={(e) => setTextSearch(e.target.value)}
                             value={textSearch}
@@ -133,7 +135,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 className={clsx('tab w-[150px] justify-start', { 'tab-active': (tab === 'RELEASE') })}
                             >
                                 <p className="flex gap-2 items-center">
-                                    Released
+                                    {t('Released') + ' '}
                                     ({
                                         installedReleases.reduce((acc, i) => acc += (i.prerelease ? 0 : 1), 0).toString()
                                     })
@@ -147,7 +149,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 className={clsx('tab w-[150px] justify-start', { 'tab-active': (tab === 'PRERELEASE') })}
                             >
                                 <p className="flex gap-2 items-center">
-                                    Prerelease
+                                    {t('Prerelease') + ' '}
                                     ({
                                         installedReleases.reduce((acc, i) => acc += (i.prerelease ? 1 : 0), 0).toString()
                                     })
@@ -163,13 +165,13 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                         >Installed</a> */}
                         </div>
                         <div className="flex flex-row gap-2">
-                            <span className="flex items-center tooltip text-info" data-tip="Show installed only">
+                            <span className="flex items-center tooltip text-info" data-tip={t('ShowInstalledOnly')}>
 
                                 <label className="swap swap-indeterminate">
                                     {/* this hidden checkbox controls the state */}
                                     <input type="checkbox" onChange={(e) => setFilterInstalled(e.target.checked)} />
-                                    <div className="swap-on  text-sm flex gap-2 items-center text-info"><HardDrive className="stroke-info" />Show installed only</div>
-                                    <div className="swap-off text-sm flex gap-2 items-center text-base-content"><HardDrive />Show installed only</div>
+                                    <div className="swap-on  text-sm flex gap-2 items-center text-info"><HardDrive className="stroke-info" />{t('ShowInstalledOnly')}</div>
+                                    <div className="swap-off text-sm flex gap-2 items-center text-base-content"><HardDrive />{t('ShowInstalledOnly')}</div>
                                 </label>
                             </span>
 

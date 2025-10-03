@@ -81,5 +81,9 @@
   "render.compatible": "Compatible",
   "edit_now": "Edit Now",
   "waitfordialogtoaddproject": "Waiting for dialog to add project...",
-  "releases.none_installed": "No Godot versions installed"
+  "releases.none_installed": "No Godot versions installed",
+  "InstallGodotEditor": "Install Godot Editor",
+  "Released": "Released",
+  "Prerelease": "Prerelease",
+  "ShowInstalledOnly": "Show Installed Only"
 }
