@@ -69,13 +69,13 @@ export const InstallsView: React.FC = () => {
 
                 {
                     (installedReleases.length < 1 && downloadingReleases.length < 1)
-                        ? (<div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />No releases installed, yet.<a onClick={() => setInstallOpen(true)} className="underline cursor-pointer">Install.</a></div>)
+                        ? (<div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />{t('Noreleasesinstalledyet')}<a onClick={() => setInstallOpen(true)} className="underline cursor-pointer">{t('install')}</a></div>)
                         : (
                             <div className="overflow-auto h-full">
                                 <table className="table table-sm">
                                     <thead className="sticky top-0 bg-base-200">
                                         <tr >
-                                            <th>Name</th>
+                                            <th>{t('name')}</th>
                                             <th></th>
                                         </tr>
                                     </thead>

@@ -8,6 +8,7 @@
   "light": "Light",
   "dark": "Dark",
   "system": "System (Auto)",
+  "install": "Install",
   "installs": "Installs",
   "editor": "Editor",
   "editor_installs": "Editor Installs",
@@ -85,5 +86,6 @@
   "InstallGodotEditor": "Install Godot Editor",
   "Released": "Released",
   "Prerelease": "Prerelease",
-  "ShowInstalledOnly": "Show Installed Only"
+  "ShowInstalledOnly": "Show Installed Only",
+  "Noreleasesinstalledyet": "No releases installed, yet."
 }
