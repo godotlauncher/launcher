@@ -126,8 +126,9 @@ export const SettingsView: React.FC = () => {
                                 <div className="divider"></div>
 
                                 <ProjectLaunchAction />
-                                <div className="divider"></div>
+                                {/* Windows Symlink Setting includes divider */}
                                 <WindowsSymlinkSetting />
+
                                 <div className="divider"></div>
                                 <AutoStartSetting />
                             </div>
