@@ -22,6 +22,7 @@
   "tools": "Tools",
   "updates": "Updates",
   "settings": "Settings",
+  "Cancel": "取消",
   "editor_install_location": "Editor Install Location",
   "editor_install_location_note": "Choose a location for Editor installs. Existing installs will not be affected.",
   "install_location": "Install Location",
@@ -87,5 +88,36 @@
   "Released": "Released",
   "Prerelease": "Prerelease",
   "ShowInstalledOnly": "Show Installed Only",
-  "Noreleasesinstalledyet": "No releases installed, yet."
+  "Noreleasesinstalledyet": "No releases installed, yet.",
+  "ChooseGodotLauncherbehaviorforprojects": "Choose Godot Launcher behavior for projects.",
+  "Ask_for_confirmation_when_removing_projects": "Ask for confirmation when removing projects.",
+  "Project_Launch_Action": "Project Launch Action",
+  "Choose_what_GD_Launcher_does_after_launching_a_project": "Choose what Godot Launcher does after launching a project",
+  "Nothing": "Nothing",
+  "Minimize": "Minimize",
+  "Close_to_system_tray": "Close to system tray",
+  "editor.symlink": "Editor symlinks",
+  "platform.windows_only": "Windows only",
+  "settings.editor.symlink_desc": "Choose whether project editors use optional symbolic links or stay with local copies.",
+  "settings.editor.symlink.note": "Use symbolic links for Windows project editors. This stays off by default so you can opt in when you are ready for potential elevation prompts during editor updates.",
+  "settings.editor.symlink.warning": "Changing this setting does not convert existing project links; it only affects how future editor refreshes behave.",
+
+  "settings.editor.symlink.enable.title": "Enable editor symlinks",
+  "settings.editor.symlink.disable.title": "Disable editor symlinks",
+
+  "settings.editor.symlink.enable.action": "Enable symlinks",
+  "settings.editor.symlink.disable.action": "Disable symlinks",
+
+  "settings.editor.symlink.enable.desc.1": "When enabled, Godot Launcher links each project to the installed editor instead of copying it.",
+  "settings.editor.symlink.enable.desc.2": "This keeps disk usage low, but Windows may request administrator approval when new symlinks are created.",
+  "settings.editor.symlink.enable.desc.3": "Existing projects keep their current local copies until their editor version is changed or reinstalled.",
+
+  "settings.editor.symlink.disable.desc.1": "Switch back to local copies to avoid elevation prompts. Godot Launcher will copy the editor files into each project instead.",
+  "settings.editor.symlink.disable.desc.2": "Existing symlinks remain in place until their editor version is changed or reinstalled.",
+
+  "startup.settings.header": "Startup Preference",
+  "startup.settings.subheader": "Choose what GD Launcher does when your computer starts",
+  "startup.autostart.linux_not_supported": "Auto start currently is not supported on Linux",
+  "startup.autostart.enable": "Start when computer starts",
+  "startup.autostart.tray": "Start in tray"
 }

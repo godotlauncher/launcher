@@ -21,6 +21,7 @@
   "tools": "工具",
   "updates": "更新",
   "settings": "设置",
+  "Cancel": "取消",
   "editor": "编辑器",
   "editor_install_location": "编辑器安装位置",
   "editor_install_location_note": "选择编辑器安装的位置。（现有安装不会受到影响）",
@@ -87,6 +88,37 @@
   "Released": "发行版",
   "Prerelease": "预发行版",
   "ShowInstalledOnly": "仅显示已安装",
-  "Noreleasesinstalledyet": "尚未安装任何版本。"
+  "Noreleasesinstalledyet": "尚未安装任何版本。",
+  "ChooseGodotLauncherbehaviorforprojects": "选择 Godot Launcher 的项目行为",
+  "Ask_for_confirmation_when_removing_projects": "删除项目时询问确认。",
+  "Project_Launch_Action": "项目启动行为",
+  "Choose_what_GD_Launcher_does_after_launching_a_project": "选择 Godot Launcher 启动项目后的行为",
+  "Nothing": "无",
+  "Minimize": "最小化",
+  "Close_to_system_tray": "关闭到托盘",
+  "editor.symlink": "编辑器符号链接",
+  
+  "platform.windows_only": "仅限 Windows",
+  "settings.editor.symlink_desc": "选择项目编辑器是使用可选的符号链接，还是保留本地副本。",
+  "settings.editor.symlink.note": "在 Windows 项目编辑器中使用符号链接。此选项默认关闭，你可以在准备好应对编辑器更新时可能出现的权限提升提示后再启用。",
+  "settings.editor.symlink.warning": "更改此设置不会转换现有的项目链接；它只会影响未来的编辑器刷新行为。",
 
+  "settings.editor.symlink.enable.title": "启用编辑器符号链接",
+  "settings.editor.symlink.disable.title": "禁用编辑器符号链接",
+
+  "settings.editor.symlink.enable.action": "启用符号链接",
+  "settings.editor.symlink.disable.action": "禁用符号链接",
+
+  "settings.editor.symlink.enable.desc.1": "启用后，Godot 启动器会将每个项目链接到已安装的编辑器，而不是复制它。",
+  "settings.editor.symlink.enable.desc.2": "这可以减少磁盘占用，但在创建新的符号链接时，Windows 可能会请求管理员权限。",
+  "settings.editor.symlink.enable.desc.3": "现有项目会保持本地副本，直到编辑器版本被更改或重新安装。",
+
+  "settings.editor.symlink.disable.desc.1": "切换回本地副本以避免权限提示。Godot 启动器会将编辑器文件复制到每个项目中。",
+  "settings.editor.symlink.disable.desc.2": "现有的符号链接会保留，直到编辑器版本被更改或重新安装。",
+
+  "startup.settings.header": "启动偏好设置",
+  "startup.settings.subheader": "选择 GD Launcher 在计算机启动时执行的操作",
+  "startup.autostart.linux_not_supported": "Linux 目前不支持自动启动",
+  "startup.autostart.enable": "开机时启动",
+  "startup.autostart.tray": "启动时最小化到托盘"
 }

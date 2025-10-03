@@ -109,8 +109,8 @@ export const SettingsView: React.FC = () => {
 
                                 <div className="flex flex-col gap-4">
                                     <div>
-                                        <h1 data-testid="projectsSettingsHeader" className="font-bold">Projects</h1>
-                                        <p data-testid="projectsSettingsSubHeader" className="text-sm">Choose Godot Launcher behavior for projects.</p>
+                                        <h1 data-testid="projectsSettingsHeader" className="font-bold">{t('projects')}</h1>
+                                        <p data-testid="projectsSettingsSubHeader" className="text-sm">{t('ChooseGodotLauncherbehaviorforprojects')}</p>
                                     </div>
                                     <div className=" flex flex-col gap-8">
                                         <label className="flex flex-row items-start cursor-pointer gap-4">
@@ -122,7 +122,7 @@ export const SettingsView: React.FC = () => {
                                                         savePreferences({ ...preferences, confirm_project_remove: e.target.checked });
                                                     }
                                                 }} />
-                                            <span className="">Ask for confirmation when removing projects.</span>
+                                            <span className="">{t('Ask_for_confirmation_when_removing_projects')}</span>
                                         </label>
                                     </div>
                                 </div>
