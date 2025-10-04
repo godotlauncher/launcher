@@ -16,6 +16,7 @@ import { InstallsView } from './views/installs.view';
 import { ProjectsView } from './views/projects.view';
 import { SettingsView } from './views/settings.view';
 import { WelcomeView } from './views/welcome.view';
+import { useTranslation } from 'react-i18next';
 
 import logo from './assets/logo.png';
 import { WindowsStep } from './components/welcomeSteps/WindowsStep';
@@ -24,7 +25,7 @@ function App() {
     const [loading, setLoading] = React.useState(true);
     const [prefsLoading, setPrefsLoading] = React.useState(true);
     const [firstRun, setFirstRun] = React.useState(false);
-
+    const { t } = useTranslation();
     const { currentView, setCurrentView, openExternalLink } = useAppNavigation();
 
     const { installedReleases, loading: releaseLoading } = useRelease();
@@ -114,8 +115,8 @@ function App() {
         <div className="flex h-full overflow-hidden">
             <div className="flex flex-col h-full w-56 border-r-2 border-solid border-base-200">
                 <ul className="menu rounded-box w-56 gap-2">
-                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> Projects</a></li>
-                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />Installs</a>
+                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> {t('projects')}</a></li>
+                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />{t('installs')}</a>
                         {installedReleases.length < 1 &&
                             <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
                         }</li>
@@ -131,18 +132,18 @@ function App() {
                     <ul className="menu rounded-box w-56 gap-1 ">
                         <li>
                             <button data-testid="btnDiscord" className="relative" onClick={() => openExternalLink(COMMUNITY_DISCORD_URL)}>
-                                <img src={IconDiscord} alt="Discord" className="w-6 h-6" />Join Community
+                                <img src={IconDiscord} alt="Discord" className="w-6 h-6" />{t('jointhecommunity')}
                             </button>
                         </li>
 
                         <li>
                             <a data-testid="btnHelp" className={clsx('relative', { active: currentView === 'help' })} onClick={() => changeView('help')}>
-                                <CircleHelp />Help</a>
+                                <CircleHelp />{t('help')}</a>
                         </li>
 
                         <li className="">
                             <a data-testid="btnSettings" className={clsx('relative', { active: currentView === 'settings' })} onClick={() => changeView('settings')}>
-                                <Settings />Settings
+                                <Settings />{t('settings')}
 
                             </a></li>
                     </ul>

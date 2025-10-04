@@ -1,4 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import i18n from '../i18n';
 
 interface AppPreferences {
     preferences: UserPreferences | null;
@@ -28,7 +29,38 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({ chi
 
     useEffect(() => {
         window.electron.getPlatform().then(setPlatform);
-        loadPreferences();
+        // load preferences and then decide language behavior
+        (async () => {
+            const prefs = await loadPreferences();
+
+            // if user has explicit language preference and didn't choose auto, respect it
+            if (prefs?.language && prefs.language_auto === false) {
+                if (i18n.language !== prefs.language) {
+                    i18n.changeLanguage(prefs.language);
+                }
+                return;
+            }
+
+            // if language_auto is true or missing (first run), try to detect system language
+            try {
+                const anyWindow = window as any;
+                let locale: string | undefined;
+                if (anyWindow?.electron?.getLocale) {
+                    locale = await anyWindow.electron.getLocale();
+                }
+                if (!locale && typeof navigator !== 'undefined') {
+                    locale = navigator.language || (navigator as any).userLanguage;
+                }
+                if (locale) {
+                    const lang = locale.startsWith('zh') ? 'zh' : 'en';
+                    if (i18n.language !== lang) {
+                        i18n.changeLanguage(lang);
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+        })();
     }, []);
 
     const updatePreferences = async (newPrefs: Partial<UserPreferences>) => {

@@ -1,19 +1,19 @@
 import { HardDrive } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 type InstalledReleaseTableProps = {
     releases: InstalledRelease[];
 };
 
 export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ releases }) => {
-
+    const { t } = useTranslation();
 
     return (
         <table className="table  table-pin-rows table-sm h-full">
             <thead className="sticky top-0 bg-base-200 z-10">
                 <tr >
-                    <th className="min-w-44">Version</th>
-                    <th>Released</th>
-                    <th className="">Installed </th>
+                    <th className="min-w-44">{t('version')}</th>
+                    <th>{t('Released')}</th>
+                    <th className="">{t('installed')} </th>
                 </tr>
             </thead>
             <tbody className="">

@@ -6,12 +6,14 @@ import { usePreferences } from '../../hooks/usePreferences';
 import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
 import { sortReleases } from '../../releaseStoring.utils';
+import { useTranslation } from 'react-i18next';
 
 type SubViewProps = {
     onClose: () => void;
 };
 
 export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
+    const { t } = useTranslation();
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseIndex, setReleaseIndex] = useState<number>(0);
     const [projectName, setProjectName] = useState<string>('');
@@ -141,7 +143,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const showVSCodeHelp = () => {
         addAlert('Why is Visual Studio Code not detected?',
             <>
-                <p>Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the VS Code executable in the settings.</p>
+                <p>{t('GDLauncherNeedVSCodeNote')}</p>
             </>,
             <CircleHelp />);
     };
@@ -159,7 +161,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             value="FORWARD_PLUS"
                             onChange={onRendererChanged}
                             checked={renderer === 'FORWARD_PLUS'} />
-                        <span className="">Forward Plus</span>
+                        <span className="">{t('render.forwardplus')}</span>
                     </label>
                     <label className="flex cursor-pointer gap-2">
                         <input type="radio"
@@ -169,7 +171,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             value="MOBILE"
                             onChange={onRendererChanged}
                             checked={renderer === 'MOBILE'} />
-                        <span className="">Mobile</span>
+                        <span className="">{t('render.mobile')}</span>
                     </label>
                     <label className="flex cursor-pointer gap-2">
                         <input type="radio"
@@ -179,7 +181,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             value="COMPATIBLE"
                             onChange={onRendererChanged}
                             checked={renderer === 'COMPATIBLE'} />
-                        <span className="">Compatible</span>
+                        <span className="">{t('render.compatible')}</span>
                     </label>
 
                 </div>
@@ -223,7 +225,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                 <div className="flex flex-col gap-2 w-full">
 
                     <div className="flex flex-row justify-between">
-                        <h1 data-testid="settingsTitle" className="text-2xl">New Project</h1>
+                        <h1 data-testid="settingsTitle" className="text-2xl">{t('newProject')}</h1>
                         <div className="flex gap-2">
                             <button onClick={onClose}><X /></button>
                         </div>
@@ -233,17 +235,17 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                 <div className="flex flex-col gap-4 p-1">
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-row gap-2 items-center">
-                            <h2 className="text-md">Project</h2>
+                            <h2 className="text-md">{t('project')}</h2>
                             {allReleases[releaseIndex]?.mono && <p className="badge badge-outline text-base-content/50">.NET</p>}
                             {allReleases[releaseIndex]?.prerelease && <p className="badge badge-outline text-base-content/50">prerelease</p>}
                         </div>
-                        {installedReleases.length < 1 && <p className="text-warning">No Godot versions installed</p>}
+                        {installedReleases.length < 1 && <p className="text-warning">{t('releases.none_installed')}</p>}
                         <div className="flex flex-row gap-2">
                             <input ref={inputNameRef}
                                 data-testid="inputProjectName"
                                 className="input input-bordered w-full"
                                 type="text"
-                                placeholder="Project Name"
+                                placeholder={t('ProjectName')}
                                 onChange={(e) => setProjectName(e.target.value.replace(/\s/g, '-'))}
                                 onKeyDown={(event) => {
                                     if (event.key === ' ') {
@@ -273,38 +275,39 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                     </div>
                     <div className="flex flex-row justify-between">
                         <div className="flex flex-col flex-1 gap-2">
-                            <h2 className="text-md">Renderer</h2>
+                            <h2 className="text-md">{t('renderer')}</h2>
                             {
                                 getRendererType(allReleases[releaseIndex]?.version_number || 0)
                             }
                             <div className="text-sm">
                                 {renderer === 'FORWARD_PLUS' &&
-                                    <ul className="list-disc ml-10" >
-                                        <li className="">Supports desktop platforms only.</li>
-                                        <li className="">Advanced 3D graphics available.</li>
-                                        <li className="">Can scale to large complex scenes.</li>
-                                        <li className="">Uses RenderingDevice backend.</li>
-                                        <li className="">Slower rendering of simple scenes.</li>
+                                    <ul className="list-disc ml-10">
+                                        <li>{t('render.forwardplus.note.1')}</li>
+                                        <li>{t('render.forwardplus.note.2')}</li>
+                                        <li>{t('render.forwardplus.note.3')}</li>
+                                        <li>{t('render.forwardplus.note.4')}</li>
+                                        <li>{t('render.forwardplus.note.5')}</li>
                                     </ul>
                                 }
                                 {renderer === 'MOBILE' &&
                                     <ul className="list-disc ml-10">
-                                        <li>Supports desktop + mobile platforms.</li>
-                                        <li>Less advanced 3D graphics.</li>
-                                        <li>Less scalable for complex scenes.</li>
-                                        <li>Uses RenderingDevice backend.</li>
-                                        <li>Fast rendering of simple scenes.</li>
+                                        <li>{t('render.mobile.note.1')}</li>
+                                        <li>{t('render.mobile.note.2')}</li>
+                                        <li>{t('render.mobile.note.3')}</li>
+                                        <li>{t('render.mobile.note.4')}</li>
+                                        <li>{t('render.mobile.note.5')}</li>
                                     </ul>
                                 }
                                 {renderer === 'COMPATIBLE' &&
                                     <ul className="list-disc ml-10">
-                                        <li>Supports desktop, mobile + web platforms.</li>
-                                        <li>Least advanced 3D graphics (currently work-in-progress).</li>
-                                        <li>Intended for low-end/older devices.</li>
-                                        <li>Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).</li>
-                                        <li>Fastest rendering of simple scenes.</li>
+                                        <li>{t('render.compatible.note.1')}</li>
+                                        <li>{t('render.compatible.note.2')}</li>
+                                        <li>{t('render.compatible.note.3')}</li>
+                                        <li>{t('render.compatible.note.4')}</li>
+                                        <li>{t('render.compatible.note.5')}</li>
                                     </ul>
                                 }
+
                                 {/* {renderer === 'GLES3' &&
                                     <ul className="list-disc ml-10">
                                         <li>Higher visual quality</li>
@@ -328,7 +331,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
                         <div className="flex-0">
                             <div className="flex flex-col gap-2">
-                                <h2 className="text-md flex items-center gap-4">Other Settings {loadingTools && <span className="loading loading-dots loading-xs"></span>}</h2>
+                                <h2 className="text-md flex items-center gap-4">{t('other_settings')} {loadingTools && <span className="loading loading-dots loading-xs"></span>}</h2>
 
 
                                 <div className={clsx('flex flex-col gap-4 p-4 ', { 'invisible': loadingTools })}>
@@ -337,7 +340,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                             disabled={!hasTool('Git')}
                                             checked={withGit}
                                             onChange={(e) => setWithGit(e.target.checked)} />
-                                        <span className="">Initialize Git Repository</span>
+                                        <span className="">{t('initialize_repository')}</span>
                                     </label>
                                     {
                                         !hasTool('Git') && <span className="text-sm text-warning">Git is not installed on this computer</span>
@@ -349,7 +352,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                             disabled={!hasTool('VSCode')}
                                             checked={withVSCode}
                                             onChange={(e) => setWithVSCode(e.target.checked)} />
-                                        <span className="">Setup Visual Studio Code as Text Editor</span>
+                                        <span className="">{t('setupVSCodeAsTextEditor')}</span>
                                     </label>
                                     {
                                         !hasTool('VSCode') &&
@@ -369,9 +372,9 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
                             <label className="flex items-center ">
                                 <input type="checkbox" className="checkbox checkbox-primary" checked={editNow} onChange={(e) => setEditNow(e.currentTarget.checked)} />
-                                <span className="ml-2">Edit now</span>
+                                <span className="ml-2">{t('edit_now')}</span>
                             </label>
-                            <button disabled={creating || installedReleases.length < 1} data-testid="btnCreateProject" onClick={() => onCreateProject()} className="btn btn-primary ">Create Project</button>
+                            <button disabled={creating || installedReleases.length < 1} data-testid="btnCreateProject" onClick={() => onCreateProject()} className="btn btn-primary ">{t('createProject')}</button>
                         </div>
                     </div>
                 </div>

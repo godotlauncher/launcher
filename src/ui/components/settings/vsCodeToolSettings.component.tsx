@@ -1,12 +1,12 @@
 import { Folder, X } from 'lucide-react';
 import { MouseEvent, useEffect, useState } from 'react';
 import { usePreferences } from '../../hooks/usePreferences';
-
+import { useTranslation } from 'react-i18next';
 export const VSCodeToolSettings: React.FC = () => {
 
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
     const [tool, setTool] = useState<InstalledTool | undefined>();
-
+    const { t } = useTranslation();
     const { preferences, updatePreferences } = usePreferences();
 
     const checkVSCode = async () => {
@@ -46,20 +46,20 @@ export const VSCodeToolSettings: React.FC = () => {
             {
                 dialogOpen &&
                 <div className="absolute inset-0 z-10 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p><p>Waiting for dialog...</p>
+                    <p className="loading loading-infinity"></p><p>{t('waitingfordialog')}</p>
                 </div>
             }
             <div className="flex flex-col gap-4">
                 <div>
                     <h2 data-testid="startupSettingsHeader" className="font-bold">Visual Studio Code</h2>
-                    <p data-testid="startupSettingsSubHeader" className="text-sm">A fast, extensible code editor with GDScript and .NET support for Godot.</p>
+                    <p data-testid="startupSettingsSubHeader" className="text-sm">{t('vscodeIntro')}</p>
                 </div>
                 <div className="flex flex-col flex-shrink items-start justify-center gap-4 ">
                     {(!tool || (tool?.path?.length || 0) === 0) && (
 
                         <div className="alert flex flex-col items-start alert-warning bg-warning/50">
-                            <h2 className="font-bold text-lg">Visual Studio Code not Detected!</h2>
-                            <p>Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the vs code executable below</p>
+                            <h2 className="font-bold text-lg">{t('vscodeNotDetected')}</h2>
+                            <p>{t('vscodeNotDetectedDesc')}</p>
                         </div>
                     )}
                     <div className="flex flex-col w-full gap-4 relative">
@@ -79,7 +79,7 @@ export const VSCodeToolSettings: React.FC = () => {
                             <div className="flex flex-col flex-1 items-start">
                                 <div className="flex flex-row items-center justify-start gap-2 text-sm text-base-content/50 w-full">
                                     <Folder className="fill-base-content/50 self-start stroke-none" />
-                                    <p className="flex  flex-grow flex-1">Visual Studio Code Path to Executable {(preferences?.vs_code_path?.length || 0) === 0 && (tool?.path != null && tool.path.length > 0) ? '(autodetected)' : ''}</p>
+                                    <p className="flex  flex-grow flex-1">{t('selectVsCodePath')} {(preferences?.vs_code_path?.length || 0) === 0 && (tool?.path != null && tool.path.length > 0) ? t('autodetected') : ''}</p>
 
                                 </div>
                                 <div className="pl-0"> {preferences?.vs_code_path || <span className="text-base-content/50"> {preferences?.vs_code_path || tool?.path || 'no path set'} </span>}</div>
@@ -90,7 +90,7 @@ export const VSCodeToolSettings: React.FC = () => {
                             <table className="">
                                 <tbody>
                                     <tr className="h-10">
-                                        <td className="flex-1 pr-2">Installed:</td>
+                                        <td className="flex-1 pr-2">{t('installed')}:</td>
                                         <td className="px-4 ">{tool?.path && tool.path.length > 0 ? '✅' : '❌'}</td>
                                     </tr>
                                 </tbody>

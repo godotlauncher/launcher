@@ -10,8 +10,11 @@ import { VSCodeToolSettings } from '../components/settings/vsCodeToolSettings.co
 import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 
 export const SettingsView: React.FC = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'projects' | 'installs' | 'appearance' | 'behavior' | 'tools' | 'updates'>('projects');
     const { preferences, savePreferences } = usePreferences();
 
@@ -25,7 +28,7 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-2 w-full">
 
                     <div className="flex flex-row justify-between">
-                        <h1 data-testid="settingsTitle" className="text-2xl">Settings</h1>
+                        <h1 data-testid="settingsTitle" className="text-2xl">{t('settings')}</h1>
                         <div className="flex gap-2">
                         </div>
                     </div>
@@ -35,12 +38,12 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-0 flex-1">
                     {/* Tabs */}
                     <div role="tablist" className="flex tabs tabs-lifted">
-                        <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>Projects</a>
-                        <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>Installs</a>
-                        <a data-testid="tabAppearance" onClick={() => setActiveTab('appearance')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'appearance') })}>Appearance</a>
-                        <a data-testid="tabBehavior" onClick={() => setActiveTab('behavior')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'behavior') })}>Behavior</a>
-                        <a data-testid="tabTools" onClick={() => setActiveTab('tools')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'tools') })}>Tools</a>
-                        <a data-testid="tabUpdates" onClick={() => setActiveTab('updates')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'updates') })}>Updates</a>
+                        <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>{t('projects')}</a>
+                        <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>{t('installs')}</a>
+                        <a data-testid="tabAppearance" onClick={() => setActiveTab('appearance')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'appearance') })}>{t('appearance')}</a>
+                        <a data-testid="tabBehavior" onClick={() => setActiveTab('behavior')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'behavior') })}>{t('behavior')}</a>
+                        <a data-testid="tabTools" onClick={() => setActiveTab('tools')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'tools') })}>{t('tools')}</a>
+                        <a data-testid="tabUpdates" onClick={() => setActiveTab('updates')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'updates') })}>{t('updates')}</a>
                     </div >
 
                     {/* Scrollable Content */}
@@ -62,20 +65,20 @@ export const SettingsView: React.FC = () => {
                             <div className={clsx('flex flex-col h-0 gap-4', { 'hidden': (activeTab !== 'appearance') })}>
                                 {/* theme */}
                                 <div className="flex flex-col">
-                                    <h1 data-testid="themeHeader" className="font-bold">Theme</h1>
-                                    <p data-testid="themeSubHeader" className="text-sm">Customize the appearance for Godot Launcher</p>
+                                    <h1 data-testid="themeHeader" className="font-bold">{t('theme')}</h1>
+                                    <p data-testid="themeSubHeader" className="text-sm">{t('theme_introduction')}</p>
                                     <div className=" flex flex-row flex-0 p-4 gap-4">
                                         <label className="flex flex-row  items-center justify-start  gap-4 cursor-pointer ">
                                             <input onChange={(e) => { if (e.target.checked) setTheme('light'); }} data-testid="themeLight" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'light'} />
-                                            <span className="">Light</span>
+                                            <span className="">{t('light')}</span>
                                         </label>
                                         <label className="flex flex-row   items-center justify-start gap-4 cursor-pointer ">
                                             <input onChange={(e) => { if (e.target.checked) setTheme('dark'); }} data-testid="themeDark" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'dark'} />
-                                            <span className="">Dark</span>
+                                            <span className="">{t('dark')}</span>
                                         </label>
                                         <label className="flex flex-row  items-center justify-start gap-4 cursor-pointer">
                                             <input onChange={(e) => { if (e.target.checked) setTheme('auto'); }} data-testid="themeAuto" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'auto'} />
-                                            <span className="">System (automatic)</span>
+                                            <span className="">{t('system')}</span>
                                         </label>
 
                                     </div>
@@ -84,16 +87,32 @@ export const SettingsView: React.FC = () => {
 
 
                                 <div className="flex flex-col">
-                                    <h1 data-testid="languageHeader" className="font-bold">Language</h1>
-                                    <p data-testid="languageSubHeader" className="text-sm">Select language for Godot Launcher (does not change Godot language)</p>
+                                    <h1 data-testid="languageHeader" className="font-bold">{t('language')}</h1>
+                                    <p data-testid="languageSubHeader" className="text-sm">{t('select_language_note')}</p>
                                     <div className=" flex flex-col p-4 gap-4">
                                         <div className="flex flex-row flex-shrink items-center justify-start gap-4 ">
                                             <select
-                                                value={'en'}
-                                                data-testid="languageSelect"
-                                                className="select select-bordered w-full max-w-xs" disabled>
-                                                <option data-testid="languageSelectEnglish" value={'en'} >English</option>
-                                                <option data-testid="languageSelectSpanish" value={'es'}>Spanish</option>
+                                                value={preferences?.language_auto ? 'auto' : (preferences?.language || i18n.language)}
+                                                onChange={async (e) => {
+                                                    const val = e.target.value;
+                                                    if (val === 'auto') {
+                                                        // enable auto language detection
+                                                        await savePreferences({ ...preferences!, language_auto: true });
+                                                        // trigger detection by reloading preferences in provider (it will detect system language)
+                                                        // also apply immediate detection heuristically here
+                                                        const locale = navigator?.language || (navigator as any)?.userLanguage;
+                                                        const lang = locale?.startsWith('zh') ? 'zh' : 'en';
+                                                        i18n.changeLanguage(lang);
+                                                    } else {
+                                                        // user chose a specific language
+                                                        await savePreferences({ ...preferences!, language: val, language_auto: false });
+                                                        i18n.changeLanguage(val);
+                                                    }
+                                                }}
+                                                className="select select-bordered w-full max-w-xs">
+                                                <option value="auto">{t('system')}</option>
+                                                <option value="en">English</option>
+                                                <option value="zh">简体中文</option>
                                             </select>
 
                                         </div>
@@ -106,8 +125,8 @@ export const SettingsView: React.FC = () => {
 
                                 <div className="flex flex-col gap-4">
                                     <div>
-                                        <h1 data-testid="projectsSettingsHeader" className="font-bold">Projects</h1>
-                                        <p data-testid="projectsSettingsSubHeader" className="text-sm">Choose Godot Launcher behavior for projects.</p>
+                                        <h1 data-testid="projectsSettingsHeader" className="font-bold">{t('projects')}</h1>
+                                        <p data-testid="projectsSettingsSubHeader" className="text-sm">{t('ChooseGodotLauncherbehaviorforprojects')}</p>
                                     </div>
                                     <div className=" flex flex-col gap-8">
                                         <label className="flex flex-row items-start cursor-pointer gap-4">
@@ -119,7 +138,7 @@ export const SettingsView: React.FC = () => {
                                                         savePreferences({ ...preferences, confirm_project_remove: e.target.checked });
                                                     }
                                                 }} />
-                                            <span className="">Ask for confirmation when removing projects.</span>
+                                            <span className="">{t('Ask_for_confirmation_when_removing_projects')}</span>
                                         </label>
                                     </div>
                                 </div>
