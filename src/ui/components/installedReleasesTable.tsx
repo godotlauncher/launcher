@@ -12,8 +12,8 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ re
             <thead className="sticky top-0 bg-base-200 z-10">
                 <tr >
                     <th className="min-w-44">{t('version')}</th>
-                    <th>Released</th>
-                    <th className="">Installed </th>
+                    <th>{t('Released')}</th>
+                    <th className="">{t('installed')} </th>
                 </tr>
             </thead>
             <tbody className="">
