@@ -92,9 +92,25 @@ export const SettingsView: React.FC = () => {
                                     <div className=" flex flex-col p-4 gap-4">
                                         <div className="flex flex-row flex-shrink items-center justify-start gap-4 ">
                                             <select
-                                                value={i18n.language}
-                                                onChange={(e) => i18n.changeLanguage(e.target.value)}
+                                                value={preferences?.language_auto ? 'auto' : (preferences?.language || i18n.language)}
+                                                onChange={async (e) => {
+                                                    const val = e.target.value;
+                                                    if (val === 'auto') {
+                                                        // enable auto language detection
+                                                        await savePreferences({ ...preferences!, language_auto: true });
+                                                        // trigger detection by reloading preferences in provider (it will detect system language)
+                                                        // also apply immediate detection heuristically here
+                                                        const locale = navigator?.language || (navigator as any)?.userLanguage;
+                                                        const lang = locale?.startsWith('zh') ? 'zh' : 'en';
+                                                        i18n.changeLanguage(lang);
+                                                    } else {
+                                                        // user chose a specific language
+                                                        await savePreferences({ ...preferences!, language: val, language_auto: false });
+                                                        i18n.changeLanguage(val);
+                                                    }
+                                                }}
                                                 className="select select-bordered w-full max-w-xs">
+                                                <option value="auto">{t('system')}</option>
                                                 <option value="en">English</option>
                                                 <option value="zh">简体中文</option>
                                             </select>

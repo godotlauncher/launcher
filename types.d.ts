@@ -37,6 +37,11 @@ type UserPreferences = {
     windows_enable_symlinks: boolean;
     windows_symlink_win_notify: boolean;
     vs_code_path?: string;
+    // language preferences
+    // ui language currently selected (e.g. 'en' | 'zh')
+    language?: string;
+    // if true, app should follow system language automatically; if false, use user's selected language
+    language_auto?: boolean;
 };
 
 type InstalledRelease = {

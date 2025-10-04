@@ -119,5 +119,8 @@
   "startup.settings.subheader": "Choose what GD Launcher does when your computer starts",
   "startup.autostart.linux_not_supported": "Auto start currently is not supported on Linux",
   "startup.autostart.enable": "Start when computer starts",
-  "startup.autostart.tray": "Start in tray"
+  "startup.autostart.tray": "Start in tray",
+  "RecentProjects": "Recent Projects",
+  "ShowGodotLauncher": "Show Godot Launcher",
+  "Quit": "Quit"
 }

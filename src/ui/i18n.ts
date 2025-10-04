@@ -6,12 +6,16 @@ import en from './locales/en.json';
 i18n
   .use(initReactI18next)
   .init({
+    fallbackLng: 'en',
+    detection: {
+      order: ['localStorage', 'navigator'], // 先看 localStorage，再系统语言
+      caches: ['localStorage'],             // 存储到 localStorage
+    },
     resources: {
       zh: { translation: zhCN },
       en: { translation: en }
     },
     lng: 'en', // 默认语言
-    fallbackLng: 'en',
     interpolation: { escapeValue: false }
   });
 

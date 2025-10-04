@@ -117,8 +117,12 @@
   "settings.editor.symlink.disable.desc.2": "现有的符号链接会保留，直到编辑器版本被更改或重新安装。",
 
   "startup.settings.header": "启动偏好设置",
-  "startup.settings.subheader": "选择 GD Launcher 在计算机启动时执行的操作",
+  "startup.settings.subheader": "选择 Godot Launcher 在计算机启动时执行的操作",
   "startup.autostart.linux_not_supported": "Linux 目前不支持自动启动",
   "startup.autostart.enable": "开机时启动",
-  "startup.autostart.tray": "启动时最小化到托盘"
+  "startup.autostart.tray": "启动时最小化到托盘",
+
+  "RecentProjects": "最近的项目",
+  "ShowGodotLauncher": "显示 Godot 启动器",
+  "Quit": "退出"
 }
