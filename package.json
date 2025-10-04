@@ -1,7 +1,7 @@
 {
     "name": "godot-launcher",
     "private": true,
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Godot Launcher is a companion app for managing Godot projects with per-project editor settings.",
     "keywords": [
         "godot",
@@ -47,7 +47,7 @@
         "app:dir": "electron-builder --dir",
         "app:dist": "electron-builder",
         "postinstall": "electron-builder install-app-deps",
-        "changelog": "auto-changelog --ignore-commit-pattern \"[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG\""
+        "changelog": "auto-changelog --ignore-commit-pattern \"[R|r]elease|[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG\""
     },
     "dependencies": {
         "clsx": "^2.1.1",

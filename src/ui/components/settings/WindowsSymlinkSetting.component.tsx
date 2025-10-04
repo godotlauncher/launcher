@@ -65,28 +65,31 @@ export const WindowsSymlinkSetting: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-                <h2 className="font-bold">{t('editor.symlink')} <span className='badge badge-sm badge-info'>{t('platform.windows_only')}</span></h2>
-                <p className="text-sm text-base-content/80">
-                    {t('settings.editor.symlink_desc')}
+        <>
+            <div className="divider"></div>
+            <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                    <h2 className="font-bold">Editor symlinks <span className='badge badge-sm badge-info'>Windows Only</span></h2>
+                    <p className="text-sm text-base-content/80">
+                        Choose whether project editors use optional symbolic links or stay with local copies.
+                    </p>
+                </div>
+                <label className="flex flex-row items-start gap-4 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        className="checkbox"
+                        checked={preferences.windows_enable_symlinks}
+                        onChange={(e) => handleToggleChange(e.target.checked)}
+                        disabled={saving}
+                    />
+                    <span className="text-sm">
+                        Use symbolic links for Windows project editors. This stays off by default so you can opt in when you are ready for potential elevation prompts during editor updates.
+                    </span>
+                </label>
+                <p className="text-xs text-base-content/70">
+                    Changing this setting does not convert existing project links; it only affects how future editor refreshes behave.
                 </p>
             </div>
-            <label className="flex flex-row items-start gap-4 cursor-pointer">
-                <input
-                    type="checkbox"
-                    className="checkbox"
-                    checked={preferences.windows_enable_symlinks}
-                    onChange={(e) => handleToggleChange(e.target.checked)}
-                    disabled={saving}
-                />
-                <span className="text-sm">
-                    {t('settings.editor.symlink.note')}
-                </span>
-            </label>
-            <p className="text-xs text-base-content/70">
-                {t('settings.editor.symlink.warning')}
-            </p>
-        </div>
-    );  
+        </>
+    );
 };
