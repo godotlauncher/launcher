@@ -64,11 +64,14 @@ module.exports =
         "icon": "build/icon.ico",
         "executableName": "GodotLauncher",
         "artifactName": "Godot_Launcher-${version}-${os}.${ext}",
+
         "azureSignOptions": {
 
             "endpoint": process.env.WIN_SIGN_ENDPOINT,
             "certificateProfileName": process.env.WIN_SIGN_CERTIFICATE_PROFILE_NAME,
             "codeSigningAccountName": process.env.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME,
+            "TimestampRfc3161": process.env.AZURE_TIMESTAMP_URL,
+            "TimestampDigest": process.env.AZURE_TIMESTAMP_DIGEST
         },
 
         "target": [
