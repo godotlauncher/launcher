@@ -52,7 +52,7 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
     await i18next.use(Backend).init({
       lng: resolvedLocale,
       fallbackLng: 'en',
-      ns: ['translation', 'dialogs', 'menus'],
+      ns: ['translation', 'dialogs', 'menus', 'common', 'projects', 'installs', 'settings', 'help', 'createProject', 'installEditor'],
       defaultNS: 'translation',
       backend: {
         loadPath: path.join(localesPath, '{{lng}}/{{ns}}.json'),
