@@ -1,12 +1,13 @@
+import { app } from 'electron';
+import logger from 'electron-log/main.js';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import path from 'node:path';
-import { app } from 'electron';
-import logger from 'electron-log/main.js';
 import { isDev } from '../utils.js';
 
-let i18nInstance: typeof i18next | null = null;
 
+let i18nInstance: typeof i18next | null = null;
+const mainWindow = app
 /**
  * Resolve the locale to use based on user preference and system settings
  * @param userPreference User's language preference ('system' or locale code)
@@ -22,10 +23,10 @@ function resolveLocale(userPreference?: string): string {
   // Otherwise, detect system language
   const systemLocale = app.getLocale();
   logger.info(`Detected system locale: ${systemLocale}`);
-  
+
   // Normalize locale (e.g., 'en-US' -> 'en', 'es-ES' -> 'es')
   const normalizedLocale = systemLocale.split('-')[0].toLowerCase();
-  
+
   return normalizedLocale;
 }
 
@@ -65,7 +66,7 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
 
     i18nInstance = i18next;
     logger.info(`i18n initialized successfully with language: ${i18nInstance.language}`);
-    
+
     return i18next;
   } catch (error) {
     logger.error('Failed to initialize i18n:', error);
@@ -97,11 +98,12 @@ export async function changeLanguage(lng: string): Promise<void> {
   }
 
   const resolvedLocale = resolveLocale(lng);
-  
+
   logger.info(`Changing language to: ${resolvedLocale}`);
-  
+
   try {
     await i18nInstance.changeLanguage(resolvedLocale);
+
     logger.info(`Language changed successfully to: ${i18nInstance.language}`);
   } catch (error) {
     logger.error(`Failed to change language to ${resolvedLocale}:`, error);
@@ -126,9 +128,8 @@ export function getCurrentLanguage(): string {
  * @returns Array of available locale codes
  */
 export function getAvailableLanguages(): string[] {
-  // For now, we only have English
-  // As we add more languages, we can scan the locales directory
-  return ['en'];
+  // Update this list when adding new locale folders under src/locales
+  return ['en', 'it'];
 }
 
 /**
@@ -147,7 +148,7 @@ export function getAllTranslations(language?: string): Record<string, Record<str
 
   // Get all loaded namespaces
   const namespaces = i18nInstance.options.ns as string[];
-  
+
   logger.debug(`Exporting translations for language: ${lang}, namespaces: ${namespaces.join(', ')}`);
 
   for (const ns of namespaces) {

@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Importa impostazioni dell'editor",
+    "message": "Sei sicuro di voler importare le impostazioni dell'editor da un file?",
+    "detail": "Questa operazione sostituirà le impostazioni attuali dell'editor. Verrà creata una copia di backup.",
+    "continue": "Continua",
+    "cancel": "Annulla",
+    "selectFile": "Importa file delle impostazioni dell'editor",
+    "textResource": "Risorsa di testo"
+  },
+  "exportSettings": {
+    "title": "Esporta impostazioni dell'editor su file",
+    "allFiles": "Tutti i file"
+  },
+  "removeProject": {
+    "title": "Rimuovi progetto dall'elenco",
+    "message": "Sei sicuro di voler rimuovere il progetto \"{{projectName}}\" dall'elenco?",
+    "detail": "Il progetto non verrà eliminato dal tuo dispositivo.",
+    "ok": "OK",
+    "cancel": "Annulla",
+    "doNotAskAgain": "Non chiedermelo più"
+  },
+  "removeRelease": {
+    "title": "Rimuovi versione",
+    "message": "Sei sicuro di voler eliminare la versione \"{{version}}\"?",
+    "detail": "La versione verrà eliminata dal tuo dispositivo. Potrai installarla di nuovo in seguito.",
+    "ok": "OK",
+    "cancel": "Annulla",
+    "error": "Errore",
+    "errorMessage": "Si è verificato un errore durante la rimozione della versione."
+  },
+  "selectFolder": "Seleziona cartella",
+  "selectFile": "Seleziona file",
+  "error": {
+    "title": "Errore",
+    "generic": "Si è verificato un errore: {{message}}"
+  }
+}

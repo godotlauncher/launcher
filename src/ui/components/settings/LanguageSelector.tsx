@@ -11,6 +11,7 @@ interface LanguageOption {
 const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'system', name: 'System (Auto-detect)' },
   { code: 'en', name: 'English' },
+  { code: 'it', name: 'Italiano' },
   // Add more languages here as they become available
   // { code: 'es', name: 'Español' },
   // { code: 'fr', name: 'Français' },

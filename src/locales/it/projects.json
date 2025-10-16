@@ -1,0 +1,59 @@
+{
+  "title": "Progetti",
+  "buttons": {
+    "add": "Aggiungi",
+    "newProject": "Nuovo progetto",
+    "addProject": "Aggiungi progetto",
+    "createProject": "Crea progetto",
+    "refresh": "Aggiorna",
+    "launch": "Avvia",
+    "changeEditor": "Cambia editor"
+  },
+  "search": {
+    "placeholder": "Cerca"
+  },
+  "table": {
+    "name": "Nome",
+    "modified": "Modificato",
+    "editor": "Editor",
+    "version": "Versione",
+    "lastOpened": "Ultima apertura",
+    "actions": "Azioni",
+    "invalidProject": "Questo progetto non è valido, controlla percorso del progetto ed editor!",
+    "dotNetProject": "Questo è un progetto .NET",
+    "prerelease": "Utilizza una versione pre-release dell'editor Godot",
+    "windowedMode": "Questo progetto si apre in modalità finestra"
+  },
+  "addProject": {
+    "selectFile": "Seleziona file del progetto",
+    "godotProject": "Progetto Godot"
+  },
+  "messages": {
+    "noProjects": "Nessun progetto trovato",
+    "noReleases": "Nessuna versione installata.",
+    "goToInstalls": "Vai alle installazioni.",
+    "projectAdded": "Progetto aggiunto correttamente",
+    "projectRemoved": "Progetto rimosso",
+    "editorChanged": "Editor modificato correttamente",
+    "invalidProject": "Questo progetto non è valido, controlla percorso del progetto ed editor!",
+    "monoProject": "Questo è un progetto .NET",
+    "prereleaseVersion": "Utilizza una versione pre-release dell'editor Godot"
+  },
+  "createProject": {
+    "title": "Nuovo progetto",
+    "projectName": "Nome progetto",
+    "projectPath": "Percorso progetto",
+    "selectVersion": "Seleziona versione di Godot",
+    "renderer": "Renderer",
+    "editNow": "Modifica ora",
+    "setupVSCode": "Configura Visual Studio Code come editor di testo",
+    "vscodeNotInstalled": "Visual Studio Code non è installato su questo computer",
+    "noVersionsInstalled": "Nessuna versione di Godot installata",
+    "errors": {
+      "nameRequired": "Il nome del progetto è obbligatorio",
+      "pathRequired": "Il percorso del progetto è obbligatorio",
+      "invalidPath": "Percorso del progetto non valido"
+    }
+  },
+  "searchPlaceholder": "Cerca progetti..."
+}

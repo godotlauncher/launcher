@@ -1,0 +1,45 @@
+{
+  "title": "Installa editor Godot",
+  "search": {
+    "placeholder": "Cerca"
+  },
+  "tabs": {
+    "released": "Rilasciate",
+    "prerelease": "Pre-release",
+    "installed": "Installate"
+  },
+  "filters": {
+    "showInstalledOnly": "Mostra solo installate"
+  },
+  "buttons": {
+    "reload": "Ricarica elenco versioni"
+  },
+  "errors": {
+    "fetchError": "Si è verificato un errore durante il recupero delle versioni.",
+    "tryAgainLater": "Per favore",
+    "tryAgain": "riprovare più tardi"
+  },
+  "messages": {
+    "installError": "Qualcosa è andato storto durante l'installazione della versione"
+  },
+  "table": {
+    "headers": {
+      "version": "Versione",
+      "released": "Rilasciata",
+      "download": "Download",
+      "installed": "Installata"
+    },
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "Installazione in corso...",
+    "downloading": "download in corso...",
+    "tooltips": {
+      "installed": "Installata - {{version}}",
+      "installedGDScript": "Installata - {{version}} (GDScript)",
+      "installedDotNet": "Installata - {{version}} .NET",
+      "download": "Scarica {{version}}",
+      "downloadGDScript": "Scarica {{version}} (GDScript)",
+      "downloadDotNet": "Scarica {{version}} .NET"
+    }
+  }
+}
