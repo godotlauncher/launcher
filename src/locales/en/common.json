@@ -15,6 +15,22 @@
   "success": "Success",
   "warning": "Warning",
   "info": "Information",
+  "app": {
+    "loadingMessage": "Getting things ready...",
+    "navigation": {
+      "projects": "Projects",
+      "installs": "Installs",
+      "help": "Help",
+      "settings": "Settings",
+      "joinCommunity": "Join Community"
+    },
+    "update": {
+      "available": "is available, restart Godot Launcher to install.",
+      "version": "Version {{version}}",
+      "newVersion": "A new version",
+      "restartNow": "Restart now."
+    }
+  },
   "selectRelease": {
     "description": "Select editor version",
     "tableHeaders": {

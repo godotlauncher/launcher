@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import './App.css';
 
@@ -21,6 +22,7 @@ import logo from './assets/logo.png';
 import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 
 function App() {
+    const { t } = useTranslation('common');
     const [loading, setLoading] = React.useState(true);
     const [prefsLoading, setPrefsLoading] = React.useState(true);
     const [firstRun, setFirstRun] = React.useState(false);
@@ -82,7 +84,7 @@ function App() {
     if (loading || prefsLoading) {
         return <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-base-100 gap-4">
             <img src={logo} alt="Godot Launcher Logo" className="w-10 h-10 animate-pulse" />
-            <span className="">Getting things ready...</span>
+            <span className="">{t('app.loadingMessage')}</span>
         </div>;
     }
 
@@ -103,7 +105,7 @@ function App() {
                                 windows_symlink_win_notify: true,
                                 prefs_version: Math.max(preferences.prefs_version ?? 3, 3)
                             });
-                        }}>Continue</button>
+                        }}>{t('buttons.continue')}</button>
                     </div>
                 </div >
             </div>
@@ -114,8 +116,8 @@ function App() {
         <div className="flex h-full overflow-hidden">
             <div className="flex flex-col h-full w-56 border-r-2 border-solid border-base-200">
                 <ul className="menu rounded-box w-56 gap-2">
-                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> Projects</a></li>
-                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />Installs</a>
+                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> {t('app.navigation.projects')}</a></li>
+                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />{t('app.navigation.installs')}</a>
                         {installedReleases.length < 1 &&
                             <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
                         }</li>
@@ -123,7 +125,7 @@ function App() {
                 <div className="flex flex-1"></div>
                 {(updateAvailable && updateAvailable?.type === 'ready') && (
                     <div className="gap-2 p-4 m-2 text-sm text-info rounded-xl bg-base-200">
-                        {updateAvailable?.version ? `Version ${updateAvailable?.version}` : 'A new version'} is available, restart Godot Launcher to install. <button onClick={installAndRelaunch} className="underline cursor-pointer hover:no-underline">Restart now.</button>
+                        {updateAvailable?.version ? t('app.update.version', { version: updateAvailable?.version }) : t('app.update.newVersion')} {t('app.update.available')} <button onClick={installAndRelaunch} className="underline cursor-pointer hover:no-underline">{t('app.update.restartNow')}</button>
                     </div>
                 )}
                 <div className="border-t-2 border-solid border-base-200">
@@ -131,18 +133,18 @@ function App() {
                     <ul className="menu rounded-box w-56 gap-1 ">
                         <li>
                             <button data-testid="btnDiscord" className="relative" onClick={() => openExternalLink(COMMUNITY_DISCORD_URL)}>
-                                <img src={IconDiscord} alt="Discord" className="w-6 h-6" />Join Community
+                                <img src={IconDiscord} alt="Discord" className="w-6 h-6" />{t('app.navigation.joinCommunity')}
                             </button>
                         </li>
 
                         <li>
                             <a data-testid="btnHelp" className={clsx('relative', { active: currentView === 'help' })} onClick={() => changeView('help')}>
-                                <CircleHelp />Help</a>
+                                <CircleHelp />{t('app.navigation.help')}</a>
                         </li>
 
                         <li className="">
                             <a data-testid="btnSettings" className={clsx('relative', { active: currentView === 'settings' })} onClick={() => changeView('settings')}>
-                                <Settings />Settings
+                                <Settings />{t('app.navigation.settings')}
 
                             </a></li>
                     </ul>
