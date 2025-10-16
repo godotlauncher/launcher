@@ -69,7 +69,7 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
     if (last3.length > 0) {
         quickLaunchMenu = [
             {
-                label: t('menus.tray.recentProjects'),
+                label: t('menus:tray.recentProjects'),
                 enabled: false
             }
         ];
@@ -92,7 +92,7 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
     const menu = Menu.buildFromTemplate([
         ...quickLaunchMenu,
         {
-            label: t('menus.tray.showGodotLauncher'),
+            label: t('menus:tray.showGodotLauncher'),
             click: () => {
                 mainWindow.show();
                 if (app.dock) {
@@ -102,7 +102,7 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
         },
         { type: 'separator' },
         {
-            label: t('menus.tray.quit'),
+            label: t('menus:tray.quit'),
             click: () => {
                 app.quit();
             }

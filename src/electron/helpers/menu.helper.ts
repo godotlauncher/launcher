@@ -8,38 +8,38 @@ export function createMenu(mainWindow: BrowserWindow) {
     Menu.setApplicationMenu(
         Menu.buildFromTemplate([
             {
-                label: process.platform === 'darwin' ? undefined : t('menus.app.label'),
+                label: process.platform === 'darwin' ? undefined : t('menus:app.label'),
                 type: 'submenu',
                 submenu: [
                     {
-                        label: t('menus.app.about'),
+                        label: t('menus:app.about'),
                         role: 'about',
                     },
                     {
                         type: 'separator',
                     },
                     {
-                        label: t('menus.app.close'),
+                        label: t('menus:app.close'),
                         role: 'close',
                     },
                     {
                         type: 'separator',
                     },
                     {
-                        label: t('menus.app.quit'),
+                        label: t('menus:app.quit'),
                         role: 'quit',
                     },
                 ],
             },
             {
-                label: t('menus.developer.label'),
+                label: t('menus:developer.label'),
                 submenu: [
                     {
-                        label: t('menus.developer.reload'),
+                        label: t('menus:developer.reload'),
                         role: 'reload',
                     },
                     {
-                        label: t('menus.developer.toggleDevTools'),
+                        label: t('menus:developer.toggleDevTools'),
                         role: 'toggleDevTools',
                         visible: isDev(),
                     },
@@ -47,7 +47,7 @@ export function createMenu(mainWindow: BrowserWindow) {
                         type: 'separator',
                     },
                     {
-                        label: t('menus.developer.openConfigFolder'),
+                        label: t('menus:developer.openConfigFolder'),
                         click: async () => {
                             const prefsPath = await getPrefsPath();
                             shell.showItemInFolder(prefsPath);

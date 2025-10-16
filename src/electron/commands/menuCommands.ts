@@ -20,7 +20,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
     const menu = Menu.buildFromTemplate([
         {
             icon: getThemedMenuIcon('open-folder'),
-            label: t('menus.project.openProjectFolder'),
+            label: t('menus:project.openProjectFolder'),
             enabled: project.path.length > 0,
             click: () => {
                 shell.openPath(project.path);
@@ -28,7 +28,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         },
         {
             icon: getThemedMenuIcon('open-folder'),
-            label: t('menus.project.openEditorSettingsFolder'),
+            label: t('menus:project.openEditorSettingsFolder'),
             enabled: (project.editor_settings_path && project.editor_settings_path.length > 0) || false,
             click: () => {
                 shell.openPath(project.editor_settings_path);
@@ -39,8 +39,8 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         },
         {
             icon: getThemedMenuIcon(project.open_windowed ? 'checkbox-checked' : 'checkbox'),
-            label: t('menus.project.openWindowed'),
-            toolTip: t('menus.project.openWindowedTooltip'),
+            label: t('menus:project.openWindowed'),
+            toolTip: t('menus:project.openWindowedTooltip'),
             type: 'normal',
             checked: project.open_windowed,
             click: async () => {
@@ -53,15 +53,15 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         {
             // export editor settings
             icon: getThemedMenuIcon('file-export'),
-            label: t('menus.project.exportEditorSettings'),
+            label: t('menus:project.exportEditorSettings'),
             enabled: (project.editor_settings_path.length > 0),
             click: async () => {
                 const result = await dialog.showSaveDialog(mainWindow, {
-                    title: t('dialogs.exportSettings.title'),
+                    title: t('dialogs:exportSettings.title'),
                     defaultPath: path.resolve(os.homedir(), `${path.basename(project.editor_settings_file)}`),
 
                     filters: [
-                        { name: t('dialogs.exportSettings.allFiles'), extensions: ['*'] }
+                        { name: t('dialogs:exportSettings.allFiles'), extensions: ['*'] }
                     ]
                 });
 
@@ -73,7 +73,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         {
             // import editor settings
             icon: getThemedMenuIcon('file-save'),
-            label: t('menus.project.importEditorSettings'),
+            label: t('menus:project.importEditorSettings'),
             enabled: project.editor_settings_path.length > 0 || project.launch_path.length > 0,
             click: async () => {
 
@@ -82,21 +82,21 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                 const confirm = await dialog.showMessageBox(mainWindow, {
                     type: 'warning',
                     noLink: true,
-                    buttons: [t('dialogs.importSettings.continue'), t('dialogs.importSettings.cancel')],
-                    title: t('dialogs.importSettings.title'),
-                    message: t('dialogs.importSettings.message'),
-                    detail: t('dialogs.importSettings.detail'),
+                    buttons: [t('dialogs:importSettings.continue'), t('dialogs:importSettings.cancel')],
+                    title: t('dialogs:importSettings.title'),
+                    message: t('dialogs:importSettings.message'),
+                    detail: t('dialogs:importSettings.detail'),
                 });
                 if (confirm.response === 1) {
                     return;
                 }
 
                 const result = await dialog.showOpenDialog(mainWindow, {
-                    title: t('dialogs.importSettings.selectFile'),
+                    title: t('dialogs:importSettings.selectFile'),
                     defaultPath: os.homedir(),
                     properties: ['openFile'],
                     filters: [
-                        { name: t('dialogs.importSettings.textResource'), extensions: ['tres'] }
+                        { name: t('dialogs:importSettings.textResource'), extensions: ['tres'] }
                     ]
                 });
 
@@ -118,7 +118,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         },
         {
             icon: getThemedMenuIcon('bin'),
-            label: t('menus.project.removeFromList'),
+            label: t('menus:project.removeFromList'),
             click: async () => {
 
                 const prefs = await getUserPreferences();
@@ -126,11 +126,11 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                 if (prefs.confirm_project_remove) {
                     const result = await dialog.showMessageBox(mainWindow, {
                         type: 'warning',
-                        buttons: [t('dialogs.removeProject.ok'), t('dialogs.removeProject.cancel')],
-                        title: t('dialogs.removeProject.title'),
-                        message: t('dialogs.removeProject.message', { projectName: project.name }),
-                        detail: t('dialogs.removeProject.detail'),
-                        checkboxLabel: t('dialogs.removeProject.doNotAskAgain'),
+                        buttons: [t('dialogs:removeProject.ok'), t('dialogs:removeProject.cancel')],
+                        title: t('dialogs:removeProject.title'),
+                        message: t('dialogs:removeProject.message', { projectName: project.name }),
+                        detail: t('dialogs:removeProject.detail'),
+                        checkboxLabel: t('dialogs:removeProject.doNotAskAgain'),
                         checkboxChecked: false
                     });
 
@@ -158,7 +158,7 @@ export async function showReleaseMenu(release: InstalledRelease): Promise<void> 
     const menu = Menu.buildFromTemplate([
         {
             icon: getThemedMenuIcon('open-folder'),
-            label: t('menus.release.openInstalledFolder'),
+            label: t('menus:release.openInstalledFolder'),
             enabled: release.install_path.length > 0,
             click: () => {
                 shell.openPath(release.install_path);
@@ -169,7 +169,7 @@ export async function showReleaseMenu(release: InstalledRelease): Promise<void> 
         },
         {
             icon: getThemedMenuIcon('godot'),
-            label: t('menus.release.startProjectManager'),
+            label: t('menus:release.startProjectManager'),
             click: async () => {
                 await openProjectManager(release);
             },
@@ -179,14 +179,14 @@ export async function showReleaseMenu(release: InstalledRelease): Promise<void> 
         },
         {
             icon: getThemedMenuIcon('bin'),
-            label: t('menus.release.deleteRelease'),
+            label: t('menus:release.deleteRelease'),
             click: async () => {
                 const result = await dialog.showMessageBox(getMainWindow(), {
                     type: 'warning',
-                    buttons: [t('dialogs.removeRelease.ok'), t('dialogs.removeRelease.cancel')],
-                    title: t('dialogs.removeRelease.title'),
-                    message: t('dialogs.removeRelease.message', { version: release.version }),
-                    detail: t('dialogs.removeRelease.detail'),
+                    buttons: [t('dialogs:removeRelease.ok'), t('dialogs:removeRelease.cancel')],
+                    title: t('dialogs:removeRelease.title'),
+                    message: t('dialogs:removeRelease.message', { version: release.version }),
+                    detail: t('dialogs:removeRelease.detail'),
                 });
 
                 if (result.response === 0) {
@@ -197,7 +197,7 @@ export async function showReleaseMenu(release: InstalledRelease): Promise<void> 
                         ipcWebContentsSend('releases-updated', getMainWindow()?.webContents, result.releases);
                     }
                     else {
-                        dialog.showErrorBox(t('dialogs.removeRelease.error'), result.error || t('dialogs.removeRelease.errorMessage'));
+                        dialog.showErrorBox(t('dialogs:removeRelease.error'), result.error || t('dialogs:removeRelease.errorMessage'));
                     }
 
                 }
