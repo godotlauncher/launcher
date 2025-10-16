@@ -4,6 +4,7 @@ import { AutoStartSetting } from '../components/settings/AutoStartSetting.compon
 import { CheckForUpdates } from '../components/settings/checkForUpdates.component';
 import { EditorsLocation } from '../components/settings/EditorLocation.component';
 import { GitToolSettings } from '../components/settings/gitToolSettings.component';
+import { LanguageSelector } from '../components/settings/LanguageSelector';
 import { ProjectLaunchAction } from '../components/settings/projectLaunchAction.component';
 import { ProjectsLocation } from '../components/settings/projectsLocation.component';
 import { VSCodeToolSettings } from '../components/settings/vsCodeToolSettings.component';
@@ -83,22 +84,7 @@ export const SettingsView: React.FC = () => {
                                 <div className="divider"></div>
 
 
-                                <div className="flex flex-col">
-                                    <h1 data-testid="languageHeader" className="font-bold">Language</h1>
-                                    <p data-testid="languageSubHeader" className="text-sm">Select language for Godot Launcher (does not change Godot language)</p>
-                                    <div className=" flex flex-col p-4 gap-4">
-                                        <div className="flex flex-row flex-shrink items-center justify-start gap-4 ">
-                                            <select
-                                                value={'en'}
-                                                data-testid="languageSelect"
-                                                className="select select-bordered w-full max-w-xs" disabled>
-                                                <option data-testid="languageSelectEnglish" value={'en'} >English</option>
-                                                <option data-testid="languageSelectSpanish" value={'es'}>Spanish</option>
-                                            </select>
-
-                                        </div>
-                                    </div>
-                                </div>
+                                <LanguageSelector />
                             </div>
 
                             {/* Behavior */}

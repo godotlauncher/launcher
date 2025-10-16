@@ -40,6 +40,13 @@ import { showProjectMenu, showReleaseMenu } from './commands/menuCommands.js';
 import { app, shell } from 'electron';
 import { setAutoStart } from './utils/platform.utils.js';
 import { checkForUpdates, installUpdateAndRestart } from './autoUpdater.js';
+import {
+    initI18n,
+    getCurrentLanguage,
+    getAvailableLanguages,
+    getAllTranslations,
+    changeLanguage,
+} from './i18n/index.js';
 
 // create default folder if not exist
 async function createDefaultFolder() {
@@ -62,6 +69,9 @@ async function createDefaultFolder() {
 // createDefaultFolder(); // Commented out direct call
 
 export { createDefaultFolder }; // Export the function
+
+// Export i18n initialization for use in main.ts
+export { initI18n } from './i18n/index.js';
 
 export function registerHandlers() {
     // ##### user-preferences #####
@@ -225,5 +235,30 @@ export function registerHandlers() {
 
     ipcMainHandler('get-app-version', async () => {
         return app.getVersion();
+    });
+
+    // ##### i18n #####
+
+    ipcMainHandler('i18n:get-current-language', async () => {
+        return getCurrentLanguage();
+    });
+
+    ipcMainHandler('i18n:get-available-languages', async () => {
+        return getAvailableLanguages();
+    });
+
+    ipcMainHandler('i18n:get-all-translations', async (_, language?: string) => {
+        return getAllTranslations(language);
+    });
+
+    ipcMainHandler('i18n:change-language', async (_, lang: string) => {
+        await changeLanguage(lang);
+        
+        // Update user preferences
+        const prefs = await getUserPreferences();
+        await setUserPreferences({ ...prefs, language: lang });
+        
+        // Return new translations for renderer
+        return getAllTranslations(lang);
     });
 }

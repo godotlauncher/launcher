@@ -37,6 +37,7 @@ type UserPreferences = {
     windows_enable_symlinks: boolean;
     windows_symlink_win_notify: boolean;
     vs_code_path?: string;
+    language?: string; // 'system' for auto-detect, or locale code like 'en', 'es', 'fr'
 };
 
 type InstalledRelease = {
@@ -200,6 +201,12 @@ type EventChannelMapping = {
 
     'get-platform': Promise<string>;
     'get-app-version': Promise<string>;
+
+    // ##### i18n #####
+    'i18n:get-current-language': Promise<string>;
+    'i18n:get-available-languages': Promise<string[]>;
+    'i18n:get-all-translations': Promise<Record<string, Record<string, any>>>;
+    'i18n:change-language': Promise<Record<string, Record<string, any>>>;
 };
 
 interface Window {
@@ -288,5 +295,13 @@ interface Window {
         relaunchApp: () => Promise<void>;
         installUpdateAndRestart: () => Promise<void>;
         checkForUpdates: () => Promise<void>;
+
+        // ##### i18n #####
+        i18n: {
+            getCurrentLanguage: () => Promise<string>;
+            getAvailableLanguages: () => Promise<string[]>;
+            getAllTranslations: (language?: string) => Promise<Record<string, Record<string, any>>>;
+            changeLanguage: (lang: string) => Promise<Record<string, Record<string, any>>>;
+        };
     };
 }

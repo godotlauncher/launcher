@@ -1,0 +1,30 @@
+{
+  "title": "Help",
+  "sections": {
+    "gettingStarted": {
+      "title": "Getting Started",
+      "content": "Welcome to Godot Launcher! This application helps you manage multiple Godot versions and projects."
+    },
+    "documentation": {
+      "title": "Documentation",
+      "visitDocs": "Visit Documentation"
+    },
+    "community": {
+      "title": "Community",
+      "discord": "Join our Discord",
+      "github": "View on GitHub"
+    },
+    "about": {
+      "title": "About",
+      "version": "Version {{version}}",
+      "license": "Licensed under MIT",
+      "thirdParty": "Third-party Notices"
+    }
+  },
+  "links": {
+    "documentation": "Documentation",
+    "github": "GitHub Repository",
+    "discord": "Discord Community",
+    "website": "Website"
+  }
+}

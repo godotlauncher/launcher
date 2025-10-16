@@ -1,0 +1,17 @@
+{
+  "buttons": {
+    "ok": "Ok",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "continue": "Continue",
+    "skip": "Skip"
+  },
+  "loading": "Loading...",
+  "saving": "Saving...",
+  "error": "Error",
+  "success": "Success",
+  "warning": "Warning",
+  "info": "Information"
+}

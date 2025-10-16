@@ -1,0 +1,26 @@
+{
+  "importSettings": {
+    "title": "Import Editor Settings",
+    "message": "Are you sure you want to import the editor settings from a file?",
+    "detail": "This will replace the current editor settings. A backup will be created."
+  },
+  "exportSettings": {
+    "title": "Export Editor Settings to File"
+  },
+  "removeProject": {
+    "title": "Remove Project",
+    "message": "Are you sure you want to remove '{{name}}' from the project list?",
+    "detail": "This will not delete the project files."
+  },
+  "removeRelease": {
+    "title": "Remove Godot Version",
+    "message": "Are you sure you want to remove Godot {{version}}?",
+    "detail": "This will delete all files for this version."
+  },
+  "selectFolder": "Select Folder",
+  "selectFile": "Select File",
+  "error": {
+    "title": "Error",
+    "generic": "An error occurred: {{message}}"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "title": "Projects",
+  "buttons": {
+    "addProject": "Add Project",
+    "createProject": "Create Project",
+    "refresh": "Refresh"
+  },
+  "table": {
+    "name": "Name",
+    "version": "Version",
+    "lastOpened": "Last Opened",
+    "actions": "Actions"
+  },
+  "messages": {
+    "noProjects": "No projects found",
+    "invalidProject": "This project is invalid, check project and editor locations!",
+    "monoProject": "This is a .NET Project",
+    "prereleaseVersion": "Using a pre-release Godot editor version"
+  },
+  "createProject": {
+    "title": "New Project",
+    "projectName": "Project Name",
+    "projectPath": "Project Path",
+    "selectVersion": "Select Godot Version",
+    "renderer": "Renderer",
+    "editNow": "Edit now",
+    "setupVSCode": "Setup Visual Studio Code as Text Editor",
+    "vscodeNotInstalled": "Visual Studio Code is not installed on this computer",
+    "noVersionsInstalled": "No Godot versions installed",
+    "errors": {
+      "nameRequired": "Project name is required",
+      "pathRequired": "Project path is required",
+      "invalidPath": "Invalid project path"
+    }
+  },
+  "searchPlaceholder": "Search projects..."
+}

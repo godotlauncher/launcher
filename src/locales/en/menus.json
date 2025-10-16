@@ -1,0 +1,30 @@
+{
+  "app": {
+    "about": "About",
+    "close": "Close",
+    "quit": "Quit"
+  },
+  "developer": {
+    "label": "Developer",
+    "reload": "Reload",
+    "toggleDevTools": "Toggle Developer Tools",
+    "openConfigFolder": "Open Config Folder"
+  },
+  "project": {
+    "openFolder": "Open Project Folder",
+    "openEditorSettings": "Open Editor Settings Folder",
+    "openWindowed": "Open Windowed",
+    "exportSettings": "Export Editor Settings to File",
+    "importSettings": "Import Editor Settings from File",
+    "removeProject": "Remove Project"
+  },
+  "release": {
+    "openFolder": "Open Install Folder",
+    "removeRelease": "Remove Version"
+  },
+  "tray": {
+    "recentProjects": "Recent Projects",
+    "showLauncher": "Show Launcher",
+    "quit": "Quit"
+  }
+}

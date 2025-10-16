@@ -90,6 +90,14 @@ electron.contextBridge.exposeInMainWorld("electron", {
     getPlatform: () => ipcInvoke("get-platform"),
     getAppVersion: () => ipcInvoke("get-app-version"),
     checkForUpdates: () => ipcInvoke("check-updates"),
+
+    // ##### i18n #####
+    i18n: {
+        getCurrentLanguage: () => ipcInvoke("i18n:get-current-language"),
+        getAvailableLanguages: () => ipcInvoke("i18n:get-available-languages"),
+        getAllTranslations: (language?: string) => ipcInvoke("i18n:get-all-translations", language),
+        changeLanguage: (lang: string) => ipcInvoke("i18n:change-language", lang),
+    },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Channel extends keyof EventChannelMapping>(

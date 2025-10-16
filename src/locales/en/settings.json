@@ -1,0 +1,65 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "general": "General",
+    "advanced": "Advanced"
+  },
+  "general": {
+    "language": {
+      "label": "Language",
+      "system": "System (Auto-detect)",
+      "description": "Select your preferred language"
+    },
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "projectsLocation": {
+      "label": "Default Projects Location",
+      "description": "Where new projects will be created"
+    },
+    "installLocation": {
+      "label": "Godot Install Location",
+      "description": "Where Godot versions will be installed"
+    },
+    "postLaunchAction": {
+      "label": "After Launching a Project",
+      "none": "Do nothing",
+      "minimize": "Minimize launcher",
+      "closeToTray": "Close to system tray"
+    },
+    "autoCheckUpdates": {
+      "label": "Automatically check for updates",
+      "description": "Check for Godot Launcher updates on startup"
+    },
+    "autoStart": {
+      "label": "Start with system",
+      "description": "Launch Godot Launcher when your computer starts"
+    },
+    "startInTray": {
+      "label": "Start minimized to tray",
+      "description": "Start the launcher in the system tray"
+    }
+  },
+  "advanced": {
+    "confirmProjectRemove": {
+      "label": "Confirm before removing projects",
+      "description": "Show confirmation dialog when removing projects"
+    },
+    "enableSymlinks": {
+      "label": "Enable symbolic links (Windows)",
+      "description": "Use symbolic links for editor settings"
+    }
+  },
+  "buttons": {
+    "save": "Save Settings",
+    "reset": "Reset to Defaults",
+    "openConfigFolder": "Open Config Folder"
+  },
+  "messages": {
+    "saved": "Settings saved successfully",
+    "resetConfirm": "Are you sure you want to reset all settings to defaults?"
+  }
+}

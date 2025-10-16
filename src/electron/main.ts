@@ -1,7 +1,7 @@
 import { BrowserWindow, Menu, app, dialog } from 'electron';
 import logger from 'electron-log/main.js';
 import path from 'node:path';
-import { createDefaultFolder, registerHandlers } from './app.js';
+import { createDefaultFolder, registerHandlers, initI18n } from './app.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { getUserPreferences } from './commands/userPreferences.js';
@@ -121,6 +121,13 @@ app.on('ready', async () => {
     }
 
     await createDefaultFolder();
+
+    // Initialize i18n before creating windows
+    logger.debug('Initializing i18n...');
+    const { getUserPreferences } = await import('./commands/userPreferences.js');
+    const userPrefs = await getUserPreferences();
+    await initI18n(userPrefs.language || 'system');
+    logger.debug('i18n initialized successfully');
 
     logger.debug('App ready, checking projects and releases');
     await checkAndUpdateProjects();

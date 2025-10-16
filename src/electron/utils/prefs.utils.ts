@@ -40,7 +40,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         windows_enable_symlinks: false,
         windows_symlink_win_notify: platform === 'win32' ? false : true,
         vs_code_path: '',
-
+        language: 'system', // Default to system language detection
     };
 }
 
