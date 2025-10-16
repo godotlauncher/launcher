@@ -1,40 +1,41 @@
 import { ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 
 
 export const WindowsStep: React.FC = () => {
-
+    const { t } = useTranslation('welcome');
     const { openExternalLink } = useAppNavigation();
 
     return (
         <div className='text-sm'>
-            <h1 className="text-xl">Windows Note</h1>
+            <h1 className="text-xl">{t('windowsStep.title')}</h1>
             <p>
-                Starting from version 1.4.0, Godot Launcher can create{' '}
-                <code className="bg-base-300 px-2 rounded text-warning">symlinks</code> to the editor for each project.
-                To keep setup simple, we now default to local copies. You can enable symlinks anytime from <strong>Settings → Behavior → Editor symlinks</strong> when you want lower disk usage.
+                {t('windowsStep.intro')}{' '}
+                <code className="bg-base-300 px-2 rounded text-warning">{t('windowsStep.symlinkCode')}</code> {t('windowsStep.intro2')} <strong>{t('windowsStep.settingsPath')}</strong> {t('windowsStep.intro3')}
             </p>
             <div className="pt-6 flex flex-col gap-2">
-                <h2 className="font-bold">What changed?</h2>
+                <h2 className="font-bold">{t('windowsStep.whatChangedTitle')}</h2>
                 <ul className="flex flex-col gap-4">
                     <li>
-                        Creating symbolic links on Windows requires administrator privileges and elevated command execution. The launcher now elevates permissions only when creating symlinks.
+                        {t('windowsStep.change1')}
                     </li>
                     <li>
-                        You will see a UAC prompt only if you are not an  <code className="bg-base-300 px-2 rounded text-warning">Administrator</code> on your PC and if{' '}
-                        <code className="bg-base-300 px-2 rounded text-warning">Developer Mode</code> is not enabled.
+                        {t('windowsStep.change2')}{' '}
+                        <code className="bg-base-300 px-2 rounded text-warning">{t('windowsStep.administratorCode')}</code> {t('windowsStep.change2b')}{' '}
+                        <code className="bg-base-300 px-2 rounded text-warning">{t('windowsStep.developerModeCode')}</code> {t('windowsStep.change2c')}
                     </li>
                     <li>
-                        Ready to try symlinks? Toggle on <strong>Editor symlinks</strong> in Settings when you're prepared for the occasional elevation prompt.
+                        {t('windowsStep.change3')} <strong>{t('windowsStep.editorSymlinks')}</strong> {t('windowsStep.change3b')}
                     </li>
                     <li className="flex flex-row gap-1 font-bold">
-                        NOTE: If you are using .NET-based editors, you need to install the .NET SDK from{' '}
+                        {t('windowsStep.dotnetNote')}{' '}
                         <button
                             className="flex flex-row hover:underline items-basleline text-info"
                             onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}
                         >
-                            Microsoft .NET website <ExternalLink className="w-4" />
+                            {t('windowsStep.dotnetLink')} <ExternalLink className="w-4" />
                         </button>
                     </li>
                 </ul>

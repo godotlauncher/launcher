@@ -13,7 +13,12 @@ module.exports =
     ],
     "extraResources": [
         "dist-electron/preload.cjs",
-        "src/assets/**"
+        "src/assets/**",
+        {
+            "from": "src/locales",
+            "to": "locales",
+            "filter": ["**/*"]
+        }
     ],
     "mac": {
         "icon": "build/icon.icns",

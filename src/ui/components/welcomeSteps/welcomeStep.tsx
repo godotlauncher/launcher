@@ -1,13 +1,15 @@
 import { ExternalLinkIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const WelcomeStep: React.FC = () => {
+    const { t } = useTranslation('welcome');
 
     return (
         <div className="flex flex-col gap-4 text-sm ">
-            <p>Thanks for using Godot Launcher!</p>
-            <p>Godot Launcher makes it easy to <strong>manage multiple versions of the Godot Engine</strong> and keeps <strong>editor settings separate for each project.</strong></p>
-            <p>By using it, you're helping to support the project! If you ever have feedback or find a bug, let us know, we'd love to make it even better for you.</p>
-            <p>Enjoy and happy coding!
+            <p>{t('welcomeStep.title')}</p>
+            <p>{t('welcomeStep.description1')} <strong>{t('welcomeStep.description1Bold')}</strong> {t('welcomeStep.description2')} <strong>{t('welcomeStep.description2Bold')}</strong></p>
+            <p>{t('welcomeStep.feedback')}</p>
+            <p>{t('welcomeStep.enjoy')}
                 <button className="btn btn-link p-0 flex gap-1"
                     onClick={() => window.electron.openExternal('https://godotlauncher.com')}
                 >https://godotlauncher.com

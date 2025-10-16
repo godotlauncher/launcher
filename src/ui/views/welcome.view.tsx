@@ -1,6 +1,7 @@
 import log from 'electron-log/renderer';
 
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { WelcomeStep } from '../components/welcomeSteps/welcomeStep';
 import clsx from 'clsx';
 import { CurrentSettingsStep } from '../components/welcomeSteps/currentSettingsStep';
@@ -21,6 +22,7 @@ interface StepDetails {
 }
 
 export const WelcomeView: React.FC = () => {
+    const { t } = useTranslation('welcome');
 
     const [stepIndex, setStepIndex] = useState<number | undefined>();
     const [nextStepText, setNextStepText] = useState<string>('Next');
@@ -29,31 +31,31 @@ export const WelcomeView: React.FC = () => {
     const { updatePreferences, platform } = usePreferences();
 
     const macSteps: StepDetails[] = [
-        { title: 'Welcome', nextButton: 'Next: MacOS', prevButton: '', component: <WelcomeStep /> },
-        { title: 'MacOS', nextButton: 'Next: Current Settings', prevButton: 'Back: Welcomes', component: <MacOSStep /> },
-        { title: 'Current Settings', nextButton: 'Next: Set Locations', prevButton: 'Back: MacOS', component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
-        { title: 'Set Locations', nextButton: 'Next: Customize Behavior', prevButton: 'Back: Current Settings', component: <SetLocationStep /> },
-        { title: 'Customize Behavior', nextButton: 'Next: Ready', prevButton: 'Back: Set Locations', component: <CustomizeBehaviorStep /> },
-        { title: 'Ready', nextButton: 'Start', prevButton: 'Back: Customize Behavior', component: <StartStep /> },
+        { title: t('steps.welcome'), nextButton: t('navigation.nextMacOS'), prevButton: '', component: <WelcomeStep /> },
+        { title: t('steps.macos'), nextButton: t('navigation.nextCurrentSettings'), prevButton: t('navigation.backWelcome'), component: <MacOSStep /> },
+        { title: t('steps.currentSettings'), nextButton: t('navigation.nextSetLocations'), prevButton: t('navigation.backMacOS'), component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
+        { title: t('steps.setLocations'), nextButton: t('navigation.nextCustomizeBehavior'), prevButton: t('navigation.backCurrentSettings'), component: <SetLocationStep /> },
+        { title: t('steps.customizeBehavior'), nextButton: t('navigation.nextReady'), prevButton: t('navigation.backSetLocations'), component: <CustomizeBehaviorStep /> },
+        { title: t('steps.ready'), nextButton: t('navigation.start'), prevButton: t('navigation.backCustomizeBehavior'), component: <StartStep /> },
     ];
 
     const winSteps: StepDetails[] = [
-        { title: 'Welcome', nextButton: 'Next: Windows', prevButton: '', component: <WelcomeStep /> },
-        { title: 'Windows', nextButton: 'Next: Current Settings', prevButton: 'Back: Welcome', component: <WindowsStep /> },
-        { title: 'Current Settings', nextButton: 'Next: Set Locations', prevButton: 'Back: Windows', component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
-        { title: 'Set Locations', nextButton: 'Next: Customize Behavior', prevButton: 'Back: Current Settings', component: <SetLocationStep /> },
-        { title: 'Customize Behavior', nextButton: 'Next: Ready', prevButton: 'Back: Set Locations', component: <CustomizeBehaviorStep /> },
-        { title: 'Windows Symlink', nextButton: 'Next: Ready', prevButton: 'Back: Customize Behavior', component: <WindowsSymlinkSetting /> },
-        { title: 'Ready', nextButton: 'Start', prevButton: 'Back: Customize Behavior', component: <StartStep /> },
+        { title: t('steps.welcome'), nextButton: t('navigation.nextWindows'), prevButton: '', component: <WelcomeStep /> },
+        { title: t('steps.windows'), nextButton: t('navigation.nextCurrentSettings'), prevButton: t('navigation.backWelcome'), component: <WindowsStep /> },
+        { title: t('steps.currentSettings'), nextButton: t('navigation.nextSetLocations'), prevButton: t('navigation.backWindows'), component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
+        { title: t('steps.setLocations'), nextButton: t('navigation.nextCustomizeBehavior'), prevButton: t('navigation.backCurrentSettings'), component: <SetLocationStep /> },
+        { title: t('steps.customizeBehavior'), nextButton: t('navigation.nextReady'), prevButton: t('navigation.backSetLocations'), component: <CustomizeBehaviorStep /> },
+        { title: t('steps.windowsSymlink'), nextButton: t('navigation.nextReady'), prevButton: t('navigation.backCustomizeBehavior'), component: <WindowsSymlinkSetting /> },
+        { title: t('steps.ready'), nextButton: t('navigation.start'), prevButton: t('navigation.backCustomizeBehavior'), component: <StartStep /> },
     ];
 
     const linuxSteps: StepDetails[] = [
-        { title: 'Welcome', nextButton: 'Next: Linux', prevButton: '', component: <WelcomeStep /> },
-        { title: 'Linux', nextButton: 'Next: Current Settings', prevButton: 'Back: Welcome', component: <LinuxStep /> },
-        { title: 'Current Settings', nextButton: 'Next: Set Locations', prevButton: 'Back: Windows', component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
-        { title: 'Set Locations', nextButton: 'Next: Customize Behavior', prevButton: 'Back: Current Settings', component: <SetLocationStep /> },
-        { title: 'Customize Behavior', nextButton: 'Next: Ready', prevButton: 'Back: Customize Behavior', component: <CustomizeBehaviorStep /> },
-        { title: 'Ready', nextButton: 'Start', prevButton: 'Back: Customize Behavior', component: <StartStep /> },
+        { title: t('steps.welcome'), nextButton: t('navigation.nextLinux'), prevButton: '', component: <WelcomeStep /> },
+        { title: t('steps.linux'), nextButton: t('navigation.nextCurrentSettings'), prevButton: t('navigation.backWelcome'), component: <LinuxStep /> },
+        { title: t('steps.currentSettings'), nextButton: t('navigation.nextSetLocations'), prevButton: t('navigation.backWindows'), component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} /> },
+        { title: t('steps.setLocations'), nextButton: t('navigation.nextCustomizeBehavior'), prevButton: t('navigation.backCurrentSettings'), component: <SetLocationStep /> },
+        { title: t('steps.customizeBehavior'), nextButton: t('navigation.nextReady'), prevButton: t('navigation.backCustomizeBehavior'), component: <CustomizeBehaviorStep /> },
+        { title: t('steps.ready'), nextButton: t('navigation.start'), prevButton: t('navigation.backCustomizeBehavior'), component: <StartStep /> },
     ];
 
     const getMaxSteps = () => {
@@ -155,7 +157,7 @@ export const WelcomeView: React.FC = () => {
             <div className="flex flex-col w-[900px] h-full p-4 gap-2 overflow-hidden">
                 {/* Header */}
                 <div className="flex flex-col gap-4">
-                    <h1 data-testid="installsTitle" className="text-3xl">Godot Launcher</h1>
+                    <h1 data-testid="installsTitle" className="text-3xl">{t('title')}</h1>
                     <ul className="steps">
                         {/* Steps */}
                         {getPlatformSteps().map((step, index) => (

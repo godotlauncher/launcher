@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
 
 type CurrentSettingsStepProps = {
@@ -6,6 +7,7 @@ type CurrentSettingsStepProps = {
 };
 
 export const CurrentSettingsStep: React.FC<CurrentSettingsStepProps> = ({ onSkip }) => {
+    const { t } = useTranslation('welcome');
 
     const [loading, setLoading] = useState<boolean>(true);
     const { preferences } = usePreferences();
@@ -19,13 +21,13 @@ export const CurrentSettingsStep: React.FC<CurrentSettingsStepProps> = ({ onSkip
     const getPostLaunchText = (action: UserPreferences['post_launch_action']) => {
         switch (action) {
             case 'none':
-                return 'Nothing';
+                return t('currentSettings.postLaunchActions.nothing');
             case 'minimize':
-                return 'Minimize';
+                return t('currentSettings.postLaunchActions.minimize');
             case 'close_to_tray':
-                return 'Close to system tray';
+                return t('currentSettings.postLaunchActions.closeToTray');
             default:
-                return 'Nothing';
+                return t('currentSettings.postLaunchActions.nothing');
         }
     };
     return (
@@ -34,47 +36,47 @@ export const CurrentSettingsStep: React.FC<CurrentSettingsStepProps> = ({ onSkip
             {loading && <p className="loading loading-spinner w-6"></p>}
             {!loading && (
                 <>
-                    <p className="font-bold">Default Settings:</p>
+                    <p className="font-bold">{t('currentSettings.title')}</p>
                     <div className="bg-base-200 p-4 rounded-lg flex flex-row justify-between items-start ">
 
                         <table className="">
                             <tbody>
                                 <tr className="h-8">
-                                    <td className="flex-1">Projects Location:</td>
+                                    <td className="flex-1">{t('currentSettings.projectsLocation')}</td>
                                     <td className="pl-4">{preferences?.projects_location}</td>
                                 </tr>
                                 <tr className="h-8">
-                                    <td className="flex-1">Godot Install Location:</td>
+                                    <td className="flex-1">{t('currentSettings.installLocation')}</td>
                                     <td className="pl-4">{preferences?.install_location}</td>
                                 </tr>
                                 <tr className="h-8">
 
-                                    <td className="flex-1">Action After Launching a Project:</td>
+                                    <td className="flex-1">{t('currentSettings.postLaunchAction')}</td>
                                     <td className="pl-4">{getPostLaunchText(preferences?.post_launch_action || 'close_to_tray')}</td>
                                 </tr>
                                 <tr className="h-8">
 
-                                    <td className="flex-1">Auto Check for Updates:</td>
-                                    <td className="pl-4">{preferences?.auto_check_updates ? 'Yes' : 'No'}</td>
+                                    <td className="flex-1">{t('currentSettings.autoCheckUpdates')}</td>
+                                    <td className="pl-4">{preferences?.auto_check_updates ? t('currentSettings.yes') : t('currentSettings.no')}</td>
                                 </tr>
 
                                 <tr className="h-8">
-                                    <td className="flex-1">Auto Start When Computer Starts:</td>
-                                    <td className="pl-4">{preferences?.auto_start ? 'Yes' : 'No'}</td>
+                                    <td className="flex-1">{t('currentSettings.autoStart')}</td>
+                                    <td className="pl-4">{preferences?.auto_start ? t('currentSettings.yes') : t('currentSettings.no')}</td>
                                 </tr>
 
                                 {
                                     preferences?.auto_start &&
                                     <tr>
-                                        <td className="flex-1">Auto Start Type:</td>
-                                        <td className="pl-4">{preferences?.start_in_tray ? 'System Tray' : 'Normal Window'}</td>
+                                        <td className="flex-1">{t('currentSettings.autoStartType')}</td>
+                                        <td className="pl-4">{preferences?.start_in_tray ? t('currentSettings.systemTray') : t('currentSettings.normalWindow')}</td>
                                     </tr>
                                 }
 
                             </tbody>
 
                         </table>
-                        <button onClick={onSkip} className="btn btn-ghost">Skip, Use Defaults</button>
+                        <button onClick={onSkip} className="btn btn-ghost">{t('currentSettings.skipButton')}</button>
                     </div>
 
                 </>
