@@ -1,9 +1,36 @@
 {
   "title": "Help",
+  "thirdPartyNotices": "Third-party Notices",
+  "launcher": {
+    "title": "Godot Launcher",
+    "changelog": "Change Log",
+    "homePage": "Home Page",
+    "docs": "Launcher Docs"
+  },
+  "godot": {
+    "title": "Godot Engine",
+    "engine": "Godot Engine",
+    "docs": "Godot Docs"
+  },
+  "community": {
+    "title": "Community and Support",
+    "learnMore": "Learn More"
+  },
+  "contribute": {
+    "title": "How to Contribute",
+    "learnMore": "Learn More",
+    "description": "Report bugs or suggestions by submitting and issue on the official GitHub repository",
+    "reportBug": "I think I found a bug",
+    "suggestion": "I have a suggestion!"
+  },
   "sections": {
     "gettingStarted": {
       "title": "Getting Started",
-      "content": "Welcome to Godot Launcher! This application helps you manage multiple Godot versions and projects."
+      "content": "Welcome to Godot Launcher! This application helps you manage multiple Godot versions and projects.",
+      "welcome": "Welcome to Godot Launcher!",
+      "step1": "Install a Godot version from the Installs tab",
+      "step2": "Create or add a project",
+      "step3": "Launch and start developing!"
     },
     "documentation": {
       "title": "Documentation",

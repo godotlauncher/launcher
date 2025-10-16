@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AutoStartSetting } from '../components/settings/AutoStartSetting.component';
 import { CheckForUpdates } from '../components/settings/checkForUpdates.component';
 import { EditorsLocation } from '../components/settings/EditorLocation.component';
@@ -13,6 +14,7 @@ import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
 
 export const SettingsView: React.FC = () => {
+    const { t } = useTranslation('settings');
     const [activeTab, setActiveTab] = useState<'projects' | 'installs' | 'appearance' | 'behavior' | 'tools' | 'updates'>('projects');
     const { preferences, savePreferences } = usePreferences();
 
@@ -26,7 +28,7 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-2 w-full">
 
                     <div className="flex flex-row justify-between">
-                        <h1 data-testid="settingsTitle" className="text-2xl">Settings</h1>
+                        <h1 data-testid="settingsTitle" className="text-2xl">{t('title')}</h1>
                         <div className="flex gap-2">
                         </div>
                     </div>
@@ -36,12 +38,12 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-0 flex-1">
                     {/* Tabs */}
                     <div role="tablist" className="flex tabs tabs-lifted">
-                        <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>Projects</a>
-                        <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>Installs</a>
-                        <a data-testid="tabAppearance" onClick={() => setActiveTab('appearance')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'appearance') })}>Appearance</a>
-                        <a data-testid="tabBehavior" onClick={() => setActiveTab('behavior')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'behavior') })}>Behavior</a>
-                        <a data-testid="tabTools" onClick={() => setActiveTab('tools')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'tools') })}>Tools</a>
-                        <a data-testid="tabUpdates" onClick={() => setActiveTab('updates')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'updates') })}>Updates</a>
+                        <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>{t('tabs.projects')}</a>
+                        <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>{t('tabs.installs')}</a>
+                        <a data-testid="tabAppearance" onClick={() => setActiveTab('appearance')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'appearance') })}>{t('tabs.appearance')}</a>
+                        <a data-testid="tabBehavior" onClick={() => setActiveTab('behavior')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'behavior') })}>{t('tabs.behavior')}</a>
+                        <a data-testid="tabTools" onClick={() => setActiveTab('tools')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'tools') })}>{t('tabs.tools')}</a>
+                        <a data-testid="tabUpdates" onClick={() => setActiveTab('updates')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'updates') })}>{t('tabs.updates')}</a>
                     </div >
 
                     {/* Scrollable Content */}
@@ -63,20 +65,20 @@ export const SettingsView: React.FC = () => {
                             <div className={clsx('flex flex-col h-0 gap-4', { 'hidden': (activeTab !== 'appearance') })}>
                                 {/* theme */}
                                 <div className="flex flex-col">
-                                    <h1 data-testid="themeHeader" className="font-bold">Theme</h1>
-                                    <p data-testid="themeSubHeader" className="text-sm">Customize the appearance for Godot Launcher</p>
+                                    <h1 data-testid="themeHeader" className="font-bold">{t('appearance.theme.title')}</h1>
+                                    <p data-testid="themeSubHeader" className="text-sm">{t('appearance.theme.description')}</p>
                                     <div className=" flex flex-row flex-0 p-4 gap-4">
                                         <label className="flex flex-row  items-center justify-start  gap-4 cursor-pointer ">
                                             <input onChange={(e) => { if (e.target.checked) setTheme('light'); }} data-testid="themeLight" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'light'} />
-                                            <span className="">Light</span>
+                                            <span className="">{t('appearance.theme.light')}</span>
                                         </label>
                                         <label className="flex flex-row   items-center justify-start gap-4 cursor-pointer ">
                                             <input onChange={(e) => { if (e.target.checked) setTheme('dark'); }} data-testid="themeDark" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'dark'} />
-                                            <span className="">Dark</span>
+                                            <span className="">{t('appearance.theme.dark')}</span>
                                         </label>
                                         <label className="flex flex-row  items-center justify-start gap-4 cursor-pointer">
                                             <input onChange={(e) => { if (e.target.checked) setTheme('auto'); }} data-testid="themeAuto" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'auto'} />
-                                            <span className="">System (automatic)</span>
+                                            <span className="">{t('appearance.theme.system')}</span>
                                         </label>
 
                                     </div>
@@ -92,8 +94,8 @@ export const SettingsView: React.FC = () => {
 
                                 <div className="flex flex-col gap-4">
                                     <div>
-                                        <h1 data-testid="projectsSettingsHeader" className="font-bold">Projects</h1>
-                                        <p data-testid="projectsSettingsSubHeader" className="text-sm">Choose Godot Launcher behavior for projects.</p>
+                                        <h1 data-testid="projectsSettingsHeader" className="font-bold">{t('behavior.projects.title')}</h1>
+                                        <p data-testid="projectsSettingsSubHeader" className="text-sm">{t('behavior.projects.description')}</p>
                                     </div>
                                     <div className=" flex flex-col gap-8">
                                         <label className="flex flex-row items-start cursor-pointer gap-4">
@@ -105,7 +107,7 @@ export const SettingsView: React.FC = () => {
                                                         savePreferences({ ...preferences, confirm_project_remove: e.target.checked });
                                                     }
                                                 }} />
-                                            <span className="">Ask for confirmation when removing projects.</span>
+                                            <span className="">{t('behavior.projects.confirmRemove')}</span>
                                         </label>
                                     </div>
                                 </div>

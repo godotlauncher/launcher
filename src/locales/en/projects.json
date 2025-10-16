@@ -1,18 +1,40 @@
 {
   "title": "Projects",
   "buttons": {
+    "add": "Add",
+    "newProject": "New Project",
     "addProject": "Add Project",
     "createProject": "Create Project",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "launch": "Launch",
+    "changeEditor": "Change Editor"
+  },
+  "search": {
+    "placeholder": "Search"
   },
   "table": {
     "name": "Name",
+    "modified": "Modified",
+    "editor": "Editor",
     "version": "Version",
     "lastOpened": "Last Opened",
-    "actions": "Actions"
+    "actions": "Actions",
+    "invalidProject": "This project is invalid, check project and editor locations!",
+    "dotNetProject": "This is a .Net Project",
+    "prerelease": "Using a pre-release Godot editor version",
+    "windowedMode": "This project is open in windowed mode"
+  },
+  "addProject": {
+    "selectFile": "Select Project File",
+    "godotProject": "Godot Project"
   },
   "messages": {
     "noProjects": "No projects found",
+    "noReleases": "No releases installed.",
+    "goToInstalls": "Go to installs.",
+    "projectAdded": "Project added successfully",
+    "projectRemoved": "Project removed",
+    "editorChanged": "Editor changed successfully",
     "invalidProject": "This project is invalid, check project and editor locations!",
     "monoProject": "This is a .NET Project",
     "prereleaseVersion": "Using a pre-release Godot editor version"

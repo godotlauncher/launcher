@@ -1,5 +1,6 @@
 import logger from 'electron-log';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -18,6 +19,7 @@ TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
 export const ProjectsView: React.FC = () => {
+    const { t } = useTranslation('projects');
     const [textSearch, setTextSearch] = useState<string>('');
     const [createOpen, setCreateOpen] = useState<boolean>(false);
 
@@ -60,7 +62,7 @@ export const ProjectsView: React.FC = () => {
     const onAddProject = async () => {
         if (addingProject) return;
         setAddingProject(true);
-        const result = await window.electron.openFileDialog(preferences!.projects_location!, 'Select Project File', [{ name: 'Godot Project', extensions: ['godot'] }]);
+        const result = await window.electron.openFileDialog(preferences!.projects_location!, t('addProject.selectFile'), [{ name: t('addProject.godotProject'), extensions: ['godot'] }]);
         setAddingProject(false);
 
         if (!result.canceled) {
@@ -207,18 +209,18 @@ export const ProjectsView: React.FC = () => {
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between items-start">
                         <div className="flex flex-col gap-1">
-                            <h1 data-testid="projectsTitle" className="text-2xl">Projects</h1>
+                            <h1 data-testid="projectsTitle" className="text-2xl">{t('title')}</h1>
                             <p className="badge text-base-content/50">{preferences?.projects_location}</p>
                         </div>
                         <div className="flex gap-2">
-                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">Add</button>
-                            <button disabled={installedReleases.length < 1} data-testid="btnProjectCreate" className="btn btn-primary" onClick={() => setCreateOpen(true)}>New Project</button>
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectAdd" onClick={() => onAddProject()} className="btn btn-neutral">{t('buttons.add')}</button>
+                            <button disabled={installedReleases.length < 1} data-testid="btnProjectCreate" className="btn btn-primary" onClick={() => setCreateOpen(true)}>{t('buttons.newProject')}</button>
                         </div>
                     </div>
                     <div className="flex flex-row justify-end my-2 items-center">
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder={t('search.placeholder')}
                             className="input input-bordered w-full max-w-xs"
                             onChange={(e) => setTextSearch(e.target.value)}
                             value={textSearch}
@@ -231,7 +233,7 @@ export const ProjectsView: React.FC = () => {
                         }
                     </div>
                 </div>
-                {(!releaseLoading && installedReleases.length < 1) && <div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />No releases installed.<a onClick={() => setCurrentView('installs')} className="underline cursor-pointer">Go to installs.</a></div>}
+                {(!releaseLoading && installedReleases.length < 1) && <div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />{t('messages.noReleases')}<a onClick={() => setCurrentView('installs')} className="underline cursor-pointer">{t('messages.goToInstalls')}</a></div>}
                 <div className="divider m-0"></div>
                 {loading && <div className="loading loading-dots loading-lg"></div>}
                 {!loading &&
@@ -248,7 +250,7 @@ export const ProjectsView: React.FC = () => {
                                                 setSortData({ field: 'name', order: 'asc' });
                                             }
                                         }}>
-                                            Name
+                                            {t('table.name')}
                                             {getSortIcon('name')}
                                         </label>
                                     </th>
@@ -261,11 +263,11 @@ export const ProjectsView: React.FC = () => {
                                                 setSortData({ field: 'modified', order: 'asc' });
                                             }
                                         }}>
-                                            Modified
+                                            {t('table.modified')}
                                             {getSortIcon('modified')}
                                         </label>
                                     </th>
-                                    <th className="w-60 min-w-60">Editor</th>
+                                    <th className="w-60 min-w-60">{t('table.editor')}</th>
                                     <th className=""></th>
                                 </tr>
                             </thead>
@@ -278,7 +280,7 @@ export const ProjectsView: React.FC = () => {
                                                     <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg "><div className="loading loading-bars"></div></div>
                                                 }
                                                 <div className="font-bold flex text-lg gap-2 items-center justify-start">
-                                                    {!row.valid && <span className="tooltip tooltip-right" data-tip="This project is invalid, check project and editor locations!">
+                                                    {!row.valid && <span className="tooltip tooltip-right" data-tip={t('table.invalidProject')}>
                                                         <TriangleAlert className="stroke-warning" />
                                                     </span>
                                                     }
@@ -286,17 +288,17 @@ export const ProjectsView: React.FC = () => {
                                                     </button>
 
                                                     {row.release.mono &&
-                                                        <p className='tooltip tooltip-right tooltip-primary flex items-center' data-tip="This is a .Net Project">
+                                                        <p className='tooltip tooltip-right tooltip-primary flex items-center' data-tip={t('table.dotNetProject')}>
                                                             <span className="badge badge-outline text-xs text-base-content/50 ">c#</span>
                                                         </p>
                                                     }
                                                     {row.release.prerelease &&
-                                                        <p className='tooltip tooltip-right right-0 tooltip-secondary flex items-center' data-tip="Using a pre-release Godot editor version">
+                                                        <p className='tooltip tooltip-right right-0 tooltip-secondary flex items-center' data-tip={t('table.prerelease')}>
                                                             <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">pr</span>
                                                         </p>
                                                     }
                                                     {row.open_windowed &&
-                                                        <p className='tooltip tooltip-right tooltip-primary flex items-center' data-tip="This project is open in windowed mode">
+                                                        <p className='tooltip tooltip-right tooltip-primary flex items-center' data-tip={t('table.windowedMode')}>
                                                             <span className="badge badge-outline text-xs text-base-content/50">w</span>
                                                         </p>
                                                     }

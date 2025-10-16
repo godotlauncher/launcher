@@ -1,14 +1,38 @@
 {
   "title": "Settings",
   "tabs": {
-    "general": "General",
-    "advanced": "Advanced"
+    "projects": "Projects",
+    "installs": "Installs",
+    "appearance": "Appearance",
+    "behavior": "Behavior",
+    "tools": "Tools",
+    "updates": "Updates"
+  },
+  "appearance": {
+    "theme": {
+      "title": "Theme",
+      "description": "Customize the appearance for Godot Launcher",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System (automatic)"
+    }
+  },
+  "behavior": {
+    "projects": {
+      "title": "Projects",
+      "description": "Choose Godot Launcher behavior for projects.",
+      "confirmRemove": "Ask for confirmation when removing projects."
+    }
   },
   "general": {
     "language": {
       "label": "Language",
+      "title": "Language",
+      "description": "Select language for Godot Launcher (does not change Godot language)",
       "system": "System (Auto-detect)",
-      "description": "Select your preferred language"
+      "options": {
+        "system": "System (Auto-detect)"
+      }
     },
     "theme": {
       "label": "Theme",
