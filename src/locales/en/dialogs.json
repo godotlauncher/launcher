@@ -2,20 +2,32 @@
   "importSettings": {
     "title": "Import Editor Settings",
     "message": "Are you sure you want to import the editor settings from a file?",
-    "detail": "This will replace the current editor settings. A backup will be created."
+    "detail": "This will replace the current editor settings. A backup will be created.",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "selectFile": "Import Editor Settings File",
+    "textResource": "Text Resource"
   },
   "exportSettings": {
-    "title": "Export Editor Settings to File"
+    "title": "Export Editor Settings to File",
+    "allFiles": "All Files"
   },
   "removeProject": {
-    "title": "Remove Project",
-    "message": "Are you sure you want to remove '{{name}}' from the project list?",
-    "detail": "This will not delete the project files."
+    "title": "Remove Project from List",
+    "message": "Are you sure you want to remove the project \"{{projectName}}\" from the list?",
+    "detail": "This will not delete the project on your device.",
+    "ok": "Ok",
+    "cancel": "Cancel",
+    "doNotAskAgain": "Do not ask me again"
   },
   "removeRelease": {
-    "title": "Remove Godot Version",
-    "message": "Are you sure you want to remove Godot {{version}}?",
-    "detail": "This will delete all files for this version."
+    "title": "Remove Release",
+    "message": "Are you sure you want to delete release \"{{version}}\"?",
+    "detail": "This will delete the release from your device. You can install it again later.",
+    "ok": "Ok",
+    "cancel": "Cancel",
+    "error": "Error",
+    "errorMessage": "An error occurred while removing the release."
   },
   "selectFolder": "Select Folder",
   "selectFile": "Select File",

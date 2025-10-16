@@ -1,5 +1,6 @@
 {
   "app": {
+    "label": "App",
     "about": "About",
     "close": "Close",
     "quit": "Quit"
@@ -11,20 +12,22 @@
     "openConfigFolder": "Open Config Folder"
   },
   "project": {
-    "openFolder": "Open Project Folder",
-    "openEditorSettings": "Open Editor Settings Folder",
+    "openProjectFolder": "Open Project Folder",
+    "openEditorSettingsFolder": "Open Editor Settings Folder",
     "openWindowed": "Open Windowed",
-    "exportSettings": "Export Editor Settings to File",
-    "importSettings": "Import Editor Settings from File",
-    "removeProject": "Remove Project"
+    "openWindowedTooltip": "When this option is checked, Godot will launch in windowed mode.",
+    "exportEditorSettings": "Export Editor Settings to File",
+    "importEditorSettings": "Import Editor Settings from File",
+    "removeFromList": "Remove Project From List"
   },
   "release": {
-    "openFolder": "Open Install Folder",
-    "removeRelease": "Remove Version"
+    "openInstalledFolder": "Open Installed Folder",
+    "startProjectManager": "Start the Project Manager",
+    "deleteRelease": "Delete Release from This Device"
   },
   "tray": {
     "recentProjects": "Recent Projects",
-    "showLauncher": "Show Launcher",
+    "showGodotLauncher": "Show Godot Launcher",
     "quit": "Quit"
   }
 }

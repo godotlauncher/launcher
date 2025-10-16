@@ -6,6 +6,7 @@ import { getStoredProjectsList } from '../utils/projects.utils.js';
 import { getConfigDir } from '../utils/prefs.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { launchProject } from '../commands/projects.js';
+import { t } from '../i18n/index.js';
 
 let tray: Tray;
 let mainWindow: BrowserWindow;
@@ -68,7 +69,7 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
     if (last3.length > 0) {
         quickLaunchMenu = [
             {
-                label: 'Recent Projects',
+                label: t('menus.tray.recentProjects'),
                 enabled: false
             }
         ];
@@ -91,7 +92,7 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
     const menu = Menu.buildFromTemplate([
         ...quickLaunchMenu,
         {
-            label: 'Show Godot Launcher',
+            label: t('menus.tray.showGodotLauncher'),
             click: () => {
                 mainWindow.show();
                 if (app.dock) {
@@ -101,7 +102,7 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
         },
         { type: 'separator' },
         {
-            label: 'Quit',
+            label: t('menus.tray.quit'),
             click: () => {
                 app.quit();
             }
