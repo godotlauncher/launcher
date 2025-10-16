@@ -21,5 +21,25 @@
   },
   "messages": {
     "installError": "Something went wrong when installing release"
+  },
+  "table": {
+    "headers": {
+      "version": "Version",
+      "released": "Released",
+      "download": "Download",
+      "installed": "Installed"
+    },
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "Installing...",
+    "downloading": "downloading...",
+    "tooltips": {
+      "installed": "Installed - {{version}}",
+      "installedGDScript": "Installed - {{version}} (GDScript)",
+      "installedDotNet": "Installed - {{version}} .NET",
+      "download": "Download {{version}}",
+      "downloadGDScript": "Download {{version}} (GDScript)",
+      "downloadDotNet": "Download {{version}} .NET"
+    }
   }
 }

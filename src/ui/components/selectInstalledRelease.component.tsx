@@ -1,5 +1,6 @@
 import { TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from '../views/subViews/installEditor.subview';
@@ -14,6 +15,7 @@ type InstalledReleaseSelectorProps = {
 };
 
 export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> = ({ title, currentRelease, onReleaseSelected, onClose }) => {
+    const { t } = useTranslation('common');
     // const [textSearch, setTextSearch] = useState<string>("");
     const [selectedRelease, setSelectedRelease] = useState<InstalledRelease | null>(currentRelease);
     const [filteredReleases, setFilteredReleases] = useState<InstalledRelease[]>([]);
@@ -63,7 +65,7 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                     <div className="w-full flex flex-row items-center justify-between">
                         <div>
                             <h1 className="font-bold">{title}</h1>
-                            <p className="text-base-content/50 text-sm">Select editor version</p>
+                            <p className="text-base-content/50 text-sm">{t('selectRelease.description')}</p>
                         </div>
                         <CloseButton onClick={onClose} />
                     </div>
@@ -73,7 +75,7 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                             <thead className="sticky top-0 bg-base-200">
                                 <tr >
                                     <th className="w-12"></th>
-                                    <th>Name</th>
+                                    <th>{t('selectRelease.tableHeaders.name')}</th>
                                 </tr>
                             </thead>
 
@@ -83,9 +85,9 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                                         <td colSpan={2} className="">
                                             <div className="flex flex-row gap-2 text-warning items-center">
                                                 <TriangleAlert className="stroke-warning" />
-                                                No releases found, required editor version {parseInt(currentRelease.version_number.toString())}.x
+                                                {t('selectRelease.noReleases', { version: parseInt(currentRelease.version_number.toString()) })}
                                             </div>
-                                            <div><button className="btn btn-link" onClick={() => setShowInstallEditor(true)}>Install releases</button></div>
+                                            <div><button className="btn btn-link" onClick={() => setShowInstallEditor(true)}>{t('selectRelease.installReleases')}</button></div>
                                         </td>
                                     </tr>
                                 }
@@ -97,8 +99,8 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                                                     <td><span className="loading loading-ring text-info p-0"></span></td>
                                                     <td >
                                                         {row.version}
-                                                        {row.mono && <span className="badge badge-neutral">.NET</span>}
-                                                        {row.prerelease && <span className="badge badge-secondary">prerelease</span>}
+                                                        {row.mono && <span className="badge badge-neutral">{t('selectRelease.badges.dotnet')}</span>}
+                                                        {row.prerelease && <span className="badge badge-secondary">{t('selectRelease.badges.prerelease')}</span>}
                                                     </td>
                                                 </tr>
                                             );
@@ -123,8 +125,8 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                                                         <div className="flex flex-col gap-1 justify-start">
                                                             <div className="flex flex-row gap-2 ">
                                                                 {row.version}
-                                                                {row.mono && <span className="badge badge-neutral">.NET</span>}
-                                                                {row.prerelease && <span className="badge badge-secondary">prerelease</span>}
+                                                                {row.mono && <span className="badge badge-neutral">{t('selectRelease.badges.dotnet')}</span>}
+                                                                {row.prerelease && <span className="badge badge-secondary">{t('selectRelease.badges.prerelease')}</span>}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -142,7 +144,7 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                                 data-testid="buttonSelectRelease"
                                 disabled={!selectedRelease}
                                 className="btn btn-primary"
-                                onClick={() => selectedRelease && onReleaseSelected(selectedRelease)}>Select</button>
+                                onClick={() => selectedRelease && onReleaseSelected(selectedRelease)}>{t('buttons.select')}</button>
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 import { HardDrive, HardDriveDownload } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 
 type InstallReleaseTableProps = {
@@ -7,7 +8,7 @@ type InstallReleaseTableProps = {
 };
 
 export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releases, onInstall }) => {
-
+    const { t } = useTranslation('installEditor');
     const { isInstalledRelease, isDownloadingRelease } = useRelease();
 
     const installReleaseRequest = (release: ReleaseSummary, mono: boolean) => {
@@ -18,9 +19,9 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
         <table className="table  table-pin-rows table-sm h-full">
             <thead className="sticky top-0 bg-base-200 z-10">
                 <tr >
-                    <th className="min-w-[150px]">Version</th>
-                    <th>Released</th>
-                    <th className="min-w-[200px]">Download </th>
+                    <th className="min-w-[150px]">{t('table.headers.version')}</th>
+                    <th>{t('table.headers.released')}</th>
+                    <th className="min-w-[200px]">{t('table.headers.download')} </th>
                     <th className="min-w-[200px]"></th>
                 </tr>
             </thead>
@@ -33,17 +34,17 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
                             <td className="flex flex-row gap-2">
                                 {
                                     isInstalledRelease(row.version, false)
-                                        ? (<p className="tooltip tooltip-left flex items-center text-info gap-1" data-tip={`Installed - ${row.version} (GDScript)`}>
-                                            <HardDrive /> (GDScript)
+                                        ? (<p className="tooltip tooltip-left flex items-center text-info gap-1" data-tip={t('table.tooltips.installedGDScript', { version: row.version })}>
+                                            <HardDrive /> {t('table.gdscript')}
                                         </p>)
                                         : isDownloadingRelease(row.version, false)
-                                            ? <div className="flex items-center gap-1 text-info"><p className="loading loading-ring loading-sm text-current"></p>(GDScript) Installing...</div>
-                                            : (<p className="tooltip tooltip-left flex items-center" data-tip={`Download ${row.version} (GDScript)`}>
+                                            ? <div className="flex items-center gap-1 text-info"><p className="loading loading-ring loading-sm text-current"></p>{t('table.gdscript')} {t('table.installing')}</div>
+                                            : (<p className="tooltip tooltip-left flex items-center" data-tip={t('table.tooltips.downloadGDScript', { version: row.version })}>
                                                 <button data-testid={`btnDownload${row.version}`}
                                                     className="flex items-center"
                                                     onClick={() => installReleaseRequest(row, false)}
-                                                    aria-label={`download ${row.version} (GDScript)`}>
-                                                    <HardDriveDownload /> (GDScript)
+                                                    aria-label={t('table.tooltips.downloadGDScript', { version: row.version })}>
+                                                    <HardDriveDownload /> {t('table.gdscript')}
                                                 </button>
                                             </p>)
                                 }
@@ -52,13 +53,13 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
 
                                 {
                                     isInstalledRelease(row.version, true)
-                                        ? (<p className="tooltip tooltip-left flex items-center gap-1 text-info" data-tip={`Installed - ${row.version} .NET`}>
-                                            <HardDrive />(.NET)
+                                        ? (<p className="tooltip tooltip-left flex items-center gap-1 text-info" data-tip={t('table.tooltips.installedDotNet', { version: row.version })}>
+                                            <HardDrive />{t('table.dotnet')}
                                         </p>)
                                         : isDownloadingRelease(row.version, true)
-                                            ? <div className="flex items-center gap-1 text-info"><div className="loading loading-ring loading-sm text-current"></div>(.NET) Installing...</div>
-                                            : (<p className="tooltip tooltip-left flex items-center" data-tip={`Download ${row.version} .NET`}>
-                                                <button data-testid={`btnDownload${row.version}-mono`} className="flex flex-row text-xs gap-1 items-center" onClick={() => installReleaseRequest(row, true)} aria-label={`download ${row.version} - .NET`} ><HardDriveDownload />(.NET)</button>
+                                            ? <div className="flex items-center gap-1 text-info"><div className="loading loading-ring loading-sm text-current"></div>{t('table.dotnet')} {t('table.installing')}</div>
+                                            : (<p className="tooltip tooltip-left flex items-center" data-tip={t('table.tooltips.downloadDotNet', { version: row.version })}>
+                                                <button data-testid={`btnDownload${row.version}-mono`} className="flex flex-row text-xs gap-1 items-center" onClick={() => installReleaseRequest(row, true)} aria-label={t('table.tooltips.downloadDotNet', { version: row.version })} ><HardDriveDownload />{t('table.dotnet')}</button>
                                             </p>)
                                 }
                             </td>

@@ -6,12 +6,25 @@
     "save": "Save",
     "delete": "Delete",
     "continue": "Continue",
-    "skip": "Skip"
+    "skip": "Skip",
+    "select": "Select"
   },
   "loading": "Loading...",
   "saving": "Saving...",
   "error": "Error",
   "success": "Success",
   "warning": "Warning",
-  "info": "Information"
+  "info": "Information",
+  "selectRelease": {
+    "description": "Select editor version",
+    "tableHeaders": {
+      "name": "Name"
+    },
+    "noReleases": "No releases found, required editor version {{version}}.x",
+    "installReleases": "Install releases",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "prerelease"
+    }
+  }
 }
