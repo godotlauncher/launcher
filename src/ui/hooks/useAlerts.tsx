@@ -1,4 +1,5 @@
 import React, { PropsWithChildren, ReactNode, useContext, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert } from '../components/alert.component';
 import { Confirm, ConfirmButtons } from '../components/confirm.component';
 
@@ -31,6 +32,7 @@ export const useAlerts = () => useContext(AlertsContext);
 
 
 export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
+    const { t } = useTranslation('common');
     const [alerts, setAlerts] = useState<IAlert[]>([]);
 
     const [confirm, setConfirm] = useState<IConfirm | null>(null);
@@ -55,7 +57,7 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
         setConfirm({
             title,
             content,
-            buttons: [{ typeClass: 'btn-primary', text: 'Ok', onClick: onOk }, { typeClass: 'btn-neutral', text: 'Cancel', onClick: onCancel }],
+            buttons: [{ typeClass: 'btn-primary', text: t('buttons.ok'), onClick: onOk }, { typeClass: 'btn-neutral', text: t('buttons.cancel'), onClick: onCancel }],
             icon,
         });
     };
