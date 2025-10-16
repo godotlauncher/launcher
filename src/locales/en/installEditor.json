@@ -1,0 +1,25 @@
+{
+  "title": "Install Godot Editor",
+  "search": {
+    "placeholder": "Search"
+  },
+  "tabs": {
+    "released": "Released",
+    "prerelease": "Prerelease",
+    "installed": "Installed"
+  },
+  "filters": {
+    "showInstalledOnly": "Show installed only"
+  },
+  "buttons": {
+    "reload": "Reload Release List"
+  },
+  "errors": {
+    "fetchError": "There was an error fetching releases.",
+    "tryAgainLater": "Please",
+    "tryAgain": "try again later"
+  },
+  "messages": {
+    "installError": "Something went wrong when installing release"
+  }
+}

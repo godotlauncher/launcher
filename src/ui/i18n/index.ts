@@ -24,7 +24,7 @@ async function initializeI18n() {
         lng: currentLang,
         fallbackLng: 'en',
         supportedLngs: availableLanguages,
-        ns: ['common', 'projects', 'installs', 'settings', 'help'],
+        ns: ['common', 'projects', 'installs', 'settings', 'help', 'createProject', 'installEditor'],
         defaultNS: 'common',
         interpolation: {
           escapeValue: false, // React already escapes

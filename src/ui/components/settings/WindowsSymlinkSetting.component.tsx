@@ -1,9 +1,11 @@
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
 import { usePreferences } from '../../hooks/usePreferences';
 
 export const WindowsSymlinkSetting: React.FC = () => {
+    const { t } = useTranslation('settings');
     const { preferences, savePreferences, platform } = usePreferences();
     const { addCustomConfirm } = useAlerts();
     const [saving, setSaving] = useState(false);
@@ -32,20 +34,20 @@ export const WindowsSymlinkSetting: React.FC = () => {
             return;
         }
 
-        const title = checked ? 'Enable editor symlinks' : 'Disable editor symlinks';
-        const actionLabel = checked ? 'Enable symlinks' : 'Disable symlinks';
+        const title = checked ? t('windowsSymlinks.enableTitle') : t('windowsSymlinks.disableTitle');
+        const actionLabel = checked ? t('windowsSymlinks.enableAction') : t('windowsSymlinks.disableAction');
         const description = checked
             ? (
                 <div className="flex flex-col gap-2 text-sm">
-                    <p>When enabled, Godot Launcher links each project to the installed editor instead of copying it.</p>
-                    <p>This keeps disk usage low, but Windows may request administrator approval when new symlinks are created.</p>
-                    <p>Existing projects keep their current local copies until their editor version is changed or reinstalled.</p>
+                    <p>{t('windowsSymlinks.enableDescription.line1')}</p>
+                    <p>{t('windowsSymlinks.enableDescription.line2')}</p>
+                    <p>{t('windowsSymlinks.enableDescription.line3')}</p>
                 </div>
             )
             : (
                 <div className="flex flex-col gap-2 text-sm">
-                    <p>Switch back to local copies to avoid elevation prompts. Godot Launcher will copy the editor files into each project instead.</p>
-                    <p>Existing symlinks remain in place until their editor version is changed or reinstalled.</p>
+                    <p>{t('windowsSymlinks.disableDescription.line1')}</p>
+                    <p>{t('windowsSymlinks.disableDescription.line2')}</p>
                 </div>
             );
 
@@ -68,9 +70,9 @@ export const WindowsSymlinkSetting: React.FC = () => {
             <div className="divider"></div>
             <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                    <h2 className="font-bold">Editor symlinks <span className='badge badge-sm badge-info'>Windows Only</span></h2>
+                    <h2 className="font-bold">{t('windowsSymlinks.title')} <span className='badge badge-sm badge-info'>{t('windowsSymlinks.windowsOnly')}</span></h2>
                     <p className="text-sm text-base-content/80">
-                        Choose whether project editors use optional symbolic links or stay with local copies.
+                        {t('windowsSymlinks.description')}
                     </p>
                 </div>
                 <label className="flex flex-row items-start gap-4 cursor-pointer">
@@ -82,11 +84,11 @@ export const WindowsSymlinkSetting: React.FC = () => {
                         disabled={saving}
                     />
                     <span className="text-sm">
-                        Use symbolic links for Windows project editors. This stays off by default so you can opt in when you are ready for potential elevation prompts during editor updates.
+                        {t('windowsSymlinks.checkbox')}
                     </span>
                 </label>
                 <p className="text-xs text-base-content/70">
-                    Changing this setting does not convert existing project links; it only affects how future editor refreshes behave.
+                    {t('windowsSymlinks.note')}
                 </p>
             </div>
         </>

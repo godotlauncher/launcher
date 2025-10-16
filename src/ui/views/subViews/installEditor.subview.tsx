@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -14,6 +15,7 @@ type SubviewProps = {
 
 
 export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
+    const { t } = useTranslation('installEditor');
     const { preferences } = usePreferences();
     const [textSearch, setTextSearch] = useState<string>('');
     const [tab, setTab] = useState<'RELEASE' | 'PRERELEASE' | 'INSTALLED'>('RELEASE');
@@ -39,7 +41,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
             await refreshAvailableReleases();
         }
         else {
-            addAlert('Error', result.error || 'Something went wrong when installing release');
+            addAlert('Error', result.error || t('messages.installError'));
         }
     };
 
@@ -101,7 +103,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
                         <div className="flex flex-row justify-between items-start">
                             <div className="flex flex-col gap-1">
-                                <h1 data-testid="settingsTitle" className="text-2xl">Install Godot Editor</h1>
+                                <h1 data-testid="settingsTitle" className="text-2xl">{t('title')}</h1>
                                 <p className="badge text-base-content/50">{preferences?.install_location}</p>
                             </div>
                             <div className="flex gap-2">
@@ -112,7 +114,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                     <div className="flex flex-row justify-end my-2 pr-1 items-center">
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder={t('search.placeholder')}
                             className="input input-bordered w-full max-w-xs"
                             onChange={(e) => setTextSearch(e.target.value)}
                             value={textSearch}
@@ -133,7 +135,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 className={clsx('tab w-[150px] justify-start', { 'tab-active': (tab === 'RELEASE') })}
                             >
                                 <p className="flex gap-2 items-center">
-                                    Released
+                                    {t('tabs.released')}
                                     ({
                                         installedReleases.reduce((acc, i) => acc += (i.prerelease ? 0 : 1), 0).toString()
                                     })
@@ -147,7 +149,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 className={clsx('tab w-[150px] justify-start', { 'tab-active': (tab === 'PRERELEASE') })}
                             >
                                 <p className="flex gap-2 items-center">
-                                    Prerelease
+                                    {t('tabs.prerelease')}
                                     ({
                                         installedReleases.reduce((acc, i) => acc += (i.prerelease ? 1 : 0), 0).toString()
                                     })
@@ -163,17 +165,17 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                         >Installed</a> */}
                         </div>
                         <div className="flex flex-row gap-2">
-                            <span className="flex items-center tooltip text-info" data-tip="Show installed only">
+                            <span className="flex items-center tooltip text-info" data-tip={t('filters.showInstalledOnly')}>
 
                                 <label className="swap swap-indeterminate">
                                     {/* this hidden checkbox controls the state */}
                                     <input type="checkbox" onChange={(e) => setFilterInstalled(e.target.checked)} />
-                                    <div className="swap-on  text-sm flex gap-2 items-center text-info"><HardDrive className="stroke-info" />Show installed only</div>
-                                    <div className="swap-off text-sm flex gap-2 items-center text-base-content"><HardDrive />Show installed only</div>
+                                    <div className="swap-on  text-sm flex gap-2 items-center text-info"><HardDrive className="stroke-info" />{t('filters.showInstalledOnly')}</div>
+                                    <div className="swap-off text-sm flex gap-2 items-center text-base-content"><HardDrive />{t('filters.showInstalledOnly')}</div>
                                 </label>
                             </span>
 
-                            <button onClick={refreshAvailableReleases} className="btn btn-sm" title="Reload Release List"><RefreshCcw className="w-4" /></button>
+                            <button onClick={refreshAvailableReleases} className="btn btn-sm" title={t('buttons.reload')}><RefreshCcw className="w-4" /></button>
 
                         </div>
                     </div>
@@ -186,9 +188,9 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                         {
                             hasError &&
                             <div>
-                                <div>There was an error fetching releases.</div>
+                                <div>{t('errors.fetchError')}</div>
                                 <div>{hasError}</div>
-                                <div>Please <button className="underline cursor-pointer hover:no-underline" onClick={async () => await refreshAvailableReleases()}>try again later</button></div>
+                                <div>{t('errors.tryAgainLater')} <button className="underline cursor-pointer hover:no-underline" onClick={async () => await refreshAvailableReleases()}>{t('errors.tryAgain')}</button></div>
                             </div>
                         }
                         {
