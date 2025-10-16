@@ -47,6 +47,7 @@ import {
     getAllTranslations,
     changeLanguage,
 } from './i18n/index.js';
+import { refreshMenu } from './helpers/menu.helper.js';
 
 // create default folder if not exist
 async function createDefaultFolder() {
@@ -253,8 +254,8 @@ export function registerHandlers() {
 
     ipcMainHandler('i18n:change-language', async (_, lang: string) => {
         await changeLanguage(lang);
-        
-        // Update user preferences
+        refreshMenu();
+        // Update user preferences  
         const prefs = await getUserPreferences();
         await setUserPreferences({ ...prefs, language: lang });
         
