@@ -154,6 +154,7 @@ suite('prefs.util', test => {
                 windows_enable_symlinks: false,
                 windows_symlink_win_notify: false,
                 vs_code_path: "",
+                language: "system",
             });
         });
     });
@@ -191,6 +192,7 @@ suite('prefs.util', test => {
                 windows_enable_symlinks: false,
                 windows_symlink_win_notify: true,
                 vs_code_path: "",
+                language: "system",
             });
         });
     });
