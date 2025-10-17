@@ -34,6 +34,18 @@ vi.mock('../commands/projects.js', () => ({
     launchProject: vi.fn()
 }));
 
+vi.mock('../i18n/index.js', () => {
+    const translations = {
+        'menus:tray.recentProjects': 'Recent Projects',
+        'menus:tray.showGodotLauncher': 'Show Godot Launcher',
+        'menus:tray.quit': 'Quit',
+    } as const;
+
+    return {
+        t: vi.fn((key: string) => translations[key as keyof typeof translations] ?? key),
+    };
+});
+
 // Create a mock for electron-updater first
 vi.mock('electron-updater', () => ({
     default: {
