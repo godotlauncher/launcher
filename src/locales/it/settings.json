@@ -138,9 +138,9 @@
     "description": "Configura come GD Launcher controlla gli aggiornamenti",
     "autoCheck": "Controlla automaticamente gli aggiornamenti",
     "checkNow": "Controlla aggiornamenti",
-    "updateAvailable": "La versione {{version}} è disponibile, riavvia Godot Launcher per installarla.",
-    "updateReady": "È disponibile una nuova versione, riavvia Godot Launcher per installarla.",
-    "restartNow": "Riavvia ora."
+  "updateAvailable": "La versione {{version}} è disponibile, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
+  "updateReady": "È disponibile una nuova versione, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
+  "restartNow": "Riavvia ora."
   },
   "windowsSymlinks": {
     "title": "Collegamenti simbolici dell'editor",

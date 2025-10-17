@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 import './App.css';
 
@@ -125,7 +125,24 @@ function App() {
                 <div className="flex flex-1"></div>
                 {(updateAvailable && updateAvailable?.type === 'ready') && (
                     <div className="gap-2 p-4 m-2 text-sm text-info rounded-xl bg-base-200">
-                        {updateAvailable?.version ? t('app.update.version', { version: updateAvailable?.version }) : t('app.update.newVersion')} {t('app.update.available')} <button onClick={installAndRelaunch} className="underline cursor-pointer hover:no-underline">{t('app.update.restartNow')}</button>
+                        {updateAvailable?.version ? (
+                            <Trans
+                                ns="common"
+                                i18nKey="app.update.bannerWithVersion"
+                                values={{ version: updateAvailable.version }}
+                                components={{
+                                    Button: <button onClick={installAndRelaunch} className="underline cursor-pointer hover:no-underline" />
+                                }}
+                            />
+                        ) : (
+                            <Trans
+                                ns="common"
+                                i18nKey="app.update.bannerNoVersion"
+                                components={{
+                                    Button: <button onClick={installAndRelaunch} className="underline cursor-pointer hover:no-underline" />
+                                }}
+                            />
+                        )}
                     </div>
                 )}
                 <div className="border-t-2 border-solid border-base-200">

@@ -1,5 +1,5 @@
 import { ChangeEvent } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useApp } from '../../hooks/useApp';
 
@@ -40,7 +40,20 @@ export const CheckForUpdates: React.FC = () => {
 
                     {updateAvailable && updateAvailable?.type === 'ready' && (
                         <div className="gap-2 p-4 m-2 text-sm text-info rounded-xl bg-base-200">
-                            {updateAvailable?.version ? t('updates.updateAvailable', { version: updateAvailable.version }) : t('updates.updateReady')} <button onClick={() => installAndRelaunch()} className="underline cursor-pointer hover:no-underline">{t('updates.restartNow')}</button>
+                            {updateAvailable?.version ? (
+                                <Trans
+                                    ns="settings"
+                                    i18nKey="updates.updateAvailable"
+                                    values={{ version: updateAvailable.version }}
+                                    components={{ Button: <button onClick={() => installAndRelaunch()} className="underline cursor-pointer hover:no-underline" /> }}
+                                />
+                            ) : (
+                                <Trans
+                                    ns="settings"
+                                    i18nKey="updates.updateReady"
+                                    components={{ Button: <button onClick={() => installAndRelaunch()} className="underline cursor-pointer hover:no-underline" /> }}
+                                />
+                            )}
                         </div>
                     )}
                 </div>

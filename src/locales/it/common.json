@@ -28,7 +28,9 @@
       "available": "è disponibile, riavvia Godot Launcher per installarla.",
       "version": "Versione {{version}}",
       "newVersion": "È disponibile una nuova versione",
-      "restartNow": "Riavvia ora."
+      "restartNow": "Riavvia ora.",
+      "bannerWithVersion": "La versione {{version}} è disponibile, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
+      "bannerNoVersion": "È disponibile una nuova versione, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>"
     }
   },
   "selectRelease": {

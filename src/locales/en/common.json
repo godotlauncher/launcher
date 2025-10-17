@@ -28,7 +28,9 @@
       "available": "is available, restart Godot Launcher to install.",
       "version": "Version {{version}}",
       "newVersion": "A new version",
-      "restartNow": "Restart now."
+      "restartNow": "Restart now.",
+      "bannerWithVersion": "Version {{version}} is available, restart Godot Launcher to install. <Button>Restart now</Button>",
+      "bannerNoVersion": "A new version is available, restart Godot Launcher to install. <Button>Restart now</Button>"
     }
   },
   "selectRelease": {

@@ -138,9 +138,9 @@
     "description": "Configure how GD Launcher checks for updates",
     "autoCheck": "Automatically check for updates",
     "checkNow": "Check for updates",
-    "updateAvailable": "Version {{version}} is available, restart Godot Launcher to install.",
-    "updateReady": "A new version is available, restart Godot Launcher to install.",
-    "restartNow": "Restart now."
+  "updateAvailable": "Version {{version}} is available, restart Godot Launcher to install. <Button>Restart now</Button>",
+  "updateReady": "A new version is available, restart Godot Launcher to install. <Button>Restart now</Button>",
+  "restartNow": "Restart now."
   },
   "windowsSymlinks": {
     "title": "Editor symlinks",
