@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 
-import { ipcMainHandler } from './utils.js';
+import { ipcMainHandler, isDev } from './utils.js';
 import {
     getConfigDir,
     getDefaultPrefs,
@@ -254,11 +254,17 @@ export function registerHandlers() {
 
     ipcMainHandler('i18n:change-language', async (_, lang: string) => {
         await changeLanguage(lang);
-        refreshMenu();
+
+        // Refresh menu to update translations
+        // only in dev mode to avoid disrupting user experience
+        if (isDev()) {
+            refreshMenu();
+        }
+        
         // Update user preferences  
         const prefs = await getUserPreferences();
         await setUserPreferences({ ...prefs, language: lang });
-        
+
         // Return new translations for renderer
         return getAllTranslations(lang);
     });
