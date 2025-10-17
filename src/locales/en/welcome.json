@@ -33,10 +33,7 @@
   },
   "welcomeStep": {
     "title": "Thanks for using Godot Launcher!",
-    "description1": "Godot Launcher makes it easy to",
-    "description1Bold": "manage multiple versions of the Godot Engine",
-    "description2": "and keeps",
-    "description2Bold": "editor settings separate for each project.",
+    "description": "Godot Launcher makes it easy to <strong>manage multiple versions of the Godot Engine</strong> and keeps <strong>editor settings separate for each project.</strong>",
     "feedback": "By using it, you're helping to support the project! If you ever have feedback or find a bug, let us know, we'd love to make it even better for you.",
     "enjoy": "Enjoy and happy coding!"
   },
@@ -44,15 +41,9 @@
     "title": "You're All Set! 🚀",
     "subtitle": "Godot Launcher is ready to go! You can now manage your projects and explore all the features.",
     "whatsNext": "What's Next?",
-    "installTab": "Install and experiment with the latest prereleases in the",
-    "installTabBold": "Install",
-    "installTabSuffix": "tab.",
-    "projectsTab": "Quickly add or create projects in the",
-    "projectsTabBold": "Projects",
-    "projectsTabSuffix": "tab.",
-    "settingsTab": "Customize your experience just the way you like in the",
-    "settingsTabBold": "Settings",
-    "settingsTabSuffix": "tab."
+    "installTab": "Install and experiment with the latest prereleases in the <strong>Install</strong> tab.",
+    "projectsTab": "Quickly add or create projects in the <strong>Projects</strong> tab.",
+    "settingsTab": "Customize your experience just the way you like in the <strong>Settings</strong> tab."
   },
   "customizeBehavior": {
     "afterLaunching": "After Launching a Project",
@@ -87,35 +78,21 @@
     "intro": "The Godot Launcher creates a copy of the editor for each project.",
     "whyTitle": "Why?",
     "reason": "Creating symbolic links on macOS is not restricted by permissions, but opening the editor through a symlink has proven to be unreliable. To ensure a smooth experience, we provide a dedicated copy of the engine for each project instead. While Godot is only around 200MB—and this is generally not a problem—be aware that multiple projects can lead to increased disk usage.",
-    "dotnetNote": "NOTE: If you are working with .NET Editors, you will need to install the .NET SDK from",
-    "dotnetLink": "Microsoft .NET website"
+    "dotnetNote": "NOTE: If you are working with .NET Editors, you will need to install the .NET SDK from <link>Microsoft .NET website<icon /></link>"
   },
   "windowsStep": {
     "title": "Windows Note",
-    "intro": "Starting from version 1.4.0, Godot Launcher can create",
-    "symlinkCode": "symlinks",
-    "intro2": "to the editor for each project. To keep setup simple, we now default to local copies. You can enable symlinks anytime from",
-    "settingsPath": "Settings → Behavior → Editor symlinks",
-    "intro3": "when you want lower disk usage.",
-    "whatChangedTitle": "What changed?",
+    "intro": "Starting from version 1.4.0, Godot Launcher can create <code>symlinks</code> to the editor for each project. To keep setup simple, we now default to local copies. You can enable symlinks anytime from <strong>Settings → Behavior → Editor symlinks</strong> when you want lower disk usage.",
     "change1": "Creating symbolic links on Windows requires administrator privileges and elevated command execution. The launcher now elevates permissions only when creating symlinks.",
-    "change2": "You will see a UAC prompt only if you are not an",
-    "administratorCode": "Administrator",
-    "change2b": "on your PC and if",
-    "developerModeCode": "Developer Mode",
-    "change2c": "is not enabled.",
-    "change3": "Ready to try symlinks? Toggle on",
-    "editorSymlinks": "Editor symlinks",
-    "change3b": "in Settings when you're prepared for the occasional elevation prompt.",
-    "dotnetNote": "NOTE: If you are using .NET-based editors, you need to install the .NET SDK from",
-    "dotnetLink": "Microsoft .NET website"
+    "change2": "You will see a UAC prompt only if you are not an <code>Administrator</code> on your PC and if <code>Developer Mode</code> is not enabled.",
+    "change3": "Ready to try symlinks? Toggle on <strong>Editor symlinks</strong> in Settings when you're prepared for the occasional elevation prompt.",
+    "dotnetNote": "NOTE: If you are using .NET-based editors, you need to install the .NET SDK from <link>Microsoft .NET website<icon /></link>"
   },
   "linuxStep": {
     "title": "Linux Note",
     "intro": "Godot Launcher uses symbolic links for each project",
     "whyTitle": "Why?",
     "reason": "Unlike Windows and MacOS version, Linux uses symbolic links to the editor to launch projects. This saves disk space and allows for per project settings.",
-    "dotnetNote": "NOTE: If you are working with .NET Editors, you will need to install the .NET SDK from",
-    "dotnetLink": "Microsoft .NET website"
+    "dotnetNote": "NOTE: If you are working with .NET Editors, you will need to install the .NET SDK from <link>Microsoft .NET website<icon /></link>"
   }
 }

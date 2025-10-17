@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 
@@ -20,8 +20,19 @@ export const LinuxStep: React.FC = () => {
                         {t('linuxStep.reason')}
                     </li>
                     <li className="flex flex-row gap-1 font-bold">
-                        {t('linuxStep.dotnetNote')}
-                        <button className="flex flex-row hover:underline items-basleline text-info" onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}>{t('linuxStep.dotnetLink')} <ExternalLink className="w-4" /></button>
+                        <Trans
+                            i18nKey="linuxStep.dotnetNote"
+                            ns="welcome"
+                            components={{
+                                link: (
+                                    <button
+                                        className="flex flex-row hover:underline items-baseline text-info"
+                                        onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}
+                                    />
+                                ),
+                                icon: <ExternalLink className="w-4" />
+                            }}
+                        />
                     </li>
                 </ul>
             </div>

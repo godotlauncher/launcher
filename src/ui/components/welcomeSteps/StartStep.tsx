@@ -1,7 +1,7 @@
 
 
 
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 
 export const StartStep: React.FC = () => {
@@ -17,9 +17,33 @@ export const StartStep: React.FC = () => {
             <div className="flex flex-col gap-4">
                 <p className="font-bold">{t('startStep.whatsNext')}</p>
                 <ul className="flex flex-col list-disc ml-0 pl-4 gap-2">
-                    <li>{t('startStep.installTab')} <strong>{t('startStep.installTabBold')}</strong> {t('startStep.installTabSuffix')}</li>
-                    <li>{t('startStep.projectsTab')} <strong>{t('startStep.projectsTabBold')}</strong> {t('startStep.projectsTabSuffix')}</li>
-                    <li>{t('startStep.settingsTab')} <strong>{t('startStep.settingsTabBold')}</strong> {t('startStep.settingsTabSuffix')}</li>
+                    <li>
+                        <Trans
+                            i18nKey="startStep.installTab"
+                            ns="welcome"
+                            components={{
+                                strong: <strong />
+                            }}
+                        />
+                    </li>
+                    <li>
+                        <Trans
+                            i18nKey="startStep.projectsTab"
+                            ns="welcome"
+                            components={{
+                                strong: <strong />
+                            }}
+                        />
+                    </li>
+                    <li>
+                        <Trans
+                            i18nKey="startStep.settingsTab"
+                            ns="welcome"
+                            components={{
+                                strong: <strong />
+                            }}
+                        />
+                    </li>
                 </ul>
             </div>
         </div>

@@ -1,18 +1,17 @@
-import log from 'electron-log/renderer';
-
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { WelcomeStep } from '../components/welcomeSteps/welcomeStep';
 import clsx from 'clsx';
-import { CurrentSettingsStep } from '../components/welcomeSteps/currentSettingsStep';
-import { SetLocationStep } from '../components/welcomeSteps/SetLocationStep';
-import { CustomizeBehaviorStep, } from '../components/welcomeSteps/CustomizeBehaviorStep';
-import { StartStep } from '../components/welcomeSteps/StartStep';
-import { usePreferences } from '../hooks/usePreferences';
-import { MacOSStep } from '../components/welcomeSteps/macosStep';
-import { WindowsStep } from '../components/welcomeSteps/WindowsStep';
-import { LinuxStep } from '../components/welcomeSteps/linuxStep';
+import log from 'electron-log/renderer';
+import React, { JSX, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
+import { CurrentSettingsStep } from '../components/welcomeSteps/currentSettingsStep';
+import { CustomizeBehaviorStep, } from '../components/welcomeSteps/CustomizeBehaviorStep';
+import { LinuxStep } from '../components/welcomeSteps/linuxStep';
+import { MacOSStep } from '../components/welcomeSteps/macosStep';
+import { SetLocationStep } from '../components/welcomeSteps/SetLocationStep';
+import { StartStep } from '../components/welcomeSteps/StartStep';
+import { WelcomeStep } from '../components/welcomeSteps/welcomeStep';
+import { WindowsStep } from '../components/welcomeSteps/WindowsStep';
+import { usePreferences } from '../hooks/usePreferences';
 
 interface StepDetails {
     title: string;

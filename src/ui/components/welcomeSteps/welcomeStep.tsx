@@ -1,5 +1,5 @@
 import { ExternalLinkIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 export const WelcomeStep: React.FC = () => {
     const { t } = useTranslation('welcome');
@@ -7,7 +7,15 @@ export const WelcomeStep: React.FC = () => {
     return (
         <div className="flex flex-col gap-4 text-sm ">
             <p>{t('welcomeStep.title')}</p>
-            <p>{t('welcomeStep.description1')} <strong>{t('welcomeStep.description1Bold')}</strong> {t('welcomeStep.description2')} <strong>{t('welcomeStep.description2Bold')}</strong></p>
+            <p>
+                <Trans
+                    i18nKey="welcomeStep.description"
+                    ns="welcome"
+                    components={{
+                        strong: <strong />
+                    }}
+                />
+            </p>
             <p>{t('welcomeStep.feedback')}</p>
             <p>{t('welcomeStep.enjoy')}
                 <button className="btn btn-link p-0 flex gap-1"
