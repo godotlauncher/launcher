@@ -17,7 +17,8 @@
   "errors": {
     "fetchError": "Si è verificato un errore durante il recupero delle versioni.",
     "tryAgainLater": "Per favore",
-    "tryAgain": "riprovare più tardi"
+    "tryAgain": "riprovare più tardi",
+    "retryInline": "Si è verificato un errore. <Button>Riprova</Button>"
   },
   "messages": {
     "installError": "Qualcosa è andato storto durante l'installazione della versione"

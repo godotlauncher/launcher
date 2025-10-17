@@ -126,6 +126,7 @@
       "notDetectedTitle": "Visual Studio Code non rilevato!",
       "notDetectedMessage": "Godot Launcher può rilevare automaticamente VS Code solo se è stato aggiunto al PATH. Puoi invece specificare il percorso dell'eseguibile qui sotto",
       "pathLabel": "Percorso dell'eseguibile di Visual Studio Code",
+    "selectExecutable": "Seleziona l'eseguibile di Visual Studio Code",
       "autodetected": "(rilevato automaticamente)",
       "noPathSet": "nessun percorso impostato",
       "clearCustomPath": "Cancella percorso personalizzato",

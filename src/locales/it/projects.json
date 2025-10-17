@@ -32,6 +32,7 @@
     "noProjects": "Nessun progetto trovato",
     "noReleases": "Nessuna versione installata.",
     "goToInstalls": "Vai alle installazioni.",
+    "noReleasesCta": "Nessuna versione installata. <Link>Vai alle installazioni</Link>",
     "projectAdded": "Progetto aggiunto correttamente",
     "projectRemoved": "Progetto rimosso",
     "editorChanged": "Editor modificato correttamente",

@@ -41,6 +41,7 @@
   "messages": {
     "noReleases": "Ancora nessuna versione installata.",
     "install": "Installa.",
+    "noReleasesCta": "Ancora nessuna versione installata. <Link>Installa</Link>",
     "noInstalled": "Nessuna versione di Godot installata",
     "noAvailable": "Nessuna versione disponibile",
     "installing": "Installazione in corso...",

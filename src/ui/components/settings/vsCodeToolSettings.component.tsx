@@ -25,7 +25,7 @@ export const VSCodeToolSettings: React.FC = () => {
 
     const selectVsCodePath = async (currentPath: string) => {
         setDialogOpen(true);
-        const result = await window.electron.openFileDialog(currentPath, 'Select Visual Studio Code Executable', [{ name: 'All Files', extensions: ['*'] }]);
+    const result = await window.electron.openFileDialog(currentPath, t('tools.vscode.selectExecutable'), [{ name: 'All Files', extensions: ['*'] }]);
         if (!result.canceled) {
             if (preferences) {
                 await updatePreferences({ vs_code_path: result.filePaths[0] });

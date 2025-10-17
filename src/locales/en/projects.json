@@ -32,6 +32,7 @@
     "noProjects": "No projects found",
     "noReleases": "No releases installed.",
     "goToInstalls": "Go to installs.",
+    "noReleasesCta": "No releases installed yet. <Link>Go to installs</Link>",
     "projectAdded": "Project added successfully",
     "projectRemoved": "Project removed",
     "editorChanged": "Editor changed successfully",

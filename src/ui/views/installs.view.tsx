@@ -1,6 +1,6 @@
 import { CircleX, EllipsisVertical, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
@@ -20,19 +20,19 @@ export const InstallsView: React.FC = () => {
     const getFilteredRows = () => {
         // merge downloading and installed releases for proper display
         const all = installedReleases.concat(downloadingReleases.map(r =>
-            ({
-                version: r.version,
-                version_number: -1,
-                install_path: '',
-                mono: r.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: r.prerelease,
-                config_version: 5,
-                published_at: r.published_at,
-                valid: true
-            })));
+        ({
+            version: r.version,
+            version_number: -1,
+            install_path: '',
+            mono: r.mono,
+            platform: '',
+            arch: '',
+            editor_path: '',
+            prerelease: r.prerelease,
+            config_version: 5,
+            published_at: r.published_at,
+            valid: true
+        })));
 
         if (textSearch === '') return all.sort(sortReleases);
         const selection = all.filter(row => row.version.toLowerCase().includes(textSearch.toLowerCase()));
@@ -69,7 +69,16 @@ export const InstallsView: React.FC = () => {
 
                 {
                     (installedReleases.length < 1 && downloadingReleases.length < 1)
-                        ? (<div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />{t('messages.noReleases')}<a onClick={() => setInstallOpen(true)} className="underline cursor-pointer">{t('messages.install')}</a></div>)
+                        ? (
+                            <div className="text-warning flex gap-2">
+                                <TriangleAlert className="stroke-warning" />
+                                <Trans
+                                    ns="installs"
+                                    i18nKey="messages.noReleasesCta"
+                                    components={{ Link: <a onClick={() => setInstallOpen(true)} className="underline cursor-pointer" /> }}
+                                />
+                            </div>
+                        )
                         : (
                             <div className="overflow-auto h-full">
                                 <table className="table table-sm">

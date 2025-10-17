@@ -17,7 +17,8 @@
   "errors": {
     "fetchError": "There was an error fetching releases.",
     "tryAgainLater": "Please",
-    "tryAgain": "try again later"
+    "tryAgain": "try again later",
+    "retryInline": "Please try again. <Button>Try again</Button>"
   },
   "messages": {
     "installError": "Something went wrong when installing release"

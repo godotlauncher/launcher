@@ -1,6 +1,6 @@
 import logger from 'electron-log';
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -233,7 +233,19 @@ export const ProjectsView: React.FC = () => {
                         }
                     </div>
                 </div>
-                {(!releaseLoading && installedReleases.length < 1) && <div className="text-warning flex gap-2"><TriangleAlert className="stroke-warning" />{t('messages.noReleases')}<a onClick={() => setCurrentView('installs')} className="underline cursor-pointer">{t('messages.goToInstalls')}</a></div>}
+                
+                {(!releaseLoading && installedReleases.length < 1) && (
+                    <div className="text-warning flex gap-2">
+                        <TriangleAlert className="stroke-warning" />
+                        <Trans
+                            ns="projects"
+                            i18nKey="messages.noReleasesCta"
+                            components={{
+                                Link: <a onClick={() => setCurrentView('installs')} className="underline cursor-pointer" />
+                            }}
+                        />
+                    </div>
+                )}
                 <div className="divider m-0"></div>
                 {loading && <div className="loading loading-dots loading-lg"></div>}
                 {!loading &&

@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -190,7 +190,13 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                             <div>
                                 <div>{t('errors.fetchError')}</div>
                                 <div>{hasError}</div>
-                                <div>{t('errors.tryAgainLater')} <button className="underline cursor-pointer hover:no-underline" onClick={async () => await refreshAvailableReleases()}>{t('errors.tryAgain')}</button></div>
+                                <div>
+                                    <Trans
+                                        ns="installEditor"
+                                        i18nKey="errors.retryInline"
+                                        components={{ Button: <button className="underline cursor-pointer hover:no-underline" onClick={async () => await refreshAvailableReleases()} /> }}
+                                    />
+                                </div>
                             </div>
                         }
                         {
