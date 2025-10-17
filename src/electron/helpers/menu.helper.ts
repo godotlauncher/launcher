@@ -5,7 +5,7 @@ import { t } from '../i18n/index.js';
 
 let mainWindow: BrowserWindow;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function createMenu(window: BrowserWindow) {
     mainWindow = window;
     const menu = buildMenu();
@@ -70,6 +70,6 @@ function buildMenu(): Electron.Menu {
                 },
             ],
         },
-    ])
+    ]);
 
 }
