@@ -78,7 +78,7 @@
     "intro": "Godot Launcher crea una copia dell'editor per ogni progetto.",
     "whyTitle": "Perché?",
     "reason": "La creazione di collegamenti simbolici su macOS non è limitata dai permessi, ma aprire l'editor tramite un collegamento si è dimostrato poco affidabile. Per offrirti un'esperienza stabile forniamo invece una copia dedicata del motore per ogni progetto. Anche se Godot pesa circa 200 MB — e di norma non rappresenta un problema — ricorda che molti progetti possono aumentare l'uso del disco.",
-    "dotnetNote": "NOTA: Se lavori con editor .NET dovrai installare il .NET SDK dal <link>sito web Microsoft .NET<icon /></link>"
+  "dotnetNote": "NOTA: Se lavori con editor .NET dovrai installare il .NET SDK dal <ButtonLink>sito web Microsoft .NET</ButtonLink> <Icon />"
   },
   "windowsStep": {
     "title": "Nota per Windows",
@@ -86,13 +86,13 @@
     "change1": "La creazione di collegamenti simbolici su Windows richiede privilegi amministrativi ed esecuzione elevata. Il launcher ora richiede l'elevazione solo quando crea collegamenti simbolici.",
     "change2": "Vedrai una richiesta UAC solo se non sei un <code>Amministratore</code> sul tuo PC e se <code>Modalità sviluppatore</code> non è abilitata.",
     "change3": "Pronto a provare i collegamenti? Attiva <strong>Collegamenti simbolici editor</strong> nelle Impostazioni quando sei pronto a gestire le occasionali richieste di elevazione.",
-    "dotnetNote": "NOTA: Se utilizzi editor basati su .NET devi installare il .NET SDK dal <link>sito web Microsoft .NET<icon /></link>"
+  "dotnetNote": "NOTA: Se utilizzi editor basati su .NET devi installare il .NET SDK dal <ButtonLink>sito web Microsoft .NET</ButtonLink> <Icon />"
   },
   "linuxStep": {
     "title": "Nota per Linux",
     "intro": "Godot Launcher utilizza collegamenti simbolici per ogni progetto",
     "whyTitle": "Perché?",
     "reason": "A differenza delle versioni Windows e macOS, su Linux vengono utilizzati collegamenti simbolici all'editor per avviare i progetti. Questo consente di risparmiare spazio su disco e di mantenere impostazioni per progetto.",
-    "dotnetNote": "NOTA: Se lavori con editor .NET dovrai installare il .NET SDK dal <link>sito web Microsoft .NET<icon /></link>"
+  "dotnetNote": "NOTA: Se lavori con editor .NET dovrai installare il .NET SDK dal <ButtonLink>sito web Microsoft .NET</ButtonLink> <Icon />"
   }
 }

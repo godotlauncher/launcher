@@ -24,13 +24,13 @@ export const LinuxStep: React.FC = () => {
                             i18nKey="linuxStep.dotnetNote"
                             ns="welcome"
                             components={{
-                                link: (
+                                ButtonLink: (
                                     <button
-                                        className="flex flex-row hover:underline items-baseline text-info"
+                                        className="hover:underline text-info"
                                         onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}
                                     />
                                 ),
-                                icon: <ExternalLink className="w-4" />
+                                Icon: <ExternalLink className="w-4 inline-block" />
                             }}
                         />
                     </li>

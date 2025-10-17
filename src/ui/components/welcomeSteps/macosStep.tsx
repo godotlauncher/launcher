@@ -19,18 +19,18 @@ export const MacOSStep: React.FC = () => {
                     <li>
                         {t('macosStep.reason')}
                     </li>
-                    <li className="flex flex-row gap-1 font-bold">
+                    <li className="flex flex-row items-center gap-1 font-bold">
                         <Trans
                             i18nKey="macosStep.dotnetNote"
                             ns="welcome"
                             components={{
-                                link: (
+                                ButtonLink: (
                                     <button
-                                        className="flex flex-row hover:underline items-baseline text-info"
+                                        className="hover:underline text-info"
                                         onClick={() => openExternalLink('https://dotnet.microsoft.com/download')}
                                     />
                                 ),
-                                icon: <ExternalLink className="w-4" />
+                                Icon: <ExternalLink className="w-4 inline-block" />
                             }}
                         />
                     </li>
