@@ -1,0 +1,63 @@
+{
+  "title": "Nouveau projet",
+  "project": {
+    "title": "Projet",
+    "dotNetBadge": ".NET",
+    "prereleaseBadge": "préversion",
+    "noVersionsInstalled": "Aucune version de Godot installée",
+    "nameplaceholder": "Nom du projet",
+    "downloading": "Téléchargement...",
+    "nameRequired": "Le nom du projet est requis"
+  },
+  "renderer": {
+    "title": "Moteur de rendu",
+    "forwardPlus": "Forward Plus",
+    "mobile": "Mobile",
+    "compatible": "Compatible",
+    "gles3": "GLES3",
+    "gles2": "GLES2",
+    "forwardPlusFeatures": {
+      "desktop": "Prend en charge uniquement les plateformes de bureau.",
+      "advanced3d": "Graphiques 3D avancés disponibles.",
+      "scalable": "Peut évoluer vers de grandes scènes complexes.",
+      "renderingDevice": "Utilise le backend RenderingDevice.",
+      "slowerSimple": "Rendu plus lent des scènes simples."
+    },
+    "mobileFeatures": {
+      "platforms": "Prend en charge les plateformes de bureau et mobiles.",
+      "less3d": "Graphiques 3D moins avancés.",
+      "lessScalable": "Moins évolutif pour les scènes complexes.",
+      "renderingDevice": "Utilise le backend RenderingDevice.",
+      "fastSimple": "Rendu rapide des scènes simples."
+    },
+    "compatibleFeatures": {
+      "platforms": "Prend en charge les plateformes de bureau, mobiles et web.",
+      "least3d": "Graphiques 3D les moins avancés (actuellement en cours de développement).",
+      "lowEnd": "Destiné aux appareils bas de gamme/anciens.",
+      "opengl": "Utilise le backend OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
+      "fastest": "Rendu le plus rapide des scènes simples."
+    }
+  },
+  "otherSettings": {
+    "title": "Autres paramètres",
+    "initGit": "Initialiser le dépôt Git",
+    "gitNotInstalled": "Git n'est pas installé sur cet ordinateur",
+    "setupVSCode": "Configurer Visual Studio Code comme éditeur de texte",
+    "vscodeNotInstalled": "Visual Studio Code n'est pas installé sur cet ordinateur",
+    "vscodeHelp": {
+      "title": "Pourquoi Visual Studio Code n'est-il pas détecté ?",
+      "message": "Godot Launcher ne peut détecter automatiquement VS Code que s'il a été installé dans le PATH. Vous pouvez à la place spécifier le chemin vers l'exécutable VS Code dans les paramètres."
+    }
+  },
+  "buttons": {
+    "editNow": "Modifier maintenant",
+    "create": "Créer le projet"
+  },
+  "errors": {
+    "projectExists": "Le projet '{{name}}' existe déjà",
+    "invalidEditorVersion": "Version de l'éditeur invalide : {{version}}",
+    "failedProjectDefinition": "Échec de l'obtention de la définition du projet pour la version : {{version}}",
+    "folderNotEmpty": "Le dossier du projet '{{name}}' existe déjà et n'est pas vide, vouliez-vous ajouter un projet existant ?",
+    "failedCreateFile": "Échec de la création du fichier du projet : {{error}}"
+  }
+}

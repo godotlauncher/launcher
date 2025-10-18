@@ -1,0 +1,50 @@
+{
+  "title": "Installer l'éditeur Godot",
+  "search": {
+    "placeholder": "Rechercher"
+  },
+  "tabs": {
+    "released": "Publiées",
+    "prerelease": "Préversion",
+    "installed": "Installées"
+  },
+  "filters": {
+    "showInstalledOnly": "Afficher uniquement les installées"
+  },
+  "buttons": {
+    "reload": "Recharger la liste des versions"
+  },
+  "errors": {
+    "fetchError": "Une erreur s'est produite lors de la récupération des versions.",
+    "tryAgainLater": "Veuillez",
+    "tryAgain": "réessayer plus tard",
+    "retryInline": "Veuillez réessayer. <Button>Réessayer</Button>",
+    "noPlatformAsset": "Aucun fichier trouvé pour la plateforme",
+    "invalidEditorVersion": "Version de l'éditeur invalide",
+    "unsupportedPlatform": "Plateforme non prise en charge",
+    "unsupportedFileExtension": "Extension de fichier non prise en charge"
+  },
+  "messages": {
+    "installError": "Quelque chose s'est mal passé lors de l'installation de la version"
+  },
+  "table": {
+    "headers": {
+      "version": "Version",
+      "released": "Publiée",
+      "download": "Télécharger",
+      "installed": "Installée"
+    },
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "Installation...",
+    "downloading": "téléchargement...",
+    "tooltips": {
+      "installed": "Installée - {{version}}",
+      "installedGDScript": "Installée - {{version}} (GDScript)",
+      "installedDotNet": "Installée - {{version}} .NET",
+      "download": "Télécharger {{version}}",
+      "downloadGDScript": "Télécharger {{version}} (GDScript)",
+      "downloadDotNet": "Télécharger {{version}} .NET"
+    }
+  }
+}

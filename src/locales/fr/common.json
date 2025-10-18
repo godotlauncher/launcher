@@ -1,0 +1,48 @@
+{
+  "buttons": {
+    "ok": "Ok",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "continue": "Continuer",
+    "skip": "Ignorer",
+    "select": "Sélectionner"
+  },
+  "loading": "Chargement...",
+  "saving": "Enregistrement...",
+  "error": "Erreur",
+  "success": "Succès",
+  "warning": "Avertissement",
+  "info": "Information",
+  "app": {
+    "loadingMessage": "Préparation en cours...",
+    "navigation": {
+      "projects": "Projets",
+      "installs": "Installations",
+      "help": "Aide",
+      "settings": "Paramètres",
+      "joinCommunity": "Rejoindre la communauté"
+    },
+    "update": {
+      "available": "est disponible, redémarrez Godot Launcher pour l'installer.",
+      "version": "Version {{version}}",
+      "newVersion": "Une nouvelle version",
+      "restartNow": "Redémarrer maintenant.",
+      "bannerWithVersion": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
+      "bannerNoVersion": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>"
+    }
+  },
+  "selectRelease": {
+    "description": "Sélectionner la version de l'éditeur",
+    "tableHeaders": {
+      "name": "Nom"
+    },
+    "noReleases": "Aucune version trouvée, version de l'éditeur requise {{version}}.x",
+    "installReleases": "Installer les versions",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "préversion"
+    }
+  }
+}

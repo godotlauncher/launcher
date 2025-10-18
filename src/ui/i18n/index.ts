@@ -20,6 +20,7 @@ async function initializeI18n() {
 
         const fallbackLng = {
             'de': ['en'],
+            'fr': ['en'],
             'pt-BR': ['pt', 'en'],
             pt: ['en'],
             'zh-CN': ['zh-CN', 'en'],

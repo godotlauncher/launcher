@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Importer les paramètres de l'éditeur",
+    "message": "Êtes-vous sûr de vouloir importer les paramètres de l'éditeur depuis un fichier ?",
+    "detail": "Cela remplacera les paramètres actuels de l'éditeur. Une sauvegarde sera créée.",
+    "continue": "Continuer",
+    "cancel": "Annuler",
+    "selectFile": "Importer le fichier de paramètres de l'éditeur",
+    "textResource": "Ressource texte"
+  },
+  "exportSettings": {
+    "title": "Exporter les paramètres de l'éditeur vers un fichier",
+    "allFiles": "Tous les fichiers"
+  },
+  "removeProject": {
+    "title": "Retirer le projet de la liste",
+    "message": "Êtes-vous sûr de vouloir retirer le projet \"{{projectName}}\" de la liste ?",
+    "detail": "Cela ne supprimera pas le projet de votre appareil.",
+    "ok": "Ok",
+    "cancel": "Annuler",
+    "doNotAskAgain": "Ne plus me demander"
+  },
+  "removeRelease": {
+    "title": "Supprimer la version",
+    "message": "Êtes-vous sûr de vouloir supprimer la version \"{{version}}\" ?",
+    "detail": "Cela supprimera la version de votre appareil. Vous pourrez la réinstaller plus tard.",
+    "ok": "Ok",
+    "cancel": "Annuler",
+    "error": "Erreur",
+    "errorMessage": "Une erreur s'est produite lors de la suppression de la version."
+  },
+  "selectFolder": "Sélectionner un dossier",
+  "selectFile": "Sélectionner un fichier",
+  "error": {
+    "title": "Erreur",
+    "generic": "Une erreur s'est produite : {{message}}"
+  }
+}

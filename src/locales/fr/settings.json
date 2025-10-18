@@ -1,0 +1,170 @@
+{
+  "title": "Paramètres",
+  "tabs": {
+    "projects": "Projets",
+    "installs": "Installations",
+    "appearance": "Apparence",
+    "behavior": "Comportement",
+    "tools": "Outils",
+    "updates": "Mises à jour"
+  },
+  "appearance": {
+    "theme": {
+      "title": "Thème",
+      "description": "Personnaliser l'apparence de Godot Launcher",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système (automatique)"
+    }
+  },
+  "behavior": {
+    "projects": {
+      "title": "Projets",
+      "description": "Choisir le comportement de Godot Launcher pour les projets.",
+      "confirmRemove": "Demander confirmation lors de la suppression de projets."
+    },
+    "autoStart": {
+      "title": "Préférence de démarrage",
+      "description": "Choisir ce que fait GD Launcher au démarrage de votre ordinateur",
+      "linuxWarning": "Le démarrage automatique n'est actuellement pas pris en charge sur Linux",
+      "startOnBoot": "Démarrer au démarrage de l'ordinateur.",
+      "startInTray": "Démarrer dans la barre d'état système."
+    },
+    "projectLaunch": {
+      "title": "Action de lancement du projet",
+      "description": "Choisir ce que fait GD Launcher après le lancement d'un projet",
+      "none": "Rien",
+      "minimize": "Réduire",
+      "closeToTray": "Fermer dans la barre d'état système"
+    },
+    "projectsLocation": {
+      "title": "Emplacement des projets",
+      "description": "Sélectionner un emplacement pour les nouveaux projets. Les projets existants ne seront pas affectés.",
+      "defaultLocation": "Emplacement par défaut",
+      "waitingForDialog": "En attente du dialogue..."
+    },
+    "editorsLocation": {
+      "title": "Emplacement des installations de l'éditeur",
+      "description": "Choisir un emplacement pour les installations de l'éditeur. Les installations existantes ne seront pas affectées.",
+      "installLocation": "Emplacement d'installation",
+      "waitingForDialog": "En attente du dialogue..."
+    },
+    "checkForUpdates": {
+      "title": "Vérifier les mises à jour",
+      "description": "Vérifier automatiquement les mises à jour au démarrage de Godot Launcher",
+      "enabled": "Vérifier les mises à jour au démarrage"
+    }
+  },
+  "general": {
+    "language": {
+      "label": "Langue",
+      "title": "Langue",
+      "description": "Sélectionner la langue pour Godot Launcher (ne change pas la langue de Godot)",
+      "system": "Système (détection automatique)",
+      "options": {
+        "system": "Système (détection automatique)"
+      }
+    },
+    "theme": {
+      "label": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "projectsLocation": {
+      "label": "Emplacement par défaut des projets",
+      "description": "Où les nouveaux projets seront créés"
+    },
+    "installLocation": {
+      "label": "Emplacement d'installation de Godot",
+      "description": "Où les versions de Godot seront installées"
+    },
+    "postLaunchAction": {
+      "label": "Après le lancement d'un projet",
+      "none": "Ne rien faire",
+      "minimize": "Réduire le lanceur",
+      "closeToTray": "Fermer dans la barre d'état système"
+    },
+    "autoCheckUpdates": {
+      "label": "Vérifier automatiquement les mises à jour",
+      "description": "Vérifier les mises à jour de Godot Launcher au démarrage"
+    },
+    "autoStart": {
+      "label": "Démarrer avec le système",
+      "description": "Lancer Godot Launcher au démarrage de votre ordinateur"
+    },
+    "startInTray": {
+      "label": "Démarrer réduit dans la barre",
+      "description": "Démarrer le lanceur dans la barre d'état système"
+    }
+  },
+  "advanced": {
+    "confirmProjectRemove": {
+      "label": "Confirmer avant de retirer des projets",
+      "description": "Afficher le dialogue de confirmation lors de la suppression de projets"
+    },
+    "enableSymlinks": {
+      "label": "Activer les liens symboliques (Windows)",
+      "description": "Utiliser des liens symboliques pour les paramètres de l'éditeur"
+    }
+  },
+  "buttons": {
+    "save": "Enregistrer les paramètres",
+    "reset": "Réinitialiser par défaut",
+    "openConfigFolder": "Ouvrir le dossier de configuration"
+  },
+  "tools": {
+    "git": {
+      "title": "Git",
+      "description": "Git est un système de contrôle de version distribué pour gérer les modifications du code et la collaboration.",
+      "installed": "Installé :",
+      "version": "Version :"
+    },
+    "vscode": {
+      "title": "Visual Studio Code",
+      "description": "Un éditeur de code rapide et extensible avec support GDScript et .NET pour Godot.",
+      "notDetectedTitle": "Visual Studio Code non détecté !",
+      "notDetectedMessage": "Godot Launcher ne peut détecter automatiquement VS Code que s'il a été installé dans le PATH. Vous pouvez à la place spécifier le chemin vers l'exécutable VS Code ci-dessous",
+      "pathLabel": "Chemin de l'exécutable Visual Studio Code",
+      "selectExecutable": "Sélectionner l'exécutable Visual Studio Code",
+      "autodetected": "(détecté automatiquement)",
+      "noPathSet": "aucun chemin défini",
+      "clearCustomPath": "Effacer le chemin personnalisé",
+      "waitingForDialog": "En attente du dialogue...",
+      "installed": "Installé :"
+    }
+  },
+  "updates": {
+    "title": "Mises à jour",
+    "description": "Configurer comment GD Launcher vérifie les mises à jour",
+    "autoCheck": "Vérifier automatiquement les mises à jour",
+    "checkNow": "Vérifier les mises à jour",
+  "updateAvailable": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
+  "updateReady": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
+  "restartNow": "Redémarrer maintenant."
+  },
+  "windowsSymlinks": {
+    "title": "Liens symboliques de l'éditeur",
+    "windowsOnly": "Windows uniquement",
+    "description": "Choisir si les éditeurs de projet utilisent des liens symboliques optionnels ou conservent des copies locales.",
+    "checkbox": "Utiliser des liens symboliques pour les éditeurs de projet Windows. Cela reste désactivé par défaut pour que vous puissiez choisir quand vous êtes prêt pour d'éventuelles invites d'élévation lors des mises à jour de l'éditeur.",
+    "note": "La modification de ce paramètre ne convertit pas les liens de projet existants ; elle n'affecte que le comportement des futures actualisations de l'éditeur.",
+    "enableTitle": "Activer les liens symboliques de l'éditeur",
+    "disableTitle": "Désactiver les liens symboliques de l'éditeur",
+    "enableAction": "Activer les liens symboliques",
+    "disableAction": "Désactiver les liens symboliques",
+    "enableDescription": {
+      "line1": "Lorsque cette option est activée, Godot Launcher lie chaque projet à l'éditeur installé au lieu de le copier.",
+      "line2": "Cela permet de réduire l'utilisation du disque, mais Windows peut demander l'approbation de l'administrateur lors de la création de nouveaux liens symboliques.",
+      "line3": "Les projets existants conservent leurs copies locales actuelles jusqu'à ce que leur version d'éditeur soit changée ou réinstallée."
+    },
+    "disableDescription": {
+      "line1": "Revenez aux copies locales pour éviter les invites d'élévation. Godot Launcher copiera les fichiers de l'éditeur dans chaque projet.",
+      "line2": "Les liens symboliques existants restent en place jusqu'à ce que leur version d'éditeur soit changée ou réinstallée."
+    }
+  },
+  "messages": {
+    "saved": "Paramètres enregistrés avec succès",
+    "resetConfirm": "Êtes-vous sûr de vouloir réinitialiser tous les paramètres par défaut ?"
+  }
+}
