@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Importuj ustawienia edytora",
+    "message": "Czy na pewno chcesz zaimportować ustawienia edytora z pliku?",
+    "detail": "Spowoduje to zastąpienie bieżących ustawień edytora. Zostanie utworzona kopia zapasowa.",
+    "continue": "Kontynuuj",
+    "cancel": "Anuluj",
+    "selectFile": "Importuj plik ustawień edytora",
+    "textResource": "Zasób tekstowy"
+  },
+  "exportSettings": {
+    "title": "Eksportuj ustawienia edytora do pliku",
+    "allFiles": "Wszystkie pliki"
+  },
+  "removeProject": {
+    "title": "Usuń projekt z listy",
+    "message": "Czy na pewno chcesz usunąć projekt \"{{projectName}}\" z listy?",
+    "detail": "Nie spowoduje to usunięcia projektu z Twojego urządzenia.",
+    "ok": "Ok",
+    "cancel": "Anuluj",
+    "doNotAskAgain": "Nie pytaj ponownie"
+  },
+  "removeRelease": {
+    "title": "Usuń wydanie",
+    "message": "Czy na pewno chcesz usunąć wydanie \"{{version}}\"?",
+    "detail": "Spowoduje to usunięcie wydania z Twojego urządzenia. Możesz zainstalować je ponownie później.",
+    "ok": "Ok",
+    "cancel": "Anuluj",
+    "error": "Błąd",
+    "errorMessage": "Wystąpił błąd podczas usuwania wydania."
+  },
+  "selectFolder": "Wybierz folder",
+  "selectFile": "Wybierz plik",
+  "error": {
+    "title": "Błąd",
+    "generic": "Wystąpił błąd: {{message}}"
+  }
+}

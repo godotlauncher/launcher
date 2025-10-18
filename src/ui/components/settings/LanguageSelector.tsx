@@ -20,6 +20,7 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     { code: 'de', name: 'Deutsch' },
     { code: 'fr', name: 'Français' },
     { code: 'es', name: 'Español' },
+    { code: 'pl', name: 'Polski' },
     // Add more languages here as they become available
 ];
 

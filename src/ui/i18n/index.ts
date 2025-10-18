@@ -22,6 +22,7 @@ async function initializeI18n() {
             'de': ['en'],
             'fr': ['en'],
             'es': ['en'],
+            'pl': ['en'],
             'pt-BR': ['pt', 'en'],
             pt: ['en'],
             'zh-CN': ['zh-CN', 'en'],

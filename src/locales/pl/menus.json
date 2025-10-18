@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "Aplikacja",
+        "about": "O programie",
+        "close": "Zamknij",
+        "quit": "Zakończ"
+    },
+    "developer": {
+        "label": "Deweloper",
+        "reload": "Przeładuj",
+        "toggleDevTools": "Przełącz narzędzia deweloperskie",
+        "openConfigFolder": "Otwórz folder konfiguracji"
+    },
+    "project": {
+        "openProjectFolder": "Otwórz folder projektu",
+        "openEditorSettingsFolder": "Otwórz folder ustawień edytora",
+        "openWindowed": "Otwórz w oknie",
+        "openWindowedTooltip": "Gdy ta opcja jest zaznaczona, Godot uruchomi się w trybie okienkowym.",
+        "exportEditorSettings": "Eksportuj ustawienia edytora do pliku",
+        "importEditorSettings": "Importuj ustawienia edytora z pliku",
+        "removeFromList": "Usuń projekt z listy"
+    },
+    "release": {
+        "openInstalledFolder": "Otwórz folder instalacji",
+        "startProjectManager": "Uruchom menedżer projektów",
+        "deleteRelease": "Usuń wydanie z tego urządzenia"
+    },
+    "tray": {
+        "recentProjects": "Ostatnie projekty",
+        "showGodotLauncher": "Pokaż Godot Launcher",
+        "quit": "Zakończ"
+    }
+}
