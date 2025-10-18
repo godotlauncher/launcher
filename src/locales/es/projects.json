@@ -1,0 +1,78 @@
+{
+  "title": "Proyectos",
+  "buttons": {
+    "add": "Añadir",
+    "newProject": "Nuevo proyecto",
+    "addProject": "Añadir proyecto",
+    "createProject": "Crear proyecto",
+    "refresh": "Actualizar",
+    "launch": "Iniciar",
+    "changeEditor": "Cambiar editor"
+  },
+  "search": {
+    "placeholder": "Buscar"
+  },
+  "table": {
+    "name": "Nombre",
+    "modified": "Modificado",
+    "editor": "Editor",
+    "version": "Versión",
+    "lastOpened": "Última apertura",
+    "actions": "Acciones",
+    "invalidProject": "¡Este proyecto es inválido, verifica las ubicaciones del proyecto y del editor!",
+    "dotNetProject": "Este es un proyecto .Net",
+    "prerelease": "Usando una versión preliminar del editor Godot",
+    "windowedMode": "Este proyecto se abre en modo ventana"
+  },
+  "addProject": {
+    "selectFile": "Seleccionar archivo del proyecto",
+    "godotProject": "Proyecto Godot",
+    "errors": {
+      "projectExists": "El proyecto '{{path}}' ya existe",
+      "invalidPath": "Ruta del proyecto inválida",
+      "invalidProjectFile": "Archivo project.godot inválido",
+      "nameExists": "Ya existe un proyecto con el nombre '{{name}}'\nPor favor renombra el proyecto en 'project.godot' o elimina el existente.",
+      "invalidRenderer": "Archivo del proyecto inválido",
+      "invalidConfigVersion": "Versión de configuración de project.godot inválida.\nSolo se admite la versión de configuración 5",
+      "noStableReleases": "No se encontraron versiones estables instaladas para Godot {{version}}.x\nPor favor instala una versión estable para Godot {{version}}.x, luego intenta añadir el proyecto de nuevo.",
+      "noDotNetRelease": "El proyecto parece ser un proyecto .NET pero no se encontró ningún editor con versión .NET",
+      "noCompatibleRelease": "No se encontraron versiones instaladas para Godot {{version}}.x que admitan config_version {{configVersion}}."
+    }
+  },
+  "messages": {
+    "noProjects": "No se encontraron proyectos",
+    "noReleases": "No hay versiones instaladas.",
+    "goToInstalls": "Ir a instalaciones.",
+    "noReleasesCta": "No hay versiones instaladas aún. <Link>Ir a instalaciones</Link>",
+    "projectAdded": "Proyecto añadido exitosamente",
+    "projectRemoved": "Proyecto eliminado",
+    "editorChanged": "Editor cambiado exitosamente",
+    "invalidProject": "¡Este proyecto es inválido, verifica las ubicaciones del proyecto y del editor!",
+    "monoProject": "Este es un proyecto .NET",
+    "prereleaseVersion": "Usando una versión preliminar del editor Godot"
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "Proyecto no encontrado",
+      "invalidEditorVersion": "Versión del editor inválida",
+      "differentMajorVersion": "No se puede usar una versión mayor diferente del editor\nPara proteger tu proyecto consulta la guía de migración oficial en https://godotengine.org"
+    }
+  },
+  "createProject": {
+    "title": "Nuevo proyecto",
+    "projectName": "Nombre del proyecto",
+    "projectPath": "Ruta del proyecto",
+    "selectVersion": "Seleccionar versión de Godot",
+    "renderer": "Motor de renderizado",
+    "editNow": "Editar ahora",
+    "setupVSCode": "Configurar Visual Studio Code como editor de texto",
+    "vscodeNotInstalled": "Visual Studio Code no está instalado en este ordenador",
+    "noVersionsInstalled": "No hay versiones de Godot instaladas",
+    "errors": {
+      "nameRequired": "Se requiere el nombre del proyecto",
+      "pathRequired": "Se requiere la ruta del proyecto",
+      "invalidPath": "Ruta del proyecto inválida"
+    }
+  },
+  "searchPlaceholder": "Buscar proyectos..."
+}

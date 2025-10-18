@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Godot Launcher",
+    "version": "Versión {{version}}",
+    "loading": "Preparando todo...",
+    "quit": "Salir",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "ok": "Ok",
+    "yes": "Sí",
+    "no": "No",
+    "continue": "Continuar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "remove": "Quitar",
+    "edit": "Editar",
+    "create": "Crear",
+    "add": "Añadir",
+    "browse": "Examinar",
+    "refresh": "Actualizar"
+  },
+  "errors": {
+    "generic": "Ocurrió un error",
+    "notFound": "No encontrado",
+    "invalidPath": "Ruta inválida",
+    "permissionDenied": "Permiso denegado",
+    "fileNotFound": "Archivo no encontrado"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Importar configuración del editor",
+    "message": "¿Estás seguro de que quieres importar la configuración del editor desde un archivo?",
+    "detail": "Esto reemplazará la configuración actual del editor. Se creará una copia de seguridad.",
+    "continue": "Continuar",
+    "cancel": "Cancelar",
+    "selectFile": "Importar archivo de configuración del editor",
+    "textResource": "Recurso de texto"
+  },
+  "exportSettings": {
+    "title": "Exportar configuración del editor a archivo",
+    "allFiles": "Todos los archivos"
+  },
+  "removeProject": {
+    "title": "Quitar proyecto de la lista",
+    "message": "¿Estás seguro de que quieres quitar el proyecto \"{{projectName}}\" de la lista?",
+    "detail": "Esto no eliminará el proyecto de tu dispositivo.",
+    "ok": "Ok",
+    "cancel": "Cancelar",
+    "doNotAskAgain": "No preguntar de nuevo"
+  },
+  "removeRelease": {
+    "title": "Eliminar versión",
+    "message": "¿Estás seguro de que quieres eliminar la versión \"{{version}}\"?",
+    "detail": "Esto eliminará la versión de tu dispositivo. Podrás instalarla de nuevo más tarde.",
+    "ok": "Ok",
+    "cancel": "Cancelar",
+    "error": "Error",
+    "errorMessage": "Ocurrió un error al eliminar la versión."
+  },
+  "selectFolder": "Seleccionar carpeta",
+  "selectFile": "Seleccionar archivo",
+  "error": {
+    "title": "Error",
+    "generic": "Ocurrió un error: {{message}}"
+  }
+}

@@ -19,8 +19,8 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     { code: 'zh-TW', name: '繁體中文' },
     { code: 'de', name: 'Deutsch' },
     { code: 'fr', name: 'Français' },
+    { code: 'es', name: 'Español' },
     // Add more languages here as they become available
-    // { code: 'es', name: 'Español' },
 ];
 
 export const LanguageSelector: React.FC = () => {
