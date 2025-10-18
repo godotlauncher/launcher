@@ -1,0 +1,63 @@
+{
+  "title": "エディタのインストール",
+  "tabs": {
+    "installed": "インストール済み",
+    "available": "利用可能"
+  },
+  "buttons": {
+    "install": "エディタをインストール",
+    "installVersion": "バージョンをインストール",
+    "refresh": "更新",
+    "uninstall": "アンインストール",
+    "openFolder": "フォルダを開く"
+  },
+  "search": {
+    "placeholder": "検索"
+  },
+  "table": {
+    "name": "名前",
+    "version": "バージョン",
+    "type": "タイプ",
+    "size": "サイズ",
+    "published": "公開日",
+    "actions": "アクション",
+    "status": "ステータス"
+  },
+  "badges": {
+    "dotNet": ".NET",
+    "prerelease": "プレリリース"
+  },
+  "types": {
+    "stable": "安定版",
+    "beta": "ベータ",
+    "dev": "開発版",
+    "mono": ".NET"
+  },
+  "status": {
+    "installing": "インストール中...",
+    "installed": "インストール済み",
+    "downloading": "ダウンロード中..."
+  },
+  "messages": {
+    "noReleases": "リリースがまだインストールされていません。",
+    "install": "インストール。",
+    "noReleasesCta": "リリースがまだインストールされていません。<Link>インストール</Link>",
+    "noInstalled": "Godotバージョンがインストールされていません",
+    "noAvailable": "利用可能なバージョンがありません",
+    "installing": "インストール中...",
+    "downloadProgress": "ダウンロード中：{{percent}}%",
+    "installSuccess": "エディタが正常にインストールされました",
+    "uninstallSuccess": "エディタがアンインストールされました"
+  },
+  "install": {
+    "title": "Godotエディタをインストール",
+    "selectVersion": "インストールするバージョンを選択",
+    "includeMonoVersion": ".NETバージョンを含める",
+    "downloading": "ダウンロード中...",
+    "extracting": "展開中...",
+    "buttons": {
+      "install": "インストール",
+      "cancel": "キャンセル"
+    }
+  }
+}

@@ -22,6 +22,7 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     { code: 'es', name: 'Español' },
     { code: 'pl', name: 'Polski' },
     { code: 'ru', name: 'Русский' },
+    { code: 'ja', name: '日本語' },
     // Add more languages here as they become available
 ];
 

@@ -1,0 +1,170 @@
+{
+  "title": "設定",
+  "tabs": {
+    "projects": "プロジェクト",
+    "installs": "インストール",
+    "appearance": "外観",
+    "behavior": "動作",
+    "tools": "ツール",
+    "updates": "アップデート"
+  },
+  "appearance": {
+    "theme": {
+      "title": "テーマ",
+      "description": "Godot Launcherの外観をカスタマイズ",
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム（自動）"
+    }
+  },
+  "behavior": {
+    "projects": {
+      "title": "プロジェクト",
+      "description": "プロジェクトに対するGodot Launcherの動作を選択します。",
+      "confirmRemove": "プロジェクトを削除する際に確認を求める。"
+    },
+    "autoStart": {
+      "title": "起動設定",
+      "description": "コンピュータ起動時のGD Launcherの動作を選択",
+      "linuxWarning": "Linuxでは現在、自動起動はサポートされていません",
+      "startOnBoot": "コンピュータの起動時に起動する。",
+      "startInTray": "トレイに起動する。"
+    },
+    "projectLaunch": {
+      "title": "プロジェクト起動時の動作",
+      "description": "プロジェクト起動後のGD Launcherの動作を選択",
+      "none": "何もしない",
+      "minimize": "最小化",
+      "closeToTray": "システムトレイに閉じる"
+    },
+    "projectsLocation": {
+      "title": "プロジェクトの場所",
+      "description": "新規プロジェクトの場所を選択します。既存のプロジェクトには影響しません。",
+      "defaultLocation": "デフォルトの場所",
+      "waitingForDialog": "ダイアログを待機中..."
+    },
+    "editorsLocation": {
+      "title": "エディタインストールの場所",
+      "description": "エディタインストールの場所を選択します。既存のインストールには影響しません。",
+      "installLocation": "インストールの場所",
+      "waitingForDialog": "ダイアログを待機中..."
+    },
+    "checkForUpdates": {
+      "title": "アップデートの確認",
+      "description": "Godot Launcher起動時に自動的にアップデートを確認",
+      "enabled": "起動時にアップデートを確認"
+    }
+  },
+  "general": {
+    "language": {
+      "label": "言語",
+      "title": "言語",
+      "description": "Godot Launcherの言語を選択（Godotの言語は変更されません）",
+      "system": "システム（自動検出）",
+      "options": {
+        "system": "システム（自動検出）"
+      }
+    },
+    "theme": {
+      "label": "テーマ",
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム"
+    },
+    "projectsLocation": {
+      "label": "デフォルトのプロジェクトの場所",
+      "description": "新規プロジェクトが作成される場所"
+    },
+    "installLocation": {
+      "label": "Godotインストールの場所",
+      "description": "Godotバージョンがインストールされる場所"
+    },
+    "postLaunchAction": {
+      "label": "プロジェクト起動後",
+      "none": "何もしない",
+      "minimize": "ランチャーを最小化",
+      "closeToTray": "システムトレイに閉じる"
+    },
+    "autoCheckUpdates": {
+      "label": "自動的にアップデートを確認",
+      "description": "起動時にGodot Launcherのアップデートを確認"
+    },
+    "autoStart": {
+      "label": "システムと一緒に起動",
+      "description": "コンピュータの起動時にGodot Launcherを起動"
+    },
+    "startInTray": {
+      "label": "トレイに最小化して起動",
+      "description": "システムトレイでランチャーを起動"
+    }
+  },
+  "advanced": {
+    "confirmProjectRemove": {
+      "label": "プロジェクト削除前に確認",
+      "description": "プロジェクト削除時に確認ダイアログを表示"
+    },
+    "enableSymlinks": {
+      "label": "シンボリックリンクを有効化（Windows）",
+      "description": "エディタ設定にシンボリックリンクを使用"
+    }
+  },
+  "buttons": {
+    "save": "設定を保存",
+    "reset": "デフォルトにリセット",
+    "openConfigFolder": "設定フォルダを開く"
+  },
+  "tools": {
+    "git": {
+      "title": "Git",
+      "description": "Gitは、コードの変更管理とコラボレーションのための分散型バージョン管理システムです。",
+      "installed": "インストール済み：",
+      "version": "バージョン："
+    },
+    "vscode": {
+      "title": "Visual Studio Code",
+      "description": "GDScriptと.NETをサポートする高速で拡張可能なコードエディタです。",
+      "notDetectedTitle": "Visual Studio Codeが検出されませんでした！",
+      "notDetectedMessage": "Godot LauncherはPATHにインストールされている場合のみVS Codeを自動検出できます。代わりに以下でVS Codeの実行ファイルへのパスを指定できます",
+      "pathLabel": "Visual Studio Code実行ファイルへのパス",
+      "selectExecutable": "Visual Studio Code実行ファイルを選択",
+      "autodetected": "（自動検出）",
+      "noPathSet": "パスが設定されていません",
+      "clearCustomPath": "カスタムパスをクリア",
+      "waitingForDialog": "ダイアログを待機中...",
+      "installed": "インストール済み："
+    }
+  },
+  "updates": {
+    "title": "アップデート",
+    "description": "GD Launcherがアップデートを確認する方法を設定",
+    "autoCheck": "自動的にアップデートを確認",
+    "checkNow": "アップデートを確認",
+    "updateAvailable": "バージョン {{version}}が利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>",
+    "updateReady": "新しいバージョンが利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>",
+    "restartNow": "今すぐ再起動。"
+  },
+  "windowsSymlinks": {
+    "title": "エディタシンボリックリンク",
+    "windowsOnly": "Windowsのみ",
+    "description": "プロジェクトエディタがオプションのシンボリックリンクを使用するか、ローカルコピーのままにするかを選択します。",
+    "checkbox": "Windowsプロジェクトエディタにシンボリックリンクを使用します。エディタの更新時に管理者権限の昇格プロンプトに対応できるようになったら、オプトインできるようにデフォルトではオフになっています。",
+    "note": "この設定を変更しても既存のプロジェクトリンクは変換されません。今後のエディタ更新の動作にのみ影響します。",
+    "enableTitle": "エディタシンボリックリンクを有効化",
+    "disableTitle": "エディタシンボリックリンクを無効化",
+    "enableAction": "シンボリックリンクを有効化",
+    "disableAction": "シンボリックリンクを無効化",
+    "enableDescription": {
+      "line1": "有効にすると、Godot Launcherはエディタをコピーする代わりに、各プロジェクトをインストール済みエディタにリンクします。",
+      "line2": "これによりディスク使用量は低くなりますが、新しいシンボリックリンクの作成時にWindowsが管理者承認を要求する場合があります。",
+      "line3": "既存のプロジェクトは、エディタバージョンが変更または再インストールされるまで、現在のローカルコピーを保持します。"
+    },
+    "disableDescription": {
+      "line1": "昇格プロンプトを避けるためにローカルコピーに戻します。Godot Launcherは各プロジェクトにエディタファイルをコピーします。",
+      "line2": "既存のシンボリックリンクは、エディタバージョンが変更または再インストールされるまでそのまま残ります。"
+    }
+  },
+  "messages": {
+    "saved": "設定が正常に保存されました",
+    "resetConfirm": "すべての設定をデフォルトにリセットしますか？"
+  }
+}

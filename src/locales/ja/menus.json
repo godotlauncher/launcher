@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "アプリ",
+        "about": "について",
+        "close": "閉じる",
+        "quit": "終了"
+    },
+    "developer": {
+        "label": "開発者",
+        "reload": "再読み込み",
+        "toggleDevTools": "開発者ツールを切り替え",
+        "openConfigFolder": "設定フォルダを開く"
+    },
+    "project": {
+        "openProjectFolder": "プロジェクトフォルダを開く",
+        "openEditorSettingsFolder": "エディタ設定フォルダを開く",
+        "openWindowed": "ウィンドウモードで開く",
+        "openWindowedTooltip": "このオプションをオンにすると、Godotがウィンドウモードで起動します。",
+        "exportEditorSettings": "エディタ設定をファイルにエクスポート",
+        "importEditorSettings": "ファイルからエディタ設定をインポート",
+        "removeFromList": "リストからプロジェクトを削除"
+    },
+    "release": {
+        "openInstalledFolder": "インストールフォルダを開く",
+        "startProjectManager": "プロジェクトマネージャーを起動",
+        "deleteRelease": "このデバイスからリリースを削除"
+    },
+    "tray": {
+        "recentProjects": "最近のプロジェクト",
+        "showGodotLauncher": "Godot Launcherを表示",
+        "quit": "終了"
+    }
+}

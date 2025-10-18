@@ -1,0 +1,98 @@
+{
+  "title": "Godot Launcher",
+  "steps": {
+    "welcome": "ようこそ",
+    "macos": "MacOS",
+    "windows": "Windows",
+    "linux": "Linux",
+    "currentSettings": "現在の設定",
+    "setLocations": "場所を設定",
+    "customizeBehavior": "動作をカスタマイズ",
+    "windowsSymlink": "Windowsシンボリックリンク",
+    "ready": "準備完了"
+  },
+  "navigation": {
+    "next": "次へ",
+    "previous": "前へ",
+    "start": "開始",
+    "nextMacOS": "次へ：MacOS",
+    "nextWindows": "次へ：Windows",
+    "nextLinux": "次へ：Linux",
+    "nextCurrentSettings": "次へ：現在の設定",
+    "nextSetLocations": "次へ：場所を設定",
+    "nextCustomizeBehavior": "次へ：動作をカスタマイズ",
+    "nextWindowsSymlink": "次へ：Windowsシンボリックリンク",
+    "nextReady": "次へ：準備完了",
+    "backWelcome": "前へ：ようこそ",
+    "backMacOS": "前へ：MacOS",
+    "backWindows": "前へ：Windows",
+    "backLinux": "前へ：Linux",
+    "backCurrentSettings": "前へ：現在の設定",
+    "backSetLocations": "前へ：場所を設定",
+    "backCustomizeBehavior": "前へ：動作をカスタマイズ"
+  },
+  "welcomeStep": {
+    "title": "Godot Launcherをご利用いただきありがとうございます！",
+    "description": "Godot Launcherは、<strong>Godotエンジンの複数バージョンを管理</strong>し、<strong>各プロジェクトのエディタ設定を個別に保つ</strong>ことを簡単にします。",
+    "feedback": "これを使用することで、プロジェクトをサポートすることになります！フィードバックやバグを見つけた場合は、お知らせください。あなたのためにさらに良いものにしたいと思っています。",
+    "enjoy": "楽しんで、ハッピーコーディング！"
+  },
+  "startStep": {
+    "title": "準備完了！🚀",
+    "subtitle": "Godot Launcherの準備ができました！プロジェクトを管理し、すべての機能を探索できます。",
+    "whatsNext": "次のステップは？",
+    "installTab": "<strong>インストール</strong>タブで最新のプレリリースをインストールして試してください。",
+    "projectsTab": "<strong>プロジェクト</strong>タブでプロジェクトを素早く追加または作成します。",
+    "settingsTab": "<strong>設定</strong>タブで好みに合わせてカスタマイズします。"
+  },
+  "customizeBehavior": {
+    "afterLaunching": "プロジェクト起動後",
+    "nothing": "何もしない",
+    "minimize": "最小化",
+    "closeToTray": "システムトレイに閉じる",
+    "autoCheckUpdates": "自動的にアップデートを確認",
+    "autoStart": "コンピュータの起動時に起動する。",
+    "startInTray": "トレイに起動する。"
+  },
+  "currentSettings": {
+    "title": "デフォルト設定：",
+    "projectsLocation": "プロジェクトの場所：",
+    "installLocation": "Godotインストールの場所：",
+    "postLaunchAction": "プロジェクト起動後の動作：",
+    "autoCheckUpdates": "アップデートの自動確認：",
+    "autoStart": "コンピュータ起動時の自動起動：",
+    "autoStartType": "自動起動タイプ：",
+    "systemTray": "システムトレイ",
+    "normalWindow": "通常ウィンドウ",
+    "yes": "はい",
+    "no": "いいえ",
+    "skipButton": "スキップ、デフォルトを使用",
+    "postLaunchActions": {
+      "nothing": "何もしない",
+      "minimize": "最小化",
+      "closeToTray": "システムトレイに閉じる"
+    }
+  },
+  "macosStep": {
+    "title": "macOSに関する注意事項",
+    "intro": "Godot Launcherは各プロジェクトのエディタのコピーを作成します。",
+    "whyTitle": "なぜ？",
+    "reason": "macOSでシンボリックリンクを作成することは権限によって制限されませんが、シンボリックリンクを通じてエディタを開くことは信頼性が低いことが判明しています。スムーズなエクスペリエンスを確保するため、代わりに各プロジェクト用の専用のエンジンコピーを提供します。Godotは約200MBしかありません（これは通常問題になりません）が、複数のプロジェクトはディスク使用量の増加につながる可能性があることに注意してください。",
+    "dotnetNote": "注：.NETエディタを使用する場合は、<ButtonLink>Microsoft .NETウェブサイト</ButtonLink> <Icon />から.NET SDKをインストールする必要があります"
+  },
+  "windowsStep": {
+    "title": "Windowsに関する注意事項",
+    "intro": "バージョン1.4.0から、Godot Launcherは各プロジェクトのエディタへの<code>シンボリックリンク</code>を作成できます。セットアップを簡単にするため、現在はデフォルトでローカルコピーにしています。ディスク使用量を減らしたい場合は、<strong>設定 → 動作 → エディタシンボリックリンク</strong>からいつでもシンボリックリンクを有効にできます。",
+    "change1": "Windowsでシンボリックリンクを作成するには管理者権限と昇格したコマンド実行が必要です。ランチャーは、シンボリックリンクの作成時にのみ権限を昇格します。",
+    "change2": "UAC プロンプトは、PCで<code>管理者</code>でない場合、および<code>開発者モード</code>が有効でない場合にのみ表示されます。",
+    "change3": "シンボリックリンクを試す準備はできていますか？時々の昇格プロンプトに対応できる準備ができたら、設定で<strong>エディタシンボリックリンク</strong>をオンに切り替えてください。",
+    "dotnetNote": "注：.NETベースのエディタを使用する場合は、<ButtonLink>Microsoft .NETウェブサイト</ButtonLink> <Icon />から.NET SDKをインストールする必要があります"
+  },
+  "linuxStep": {
+    "title": "Linuxに関する注意事項",
+    "intro": "Godot Launcherは各プロジェクトにシンボリックリンクを使用します",
+    "whyTitle": "なぜ？",
+    "reason": "WindowsおよびmacOSバージョンとは異なり、Linuxバージョンはプロジェクトを起動するためにエディタへのシンボリックリンクを使用します。これによりディスク容量が節約され、プロジェクトごとの設定が可能になります。",
+    "dotnetNote": "注：.NETエディタを使用する場合は、<ButtonLink>Microsoft .NETウェブサイト</ButtonLink> <Icon />から.NET SDKをインストールする必要があります"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "title": "Godotエディタをインストール",
+  "search": {
+    "placeholder": "検索"
+  },
+  "tabs": {
+    "released": "リリース済み",
+    "prerelease": "プレリリース",
+    "installed": "インストール済み"
+  },
+  "filters": {
+    "showInstalledOnly": "インストール済みのみ表示"
+  },
+  "buttons": {
+    "reload": "リリースリストを再読み込み"
+  },
+  "errors": {
+    "fetchError": "リリースの取得中にエラーが発生しました。",
+    "tryAgainLater": "後ほど",
+    "tryAgain": "再試行してください",
+    "retryInline": "もう一度お試しください。<Button>再試行</Button>",
+    "noPlatformAsset": "プラットフォーム用のアセットが見つかりません",
+    "invalidEditorVersion": "無効なエディタバージョン",
+    "unsupportedPlatform": "サポートされていないプラットフォーム",
+    "unsupportedFileExtension": "サポートされていないファイル拡張子"
+  },
+  "messages": {
+    "installError": "リリースのインストール中に問題が発生しました"
+  },
+  "table": {
+    "headers": {
+      "version": "バージョン",
+      "released": "リリース日",
+      "download": "ダウンロード",
+      "installed": "インストール済み"
+    },
+    "gdscript": "（GDScript）",
+    "dotnet": "（.NET）",
+    "installing": "インストール中...",
+    "downloading": "ダウンロード中...",
+    "tooltips": {
+      "installed": "インストール済み - {{version}}",
+      "installedGDScript": "インストール済み - {{version}}（GDScript）",
+      "installedDotNet": "インストール済み - {{version}} .NET",
+      "download": "{{version}}をダウンロード",
+      "downloadGDScript": "{{version}}（GDScript）をダウンロード",
+      "downloadDotNet": "{{version}} .NETをダウンロード"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "title": "プロジェクト",
+  "buttons": {
+    "add": "追加",
+    "newProject": "新規プロジェクト",
+    "addProject": "プロジェクトを追加",
+    "createProject": "プロジェクトを作成",
+    "refresh": "更新",
+    "launch": "起動",
+    "changeEditor": "エディタを変更"
+  },
+  "search": {
+    "placeholder": "検索"
+  },
+  "table": {
+    "name": "名前",
+    "modified": "変更日時",
+    "editor": "エディタ",
+    "version": "バージョン",
+    "lastOpened": "最終オープン",
+    "actions": "アクション",
+    "invalidProject": "このプロジェクトは無効です。プロジェクトとエディタの場所を確認してください！",
+    "dotNetProject": "これは.Netプロジェクトです",
+    "prerelease": "プレリリース版のGodotエディタを使用しています",
+    "windowedMode": "このプロジェクトはウィンドウモードで開かれています"
+  },
+  "addProject": {
+    "selectFile": "プロジェクトファイルを選択",
+    "godotProject": "Godotプロジェクト",
+    "errors": {
+      "projectExists": "プロジェクト '{{path}}' は既に存在します",
+      "invalidPath": "無効なプロジェクトパス",
+      "invalidProjectFile": "無効なproject.godotファイル",
+      "nameExists": "名前 '{{name}}' のプロジェクトは既に存在します\n'project.godot'でプロジェクト名を変更するか、既存のプロジェクトを削除してください。",
+      "invalidRenderer": "無効なプロジェクトファイル",
+      "invalidConfigVersion": "project.godotのconfig_versionが無効です。\nconfig version 5のみサポートされています",
+      "noStableReleases": "Godot {{version}}.xの安定版リリースがインストールされていません\nGodot {{version}}.xの安定版をインストールしてから、再度プロジェクトを追加してください。",
+      "noDotNetRelease": "プロジェクトは.NETプロジェクトのようですが、.NET対応エディタが見つかりません",
+      "noCompatibleRelease": "config_version {{configVersion}}をサポートするGodot {{version}}.xのインストール済みリリースが見つかりません。"
+    }
+  },
+  "messages": {
+    "noProjects": "プロジェクトが見つかりません",
+    "noReleases": "リリースがインストールされていません。",
+    "goToInstalls": "インストールへ移動。",
+    "noReleasesCta": "リリースがまだインストールされていません。<Link>インストールへ移動</Link>",
+    "projectAdded": "プロジェクトが正常に追加されました",
+    "projectRemoved": "プロジェクトが削除されました",
+    "editorChanged": "エディタが正常に変更されました",
+    "invalidProject": "このプロジェクトは無効です。プロジェクトとエディタの場所を確認してください！",
+    "monoProject": "これは.NETプロジェクトです",
+    "prereleaseVersion": "プレリリース版のGodotエディタを使用しています"
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "プロジェクトが見つかりません",
+      "invalidEditorVersion": "無効なエディタバージョン",
+      "differentMajorVersion": "エディタの異なるメジャーバージョンは使用できません\nプロジェクトを保護するため、https://godotengine.org の公式移行ガイドを参照してください"
+    }
+  },
+  "createProject": {
+    "title": "新規プロジェクト",
+    "projectName": "プロジェクト名",
+    "projectPath": "プロジェクトパス",
+    "selectVersion": "Godotバージョンを選択",
+    "renderer": "レンダラー",
+    "editNow": "今すぐ編集",
+    "setupVSCode": "Visual Studio Codeをテキストエディタとして設定",
+    "vscodeNotInstalled": "Visual Studio Codeがこのコンピュータにインストールされていません",
+    "noVersionsInstalled": "Godotバージョンがインストールされていません",
+    "errors": {
+      "nameRequired": "プロジェクト名が必要です",
+      "pathRequired": "プロジェクトパスが必要です",
+      "invalidPath": "無効なプロジェクトパス"
+    }
+  },
+  "searchPlaceholder": "プロジェクトを検索..."
+}

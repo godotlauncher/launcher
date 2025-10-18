@@ -1,0 +1,63 @@
+{
+  "title": "新規プロジェクト",
+  "project": {
+    "title": "プロジェクト",
+    "dotNetBadge": ".NET",
+    "prereleaseBadge": "プレリリース",
+    "noVersionsInstalled": "Godotバージョンがインストールされていません",
+    "nameplaceholder": "プロジェクト名",
+    "downloading": "ダウンロード中...",
+    "nameRequired": "プロジェクト名が必要です"
+  },
+  "renderer": {
+    "title": "レンダラー",
+    "forwardPlus": "Forward Plus",
+    "mobile": "モバイル",
+    "compatible": "互換",
+    "gles3": "GLES3",
+    "gles2": "GLES2",
+    "forwardPlusFeatures": {
+      "desktop": "デスクトッププラットフォームのみをサポート。",
+      "advanced3d": "高度な3Dグラフィックスが利用可能。",
+      "scalable": "大規模で複雑なシーンにスケールできます。",
+      "renderingDevice": "RenderingDeviceバックエンドを使用。",
+      "slowerSimple": "シンプルなシーンのレンダリングは遅くなります。"
+    },
+    "mobileFeatures": {
+      "platforms": "デスクトップ + モバイルプラットフォームをサポート。",
+      "less3d": "高度な3Dグラフィックスは少なめ。",
+      "lessScalable": "複雑なシーンへのスケーラビリティは低い。",
+      "renderingDevice": "RenderingDeviceバックエンドを使用。",
+      "fastSimple": "シンプルなシーンの高速レンダリング。"
+    },
+    "compatibleFeatures": {
+      "platforms": "デスクトップ、モバイル + ウェブプラットフォームをサポート。",
+      "least3d": "最も高度でない3Dグラフィックス（現在開発中）。",
+      "lowEnd": "ローエンド/古いデバイス向け。",
+      "opengl": "OpenGL 3バックエンドを使用（OpenGL 3.3/ES 3.0/WebGL2）。",
+      "fastest": "シンプルなシーンの最速レンダリング。"
+    }
+  },
+  "otherSettings": {
+    "title": "その他の設定",
+    "initGit": "Gitリポジトリを初期化",
+    "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
+    "setupVSCode": "Visual Studio Codeをテキストエディタとして設定",
+    "vscodeNotInstalled": "Visual Studio Codeがこのコンピュータにインストールされていません",
+    "vscodeHelp": {
+      "title": "Visual Studio Codeが検出されないのはなぜですか？",
+      "message": "Godot LauncherはPATHにインストールされている場合のみVS Codeを自動検出できます。代わりに設定でVS Code実行ファイルへのパスを指定できます。"
+    }
+  },
+  "buttons": {
+    "editNow": "今すぐ編集",
+    "create": "プロジェクトを作成"
+  },
+  "errors": {
+    "projectExists": "プロジェクト '{{name}}' は既に存在します",
+    "invalidEditorVersion": "無効なエディタバージョン：{{version}}",
+    "failedProjectDefinition": "バージョンのプロジェクト定義の取得に失敗しました：{{version}}",
+    "folderNotEmpty": "プロジェクトフォルダ '{{name}}' は既に存在し、空ではありません。既存のプロジェクトを追加するつもりでしたか？",
+    "failedCreateFile": "プロジェクトファイルの作成に失敗しました：{{error}}"
+  }
+}

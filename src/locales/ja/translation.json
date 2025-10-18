@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Godot Launcher",
+    "version": "バージョン {{version}}",
+    "loading": "準備中...",
+    "quit": "終了",
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "ok": "OK",
+    "yes": "はい",
+    "no": "いいえ",
+    "continue": "続ける",
+    "save": "保存",
+    "delete": "削除",
+    "remove": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "add": "追加",
+    "browse": "参照",
+    "refresh": "更新"
+  },
+  "errors": {
+    "generic": "エラーが発生しました",
+    "notFound": "見つかりません",
+    "invalidPath": "無効なパス",
+    "permissionDenied": "アクセスが拒否されました",
+    "fileNotFound": "ファイルが見つかりません"
+  }
+}

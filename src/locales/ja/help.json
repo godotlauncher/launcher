@@ -1,0 +1,57 @@
+{
+  "title": "ヘルプ",
+  "thirdPartyNotices": "サードパーティ通知",
+  "launcher": {
+    "title": "Godot Launcher",
+    "changelog": "変更履歴",
+    "homePage": "ホームページ",
+    "docs": "ランチャードキュメント"
+  },
+  "godot": {
+    "title": "Godotエンジン",
+    "engine": "Godotエンジン",
+    "docs": "Godotドキュメント"
+  },
+  "community": {
+    "title": "コミュニティとサポート",
+    "learnMore": "詳細を見る"
+  },
+  "contribute": {
+    "title": "貢献する方法",
+    "learnMore": "詳細を見る",
+    "description": "公式GitHubリポジトリにissueを送信してバグや提案を報告してください",
+    "reportBug": "バグを見つけたと思います",
+    "suggestion": "提案があります！"
+  },
+  "sections": {
+    "gettingStarted": {
+      "title": "はじめに",
+      "content": "Godot Launcherへようこそ！このアプリケーションは、複数のGodotバージョンとプロジェクトを管理するのに役立ちます。",
+      "welcome": "Godot Launcherへようこそ！",
+      "step1": "インストールタブからGodotバージョンをインストールする",
+      "step2": "プロジェクトを作成または追加する",
+      "step3": "起動して開発を始めましょう！"
+    },
+    "documentation": {
+      "title": "ドキュメント",
+      "visitDocs": "ドキュメントを見る"
+    },
+    "community": {
+      "title": "コミュニティ",
+      "discord": "Discordに参加",
+      "github": "GitHubで見る"
+    },
+    "about": {
+      "title": "について",
+      "version": "バージョン {{version}}",
+      "license": "MITライセンスの下でライセンスされています",
+      "thirdParty": "サードパーティ通知"
+    }
+  },
+  "links": {
+    "documentation": "ドキュメント",
+    "github": "GitHubリポジトリ",
+    "discord": "Discordコミュニティ",
+    "website": "ウェブサイト"
+  }
+}

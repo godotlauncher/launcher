@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "エディタ設定のインポート",
+    "message": "ファイルからエディタ設定をインポートしますか？",
+    "detail": "現在のエディタ設定が置き換えられます。バックアップが作成されます。",
+    "continue": "続ける",
+    "cancel": "キャンセル",
+    "selectFile": "エディタ設定ファイルのインポート",
+    "textResource": "テキストリソース"
+  },
+  "exportSettings": {
+    "title": "エディタ設定をファイルにエクスポート",
+    "allFiles": "すべてのファイル"
+  },
+  "removeProject": {
+    "title": "リストからプロジェクトを削除",
+    "message": "プロジェクト「{{projectName}}」をリストから削除しますか？",
+    "detail": "デバイスからプロジェクトは削除されません。",
+    "ok": "OK",
+    "cancel": "キャンセル",
+    "doNotAskAgain": "今後確認しない"
+  },
+  "removeRelease": {
+    "title": "リリースの削除",
+    "message": "リリース「{{version}}」を削除しますか？",
+    "detail": "デバイスからリリースが削除されます。後で再インストールできます。",
+    "ok": "OK",
+    "cancel": "キャンセル",
+    "error": "エラー",
+    "errorMessage": "リリースの削除中にエラーが発生しました。"
+  },
+  "selectFolder": "フォルダを選択",
+  "selectFile": "ファイルを選択",
+  "error": {
+    "title": "エラー",
+    "generic": "エラーが発生しました：{{message}}"
+  }
+}

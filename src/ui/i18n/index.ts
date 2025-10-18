@@ -28,6 +28,7 @@ async function initializeI18n() {
             'zh-CN': ['zh-CN', 'en'],
             'zh-TW': ['zh-TW', 'en'],
             ru: ['en'],
+            ja: ['en'],
             default: ['en'],
         } as const;
 
