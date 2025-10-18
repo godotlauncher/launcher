@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Editor-Einstellungen importieren",
+    "message": "Sind Sie sicher, dass Sie die Editor-Einstellungen aus einer Datei importieren möchten?",
+    "detail": "Dadurch werden die aktuellen Editor-Einstellungen ersetzt. Es wird eine Sicherung erstellt.",
+    "continue": "Weiter",
+    "cancel": "Abbrechen",
+    "selectFile": "Editor-Einstellungsdatei importieren",
+    "textResource": "Textressource"
+  },
+  "exportSettings": {
+    "title": "Editor-Einstellungen in Datei exportieren",
+    "allFiles": "Alle Dateien"
+  },
+  "removeProject": {
+    "title": "Projekt aus Liste entfernen",
+    "message": "Sind Sie sicher, dass Sie das Projekt \"{{projectName}}\" aus der Liste entfernen möchten?",
+    "detail": "Dadurch wird das Projekt nicht von Ihrem Gerät gelöscht.",
+    "ok": "Ok",
+    "cancel": "Abbrechen",
+    "doNotAskAgain": "Nicht erneut fragen"
+  },
+  "removeRelease": {
+    "title": "Release entfernen",
+    "message": "Sind Sie sicher, dass Sie das Release \"{{version}}\" löschen möchten?",
+    "detail": "Dadurch wird das Release von Ihrem Gerät gelöscht. Sie können es später erneut installieren.",
+    "ok": "Ok",
+    "cancel": "Abbrechen",
+    "error": "Fehler",
+    "errorMessage": "Beim Entfernen des Releases ist ein Fehler aufgetreten."
+  },
+  "selectFolder": "Ordner auswählen",
+  "selectFile": "Datei auswählen",
+  "error": {
+    "title": "Fehler",
+    "generic": "Es ist ein Fehler aufgetreten: {{message}}"
+  }
+}

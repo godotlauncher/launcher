@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "App",
+        "about": "Über",
+        "close": "Schließen",
+        "quit": "Beenden"
+    },
+    "developer": {
+        "label": "Entwickler",
+        "reload": "Neu laden",
+        "toggleDevTools": "Entwicklertools umschalten",
+        "openConfigFolder": "Konfigurationsordner öffnen"
+    },
+    "project": {
+        "openProjectFolder": "Projektordner öffnen",
+        "openEditorSettingsFolder": "Editor-Einstellungsordner öffnen",
+        "openWindowed": "Im Fenster öffnen",
+        "openWindowedTooltip": "Wenn diese Option aktiviert ist, wird Godot im Fenstermodus gestartet.",
+        "exportEditorSettings": "Editor-Einstellungen in Datei exportieren",
+        "importEditorSettings": "Editor-Einstellungen aus Datei importieren",
+        "removeFromList": "Projekt aus Liste entfernen"
+    },
+    "release": {
+        "openInstalledFolder": "Installationsordner öffnen",
+        "startProjectManager": "Projektmanager starten",
+        "deleteRelease": "Release von diesem Gerät löschen"
+    },
+    "tray": {
+        "recentProjects": "Zuletzt verwendete Projekte",
+        "showGodotLauncher": "Godot Launcher anzeigen",
+        "quit": "Beenden"
+    }
+}

@@ -25,7 +25,7 @@ Use [ISO 639-1 language codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_c
 - Most languages use base codes only (e.g., `es`, `fr`, `de`)
 - **Chinese requires regional codes**: `zh-CN` (Simplified) and `zh-TW` (Traditional) use completely different writing systems
 - **Portuguese supports regional codes**: `pt-BR` (Brazilian) and `pt-PT` (European) have significant differences
-- Other language variants (like `en-GB`, `es-MX`) are NOT used - one translation per language is sufficient
+- Other language variants (like `en-GB`, `es-MX`) are NOT used - one translation per language is sufficient, for now
 
 ### 2. Copy English Template Files
 

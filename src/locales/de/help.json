@@ -1,0 +1,57 @@
+{
+  "title": "Hilfe",
+  "thirdPartyNotices": "Hinweise zu Drittanbietern",
+  "launcher": {
+    "title": "Godot Launcher",
+    "changelog": "Änderungsprotokoll",
+    "homePage": "Startseite",
+    "docs": "Launcher-Dokumentation"
+  },
+  "godot": {
+    "title": "Godot Engine",
+    "engine": "Godot Engine",
+    "docs": "Godot-Dokumentation"
+  },
+  "community": {
+    "title": "Community und Support",
+    "learnMore": "Mehr erfahren"
+  },
+  "contribute": {
+    "title": "Wie Sie beitragen können",
+    "learnMore": "Mehr erfahren",
+    "description": "Melden Sie Fehler oder Vorschläge, indem Sie ein Issue im offiziellen GitHub-Repository einreichen",
+    "reportBug": "Ich glaube, ich habe einen Fehler gefunden",
+    "suggestion": "Ich habe einen Vorschlag!"
+  },
+  "sections": {
+    "gettingStarted": {
+      "title": "Erste Schritte",
+      "content": "Willkommen beim Godot Launcher! Diese Anwendung hilft Ihnen, mehrere Godot-Versionen und Projekte zu verwalten.",
+      "welcome": "Willkommen beim Godot Launcher!",
+      "step1": "Installieren Sie eine Godot-Version im Tab Installationen",
+      "step2": "Erstellen oder fügen Sie ein Projekt hinzu",
+      "step3": "Starten Sie und beginnen Sie mit der Entwicklung!"
+    },
+    "documentation": {
+      "title": "Dokumentation",
+      "visitDocs": "Dokumentation besuchen"
+    },
+    "community": {
+      "title": "Community",
+      "discord": "Treten Sie unserem Discord bei",
+      "github": "Auf GitHub ansehen"
+    },
+    "about": {
+      "title": "Über",
+      "version": "Version {{version}}",
+      "license": "Lizenziert unter MIT",
+      "thirdParty": "Hinweise zu Drittanbietern"
+    }
+  },
+  "links": {
+    "documentation": "Dokumentation",
+    "github": "GitHub-Repository",
+    "discord": "Discord-Community",
+    "website": "Webseite"
+  }
+}

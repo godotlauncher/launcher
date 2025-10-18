@@ -1,0 +1,63 @@
+{
+  "title": "Editor-Installationen",
+  "tabs": {
+    "installed": "Installiert",
+    "available": "Verfügbar"
+  },
+  "buttons": {
+    "install": "Editor installieren",
+    "installVersion": "Version installieren",
+    "refresh": "Aktualisieren",
+    "uninstall": "Deinstallieren",
+    "openFolder": "Ordner öffnen"
+  },
+  "search": {
+    "placeholder": "Suchen"
+  },
+  "table": {
+    "name": "Name",
+    "version": "Version",
+    "type": "Typ",
+    "size": "Größe",
+    "published": "Veröffentlicht",
+    "actions": "Aktionen",
+    "status": "Status"
+  },
+  "badges": {
+    "dotNet": ".NET",
+    "prerelease": "Vorabversion"
+  },
+  "types": {
+    "stable": "Stabil",
+    "beta": "Beta",
+    "dev": "Entwicklung",
+    "mono": ".NET"
+  },
+  "status": {
+    "installing": "Wird installiert...",
+    "installed": "Installiert",
+    "downloading": "Wird heruntergeladen..."
+  },
+  "messages": {
+    "noReleases": "Noch keine Releases installiert.",
+    "install": "Installieren.",
+    "noReleasesCta": "Noch keine Releases installiert. <Link>Installieren</Link>",
+    "noInstalled": "Keine Godot-Versionen installiert",
+    "noAvailable": "Keine Versionen verfügbar",
+    "installing": "Wird installiert...",
+    "downloadProgress": "Wird heruntergeladen: {{percent}}%",
+    "installSuccess": "Editor erfolgreich installiert",
+    "uninstallSuccess": "Editor deinstalliert"
+  },
+  "install": {
+    "title": "Godot Editor installieren",
+    "selectVersion": "Wählen Sie eine Version zum Installieren aus",
+    "includeMonoVersion": ".NET-Version einschließen",
+    "downloading": "Wird heruntergeladen...",
+    "extracting": "Wird entpackt...",
+    "buttons": {
+      "install": "Installieren",
+      "cancel": "Abbrechen"
+    }
+  }
+}

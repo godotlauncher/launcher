@@ -19,6 +19,7 @@ async function initializeI18n() {
         logger.info('[i18n] Available languages:', availableLanguages);
 
         const fallbackLng = {
+            'de': ['en'],
             'pt-BR': ['pt', 'en'],
             pt: ['en'],
             'zh-CN': ['zh-CN', 'en'],

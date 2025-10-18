@@ -17,6 +17,7 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     { code: 'pt-BR', name: 'Português (Brasil)' },
     { code: 'zh-CN', name: '简体中文' },
     { code: 'zh-TW', name: '繁體中文' },
+    { code: 'de', name: 'Deutsch' },
     // Add more languages here as they become available
     // { code: 'es', name: 'Español' },
     // { code: 'fr', name: 'Français' },
