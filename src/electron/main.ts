@@ -1,5 +1,5 @@
 import { BrowserWindow, Menu, app, dialog } from 'electron';
-import * as logger from 'electron-log/main.js';
+import logger from 'electron-log/main.js';
 import path from 'node:path';
 import { createDefaultFolder, registerHandlers, initI18n } from './app.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
