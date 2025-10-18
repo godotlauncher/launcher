@@ -1,37 +1,36 @@
-import { expect, Mock, test, vi, beforeEach } from 'vitest';
-import { createTray } from "./tray.helper.js";
-import path from 'node:path';
+import { beforeEach, expect, test, vi } from 'vitest';
+import { createTray } from './tray.helper.js';
 
 // Define platform before mocks
 Object.defineProperty(process, 'platform', {
-    value: 'darwin'
+    value: 'darwin',
 });
 
 // Mock the path module
 vi.mock('node:path', () => ({
     resolve: vi.fn().mockReturnValue('/some/path'),
-    join: vi.fn().mockReturnValue('/some/path')
+    join: vi.fn().mockReturnValue('/some/path'),
 }));
 
 // Mock the modules imported by tray.helper.ts
 vi.mock('../pathResolver.js', () => ({
-    getAssetPath: vi.fn().mockReturnValue('/assets')
+    getAssetPath: vi.fn().mockReturnValue('/assets'),
 }));
 
 vi.mock('../utils/projects.utils.js', () => ({
-    getStoredProjectsList: vi.fn().mockResolvedValue([])
+    getStoredProjectsList: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../utils/prefs.utils.js', () => ({
-    getConfigDir: vi.fn().mockReturnValue('/config/dir')
+    getConfigDir: vi.fn().mockReturnValue('/config/dir'),
 }));
 
 vi.mock('../constants.js', () => ({
-    PROJECTS_FILENAME: 'projects.json'
+    PROJECTS_FILENAME: 'projects.json',
 }));
 
 vi.mock('../commands/projects.js', () => ({
-    launchProject: vi.fn()
+    launchProject: vi.fn(),
 }));
 
 vi.mock('../i18n/index.js', () => {
@@ -42,7 +41,10 @@ vi.mock('../i18n/index.js', () => {
     } as const;
 
     return {
-        t: vi.fn((key: string) => translations[key as keyof typeof translations] ?? key),
+        t: vi.fn(
+            (key: string) =>
+                translations[key as keyof typeof translations] ?? key
+        ),
     };
 });
 
@@ -60,15 +62,15 @@ vi.mock('electron-updater', () => ({
             setFeedURL: vi.fn(),
             addAuthHeader: vi.fn(),
             isUpdaterActive: vi.fn(),
-            currentVersion: '1.0.0'
-        }
+            currentVersion: '1.0.0',
+        },
     },
-    UpdateCheckResult: {}
+    UpdateCheckResult: {},
 }));
 
 // Create a mock menu instance that we can control
 const mockMenu = {
-    popup: vi.fn()
+    popup: vi.fn(),
 };
 
 // Create a mock for the Tray class and its instance
@@ -76,11 +78,11 @@ const mockTrayInstance = {
     setContextMenu: vi.fn(),
     setToolTip: vi.fn(),
     on: vi.fn(),
-    popUpContextMenu: vi.fn()
+    popUpContextMenu: vi.fn(),
 };
 
 // Create a mock for electron
-vi.mock("electron", () => {
+vi.mock('electron', () => {
     // Mock Menu.buildFromTemplate to return a menu
     const buildFromTemplate = vi.fn().mockImplementation((template) => {
         // Store the template in a closure variable for later access
@@ -91,7 +93,7 @@ vi.mock("electron", () => {
     return {
         Tray: vi.fn().mockImplementation(() => mockTrayInstance),
         app: {
-            getAppPath: vi.fn().mockReturnValue("/"),
+            getAppPath: vi.fn().mockReturnValue('/'),
             quit: vi.fn(),
             isPackaged: false,
             getName: vi.fn(),
@@ -104,20 +106,20 @@ vi.mock("electron", () => {
             dock: {
                 show: vi.fn(),
                 hide: vi.fn(),
-            }
+            },
         },
         Menu: {
             buildFromTemplate,
-            setApplicationMenu: vi.fn()
+            setApplicationMenu: vi.fn(),
         },
         BrowserWindow: vi.fn(),
         shell: {
             showItemInFolder: vi.fn(),
-            openExternal: vi.fn()
+            openExternal: vi.fn(),
         },
         dialog: {
             showOpenDialog: vi.fn(),
-            showMessageBox: vi.fn()
+            showMessageBox: vi.fn(),
         },
     };
 });
@@ -128,14 +130,14 @@ const { Menu, app } = electron;
 
 const mainWindow = {
     show: vi.fn(),
-    isVisible: vi.fn().mockReturnValue(false)
+    isVisible: vi.fn().mockReturnValue(false),
 };
 
 beforeEach(() => {
     vi.clearAllMocks();
 });
 
-test("Should have tray menu with show and quit", async () => {
+test('Should have tray menu with show and quit', async () => {
     // Mock implementation for Menu.buildFromTemplate to capture the template
     let capturedTemplate: any[] = [];
     (Menu.buildFromTemplate as any).mockImplementation((template: any[]) => {
@@ -147,16 +149,20 @@ test("Should have tray menu with show and quit", async () => {
 
     // Mac platform will not show menu on load but Linux would
     // Force call updateMenu to test template creation
-    const { updateMenu } = await import("./tray.helper.js");
+    const { updateMenu } = await import('./tray.helper.js');
     await updateMenu(mockTrayInstance as any, mainWindow as any);
 
     // Verify the template structure
     expect(capturedTemplate.length).toBeGreaterThan(0);
 
     // Find the relevant menu items for testing
-    const showMenuItem = capturedTemplate.find((item) => item.label === "Show Godot Launcher");
-    const separatorItem = capturedTemplate.find((item) => item.type === "separator");
-    const quitMenuItem = capturedTemplate.find((item) => item.label === "Quit");
+    const showMenuItem = capturedTemplate.find(
+        (item) => item.label === 'Show Godot Launcher'
+    );
+    const separatorItem = capturedTemplate.find(
+        (item) => item.type === 'separator'
+    );
+    const quitMenuItem = capturedTemplate.find((item) => item.label === 'Quit');
 
     // Verify they exist
     expect(showMenuItem).toBeDefined();
@@ -172,15 +178,18 @@ test("Should have tray menu with show and quit", async () => {
     expect(app.quit).toHaveBeenCalled();
 });
 
-test("Should show window on tray click", async () => {
+test('Should show window on tray click', async () => {
     await createTray(mainWindow as any);
 
     // Check that the event handler was registered
-    expect(mockTrayInstance.on).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(mockTrayInstance.on).toHaveBeenCalledWith(
+        'click',
+        expect.any(Function)
+    );
 
     // Extract the handler function
     const clickHandlerCall = (mockTrayInstance.on as any).mock.calls.find(
-        call => call[0] === 'click'
+        (call: { [key: string]: any }) => call[0] === 'click'
     );
 
     // Make sure the handler was found
@@ -190,7 +199,7 @@ test("Should show window on tray click", async () => {
     if (clickHandlerCall) {
         const clickHandler = clickHandlerCall[1];
         // Mock popUpContextMenu since it's called by the handler
-        mockTrayInstance.popUpContextMenu.mockImplementation(() => { });
+        mockTrayInstance.popUpContextMenu.mockImplementation(() => {});
 
         // Call the click handler
         await clickHandler();

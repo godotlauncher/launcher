@@ -1,5 +1,5 @@
 import { Folder, X } from 'lucide-react';
-import { MouseEvent, useEffect, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
 
@@ -10,11 +10,11 @@ export const VSCodeToolSettings: React.FC = () => {
 
     const { preferences, updatePreferences } = usePreferences();
 
-    const checkVSCode = async () => {
+    const checkVSCode = useCallback(async () => {
         const tools = await window.electron.getInstalledTools();
         const vscode = tools.find(tool => tool.name === 'VSCode');
         setTool(vscode);
-    };
+    }, []);
 
     const clearCustomPath = async (e: MouseEvent) => {
         e.preventDefault();
@@ -35,12 +35,16 @@ export const VSCodeToolSettings: React.FC = () => {
     };
 
     useEffect(() => {
+        // Initial data fetching on mount
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         checkVSCode();
-    }, []);
+    }, [checkVSCode]);
 
     useEffect(() => {
+        // Re-check when preferences change
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         checkVSCode();
-    }, [preferences]);
+    }, [preferences, checkVSCode]);
 
     return (
         <>

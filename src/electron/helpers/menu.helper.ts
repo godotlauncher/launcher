@@ -1,16 +1,15 @@
 import { BrowserWindow, Menu, shell } from 'electron';
+import { t } from '../i18n/index.js';
 import { isDev } from '../utils.js';
 import { getPrefsPath } from '../utils/prefs.utils.js';
-import { t } from '../i18n/index.js';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mainWindow: BrowserWindow;
 
- 
 export function createMenu(window: BrowserWindow) {
     mainWindow = window;
     const menu = buildMenu();
     Menu.setApplicationMenu(menu);
-
 }
 
 export function refreshMenu() {
@@ -19,11 +18,12 @@ export function refreshMenu() {
 }
 
 function buildMenu(): Electron.Menu {
-
-
     return Menu.buildFromTemplate([
         {
-            label: process.platform === 'darwin' ? undefined : t('menus:app.label'),
+            label:
+                process.platform === 'darwin'
+                    ? undefined
+                    : t('menus:app.label'),
             type: 'submenu',
             submenu: [
                 {
@@ -71,5 +71,4 @@ function buildMenu(): Electron.Menu {
             ],
         },
     ]);
-
 }

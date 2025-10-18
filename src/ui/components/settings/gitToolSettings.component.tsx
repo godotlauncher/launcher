@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const GitToolSettings: React.FC = () => {
     const { t } = useTranslation('settings');
     const [tool, setTool] = useState<InstalledTool | undefined>();
 
-    const checkGit = async () => {
+    const checkGit = useCallback(async () => {
         const tools = await window.electron.getInstalledTools();
         const git = tools.find(tool => tool.name === 'Git');
         setTool(git);
-    };
+    }, []);
 
     useEffect(() => {
+        // Initial data fetching on mount
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         checkGit();
-    }, []);
+    }, [checkGit]);
 
 
     return (

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../../i18n';
+import logger from 'electron-log';
 
 interface LanguageOption {
-  code: string;
-  name: string;
+    code: string;
+    name: string;
 }
 
 // Available language options
@@ -30,7 +31,7 @@ export const LanguageSelector: React.FC = () => {
                 const prefs = await window.electron.getUserPreferences();
                 setSelectedLanguage(prefs.language || 'system');
             } catch (error) {
-                console.error('[LanguageSelector] Failed to load language preference:', error);
+                logger.error('[LanguageSelector] Failed to load language preference:', error);
             }
         };
 
@@ -39,25 +40,25 @@ export const LanguageSelector: React.FC = () => {
 
     const handleLanguageChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newLanguage = event.target.value;
-    
+
         if (newLanguage === selectedLanguage) {
             return; // No change
         }
 
         setIsChanging(true);
-    
+
         try {
-            console.log(`[LanguageSelector] Changing language to: ${newLanguage}`);
-      
+            logger.info(`[LanguageSelector] Changing language to: ${newLanguage}`);
+
             // Change language (this updates preferences in backend and fetches new translations)
             await changeLanguage(newLanguage);
-      
+
             // Update local state
             setSelectedLanguage(newLanguage);
-      
-            console.log(`[LanguageSelector] Language changed successfully to: ${newLanguage}`);
+
+            logger.info(`[LanguageSelector] Language changed successfully to: ${newLanguage}`);
         } catch (error) {
-            console.error('[LanguageSelector] Failed to change language:', error);
+            logger.error('[LanguageSelector] Failed to change language:', error);
             // Revert to previous selection on error
             event.target.value = selectedLanguage;
         } finally {
@@ -80,7 +81,7 @@ export const LanguageSelector: React.FC = () => {
             >
                 {LANGUAGE_OPTIONS.map((option) => (
                     <option key={option.code} value={option.code}>
-                        {option.code === 'system' 
+                        {option.code === 'system'
                             ? t('general.language.system', option.name)
                             : option.name
                         }
@@ -92,7 +93,7 @@ export const LanguageSelector: React.FC = () => {
                     {t('general.language.description', 'Select your preferred language')}
                 </span>
             </label>
-      
+
             {isChanging && (
                 <div className="flex items-center gap-2 mt-2">
                     <span className="loading loading-spinner loading-sm"></span>

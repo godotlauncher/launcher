@@ -5,9 +5,8 @@ import Backend from 'i18next-fs-backend';
 import path from 'node:path';
 import { isDev } from '../utils.js';
 
-
 let i18nInstance: typeof i18next | null = null;
-const mainWindow = app;
+// const mainWindow = app;
 /**
  * Resolve the locale to use based on user preference and system settings
  * @param userPreference User's language preference ('system' or locale code)
@@ -53,7 +52,19 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
         await i18next.use(Backend).init({
             lng: resolvedLocale,
             fallbackLng: 'en',
-            ns: ['translation', 'dialogs', 'menus', 'common', 'projects', 'installs', 'settings', 'help', 'createProject', 'installEditor', 'welcome'],
+            ns: [
+                'translation',
+                'dialogs',
+                'menus',
+                'common',
+                'projects',
+                'installs',
+                'settings',
+                'help',
+                'createProject',
+                'installEditor',
+                'welcome',
+            ],
             defaultNS: 'translation',
             backend: {
                 loadPath: path.join(localesPath, '{{lng}}/{{ns}}.json'),
@@ -65,7 +76,9 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
         });
 
         i18nInstance = i18next;
-        logger.info(`i18n initialized successfully with language: ${i18nInstance.language}`);
+        logger.info(
+            `i18n initialized successfully with language: ${i18nInstance.language}`
+        );
 
         return i18next;
     } catch (error) {
@@ -80,6 +93,7 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
  * @param options Interpolation options
  * @returns Translated string
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function t(key: string, options?: any): string {
     if (!i18nInstance) {
         logger.error('i18n not initialized, returning key as-is');
@@ -104,7 +118,9 @@ export async function changeLanguage(lng: string): Promise<void> {
     try {
         await i18nInstance.changeLanguage(resolvedLocale);
 
-        logger.info(`Language changed successfully to: ${i18nInstance.language}`);
+        logger.info(
+            `Language changed successfully to: ${i18nInstance.language}`
+        );
     } catch (error) {
         logger.error(`Failed to change language to ${resolvedLocale}:`, error);
         throw error;
@@ -137,29 +153,37 @@ export function getAvailableLanguages(): string[] {
  * @param language Locale code (optional, defaults to current language)
  * @returns Object with all namespaces and their translations
  */
-export function getAllTranslations(language?: string): Record<string, Record<string, any>> {
+export function getAllTranslations(
+    language?: string
+): Record<string, Record<string, unknown>> {
     if (!i18nInstance) {
         logger.error('i18n not initialized, returning empty translations');
         return {};
     }
 
     const lang = language || i18nInstance.language;
-    const translations: Record<string, Record<string, any>> = {};
+    const translations: Record<string, Record<string, unknown>> = {};
 
     // Get all loaded namespaces
     const namespaces = i18nInstance.options.ns as string[];
 
-    logger.debug(`Exporting translations for language: ${lang}, namespaces: ${namespaces.join(', ')}`);
+    logger.debug(
+        `Exporting translations for language: ${lang}, namespaces: ${namespaces.join(', ')}`
+    );
 
     for (const ns of namespaces) {
         const bundle = i18nInstance.getResourceBundle(lang, ns);
         if (bundle) {
             translations[ns] = bundle;
         } else {
-            logger.warn(`No translations found for namespace: ${ns} in language: ${lang}`);
+            logger.warn(
+                `No translations found for namespace: ${ns} in language: ${lang}`
+            );
         }
     }
 
-    logger.debug(`Exported ${Object.keys(translations).length} namespaces for ${lang}`);
+    logger.debug(
+        `Exported ${Object.keys(translations).length} namespaces for ${lang}`
+    );
     return translations;
 }

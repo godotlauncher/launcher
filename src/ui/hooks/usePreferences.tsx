@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
 
 interface AppPreferences {
     preferences: UserPreferences | null;
@@ -26,28 +26,29 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({ chi
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [platform, setPlatform] = useState<string>('');
 
-    useEffect(() => {
-        window.electron.getPlatform().then(setPlatform);
-        loadPreferences();
-    }, []);
-
-    const updatePreferences = async (newPrefs: Partial<UserPreferences>) => {
-        const prefs = { ...preferences, ...newPrefs } as UserPreferences;
-        savePreferences(prefs).then(setPreferences);
-    };
-
-
-    const loadPreferences = async () => {
+    const loadPreferences = useCallback(async () => {
         const preferences = await window.electron.getUserPreferences();
         setPreferences(preferences);
         return preferences;
-    };
+    }, []);
 
-    const savePreferences = async (preferences: UserPreferences) => {
+    const savePreferences = useCallback(async (preferences: UserPreferences) => {
         const newPreferences = await window.electron.setUserPreferences(preferences);
         setPreferences({ ...newPreferences });
         return newPreferences;
-    };
+    }, []);
+
+    useEffect(() => {
+        window.electron.getPlatform().then(setPlatform);
+        // Load preferences on mount - this is intentional initial data fetching
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadPreferences();
+    }, [loadPreferences]);
+
+    const updatePreferences = useCallback(async (newPrefs: Partial<UserPreferences>) => {
+        const prefs = { ...preferences, ...newPrefs } as UserPreferences;
+        savePreferences(prefs).then(setPreferences);
+    }, [preferences, savePreferences]);
 
     const setAutoStart = async (autoStart: boolean, hidden: boolean): Promise<SetAutoStartResult> => {
 

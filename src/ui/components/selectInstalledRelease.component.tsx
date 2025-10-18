@@ -1,5 +1,5 @@
 import { TriangleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
@@ -26,11 +26,7 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
         setSelectedRelease(currentRelease);
     }, [currentRelease]);
 
-    useEffect(() => {
-        setFilteredReleases(getFilteredRows());
-    }, [installedReleases, downloadingReleases]);
-
-    const getFilteredRows = () => {
+    const getFilteredRows = useCallback(() => {
         // merge downloading and installed releases for proper display
         const all = installedReleases.filter(r => parseInt(r.version_number.toString()) >= parseInt(currentRelease.version_number.toString()))
             .concat(downloadingReleases.map(r =>
@@ -50,7 +46,11 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
 
         return all.sort(sortReleases);
 
-    };
+    }, [installedReleases, downloadingReleases, currentRelease]);
+
+    useEffect(() => {
+        setFilteredReleases(getFilteredRows());
+    }, [getFilteredRows]);
 
     return (
 

@@ -1,5 +1,5 @@
 import { BrowserWindow, Menu, app, dialog } from 'electron';
-import logger from 'electron-log/main.js';
+import * as logger from 'electron-log/main.js';
 import path from 'node:path';
 import { createDefaultFolder, registerHandlers, initI18n } from './app.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
@@ -15,13 +15,17 @@ logger.initialize();
 
 logger.info('Starting Godot Launcher');
 logger.info(`Version: ${app.getVersion()}`);
-logger.info(`Electron: ${process.versions.electron}, Chrome: ${process.versions.chrome}, Node: ${process.versions.node}, V8: ${process.versions.v8}`);
+logger.info(
+    `Electron: ${process.versions.electron}, Chrome: ${process.versions.chrome}, Node: ${process.versions.node}, V8: ${process.versions.v8}`
+);
 logger.info(`Platform: ${process.platform}, Arch: ${process.arch}`);
 logger.info(`isDev: ${isDev()}`);
 logger.info(`App path: ${app.getAppPath()}`);
 logger.info(`Debug flags: ${process.argv.includes('--debug')}`);
 if (process.platform === 'linux') {
-    logger.info(`sandbox disabled: ${process.argv.includes('--no-sandbox') || process.argv.includes('--disable-sandbox') || process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1'}`);
+    logger.info(
+        `sandbox disabled: ${process.argv.includes('--no-sandbox') || process.argv.includes('--disable-sandbox') || process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1'}`
+    );
 }
 
 // --- sandbox flag passthrough (must be before app.whenReady / any windows) ---
@@ -39,13 +43,11 @@ if (process.platform === 'linux' && userRequestedNoSandbox) {
 if (isDev()) {
     logger.transports.file.level = 'debug';
     logger.transports.console.level = 'debug';
-}
-else {
+} else {
     if (process.argv.includes('--debug')) {
         logger.transports.file.level = 'debug';
         logger.transports.console.level = 'debug';
-    }
-    else {
+    } else {
         logger.transports.file.level = 'info';
         logger.transports.console.level = 'info';
     }
@@ -63,11 +65,9 @@ if (!isDev()) {
     if (!hasLock) {
         logger.warn('Another instance is running, quitting');
         app.quit();
-    }
-    else {
+    } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         app.on('second-instance', (event, commandLine, workingDirectory) => {
-
             if (_mainWindow) {
                 if (_mainWindow.isMinimized()) {
                     _mainWindow.restore();
@@ -82,7 +82,6 @@ if (!isDev()) {
             }
         });
     }
-
 }
 
 const platformIconDir = process.platform === 'darwin' ? 'darwin' : 'default';
@@ -103,20 +102,21 @@ app.on('activate', () => {
 });
 
 app.on('ready', async () => {
-
     // only support these platforms
     const supportedPlatforms = ['darwin', 'win32', 'linux'];
     if (!supportedPlatforms.includes(process.platform)) {
         logger.error('Unsupported platform:', process.platform);
-        dialog.showMessageBox({
-            type: 'error',
-            title: 'Unsupported platform',
-            message: 'Godot Launcher is not supported on this platform',
-            detail: `Godot Launcher is not supported on ${process.platform} platform. If you want to help us support this platform, see our contribution guide.`,
-            buttons: ['OK']
-        }).then(() => {
-            app.quit();
-        });
+        dialog
+            .showMessageBox({
+                type: 'error',
+                title: 'Unsupported platform',
+                message: 'Godot Launcher is not supported on this platform',
+                detail: `Godot Launcher is not supported on ${process.platform} platform. If you want to help us support this platform, see our contribution guide.`,
+                buttons: ['OK'],
+            })
+            .then(() => {
+                app.quit();
+            });
         return;
     }
 
@@ -124,7 +124,9 @@ app.on('ready', async () => {
 
     // Initialize i18n before creating windows
     logger.debug('Initializing i18n...');
-    const { getUserPreferences } = await import('./commands/userPreferences.js');
+    const { getUserPreferences } = await import(
+        './commands/userPreferences.js'
+    );
     const userPrefs = await getUserPreferences();
     await initI18n(userPrefs.language || 'system');
     logger.debug('i18n initialized successfully');
@@ -132,8 +134,6 @@ app.on('ready', async () => {
     logger.debug('App ready, checking projects and releases');
     await checkAndUpdateProjects();
     await checkAndUpdateReleases();
-
-
 
     const mainWindow = new BrowserWindow({
         width: 1024,
@@ -148,15 +148,16 @@ app.on('ready', async () => {
         show: false,
     });
 
-    app.dock?.setIcon(path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'));
-    mainWindow.setIcon(path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'));
-
-
+    app.dock?.setIcon(
+        path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')
+    );
+    mainWindow.setIcon(
+        path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')
+    );
 
     if (isDev()) {
         mainWindow.loadURL('http://localhost:5123');
-    }
-    else {
+    } else {
         mainWindow.loadFile(getUIPath());
     }
 
@@ -174,14 +175,21 @@ app.on('ready', async () => {
     const prefs = await getUserPreferences();
     setAutoStart(prefs.auto_start, prefs.start_in_tray);
 
-    setupAutoUpdate(mainWindow, prefs.auto_check_updates, 60 * 60 * 1000, true, true);
+    setupAutoUpdate(
+        mainWindow,
+        prefs.auto_check_updates,
+        60 * 60 * 1000,
+        true,
+        true
+    );
 
     mainWindow.on('ready-to-show', async () => {
-
         if (process.platform === 'darwin') {
             if (app.getLoginItemSettings().wasOpenedAtLogin) {
                 if (prefs.start_in_tray) {
-                    logger.info('App was opened at login with prefs.start_in_tray, hiding window');
+                    logger.info(
+                        'App was opened at login with prefs.start_in_tray, hiding window'
+                    );
                     mainWindow.hide();
                     app.dock?.hide();
                 }
@@ -189,40 +197,39 @@ app.on('ready', async () => {
                 mainWindow.show();
                 app.dock?.show();
             }
-
-        }
-        else if (process.platform === 'win32') {
+        } else if (process.platform === 'win32') {
             // check if launch argument has been passed --hidden
             if (process.argv.includes('--hidden')) {
                 logger.debug('Hiding window on launch with --hidden');
                 mainWindow.hide();
                 app.dock?.hide();
-            }
-            else {
+            } else {
                 mainWindow.show();
                 app.dock?.show();
             }
-        }
-        else {
+        } else {
             mainWindow.show();
             app.dock?.show();
         }
     });
 });
 
-
 function handleCloseEvents(mainWindow: BrowserWindow) {
-
     // Hide the window instead of closing it
     let willClose = false;
 
     mainWindow.on('close', (e) => {
-
         // close if onboarding has not been completed
-        getUserPreferences().then(prefs => {
-            const onboardingIncomplete = (prefs.first_run && willClose === false) || (process.platform === 'win32' && !prefs.windows_symlink_win_notify && willClose === false);
+        getUserPreferences().then((prefs) => {
+            const onboardingIncomplete =
+                (prefs.first_run && willClose === false) ||
+                (process.platform === 'win32' &&
+                    !prefs.windows_symlink_win_notify &&
+                    willClose === false);
             if (onboardingIncomplete) {
-                logger.debug('Incomplete onboarding, quitting instead of hiding');
+                logger.debug(
+                    'Incomplete onboarding, quitting instead of hiding'
+                );
                 app.quit();
             }
         });
@@ -237,7 +244,6 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
         e.preventDefault();
         mainWindow.hide();
         app.dock?.hide();
-
     });
 
     app.on('before-quit', () => {
@@ -249,12 +255,17 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
     mainWindow.on('show', () => {
         logger.debug('Showing window');
 
-        app.dock?.setIcon(path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'));
-        mainWindow.setIcon(path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'));
+        app.dock?.setIcon(
+            path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')
+        );
+        mainWindow.setIcon(
+            path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')
+        );
 
-        logger.log(`Showing Window, setting dock icon to ${path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')}`);
+        logger.log(
+            `Showing Window, setting dock icon to ${path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')}`
+        );
 
         willClose = false;
     });
-
 }

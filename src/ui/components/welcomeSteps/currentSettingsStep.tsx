@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
 
@@ -9,14 +8,8 @@ type CurrentSettingsStepProps = {
 export const CurrentSettingsStep: React.FC<CurrentSettingsStepProps> = ({ onSkip }) => {
     const { t } = useTranslation('welcome');
 
-    const [loading, setLoading] = useState<boolean>(true);
     const { preferences } = usePreferences();
-
-    useEffect(() => {
-        if (preferences) {
-            setLoading(false);
-        }
-    }, [preferences]);
+    const loading = !preferences;
 
     const getPostLaunchText = (action: UserPreferences['post_launch_action']) => {
         switch (action) {

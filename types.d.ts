@@ -205,8 +205,8 @@ type EventChannelMapping = {
     // ##### i18n #####
     'i18n:get-current-language': Promise<string>;
     'i18n:get-available-languages': Promise<string[]>;
-    'i18n:get-all-translations': Promise<Record<string, Record<string, any>>>;
-    'i18n:change-language': Promise<Record<string, Record<string, any>>>;
+    'i18n:get-all-translations': Promise<Record<string, Record<string, unknown>>>;
+    'i18n:change-language': Promise<Record<string, Record<string, unknown>>>;
 };
 
 interface Window {
@@ -300,8 +300,8 @@ interface Window {
         i18n: {
             getCurrentLanguage: () => Promise<string>;
             getAvailableLanguages: () => Promise<string[]>;
-            getAllTranslations: (language?: string) => Promise<Record<string, Record<string, any>>>;
-            changeLanguage: (lang: string) => Promise<Record<string, Record<string, any>>>;
+            getAllTranslations: (language?: string) => Promise<Record<string, Record<string, unknown>>>;
+            changeLanguage: (lang: string) => Promise<Record<string, Record<string, unknown>>>;
         };
     };
 }

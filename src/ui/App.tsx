@@ -24,8 +24,6 @@ import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 function App() {
     const { t } = useTranslation('common');
     const [loading, setLoading] = React.useState(true);
-    const [prefsLoading, setPrefsLoading] = React.useState(true);
-    const [firstRun, setFirstRun] = React.useState(false);
 
     const { currentView, setCurrentView, openExternalLink } = useAppNavigation();
 
@@ -33,36 +31,27 @@ function App() {
     const { preferences, platform, updatePreferences } = usePreferences();
 
     const { updateAvailable, installAndRelaunch } = useApp();
+
+    // Derive values from preferences and loading state
+    const prefsLoading = !preferences;
+    const firstRun = preferences?.first_run || false;
     // set the title of the app
     const version = import.meta.env.VITE_APP_VERSION;
-    document.title = `Godot Launcher ${version}`;
-
 
     useEffect(() => {
-        if (preferences) {
-            setFirstRun(preferences.first_run || false);
-
-            // migrate legacy preference versions for non-Windows users
-            // if (preferences.prefs_version < 3 && platform !== 'win32') {
-            //     updatePreferences({ prefs_version: 3 });
-            // }
-
-            setPrefsLoading(false);
-        }
-    }, [preferences]);
+        document.title = `Godot Launcher ${version}`;
+    }, [version]);
 
     useEffect(() => {
-
         if (!releaseLoading) {
+            // Coordinating loading states is a valid use case
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
             if (installedReleases.length < 1) {
                 setCurrentView('installs');
             }
         }
-
-        setFirstRun(preferences?.first_run || false);
-
-    }, [releaseLoading]);
+    }, [releaseLoading, installedReleases.length, setCurrentView]);
 
     const changeView = (view: View) => {
         setCurrentView(view);

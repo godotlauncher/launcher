@@ -114,6 +114,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     useEffect(() => {
         const off = window.electron.subscribeProjects(setProjects);
+        // Initial data fetching on mount
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         getProjects();
 
         return () => {

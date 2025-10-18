@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { CircleHelp, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
 import { usePreferences } from '../../hooks/usePreferences';
@@ -29,7 +29,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const [withVSCode, setWithVSCode] = useState<boolean>(true);
 
     const [loadingTools, setLoadingTools] = useState<boolean>(true);
-    const [allReleases, setAllReleases] = useState<InstalledRelease[]>([]);
     const inputNameRef = useRef<HTMLInputElement>(null);
 
 
@@ -38,6 +37,39 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const { installedReleases, downloadingReleases } = useRelease();
     const { createProject, launchProject } = useProjects();
     const { preferences, platform } = usePreferences();
+
+    // Derive allReleases from installedReleases and downloadingReleases
+    const allReleases = useMemo(() => {
+        return installedReleases.concat(downloadingReleases.map(r =>
+            ({
+                version: r.version,
+                version_number: -1,
+                install_path: '',
+                mono: r.mono,
+                platform: '',
+                arch: '',
+                editor_path: '',
+                prerelease: r.prerelease,
+                config_version: 5,
+                published_at: r.published_at,
+                valid: true,
+            })))
+            .sort(sortReleases);
+    }, [installedReleases, downloadingReleases]);
+
+    // Derive projectPath from projectName and preferences
+    const derivedProjectPath = useMemo(() => {
+        const basePath = preferences?.projects_location || '';
+        if (platform === 'win32') {
+            return `${basePath}\\${projectName}`;
+        }
+        return `${basePath}/${projectName}`;
+    }, [projectName, preferences, platform]);
+
+    // Update projectPath when derivedProjectPath changes
+    useEffect(() => {
+        setProjectPath(derivedProjectPath);
+    }, [derivedProjectPath]);
 
     const onCreateProject = async () => {
 
@@ -68,37 +100,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         }
     };
 
-    useEffect(() => {
-        const all = installedReleases.concat(downloadingReleases.map(r =>
-            ({
-                version: r.version,
-                version_number: -1,
-                install_path: '',
-                mono: r.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: r.prerelease,
-                config_version: 5,
-                published_at: r.published_at,
-                valid: true,
-            })))
-            .sort(sortReleases);
-
-        setAllReleases(all);
-
-    }, [installedReleases, downloadingReleases]);
-
-    useEffect(() => {
-        const basePath = preferences?.projects_location || '';
-        if (platform === 'win32') {
-            setProjectPath(`${basePath}\\${projectName}`);
-        }
-        else {
-            setProjectPath(`${basePath}/${projectName}`);
-        }
-    }, [projectName, preferences, platform]);
-
     const changeRelease = (index: number) => {
         setReleaseIndex(index);
         const release = allReleases[index];
@@ -115,10 +116,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         setRenderer(e.target.value as RendererType[5]);
     };
 
-    const hasTool = (name: string): boolean => {
+    const hasTool = useCallback((name: string): boolean => {
         const tool = tools.find(tool => tool.name === name);
         return (tool?.path?.length || 0) > 0;
-    };
+    }, [tools]);
 
     useEffect(() => {
         if (inputNameRef.current) {
@@ -135,9 +136,9 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         if (tools.length === 0) return;
         const hasGit = hasTool('Git');
         const hasVSCode = hasTool('VSCode');
-        setWithGit(() => hasGit);
-        setWithVSCode(() => hasVSCode);
-    }, [tools]);
+        setWithGit(hasGit);
+        setWithVSCode(hasVSCode);
+    }, [hasTool, tools]);
 
 
     const showVSCodeHelp = () => {
