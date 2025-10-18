@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Editör Ayarlarını İçe Aktar",
+    "message": "Editör ayarlarını bir dosyadan içe aktarmak istediğinizden emin misiniz?",
+    "detail": "Bu işlem mevcut editör ayarlarının yerini alacaktır. Bir yedek oluşturulacaktır.",
+    "continue": "Devam",
+    "cancel": "İptal",
+    "selectFile": "Editör Ayarları Dosyasını İçe Aktar",
+    "textResource": "Metin Kaynağı"
+  },
+  "exportSettings": {
+    "title": "Editör Ayarlarını Dosyaya Aktar",
+    "allFiles": "Tüm Dosyalar"
+  },
+  "removeProject": {
+    "title": "Projeyi Listeden Kaldır",
+    "message": "\"{{projectName}}\" projesini listeden kaldırmak istediğinizden emin misiniz?",
+    "detail": "Bu işlem projeyi cihazınızdan silmez.",
+    "ok": "Tamam",
+    "cancel": "İptal",
+    "doNotAskAgain": "Bir daha sorma"
+  },
+  "removeRelease": {
+    "title": "Sürümü Kaldır",
+    "message": "\"{{version}}\" sürümünü silmek istediğinizden emin misiniz?",
+    "detail": "Bu işlem sürümü cihazınızdan silecektir. Daha sonra tekrar yükleyebilirsiniz.",
+    "ok": "Tamam",
+    "cancel": "İptal",
+    "error": "Hata",
+    "errorMessage": "Sürüm kaldırılırken bir hata oluştu."
+  },
+  "selectFolder": "Klasör Seç",
+  "selectFile": "Dosya Seç",
+  "error": {
+    "title": "Hata",
+    "generic": "Bir hata oluştu: {{message}}"
+  }
+}

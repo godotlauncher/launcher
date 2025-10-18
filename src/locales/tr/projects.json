@@ -1,0 +1,78 @@
+{
+  "title": "Projeler",
+  "buttons": {
+    "add": "Ekle",
+    "newProject": "Yeni Proje",
+    "addProject": "Proje Ekle",
+    "createProject": "Proje Oluştur",
+    "refresh": "Yenile",
+    "launch": "Başlat",
+    "changeEditor": "Editörü Değiştir"
+  },
+  "search": {
+    "placeholder": "Ara"
+  },
+  "table": {
+    "name": "İsim",
+    "modified": "Değiştirilme",
+    "editor": "Editör",
+    "version": "Sürüm",
+    "lastOpened": "Son Açılma",
+    "actions": "İşlemler",
+    "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
+    "dotNetProject": "Bu bir .Net Projesidir",
+    "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
+    "windowedMode": "Bu proje pencere modunda açık"
+  },
+  "addProject": {
+    "selectFile": "Proje Dosyasını Seç",
+    "godotProject": "Godot Projesi",
+    "errors": {
+      "projectExists": "'{{path}}' projesi zaten mevcut",
+      "invalidPath": "Geçersiz proje yolu",
+      "invalidProjectFile": "Geçersiz project.godot dosyası",
+      "nameExists": "'{{name}}' isimli proje zaten mevcut\nLütfen projeyi 'project.godot' içinde yeniden adlandırın veya mevcut olanı kaldırın.",
+      "invalidRenderer": "Geçersiz proje dosyası",
+      "invalidConfigVersion": "Geçersiz project.godot config_version.\nSadece config version 5 destekleniyor",
+      "noStableReleases": "Godot {{version}}.x için kurulu Kararlı sürüm bulunamadı\nLütfen Godot {{version}}.x için kararlı bir sürüm yükleyin, ardından projeyi tekrar eklemeyi deneyin.",
+      "noDotNetRelease": "Proje bir .NET projesi gibi görünüyor ancak .NET sürümüne sahip Editör bulunamadı",
+      "noCompatibleRelease": "config_version {{configVersion}} destekleyen Godot {{version}}.x için kurulu sürüm bulunamadı."
+    }
+  },
+  "messages": {
+    "noProjects": "Proje bulunamadı",
+    "noReleases": "Kurulu sürüm yok.",
+    "goToInstalls": "Kurulumlara git.",
+    "noReleasesCta": "Henüz kurulu sürüm yok. <Link>Kurulumlara git</Link>",
+    "projectAdded": "Proje başarıyla eklendi",
+    "projectRemoved": "Proje kaldırıldı",
+    "editorChanged": "Editör başarıyla değiştirildi",
+    "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
+    "monoProject": "Bu bir .NET Projesidir",
+    "prereleaseVersion": "Ön sürüm Godot editör sürümü kullanılıyor"
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "Proje bulunamadı",
+      "invalidEditorVersion": "Geçersiz editör sürümü",
+      "differentMajorVersion": "Editörün farklı bir ana sürümü kullanılamaz\nProjenizi korumak için https://godotengine.org adresindeki resmi geçiş kılavuzuna bakın"
+    }
+  },
+  "createProject": {
+    "title": "Yeni Proje",
+    "projectName": "Proje Adı",
+    "projectPath": "Proje Yolu",
+    "selectVersion": "Godot Sürümünü Seçin",
+    "renderer": "İşleyici",
+    "editNow": "Şimdi düzenle",
+    "setupVSCode": "Visual Studio Code'u Metin Editörü olarak Ayarla",
+    "vscodeNotInstalled": "Visual Studio Code bu bilgisayarda yüklü değil",
+    "noVersionsInstalled": "Godot sürümü yüklü değil",
+    "errors": {
+      "nameRequired": "Proje adı gerekli",
+      "pathRequired": "Proje yolu gerekli",
+      "invalidPath": "Geçersiz proje yolu"
+    }
+  },
+  "searchPlaceholder": "Projelerde ara..."
+}

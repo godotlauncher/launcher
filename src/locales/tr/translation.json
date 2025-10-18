@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Godot Launcher",
+    "version": "Sürüm {{version}}",
+    "loading": "Her şey hazırlanıyor...",
+    "quit": "Çıkış",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "ok": "Tamam",
+    "yes": "Evet",
+    "no": "Hayır",
+    "continue": "Devam",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "remove": "Kaldır",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "add": "Ekle",
+    "browse": "Gözat",
+    "refresh": "Yenile"
+  },
+  "errors": {
+    "generic": "Bir hata oluştu",
+    "notFound": "Bulunamadı",
+    "invalidPath": "Geçersiz yol",
+    "permissionDenied": "İzin reddedildi",
+    "fileNotFound": "Dosya bulunamadı"
+  }
+}

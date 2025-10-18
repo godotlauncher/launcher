@@ -1,0 +1,170 @@
+{
+  "title": "Ayarlar",
+  "tabs": {
+    "projects": "Projeler",
+    "installs": "Kurulumlar",
+    "appearance": "Görünüm",
+    "behavior": "Davranış",
+    "tools": "Araçlar",
+    "updates": "Güncellemeler"
+  },
+  "appearance": {
+    "theme": {
+      "title": "Tema",
+      "description": "Godot Launcher görünümünü özelleştirin",
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem (otomatik)"
+    }
+  },
+  "behavior": {
+    "projects": {
+      "title": "Projeler",
+      "description": "Projeler için Godot Launcher davranışını seçin.",
+      "confirmRemove": "Projeleri kaldırırken onay iste."
+    },
+    "autoStart": {
+      "title": "Başlangıç Tercihi",
+      "description": "Bilgisayarınız başladığında GD Launcher'ın ne yapacağını seçin",
+      "linuxWarning": "Otomatik başlatma şu anda Linux'ta desteklenmiyor",
+      "startOnBoot": "Bilgisayar başladığında başlat.",
+      "startInTray": "Sistem tepsisinde başlat."
+    },
+    "projectLaunch": {
+      "title": "Proje Başlatma Eylemi",
+      "description": "Bir proje başlattıktan sonra GD Launcher'ın ne yapacağını seçin",
+      "none": "Hiçbir şey",
+      "minimize": "Simge durumuna küçült",
+      "closeToTray": "Sistem tepsisine küçült"
+    },
+    "projectsLocation": {
+      "title": "Proje Konumu",
+      "description": "Yeni projeler için bir konum seçin. Mevcut projeler etkilenmeyecektir.",
+      "defaultLocation": "Varsayılan Konum",
+      "waitingForDialog": "İletişim kutusu bekleniyor..."
+    },
+    "editorsLocation": {
+      "title": "Editör Kurulum Konumu",
+      "description": "Editör kurulumları için bir konum seçin. Mevcut kurulumlar etkilenmeyecektir.",
+      "installLocation": "Kurulum Konumu",
+      "waitingForDialog": "İletişim kutusu bekleniyor..."
+    },
+    "checkForUpdates": {
+      "title": "Güncellemeleri Kontrol Et",
+      "description": "Godot Launcher başladığında güncellemeleri otomatik olarak kontrol et",
+      "enabled": "Başlangıçta güncellemeleri kontrol et"
+    }
+  },
+  "general": {
+    "language": {
+      "label": "Dil",
+      "title": "Dil",
+      "description": "Godot Launcher için dil seçin (Godot dilini değiştirmez)",
+      "system": "Sistem (Otomatik algıla)",
+      "options": {
+        "system": "Sistem (Otomatik algıla)"
+      }
+    },
+    "theme": {
+      "label": "Tema",
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    },
+    "projectsLocation": {
+      "label": "Varsayılan Projeler Konumu",
+      "description": "Yeni projelerin oluşturulacağı yer"
+    },
+    "installLocation": {
+      "label": "Godot Kurulum Konumu",
+      "description": "Godot sürümlerinin yükleneceği yer"
+    },
+    "postLaunchAction": {
+      "label": "Bir Proje Başlattıktan Sonra",
+      "none": "Hiçbir şey yapma",
+      "minimize": "Launcher'ı simge durumuna küçült",
+      "closeToTray": "Sistem tepsisine küçült"
+    },
+    "autoCheckUpdates": {
+      "label": "Güncellemeleri otomatik kontrol et",
+      "description": "Başlangıçta Godot Launcher güncellemelerini kontrol et"
+    },
+    "autoStart": {
+      "label": "Sistemle birlikte başlat",
+      "description": "Bilgisayarınız başladığında Godot Launcher'ı başlat"
+    },
+    "startInTray": {
+      "label": "Sistem tepsisinde küçültülmüş olarak başlat",
+      "description": "Launcher'ı sistem tepsisinde başlat"
+    }
+  },
+  "advanced": {
+    "confirmProjectRemove": {
+      "label": "Projeleri kaldırmadan önce onayla",
+      "description": "Projeleri kaldırırken onay iletişim kutusu göster"
+    },
+    "enableSymlinks": {
+      "label": "Sembolik bağlantıları etkinleştir (Windows)",
+      "description": "Editör ayarları için sembolik bağlantılar kullan"
+    }
+  },
+  "buttons": {
+    "save": "Ayarları Kaydet",
+    "reset": "Varsayılanlara Sıfırla",
+    "openConfigFolder": "Yapılandırma Klasörünü Aç"
+  },
+  "tools": {
+    "git": {
+      "title": "Git",
+      "description": "Git, kod değişikliklerini yönetmek ve işbirliği yapmak için dağıtık bir sürüm kontrol sistemidir.",
+      "installed": "Kurulu:",
+      "version": "Sürüm:"
+    },
+    "vscode": {
+      "title": "Visual Studio Code",
+      "description": "Godot için GDScript ve .NET desteğine sahip hızlı, genişletilebilir bir kod editörü.",
+      "notDetectedTitle": "Visual Studio Code Algılanamadı!",
+      "notDetectedMessage": "Godot Launcher, VS Code'u yalnızca PATH'te yüklüyse otomatik olarak algılayabilir. Bunun yerine aşağıdan VS Code çalıştırılabilir dosyasının yolunu belirtebilirsiniz",
+      "pathLabel": "Visual Studio Code Çalıştırılabilir Dosya Yolu",
+      "selectExecutable": "Visual Studio Code Çalıştırılabilir Dosyasını Seç",
+      "autodetected": "(otomatik algılandı)",
+      "noPathSet": "yol ayarlanmadı",
+      "clearCustomPath": "Özel Yolu Temizle",
+      "waitingForDialog": "İletişim kutusu bekleniyor...",
+      "installed": "Kurulu:"
+    }
+  },
+  "updates": {
+    "title": "Güncellemeler",
+    "description": "GD Launcher'ın güncellemeleri nasıl kontrol edeceğini yapılandırın",
+    "autoCheck": "Güncellemeleri otomatik kontrol et",
+    "checkNow": "Güncellemeleri kontrol et",
+    "updateAvailable": "Sürüm {{version}} mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
+    "updateReady": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
+    "restartNow": "Şimdi yeniden başlat."
+  },
+  "windowsSymlinks": {
+    "title": "Editör sembolik bağlantıları",
+    "windowsOnly": "Yalnızca Windows",
+    "description": "Proje editörlerinin isteğe bağlı sembolik bağlantılar kullanıp kullanmayacağını veya yerel kopyalarla kalıp kalmayacağını seçin.",
+    "checkbox": "Windows proje editörleri için sembolik bağlantıları kullan. Bu, editör güncellemeleri sırasında olası yetki yükseltme istemleri için hazır olduğunuzda etkinleştirebilmeniz için varsayılan olarak kapalıdır.",
+    "note": "Bu ayarın değiştirilmesi mevcut proje bağlantılarını dönüştürmez; yalnızca gelecekteki editör yenilemelerinin nasıl davranacağını etkiler.",
+    "enableTitle": "Editör sembolik bağlantılarını etkinleştir",
+    "disableTitle": "Editör sembolik bağlantılarını devre dışı bırak",
+    "enableAction": "Sembolik bağlantıları etkinleştir",
+    "disableAction": "Sembolik bağlantıları devre dışı bırak",
+    "enableDescription": {
+      "line1": "Etkinleştirildiğinde, Godot Launcher her projeyi kopyalamak yerine kurulu editöre bağlar.",
+      "line2": "Bu disk kullanımını düşük tutar, ancak Windows yeni sembolik bağlantılar oluşturulduğunda yönetici onayı isteyebilir.",
+      "line3": "Mevcut projeler, editör sürümleri değiştirilene veya yeniden yüklenene kadar mevcut yerel kopyalarını korur."
+    },
+    "disableDescription": {
+      "line1": "Yetki yükseltme istemlerinden kaçınmak için yerel kopyalara geri dönün. Godot Launcher, editör dosyalarını her projeye kopyalayacaktır.",
+      "line2": "Mevcut sembolik bağlantılar, editör sürümleri değiştirilene veya yeniden yüklenene kadar yerinde kalır."
+    }
+  },
+  "messages": {
+    "saved": "Ayarlar başarıyla kaydedildi",
+    "resetConfirm": "Tüm ayarları varsayılanlara sıfırlamak istediğinizden emin misiniz?"
+  }
+}

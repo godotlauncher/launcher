@@ -1,0 +1,63 @@
+{
+  "title": "Editör Kurulumları",
+  "tabs": {
+    "installed": "Kurulu",
+    "available": "Mevcut"
+  },
+  "buttons": {
+    "install": "Editör Yükle",
+    "installVersion": "Sürüm Yükle",
+    "refresh": "Yenile",
+    "uninstall": "Kaldır",
+    "openFolder": "Klasörü Aç"
+  },
+  "search": {
+    "placeholder": "Ara"
+  },
+  "table": {
+    "name": "İsim",
+    "version": "Sürüm",
+    "type": "Tür",
+    "size": "Boyut",
+    "published": "Yayınlanma",
+    "actions": "İşlemler",
+    "status": "Durum"
+  },
+  "badges": {
+    "dotNet": ".NET",
+    "prerelease": "ön sürüm"
+  },
+  "types": {
+    "stable": "Kararlı",
+    "beta": "Beta",
+    "dev": "Geliştirme",
+    "mono": ".NET"
+  },
+  "status": {
+    "installing": "Yükleniyor...",
+    "installed": "Kuruldu",
+    "downloading": "İndiriliyor..."
+  },
+  "messages": {
+    "noReleases": "Henüz kurulu sürüm yok.",
+    "install": "Yükle.",
+    "noReleasesCta": "Henüz kurulu sürüm yok. <Link>Yükle</Link>",
+    "noInstalled": "Kurulu Godot sürümü yok",
+    "noAvailable": "Mevcut sürüm yok",
+    "installing": "Yükleniyor...",
+    "downloadProgress": "İndiriliyor: %{{percent}}",
+    "installSuccess": "Editör başarıyla yüklendi",
+    "uninstallSuccess": "Editör kaldırıldı"
+  },
+  "install": {
+    "title": "Godot Editör Yükle",
+    "selectVersion": "Yüklenecek bir sürüm seçin",
+    "includeMonoVersion": ".NET sürümünü dahil et",
+    "downloading": "İndiriliyor...",
+    "extracting": "Çıkarılıyor...",
+    "buttons": {
+      "install": "Yükle",
+      "cancel": "İptal"
+    }
+  }
+}

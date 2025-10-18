@@ -6,7 +6,7 @@ import path from 'node:path';
 import { isDev } from '../utils.js';
 
 const DEFAULT_LANGUAGE = 'en';
-const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR', 'zh-CN', 'zh-TW', 'de', 'fr', 'es', 'pl', 'ru', 'ja'] as const;
+const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR', 'zh-CN', 'zh-TW', 'de', 'fr', 'es', 'pl', 'ru', 'ja', 'tr'] as const;
 const LANGUAGE_SET = new Set<string>(AVAILABLE_LANGUAGES);
 
 const FALLBACK_LANGUAGES = {
@@ -20,6 +20,7 @@ const FALLBACK_LANGUAGES = {
     pl: [DEFAULT_LANGUAGE],
     ru: [DEFAULT_LANGUAGE],
     ja: [DEFAULT_LANGUAGE],
+    tr: [DEFAULT_LANGUAGE],
     default: [DEFAULT_LANGUAGE],
 } as const;
 

@@ -1,0 +1,48 @@
+{
+  "buttons": {
+    "ok": "Tamam",
+    "cancel": "İptal",
+    "close": "Kapat",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "continue": "Devam",
+    "skip": "Atla",
+    "select": "Seç"
+  },
+  "loading": "Yükleniyor...",
+  "saving": "Kaydediliyor...",
+  "error": "Hata",
+  "success": "Başarılı",
+  "warning": "Uyarı",
+  "info": "Bilgi",
+  "app": {
+    "loadingMessage": "Her şey hazırlanıyor...",
+    "navigation": {
+      "projects": "Projeler",
+      "installs": "Kurulumlar",
+      "help": "Yardım",
+      "settings": "Ayarlar",
+      "joinCommunity": "Topluluğa Katıl"
+    },
+    "update": {
+      "available": "mevcut, yüklemek için Godot Launcher'ı yeniden başlatın.",
+      "version": "Sürüm {{version}}",
+      "newVersion": "Yeni bir sürüm",
+      "restartNow": "Şimdi yeniden başlat.",
+      "bannerWithVersion": "Sürüm {{version}} mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
+      "bannerNoVersion": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>"
+    }
+  },
+  "selectRelease": {
+    "description": "Editör sürümünü seçin",
+    "tableHeaders": {
+      "name": "İsim"
+    },
+    "noReleases": "Sürüm bulunamadı, gerekli editör sürümü {{version}}.x",
+    "installReleases": "Sürümleri yükle",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "ön sürüm"
+    }
+  }
+}

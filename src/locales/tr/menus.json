@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "Uygulama",
+        "about": "Hakkında",
+        "close": "Kapat",
+        "quit": "Çıkış"
+    },
+    "developer": {
+        "label": "Geliştirici",
+        "reload": "Yeniden Yükle",
+        "toggleDevTools": "Geliştirici Araçlarını Aç/Kapat",
+        "openConfigFolder": "Yapılandırma Klasörünü Aç"
+    },
+    "project": {
+        "openProjectFolder": "Proje Klasörünü Aç",
+        "openEditorSettingsFolder": "Editör Ayarları Klasörünü Aç",
+        "openWindowed": "Pencere Modunda Aç",
+        "openWindowedTooltip": "Bu seçenek işaretlendiğinde, Godot pencere modunda başlatılacaktır.",
+        "exportEditorSettings": "Editör Ayarlarını Dosyaya Aktar",
+        "importEditorSettings": "Editör Ayarlarını Dosyadan İçe Aktar",
+        "removeFromList": "Projeyi Listeden Kaldır"
+    },
+    "release": {
+        "openInstalledFolder": "Kurulum Klasörünü Aç",
+        "startProjectManager": "Proje Yöneticisini Başlat",
+        "deleteRelease": "Sürümü Bu Cihazdan Sil"
+    },
+    "tray": {
+        "recentProjects": "Son Projeler",
+        "showGodotLauncher": "Godot Launcher'ı Göster",
+        "quit": "Çıkış"
+    }
+}

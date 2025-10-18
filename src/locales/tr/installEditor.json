@@ -1,0 +1,50 @@
+{
+  "title": "Godot Editör Yükle",
+  "search": {
+    "placeholder": "Ara"
+  },
+  "tabs": {
+    "released": "Yayınlanmış",
+    "prerelease": "Ön Sürüm",
+    "installed": "Kurulu"
+  },
+  "filters": {
+    "showInstalledOnly": "Yalnızca kurulu olanları göster"
+  },
+  "buttons": {
+    "reload": "Sürüm Listesini Yeniden Yükle"
+  },
+  "errors": {
+    "fetchError": "Sürümler alınırken bir hata oluştu.",
+    "tryAgainLater": "Lütfen",
+    "tryAgain": "daha sonra tekrar deneyin",
+    "retryInline": "Lütfen tekrar deneyin. <Button>Tekrar dene</Button>",
+    "noPlatformAsset": "Platform için Varlık bulunamadı",
+    "invalidEditorVersion": "Geçersiz editör sürümü",
+    "unsupportedPlatform": "Desteklenmeyen platform",
+    "unsupportedFileExtension": "Desteklenmeyen dosya uzantısı"
+  },
+  "messages": {
+    "installError": "Sürüm yüklenirken bir şeyler ters gitti"
+  },
+  "table": {
+    "headers": {
+      "version": "Sürüm",
+      "released": "Yayınlanma",
+      "download": "İndir",
+      "installed": "Kurulu"
+    },
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "Yükleniyor...",
+    "downloading": "indiriliyor...",
+    "tooltips": {
+      "installed": "Kuruldu - {{version}}",
+      "installedGDScript": "Kuruldu - {{version}} (GDScript)",
+      "installedDotNet": "Kuruldu - {{version}} .NET",
+      "download": "{{version}} İndir",
+      "downloadGDScript": "{{version}} İndir (GDScript)",
+      "downloadDotNet": "{{version}} .NET İndir"
+    }
+  }
+}

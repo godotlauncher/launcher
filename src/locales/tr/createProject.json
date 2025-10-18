@@ -1,0 +1,63 @@
+{
+  "title": "Yeni Proje",
+  "project": {
+    "title": "Proje",
+    "dotNetBadge": ".NET",
+    "prereleaseBadge": "ön sürüm",
+    "noVersionsInstalled": "Godot sürümü yüklü değil",
+    "nameplaceholder": "Proje Adı",
+    "downloading": "İndiriliyor...",
+    "nameRequired": "Proje adı gerekli"
+  },
+  "renderer": {
+    "title": "İşleyici",
+    "forwardPlus": "Forward Plus",
+    "mobile": "Mobil",
+    "compatible": "Uyumlu",
+    "gles3": "GLES3",
+    "gles2": "GLES2",
+    "forwardPlusFeatures": {
+      "desktop": "Yalnızca masaüstü platformları destekler.",
+      "advanced3d": "Gelişmiş 3D grafikler mevcut.",
+      "scalable": "Büyük karmaşık sahnelere ölçeklenebilir.",
+      "renderingDevice": "RenderingDevice arka ucunu kullanır.",
+      "slowerSimple": "Basit sahnelerin daha yavaş işlenmesi."
+    },
+    "mobileFeatures": {
+      "platforms": "Masaüstü + mobil platformları destekler.",
+      "less3d": "Daha az gelişmiş 3D grafikler.",
+      "lessScalable": "Karmaşık sahneler için daha az ölçeklenebilir.",
+      "renderingDevice": "RenderingDevice arka ucunu kullanır.",
+      "fastSimple": "Basit sahnelerin hızlı işlenmesi."
+    },
+    "compatibleFeatures": {
+      "platforms": "Masaüstü, mobil + web platformlarını destekler.",
+      "least3d": "En az gelişmiş 3D grafikler (şu anda geliştirme aşamasında).",
+      "lowEnd": "Düşük uçlu/eski cihazlar için tasarlanmıştır.",
+      "opengl": "OpenGL 3 arka ucunu kullanır (OpenGL 3.3/ES 3.0/WebGL2).",
+      "fastest": "Basit sahnelerin en hızlı işlenmesi."
+    }
+  },
+  "otherSettings": {
+    "title": "Diğer Ayarlar",
+    "initGit": "Git Deposu Başlat",
+    "gitNotInstalled": "Git bu bilgisayarda yüklü değil",
+    "setupVSCode": "Visual Studio Code'u Metin Editörü olarak Ayarla",
+    "vscodeNotInstalled": "Visual Studio Code bu bilgisayarda yüklü değil",
+    "vscodeHelp": {
+      "title": "Visual Studio Code neden algılanmıyor?",
+      "message": "Godot Launcher, VS Code'u yalnızca PATH'te yüklüyse otomatik olarak algılayabilir. Bunun yerine ayarlardan VS Code çalıştırılabilir dosyasının yolunu belirtebilirsiniz."
+    }
+  },
+  "buttons": {
+    "editNow": "Şimdi düzenle",
+    "create": "Proje Oluştur"
+  },
+  "errors": {
+    "projectExists": "'{{name}}' projesi zaten mevcut",
+    "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",
+    "failedProjectDefinition": "{{version}} sürümü için proje tanımı alınamadı",
+    "folderNotEmpty": "'{{name}}' proje klasörü zaten mevcut ve boş değil, mevcut bir projeyi eklemek mi istediniz?",
+    "failedCreateFile": "Proje dosyası oluşturulamadı: {{error}}"
+  }
+}
