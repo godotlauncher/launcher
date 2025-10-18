@@ -1,0 +1,78 @@
+{
+  "title": "Проекты",
+  "buttons": {
+    "add": "Добавить",
+    "newProject": "Новый проект",
+    "addProject": "Добавить проект",
+    "createProject": "Создать проект",
+    "refresh": "Обновить",
+    "launch": "Запустить",
+    "changeEditor": "Сменить редактор"
+  },
+  "search": {
+    "placeholder": "Поиск"
+  },
+  "table": {
+    "name": "Название",
+    "modified": "Изменён",
+    "editor": "Редактор",
+    "version": "Версия",
+    "lastOpened": "Последнее открытие",
+    "actions": "Действия",
+    "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
+    "dotNetProject": "Это .Net проект",
+    "prerelease": "Используется пререлизная версия редактора Godot",
+    "windowedMode": "Этот проект открыт в оконном режиме"
+  },
+  "addProject": {
+    "selectFile": "Выбрать файл проекта",
+    "godotProject": "Проект Godot",
+    "errors": {
+      "projectExists": "Проект '{{path}}' уже существует",
+      "invalidPath": "Неверный путь проекта",
+      "invalidProjectFile": "Неверный файл project.godot",
+      "nameExists": "Проект с именем '{{name}}' уже существует\nПожалуйста, переименуйте проект в 'project.godot' или удалите существующий.",
+      "invalidRenderer": "Неверный файл проекта",
+      "invalidConfigVersion": "Неверная версия config_version в project.godot.\nПоддерживается только версия конфигурации 5",
+      "noStableReleases": "Не найдены установленные стабильные версии для Godot {{version}}.x\nПожалуйста, установите стабильную версию для Godot {{version}}.x, затем попробуйте добавить проект снова.",
+      "noDotNetRelease": "Проект похож на .NET проект, но не найдена версия редактора с .NET",
+      "noCompatibleRelease": "Не найдены установленные версии для Godot {{version}}.x, которые поддерживают config_version {{configVersion}}."
+    }
+  },
+  "messages": {
+    "noProjects": "Проекты не найдены",
+    "noReleases": "Версии не установлены.",
+    "goToInstalls": "Перейти к установкам.",
+    "noReleasesCta": "Версии ещё не установлены. <Link>Перейти к установкам</Link>",
+    "projectAdded": "Проект успешно добавлен",
+    "projectRemoved": "Проект удалён",
+    "editorChanged": "Редактор успешно изменён",
+    "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
+    "monoProject": "Это .NET проект",
+    "prereleaseVersion": "Используется пререлизная версия редактора Godot"
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "Проект не найден",
+      "invalidEditorVersion": "Неверная версия редактора",
+      "differentMajorVersion": "Нельзя использовать другую основную версию редактора\nДля защиты вашего проекта см. официальное руководство по миграции на https://godotengine.org"
+    }
+  },
+  "createProject": {
+    "title": "Новый проект",
+    "projectName": "Название проекта",
+    "projectPath": "Путь проекта",
+    "selectVersion": "Выбрать версию Godot",
+    "renderer": "Рендерер",
+    "editNow": "Редактировать сейчас",
+    "setupVSCode": "Установить Visual Studio Code как текстовый редактор",
+    "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере",
+    "noVersionsInstalled": "Версии Godot не установлены",
+    "errors": {
+      "nameRequired": "Требуется название проекта",
+      "pathRequired": "Требуется путь проекта",
+      "invalidPath": "Неверный путь проекта"
+    }
+  },
+  "searchPlaceholder": "Поиск проектов..."
+}

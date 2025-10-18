@@ -1,0 +1,63 @@
+{
+  "title": "Установленные редакторы",
+  "tabs": {
+    "installed": "Установленные",
+    "available": "Доступные"
+  },
+  "buttons": {
+    "install": "Установить редактор",
+    "installVersion": "Установить версию",
+    "refresh": "Обновить",
+    "uninstall": "Удалить",
+    "openFolder": "Открыть папку"
+  },
+  "search": {
+    "placeholder": "Поиск"
+  },
+  "table": {
+    "name": "Название",
+    "version": "Версия",
+    "type": "Тип",
+    "size": "Размер",
+    "published": "Опубликовано",
+    "actions": "Действия",
+    "status": "Статус"
+  },
+  "badges": {
+    "dotNet": ".NET",
+    "prerelease": "пререлиз"
+  },
+  "types": {
+    "stable": "Стабильная",
+    "beta": "Бета",
+    "dev": "Разработка",
+    "mono": ".NET"
+  },
+  "status": {
+    "installing": "Установка...",
+    "installed": "Установлено",
+    "downloading": "Загрузка..."
+  },
+  "messages": {
+    "noReleases": "Версии ещё не установлены.",
+    "install": "Установить.",
+    "noReleasesCta": "Версии ещё не установлены. <Link>Установить</Link>",
+    "noInstalled": "Версии Godot не установлены",
+    "noAvailable": "Нет доступных версий",
+    "installing": "Установка...",
+    "downloadProgress": "Загрузка: {{percent}}%",
+    "installSuccess": "Редактор успешно установлен",
+    "uninstallSuccess": "Редактор удалён"
+  },
+  "install": {
+    "title": "Установить редактор Godot",
+    "selectVersion": "Выберите версию для установки",
+    "includeMonoVersion": "Включить .NET версию",
+    "downloading": "Загрузка...",
+    "extracting": "Распаковка...",
+    "buttons": {
+      "install": "Установить",
+      "cancel": "Отмена"
+    }
+  }
+}

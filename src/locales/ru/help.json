@@ -1,0 +1,57 @@
+{
+  "title": "Помощь",
+  "thirdPartyNotices": "Уведомления о сторонних компонентах",
+  "launcher": {
+    "title": "Godot Launcher",
+    "changelog": "Журнал изменений",
+    "homePage": "Главная страница",
+    "docs": "Документация лаунчера"
+  },
+  "godot": {
+    "title": "Движок Godot",
+    "engine": "Движок Godot",
+    "docs": "Документация Godot"
+  },
+  "community": {
+    "title": "Сообщество и поддержка",
+    "learnMore": "Узнать больше"
+  },
+  "contribute": {
+    "title": "Как внести вклад",
+    "learnMore": "Узнать больше",
+    "description": "Сообщайте об ошибках или предложениях, создав issue в официальном репозитории GitHub",
+    "reportBug": "Я думаю, что нашёл ошибку",
+    "suggestion": "У меня есть предложение!"
+  },
+  "sections": {
+    "gettingStarted": {
+      "title": "Начало работы",
+      "content": "Добро пожаловать в Godot Launcher! Это приложение помогает управлять несколькими версиями Godot и проектами.",
+      "welcome": "Добро пожаловать в Godot Launcher!",
+      "step1": "Установите версию Godot на вкладке Установки",
+      "step2": "Создайте или добавьте проект",
+      "step3": "Запустите и начните разработку!"
+    },
+    "documentation": {
+      "title": "Документация",
+      "visitDocs": "Посетить документацию"
+    },
+    "community": {
+      "title": "Сообщество",
+      "discord": "Присоединиться к нашему Discord",
+      "github": "Посмотреть на GitHub"
+    },
+    "about": {
+      "title": "О программе",
+      "version": "Версия {{version}}",
+      "license": "Лицензия MIT",
+      "thirdParty": "Уведомления о сторонних компонентах"
+    }
+  },
+  "links": {
+    "documentation": "Документация",
+    "github": "Репозиторий GitHub",
+    "discord": "Сообщество Discord",
+    "website": "Веб-сайт"
+  }
+}

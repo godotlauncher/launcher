@@ -1,0 +1,50 @@
+{
+  "title": "Установить редактор Godot",
+  "search": {
+    "placeholder": "Поиск"
+  },
+  "tabs": {
+    "released": "Выпущенные",
+    "prerelease": "Пререлиз",
+    "installed": "Установленные"
+  },
+  "filters": {
+    "showInstalledOnly": "Показать только установленные"
+  },
+  "buttons": {
+    "reload": "Обновить список версий"
+  },
+  "errors": {
+    "fetchError": "Произошла ошибка при получении версий.",
+    "tryAgainLater": "Пожалуйста",
+    "tryAgain": "попробуйте позже",
+    "retryInline": "Пожалуйста, попробуйте снова. <Button>Попробовать снова</Button>",
+    "noPlatformAsset": "Не найден ресурс для платформы",
+    "invalidEditorVersion": "Неверная версия редактора",
+    "unsupportedPlatform": "Неподдерживаемая платформа",
+    "unsupportedFileExtension": "Неподдерживаемое расширение файла"
+  },
+  "messages": {
+    "installError": "Что-то пошло не так при установке версии"
+  },
+  "table": {
+    "headers": {
+      "version": "Версия",
+      "released": "Выпущено",
+      "download": "Загрузка",
+      "installed": "Установлено"
+    },
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "Установка...",
+    "downloading": "загрузка...",
+    "tooltips": {
+      "installed": "Установлено - {{version}}",
+      "installedGDScript": "Установлено - {{version}} (GDScript)",
+      "installedDotNet": "Установлено - {{version}} .NET",
+      "download": "Загрузить {{version}}",
+      "downloadGDScript": "Загрузить {{version}} (GDScript)",
+      "downloadDotNet": "Загрузить {{version}} .NET"
+    }
+  }
+}

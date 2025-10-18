@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "Приложение",
+        "about": "О программе",
+        "close": "Закрыть",
+        "quit": "Выход"
+    },
+    "developer": {
+        "label": "Разработчик",
+        "reload": "Перезагрузить",
+        "toggleDevTools": "Инструменты разработчика",
+        "openConfigFolder": "Открыть папку конфигурации"
+    },
+    "project": {
+        "openProjectFolder": "Открыть папку проекта",
+        "openEditorSettingsFolder": "Открыть папку настроек редактора",
+        "openWindowed": "Открыть в оконном режиме",
+        "openWindowedTooltip": "Когда эта опция включена, Godot запустится в оконном режиме.",
+        "exportEditorSettings": "Экспортировать настройки редактора в файл",
+        "importEditorSettings": "Импортировать настройки редактора из файла",
+        "removeFromList": "Удалить проект из списка"
+    },
+    "release": {
+        "openInstalledFolder": "Открыть папку установки",
+        "startProjectManager": "Запустить менеджер проектов",
+        "deleteRelease": "Удалить версию с этого устройства"
+    },
+    "tray": {
+        "recentProjects": "Недавние проекты",
+        "showGodotLauncher": "Показать Godot Launcher",
+        "quit": "Выход"
+    }
+}

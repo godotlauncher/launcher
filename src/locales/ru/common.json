@@ -1,0 +1,48 @@
+{
+  "buttons": {
+    "ok": "Ок",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "continue": "Продолжить",
+    "skip": "Пропустить",
+    "select": "Выбрать"
+  },
+  "loading": "Загрузка...",
+  "saving": "Сохранение...",
+  "error": "Ошибка",
+  "success": "Успешно",
+  "warning": "Предупреждение",
+  "info": "Информация",
+  "app": {
+    "loadingMessage": "Подготовка...",
+    "navigation": {
+      "projects": "Проекты",
+      "installs": "Установки",
+      "help": "Помощь",
+      "settings": "Настройки",
+      "joinCommunity": "Присоединиться к сообществу"
+    },
+    "update": {
+      "available": "доступна, перезапустите Godot Launcher для установки.",
+      "version": "Версия {{version}}",
+      "newVersion": "Новая версия",
+      "restartNow": "Перезапустить сейчас.",
+      "bannerWithVersion": "Версия {{version}} доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
+      "bannerNoVersion": "Новая версия доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>"
+    }
+  },
+  "selectRelease": {
+    "description": "Выберите версию редактора",
+    "tableHeaders": {
+      "name": "Название"
+    },
+    "noReleases": "Не найдены версии, требуется версия редактора {{version}}.x",
+    "installReleases": "Установить версии",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "пререлиз"
+    }
+  }
+}
