@@ -41,7 +41,7 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
                                             ? <div className="flex items-center gap-1 text-info"><p className="loading loading-ring loading-sm text-current"></p>{t('table.gdscript')} {t('table.installing')}</div>
                                             : (<p className="tooltip tooltip-left flex items-center" data-tip={t('table.tooltips.downloadGDScript', { version: row.version })}>
                                                 <button data-testid={`btnDownload${row.version}`}
-                                                    className="flex items-center"
+                                                    className="flex items-end gap-1 text-sm"
                                                     onClick={() => installReleaseRequest(row, false)}
                                                     aria-label={t('table.tooltips.downloadGDScript', { version: row.version })}>
                                                     <HardDriveDownload /> {t('table.gdscript')}
@@ -53,13 +53,13 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({ releas
 
                                 {
                                     isInstalledRelease(row.version, true)
-                                        ? (<p className="tooltip tooltip-left flex items-center gap-1 text-info" data-tip={t('table.tooltips.installedDotNet', { version: row.version })}>
+                                        ? (<p className="tooltip tooltip-left flex items-center gap-1 text-xs text-info" data-tip={t('table.tooltips.installedDotNet', { version: row.version })}>
                                             <HardDrive />{t('table.dotnet')}
                                         </p>)
                                         : isDownloadingRelease(row.version, true)
                                             ? <div className="flex items-center gap-1 text-info"><div className="loading loading-ring loading-sm text-current"></div>{t('table.dotnet')} {t('table.installing')}</div>
                                             : (<p className="tooltip tooltip-left flex items-center" data-tip={t('table.tooltips.downloadDotNet', { version: row.version })}>
-                                                <button data-testid={`btnDownload${row.version}-mono`} className="flex flex-row text-xs gap-1 items-center" onClick={() => installReleaseRequest(row, true)} aria-label={t('table.tooltips.downloadDotNet', { version: row.version })} ><HardDriveDownload />{t('table.dotnet')}</button>
+                                                <button data-testid={`btnDownload${row.version}-mono`} className="flex flex-row text-xs gap-1 items-end" onClick={() => installReleaseRequest(row, true)} aria-label={t('table.tooltips.downloadDotNet', { version: row.version })} ><HardDriveDownload />{t('table.dotnet')}</button>
                                             </p>)
                                 }
                             </td>
