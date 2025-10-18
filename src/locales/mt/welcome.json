@@ -1,0 +1,98 @@
+{
+  "title": "Godot Launcher",
+  "steps": {
+    "welcome": "Merħba",
+    "macos": "MacOS",
+    "windows": "Windows",
+    "linux": "Linux",
+    "currentSettings": "Settings Kurrenti",
+    "setLocations": "Issettja Indirizzi",
+    "customizeBehavior": "Ippersonalizza l-Imġiba",
+    "windowsSymlink": "Windows Symlink",
+    "ready": "Lest"
+  },
+  "navigation": {
+    "next": "Li jmiss",
+    "previous": "Ta' Qabel",
+    "start": "Ibda",
+    "nextMacOS": "Li jmiss: MacOS",
+    "nextWindows": "Li jmiss: Windows",
+    "nextLinux": "Li jmiss: Linux",
+    "nextCurrentSettings": "Li jmiss: Settings Kurrenti",
+    "nextSetLocations": "Li jmiss: Issettja Indirizzi",
+    "nextCustomizeBehavior": "Li jmiss: Ippersonalizza l-Imġiba",
+    "nextWindowsSymlink": "Li jmiss: Windows Symlink",
+    "nextReady": "Li jmiss: Lest",
+    "backWelcome": "Lura: Merħba",
+    "backMacOS": "Lura: MacOS",
+    "backWindows": "Lura: Windows",
+    "backLinux": "Lura: Linux",
+    "backCurrentSettings": "Lura: Settings Kurrenti",
+    "backSetLocations": "Lura: Issettja Indirizzi",
+    "backCustomizeBehavior": "Lura: Ippersonalizza l-Imġiba"
+  },
+  "welcomeStep": {
+    "title": "Grazzi talli tuża Godot Launcher!",
+    "description": "Godot Launcher jagħmilha faċli biex <strong>timmanġġja verżjonijiet multipli tal-Godot Engine</strong> u jżomm <strong>settings tal-editur separati għal kull proġett.</strong>",
+    "feedback": "Billi tużah, qed tgħin biex tappoġġja l-proġett! Jekk xi darba jkollok feedback jew issib bug, għidilna, nixtiequ nagħmluh aħjar għalik.",
+    "enjoy": "Igawdi u kodjar ferrieħ!"
+  },
+  "startStep": {
+    "title": "Kollox Lest! 🚀",
+    "subtitle": "Godot Launcher huwa lest biex tmur! Issa tista' timmanġġja l-proġetti tiegħek u tesplora l-features kollha.",
+    "whatsNext": "X'inhu Li jmiss?",
+    "installTab": "Installa u esperimenta bl-aħħar prereleases fit-tab <strong>Installa</strong>.",
+    "projectsTab": "Żid jew oħloq proġetti malajr fit-tab <strong>Proġetti</strong>.",
+    "settingsTab": "Ippersonalizza l-esperjenza tiegħek kif trid fit-tab <strong>Settings</strong>."
+  },
+  "customizeBehavior": {
+    "afterLaunching": "Wara li Tibda Proġett",
+    "nothing": "Xejn",
+    "minimize": "Imminimizza",
+    "closeToTray": "Agħlaq għas-system tray",
+    "autoCheckUpdates": "Awtomatikament iċċekkja għal aġġornamenti",
+    "autoStart": "Ibda meta l-kompjuter jibda.",
+    "startInTray": "Ibda fit-tray."
+  },
+  "currentSettings": {
+    "title": "Settings Default:",
+    "projectsLocation": "Indirizz tal-Proġetti:",
+    "installLocation": "Indirizz tal-Installazzjoni ta' Godot:",
+    "postLaunchAction": "Azzjoni Wara li Tibda Proġett:",
+    "autoCheckUpdates": "Iċċekkja Awtomatikament għal Aġġornamenti:",
+    "autoStart": "Ibda Awtomatikament Meta l-Kompjuter Jibda:",
+    "autoStartType": "Tip ta' Bidu Awtomatiku:",
+    "systemTray": "System Tray",
+    "normalWindow": "Window Normali",
+    "yes": "Iva",
+    "no": "Le",
+    "skipButton": "Aqbeż, Uża Defaults",
+    "postLaunchActions": {
+      "nothing": "Xejn",
+      "minimize": "Imminimizza",
+      "closeToTray": "Agħlaq għas-system tray"
+    }
+  },
+  "macosStep": {
+    "title": "Nota macOS",
+    "intro": "Il-Godot Launcher joħloq kopja tal-editur għal kull proġett.",
+    "whyTitle": "Għaliex?",
+    "reason": "Il-ħolqien ta' symbolic links fuq macOS mhuwiex irristrett minn permessi, iżda l-ftuħ tal-editur permezz ta' symlink wera li mhuwiex affidabbli. Biex niżguraw esperjenza bla problemi, nipprovdu kopja ddedikata tal-engine għal kull proġett. Filwaqt li Godot huwa madwar 200MB biss (u dan ġeneralment mhux problema) kun af li proġetti multipli jistgħu jwasslu għal użu akbar tad-disk.",
+    "dotnetNote": "NOTA: Jekk qed taħdem b'Edituri .NET, se jkollok bżonn tinstalla l-.NET SDK minn <ButtonLink>Microsoft .NET website</ButtonLink> <Icon />"
+  },
+  "windowsStep": {
+    "title": "Nota Windows",
+    "intro": "Minn verżjoni 1.4.0, Godot Launcher jista' joħloq <code>symlinks</code> għall-editur għal kull proġett. Biex inżommu s-setup sempliċi, issa awtomatikament nużaw kopji lokali. Tista' tippermetti symlinks kull meta trid minn <strong>Settings → Behavior → Editor symlinks</strong> meta trid użu iktar baxx tad-disk.",
+    "change1": "Il-ħolqien ta' symbolic links fuq Windows jeħtieġ privileġġi ta' amministratur u eżekuzzjoni ta' kmandi elevati. Il-launcher issa jelevah il-permessi biss meta joħloq symlinks.",
+    "change2": "Tara prompt UAC biss jekk m'intix <code>Amministratur</code> fuq il-PC tiegħek u jekk <code>Developer Mode</code> mhuwiex attivat.",
+    "change3": "Lest biex tipprova symlinks? Aktiva <strong>Editor symlinks</strong> fis-Settings meta tkun lest għall-prompts ta' elevazzjoni okkażjonali.",
+    "dotnetNote": "NOTA: Jekk qed tuża edituri bbażati fuq .NET, jeħtieġ tinstalla l-.NET SDK minn <ButtonLink>Microsoft .NET website</ButtonLink> <Icon />"
+  },
+  "linuxStep": {
+    "title": "Nota Linux",
+    "intro": "Godot Launcher juża symbolic links għal kull proġett",
+    "whyTitle": "Għaliex?",
+    "reason": "Kuntrarju għall-verżjonijiet Windows u MacOS, Linux juża symbolic links għall-editur biex jibda proġetti. Dan jiffranka spazju fuq id-disk u jippermetti settings għal kull proġett.",
+    "dotnetNote": "NOTA: Jekk qed taħdem b'Edituri .NET, se jkollok bżonn tinstalla l-.NET SDK minn <ButtonLink>Microsoft .NET website</ButtonLink> <Icon />"
+  }
+}

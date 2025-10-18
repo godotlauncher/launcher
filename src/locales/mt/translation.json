@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Godot Launcher",
+    "version": "Verżjoni {{version}}",
+    "loading": "Qed nippreparaw kollox...",
+    "quit": "Oħroġ",
+    "close": "Agħlaq",
+    "cancel": "Ikkanċella",
+    "ok": "Ok",
+    "yes": "Iva",
+    "no": "Le",
+    "continue": "Kompli",
+    "save": "Ikteb",
+    "delete": "Ħassar",
+    "remove": "Neħħi",
+    "edit": "Editja",
+    "create": "Oħloq",
+    "add": "Żid",
+    "browse": "Fittex",
+    "refresh": "Aġġorna"
+  },
+  "errors": {
+    "generic": "Kien hemm żball",
+    "notFound": "Ma nstabx",
+    "invalidPath": "Indirizz invalidu",
+    "permissionDenied": "Permess miċħud",
+    "fileNotFound": "Fajl ma nstabx"
+  }
+}

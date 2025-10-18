@@ -24,6 +24,7 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     { code: 'ru', name: 'Русский' },
     { code: 'ja', name: '日本語' },
     { code: 'tr', name: 'Türkçe' },
+    { code: 'mt', name: 'Malti' },
     // Add more languages here as they become available
 ];
 

@@ -1,0 +1,48 @@
+{
+  "buttons": {
+    "ok": "Ok",
+    "cancel": "Ikkanċella",
+    "close": "Agħlaq",
+    "save": "Ikteb",
+    "delete": "Ħassar",
+    "continue": "Kompli",
+    "skip": "Aqbeż",
+    "select": "Agħżel"
+  },
+  "loading": "Qed jillowdja...",
+  "saving": "Qed jikteb...",
+  "error": "Żball",
+  "success": "Suċċess",
+  "warning": "Twissija",
+  "info": "Informazzjoni",
+  "app": {
+    "loadingMessage": "Qed nippreparaw kollox...",
+    "navigation": {
+      "projects": "Proġetti",
+      "installs": "Installazzjonijiet",
+      "help": "Għajnuna",
+      "settings": "Settings",
+      "joinCommunity": "Ingħaqad mal-Komunità"
+    },
+    "update": {
+      "available": "huwa disponibbli, erġa' ibda Godot Launcher biex tinstallah.",
+      "version": "Verżjoni {{version}}",
+      "newVersion": "Verżjoni ġdida",
+      "restartNow": "Ibda mill-ġdid issa.",
+      "bannerWithVersion": "Verżjoni {{version}} hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
+      "bannerNoVersion": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>"
+    }
+  },
+  "selectRelease": {
+    "description": "Agħżel verżjoni tal-editur",
+    "tableHeaders": {
+      "name": "Isem"
+    },
+    "noReleases": "Ebda releases ma nstabu, verżjoni tal-editur meħtieġa {{version}}.x",
+    "installReleases": "Installa releases",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "prerelease"
+    }
+  }
+}

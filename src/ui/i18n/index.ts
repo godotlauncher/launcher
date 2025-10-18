@@ -30,6 +30,7 @@ async function initializeI18n() {
             ru: ['en'],
             ja: ['en'],
             tr: ['en'],
+            mt: ['en'],
             default: ['en'],
         } as const;
 

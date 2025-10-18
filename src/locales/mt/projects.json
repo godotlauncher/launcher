@@ -1,0 +1,89 @@
+{
+  "title": "Proġetti",
+  "buttons": {
+    "add": "Żid",
+    "newProject": "Proġett Ġdid",
+    "addProject": "Żid Proġett",
+    "createProject": "Oħloq Proġett",
+    "refresh": "Aġġorna",
+    "launch": "Ibda",
+    "changeEditor": "Ibdel l-Editur"
+  },
+  "search": {
+    "placeholder": "Fittex"
+  },
+  "table": {
+    "name": "Isem",
+    "modified": "Modifikat",
+    "editor": "Editur",
+    "version": "Verżjoni",
+    "lastOpened": "Aħħar Miftuħ",
+    "actions": "Azzjonijiet",
+    "invalidProject": "Dan il-proġett mhuwiex validu, iċċekkja l-indirizz tal-proġett u tal-editur!",
+    "dotNetProject": "Dan huwa Proġett .Net",
+    "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
+    "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode"
+  },
+  "addProject": {
+    "selectFile": "Agħżel Fajl tal-Proġett",
+    "godotProject": "Proġett Godot",
+    "errors": {
+      "projectExists": "Proġett '{{path}}' diġà jeżisti",
+      "invalidPath": "Indirizz tal-proġett invalidu",
+      "invalidProjectFile": "Fajl project.godot invalidu",
+      "nameExists": "Proġett bl-isem '{{name}}' diġà jeżisti\nJekk jogħġbok ibdel l-isem tal-proġett fi 'project.godot' jew neħħi dak li jeżisti.",
+      "invalidRenderer": "Fajl tal-proġett invalidu",
+      "invalidConfigVersion": "Verżjoni ta' config_version f'project.godot invalida.\nBiss config version 5 hija supportata",
+      "noStableReleases": "Ebda releases Stabbli installati ma nstabu għal Godot {{version}}.x\nJekk jogħġbok installa stable release għal Godot {{version}}.x, u mbagħad erġa' ipprova żid il-proġett.",
+      "noDotNetRelease": "Il-proġett jidher li huwa proġett .NET iżda ebda Editur b'release .NET ma nstab",
+      "noCompatibleRelease": "Ebda releases installati ma nstabu għal Godot {{version}}.x li jappoġġjaw config_version {{configVersion}}."
+    }
+  },
+  "messages": {
+    "noProjects": "Ebda proġetti ma nstabu",
+    "noReleases": "Ebda releases installati.",
+    "goToInstalls": "Mur għall-installazzjonijiet.",
+    "noReleasesCta": "Ebda releases installati għadha. <Link>Mur għall-installazzjonijiet</Link>",
+    "projectAdded": "Proġett miżjud b'suċċess",
+    "projectRemoved": "Proġett imneħħi",
+    "editorChanged": "Editur ibdel b'suċċess",
+    "invalidProject": "Dan il-proġett mhuwiex validu, iċċekkja l-indirizz tal-proġett u tal-editur!",
+    "monoProject": "Dan huwa Proġett .NET",
+    "prereleaseVersion": "Qed tuża verżjoni pre-release tal-editur Godot",
+    "waitingForDialog": "Qed nistennew id-djalogu biex żżid il-proġett...",
+    "needReleaseInstalled": "Għandek bżonn mill-inqas release installata biex żżid proġett",
+    "addProjectError": "Xi ħaġa marret ħażin meta żdiedt il-proġett",
+    "setEditorError": "Xi ħaġa marret ħażin meta ssettjajt l-editur tal-proġett",
+    "projectNotValid": "Il-proġett mhuwiex validu, jekk jogħġbok kun żgur li l-proġett u r-release huma validi fuq il-kompjuter tiegħek."
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "Proġett ma nstabx",
+      "invalidEditorVersion": "Verżjoni tal-editur invalida",
+      "differentMajorVersion": "Ma tistax tuża verżjoni maġġuri differenti tal-editur\nBiex tipproteġi l-proġett tiegħek ara l-gwida uffiċjali tal-migrazzjoni fuq https://godotengine.org"
+    }
+  },
+  "createProject": {
+    "title": "Proġett Ġdid",
+    "projectName": "Isem tal-Proġett",
+    "projectPath": "Indirizz tal-Proġett",
+    "selectVersion": "Agħżel Verżjoni ta' Godot",
+    "renderer": "Renderer",
+    "editNow": "Editja issa",
+    "setupVSCode": "Issettja Visual Studio Code bħala Text Editur",
+    "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter",
+    "noVersionsInstalled": "Ebda verżjonijiet ta' Godot installati",
+    "errors": {
+      "nameRequired": "Isem tal-proġett huwa meħtieġ",
+      "pathRequired": "Indirizz tal-proġett huwa meħtieġ",
+      "invalidPath": "Indirizz tal-proġett invalidu"
+    }
+  },
+  "searchPlaceholder": "Fittex proġetti...",
+  "editorSettings": {
+    "title": "Settings tal-Editur",
+    "alreadyExists": "Settings tal-editur għal {{version}} [.NET] diġà jeżistu u ebda tibdil ma sar biex nipproteġu s-setup tiegħek.",
+    "switchingToDotNet": "Jekk qed tibdel għal verżjoni .NET minn GDScript, tista' manwalment tikkonfigura External Editor minn <strong>Editor Settings -> Dotnent</strong> (advanced switch: true).",
+    "readMore": "Aqra Iktar"
+  }
+}

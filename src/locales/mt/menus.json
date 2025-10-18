@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "App",
+        "about": "Dwar",
+        "close": "Agħlaq",
+        "quit": "Oħroġ"
+    },
+    "developer": {
+        "label": "Żviluppatur",
+        "reload": "Erġa' Llowdja",
+        "toggleDevTools": "Fetaħ/Agħlaq Developer Tools",
+        "openConfigFolder": "Iftaħ Folder tal-Konfigurazzjoni"
+    },
+    "project": {
+        "openProjectFolder": "Iftaħ Folder tal-Proġett",
+        "openEditorSettingsFolder": "Iftaħ Folder tas-Settings tal-Editur",
+        "openWindowed": "Iftaħ f'Window",
+        "openWindowedTooltip": "Meta din l-għażla hija magħżula, Godot se jinħoloq f'window mode.",
+        "exportEditorSettings": "Esporta Settings tal-Editur għal Fajl",
+        "importEditorSettings": "Importa Settings tal-Editur minn Fajl",
+        "removeFromList": "Neħħi Proġett mil-Lista"
+    },
+    "release": {
+        "openInstalledFolder": "Iftaħ Folder tal-Installazzjoni",
+        "startProjectManager": "Ibda l-Project Manager",
+        "deleteRelease": "Ħassar Release minn dan it-Tagħmir"
+    },
+    "tray": {
+        "recentProjects": "Proġetti Riċenti",
+        "showGodotLauncher": "Uri Godot Launcher",
+        "quit": "Oħroġ"
+    }
+}

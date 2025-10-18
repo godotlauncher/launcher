@@ -1,0 +1,50 @@
+{
+  "title": "Installa Editur Godot",
+  "search": {
+    "placeholder": "Fittex"
+  },
+  "tabs": {
+    "released": "Rilaxxat",
+    "prerelease": "Prerelease",
+    "installed": "Installat"
+  },
+  "filters": {
+    "showInstalledOnly": "Uri biss installati"
+  },
+  "buttons": {
+    "reload": "Erġa' llowdja l-Lista ta' Releases"
+  },
+  "errors": {
+    "fetchError": "Kien hemm żball waqt li qed jinġibu r-releases.",
+    "tryAgainLater": "Jekk jogħġbok",
+    "tryAgain": "erġa' pprova aktar tard",
+    "retryInline": "Jekk jogħġbok erġa' pprova. <Button>Erġa' pprova</Button>",
+    "noPlatformAsset": "Ebda Asset ma nstab għall-pjattaforma",
+    "invalidEditorVersion": "Verżjoni tal-editur invalida",
+    "unsupportedPlatform": "Pjattaforma mhux supportata",
+    "unsupportedFileExtension": "Estensjoni tal-fajl mhux supportata"
+  },
+  "messages": {
+    "installError": "Xi ħaġa marret ħażin meta nstalla r-release"
+  },
+  "table": {
+    "headers": {
+      "version": "Verżjoni",
+      "released": "Rilaxxat",
+      "download": "Niżżel",
+      "installed": "Installat"
+    },
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "Qed jinstalla...",
+    "downloading": "qed jinżel...",
+    "tooltips": {
+      "installed": "Installat - {{version}}",
+      "installedGDScript": "Installat - {{version}} (GDScript)",
+      "installedDotNet": "Installat - {{version}} .NET",
+      "download": "Niżżel {{version}}",
+      "downloadGDScript": "Niżżel {{version}} (GDScript)",
+      "downloadDotNet": "Niżżel {{version}} .NET"
+    }
+  }
+}

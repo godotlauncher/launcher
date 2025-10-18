@@ -1,0 +1,38 @@
+{
+  "importSettings": {
+    "title": "Importa Settings tal-Editur",
+    "message": "Int żgur li trid timporta s-settings tal-editur minn fajl?",
+    "detail": "Dan se jibdel is-settings tal-editur kurrenti. Se tinħoloq kopja ta' backup.",
+    "continue": "Kompli",
+    "cancel": "Ikkanċella",
+    "selectFile": "Importa Fajl tas-Settings tal-Editur",
+    "textResource": "Riżors tat-Test"
+  },
+  "exportSettings": {
+    "title": "Esporta Settings tal-Editur għal Fajl",
+    "allFiles": "Il-Fajls Kollha"
+  },
+  "removeProject": {
+    "title": "Neħħi Proġett mil-Lista",
+    "message": "Int żgur li trid tneħħi l-proġett \"{{projectName}}\" mil-lista?",
+    "detail": "Dan mhux se jħassar il-proġett mit-tagħmir tiegħek.",
+    "ok": "Ok",
+    "cancel": "Ikkanċella",
+    "doNotAskAgain": "Tistaqsiniex iktar"
+  },
+  "removeRelease": {
+    "title": "Neħħi Release",
+    "message": "Int żgur li trid tħassar ir-release \"{{version}}\"?",
+    "detail": "Dan se jħassar ir-release mit-tagħmir tiegħek. Tista' tinstallah mill-ġdid aktar tard.",
+    "ok": "Ok",
+    "cancel": "Ikkanċella",
+    "error": "Żball",
+    "errorMessage": "Kien hemm żball waqt li qed tneħħi r-release."
+  },
+  "selectFolder": "Agħżel Folder",
+  "selectFile": "Agħżel Fajl",
+  "error": {
+    "title": "Żball",
+    "generic": "Kien hemm żball: {{message}}"
+  }
+}

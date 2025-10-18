@@ -1,0 +1,63 @@
+{
+  "title": "Installazzjonijiet tal-Editur",
+  "tabs": {
+    "installed": "Installati",
+    "available": "Disponibbli"
+  },
+  "buttons": {
+    "install": "Installa Editur",
+    "installVersion": "Installa Verżjoni",
+    "refresh": "Aġġorna",
+    "uninstall": "Żinstalla",
+    "openFolder": "Iftaħ Folder"
+  },
+  "search": {
+    "placeholder": "Fittex"
+  },
+  "table": {
+    "name": "Isem",
+    "version": "Verżjoni",
+    "type": "Tip",
+    "size": "Daqs",
+    "published": "Ippubblikat",
+    "actions": "Azzjonijiet",
+    "status": "Stat"
+  },
+  "badges": {
+    "dotNet": ".NET",
+    "prerelease": "prerelease"
+  },
+  "types": {
+    "stable": "Stabbli",
+    "beta": "Beta",
+    "dev": "Żvilupp",
+    "mono": ".NET"
+  },
+  "status": {
+    "installing": "Qed jinstalla...",
+    "installed": "Installat",
+    "downloading": "Qed jinżel..."
+  },
+  "messages": {
+    "noReleases": "Ebda releases installati, għadha.",
+    "install": "Installa.",
+    "noReleasesCta": "Ebda releases installati għadha. <Link>Installa</Link>",
+    "noInstalled": "Ebda verżjonijiet ta' Godot installati",
+    "noAvailable": "Ebda verżjonijiet disponibbli",
+    "installing": "Qed jinstalla...",
+    "downloadProgress": "Qed jinżel: {{percent}}%",
+    "installSuccess": "Editur installat b'suċċess",
+    "uninstallSuccess": "Editur żinstallat"
+  },
+  "install": {
+    "title": "Installa Editur Godot",
+    "selectVersion": "Agħżel verżjoni biex tinstalla",
+    "includeMonoVersion": "Inkludi verżjoni .NET",
+    "downloading": "Qed jinżel...",
+    "extracting": "Qed jestratti...",
+    "buttons": {
+      "install": "Installa",
+      "cancel": "Ikkanċella"
+    }
+  }
+}

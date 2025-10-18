@@ -1,0 +1,57 @@
+{
+  "title": "Għajnuna",
+  "thirdPartyNotices": "Avviżi ta' Partijiet Terzi",
+  "launcher": {
+    "title": "Godot Launcher",
+    "changelog": "Change Log",
+    "homePage": "Home Page",
+    "docs": "Dokumentazzjoni tal-Launcher"
+  },
+  "godot": {
+    "title": "Godot Engine",
+    "engine": "Godot Engine",
+    "docs": "Dokumentazzjoni ta' Godot"
+  },
+  "community": {
+    "title": "Komunità u Appoġġ",
+    "learnMore": "Itgħallem Aktar"
+  },
+  "contribute": {
+    "title": "Kif Tikkontribwixxi",
+    "learnMore": "Itgħallem Aktar",
+    "description": "Irrapporta bugs jew suġġerimenti billi tissottometti issue fuq ir-repożitorju uffiċjali ta' GitHub",
+    "reportBug": "Naħseb li sibt bug",
+    "suggestion": "Għandi suġġeriment!"
+  },
+  "sections": {
+    "gettingStarted": {
+      "title": "Kif Tibda",
+      "content": "Merħba għal Godot Launcher! Din l-applikazzjoni tgħinek timmanġġja diversi verżjonijiet ta' Godot u proġetti.",
+      "welcome": "Merħba għal Godot Launcher!",
+      "step1": "Installa verżjoni ta' Godot mit-tab tal-Installazzjonijiet",
+      "step2": "Oħloq jew żid proġett",
+      "step3": "Ibda u ibda tiżviluppa!"
+    },
+    "documentation": {
+      "title": "Dokumentazzjoni",
+      "visitDocs": "Żur id-Dokumentazzjoni"
+    },
+    "community": {
+      "title": "Komunità",
+      "discord": "Ingħaqad mad-Discord tagħna",
+      "github": "Ara fuq GitHub"
+    },
+    "about": {
+      "title": "Dwar",
+      "version": "Verżjoni {{version}}",
+      "license": "Liċenzjat taħt MIT",
+      "thirdParty": "Avviżi ta' Partijiet Terzi"
+    }
+  },
+  "links": {
+    "documentation": "Dokumentazzjoni",
+    "github": "Repożitorju GitHub",
+    "discord": "Komunità Discord",
+    "website": "Website"
+  }
+}

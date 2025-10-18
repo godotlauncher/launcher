@@ -1,0 +1,63 @@
+{
+  "title": "Proġett Ġdid",
+  "project": {
+    "title": "Proġett",
+    "dotNetBadge": ".NET",
+    "prereleaseBadge": "prerelease",
+    "noVersionsInstalled": "Ebda verżjonijiet ta' Godot installati",
+    "nameplaceholder": "Isem tal-Proġett",
+    "downloading": "Qed jinżel...",
+    "nameRequired": "Isem tal-proġett huwa meħtieġ"
+  },
+  "renderer": {
+    "title": "Renderer",
+    "forwardPlus": "Forward Plus",
+    "mobile": "Mobile",
+    "compatible": "Kompatibbli",
+    "gles3": "GLES3",
+    "gles2": "GLES2",
+    "forwardPlusFeatures": {
+      "desktop": "Jappoġġja pjattaformi desktop biss.",
+      "advanced3d": "Grafika 3D avvanzata disponibbli.",
+      "scalable": "Jista' jiskala għal xeni kbar u kumplessi.",
+      "renderingDevice": "Juża backend RenderingDevice.",
+      "slowerSimple": "Rendering aktar bil-mod ta' xeni sempliċi."
+    },
+    "mobileFeatures": {
+      "platforms": "Jappoġġja desktop + pjattaformi mobile.",
+      "less3d": "Grafika 3D inqas avvanzata.",
+      "lessScalable": "Inqas skalabbli għal xeni kumplessi.",
+      "renderingDevice": "Juża backend RenderingDevice.",
+      "fastSimple": "Rendering mgħaġġel ta' xeni sempliċi."
+    },
+    "compatibleFeatures": {
+      "platforms": "Jappoġġja desktop, mobile + pjattaformi web.",
+      "least3d": "Grafika 3D l-inqas avvanzata (bħalissa work-in-progress).",
+      "lowEnd": "Maħsub għal tagħmir antik/low-end.",
+      "opengl": "Juża backend OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
+      "fastest": "L-aktar rendering mgħaġġel ta' xeni sempliċi."
+    }
+  },
+  "otherSettings": {
+    "title": "Settings Oħra",
+    "initGit": "Ibda Git Repository",
+    "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",
+    "setupVSCode": "Issettja Visual Studio Code bħala Text Editur",
+    "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter",
+    "vscodeHelp": {
+      "title": "Għaliex Visual Studio Code ma jinstabx?",
+      "message": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code fis-settings."
+    }
+  },
+  "buttons": {
+    "editNow": "Editja issa",
+    "create": "Oħloq Proġett"
+  },
+  "errors": {
+    "projectExists": "Proġett '{{name}}' diġà jeżisti",
+    "invalidEditorVersion": "Verżjoni tal-editur invalida: {{version}}",
+    "failedProjectDefinition": "Naqas milli jinkiseb id-definizzjoni tal-proġett għal verżjoni: {{version}}",
+    "folderNotEmpty": "Folder tal-proġett '{{name}}' diġà jeżisti u mhuwiex vojt, ridt tgħid li żżid proġett eżistenti?",
+    "failedCreateFile": "Naqas milli jinħoloq il-fajl tal-proġett: {{error}}"
+  }
+}
