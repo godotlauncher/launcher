@@ -1,0 +1,78 @@
+{
+  "title": "專案",
+  "buttons": {
+    "add": "新增",
+    "newProject": "新專案",
+    "addProject": "新增專案",
+    "createProject": "建立專案",
+    "refresh": "重新整理",
+    "launch": "啟動",
+    "changeEditor": "更改編輯器"
+  },
+  "search": {
+    "placeholder": "搜尋"
+  },
+  "table": {
+    "name": "名稱",
+    "modified": "修改時間",
+    "editor": "編輯器",
+    "version": "版本",
+    "lastOpened": "上次開啟",
+    "actions": "動作",
+    "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
+    "dotNetProject": "這是一個 .NET 專案",
+    "prerelease": "使用預先釋出的 Godot 編輯器版本",
+    "windowedMode": "此專案以視窗模式開啟"
+  },
+  "addProject": {
+    "selectFile": "選擇專案檔",
+    "godotProject": "Godot 專案",
+    "errors": {
+      "projectExists": "專案 '{{path}}' 已存在",
+      "invalidPath": "無效的專案路徑",
+      "invalidProjectFile": "無效的 project.godot 檔案",
+      "nameExists": "名稱為 '{{name}}' 的專案已存在\n請在 'project.godot' 中重新命名專案，或移除現有專案。",
+      "invalidRenderer": "無效的專案檔",
+      "invalidConfigVersion": "無效的 project.godot config_version。\n僅支援設定版本 5",
+      "noStableReleases": "找不到 Godot {{version}}.x 的已安裝穩定版\n請先為 Godot {{version}}.x 安裝穩定版，再嘗試新增專案。",
+      "noDotNetRelease": "此專案似乎為 .NET 專案，但未找到含 .NET 的編輯器發行版",
+      "noCompatibleRelease": "找不到支援 config_version {{configVersion}} 的 Godot {{version}}.x 已安裝發行版。"
+    }
+  },
+  "messages": {
+    "noProjects": "未找到專案",
+    "noReleases": "未安裝任何發行版本。",
+    "goToInstalls": "前往安裝。",
+    "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
+    "projectAdded": "已成功新增專案",
+    "projectRemoved": "專案已移除",
+    "editorChanged": "編輯器更改成功",
+    "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
+    "monoProject": "這是一個 .NET 專案",
+    "prereleaseVersion": "使用預先釋出的 Godot 編輯器版本"
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "找不到專案",
+      "invalidEditorVersion": "無效的編輯器版本",
+      "differentMajorVersion": "無法使用不同主版本的編輯器\n為保護您的專案，請參考官方遷移指南：https://godotengine.org"
+    }
+  },
+  "createProject": {
+    "title": "新專案",
+    "projectName": "專案名稱",
+    "projectPath": "專案路徑",
+    "selectVersion": "選擇 Godot 版本",
+    "renderer": "渲染器",
+    "editNow": "立即編輯",
+    "setupVSCode": "將 Visual Studio Code 設為文字編輯器",
+    "vscodeNotInstalled": "此電腦未安裝 Visual Studio Code",
+    "noVersionsInstalled": "尚未安裝任何 Godot 版本",
+    "errors": {
+      "nameRequired": "必須填寫專案名稱",
+      "pathRequired": "必須填寫專案路徑",
+      "invalidPath": "無效的專案路徑"
+    }
+  },
+  "searchPlaceholder": "搜尋專案…"
+}

@@ -1,0 +1,57 @@
+{
+  "title": "說明",
+  "thirdPartyNotices": "第三方公告",
+  "launcher": {
+    "title": "Godot 啟動器",
+    "changelog": "變更記錄",
+    "homePage": "首頁",
+    "docs": "啟動器文件"
+  },
+  "godot": {
+    "title": "Godot 引擎",
+    "engine": "Godot 引擎",
+    "docs": "Godot 文件"
+  },
+  "community": {
+    "title": "社群與支援",
+    "learnMore": "瞭解更多"
+  },
+  "contribute": {
+    "title": "如何貢獻",
+    "learnMore": "瞭解更多",
+    "description": "在官方 GitHub 儲存庫提交議題以回報錯誤或提供建議",
+    "reportBug": "我覺得我找到了一個錯誤",
+    "suggestion": "我有個建議！"
+  },
+  "sections": {
+    "gettingStarted": {
+      "title": "快速開始",
+      "content": "歡迎使用 Godot 啟動器！此應用程式可協助您管理多個 Godot 版本與專案。",
+      "welcome": "歡迎使用 Godot 啟動器！",
+      "step1": "在安裝分頁中安裝 Godot 版本",
+      "step2": "建立或新增專案",
+      "step3": "啟動並開始開發！"
+    },
+    "documentation": {
+      "title": "文件",
+      "visitDocs": "前往文件"
+    },
+    "community": {
+      "title": "社群",
+      "discord": "加入我們的 Discord",
+      "github": "在 GitHub 檢視"
+    },
+    "about": {
+      "title": "關於",
+      "version": "版本 {{version}}",
+      "license": "採用 MIT 授權",
+      "thirdParty": "第三方公告"
+    }
+  },
+  "links": {
+    "documentation": "文件",
+    "github": "GitHub 儲存庫",
+    "discord": "Discord 社群",
+    "website": "網站"
+  }
+}

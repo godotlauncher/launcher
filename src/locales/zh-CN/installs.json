@@ -1,0 +1,63 @@
+{
+  "title": "编辑器安装",
+  "tabs": {
+    "installed": "已安装",
+    "available": "可用"
+  },
+  "buttons": {
+    "install": "安装编辑器",
+    "installVersion": "安装版本",
+    "refresh": "刷新",
+    "uninstall": "卸载",
+    "openFolder": "打开文件夹"
+  },
+  "search": {
+    "placeholder": "搜索"
+  },
+  "table": {
+    "name": "名称",
+    "version": "版本",
+    "type": "类型",
+    "size": "大小",
+    "published": "发布日期",
+    "actions": "操作",
+    "status": "状态"
+  },
+  "badges": {
+    "dotNet": ".NET",
+    "prerelease": "预发布"
+  },
+  "types": {
+    "stable": "稳定",
+    "beta": "测试",
+    "dev": "开发",
+    "mono": ".NET"
+  },
+  "status": {
+    "installing": "安装中...",
+    "installed": "已安装",
+    "downloading": "下载中..."
+  },
+  "messages": {
+    "noReleases": "尚未安装任何发行版本。",
+    "install": "安装。",
+    "noReleasesCta": "尚未安装任何版本。 <Link>安装</Link>",
+    "noInstalled": "尚未安装 Godot 版本",
+    "noAvailable": "没有可用版本",
+    "installing": "安装中...",
+    "downloadProgress": "下载中：{{percent}}%",
+    "installSuccess": "编辑器安装成功",
+    "uninstallSuccess": "编辑器已卸载"
+  },
+  "install": {
+    "title": "安装 Godot 编辑器",
+    "selectVersion": "选择要安装的版本",
+    "includeMonoVersion": "包含 .NET 版本",
+    "downloading": "下载中...",
+    "extracting": "解压中...",
+    "buttons": {
+      "install": "安装",
+      "cancel": "取消"
+    }
+  }
+}

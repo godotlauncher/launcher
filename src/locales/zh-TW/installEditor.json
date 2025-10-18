@@ -1,0 +1,50 @@
+{
+  "title": "安裝 Godot 編輯器",
+  "search": {
+    "placeholder": "搜尋"
+  },
+  "tabs": {
+    "released": "正式釋出",
+    "prerelease": "預先釋出",
+    "installed": "已安裝"
+  },
+  "filters": {
+    "showInstalledOnly": "僅顯示已安裝"
+  },
+  "buttons": {
+    "reload": "重新載入發行清單"
+  },
+  "errors": {
+    "fetchError": "擷取發行版本時發生錯誤。",
+    "tryAgainLater": "請",
+    "tryAgain": "稍後再試",
+    "retryInline": "請再試一次。<Button>重試</Button>",
+    "noPlatformAsset": "找不到此平台的資產",
+    "invalidEditorVersion": "無效的編輯器版本",
+    "unsupportedPlatform": "不支援的平台",
+    "unsupportedFileExtension": "不支援的檔案副檔名"
+  },
+  "messages": {
+    "installError": "安裝發行版本時發生問題"
+  },
+  "table": {
+    "headers": {
+      "version": "版本",
+      "released": "發佈日期",
+      "download": "下載",
+      "installed": "已安裝"
+    },
+    "gdscript": "（GDScript）",
+    "dotnet": "（.NET）",
+    "installing": "安裝中…",
+    "downloading": "下載中…",
+    "tooltips": {
+      "installed": "已安裝 - {{version}}",
+      "installedGDScript": "已安裝 - {{version}}（GDScript）",
+      "installedDotNet": "已安裝 - {{version}} .NET",
+      "download": "下載 {{version}}",
+      "downloadGDScript": "下載 {{version}}（GDScript）",
+      "downloadDotNet": "下載 {{version}} .NET"
+    }
+  }
+}

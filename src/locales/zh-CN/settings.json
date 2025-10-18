@@ -1,0 +1,170 @@
+{
+  "title": "设置",
+  "tabs": {
+    "projects": "项目",
+    "installs": "安装",
+    "appearance": "外观",
+    "behavior": "行为",
+    "tools": "工具",
+    "updates": "更新"
+  },
+  "appearance": {
+    "theme": {
+      "title": "主题",
+      "description": "自定义 Godot 启动器 的外观",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "系统（自动）"
+    }
+  },
+  "behavior": {
+    "projects": {
+      "title": "项目",
+      "description": "选择 Godot 启动器 对项目的行为。",
+      "confirmRemove": "移除项目时请求确认。"
+    },
+    "autoStart": {
+      "title": "启动偏好",
+      "description": "选择计算机启动时 GD Launcher 的行为",
+      "linuxWarning": "当前在 Linux 上不支持自动启动",
+      "startOnBoot": "随系统启动时启动。",
+      "startInTray": "启动时最小化到托盘。"
+    },
+    "projectLaunch": {
+      "title": "项目启动动作",
+      "description": "启动项目后选择 GD Launcher 的行为",
+      "none": "无",
+      "minimize": "最小化",
+      "closeToTray": "关闭到系统托盘"
+    },
+    "projectsLocation": {
+      "title": "项目位置",
+      "description": "为新项目选择位置。现有项目不会受到影响。",
+      "defaultLocation": "默认位置",
+      "waitingForDialog": "等待对话框..."
+    },
+    "editorsLocation": {
+      "title": "编辑器安装位置",
+      "description": "选择编辑器安装的位置。现有安装不会受到影响。",
+      "installLocation": "安装位置",
+      "waitingForDialog": "等待对话框..."
+    },
+    "checkForUpdates": {
+      "title": "检查更新",
+      "description": "当 Godot 启动器 启动时自动检查更新",
+      "enabled": "在启动时检查更新"
+    }
+  },
+  "general": {
+    "language": {
+      "label": "语言",
+      "title": "语言",
+      "description": "选择 Godot 启动器 的语言（不会更改 Godot 的语言）",
+      "system": "系统（自动检测）",
+      "options": {
+        "system": "系统（自动检测）"
+      }
+    },
+    "theme": {
+      "label": "主题",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "系统"
+    },
+    "projectsLocation": {
+      "label": "默认项目位置",
+      "description": "新项目将创建在此处"
+    },
+    "installLocation": {
+      "label": "Godot 安装位置",
+      "description": "Godot 版本将安装在此处"
+    },
+    "postLaunchAction": {
+      "label": "启动项目后",
+      "none": "不做任何事",
+      "minimize": "最小化启动器",
+      "closeToTray": "关闭到系统托盘"
+    },
+    "autoCheckUpdates": {
+      "label": "自动检查更新",
+      "description": "在启动时检查 Godot 启动器 的更新"
+    },
+    "autoStart": {
+      "label": "随系统启动",
+      "description": "计算机启动时启动 Godot 启动器"
+    },
+    "startInTray": {
+      "label": "启动时最小化到托盘",
+      "description": "将启动器置于系统托盘启动"
+    }
+  },
+  "advanced": {
+    "confirmProjectRemove": {
+      "label": "移除项目前确认",
+      "description": "移除项目时显示确认对话框"
+    },
+    "enableSymlinks": {
+      "label": "启用符号链接（Windows）",
+      "description": "对编辑器设置使用符号链接"
+    }
+  },
+  "buttons": {
+    "save": "保存设置",
+    "reset": "重置为默认",
+    "openConfigFolder": "打开配置文件夹"
+  },
+  "tools": {
+    "git": {
+      "title": "Git",
+      "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",
+      "installed": "已安装：",
+      "version": "版本："
+    },
+    "vscode": {
+      "title": "Visual Studio Code",
+      "description": "一个快速、可扩展的代码编辑器，支持 Godot 的 GDScript 和 .NET。",
+      "notDetectedTitle": "未检测到 Visual Studio Code！",
+      "notDetectedMessage": "如果 VS Code 未添加到 PATH，Godot 启动器 只能通过 PATH 自动检测到它。您也可以在下面手动指定 VS Code 可执行文件的路径",
+      "pathLabel": "Visual Studio Code 可执行文件路径",
+      "selectExecutable": "选择 Visual Studio Code 可执行文件",
+      "autodetected": "（自动检测）",
+      "noPathSet": "未设置路径",
+      "clearCustomPath": "清除自定义路径",
+      "waitingForDialog": "等待对话框...",
+      "installed": "已安装："
+    }
+  },
+  "updates": {
+    "title": "更新",
+    "description": "配置 GD Launcher 如何检查更新",
+    "autoCheck": "自动检查更新",
+    "checkNow": "立即检查更新",
+  "updateAvailable": "版本 {{version}} 可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
+  "updateReady": "有新版本可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
+  "restartNow": "立即重启。"
+  },
+  "windowsSymlinks": {
+    "title": "编辑器符号链接",
+    "windowsOnly": "仅限 Windows",
+    "description": "选择项目编辑器是使用可选符号链接还是保留本地副本。",
+    "checkbox": "对 Windows 项目编辑器使用符号链接。此选项默认关闭，以便在编辑器更新时可能出现提升提示时，您可以选择是否启用。",
+    "note": "更改此设置不会转换现有项目链接；它只会影响将来编辑器刷新时的行为。",
+    "enableTitle": "启用编辑器符号链接",
+    "disableTitle": "禁用编辑器符号链接",
+    "enableAction": "启用符号链接",
+    "disableAction": "禁用符号链接",
+    "enableDescription": {
+      "line1": "启用后，Godot 启动器 将把每个项目链接到已安装的编辑器，而不是复制它。",
+      "line2": "这可以降低磁盘使用量，但在创建新符号链接时，Windows 可能会请求管理员批准。",
+      "line3": "现有项目将保留当前的本地副本，直到其编辑器版本发生更改或重新安装。"
+    },
+    "disableDescription": {
+      "line1": "切回本地副本以避免提升提示。Godot 启动器 将把编辑器文件复制到每个项目中。",
+      "line2": "现有符号链接将保留，直到其编辑器版本发生更改或重新安装。"
+    }
+  },
+  "messages": {
+    "saved": "设置已成功保存",
+    "resetConfirm": "您确定要将所有设置重置为默认值吗？"
+  }
+}

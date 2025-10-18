@@ -1,33 +1,33 @@
 {
-  "app": {
-    "label": "App",
-    "about": "About",
-    "close": "Close",
-    "quit": "Quit"
-  },
-  "developer": {
-    "label": "Developer",
-    "reload": "Reload",
-    "toggleDevTools": "Toggle Developer Tools",
-    "openConfigFolder": "Open Config Folder"
-  },
-  "project": {
-    "openProjectFolder": "Open Project Folder",
-    "openEditorSettingsFolder": "Open Editor Settings Folder",
-    "openWindowed": "Open Windowed",
-    "openWindowedTooltip": "When this option is checked, Godot will launch in windowed mode.",
-    "exportEditorSettings": "Export Editor Settings to File",
-    "importEditorSettings": "Import Editor Settings from File",
-    "removeFromList": "Remove Project From List"
-  },
-  "release": {
-    "openInstalledFolder": "Open Installed Folder",
-    "startProjectManager": "Start the Project Manager",
-    "deleteRelease": "Delete Release from This Device"
-  },
-  "tray": {
-    "recentProjects": "Recent Projects",
-    "showGodotLauncher": "Show Godot Launcher",
-    "quit": "Quit"
-  }
+    "app": {
+        "label": "App",
+        "about": "About",
+        "close": "Close",
+        "quit": "Quit"
+    },
+    "developer": {
+        "label": "Developer",
+        "reload": "Reload",
+        "toggleDevTools": "Toggle Developer Tools",
+        "openConfigFolder": "Open Config Folder"
+    },
+    "project": {
+        "openProjectFolder": "Open Project Folder",
+        "openEditorSettingsFolder": "Open Editor Settings Folder",
+        "openWindowed": "Open Windowed",
+        "openWindowedTooltip": "When this option is checked, Godot will launch in windowed mode.",
+        "exportEditorSettings": "Export Editor Settings to File",
+        "importEditorSettings": "Import Editor Settings from File",
+        "removeFromList": "Remove Project From List"
+    },
+    "release": {
+        "openInstalledFolder": "Open Installed Folder",
+        "startProjectManager": "Start the Project Manager",
+        "deleteRelease": "Delete Release from This Device"
+    },
+    "tray": {
+        "recentProjects": "Recent Projects",
+        "showGodotLauncher": "Show Godot Launcher",
+        "quit": "Quit"
+    }
 }

@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Godot 启动器",
+    "version": "版本 {{version}}",
+    "loading": "准备中...",
+    "quit": "退出",
+    "close": "关闭",
+    "cancel": "取消",
+    "ok": "确定",
+    "yes": "是",
+    "no": "否",
+    "continue": "继续",
+    "save": "保存",
+    "delete": "删除",
+    "remove": "移除",
+    "edit": "编辑",
+    "create": "创建",
+    "add": "添加",
+    "browse": "浏览",
+    "refresh": "刷新"
+  },
+  "errors": {
+    "generic": "发生错误",
+    "notFound": "未找到",
+    "invalidPath": "路径无效",
+    "permissionDenied": "权限被拒绝",
+    "fileNotFound": "文件未找到"
+  }
+}

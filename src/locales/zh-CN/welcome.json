@@ -1,0 +1,98 @@
+{
+  "title": "Godot 启动器",
+  "steps": {
+    "welcome": "欢迎",
+    "macos": "macOS",
+    "windows": "Windows",
+    "linux": "Linux",
+    "currentSettings": "当前设置",
+    "setLocations": "设置位置",
+    "customizeBehavior": "自定义行为",
+    "windowsSymlink": "Windows 符号链接",
+    "ready": "完成"
+  },
+  "navigation": {
+    "next": "下一步",
+    "previous": "上一步",
+    "start": "开始",
+    "nextMacOS": "下一步：macOS",
+    "nextWindows": "下一步：Windows",
+    "nextLinux": "下一步：Linux",
+    "nextCurrentSettings": "下一步：当前设置",
+    "nextSetLocations": "下一步：设置位置",
+    "nextCustomizeBehavior": "下一步：自定义行为",
+    "nextWindowsSymlink": "下一步：Windows 符号链接",
+    "nextReady": "下一步：完成",
+    "backWelcome": "返回：欢迎",
+    "backMacOS": "返回：macOS",
+    "backWindows": "返回：Windows",
+    "backLinux": "返回：Linux",
+    "backCurrentSettings": "返回：当前设置",
+    "backSetLocations": "返回：设置位置",
+    "backCustomizeBehavior": "返回：自定义行为"
+  },
+  "welcomeStep": {
+    "title": "感谢使用 Godot 启动器！",
+    "description": "Godot 启动器 可让您轻松 <strong>管理多个 Godot 引擎 版本</strong>，并为每个项目单独保存 <strong>编辑器设置</strong>。",
+    "feedback": "使用本软件即可帮助支持该项目！如果您有反馈或发现错误，请告诉我们，我们很乐意为您改进。",
+    "enjoy": "祝您使用愉快，编程顺利！"
+  },
+  "startStep": {
+    "title": "全部准备就绪！ 🚀",
+    "subtitle": "Godot 启动器 已准备好！您现在可以管理项目并探索所有功能。",
+    "whatsNext": "接下来？",
+    "installTab": "在 <strong>安装</strong> 选项卡中安装并试用最新的预发布版本。",
+    "projectsTab": "在 <strong>项目</strong> 选项卡中快速添加或创建项目。",
+    "settingsTab": "在 <strong>设置</strong> 选项卡中按您的喜好定制体验。"
+  },
+  "customizeBehavior": {
+    "afterLaunching": "启动项目后",
+    "nothing": "不做任何事",
+    "minimize": "最小化",
+    "closeToTray": "关闭到系统托盘",
+    "autoCheckUpdates": "自动检查更新",
+    "autoStart": "开机时启动。",
+    "startInTray": "启动时最小化到托盘。"
+  },
+  "currentSettings": {
+    "title": "默认设置：",
+    "projectsLocation": "项目位置：",
+    "installLocation": "Godot 安装位置：",
+    "postLaunchAction": "启动项目后操作：",
+    "autoCheckUpdates": "自动检查更新：",
+    "autoStart": "开机自动启动：",
+    "autoStartType": "自动启动类型：",
+    "systemTray": "系统托盘",
+    "normalWindow": "普通窗口",
+    "yes": "是",
+    "no": "否",
+    "skipButton": "跳过，使用默认",
+    "postLaunchActions": {
+      "nothing": "不做任何事",
+      "minimize": "最小化",
+      "closeToTray": "关闭到系统托盘"
+    }
+  },
+  "macosStep": {
+    "title": "macOS 说明",
+    "intro": "Godot 启动器 会为每个项目创建编辑器的副本。",
+    "whyTitle": "为什么？",
+    "reason": "在 macOS 上创建符号链接并不受权限限制，但通过符号链接打开编辑器已被证明不可靠。为确保顺畅体验，我们为每个项目提供专用的引擎副本。虽然 Godot 大约只有 200MB（通常不是问题），但请注意多个项目可能会导致磁盘使用量增加。",
+  "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
+  },
+  "windowsStep": {
+    "title": "Windows 说明",
+    "intro": "从 1.4.0 版本起，Godot 启动器 可以为每个项目创建指向编辑器的 <code>符号链接</code>。为简化设置，我们默认使用本地副本。当您希望降低磁盘使用量时，可以随时在 <strong>设置 → 行为 → 编辑器符号链接</strong> 中启用符号链接。",
+    "change1": "在 Windows 上创建符号链接需要管理员权限和提升的命令执行权限。启动器现在仅在创建符号链接时提升权限。",
+    "change2": "仅当您不是计算机上的 <code>管理员</code> 且未启用 <code>开发者模式</code> 时，才会看到 UAC 提示。",
+    "change3": "准备尝试符号链接吗？在准备好接受偶发的提升提示时，在设置中启用 <strong>编辑器符号链接</strong>。",
+  "dotnetNote": "注意：如果您使用的是基于 .NET 的编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
+  },
+  "linuxStep": {
+    "title": "Linux 说明",
+    "intro": "Godot 启动器 为每个项目使用符号链接",
+    "whyTitle": "为什么？",
+    "reason": "与 Windows 和 macOS 版本不同，Linux 使用指向编辑器的符号链接来启动项目。这可节省磁盘空间并允许每个项目使用独立的设置。",
+  "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
+  }
+}

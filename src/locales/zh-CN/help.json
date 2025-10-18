@@ -1,0 +1,57 @@
+{
+  "title": "帮助",
+  "thirdPartyNotices": "第三方声明",
+  "launcher": {
+    "title": "Godot Launcher",
+    "changelog": "更新日志",
+    "homePage": "主页",
+    "docs": "启动器文档"
+  },
+  "godot": {
+    "title": "Godot Engine",
+    "engine": "Godot Engine",
+    "docs": "Godot 文档"
+  },
+  "community": {
+    "title": "社区与支持",
+    "learnMore": "了解更多"
+  },
+  "contribute": {
+    "title": "如何贡献",
+    "learnMore": "了解更多",
+    "description": "通过在官方 GitHub 仓库提交 issue 来报告错误或建议",
+    "reportBug": "我发现了一个错误",
+    "suggestion": "我有一个建议！"
+  },
+  "sections": {
+    "gettingStarted": {
+      "title": "入门",
+      "content": "欢迎使用 Godot Launcher！此应用可帮助您管理多个 Godot 版本和项目。",
+      "welcome": "欢迎使用 Godot Launcher！",
+      "step1": "从“安装”选项卡安装一个 Godot 版本",
+      "step2": "创建或添加一个项目",
+      "step3": "启动并开始开发！"
+    },
+    "documentation": {
+      "title": "文档",
+      "visitDocs": "查看文档"
+    },
+    "community": {
+      "title": "社区",
+      "discord": "加入我们的 Discord",
+      "github": "在 GitHub 上查看"
+    },
+    "about": {
+      "title": "关于",
+      "version": "版本 {{version}}",
+      "license": "根据 MIT 协议授权",
+      "thirdParty": "第三方声明"
+    }
+  },
+  "links": {
+    "documentation": "文档",
+    "github": "GitHub 仓库",
+    "discord": "Discord 社区",
+    "website": "网站"
+  }
+}

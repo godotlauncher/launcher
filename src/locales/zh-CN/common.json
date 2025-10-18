@@ -1,0 +1,48 @@
+{
+  "buttons": {
+    "ok": "确定",
+    "cancel": "取消",
+    "close": "关闭",
+    "save": "保存",
+    "delete": "删除",
+    "continue": "继续",
+    "skip": "跳过",
+    "select": "选择"
+  },
+  "loading": "加载中...",
+  "saving": "保存中...",
+  "error": "错误",
+  "success": "成功",
+  "warning": "警告",
+  "info": "信息",
+  "app": {
+    "loadingMessage": "准备中...",
+    "navigation": {
+      "projects": "项目",
+      "installs": "安装",
+      "help": "帮助",
+      "settings": "设置",
+      "joinCommunity": "加入社区"
+    },
+    "update": {
+      "available": "可用，重启 Godot Launcher 以安装。",
+      "version": "版本 {{version}}",
+      "newVersion": "有新版本可用",
+      "restartNow": "立即重启。",
+      "bannerWithVersion": "版本 {{version}} 可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>",
+      "bannerNoVersion": "有新版本可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>"
+    }
+  },
+  "selectRelease": {
+    "description": "选择编辑器版本",
+    "tableHeaders": {
+      "name": "名称"
+    },
+    "noReleases": "未找到发行版，所需编辑器版本 {{version}}.x",
+    "installReleases": "安装发行版",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "预发布"
+    }
+  }
+}

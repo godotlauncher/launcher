@@ -1,0 +1,48 @@
+{
+  "buttons": {
+    "ok": "確定",
+    "cancel": "取消",
+    "close": "關閉",
+    "save": "儲存",
+    "delete": "刪除",
+    "continue": "繼續",
+    "skip": "跳過",
+    "select": "選擇"
+  },
+  "loading": "載入中…",
+  "saving": "儲存中…",
+  "error": "錯誤",
+  "success": "成功",
+  "warning": "警告",
+  "info": "資訊",
+  "app": {
+    "loadingMessage": "正在準備中…",
+    "navigation": {
+      "projects": "專案",
+      "installs": "安裝",
+      "help": "說明",
+      "settings": "設定",
+      "joinCommunity": "加入社群"
+    },
+    "update": {
+      "available": "現已可用，重新啟動 Godot 啟動器以安裝。",
+      "version": "版本 {{version}}",
+      "newVersion": "有新版本",
+      "restartNow": "立即重新啟動。",
+      "bannerWithVersion": "版本 {{version}} 可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
+      "bannerNoVersion": "有新版本可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>"
+    }
+  },
+  "selectRelease": {
+    "description": "選擇編輯器版本",
+    "tableHeaders": {
+      "name": "名稱"
+    },
+    "noReleases": "找不到發行版本，需要 {{version}}.x 的編輯器版本",
+    "installReleases": "安裝發行版本",
+    "badges": {
+      "dotnet": ".NET",
+      "prerelease": "預先釋出"
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "title": "新建项目",
+  "project": {
+    "title": "项目",
+    "dotNetBadge": ".NET",
+    "prereleaseBadge": "预发布",
+    "noVersionsInstalled": "未安装 Godot 版本",
+    "nameplaceholder": "项目名称",
+    "downloading": "正在下载...",
+    "nameRequired": "项目名称为必填项"
+  },
+  "renderer": {
+    "title": "渲染器",
+    "forwardPlus": "Forward Plus",
+    "mobile": "移动",
+    "compatible": "兼容",
+    "gles3": "GLES3",
+    "gles2": "GLES2",
+    "forwardPlusFeatures": {
+      "desktop": "仅支持桌面平台。",
+      "advanced3d": "支持高级 3D 图形。",
+      "scalable": "可扩展以处理大型复杂场景。",
+      "renderingDevice": "使用 RenderingDevice 后端。",
+      "slowerSimple": "对简单场景渲染较慢。"
+    },
+    "mobileFeatures": {
+      "platforms": "支持桌面 + 移动平台。",
+      "less3d": "3D 图形较少。",
+      "lessScalable": "对复杂场景的可扩展性较差。",
+      "renderingDevice": "使用 RenderingDevice 后端。",
+      "fastSimple": "对简单场景渲染快速。"
+    },
+    "compatibleFeatures": {
+      "platforms": "支持桌面、移动 + Web 平台。",
+      "least3d": "最少的 3D 功能（当前仍在进行中）。",
+      "lowEnd": "适用于低端/较旧设备。",
+      "opengl": "使用 OpenGL 3 后端（OpenGL 3.3/ES 3.0/WebGL2）。",
+      "fastest": "对简单场景渲染最快。"
+    }
+  },
+  "otherSettings": {
+    "title": "其他设置",
+    "initGit": "初始化 Git 仓库",
+    "gitNotInstalled": "此电脑未安装 Git",
+    "setupVSCode": "将 Visual Studio Code 设置为文本编辑器",
+    "vscodeNotInstalled": "此电脑未安装 Visual Studio Code",
+    "vscodeHelp": {
+      "title": "为什么未检测到 Visual Studio Code？",
+      "message": "Godot Launcher 只有在 VS Code 已安装到 PATH 时才能自动检测。您可以在设置中指定 VS Code 可执行文件的路径。"
+    }
+  },
+  "buttons": {
+    "editNow": "立即编辑",
+    "create": "创建项目"
+  },
+  "errors": {
+    "projectExists": "项目 '{{name}}' 已存在",
+    "invalidEditorVersion": "无效的编辑器版本：{{version}}",
+    "failedProjectDefinition": "获取版本 {{version}} 的项目定义失败",
+    "folderNotEmpty": "项目文件夹 '{{name}}' 已存在且非空，是否要添加现有项目？",
+    "failedCreateFile": "创建项目文件失败：{{error}}"
+  }
+}

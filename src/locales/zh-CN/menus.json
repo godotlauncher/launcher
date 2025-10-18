@@ -1,0 +1,33 @@
+{
+    "app": {
+        "label": "应用",
+        "about": "关于",
+        "close": "关闭",
+        "quit": "退出"
+    },
+    "developer": {
+        "label": "开发者",
+        "reload": "重新加载",
+        "toggleDevTools": "切换开发者工具",
+        "openConfigFolder": "打开配置文件夹"
+    },
+    "project": {
+        "openProjectFolder": "打开项目文件夹",
+        "openEditorSettingsFolder": "打开编辑器设置文件夹",
+        "openWindowed": "以窗口模式打开",
+        "openWindowedTooltip": "选中此选项时，Godot 将以窗口模式启动。",
+        "exportEditorSettings": "将编辑器设置导出到文件",
+        "importEditorSettings": "从文件导入编辑器设置",
+        "removeFromList": "从列表中移除项目"
+    },
+    "release": {
+        "openInstalledFolder": "打开已安装文件夹",
+        "startProjectManager": "启动项目管理器",
+        "deleteRelease": "从此设备删除该发行版"
+    },
+    "tray": {
+        "recentProjects": "最近的项目",
+        "showGodotLauncher": "显示 Godot 启动器",
+        "quit": "退出"
+    }
+}

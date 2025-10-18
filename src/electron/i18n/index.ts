@@ -6,12 +6,14 @@ import path from 'node:path';
 import { isDev } from '../utils.js';
 
 const DEFAULT_LANGUAGE = 'en';
-const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR'] as const;
+const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR', 'zh-CN', 'zh-TW'] as const;
 const LANGUAGE_SET = new Set<string>(AVAILABLE_LANGUAGES);
 
 const FALLBACK_LANGUAGES = {
     'pt-BR': ['pt', DEFAULT_LANGUAGE],
     pt: [DEFAULT_LANGUAGE],
+    'zh-CN': ['zh-CN', DEFAULT_LANGUAGE],
+    'zh-TW': ['zh-TW', DEFAULT_LANGUAGE],
     default: [DEFAULT_LANGUAGE],
 } as const;
 
