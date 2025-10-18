@@ -27,6 +27,7 @@ import { getUserPreferences } from './userPreferences.js';
 import { sortReleases } from '../utils/releaseSorting.utils.js';
 import { getProjectsDetails } from './projects.js';
 import { getInstalledTools } from './installedTools.js';
+import { t } from '../i18n/index.js';
 
 export async function addProject(
     projectPath: string
@@ -43,7 +44,7 @@ export async function addProject(
     if (projects.find((p) => p.path === dirname)) {
         return {
             success: false,
-            error: `Project '${dirname}' already exists`,
+            error: t('projects:addProject.errors.projectExists', { path: dirname }),
         };
     }
 
@@ -51,7 +52,7 @@ export async function addProject(
     if (!fs.existsSync(projectPath)) {
         return {
             success: false,
-            error: 'Invalid project path',
+            error: t('projects:addProject.errors.invalidPath'),
         };
     }
     let parsedConfig;
@@ -60,7 +61,7 @@ export async function addProject(
         const projectFile = await fs.promises.readFile(projectPath, 'utf-8');
         parsedConfig = parseGodotProjectFile(projectFile);
         if (!parsedConfig) {
-            throw new Error('Invalid project.godot file');
+            throw new Error(t('projects:addProject.errors.invalidProjectFile'));
         }
     } catch (e) {
         if (e instanceof Error) {
@@ -71,7 +72,7 @@ export async function addProject(
         }
         return {
             success: false,
-            error: 'Invalid project file ' + e,
+            error: t('projects:addProject.errors.invalidProjectFile') + ' ' + e,
         };
     }
 
@@ -82,7 +83,7 @@ export async function addProject(
     if (projects.find((p) => p.name === projectName)) {
         return {
             success: false,
-            error: `Project with name '${projectName}' already exists\nPlease rename the project in 'project.godot' or remove the existing one.`,
+            error: t('projects:addProject.errors.nameExists', { name: projectName }),
         };
     }
 
@@ -92,7 +93,7 @@ export async function addProject(
     if (renderer === 'Unknown') {
         return {
             success: false,
-            error: 'Invalid project file',
+            error: t('projects:addProject.errors.invalidRenderer'),
         };
     }
 
@@ -105,8 +106,7 @@ export async function addProject(
     if (releaseBaseVersion === 0) {
         return {
             success: false,
-            error:
-        'Invalid project.godot config_version.\nOnly config version 5 is supported',
+            error: t('projects:addProject.errors.invalidConfigVersion'),
         };
     }
 
@@ -134,7 +134,7 @@ export async function addProject(
     if (releases.length === 0) {
         return {
             success: false,
-            error: `No installed Stable releases found for Godot ${releaseBaseVersion}.x\nPlease install a stable release for Godot ${releaseBaseVersion}.x, then try adding the project again.`,
+            error: t('projects:addProject.errors.noStableReleases', { version: releaseBaseVersion }),
         };
     }
 
@@ -142,8 +142,7 @@ export async function addProject(
         // no mono release available for this version
         return {
             success: false,
-            error:
-                'Project seems to be a .NET project but no Editor with .NET release found',
+            error: t('projects:addProject.errors.noDotNetRelease'),
         };
     }
 
@@ -158,7 +157,10 @@ export async function addProject(
     if (!release) {
         return {
             success: false,
-            error: `No installed releases found for Godot ${releaseBaseVersion}.x that support config_version ${configVersion}.`,
+            error: t('projects:addProject.errors.noCompatibleRelease', { 
+                version: releaseBaseVersion, 
+                configVersion: configVersion 
+            }),
         };
     }
 
@@ -172,8 +174,7 @@ export async function addProject(
     if (!config) {
         return {
             success: false,
-            error:
-        'Invalid project.godot config_version.\nOnly config version 5 is supported',
+            error: t('projects:addProject.errors.invalidConfigVersion'),
         };
     }
 

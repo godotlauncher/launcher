@@ -18,7 +18,11 @@
     "fetchError": "Si è verificato un errore durante il recupero delle versioni.",
     "tryAgainLater": "Per favore",
     "tryAgain": "riprovare più tardi",
-    "retryInline": "Si è verificato un errore. <Button>Riprova</Button>"
+    "retryInline": "Si è verificato un errore. <Button>Riprova</Button>",
+    "noPlatformAsset": "Nessuna risorsa trovata per la piattaforma",
+    "invalidEditorVersion": "Versione editor non valida",
+    "unsupportedPlatform": "Piattaforma non supportata",
+    "unsupportedFileExtension": "Estensione file non supportata"
   },
   "messages": {
     "installError": "Qualcosa è andato storto durante l'installazione della versione"

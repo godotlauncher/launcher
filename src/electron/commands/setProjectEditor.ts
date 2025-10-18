@@ -11,6 +11,7 @@ import { createNewEditorSettings } from '../utils/godotProject.utils.js';
 import { getAssetPath } from '../pathResolver.js';
 import { getInstalledTools } from './installedTools.js';
 import { addOrUpdateVSCodeRecommendedExtensions, addVSCodeNETLaunchConfig } from '../utils/vscode.utils.js';
+import { t } from '../i18n/index.js';
 
 
 export async function setProjectEditor(project: ProjectDetails, newRelease: InstalledRelease): Promise<ChangeProjectEditorResult> {
@@ -34,7 +35,7 @@ export async function setProjectEditor(project: ProjectDetails, newRelease: Inst
     if (projectIndex === -1) {
         return {
             success: false,
-            error: 'Project not found',
+            error: t('projects:changeEditor.errors.projectNotFound'),
         };
     }
 
@@ -46,7 +47,7 @@ export async function setProjectEditor(project: ProjectDetails, newRelease: Inst
     if (!config) {
         return {
             success: false,
-            error: 'Invalid editor version',
+            error: t('projects:changeEditor.errors.invalidEditorVersion'),
         };
     }
 
@@ -54,7 +55,7 @@ export async function setProjectEditor(project: ProjectDetails, newRelease: Inst
     if (parseInt(project.version_number.toString()) != parseInt(newRelease.version_number.toString())) {
         return {
             success: false,
-            error: 'Cannot use a different major version of the editor\nTo protect your project see official migration guide on https://godotengine.org',
+            error: t('projects:changeEditor.errors.differentMajorVersion'),
         };
     }
 

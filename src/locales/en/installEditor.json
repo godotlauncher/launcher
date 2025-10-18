@@ -18,7 +18,11 @@
     "fetchError": "There was an error fetching releases.",
     "tryAgainLater": "Please",
     "tryAgain": "try again later",
-    "retryInline": "Please try again. <Button>Try again</Button>"
+    "retryInline": "Please try again. <Button>Try again</Button>",
+    "noPlatformAsset": "No Asset found for platform",
+    "invalidEditorVersion": "Invalid editor version",
+    "unsupportedPlatform": "Unsupported platform",
+    "unsupportedFileExtension": "Unsupported file extension"
   },
   "messages": {
     "installError": "Something went wrong when installing release"

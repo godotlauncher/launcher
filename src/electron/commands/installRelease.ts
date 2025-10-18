@@ -11,6 +11,7 @@ import { getUserPreferences } from './userPreferences.js';
 import { addStoredInstalledRelease, downloadReleaseAsset, getPlatformAsset } from '../utils/releases.utils.js';
 import { DEFAULT_PROJECT_DEFINITION, getProjectDefinition } from '../utils/godot.utils.js';
 import { checkAndUpdateProjects } from '../checks.js';
+import { t } from '../i18n/index.js';
 
 export async function installRelease(
     release: ReleaseSummary,
@@ -34,7 +35,7 @@ export async function installRelease(
         if (!asset) {
             return {
                 success: false,
-                error: 'No Asset found for platform',
+                error: t('installEditor:errors.noPlatformAsset'),
                 version: release.version,
             };
         }
@@ -134,21 +135,21 @@ export async function installRelease(
                         }
                         break;
                     default:
-                        throw new Error('Unsupported platform');
+                        throw new Error(t('installEditor:errors.unsupportedPlatform'));
                 }
 
                 break;
             }
 
             default:
-                throw new Error('Unsupported file extension');
+                throw new Error(t('installEditor:errors.unsupportedFileExtension'));
         }
 
         const config = getProjectDefinition(release.version_number, DEFAULT_PROJECT_DEFINITION);
         if (!config) {
             return {
                 success: false,
-                error: 'Invalid editor version',
+                error: t('installEditor:errors.invalidEditorVersion'),
                 version: release.version,
             };
         }

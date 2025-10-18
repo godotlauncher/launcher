@@ -26,7 +26,18 @@
   },
   "addProject": {
     "selectFile": "Select Project File",
-    "godotProject": "Godot Project"
+    "godotProject": "Godot Project",
+    "errors": {
+      "projectExists": "Project '{{path}}' already exists",
+      "invalidPath": "Invalid project path",
+      "invalidProjectFile": "Invalid project.godot file",
+      "nameExists": "Project with name '{{name}}' already exists\nPlease rename the project in 'project.godot' or remove the existing one.",
+      "invalidRenderer": "Invalid project file",
+      "invalidConfigVersion": "Invalid project.godot config_version.\nOnly config version 5 is supported",
+      "noStableReleases": "No installed Stable releases found for Godot {{version}}.x\nPlease install a stable release for Godot {{version}}.x, then try adding the project again.",
+      "noDotNetRelease": "Project seems to be a .NET project but no Editor with .NET release found",
+      "noCompatibleRelease": "No installed releases found for Godot {{version}}.x that support config_version {{configVersion}}."
+    }
   },
   "messages": {
     "noProjects": "No projects found",
@@ -39,6 +50,13 @@
     "invalidProject": "This project is invalid, check project and editor locations!",
     "monoProject": "This is a .NET Project",
     "prereleaseVersion": "Using a pre-release Godot editor version"
+  },
+  "changeEditor": {
+    "errors": {
+      "projectNotFound": "Project not found",
+      "invalidEditorVersion": "Invalid editor version",
+      "differentMajorVersion": "Cannot use a different major version of the editor\nTo protect your project see official migration guide on https://godotengine.org"
+    }
   },
   "createProject": {
     "title": "New Project",

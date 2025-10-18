@@ -12,6 +12,7 @@ import { gitAddAndCommit, gitInit } from '../utils/git.utils.js';
 import { addOrUpdateVSCodeRecommendedExtensions, addVSCodeSettings } from '../utils/vscode.utils.js';
 import { createNewEditorSettings } from '../utils/godotProject.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
+import { t } from '../i18n/index.js';
 
 export async function createProject(
     projectName: string,
@@ -48,7 +49,7 @@ export async function createProject(
     if (fs.existsSync(projectPath)) {
         return {
             success: false,
-            error: `Project '${projectName}' already exists`,
+            error: t('createProject:errors.projectExists', { name: projectName }),
         };
     }
 
@@ -57,7 +58,7 @@ export async function createProject(
     if (!version || isNaN(version) || version < MIN_VERSION) {
         return {
             success: false,
-            error: `Invalid editor version: ${version}`,
+            error: t('createProject:errors.invalidEditorVersion', { version: version.toString() }),
         };
     }
 
@@ -71,7 +72,7 @@ export async function createProject(
     if (!config) {
         return {
             success: false,
-            error: `Failed to get project definition for version: ${version}`,
+            error: t('createProject:errors.failedProjectDefinition', { version: version.toString() }),
         };
     }
 
@@ -84,7 +85,7 @@ export async function createProject(
         if (fs.existsSync(projectPath) && (await fs.promises.readdir(projectPath)).length > 0) {
             return {
                 success: false,
-                error: `Project folder '${projectName}' already exists and is not empty, did you mean to add an existing project?`,
+                error: t('createProject:errors.folderNotEmpty', { name: projectName }),
             };
         }
 
@@ -97,7 +98,7 @@ export async function createProject(
         catch (e) {
             return {
                 success: false,
-                error: `Failed to create project file: ${e}`,
+                error: t('createProject:errors.failedCreateFile', { error: String(e) }),
             };
         }
 
