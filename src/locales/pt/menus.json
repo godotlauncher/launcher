@@ -1,0 +1,33 @@
+{
+  "app": {
+    "label": "Aplicação",
+    "about": "Sobre",
+    "close": "Fechar",
+    "quit": "Sair"
+  },
+  "developer": {
+    "label": "Desenvolvimento",
+    "reload": "Recarregar",
+    "toggleDevTools": "Alternar ferramentas de desenvolvimento",
+    "openConfigFolder": "Abrir pasta de configuração"
+  },
+  "project": {
+    "openProjectFolder": "Abrir pasta do projeto",
+    "openEditorSettingsFolder": "Abrir pasta das definições do editor",
+    "openWindowed": "Abrir em janela",
+    "openWindowedTooltip": "Quando esta opção está ativa, o Godot inicia em modo de janela.",
+    "exportEditorSettings": "Exportar definições do editor para ficheiro",
+    "importEditorSettings": "Importar definições do editor de ficheiro",
+    "removeFromList": "Remover projeto da lista"
+  },
+  "release": {
+    "openInstalledFolder": "Abrir pasta instalada",
+    "startProjectManager": "Iniciar o gestor de projetos",
+    "deleteRelease": "Eliminar versão deste dispositivo"
+  },
+  "tray": {
+    "recentProjects": "Projetos recentes",
+    "showGodotLauncher": "Mostrar Godot Launcher",
+    "quit": "Sair"
+  }
+}

@@ -5,6 +5,60 @@ import Backend from 'i18next-fs-backend';
 import path from 'node:path';
 import { isDev } from '../utils.js';
 
+const DEFAULT_LANGUAGE = 'en';
+const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR'] as const;
+const LANGUAGE_SET = new Set<string>(AVAILABLE_LANGUAGES);
+
+const FALLBACK_LANGUAGES = {
+    'pt-BR': ['pt', DEFAULT_LANGUAGE],
+    pt: [DEFAULT_LANGUAGE],
+    default: [DEFAULT_LANGUAGE],
+} as const;
+
+function canonicalizeLocale(locale: string): string {
+    if (!locale) {
+        return DEFAULT_LANGUAGE;
+    }
+
+    const normalized = locale.replace('_', '-');
+
+    try {
+        const [canonical] = Intl.getCanonicalLocales(normalized);
+        if (canonical) {
+            return canonical;
+        }
+    } catch (error) {
+        logger.warn(`Failed to canonicalize locale "${locale}":`, error);
+    }
+
+    const [language, region] = normalized.split('-');
+
+    if (region) {
+        return `${language.toLowerCase()}-${region.toUpperCase()}`;
+    }
+
+    return language.toLowerCase();
+}
+
+function resolveToSupportedLocale(locale: string): string {
+    const canonical = canonicalizeLocale(locale);
+
+    if (LANGUAGE_SET.has(canonical)) {
+        return canonical;
+    }
+
+    const baseLanguage = canonical.split('-')[0];
+
+    if (LANGUAGE_SET.has(baseLanguage)) {
+        return baseLanguage;
+    }
+
+    logger.warn(
+        `Locale "${locale}" not supported, falling back to default language "${DEFAULT_LANGUAGE}"`
+    );
+    return DEFAULT_LANGUAGE;
+}
+
 let i18nInstance: typeof i18next | null = null;
 // const mainWindow = app;
 /**
@@ -16,17 +70,14 @@ function resolveLocale(userPreference?: string): string {
     // If user selected a specific language, use it
     if (userPreference && userPreference !== 'system') {
         logger.info(`Using user-selected language: ${userPreference}`);
-        return userPreference;
+        return resolveToSupportedLocale(userPreference);
     }
 
     // Otherwise, detect system language
     const systemLocale = app.getLocale();
     logger.info(`Detected system locale: ${systemLocale}`);
 
-    // Normalize locale (e.g., 'en-US' -> 'en', 'es-ES' -> 'es')
-    const normalizedLocale = systemLocale.split('-')[0].toLowerCase();
-
-    return normalizedLocale;
+    return resolveToSupportedLocale(systemLocale);
 }
 
 /**
@@ -51,7 +102,8 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
     try {
         await i18next.use(Backend).init({
             lng: resolvedLocale,
-            fallbackLng: 'en',
+            fallbackLng: FALLBACK_LANGUAGES,
+            supportedLngs: [...AVAILABLE_LANGUAGES],
             ns: [
                 'translation',
                 'dialogs',
@@ -134,7 +186,7 @@ export async function changeLanguage(lng: string): Promise<void> {
 export function getCurrentLanguage(): string {
     if (!i18nInstance) {
         logger.warn('i18n not initialized, returning default locale');
-        return 'en';
+        return DEFAULT_LANGUAGE;
     }
     return i18nInstance.language;
 }
@@ -145,7 +197,7 @@ export function getCurrentLanguage(): string {
  */
 export function getAvailableLanguages(): string[] {
     // Update this list when adding new locale folders under src/locales
-    return ['en', 'it'];
+    return [...AVAILABLE_LANGUAGES];
 }
 
 /**
@@ -161,7 +213,11 @@ export function getAllTranslations(
         return {};
     }
 
-    const lang = language || i18nInstance.language;
+    const requestedLanguage = language || i18nInstance.language;
+    const lang =
+        requestedLanguage === 'system'
+            ? resolveLocale('system')
+            : resolveToSupportedLocale(requestedLanguage);
     const translations: Record<string, Record<string, unknown>> = {};
 
     // Get all loaded namespaces

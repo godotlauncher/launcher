@@ -11,19 +11,25 @@ const ipcBackend = new IPCBackend();
  */
 async function initializeI18n() {
     try {
-    // Get current language from main process
+        // Get current language from main process
         const currentLang = await window.electron.i18n.getCurrentLanguage();
         const availableLanguages = await window.electron.i18n.getAvailableLanguages();
 
         logger.info(`[i18n] Initializing with language: ${currentLang}`);
         logger.info('[i18n] Available languages:', availableLanguages);
 
+        const fallbackLng = {
+            'pt-BR': ['pt', 'en'],
+            pt: ['en'],
+            default: ['en'],
+        } as const;
+
         await i18n
             .use(ipcBackend)
             .use(initReactI18next)
             .init({
                 lng: currentLang,
-                fallbackLng: 'en',
+                fallbackLng,
                 supportedLngs: availableLanguages,
                 ns: ['common', 'projects', 'installs', 'settings', 'help', 'createProject', 'installEditor', 'welcome'],
                 defaultNS: 'common',

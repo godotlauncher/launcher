@@ -13,10 +13,14 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     { code: 'system', name: 'System (Auto-detect)' },
     { code: 'en', name: 'English' },
     { code: 'it', name: 'Italiano' },
+    { code: 'pt', name: 'Português' },
+    { code: 'pt-BR', name: 'Português (Brasil)' },
     // Add more languages here as they become available
     // { code: 'es', name: 'Español' },
     // { code: 'fr', name: 'Français' },
     // { code: 'de', name: 'Deutsch' },
+    // { code: 'zh-CN', name: '简体中文' },
+    // { code: 'zh-TW', name: '繁體中文' },
 ];
 
 export const LanguageSelector: React.FC = () => {

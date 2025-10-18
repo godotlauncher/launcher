@@ -1,0 +1,98 @@
+{
+  "title": "Godot Launcher",
+  "steps": {
+    "welcome": "Boas-vindas",
+    "macos": "MacOS",
+    "windows": "Windows",
+    "linux": "Linux",
+    "currentSettings": "Configurações atuais",
+    "setLocations": "Definir locais",
+    "customizeBehavior": "Personalizar comportamento",
+    "windowsSymlink": "Link simbólico no Windows",
+    "ready": "Pronto"
+  },
+  "navigation": {
+    "next": "Avançar",
+    "previous": "Voltar",
+    "start": "Começar",
+    "nextMacOS": "Avançar: MacOS",
+    "nextWindows": "Avançar: Windows",
+    "nextLinux": "Avançar: Linux",
+    "nextCurrentSettings": "Avançar: Configurações atuais",
+    "nextSetLocations": "Avançar: Definir locais",
+    "nextCustomizeBehavior": "Avançar: Personalizar comportamento",
+    "nextWindowsSymlink": "Avançar: Link simbólico no Windows",
+    "nextReady": "Avançar: Pronto",
+    "backWelcome": "Voltar: Boas-vindas",
+    "backMacOS": "Voltar: MacOS",
+    "backWindows": "Voltar: Windows",
+    "backLinux": "Voltar: Linux",
+    "backCurrentSettings": "Voltar: Configurações atuais",
+    "backSetLocations": "Voltar: Definir locais",
+    "backCustomizeBehavior": "Voltar: Personalizar comportamento"
+  },
+  "welcomeStep": {
+    "title": "Obrigado por usar o Godot Launcher!",
+    "description": "O Godot Launcher facilita a <strong>gestão de várias versões do Godot Engine</strong> e mantém as <strong>configurações do editor separadas para cada projeto.</strong>",
+    "feedback": "Ao usar o aplicativo, você ajuda a manter o projeto! Se tiver sugestões ou encontrar um bug, avise a gente — queremos deixá-lo ainda melhor para você.",
+    "enjoy": "Divirta-se e bom desenvolvimento!"
+  },
+  "startStep": {
+    "title": "Tudo pronto! 🚀",
+    "subtitle": "O Godot Launcher está pronto para uso! Agora você pode gerenciar seus projetos e explorar todos os recursos.",
+    "whatsNext": "E agora?",
+    "installTab": "Instale e experimente as versões mais recentes na aba <strong>Instalações</strong>.",
+    "projectsTab": "Adicione ou crie projetos rapidamente na aba <strong>Projetos</strong>.",
+    "settingsTab": "Personalize sua experiência na aba <strong>Configurações</strong>."
+  },
+  "customizeBehavior": {
+    "afterLaunching": "Após iniciar um projeto",
+    "nothing": "Nada",
+    "minimize": "Minimizar",
+    "closeToTray": "Fechar para a bandeja do sistema",
+    "autoCheckUpdates": "Procurar atualizações automaticamente",
+    "autoStart": "Iniciar quando o computador ligar.",
+    "startInTray": "Iniciar na bandeja."
+  },
+  "currentSettings": {
+    "title": "Configurações padrão:",
+    "projectsLocation": "Local dos projetos:",
+    "installLocation": "Local das instalações do Godot:",
+    "postLaunchAction": "Ação após iniciar um projeto:",
+    "autoCheckUpdates": "Procurar atualizações automaticamente:",
+    "autoStart": "Iniciar automaticamente ao ligar o computador:",
+    "autoStartType": "Tipo de inicialização automática:",
+    "systemTray": "Bandeja do sistema",
+    "normalWindow": "Janela normal",
+    "yes": "Sim",
+    "no": "Não",
+    "skipButton": "Pular, usar padrão",
+    "postLaunchActions": {
+      "nothing": "Nada",
+      "minimize": "Minimizar",
+      "closeToTray": "Fechar para a bandeja do sistema"
+    }
+  },
+  "macosStep": {
+    "title": "Nota para macOS",
+    "intro": "O Godot Launcher cria uma cópia do editor para cada projeto.",
+    "whyTitle": "Por quê?",
+    "reason": "Criar links simbólicos no macOS não é limitado por permissões, mas abrir o editor por meio de um link tem se mostrado pouco confiável. Para garantir uma experiência suave, fornecemos uma cópia dedicada do engine para cada projeto. Embora o Godot tenha cerca de 200 MB (o que normalmente não é um problema), lembre-se de que vários projetos podem aumentar o uso de disco.",
+    "dotnetNote": "NOTA: Se você utilizar editores .NET, será necessário instalar o .NET SDK no <ButtonLink>site da Microsoft .NET</ButtonLink> <Icon />"
+  },
+  "windowsStep": {
+    "title": "Nota para Windows",
+    "intro": "A partir da versão 1.4.0, o Godot Launcher pode criar <code>links simbólicos</code> do editor para cada projeto. Para simplificar a configuração, agora usamos cópias locais por padrão. Você pode ativar os links simbólicos em <strong>Configurações → Comportamento → Links simbólicos do editor</strong> quando quiser reduzir o uso de disco.",
+    "change1": "Criar links simbólicos no Windows exige privilégios de administrador e execução elevada. O launcher agora solicita elevação apenas ao criar os links.",
+    "change2": "Você verá um prompt do UAC apenas se não for <code>Administrador</code> no PC e se o <code>Modo Desenvolvedor</code> não estiver habilitado.",
+    "change3": "Quer testar links simbólicos? Ative <strong>Links simbólicos do editor</strong> nas Configurações quando estiver preparado para os pedidos ocasionais de elevação.",
+    "dotnetNote": "NOTA: Se você utiliza editores baseados em .NET, é preciso instalar o .NET SDK no <ButtonLink>site da Microsoft .NET</ButtonLink> <Icon />"
+  },
+  "linuxStep": {
+    "title": "Nota para Linux",
+    "intro": "O Godot Launcher usa links simbólicos para cada projeto",
+    "whyTitle": "Por quê?",
+    "reason": "Diferente das versões para Windows e macOS, o Linux usa links simbólicos do editor ao abrir projetos. Isso economiza espaço em disco e permite configurações por projeto.",
+    "dotnetNote": "NOTA: Se você utilizar editores .NET, será preciso instalar o .NET SDK no <ButtonLink>site da Microsoft .NET</ButtonLink> <Icon />"
+  }
+}

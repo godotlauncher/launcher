@@ -10,15 +10,22 @@ Create a new folder in `src/locales/` with your language code:
 
 ```bash
 # Examples:
-src/locales/es/    # Spanish
-src/locales/fr/    # French
-src/locales/de/    # German
-src/locales/pt/    # Portuguese
-src/locales/ja/    # Japanese
-src/locales/zh/    # Chinese
+src/locales/es/       # Spanish
+src/locales/fr/       # French
+src/locales/de/       # German
+src/locales/pt-BR/    # Brazilian Portuguese
+src/locales/ja/       # Japanese
+src/locales/zh-CN/    # Simplified Chinese
+src/locales/zh-TW/    # Traditional Chinese
 ```
 
 Use [ISO 639-1 language codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).
+
+**Special Note for Regional Variants:**
+- Most languages use base codes only (e.g., `es`, `fr`, `de`)
+- **Chinese requires regional codes**: `zh-CN` (Simplified) and `zh-TW` (Traditional) use completely different writing systems
+- **Portuguese supports regional codes**: `pt-BR` (Brazilian) and `pt-PT` (European) have significant differences
+- Other language variants (like `en-GB`, `es-MX`) are NOT used - one translation per language is sufficient
 
 ### 2. Copy English Template Files
 
@@ -170,10 +177,14 @@ Make sure your language's special characters display correctly:
 Edit `src/ui/components/settings/LanguageSelector.tsx`:
 
 ```typescript
-const languages = [
-  { code: 'system', name: 'System' },
-  { code: 'en', name: 'English' },
-  { code: 'YOUR_CODE', name: 'YOUR_LANGUAGE_NAME' },  // ADD THIS LINE
+const LANGUAGE_OPTIONS: LanguageOption[] = [
+    { code: 'system', name: 'System (Auto-detect)' },
+    { code: 'en', name: 'English' },
+    { code: 'it', name: 'Italiano' },
+    { code: 'pt', name: 'Português' },
+    { code: 'pt-BR', name: 'Português (Brasil)' },
+    { code: 'YOUR_CODE', name: 'YOUR_LANGUAGE_NAME' },  // ADD THIS LINE
+    // Add more languages here as they become available
 ];
 ```
 
@@ -271,11 +282,50 @@ Before submitting, verify:
 ## 🌍 Current Languages
 
 - ✅ **English (en)** - Complete (33 components, 11 namespaces, 500+ keys)
+- ✅ **Italiano (it)** - Complete
+- ✅ **Português (pt)** - Complete (European Portuguese)
+- ✅ **Português (Brasil) (pt-BR)** - Complete (Brazilian Portuguese)
 - ⏳ **Your language here!**
 
 Want to add your language? Follow this guide and submit a Pull Request!
 
 ## 💡 Translation Guidelines
+
+### Regional Variants: When to Use Them
+
+**Most languages should use base codes only** (e.g., `es`, `fr`, `de`, `it`). Regional variants add significant maintenance overhead and are only worth it when there are substantial differences:
+
+#### ✅ **Use Regional Variants For:**
+
+**Chinese** - **REQUIRED**
+- `zh-CN` - 简体中文 (Simplified Chinese) - Mainland China, Singapore
+- `zh-TW` - 繁體中文 (Traditional Chinese) - Taiwan, Hong Kong, Macau
+- **Why**: Completely different writing systems. Not interchangeable.
+
+**Portuguese** - **OPTIONAL BUT RECOMMENDED**
+- `pt` - Português - European Portuguese (base)
+- `pt-BR` - Português (Brasil) - Brazilian Portuguese
+- **Why**: Significant vocabulary, grammar, and spelling differences that can confuse users.
+- **Note**: `pt` serves as the base and fallback for Portuguese speakers
+
+#### ❌ **Don't Create Variants For:**
+
+**English variants** (`en-US`, `en-GB`, `en-AU`)
+- Differences are minor (color/colour, realize/realise)
+- Users understand both variants perfectly well
+- Not worth the maintenance overhead
+
+**Spanish variants** (`es-ES`, `es-MX`, `es-AR`)
+- Minor vocabulary differences (ordenador/computadora)
+- All variants are mutually intelligible
+- One Spanish translation works for all regions
+
+**French variants** (`fr-FR`, `fr-CA`)
+- Some vocabulary differences but comprehensible
+- One French translation is sufficient
+
+**Other languages**
+- German, Italian, Japanese, Korean, etc. - Use base codes only
 
 ### Terminology Consistency
 
