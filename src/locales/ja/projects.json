@@ -49,7 +49,12 @@
     "editorChanged": "エディタが正常に変更されました",
     "invalidProject": "このプロジェクトは無効です。プロジェクトとエディタの場所を確認してください！",
     "monoProject": "これは.NETプロジェクトです",
-    "prereleaseVersion": "プレリリース版のGodotエディタを使用しています"
+    "prereleaseVersion": "プレリリース版のGodotエディタを使用しています",
+    "waitingForDialog": "プロジェクト追加のダイアログを待機中...",
+    "needReleaseInstalled": "プロジェクトを追加するには、少なくとも1つのリリースをインストールする必要があります",
+    "addProjectError": "プロジェクトの追加中に問題が発生しました",
+    "setEditorError": "プロジェクトエディタの設定中に問題が発生しました",
+    "projectNotValid": "プロジェクトが無効です。プロジェクトとリリースがコンピュータ上で有効であることを確認してください。"
   },
   "changeEditor": {
     "errors": {
@@ -74,5 +79,11 @@
       "invalidPath": "無効なプロジェクトパス"
     }
   },
-  "searchPlaceholder": "プロジェクトを検索..."
+  "searchPlaceholder": "プロジェクトを検索...",
+  "editorSettings": {
+    "title": "エディタ設定",
+    "alreadyExists": "{{version}} [.NET]のエディタ設定は既に存在しており、設定を保護するために変更は行われませんでした。",
+    "switchingToDotNet": "GDScriptから.NETバージョンに切り替える場合は、<strong>エディタ設定 -> Dotnent</strong>から外部エディタを手動で設定できます（高度なスイッチ：true）。",
+    "readMore": "詳細を読む"
+  }
 }

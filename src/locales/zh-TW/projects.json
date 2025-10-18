@@ -49,7 +49,12 @@
     "editorChanged": "編輯器更改成功",
     "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
     "monoProject": "這是一個 .NET 專案",
-    "prereleaseVersion": "使用預先釋出的 Godot 編輯器版本"
+    "prereleaseVersion": "使用預先釋出的 Godot 編輯器版本",
+    "waitingForDialog": "等待對話方塊以新增專案...",
+    "needReleaseInstalled": "您需要至少安裝一個發行版本才能新增專案",
+    "addProjectError": "新增專案時發生錯誤",
+    "setEditorError": "設定專案編輯器時發生錯誤",
+    "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。"
   },
   "changeEditor": {
     "errors": {
@@ -74,5 +79,11 @@
       "invalidPath": "無效的專案路徑"
     }
   },
-  "searchPlaceholder": "搜尋專案…"
+  "searchPlaceholder": "搜尋專案…",
+  "editorSettings": {
+    "title": "編輯器設定",
+    "alreadyExists": "{{version}} [.NET] 的編輯器設定已存在，為保護您的配置未進行任何變更。",
+    "switchingToDotNet": "如果您從 GDScript 切換到 .NET 版本，可以從<strong>編輯器設定 -> Dotnent</strong>手動配置外部編輯器（進階開關：true）。",
+    "readMore": "閱讀更多"
+  }
 }

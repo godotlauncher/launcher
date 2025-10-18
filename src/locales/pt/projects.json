@@ -49,7 +49,12 @@
     "editorChanged": "Editor alterado com sucesso",
     "invalidProject": "Este projeto é inválido; verifique as localizações do projeto e do editor!",
     "monoProject": "Este é um projeto .NET",
-    "prereleaseVersion": "A utilizar uma versão de pré-lançamento do editor Godot"
+    "prereleaseVersion": "A utilizar uma versão de pré-lançamento do editor Godot",
+    "waitingForDialog": "À espera da caixa de diálogo para adicionar projeto...",
+    "needReleaseInstalled": "Precisa de pelo menos uma versão instalada para adicionar um projeto",
+    "addProjectError": "Algo correu mal ao adicionar o projeto",
+    "setEditorError": "Algo correu mal ao definir o editor do projeto",
+    "projectNotValid": "O projeto não é válido; certifique-se de que o projeto e a versão são válidos no seu computador."
   },
   "changeEditor": {
     "errors": {
@@ -74,5 +79,11 @@
       "invalidPath": "Caminho do projeto inválido"
     }
   },
-  "searchPlaceholder": "Pesquisar projetos..."
+  "searchPlaceholder": "Pesquisar projetos...",
+  "editorSettings": {
+    "title": "Definições do Editor",
+    "alreadyExists": "As definições do editor para {{version}} [.NET] já existem e não foram feitas alterações para proteger a sua configuração.",
+    "switchingToDotNet": "Se está a mudar para uma versão .NET do GDScript, pode configurar manualmente o Editor Externo em <strong>Definições do Editor -> Dotnent</strong> (interruptor avançado: true).",
+    "readMore": "Ler mais"
+  }
 }

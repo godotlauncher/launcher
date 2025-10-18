@@ -49,7 +49,12 @@
     "editorChanged": "Editör başarıyla değiştirildi",
     "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
     "monoProject": "Bu bir .NET Projesidir",
-    "prereleaseVersion": "Ön sürüm Godot editör sürümü kullanılıyor"
+    "prereleaseVersion": "Ön sürüm Godot editör sürümü kullanılıyor",
+    "waitingForDialog": "Proje eklemek için iletişim kutusu bekleniyor...",
+    "needReleaseInstalled": "Proje eklemek için en az bir sürüm yüklü olmalıdır",
+    "addProjectError": "Proje eklenirken bir şeyler ters gitti",
+    "setEditorError": "Proje editörü ayarlanırken bir şeyler ters gitti",
+    "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun."
   },
   "changeEditor": {
     "errors": {
@@ -74,5 +79,11 @@
       "invalidPath": "Geçersiz proje yolu"
     }
   },
-  "searchPlaceholder": "Projelerde ara..."
+  "searchPlaceholder": "Projelerde ara...",
+  "editorSettings": {
+    "title": "Editör Ayarları",
+    "alreadyExists": "{{version}} [.NET] için editör ayarları zaten mevcut ve kurulumunuzu korumak için hiçbir değişiklik yapılmadı.",
+    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editör Ayarları -> Dotnent</strong> bölümünden Harici Editörü manuel olarak yapılandırabilirsiniz (gelişmiş anahtar: true).",
+    "readMore": "Daha Fazla Bilgi"
+  }
 }

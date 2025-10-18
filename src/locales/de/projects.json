@@ -49,7 +49,12 @@
     "editorChanged": "Editor erfolgreich gewechselt",
     "invalidProject": "Dieses Projekt ist ungültig, überprüfen Sie die Projekt- und Editorpfade!",
     "monoProject": "Dies ist ein .NET-Projekt",
-    "prereleaseVersion": "Verwende eine Vorabversion des Godot-Editors"
+    "prereleaseVersion": "Verwende eine Vorabversion des Godot-Editors",
+    "waitingForDialog": "Warten auf Dialog zum Hinzufügen des Projekts...",
+    "needReleaseInstalled": "Sie benötigen mindestens eine installierte Version, um ein Projekt hinzuzufügen",
+    "addProjectError": "Beim Hinzufügen des Projekts ist ein Fehler aufgetreten",
+    "setEditorError": "Beim Festlegen des Projekt-Editors ist ein Fehler aufgetreten",
+    "projectNotValid": "Projekt ist nicht gültig. Stellen Sie sicher, dass das Projekt und die Version auf Ihrem Computer gültig sind."
   },
   "changeEditor": {
     "errors": {
@@ -74,5 +79,11 @@
       "invalidPath": "Ungültiger Projektpfad"
     }
   },
-  "searchPlaceholder": "Projekte suchen..."
+  "searchPlaceholder": "Projekte suchen...",
+  "editorSettings": {
+    "title": "Editor-Einstellungen",
+    "alreadyExists": "Editor-Einstellungen für {{version}} [.NET] sind bereits vorhanden und es wurden keine Änderungen vorgenommen, um Ihre Konfiguration zu schützen.",
+    "switchingToDotNet": "Wenn Sie von GDScript zu einer .NET-Version wechseln, können Sie den externen Editor manuell unter <strong>Editor-Einstellungen -> Dotnent</strong> konfigurieren (erweiterter Schalter: true).",
+    "readMore": "Mehr erfahren"
+  }
 }

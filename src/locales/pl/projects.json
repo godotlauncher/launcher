@@ -49,7 +49,12 @@
     "editorChanged": "Edytor został pomyślnie zmieniony",
     "invalidProject": "Ten projekt jest nieprawidłowy, sprawdź lokalizacje projektu i edytora!",
     "monoProject": "To jest projekt .NET",
-    "prereleaseVersion": "Używa wersji testowej edytora Godot"
+    "prereleaseVersion": "Używa wersji testowej edytora Godot",
+    "waitingForDialog": "Oczekiwanie na okno dialogowe dodawania projektu...",
+    "needReleaseInstalled": "Musisz mieć zainstalowane co najmniej jedno wydanie, aby dodać projekt",
+    "addProjectError": "Coś poszło nie tak podczas dodawania projektu",
+    "setEditorError": "Coś poszło nie tak podczas ustawiania edytora projektu",
+    "projectNotValid": "Projekt jest nieprawidłowy, upewnij się, że projekt i wydanie są prawidłowe na twoim komputerze."
   },
   "changeEditor": {
     "errors": {
@@ -74,5 +79,11 @@
       "invalidPath": "Nieprawidłowa ścieżka projektu"
     }
   },
-  "searchPlaceholder": "Szukaj projektów..."
+  "searchPlaceholder": "Szukaj projektów...",
+  "editorSettings": {
+    "title": "Ustawienia Edytora",
+    "alreadyExists": "Ustawienia edytora dla {{version}} [.NET] już istnieją i nie wprowadzono żadnych zmian, aby chronić twoją konfigurację.",
+    "switchingToDotNet": "Jeśli przełączasz się na wersję .NET z GDScript, możesz ręcznie skonfigurować Zewnętrzny Edytor w <strong>Ustawienia Edytora -> Dotnent</strong> (przełącznik zaawansowany: true).",
+    "readMore": "Czytaj więcej"
+  }
 }

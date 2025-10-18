@@ -69,7 +69,7 @@ export const ProjectsView: React.FC = () => {
             const projectPath = result.filePaths[0];
 
             if (installedReleases.length === 0) {
-                addAlert('Error', 'You need at least a release installed to add a project', <TriangleAlert className="stroke-error" />);
+                addAlert(t('common:error'), t('messages.needReleaseInstalled'), <TriangleAlert className="stroke-error" />);
                 return;
             }
 
@@ -77,7 +77,7 @@ export const ProjectsView: React.FC = () => {
             logger.info(addResult);
             if (!addResult.success) {
                 logger.error(addResult.error);
-                addAlert('Error', addResult.error || 'Something went wrong when adding project', <TriangleAlert className="stroke-error" />);
+                addAlert(t('common:error'), addResult.error || t('messages.addProjectError'), <TriangleAlert className="stroke-error" />);
                 return;
             }
             else {
@@ -85,15 +85,14 @@ export const ProjectsView: React.FC = () => {
                     const { settingsCreated, shouldReportOnSettings } = addResult.additionalInfo as EditorSettingsInfo;
                     if (!settingsCreated && shouldReportOnSettings && addResult.newProject?.release.mono) {
 
-                        addAlert('Editor Settings', (
+                        addAlert(t('editorSettings.title'), (
                             <div className='flex flex-col gap-2'>
-                                <p>Editor settings for {addResult.newProject?.release.version} [.NET] already exists and no changes where made to protect your setup.</p>
-                                <p>If you are switching to a .NET version from GDScript, you can manually configure
-                                    External Editor from <strong>Editor Settings -&gt; Dotnent</strong> (advanced switch: true).</p>
+                                <p>{t('editorSettings.alreadyExists', { version: addResult.newProject?.release.version })}</p>
+                                <p dangerouslySetInnerHTML={{ __html: t('editorSettings.switchingToDotNet') }} />
                                 <button
                                     onClick={() => openExternalLink(`https://docs.godotengine.org/en/${addResult.newProject?.release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
                                     className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
-                                    Read More<ExternalLink className="h-4 w-4 m-0 p-0 " />
+                                    {t('editorSettings.readMore')}<ExternalLink className="h-4 w-4 m-0 p-0 " />
                                 </button>
                             </div>
                         ), <TriangleAlert className="stroke-warning" />);
@@ -110,7 +109,7 @@ export const ProjectsView: React.FC = () => {
         try {
             const result = await setProjectEditor(project, release);
             if (!result.success) {
-                addAlert('Error', result.error || 'Something went wrong when setting project editor');
+                addAlert(t('common:error'), result.error || t('messages.setEditorError'));
                 return;
             }
             else {
@@ -118,15 +117,14 @@ export const ProjectsView: React.FC = () => {
                     const { settingsCreated, shouldReportOnSettings } = result.additionalInfo as EditorSettingsInfo;
                     if (!settingsCreated && shouldReportOnSettings && release.mono) {
 
-                        addAlert('Editor Settings', (
+                        addAlert(t('editorSettings.title'), (
                             <div className='flex flex-col gap-2'>
-                                <p>Editor settings for {release.version} [.NET] already exists and no changes where made to protect your setup.</p>
-                                <p>If you are switching to a .NET version from GDScript, you can manually configure
-                                    External Editor from <strong>Editor Settings -&gt; Dotnent</strong> (advanced switch: true).</p>
+                                <p>{t('editorSettings.alreadyExists', { version: release.version })}</p>
+                                <p dangerouslySetInnerHTML={{ __html: t('editorSettings.switchingToDotNet') }} />
                                 <button
                                     onClick={() => openExternalLink(`https://docs.godotengine.org/en/${release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
                                     className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
-                                    Read More<ExternalLink className="h-4 w-4 m-0 p-0 " />
+                                    {t('editorSettings.readMore')}<ExternalLink className="h-4 w-4 m-0 p-0 " />
                                 </button>
                             </div>
                         ), <TriangleAlert className="stroke-warning" />);
@@ -144,7 +142,7 @@ export const ProjectsView: React.FC = () => {
             const result = await launchProject(project);
             if (!result) {
                 await checkAllReleasesValid();
-                addAlert('Error', 'Project is not valid, please make sure the project and release are valid on your computer.');
+                addAlert(t('common:error'), t('messages.projectNotValid'));
             }
         }
 
@@ -193,7 +191,7 @@ export const ProjectsView: React.FC = () => {
             {
                 addingProject &&
                 <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p><p>Waiting for dialog to add project...</p>
+                    <p className="loading loading-infinity"></p><p>{t('messages.waitingForDialog')}</p>
                 </div>
             }
 
@@ -233,7 +231,7 @@ export const ProjectsView: React.FC = () => {
                         }
                     </div>
                 </div>
-                
+
                 {(!releaseLoading && installedReleases.length < 1) && (
                     <div className="text-warning flex gap-2">
                         <TriangleAlert className="stroke-warning" />
@@ -350,7 +348,7 @@ export const ProjectsView: React.FC = () => {
                                             <td className="p-0 pr-2">
                                                 <button
                                                     onClick={(e) => onProjectMoreOptions(e, row)}
-                                                    className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"                        >
+                                                    className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg">
                                                     <EllipsisVertical />
                                                 </button >
                                             </td>
