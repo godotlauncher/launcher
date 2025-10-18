@@ -172,7 +172,43 @@ Make sure your language's special characters display correctly:
 
 ## 🧪 Testing Your Translation
 
-### 1. Add Language to Selector
+### 1. Register Language in Backend i18n
+
+Edit `src/electron/i18n/index.ts` and add your language code to `AVAILABLE_LANGUAGES` and `FALLBACK_LANGUAGES`:
+
+```typescript
+const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR', 'zh-CN', 'zh-TW', 'de', 'fr', 'YOUR_CODE'] as const;
+
+const FALLBACK_LANGUAGES = {
+    'pt-BR': ['pt', DEFAULT_LANGUAGE],
+    pt: [DEFAULT_LANGUAGE],
+    'zh-CN': ['zh-CN', DEFAULT_LANGUAGE],
+    'zh-TW': ['zh-TW', DEFAULT_LANGUAGE],
+    de: [DEFAULT_LANGUAGE],
+    fr: [DEFAULT_LANGUAGE],
+    YOUR_CODE: [DEFAULT_LANGUAGE],  // ADD THIS LINE
+    default: [DEFAULT_LANGUAGE],
+} as const;
+```
+
+### 2. Register Language in Frontend i18n
+
+Edit `src/ui/i18n/index.ts` and add your language code to the `fallbackLng` object:
+
+```typescript
+const fallbackLng = {
+    'de': ['en'],
+    'fr': ['en'],
+    'pt-BR': ['pt', 'en'],
+    pt: ['en'],
+    'zh-CN': ['zh-CN', 'en'],
+    'zh-TW': ['zh-TW', 'en'],
+    YOUR_CODE: ['en'],  // ADD THIS LINE
+    default: ['en'],
+} as const;
+```
+
+### 3. Add Language to Selector
 
 Edit `src/ui/components/settings/LanguageSelector.tsx`:
 
@@ -188,7 +224,7 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
 ];
 ```
 
-### 2. Build and Test
+### 4. Build and Test
 
 ```bash
 # Transpile backend
@@ -198,14 +234,14 @@ npm run transpile:electron
 npm run dev
 ```
 
-### 3. Switch Language
+### 5. Switch Language
 
 1. Open the app
 2. Go to Settings → Appearance
 3. Select your language from the dropdown
 4. Verify all strings display correctly
 
-### 4. Check All Areas
+### 6. Check All Areas
 
 Test these areas thoroughly:
 - [ ] **Application loading screen** - "Getting things ready..."
