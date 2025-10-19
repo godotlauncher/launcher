@@ -83,7 +83,7 @@
   "editorSettings": {
     "title": "Editör Ayarları",
     "alreadyExists": "{{version}} [.NET] için editör ayarları zaten mevcut ve kurulumunuzu korumak için hiçbir değişiklik yapılmadı.",
-    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editör Ayarları -> Dotnent</strong> bölümünden Harici Editörü manuel olarak yapılandırabilirsiniz (gelişmiş anahtar: true).",
+    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editör Ayarları -> DotNet</strong> bölümünden Harici Editörü manuel olarak yapılandırabilirsiniz (gelişmiş anahtar: true).",
     "readMore": "Daha Fazla Bilgi"
   }
 }
