@@ -83,7 +83,7 @@
     "editorSettings": {
         "title": "编辑器设置",
         "alreadyExists": "{{version}} [.NET] 的编辑器设置已存在，为保护您的配置未进行任何更改。",
-        "switchingToDotNet": "如果您从 GDScript 切换到 .NET 版本，可以从<strong>编辑器设置 -> Dotnent</strong>手动配置外部编辑器（高级开关：true）。",
+        "switchingToDotNet": "如果您从 GDScript 切换到 .NET 版本，可以从<strong>编辑器设置 -> DotNet</strong>手动配置外部编辑器（高级开关：true）。",
         "readMore": "阅读更多"
     }
 }

@@ -83,7 +83,7 @@
   "editorSettings": {
     "title": "Settings tal-Editur",
     "alreadyExists": "Settings tal-editur għal {{version}} [.NET] diġà jeżistu u ebda tibdil ma sar biex nipproteġu s-setup tiegħek.",
-    "switchingToDotNet": "Jekk qed tibdel għal verżjoni .NET minn GDScript, tista' manwalment tikkonfigura External Editor minn <strong>Editor Settings -> Dotnent</strong> (advanced switch: true).",
+    "switchingToDotNet": "Jekk qed tibdel għal verżjoni .NET minn GDScript, tista' manwalment tikkonfigura External Editor minn <strong>Editor Settings -> DotNet</strong> (advanced switch: true).",
     "readMore": "Aqra Iktar"
   }
 }

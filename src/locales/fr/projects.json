@@ -83,7 +83,7 @@
   "editorSettings": {
     "title": "Paramètres de l'éditeur",
     "alreadyExists": "Les paramètres de l'éditeur pour {{version}} [.NET] existent déjà et aucune modification n'a été apportée pour protéger votre configuration.",
-    "switchingToDotNet": "Si vous passez à une version .NET depuis GDScript, vous pouvez configurer manuellement l'éditeur externe depuis <strong>Paramètres de l'éditeur -> Dotnent</strong> (commutateur avancé : true).",
+    "switchingToDotNet": "Si vous passez à une version .NET depuis GDScript, vous pouvez configurer manuellement l'éditeur externe depuis <strong>Paramètres de l'éditeur -> DotNet</strong> (commutateur avancé : true).",
     "readMore": "En savoir plus"
   }
 }

@@ -83,7 +83,7 @@
   "editorSettings": {
     "title": "Configurações do Editor",
     "alreadyExists": "As configurações do editor para {{version}} [.NET] já existem e nenhuma alteração foi feita para proteger sua configuração.",
-    "switchingToDotNet": "Se você está mudando para uma versão .NET do GDScript, pode configurar manualmente o Editor Externo em <strong>Configurações do Editor -> Dotnent</strong> (interruptor avançado: true).",
+    "switchingToDotNet": "Se você está mudando para uma versão .NET do GDScript, pode configurar manualmente o Editor Externo em <strong>Configurações do Editor -> DotNet</strong> (interruptor avançado: true).",
     "readMore": "Ler mais"
   }
 }
