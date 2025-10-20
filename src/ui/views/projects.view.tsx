@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 
-import { ChevronDown, ChevronsUpDown, ChevronUp, CircleX, Copy, EllipsisVertical, ExternalLink, TriangleAlert } from 'lucide-react';
+import { ChevronDown, ChevronsUpDown, ChevronUp, CircleX, Copy, EllipsisVertical, TriangleAlert } from 'lucide-react';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -51,7 +51,7 @@ export const ProjectsView: React.FC = () => {
     const { preferences } = usePreferences();
     const { installedReleases, isInstalledRelease, loading: releaseLoading, checkAllReleasesValid } = useRelease();
     const { projects, setProjectEditor, addProject, launchProject, loading, showProjectMenu } = useProjects();
-    const { setCurrentView, openExternalLink } = useAppNavigation();
+    const { setCurrentView } = useAppNavigation();
 
 
     const onProjectMoreOptions = (e: React.MouseEvent, project: ProjectDetails) => {
@@ -80,25 +80,6 @@ export const ProjectsView: React.FC = () => {
                 addAlert(t('common:error'), addResult.error || t('messages.addProjectError'), <TriangleAlert className="stroke-error" />);
                 return;
             }
-            else {
-                if (addResult.additionalInfo && addResult.additionalInfo as EditorSettingsInfo) {
-                    const { settingsCreated, shouldReportOnSettings } = addResult.additionalInfo as EditorSettingsInfo;
-                    if (!settingsCreated && shouldReportOnSettings && addResult.newProject?.release.mono) {
-
-                        addAlert(t('editorSettings.title'), (
-                            <div className='flex flex-col gap-2'>
-                                <p>{t('editorSettings.alreadyExists', { version: addResult.newProject?.release.version })}</p>
-                                <p dangerouslySetInnerHTML={{ __html: t('editorSettings.switchingToDotNet') }} />
-                                <button
-                                    onClick={() => openExternalLink(`https://docs.godotengine.org/en/${addResult.newProject?.release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
-                                    className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
-                                    {t('editorSettings.readMore')}<ExternalLink className="h-4 w-4 m-0 p-0 " />
-                                </button>
-                            </div>
-                        ), <TriangleAlert className="stroke-warning" />);
-                    }
-                }
-            }
         }
     };
 
@@ -111,25 +92,6 @@ export const ProjectsView: React.FC = () => {
             if (!result.success) {
                 addAlert(t('common:error'), result.error || t('messages.setEditorError'));
                 return;
-            }
-            else {
-                if (result.additionalInfo && result.additionalInfo as EditorSettingsInfo) {
-                    const { settingsCreated, shouldReportOnSettings } = result.additionalInfo as EditorSettingsInfo;
-                    if (!settingsCreated && shouldReportOnSettings && release.mono) {
-
-                        addAlert(t('editorSettings.title'), (
-                            <div className='flex flex-col gap-2'>
-                                <p>{t('editorSettings.alreadyExists', { version: release.version })}</p>
-                                <p dangerouslySetInnerHTML={{ __html: t('editorSettings.switchingToDotNet') }} />
-                                <button
-                                    onClick={() => openExternalLink(`https://docs.godotengine.org/en/${release.version_number.toString()}/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor`)}
-                                    className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1">
-                                    {t('editorSettings.readMore')}<ExternalLink className="h-4 w-4 m-0 p-0 " />
-                                </button>
-                            </div>
-                        ), <TriangleAlert className="stroke-warning" />);
-                    }
-                }
             }
         } finally {
             setBusyProjects((prevValues) => prevValues.filter(p => p !== project.path));

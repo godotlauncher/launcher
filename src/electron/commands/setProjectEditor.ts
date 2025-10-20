@@ -7,10 +7,14 @@ import { getUserPreferences } from './userPreferences.js';
 import { getStoredProjectsList, storeProjectsList } from '../utils/projects.utils.js';
 import { DEFAULT_PROJECT_DEFINITION, getProjectDefinition, SetProjectEditorRelease } from '../utils/godot.utils.js';
 import { EDITOR_CONFIG_DIRNAME, PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';
-import { createNewEditorSettings } from '../utils/godotProject.utils.js';
+import { createNewEditorSettings, updateEditorSettings } from '../utils/godotProject.utils.js';
 import { getAssetPath } from '../pathResolver.js';
 import { getInstalledTools } from './installedTools.js';
-import { addOrUpdateVSCodeRecommendedExtensions, addVSCodeNETLaunchConfig } from '../utils/vscode.utils.js';
+import {
+    updateVSCodeSettings,
+    addVSCodeNETLaunchConfig,
+    addOrUpdateVSCodeRecommendedExtensions,
+} from '../utils/vscode.utils.js';
 import { t } from '../i18n/index.js';
 
 
@@ -67,38 +71,57 @@ export async function setProjectEditor(project: ProjectDetails, newRelease: Inst
     const tools = await getInstalledTools();
     const vsCodeTool = tools.find(t => t.name === 'VSCode');
 
-    let shouldReportOnSettings = false;
-    let settingsCreated = false;
     if (project.withVSCode && vsCodeTool) {
+        const templatesDir = path.resolve(getAssetPath(), TEMPLATE_DIR_NAME);
+        const newEditorSettingsExists = fs.existsSync(newEditorSettingsFile);
 
-        // update vscode launch.json file with new launch path
-        await addVSCodeNETLaunchConfig(project.path, newLaunchPath);
-        await addOrUpdateVSCodeRecommendedExtensions(project.path, newRelease.mono);
+        let vscodeSettingsPath = vsCodeTool.path;
 
-        const needsNewEditorSettings: boolean = fs.existsSync(newEditorSettingsFile) ? false : true;
+        if (process.platform === 'darwin') {
+            vscodeSettingsPath = path.resolve(
+                vscodeSettingsPath,
+                'Contents',
+                'MacOS',
+                'Electron'
+            );
+        }
 
-        shouldReportOnSettings = true;
-
-        if (needsNewEditorSettings) {
-            const templatesDir = path.resolve(getAssetPath(), TEMPLATE_DIR_NAME);
-
-            // create the new editor settings file
+        if (newEditorSettingsExists) {
+            // Update existing editor settings for new editor version
+            await updateEditorSettings(newEditorSettingsFile, {
+                execPath: vscodeSettingsPath,
+                execFlags: '{project} --goto {file}:{line}:{col}',
+                useExternalEditor: true,
+                isMono: newRelease.mono,
+            });
+        } else {
+            // Create new editor settings from template for new editor version
             await createNewEditorSettings(
                 templatesDir,
                 newLaunchPath,
                 config.editorConfigFilename(newRelease.version_number),
                 config.editorConfigFormat,
                 true,
-                vsCodeTool.path,
+                vscodeSettingsPath,
                 '{project} --goto {file}:{line}:{col}',
                 newRelease.mono,
             );
-
-            settingsCreated = true;
         }
-        else {
-            logger.warn('Editor settings file already exists, no changes made to editor settings');
-            settingsCreated = false;
+
+        // Always update VSCode settings for new editor version
+        await updateVSCodeSettings(
+            project.path,
+            newLaunchPath,
+            newRelease.version_number,
+            newRelease.mono
+        );
+
+        // Always update VSCode recommended extensions
+        await addOrUpdateVSCodeRecommendedExtensions(project.path, newRelease.mono);
+
+        // Always setup/update .NET launch config if using mono
+        if (newRelease.mono) {
+            await addVSCodeNETLaunchConfig(project.path, newLaunchPath);
         }
     }
 
@@ -119,9 +142,5 @@ export async function setProjectEditor(project: ProjectDetails, newRelease: Inst
     return {
         success: true,
         projects: updatedProjects,
-        additionalInfo: {
-            settingsCreated,
-            shouldReportOnSettings,
-        }
     };
 }

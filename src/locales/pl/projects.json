@@ -79,11 +79,5 @@
       "invalidPath": "Nieprawidłowa ścieżka projektu"
     }
   },
-  "searchPlaceholder": "Szukaj projektów...",
-  "editorSettings": {
-    "title": "Ustawienia Edytora",
-    "alreadyExists": "Ustawienia edytora dla {{version}} [.NET] już istnieją i nie wprowadzono żadnych zmian, aby chronić twoją konfigurację.",
-    "switchingToDotNet": "Jeśli przełączasz się na wersję .NET z GDScript, możesz ręcznie skonfigurować Zewnętrzny Edytor w <strong>Ustawienia Edytora -> DotNet</strong> (przełącznik zaawansowany: true).",
-    "readMore": "Czytaj więcej"
-  }
+  "searchPlaceholder": "Szukaj projektów..."
 }
