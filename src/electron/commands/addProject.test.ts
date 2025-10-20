@@ -24,9 +24,18 @@ const godotProjectMocks = vi.hoisted(() => ({
     getProjectRendererFromParsed: vi.fn(),
     getProjectConfigVersionFromParsed: vi.fn(),
     createNewEditorSettings: vi.fn(),
+    updateEditorSettings: vi.fn(),
 }));
 
 vi.mock('../utils/godotProject.utils.js', () => godotProjectMocks);
+
+const vscodeUtilsMocks = vi.hoisted(() => ({
+    updateVSCodeSettings: vi.fn(),
+    addVSCodeNETLaunchConfig: vi.fn(),
+    addOrUpdateVSCodeRecommendedExtensions: vi.fn(),
+}));
+
+vi.mock('../utils/vscode.utils.js', () => vscodeUtilsMocks);
 
 const platformMocks = vi.hoisted(() => ({
     getDefaultDirs: vi.fn(),
@@ -132,7 +141,14 @@ const {
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     getProjectConfigVersionFromParsed,
+    createNewEditorSettings,
+    updateEditorSettings,
 } = godotProjectMocks;
+const {
+    updateVSCodeSettings,
+    addVSCodeNETLaunchConfig,
+    addOrUpdateVSCodeRecommendedExtensions,
+} = vscodeUtilsMocks;
 const { getDefaultDirs } = platformMocks;
 const { addProjectToList } = projectUtilsMocks;
 const { getInstalledReleases } = releasesMocks;
@@ -203,6 +219,13 @@ describe('addProject', () => {
             editorConfigFormat: 3,
         });
         setProjectEditorRelease.mockResolvedValue('/fake/launch');
+        
+        // Mock VSCode utilities
+        updateVSCodeSettings.mockResolvedValue(undefined);
+        addVSCodeNETLaunchConfig.mockResolvedValue(undefined);
+        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
+        createNewEditorSettings.mockResolvedValue('/fake/editor/settings');
+        updateEditorSettings.mockResolvedValue(undefined);
     });
 
     it('falls back to an installed mono editor when no flavor-specific match is found', async () => {
@@ -215,5 +238,186 @@ describe('addProject', () => {
             expect.any(String),
             expect.objectContaining({ mono: true, version: '4.3-stable' })
         );
+    });
+
+    it('should not return additionalInfo in the result', async () => {
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result).not.toHaveProperty('additionalInfo');
+    });
+
+    it('should create new editor settings when VSCode is detected and settings do not exist', async () => {
+        // Setup VSCode tool
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+
+        // Mock .vscode folder exists but no editor settings
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return true;
+                if (target.includes('editor_settings')) return false;
+                return false;
+            }
+            return false;
+        });
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(createNewEditorSettings).toHaveBeenCalledTimes(1);
+        expect(updateEditorSettings).not.toHaveBeenCalled();
+        expect(updateVSCodeSettings).toHaveBeenCalledTimes(1);
+        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledTimes(1);
+    });
+
+    it('should update existing editor settings when VSCode is detected and settings exist', async () => {
+        // Setup VSCode tool
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+
+        // Mock .vscode folder and editor settings exist
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return true;
+                if (target.includes('editor_settings')) return true;
+                return false;
+            }
+            return false;
+        });
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(updateEditorSettings).toHaveBeenCalledTimes(1);
+        expect(updateEditorSettings).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                execPath: expect.any(String),
+                execFlags: '{project} --goto {file}:{line}:{col}',
+                useExternalEditor: true,
+                isMono: true,
+            })
+        );
+        expect(createNewEditorSettings).not.toHaveBeenCalled();
+        expect(updateVSCodeSettings).toHaveBeenCalledTimes(1);
+        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledTimes(1);
+    });
+
+    it('should always call updateVSCodeSettings when VSCode is detected', async () => {
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return true;
+                return false;
+            }
+            return false;
+        });
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(updateVSCodeSettings).toHaveBeenCalledWith(
+            expect.stringContaining('/fake/project'),
+            '/fake/launch',
+            4.3,
+            true
+        );
+    });
+
+    it('should call addVSCodeNETLaunchConfig when using mono release', async () => {
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return true;
+                return false;
+            }
+            return false;
+        });
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(addVSCodeNETLaunchConfig).toHaveBeenCalledWith(
+            expect.stringContaining('/fake/project'),
+            '/fake/launch'
+        );
+    });
+
+    it('should not call VSCode setup functions when VSCode is not detected', async () => {
+        getInstalledTools.mockResolvedValue([]);
+
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                return false;
+            }
+            return false;
+        });
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(createNewEditorSettings).not.toHaveBeenCalled();
+        expect(updateEditorSettings).not.toHaveBeenCalled();
+        expect(updateVSCodeSettings).not.toHaveBeenCalled();
+        expect(addVSCodeNETLaunchConfig).not.toHaveBeenCalled();
+        expect(addOrUpdateVSCodeRecommendedExtensions).not.toHaveBeenCalled();
+    });
+
+    it('should not call VSCode setup functions when .vscode folder does not exist', async () => {
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return false;
+                return false;
+            }
+            return false;
+        });
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(createNewEditorSettings).not.toHaveBeenCalled();
+        expect(updateEditorSettings).not.toHaveBeenCalled();
+        expect(updateVSCodeSettings).not.toHaveBeenCalled();
+        expect(addVSCodeNETLaunchConfig).not.toHaveBeenCalled();
+        expect(addOrUpdateVSCodeRecommendedExtensions).not.toHaveBeenCalled();
     });
 });
