@@ -19,6 +19,7 @@ import {
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     parseGodotProjectFile,
+    updateEditorSettings,
 } from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
@@ -28,6 +29,11 @@ import { sortReleases } from '../utils/releaseSorting.utils.js';
 import { getProjectsDetails } from './projects.js';
 import { getInstalledTools } from './installedTools.js';
 import { t } from '../i18n/index.js';
+import {
+    updateVSCodeSettings,
+    addVSCodeNETLaunchConfig,
+    addOrUpdateVSCodeRecommendedExtensions,
+} from '../utils/vscode.utils.js';
 
 export async function addProject(
     projectPath: string
@@ -202,11 +208,8 @@ export async function addProject(
     const tools = await getInstalledTools();
     const vsCodeTool = tools.find((t) => t.name === 'VSCode');
 
-    let shouldReportOnSettings = false;
-    let settingsCreated = false;
-
     if (release && withVSCode && vsCodeTool) {
-    // transfer the external text editor settings to new release version
+        // setup external text editor settings for VSCode integration
         editorSettingsFile = path.resolve(
             projectEditorPath,
             'editor_data',
@@ -224,29 +227,45 @@ export async function addProject(
             );
         }
 
-        shouldReportOnSettings = true;
+        const templatesDir = path.resolve(getAssetPath(), TEMPLATE_DIR_NAME);
+        const editorSettingsExists = fs.existsSync(editorSettingsFile);
 
-        if (!fs.existsSync(editorSettingsFile)) {
-            const templatesDir = path.resolve(getAssetPath(), TEMPLATE_DIR_NAME);
-
-            // create the new editor settings file
+        if (editorSettingsExists) {
+            // Update existing editor settings
+            await updateEditorSettings(editorSettingsFile, {
+                execPath: vscodeSettingsPath,
+                execFlags: '{project} --goto {file}:{line}:{col}',
+                useExternalEditor: true,
+                isMono: release.mono,
+            });
+        } else {
+            // Create new editor settings from template
             await createNewEditorSettings(
                 templatesDir,
                 launch_path,
                 editorConfigFileName,
                 config.editorConfigFormat,
                 true,
-                vscodeSettingsPath.replace(new RegExp(`\\${path.sep}`, 'g'), '\\\\'),
+                vscodeSettingsPath,
                 '{project} --goto {file}:{line}:{col}',
                 release.mono
             );
+        }
 
-            settingsCreated = true;
-        } else {
-            logger.warn(
-                'Editor settings file already exists, no changes made to editor settings'
-            );
-            settingsCreated = false;
+        // Always update VSCode settings
+        await updateVSCodeSettings(
+            dirname,
+            launch_path,
+            release.version_number,
+            release.mono
+        );
+
+        // Always update VSCode recommended extensions
+        await addOrUpdateVSCodeRecommendedExtensions(dirname, release.mono);
+
+        // Always setup .NET launch config if using mono
+        if (release.mono) {
+            await addVSCodeNETLaunchConfig(dirname, launch_path);
         }
     }
 
@@ -289,9 +308,5 @@ export async function addProject(
         success: true,
         projects: allProjects,
         newProject: project,
-        additionalInfo: {
-            settingsCreated,
-            shouldReportOnSettings,
-        },
     };
 }

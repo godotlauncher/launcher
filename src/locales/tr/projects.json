@@ -79,11 +79,5 @@
       "invalidPath": "Geçersiz proje yolu"
     }
   },
-  "searchPlaceholder": "Projelerde ara...",
-  "editorSettings": {
-    "title": "Editör Ayarları",
-    "alreadyExists": "{{version}} [.NET] için editör ayarları zaten mevcut ve kurulumunuzu korumak için hiçbir değişiklik yapılmadı.",
-    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editör Ayarları -> DotNet</strong> bölümünden Harici Editörü manuel olarak yapılandırabilirsiniz (gelişmiş anahtar: true).",
-    "readMore": "Daha Fazla Bilgi"
-  }
+  "searchPlaceholder": "Projelerde ara..."
 }

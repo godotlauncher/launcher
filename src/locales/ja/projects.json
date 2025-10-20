@@ -79,11 +79,5 @@
       "invalidPath": "無効なプロジェクトパス"
     }
   },
-  "searchPlaceholder": "プロジェクトを検索...",
-  "editorSettings": {
-    "title": "エディタ設定",
-    "alreadyExists": "{{version}} [.NET]のエディタ設定は既に存在しており、設定を保護するために変更は行われませんでした。",
-    "switchingToDotNet": "GDScriptから.NETバージョンに切り替える場合は、<strong>エディタ設定 -> DotNet</strong>から外部エディタを手動で設定できます（高度なスイッチ：true）。",
-    "readMore": "詳細を読む"
-  }
+  "searchPlaceholder": "プロジェクトを検索..."
 }
