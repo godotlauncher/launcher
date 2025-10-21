@@ -6,6 +6,7 @@ import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import { createMenu } from './helpers/menu.helper.js';
+import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
 import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver.js';
 import { isDev } from './utils.js';
@@ -56,6 +57,7 @@ if (isDev()) {
 //disable menu bar
 Menu.setApplicationMenu(null);
 
+let disposeFocusRevalidation: (() => void) | undefined;
 let _mainWindow: BrowserWindow | null = null;
 export const getMainWindow: () => BrowserWindow = () => _mainWindow!;
 
@@ -183,6 +185,8 @@ app.on('ready', async () => {
         true
     );
 
+    disposeFocusRevalidation = setupFocusRevalidation(mainWindow);
+
     mainWindow.on('ready-to-show', async () => {
         if (process.platform === 'darwin') {
             if (app.getLoginItemSettings().wasOpenedAtLogin) {
@@ -249,6 +253,8 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
     app.on('before-quit', () => {
         logger.info('Quitting app');
         stopAutoUpdateChecks();
+        disposeFocusRevalidation?.();
+        disposeFocusRevalidation = undefined;
         willClose = true;
     });
 
@@ -267,5 +273,10 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
         );
 
         willClose = false;
+    });
+
+    mainWindow.on('closed', () => {
+        disposeFocusRevalidation?.();
+        disposeFocusRevalidation = undefined;
     });
 }
