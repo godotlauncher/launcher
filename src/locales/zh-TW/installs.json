@@ -52,7 +52,10 @@
     "unavailableHint": "編輯器路徑無法存取。請掛載儲存裝置後再試一次，或移除該版本。",
     "revalidating": "正在驗證已安裝的版本...",
     "revalidated": "驗證完成。",
-    "revalidationFailed": "驗證失敗。請檢查儲存裝置並再試一次。"
+    "revalidatedRelease": "{{version}} 已再次可用。",
+    "revalidationFailed": "驗證失敗。請檢查儲存裝置並再試一次。",
+    "revalidationStillMissing": "驗證已完成，但 {{version}} 仍無法使用。請確認 {{path}} 可存取後再試一次。",
+    "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。"
   },
   "install": {
     "title": "安裝 Godot 編輯器",

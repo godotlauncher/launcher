@@ -52,7 +52,10 @@
     "unavailableHint": "Il-perkors tal-editur mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa' pprova, jew neħħi r-rilaxx.",
     "revalidating": "Validazzjoni tar-rilaxxi installati...",
     "revalidated": "Validazzjoni lesta.",
-    "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova."
+    "revalidatedRelease": "{{version}} issa hija disponibbli mill-ġdid.",
+    "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova.",
+    "revalidationStillMissing": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Iċċekkja li {{path}} hu aċċessibbli qabel terġa' tipprova.",
+    "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova."
   },
   "install": {
     "title": "Installa Editur Godot",

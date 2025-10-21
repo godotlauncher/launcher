@@ -9,7 +9,9 @@
     "skip": "Skip",
     "select": "Select",
     "retry": "Retry",
-    "remove": "Remove"
+    "remove": "Remove",
+    "copyPath": "Copy path",
+    "openPath": "Open path"
   },
   "loading": "Loading...",
   "saving": "Saving...",
