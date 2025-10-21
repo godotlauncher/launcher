@@ -13,7 +13,7 @@ type ReleaseContext = {
     removeRelease: (release: InstalledRelease) => Promise<void>;
     isDownloadingRelease: (version: string, mono: boolean) => boolean;
 
-    checkAllReleasesValid: () => Promise<void>;
+    checkAllReleasesValid: () => Promise<InstalledRelease[]>;
     showReleaseMenu: (release: InstalledRelease) => Promise<void>;
 
 
@@ -118,11 +118,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
         return result;
     };
 
-    const checkAllReleasesValid = async () => {
+    const checkAllReleasesValid = async (): Promise<InstalledRelease[]> => {
         setLoading(true);
         try {
             const releases = await window.electron.checkAllReleasesValid();
             setInstalledReleases(releases);
+            return releases;
         } finally {
             setLoading(false);
         }
