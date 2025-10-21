@@ -1,20 +1,23 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { dialog, Menu, shell } from 'electron';
+import { dialog, shell } from 'electron';
 
 export async function openShellFolder(pathToOpen: string): Promise<void> {
+    // make sure the path is resolved
+    pathToOpen = path.resolve(pathToOpen);
 
-    const menu = Menu.buildFromTemplate([
-        {
-            label: 'Open in Terminal',
-            click: () => {
-                shell.openPath(pathToOpen);
-            }
+    // check if the path exists and keep eating away the parts until we find an existing path
+    while (!fs.existsSync(pathToOpen)) {
+        const parentPath = path.dirname(pathToOpen);
+        if (parentPath === pathToOpen) {
+            // reached root and nothing exists
+            break;
         }
-    ]);
-    menu.popup();
-    // shell.openPath(pathToOpen);
+        pathToOpen = parentPath;
+    }
+
+    await shell.openPath(pathToOpen);
 }
 
 export async function openFileDialog(
@@ -48,5 +51,3 @@ export async function openDirectoryDialog(
         properties: ['openDirectory', 'createDirectory', 'promptToCreate'],
     });
 }
-
-
