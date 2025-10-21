@@ -37,7 +37,7 @@
     "installing": "Qed jinstalla...",
     "installed": "Installat",
     "downloading": "Qed jinżel...",
-    "unavailable": "Unavailable"
+    "unavailable": "Mhux disponibbli"
   },
   "messages": {
     "noReleases": "Ebda releases installati, għadha.",
@@ -49,10 +49,10 @@
     "downloadProgress": "Qed jinżel: {{percent}}%",
     "installSuccess": "Editur installat b'suċċess",
     "uninstallSuccess": "Editur żinstallat",
-    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release.",
-    "revalidating": "Validating installed releases...",
-    "revalidated": "Validation complete.",
-    "revalidationFailed": "Validation failed. Check your storage device and try again."
+    "unavailableHint": "Il-perkors tal-editur mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa' pprova, jew neħħi r-rilaxx.",
+    "revalidating": "Validazzjoni tar-rilaxxi installati...",
+    "revalidated": "Validazzjoni lesta.",
+    "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova."
   },
   "install": {
     "title": "Installa Editur Godot",
