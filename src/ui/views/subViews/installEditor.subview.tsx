@@ -218,6 +218,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                         releases={getFilteredInstalledRows()}
                                         onRetry={onRetryValidation}
                                         onRemove={onRemove}
+                                        loading={loading}
                                     />
                                 }
                             </div>

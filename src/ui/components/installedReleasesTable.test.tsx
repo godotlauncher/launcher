@@ -53,6 +53,7 @@ describe('InstalledReleaseTable', () => {
                 ]}
                 onRetry={vi.fn()}
                 onRemove={vi.fn()}
+                loading={false}
             />
         );
 
@@ -67,9 +68,29 @@ describe('InstalledReleaseTable', () => {
                 releases={[releaseDefaults]}
                 onRetry={vi.fn()}
                 onRemove={vi.fn()}
+                loading={false}
             />
         );
 
         expect(html).not.toContain('Unavailable');
+    });
+
+    it('disables retry/remove buttons while loading', () => {
+        const html = renderToStaticMarkup(
+            <InstalledReleaseTable
+                releases={[
+                    {
+                        ...releaseDefaults,
+                        valid: false,
+                    },
+                ]}
+                onRetry={vi.fn()}
+                onRemove={vi.fn()}
+                loading={true}
+            />
+        );
+
+        expect(html).toContain('disabled');
+        expect(html).toContain('loading-spinner');
     });
 });

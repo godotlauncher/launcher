@@ -49,7 +49,10 @@
     "downloadProgress": "Загрузка: {{percent}}%",
     "installSuccess": "Редактор успешно установлен",
     "uninstallSuccess": "Редактор удалён",
-    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release.",
+    "revalidating": "Validating installed releases...",
+    "revalidated": "Validation complete.",
+    "revalidationFailed": "Validation failed. Check your storage device and try again."
   },
   "install": {
     "title": "Установить редактор Godot",
