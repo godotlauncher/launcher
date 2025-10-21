@@ -198,8 +198,13 @@ export async function getStoredInstalledReleases(installedReleasesPath: string):
         if (fs.existsSync(installedReleasesPath)) {
             const releasesData = await fs.promises.readFile(installedReleasesPath, 'utf-8');
             const releases = JSON.parse(releasesData) as InstalledRelease[];
-            releases.sort((a, b) => a.version_number - b.version_number);
-            return releases;
+            const normalized = releases
+                .map(release => ({
+                    ...release,
+                    valid: typeof release.valid === 'boolean' ? release.valid : true,
+                }))
+                .sort((a, b) => a.version_number - b.version_number);
+            return normalized;
         }
     } catch (error) {
         logger.error('Failed to read installed releases', error);

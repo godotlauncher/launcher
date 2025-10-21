@@ -414,7 +414,7 @@ suite("Releases Utils", () => {
 
             const result = await getStoredInstalledReleases('/tmp/installed.json');
 
-            expect(result).toEqual(mockReleases);
+            expect(result).toEqual(mockReleases.map(release => ({ ...release, valid: true })));
         });
 
         test('should get empty array when installed releases file does not exist', async () => {
@@ -428,11 +428,11 @@ suite("Releases Utils", () => {
         test('should add a release to installed releases', async () => {
             vi.mocked(fs.existsSync).mockReturnValueOnce(true);
             const existingReleases = [
-                { version: '4.4-stable', mono: true, version_number: 1 }
+                { version: '4.4-stable', mono: true, version_number: 1, valid: true }
             ];
             vi.mocked(fs.promises.readFile).mockResolvedValueOnce(JSON.stringify(existingReleases));
 
-            const newRelease = { version: '4.5-beta1', mono: false, version_number: 2 } as InstalledRelease;
+            const newRelease = { version: '4.5-beta1', mono: false, version_number: 2, valid: true } as InstalledRelease;
             const result = await addStoredInstalledRelease('/tmp/installed.json', newRelease);
 
             expect(fs.promises.writeFile).toHaveBeenCalledWith(
@@ -446,8 +446,8 @@ suite("Releases Utils", () => {
         test('should remove a release from installed releases', async () => {
             vi.mocked(fs.existsSync).mockReturnValueOnce(true);
             const existingReleases = [
-                { version: '4.4-stable', mono: true, version_number: 1 },
-                { version: '4.5-beta1', mono: false, version_number: 2 }
+                { version: '4.4-stable', mono: true, version_number: 1, valid: true },
+                { version: '4.5-beta1', mono: false, version_number: 2, valid: true }
             ];
             vi.mocked(fs.promises.readFile).mockResolvedValueOnce(JSON.stringify(existingReleases));
 
