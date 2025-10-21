@@ -5,9 +5,10 @@ type InstalledReleaseTableProps = {
     releases: InstalledRelease[];
     onRetry: (release: InstalledRelease) => void;
     onRemove: (release: InstalledRelease) => void;
+    loading: boolean;
 };
 
-export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ releases, onRetry, onRemove }) => {
+export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ releases, onRetry, onRemove, loading }) => {
     const { t } = useTranslation(['installEditor', 'common']);
 
     return (
@@ -33,10 +34,19 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ re
                                             <span>{t('table.status.unavailable')}</span>
                                         </div>
                                         <div className="flex flex-row flex-wrap gap-2">
-                                            <button className="btn btn-ghost btn-xs" onClick={() => onRetry(row)}>
+                                            <button
+                                                className="btn btn-ghost btn-xs flex items-center gap-2"
+                                                disabled={loading}
+                                                onClick={() => onRetry(row)}
+                                            >
+                                                {loading && <span className="loading loading-spinner loading-xs"></span>}
                                                 {t('buttons.retry', { ns: 'common' })}
                                             </button>
-                                            <button className="btn btn-ghost btn-xs" onClick={() => onRemove(row)}>
+                                            <button
+                                                className="btn btn-ghost btn-xs"
+                                                disabled={loading}
+                                                onClick={() => onRemove(row)}
+                                            >
                                                 {t('buttons.remove', { ns: 'common' })}
                                             </button>
                                         </div>

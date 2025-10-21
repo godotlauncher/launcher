@@ -1,6 +1,7 @@
 import { CircleX, EllipsisVertical, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { useAlerts } from '../hooks/useAlerts';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
@@ -24,7 +25,8 @@ export const InstallsView: React.FC = () => {
     const [textSearch, setTextSearch] = useState<string>('');
     const [installOpen, setInstallOpen] = useState<boolean>(false);
 
-    const { installedReleases, downloadingReleases, showReleaseMenu, checkAllReleasesValid, removeRelease } = useRelease();
+    const { addAlert } = useAlerts();
+    const { installedReleases, downloadingReleases, showReleaseMenu, checkAllReleasesValid, removeRelease, loading: releasesLoading } = useRelease();
 
     const onOpenReleaseMoreOptions = (e: React.MouseEvent, release: InstalledRelease) => {
         e.stopPropagation();
@@ -57,6 +59,25 @@ export const InstallsView: React.FC = () => {
         () => createReleaseActions({ checkAllReleasesValid, removeRelease }),
         [checkAllReleasesValid, removeRelease]
     );
+
+    const handleRetry = async () => {
+        addAlert(t('common:info'), t('messages.revalidating'));
+        try {
+            await releaseActions.retry();
+            addAlert(t('common:success'), t('messages.revalidated'));
+        }
+        catch (error) {
+            addAlert(t('common:error'), t('messages.revalidationFailed'));
+            console.error(error);
+        }
+    };
+
+    const handleRemove = async (release: InstalledRelease) => {
+        if (releasesLoading) {
+            return;
+        }
+        await releaseActions.remove(release);
+    };
 
     return (
         <>
@@ -130,10 +151,19 @@ export const InstallsView: React.FC = () => {
                                                                     <>
                                                                         <span>{t('messages.unavailableHint')}</span>
                                                                         <div className="flex flex-row flex-wrap gap-2">
-                                                                            <button className="btn btn-ghost btn-xs" onClick={releaseActions.retry}>
+                                                                            <button
+                                                                                className="btn btn-ghost btn-xs flex items-center gap-2"
+                                                                                onClick={handleRetry}
+                                                                                disabled={releasesLoading}
+                                                                            >
+                                                                                {releasesLoading && <span className="loading loading-spinner loading-xs"></span>}
                                                                                 {t('buttons.retry', { ns: 'common' })}
                                                                             </button>
-                                                                            <button className="btn btn-ghost btn-xs" onClick={() => releaseActions.remove(row)}>
+                                                                            <button
+                                                                                className="btn btn-ghost btn-xs"
+                                                                                onClick={() => handleRemove(row)}
+                                                                                disabled={releasesLoading}
+                                                                            >
                                                                                 {t('buttons.uninstall')}
                                                                             </button>
                                                                         </div>

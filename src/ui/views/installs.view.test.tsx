@@ -4,6 +4,18 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { InstallsView } from './installs.view';
 
+const addAlert = vi.fn();
+
+vi.mock('../hooks/useAlerts', () => ({
+    useAlerts: () => ({
+        addAlert,
+        clearAlerts: vi.fn(),
+        closeAlert: vi.fn(),
+        addConfirm: vi.fn(),
+        addCustomConfirm: vi.fn(),
+    }),
+}));
+
 vi.mock('../hooks/useRelease', () => {
     const installedReleases: InstalledRelease[] = [
         {
@@ -28,6 +40,7 @@ vi.mock('../hooks/useRelease', () => {
             showReleaseMenu: vi.fn(),
             checkAllReleasesValid: vi.fn(),
             removeRelease: vi.fn(),
+            loading: true,
         }),
     };
 });
@@ -69,5 +82,7 @@ describe('InstallsView', () => {
         expect(html).toContain('The editor path is not accessible');
         expect(html).toContain('Retry');
         expect(html).toContain('Uninstall');
+        expect(html).toContain('disabled');
+        expect(html).toContain('loading-spinner');
     });
 });

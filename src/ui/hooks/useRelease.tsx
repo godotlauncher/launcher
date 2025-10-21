@@ -120,9 +120,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
 
     const checkAllReleasesValid = async () => {
         setLoading(true);
-        const releases = await window.electron.checkAllReleasesValid();
-        setInstalledReleases(releases);
-        setLoading(false);
+        try {
+            const releases = await window.electron.checkAllReleasesValid();
+            setInstalledReleases(releases);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return <releaseContext.Provider value={

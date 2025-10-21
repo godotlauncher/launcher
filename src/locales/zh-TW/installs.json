@@ -49,7 +49,10 @@
     "downloadProgress": "下載中：{{percent}}%",
     "installSuccess": "編輯器安裝成功",
     "uninstallSuccess": "編輯器已解除安裝",
-    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release.",
+    "revalidating": "Validating installed releases...",
+    "revalidated": "Validation complete.",
+    "revalidationFailed": "Validation failed. Check your storage device and try again."
   },
   "install": {
     "title": "安裝 Godot 編輯器",
