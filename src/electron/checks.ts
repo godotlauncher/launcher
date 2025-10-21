@@ -25,19 +25,15 @@ export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
 
     // check that release path exist
     for (const release of releases) {
-        if (!fs.existsSync(release.editor_path)) {
+        const editorPathExists = fs.existsSync(release.editor_path);
+        if (!editorPathExists) {
             logger.warn(`Release '${release.version}' has an invalid path`);
-            release.valid = false;
-        } else {
-            release.valid = true;
         }
+        release.valid = editorPathExists;
     }
 
-    // remove invalid releases and save
-    return await saveStoredInstalledReleases(
-        releasesFile,
-        releases.filter((r) => r.valid)
-    );
+    // persist all releases, including invalid ones for recovery scenarios
+    return await saveStoredInstalledReleases(releasesFile, releases);
 }
 
 export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
