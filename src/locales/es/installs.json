@@ -37,7 +37,7 @@
     "installing": "Instalando...",
     "installed": "Instalada",
     "downloading": "Descargando...",
-    "unavailable": "Unavailable"
+    "unavailable": "No disponible"
   },
   "messages": {
     "noReleases": "No hay versiones instaladas aún.",
@@ -49,10 +49,10 @@
     "downloadProgress": "Descargando: {{percent}}%",
     "installSuccess": "Editor instalado exitosamente",
     "uninstallSuccess": "Editor desinstalado",
-    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release.",
-    "revalidating": "Validating installed releases...",
-    "revalidated": "Validation complete.",
-    "revalidationFailed": "Validation failed. Check your storage device and try again."
+    "unavailableHint": "La ruta del editor no está accesible. Monta el dispositivo de almacenamiento y vuelve a intentarlo, o desinstala la versión.",
+    "revalidating": "Validando las versiones instaladas...",
+    "revalidated": "Validación completada.",
+    "revalidationFailed": "La validación falló. Revisa el dispositivo de almacenamiento y vuelve a intentarlo."
   },
   "install": {
     "title": "Instalar editor Godot",
