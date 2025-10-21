@@ -36,7 +36,8 @@
   "status": {
     "installing": "Yükleniyor...",
     "installed": "Kuruldu",
-    "downloading": "İndiriliyor..."
+    "downloading": "İndiriliyor...",
+    "unavailable": "Unavailable"
   },
   "messages": {
     "noReleases": "Henüz kurulu sürüm yok.",
@@ -47,7 +48,8 @@
     "installing": "Yükleniyor...",
     "downloadProgress": "İndiriliyor: %{{percent}}",
     "installSuccess": "Editör başarıyla yüklendi",
-    "uninstallSuccess": "Editör kaldırıldı"
+    "uninstallSuccess": "Editör kaldırıldı",
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
   },
   "install": {
     "title": "Godot Editör Yükle",

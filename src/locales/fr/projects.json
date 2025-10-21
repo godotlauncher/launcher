@@ -22,7 +22,8 @@
     "invalidProject": "Ce projet est invalide, vérifiez les emplacements du projet et de l'éditeur !",
     "dotNetProject": "Ceci est un projet .Net",
     "prerelease": "Utilise une version préliminaire de l'éditeur Godot",
-    "windowedMode": "Ce projet s'ouvre en mode fenêtré"
+    "windowedMode": "Ce projet s'ouvre en mode fenêtré",
+    "invalidRelease": "Editor unavailable"
   },
   "addProject": {
     "selectFile": "Sélectionner le fichier du projet",
@@ -54,7 +55,8 @@
     "needReleaseInstalled": "Vous devez avoir au moins une version installée pour ajouter un projet",
     "addProjectError": "Une erreur s'est produite lors de l'ajout du projet",
     "setEditorError": "Une erreur s'est produite lors de la définition de l'éditeur du projet",
-    "projectNotValid": "Le projet n'est pas valide, assurez-vous que le projet et la version sont valides sur votre ordinateur."
+    "projectNotValid": "Le projet n'est pas valide, assurez-vous que le projet et la version sont valides sur votre ordinateur.",
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
   },
   "changeEditor": {
     "errors": {

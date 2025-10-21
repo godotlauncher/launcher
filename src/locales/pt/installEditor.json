@@ -45,6 +45,9 @@
       "download": "Transferir {{version}}",
       "downloadGDScript": "Transferir {{version}} (GDScript)",
       "downloadDotNet": "Transferir {{version}} .NET"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }

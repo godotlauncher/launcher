@@ -45,6 +45,9 @@
       "download": "{{version}}をダウンロード",
       "downloadGDScript": "{{version}}（GDScript）をダウンロード",
       "downloadDotNet": "{{version}} .NETをダウンロード"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }

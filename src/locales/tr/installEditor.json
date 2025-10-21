@@ -45,6 +45,9 @@
       "download": "{{version}} İndir",
       "downloadGDScript": "{{version}} İndir (GDScript)",
       "downloadDotNet": "{{version}} .NET İndir"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }

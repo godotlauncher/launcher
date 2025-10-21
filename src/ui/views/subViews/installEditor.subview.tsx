@@ -30,6 +30,8 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         hasError,
         refreshAvailableReleases,
         isInstalledRelease,
+        removeRelease,
+        checkAllReleasesValid,
     } = useRelease();
 
     const { addAlert } = useAlerts();
@@ -91,6 +93,14 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         }
 
 
+    };
+
+    const onRetryValidation = async () => {
+        await checkAllReleasesValid();
+    };
+
+    const onRemove = async (release: InstalledRelease) => {
+        await removeRelease(release);
     };
 
     return (
@@ -204,7 +214,11 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
                                 {tab !== 'INSTALLED'
                                     ? <InstallReleaseTable releases={getFilteredRows()} onInstall={installReleaseRequest} />
-                                    : <InstalledReleaseTable releases={getFilteredInstalledRows()} />
+                                    : <InstalledReleaseTable
+                                        releases={getFilteredInstalledRows()}
+                                        onRetry={onRetryValidation}
+                                        onRemove={onRemove}
+                                    />
                                 }
                             </div>
                         }

@@ -34,10 +34,10 @@
       "download": "下载",
       "installed": "已安装"
     },
-  "gdscript": "(GDScript)",
-  "dotnet": "(.NET)",
-  "installing": "安装中...",
-  "downloading": "下载中...",
+    "gdscript": "(GDScript)",
+    "dotnet": "(.NET)",
+    "installing": "安装中...",
+    "downloading": "下载中...",
     "tooltips": {
       "installed": "已安装 - {{version}}",
       "installedGDScript": "已安装 - {{version}} (GDScript)",
@@ -45,6 +45,9 @@
       "download": "下载 {{version}}",
       "downloadGDScript": "下载 {{version}} (GDScript)",
       "downloadDotNet": "下载 {{version}} .NET"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }

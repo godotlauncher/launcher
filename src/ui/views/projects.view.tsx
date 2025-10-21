@@ -19,7 +19,7 @@ TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
 export const ProjectsView: React.FC = () => {
-    const { t } = useTranslation('projects');
+    const { t } = useTranslation(['projects', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [createOpen, setCreateOpen] = useState<boolean>(false);
 
@@ -144,6 +144,9 @@ export const ProjectsView: React.FC = () => {
                 await checkAllReleasesValid();
                 addAlert(t('common:error'), t('messages.projectNotValid'));
             }
+        } else {
+            await checkAllReleasesValid();
+            addAlert(t('common:error'), t('messages.invalidReleaseEditor'));
         }
 
     };
@@ -313,6 +316,12 @@ export const ProjectsView: React.FC = () => {
                                                         </p>
                                                     }
 
+                                                    {row.release.valid === false && (
+                                                        <span className="badge badge-warning text-xs flex items-center gap-1">
+                                                            <TriangleAlert className="w-3 h-3" />
+                                                            {t('table.invalidRelease')}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div role="button" onClick={(e) => {
                                                     e.stopPropagation();

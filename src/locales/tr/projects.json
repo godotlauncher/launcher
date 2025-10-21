@@ -22,7 +22,8 @@
     "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
     "dotNetProject": "Bu bir .Net Projesidir",
     "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
-    "windowedMode": "Bu proje pencere modunda açık"
+    "windowedMode": "Bu proje pencere modunda açık",
+    "invalidRelease": "Editor unavailable"
   },
   "addProject": {
     "selectFile": "Proje Dosyasını Seç",
@@ -54,7 +55,8 @@
     "needReleaseInstalled": "Proje eklemek için en az bir sürüm yüklü olmalıdır",
     "addProjectError": "Proje eklenirken bir şeyler ters gitti",
     "setEditorError": "Proje editörü ayarlanırken bir şeyler ters gitti",
-    "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun."
+    "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun.",
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
   },
   "changeEditor": {
     "errors": {

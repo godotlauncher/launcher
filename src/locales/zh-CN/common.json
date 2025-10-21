@@ -7,7 +7,9 @@
     "delete": "删除",
     "continue": "继续",
     "skip": "跳过",
-    "select": "选择"
+    "select": "选择",
+    "retry": "Retry",
+    "remove": "Remove"
   },
   "loading": "加载中...",
   "saving": "保存中...",
@@ -43,6 +45,8 @@
     "badges": {
       "dotnet": ".NET",
       "prerelease": "预发布"
-    }
+    },
+    "unavailable": "Unavailable release",
+    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
   }
 }

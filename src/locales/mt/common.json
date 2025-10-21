@@ -7,7 +7,9 @@
     "delete": "Ħassar",
     "continue": "Kompli",
     "skip": "Aqbeż",
-    "select": "Agħżel"
+    "select": "Agħżel",
+    "retry": "Retry",
+    "remove": "Remove"
   },
   "loading": "Qed jillowdja...",
   "saving": "Qed jikteb...",
@@ -43,6 +45,8 @@
     "badges": {
       "dotnet": ".NET",
       "prerelease": "prerelease"
-    }
+    },
+    "unavailable": "Unavailable release",
+    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
   }
 }

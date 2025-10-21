@@ -36,7 +36,8 @@
   "status": {
     "installing": "Установка...",
     "installed": "Установлено",
-    "downloading": "Загрузка..."
+    "downloading": "Загрузка...",
+    "unavailable": "Unavailable"
   },
   "messages": {
     "noReleases": "Версии ещё не установлены.",
@@ -47,7 +48,8 @@
     "installing": "Установка...",
     "downloadProgress": "Загрузка: {{percent}}%",
     "installSuccess": "Редактор успешно установлен",
-    "uninstallSuccess": "Редактор удалён"
+    "uninstallSuccess": "Редактор удалён",
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
   },
   "install": {
     "title": "Установить редактор Godot",

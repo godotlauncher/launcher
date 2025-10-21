@@ -1,16 +1,30 @@
 import { CircleX, EllipsisVertical, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
 
+type ReleaseActionDependencies = {
+    checkAllReleasesValid: () => Promise<void>;
+    removeRelease: (release: InstalledRelease) => Promise<void>;
+};
+
+export const createReleaseActions = (dependencies: ReleaseActionDependencies) => ({
+    retry: async () => {
+        await dependencies.checkAllReleasesValid();
+    },
+    remove: async (release: InstalledRelease) => {
+        await dependencies.removeRelease(release);
+    },
+});
+
 export const InstallsView: React.FC = () => {
-    const { t } = useTranslation('installs');
+    const { t } = useTranslation(['installs', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [installOpen, setInstallOpen] = useState<boolean>(false);
 
-    const { installedReleases, downloadingReleases, showReleaseMenu } = useRelease();
+    const { installedReleases, downloadingReleases, showReleaseMenu, checkAllReleasesValid, removeRelease } = useRelease();
 
     const onOpenReleaseMoreOptions = (e: React.MouseEvent, release: InstalledRelease) => {
         e.stopPropagation();
@@ -38,6 +52,11 @@ export const InstallsView: React.FC = () => {
         const selection = all.filter(row => row.version.toLowerCase().includes(textSearch.toLowerCase()));
         return selection.sort(sortReleases);
     };
+
+    const releaseActions = useMemo(
+        () => createReleaseActions({ checkAllReleasesValid, removeRelease }),
+        [checkAllReleasesValid, removeRelease]
+    );
 
     return (
         <>
@@ -95,24 +114,43 @@ export const InstallsView: React.FC = () => {
                                                 <tr key={index} className="even:bg-base-100 hover:bg-base-content/10">
                                                     <td >
                                                         <div className="flex flex-col gap-1">
-                                                            <div className="flex flex-row gap-2">
+                                                            <div className="flex flex-row gap-2 flex-wrap items-center">
                                                                 {row.version}
                                                                 {row.mono && <span className="badge">{t('badges.dotNet')}</span>}
                                                                 {row.prerelease && <span className="badge badge-secondary">{t('badges.prerelease')}</span>}
+                                                                {row.valid === false && (
+                                                                    <span className="badge badge-warning gap-1 text-xs items-center">
+                                                                        <TriangleAlert className="w-3 h-3" />
+                                                                        {t('status.unavailable')}
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            <div className="text-xs text-base-content/50">
-                                                                {row.install_path || <div className="flex flex-row gap-2">
-                                                                    <div className="loading loading-ring loading-sm"></div>
-                                                                    {t('status.installing')}
-                                                                </div>
-                                                                }
+                                                            <div className="text-xs text-base-content/50 flex flex-col gap-1">
+                                                                {row.valid === false ? (
+                                                                    <>
+                                                                        <span>{t('messages.unavailableHint')}</span>
+                                                                        <div className="flex flex-row flex-wrap gap-2">
+                                                                            <button className="btn btn-ghost btn-xs" onClick={releaseActions.retry}>
+                                                                                {t('buttons.retry', { ns: 'common' })}
+                                                                            </button>
+                                                                            <button className="btn btn-ghost btn-xs" onClick={() => releaseActions.remove(row)}>
+                                                                                {t('buttons.uninstall')}
+                                                                            </button>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    row.install_path || <div className="flex flex-row gap-2 items-center">
+                                                                        <div className="loading loading-ring loading-sm"></div>
+                                                                        {t('status.installing')}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="flex flex-row justify-end">
 
                                                         {
-                                                            row.install_path &&
+                                                            row.install_path && row.valid !== false &&
                                                             <button
                                                                 onClick={(e) => onOpenReleaseMoreOptions(e, row)}
                                                                 className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"                        >

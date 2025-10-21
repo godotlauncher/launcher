@@ -45,6 +45,9 @@
       "download": "Загрузить {{version}}",
       "downloadGDScript": "Загрузить {{version}} (GDScript)",
       "downloadDotNet": "Загрузить {{version}} .NET"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }
