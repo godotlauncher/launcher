@@ -45,6 +45,9 @@
       "download": "下載 {{version}}",
       "downloadGDScript": "下載 {{version}}（GDScript）",
       "downloadDotNet": "下載 {{version}} .NET"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }

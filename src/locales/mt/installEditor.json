@@ -45,6 +45,9 @@
       "download": "Niżżel {{version}}",
       "downloadGDScript": "Niżżel {{version}} (GDScript)",
       "downloadDotNet": "Niżżel {{version}} .NET"
+    },
+    "status": {
+      "unavailable": "Unavailable"
     }
   }
 }

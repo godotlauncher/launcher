@@ -22,7 +22,8 @@
     "invalidProject": "Dan il-proġett mhuwiex validu, iċċekkja l-indirizz tal-proġett u tal-editur!",
     "dotNetProject": "Dan huwa Proġett .Net",
     "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
-    "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode"
+    "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
+    "invalidRelease": "Editor unavailable"
   },
   "addProject": {
     "selectFile": "Agħżel Fajl tal-Proġett",
@@ -54,7 +55,8 @@
     "needReleaseInstalled": "Għandek bżonn mill-inqas release installata biex żżid proġett",
     "addProjectError": "Xi ħaġa marret ħażin meta żdiedt il-proġett",
     "setEditorError": "Xi ħaġa marret ħażin meta ssettjajt l-editur tal-proġett",
-    "projectNotValid": "Il-proġett mhuwiex validu, jekk jogħġbok kun żgur li l-proġett u r-release huma validi fuq il-kompjuter tiegħek."
+    "projectNotValid": "Il-proġett mhuwiex validu, jekk jogħġbok kun żgur li l-proġett u r-release huma validi fuq il-kompjuter tiegħek.",
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
   },
   "changeEditor": {
     "errors": {

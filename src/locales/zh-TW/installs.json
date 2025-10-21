@@ -36,7 +36,8 @@
   "status": {
     "installing": "安裝中…",
     "installed": "已安裝",
-    "downloading": "下載中…"
+    "downloading": "下載中…",
+    "unavailable": "Unavailable"
   },
   "messages": {
     "noReleases": "尚未安裝任何發行版本。",
@@ -47,7 +48,8 @@
     "installing": "安裝中…",
     "downloadProgress": "下載中：{{percent}}%",
     "installSuccess": "編輯器安裝成功",
-    "uninstallSuccess": "編輯器已解除安裝"
+    "uninstallSuccess": "編輯器已解除安裝",
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
   },
   "install": {
     "title": "安裝 Godot 編輯器",

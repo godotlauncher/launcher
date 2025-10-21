@@ -23,7 +23,11 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
     const { installedReleases, downloadingReleases } = useRelease();
 
     useEffect(() => {
-        setSelectedRelease(currentRelease);
+        if (currentRelease.valid === false) {
+            setSelectedRelease(null);
+        } else {
+            setSelectedRelease(currentRelease);
+        }
     }, [currentRelease]);
 
     const getFilteredRows = useCallback(() => {
@@ -93,6 +97,25 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                                 }
                                 {
                                     filteredReleases.length > 0 && filteredReleases.map((row, index) => {
+                                        if (row.valid === false) {
+                                            return (
+                                                <tr key={index} className="opacity-60 cursor-not-allowed">
+                                                    <td>
+                                                        <TriangleAlert className="stroke-warning" />
+                                                    </td>
+                                                    <td>
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex flex-row gap-2 items-center">
+                                                                {row.version}
+                                                                <span className="badge badge-warning">{t('selectRelease.unavailable')}</span>
+                                                                {row.mono && <span className="badge badge-neutral">{t('selectRelease.badges.dotnet')}</span>}
+                                                            </div>
+                                                            <p className="text-xs text-warning">{t('selectRelease.unavailableHint')}</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
                                         if (!row.editor_path) {
                                             return (
                                                 <tr key={index} className="hover:bg-black/10 cursor-not-allowed">

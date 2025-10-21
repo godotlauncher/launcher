@@ -36,7 +36,8 @@
   "status": {
     "installing": "Installazione in corso...",
     "installed": "Installata",
-    "downloading": "Download in corso..."
+    "downloading": "Download in corso...",
+    "unavailable": "Unavailable"
   },
   "messages": {
     "noReleases": "Ancora nessuna versione installata.",
@@ -47,7 +48,8 @@
     "installing": "Installazione in corso...",
     "downloadProgress": "Download: {{percent}}%",
     "installSuccess": "Editor installato correttamente",
-    "uninstallSuccess": "Editor disinstallato"
+    "uninstallSuccess": "Editor disinstallato",
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
   },
   "install": {
     "title": "Installa editor Godot",

@@ -7,7 +7,9 @@
     "delete": "Löschen",
     "continue": "Weiter",
     "skip": "Überspringen",
-    "select": "Auswählen"
+    "select": "Auswählen",
+    "retry": "Retry",
+    "remove": "Remove"
   },
   "loading": "Lädt...",
   "saving": "Speichert...",
@@ -43,6 +45,8 @@
     "badges": {
       "dotnet": ".NET",
       "prerelease": "Vorabversion"
-    }
+    },
+    "unavailable": "Unavailable release",
+    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
   }
 }

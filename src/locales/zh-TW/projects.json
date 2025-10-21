@@ -22,7 +22,8 @@
     "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
     "dotNetProject": "這是一個 .NET 專案",
     "prerelease": "使用預先釋出的 Godot 編輯器版本",
-    "windowedMode": "此專案以視窗模式開啟"
+    "windowedMode": "此專案以視窗模式開啟",
+    "invalidRelease": "Editor unavailable"
   },
   "addProject": {
     "selectFile": "選擇專案檔",
@@ -54,7 +55,8 @@
     "needReleaseInstalled": "您需要至少安裝一個發行版本才能新增專案",
     "addProjectError": "新增專案時發生錯誤",
     "setEditorError": "設定專案編輯器時發生錯誤",
-    "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。"
+    "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。",
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
   },
   "changeEditor": {
     "errors": {

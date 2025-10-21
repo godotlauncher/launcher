@@ -36,7 +36,8 @@
   "status": {
     "installing": "インストール中...",
     "installed": "インストール済み",
-    "downloading": "ダウンロード中..."
+    "downloading": "ダウンロード中...",
+    "unavailable": "Unavailable"
   },
   "messages": {
     "noReleases": "リリースがまだインストールされていません。",
@@ -47,7 +48,8 @@
     "installing": "インストール中...",
     "downloadProgress": "ダウンロード中：{{percent}}%",
     "installSuccess": "エディタが正常にインストールされました",
-    "uninstallSuccess": "エディタがアンインストールされました"
+    "uninstallSuccess": "エディタがアンインストールされました",
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
   },
   "install": {
     "title": "Godotエディタをインストール",

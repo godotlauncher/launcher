@@ -22,7 +22,8 @@
     "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
     "dotNetProject": "Это .Net проект",
     "prerelease": "Используется пререлизная версия редактора Godot",
-    "windowedMode": "Этот проект открыт в оконном режиме"
+    "windowedMode": "Этот проект открыт в оконном режиме",
+    "invalidRelease": "Editor unavailable"
   },
   "addProject": {
     "selectFile": "Выбрать файл проекта",
@@ -54,7 +55,8 @@
     "needReleaseInstalled": "Для добавления проекта необходимо иметь хотя бы одну установленную версию",
     "addProjectError": "Что-то пошло не так при добавлении проекта",
     "setEditorError": "Что-то пошло не так при установке редактора проекта",
-    "projectNotValid": "Проект недействителен, убедитесь, что проект и версия действительны на вашем компьютере."
+    "projectNotValid": "Проект недействителен, убедитесь, что проект и версия действительны на вашем компьютере.",
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
   },
   "changeEditor": {
     "errors": {

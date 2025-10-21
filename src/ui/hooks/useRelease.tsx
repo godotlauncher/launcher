@@ -74,7 +74,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
     };
 
     const isInstalledRelease = (version: string, mono: boolean): boolean => {
-        return installedReleases.some(r => r.version === version && r.mono === mono);
+        return installedReleases.some(r => r.version === version && r.mono === mono && r.valid !== false);
     };
 
     const removeRelease = async (release: InstalledRelease): Promise<void> => {
@@ -144,4 +144,3 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
         }
     } > {children}</ releaseContext.Provider>;
 };
-

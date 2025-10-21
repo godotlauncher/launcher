@@ -36,7 +36,8 @@
   "status": {
     "installing": "Instalowanie...",
     "installed": "Zainstalowana",
-    "downloading": "Pobieranie..."
+    "downloading": "Pobieranie...",
+    "unavailable": "Unavailable"
   },
   "messages": {
     "noReleases": "Brak jeszcze zainstalowanych wydań.",
@@ -47,7 +48,8 @@
     "installing": "Instalowanie...",
     "downloadProgress": "Pobieranie: {{percent}}%",
     "installSuccess": "Edytor został pomyślnie zainstalowany",
-    "uninstallSuccess": "Edytor odinstalowany"
+    "uninstallSuccess": "Edytor odinstalowany",
+    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release."
   },
   "install": {
     "title": "Zainstaluj edytor Godot",
