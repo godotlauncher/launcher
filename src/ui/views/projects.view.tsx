@@ -545,8 +545,8 @@ export const ProjectsView: React.FC = () => {
                                             <p>
                                                 {row.last_opened
                                                     ? timeAgo.format(
-                                                          row.last_opened
-                                                      )
+                                                        row.last_opened
+                                                    )
                                                     : '-'}
                                             </p>
                                         </td>
@@ -563,22 +563,22 @@ export const ProjectsView: React.FC = () => {
                                                         row.release.version,
                                                         row.release.mono
                                                     ) ? (
-                                                        <div className="flex flex-row items-center gap-4">
-                                                            <TriangleAlert className="stroke-warning" />
-                                                            <p className="line-through">
-                                                                {row.version}{' '}
-                                                                {row.release
-                                                                    .mono &&
+                                                            <div className="flex flex-row items-center gap-4">
+                                                                <TriangleAlert className="stroke-warning" />
+                                                                <p className="line-through">
+                                                                    {row.version}{' '}
+                                                                    {row.release
+                                                                        .mono &&
                                                                     '(.NET)'}
-                                                            </p>
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            {row.version}{' '}
-                                                            {row.release.mono &&
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                {row.version}{' '}
+                                                                {row.release.mono &&
                                                                 '(.NET)'}
-                                                        </>
-                                                    )}
+                                                            </>
+                                                        )}
                                                     <ChevronsUpDown />
                                                 </button>
                                             </div>
