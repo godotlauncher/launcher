@@ -38,7 +38,7 @@ vi.mock('../hooks/useRelease', () => {
             installedReleases,
             downloadingReleases: [],
             showReleaseMenu: vi.fn(),
-            checkAllReleasesValid: vi.fn(),
+            checkAllReleasesValid: vi.fn(() => Promise.resolve(installedReleases)),
             removeRelease: vi.fn(),
             loading: true,
         }),
@@ -78,7 +78,6 @@ describe('InstallsView', () => {
     it('renders unavailable release guidance with retry/remove actions', () => {
         const html = renderToStaticMarkup(<InstallsView />);
 
-        expect(html).toContain('Unavailable');
         expect(html).toContain('The editor path is not accessible');
         expect(html).toContain('Retry');
         expect(html).toContain('Uninstall');

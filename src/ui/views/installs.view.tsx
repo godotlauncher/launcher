@@ -1,8 +1,8 @@
 import {
-    AlertTriangle,
     CircleX,
     EllipsisVertical,
     TriangleAlert,
+    TriangleAlertIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
@@ -12,16 +12,14 @@ import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
 
 type ReleaseActionDependencies = {
-    checkAllReleasesValid: () => Promise<void>;
+    checkAllReleasesValid: () => Promise<InstalledRelease[]>;
     removeRelease: (release: InstalledRelease) => Promise<void>;
 };
 
 export const createReleaseActions = (
     dependencies: ReleaseActionDependencies
 ) => ({
-    retry: async () => {
-        await dependencies.checkAllReleasesValid();
-    },
+    retry: async () => dependencies.checkAllReleasesValid(),
     remove: async (release: InstalledRelease) => {
         await dependencies.removeRelease(release);
     },
@@ -80,14 +78,89 @@ export const InstallsView: React.FC = () => {
         [checkAllReleasesValid, removeRelease]
     );
 
-    const handleRetry = async () => {
+    const handleRetry = async (release: InstalledRelease) => {
         addAlert(t('common:info'), t('messages.revalidating'));
         try {
-            await releaseActions.retry();
-            // todo: after revalidating, show if the release is valid or not and suggest to check the folder manually by adding the path. include in locales
-            addAlert(t('common:success'), t('messages.revalidated'));
+            const releases = await releaseActions.retry();
+            const refreshedRelease = releases.find(
+                (candidate) =>
+                    candidate.version === release.version &&
+                    candidate.mono === release.mono
+            );
+
+            if (refreshedRelease?.valid) {
+                addAlert(
+                    t('common:success'),
+                    t('messages.revalidatedRelease', {
+                        version: release.version,
+                    })
+                );
+                return;
+            }
+
+            const rawPath =
+                refreshedRelease?.editor_path ||
+                refreshedRelease?.install_path ||
+                release.editor_path ||
+                release.install_path;
+
+            const candidatePath = rawPath
+                ? (rawPath.endsWith('/')
+                      ? rawPath
+                      : rawPath.substring(0, rawPath.lastIndexOf('/') + 1)) ||
+                  rawPath
+                : undefined;
+
+            if (candidatePath) {
+                addAlert(
+                    t('common:warning'),
+                    <span className="flex flex-col gap-2">
+                        <span>
+                            {t('messages.revalidationStillMissing', {
+                                version: release.version,
+                                path: rawPath,
+                            })}
+                        </span>
+                        <span className="flex flex-row gap-2">
+                            <button
+                                className="btn btn-xs btn-outline"
+                                onClick={async () => {
+                                    await navigator.clipboard.writeText(
+                                        candidatePath
+                                    );
+                                }}
+                            >
+                                {t('buttons.copyPath', { ns: 'common' })}
+                            </button>
+                            <button
+                                className="btn btn-xs btn-outline"
+                                onClick={() =>
+                                    window.electron.openShellFolder(
+                                        candidatePath
+                                    )
+                                }
+                            >
+                                {t('buttons.openPath', { ns: 'common' })}
+                            </button>
+                        </span>
+                    </span>,
+                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />
+                );
+            } else {
+                addAlert(
+                    t('common:warning'),
+                    t('messages.revalidationStillMissingNoPath', {
+                        version: release.version,
+                    }),
+                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />
+                );
+            }
         } catch (error) {
-            addAlert(t('common:error'), t('messages.revalidationFailed'));
+            addAlert(
+                t('common:error'),
+                t('messages.revalidationFailed'),
+                <TriangleAlertIcon className="inline w-4 h-4 text-error" />
+            );
             console.error(error);
         }
     };
@@ -175,7 +248,7 @@ export const InstallsView: React.FC = () => {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex flex-row gap-2 flex-wrap items-center">
                                                     {row.valid === false && (
-                                                        <AlertTriangle className="w-4 h-4 text-warning" />
+                                                        <TriangleAlert className="w-4 h-4 text-warning" />
                                                     )}
                                                     {row.version}
                                                     {row.mono && (
@@ -202,8 +275,10 @@ export const InstallsView: React.FC = () => {
                                                             <div className="flex flex-row flex-wrap gap-2">
                                                                 <button
                                                                     className="btn btn-ghost btn-xs flex items-center gap-2"
-                                                                    onClick={
-                                                                        handleRetry
+                                                                    onClick={() =>
+                                                                        handleRetry(
+                                                                            row
+                                                                        )
                                                                     }
                                                                     disabled={
                                                                         releasesLoading
