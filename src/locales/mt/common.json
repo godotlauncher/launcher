@@ -8,8 +8,10 @@
     "continue": "Kompli",
     "skip": "Aqbeż",
     "select": "Agħżel",
-    "retry": "Retry",
-    "remove": "Remove"
+    "retry": "Erġa' pprova",
+    "remove": "Neħħi",
+    "copyPath": "Ikopja l-perkors",
+    "openPath": "Iftaħ il-perkors"
   },
   "loading": "Qed jillowdja...",
   "saving": "Qed jikteb...",

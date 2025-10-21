@@ -52,7 +52,10 @@
     "unavailableHint": "O caminho do editor não está acessível. Monta o dispositivo de armazenamento e tenta novamente, ou desinstala a versão.",
     "revalidating": "A validar as versões instaladas...",
     "revalidated": "Validação concluída.",
-    "revalidationFailed": "A validação falhou. Verifica o dispositivo de armazenamento e tenta novamente."
+    "revalidatedRelease": "{{version}} voltou a ficar disponível.",
+    "revalidationFailed": "A validação falhou. Verifica o dispositivo de armazenamento e tenta novamente.",
+    "revalidationStillMissing": "A validação terminou mas {{version}} continua indisponível. Garante que {{path}} está acessível antes de tentares novamente.",
+    "revalidationStillMissingNoPath": "A validação terminou mas {{version}} continua indisponível. Garante que o dispositivo de armazenamento está montado antes de tentares novamente."
   },
   "install": {
     "title": "Instalar editor Godot",

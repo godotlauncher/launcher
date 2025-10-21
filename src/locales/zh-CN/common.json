@@ -8,8 +8,10 @@
     "continue": "继续",
     "skip": "跳过",
     "select": "选择",
-    "retry": "Retry",
-    "remove": "Remove"
+    "retry": "重试",
+    "remove": "删除",
+    "copyPath": "复制路径",
+    "openPath": "打开路径"
   },
   "loading": "加载中...",
   "saving": "保存中...",

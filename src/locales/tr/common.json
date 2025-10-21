@@ -8,8 +8,10 @@
     "continue": "Devam",
     "skip": "Atla",
     "select": "Seç",
-    "retry": "Retry",
-    "remove": "Remove"
+    "retry": "Tekrar dene",
+    "remove": "Kaldır",
+    "copyPath": "Yolu kopyala",
+    "openPath": "Yolu aç"
   },
   "loading": "Yükleniyor...",
   "saving": "Kaydediliyor...",

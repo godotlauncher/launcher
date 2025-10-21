@@ -52,7 +52,10 @@
     "unavailableHint": "Ścieżka edytora jest niedostępna. Zamontuj urządzenie pamięci i spróbuj ponownie albo odinstaluj wydanie.",
     "revalidating": "Weryfikowanie zainstalowanych wydań...",
     "revalidated": "Weryfikacja zakończona.",
-    "revalidationFailed": "Weryfikacja nie powiodła się. Sprawdź urządzenie pamięci i spróbuj ponownie."
+    "revalidatedRelease": "{{version}} jest ponownie dostępne.",
+    "revalidationFailed": "Weryfikacja nie powiodła się. Sprawdź urządzenie pamięci i spróbuj ponownie.",
+    "revalidationStillMissing": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że {{path}} jest dostępne przed ponowną próbą.",
+    "revalidationStillMissingNoPath": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że urządzenie pamięci jest zamontowane przed ponowną próbą."
   },
   "install": {
     "title": "Zainstaluj edytor Godot",

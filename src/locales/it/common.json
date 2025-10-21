@@ -8,8 +8,10 @@
     "continue": "Continua",
     "skip": "Salta",
     "select": "Seleziona",
-    "retry": "Retry",
-    "remove": "Remove"
+    "retry": "Riprova",
+    "remove": "Rimuovi",
+    "copyPath": "Copia percorso",
+    "openPath": "Apri percorso"
   },
   "loading": "Caricamento...",
   "saving": "Salvataggio...",

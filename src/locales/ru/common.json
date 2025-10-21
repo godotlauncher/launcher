@@ -8,8 +8,10 @@
     "continue": "Продолжить",
     "skip": "Пропустить",
     "select": "Выбрать",
-    "retry": "Retry",
-    "remove": "Remove"
+    "retry": "Повторить",
+    "remove": "Удалить",
+    "copyPath": "Копировать путь",
+    "openPath": "Открыть путь"
   },
   "loading": "Загрузка...",
   "saving": "Сохранение...",

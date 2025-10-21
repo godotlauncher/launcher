@@ -52,7 +52,10 @@
     "unavailableHint": "Der Editor-Pfad ist nicht erreichbar. Binde das Speichermedium ein und versuche es erneut oder deinstalliere die Version.",
     "revalidating": "Installierte Releases werden überprüft...",
     "revalidated": "Überprüfung abgeschlossen.",
-    "revalidationFailed": "Überprüfung fehlgeschlagen. Prüfe das Speichermedium und versuche es erneut."
+    "revalidatedRelease": "{{version}} ist wieder verfügbar.",
+    "revalidationFailed": "Überprüfung fehlgeschlagen. Prüfe das Speichermedium und versuche es erneut.",
+    "revalidationStillMissing": "Die Überprüfung ist abgeschlossen, aber {{version}} ist weiterhin nicht verfügbar. Stelle sicher, dass {{path}} zugänglich ist, bevor du es erneut versuchst.",
+    "revalidationStillMissingNoPath": "Die Überprüfung ist abgeschlossen, aber {{version}} ist weiterhin nicht verfügbar. Stelle sicher, dass das Speichermedium eingehängt ist, bevor du es erneut versuchst."
   },
   "install": {
     "title": "Godot Editor installieren",

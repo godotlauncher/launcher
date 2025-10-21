@@ -52,7 +52,10 @@
     "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release.",
     "revalidating": "Validating installed releases...",
     "revalidated": "Validation complete.",
-    "revalidationFailed": "Validation failed. Check your storage device and try again."
+    "revalidatedRelease": "{{version}} is reachable again.",
+    "revalidationFailed": "Validation failed. Check your storage device and try again.",
+    "revalidationStillMissing": "Validation finished but {{version}} is still unavailable. Confirm {{path}} is accessible before retrying.",
+    "revalidationStillMissingNoPath": "Validation finished but {{version}} is still unavailable. Confirm the storage device is mounted before retrying."
   },
   "install": {
     "title": "Install Godot Editor",

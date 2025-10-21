@@ -52,7 +52,10 @@
     "unavailableHint": "エディターのパスにアクセスできません。ストレージデバイスをマウントしてから再試行するか、リリースをアンインストールしてください。",
     "revalidating": "インストール済みリリースを検証しています...",
     "revalidated": "検証が完了しました。",
-    "revalidationFailed": "検証に失敗しました。ストレージデバイスを確認してから再試行してください。"
+    "revalidatedRelease": "{{version}} は再び利用可能になりました。",
+    "revalidationFailed": "検証に失敗しました。ストレージデバイスを確認してから再試行してください。",
+    "revalidationStillMissing": "検証は完了しましたが {{version}} はまだ利用できません。再試行する前に {{path}} がアクセス可能か確認してください。",
+    "revalidationStillMissingNoPath": "検証は完了しましたが {{version}} はまだ利用できません。再試行する前にストレージデバイスがマウントされているか確認してください。"
   },
   "install": {
     "title": "Godotエディタをインストール",
