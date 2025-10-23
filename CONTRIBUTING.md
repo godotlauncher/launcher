@@ -79,15 +79,16 @@ For bug fixes, if you're unsure about the best solution, discuss it first on [Di
 
 ### Writing Good Commit Messages
 
-A well-structured commit message helps with code history and future debugging. Follow these guidelines:
+A well-structured commit message helps with code history and future debugging. We follow the [Conventional Commits](https://www.conventionalcommits.org/) format so changelog automation stays reliable. Follow these guidelines:
 
+- Start the subject line with a Conventional Commit type such as `feat`, `fix`, `chore`, or `docs`, and add a scope when it clarifies the change (e.g., `feat(installs): ...`).  
 - Keep the first line **concise and descriptive** (under 72 characters if possible).  
-- Use **imperative form** (e.g., `Fix bug in project settings`, `Add auto-update feature`).  
+- Write the summary in **imperative form** (e.g., `fix: handle custom project paths`, `feat: add auto-update toggle`).  
 - If needed, provide more details in a second paragraph.  
 
 **Examples of good commit messages:**
 ```
-Fix issue with incorrect version detection on startup
+fix: correct version detection on startup
 
 Previously, the launcher failed to detect custom Godot versions correctly
 due to missing path validation. This update adds proper validation and 
@@ -95,7 +96,7 @@ fallbacks.
 ```
 
 ```
-Add quick project access from system tray
+feat: add quick project access from system tray
 
 Users can now right-click the tray icon to instantly open recent projects.
 This improves usability and saves time navigating the project list.
