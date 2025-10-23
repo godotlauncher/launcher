@@ -58,6 +58,16 @@ Join our **[Godot Launcher Discord server](https://discord.gg/Ju9jkFJGvz)** to c
 
 If you’re interested in contributing to Godot Launcher, see the [Contributing](#contributing) section below.
 
+## Versioning
+
+Godot Launcher follows [Semantic Versioning](https://semver.org/) for all releases. Versions are tagged in Git and listed in `package.json` using the `vMAJOR.MINOR.PATCH` format.
+
+- **MAJOR**: breaking changes or updates that require manual migration.
+- **MINOR**: backward-compatible improvements and new features.
+- **PATCH**: backward-compatible bug fixes and maintenance updates.
+
+Pre-release builds include suffixes like `-beta.1` or `-rc.1`. Document noteworthy changes in `CHANGELOG.md` before cutting a release so downstream users can track what changed.
+
 ## Contributing
 
 > [!IMPORTANT]\
