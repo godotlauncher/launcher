@@ -8,6 +8,7 @@ The Godot Launcher website has a dedicated [contributing section](https://godotl
 
 - [Reporting Bugs](#reporting-bugs)
 - [Proposing Features](#proposing-features)
+- [Contributing Translations](#contributing-translations)
 - [Contributing Pull Requests](#contributing-pull-requests)
 
 ## Reporting Bugs
@@ -34,6 +35,18 @@ Please follow the template instructions.
 
 - **Create one proposal per feature** to keep discussions focused.  
 - If a feature feels too large or complex, discuss it first on [Discord](http://discord.gg/Ju9jkFJGvz).  
+
+---
+
+## Contributing Translations
+
+Our interface translations were initially seeded with AI-generated content, so every language benefits from human review. If you spot awkward phrasing or want to add a new locale, we would love your help.
+
+- Start with the detailed [Contributing Translations guide](CONTRIBUTING_TRANSLATIONS.md) for setup, required files, and testing tips.  
+- Improvements of existing strings, terminology fixes, and typo corrections are all valuable contributions—no change is too small.  
+- When adding a new language, remember to copy all locale namespaces, keep JSON keys intact, and register the language in the selector component as described in the guide.
+
+Once you've verified the UI locally, open a PR so we can review and ship your updates to the community.
 
 ---
 
