@@ -229,10 +229,12 @@ export function registerHandlers() {
 
     // ##### tools #####
 
-    ipcMainHandler(
-        'get-installed-tools',
-        async () => await getInstalledTools()
-    );
+    ipcMainHandler('get-installed-tools', async () => {
+        const tools = await getInstalledTools();
+        const { refreshToolCache } = await import('./services/toolCache.js');
+        await refreshToolCache(tools);
+        return tools;
+    });
 
     ipcMainHandler('relaunch-app', async () => {
         app.relaunch();

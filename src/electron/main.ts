@@ -137,6 +137,20 @@ app.on('ready', async () => {
     await checkAndUpdateProjects();
     await checkAndUpdateReleases();
 
+    // Background tool cache refresh if stale
+    logger.debug('Checking tool cache...');
+    const { isCacheStale, refreshToolCache } = await import(
+        './services/toolCache.js'
+    );
+    if (await isCacheStale()) {
+        logger.debug('Tool cache is stale, refreshing in background...');
+        refreshToolCache().catch((err) => {
+            logger.error('Failed to refresh tool cache:', err);
+        });
+    } else {
+        logger.debug('Tool cache is fresh');
+    }
+
     const mainWindow = new BrowserWindow({
         width: 1024,
         height: 600,

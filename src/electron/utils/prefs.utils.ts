@@ -110,7 +110,8 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
         mergedPrefs = { ...defaultPrefs, ...prefs };
     } catch (e) {
         logger.debug('Could not parse user preferences, using defaults', e);
-        // todo: translate message to all locales
+        logger.debug('Corrupted preferences data:', prefsData);
+        // todo: translate message
         await dialog.showMessageBox(getMainWindow(), {
             type: 'error',
             title: 'Error reading preferences',
