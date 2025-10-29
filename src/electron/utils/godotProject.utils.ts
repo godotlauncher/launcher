@@ -247,3 +247,110 @@ export async function createNewEditorSettings(
 
 }
 
+/**
+ * Updates specific keys in an existing Godot editor settings file (.tres format).
+ * Preserves all other settings, comments, and resource definitions.
+ * 
+ * This function performs targeted updates on the editor settings file without
+ * replacing the entire file, which preserves user customizations and theme settings.
+ * 
+ * @param editorSettingsPath - Full path to the editor settings file (.tres)
+ * @param updates - Object containing the keys to update
+ * @param updates.execPath - The executable path for the external editor (optional)
+ * @param updates.execFlags - The command line flags to pass to the external editor (optional)
+ * @param updates.useExternalEditor - Whether to enable external editor (optional)
+ * @param updates.isMono - Whether this is a mono/.NET project (adds dotnet editor settings) (optional)
+ * 
+ * @returns A Promise that resolves when the update is complete
+ * @throws Will throw an error if the file doesn't exist or cannot be read/written
+ * 
+ * @example
+ * ```typescript
+ * await updateEditorSettings('/path/to/editor_settings-4.5.tres', {
+ *   execPath: 'C:\\Program Files\\VSCode\\Code.exe',
+ *   execFlags: '{project} --goto {file}:{line}:{col}',
+ *   useExternalEditor: true,
+ *   isMono: true
+ * });
+ * ```
+ */
+export async function updateEditorSettings(
+    editorSettingsPath: string,
+    updates: {
+        execPath?: string;
+        execFlags?: string;
+        useExternalEditor?: boolean;
+        isMono?: boolean;
+    }
+): Promise<void> {
+    if (!fs.existsSync(editorSettingsPath)) {
+        throw new Error(`Editor settings file not found: ${editorSettingsPath}`);
+    }
+
+    let content = await fs.promises.readFile(editorSettingsPath, 'utf-8');
+
+    // normalize Windows paths (double backslashes for Godot .tres format)
+    const normalizedExecPath = updates.execPath && process.platform === 'win32'
+        ? updates.execPath.replace(/\\/g, '\\\\')
+        : updates.execPath;
+
+    // build the settings map with proper formatting
+    const settingsMap: Record<string, string> = {};
+    
+    if (normalizedExecPath !== undefined) {
+        settingsMap['text_editor/external/exec_path'] = `"${normalizedExecPath}"`;
+    }
+    if (updates.execFlags !== undefined) {
+        settingsMap['text_editor/external/exec_flags'] = `"${updates.execFlags}"`;
+    }
+    if (updates.useExternalEditor !== undefined) {
+        settingsMap['text_editor/external/use_external_editor'] = updates.useExternalEditor.toString();
+    }
+    
+    // add mono/.NET specific settings
+    if (updates.isMono !== undefined && updates.isMono === true) {
+        settingsMap['dotnet/editor/external_editor'] = '4';
+        settingsMap['dotnet/editor/custom_exec_path_args'] = '"{file}"';
+    }
+
+    // helper to escape special regex characters
+    const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    for (const [key, value] of Object.entries(settingsMap)) {
+        const escapedKey = escapeRegExp(key);
+        
+        // match line like: text_editor/external/exec_path = "..."
+        // captures the entire line including any existing value
+        const regex = new RegExp(
+            `^(${escapedKey})\\s*=\\s*(.*)$`,
+            'm'
+        );
+
+        if (regex.test(content)) {
+            // update existing key, preserving the key and replacing only the value
+            content = content.replace(regex, `$1 = ${value}`);
+        } else {
+            // key not found, append it in the [resource] section
+            // find the [resource] section and append before the next section or end of file
+            const resourceSectionRegex = /(\[resource\][\s\S]*?)(\n\[|$)/;
+            if (resourceSectionRegex.test(content)) {
+                content = content.replace(
+                    resourceSectionRegex,
+                    (match, resourceSection, nextPart) => {
+                        // append the new key at the end of the resource section
+                        return `${resourceSection}${key} = ${value}\n${nextPart}`;
+                    }
+                );
+            } else {
+                // fallback: append at end if no [resource] section found (shouldn't happen)
+                content = content.trimEnd() + `\n${key} = ${value}\n`;
+            }
+        }
+    }
+
+    // atomic write: write to temp file then rename
+    const tmpPath = editorSettingsPath + '.tmp';
+    await fs.promises.writeFile(tmpPath, content, 'utf-8');
+    await fs.promises.rename(tmpPath, editorSettingsPath);
+}
+

@@ -81,11 +81,5 @@
       "invalidPath": "Caminho do projeto inválido"
     }
   },
-  "searchPlaceholder": "Pesquisar projetos...",
-  "editorSettings": {
-    "title": "Definições do Editor",
-    "alreadyExists": "As definições do editor para {{version}} [.NET] já existem e não foram feitas alterações para proteger a sua configuração.",
-    "switchingToDotNet": "Se está a mudar para uma versão .NET do GDScript, pode configurar manualmente o Editor Externo em <strong>Definições do Editor -> Dotnent</strong> (interruptor avançado: true).",
-    "readMore": "Ler mais"
-  }
+  "searchPlaceholder": "Pesquisar projetos..."
 }

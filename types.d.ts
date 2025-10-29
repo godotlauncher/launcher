@@ -74,17 +74,9 @@ type ProjectDetails = {
 
 };
 
-type EditorSettingsInfo = {
-    settingsCreated: boolean;
-    shouldReportOnSettings: boolean;
-};
-
-type AdditionalInfo = string | EditorSettingsInfo;
-
 type BackendResult = {
     success: boolean;
     error?: string;
-    additionalInfo?: AdditionalInfo;
 };
 
 type InstallReleaseResult = BackendResult & {
