@@ -34,5 +34,9 @@
   "error": {
     "title": "錯誤",
     "generic": "發生錯誤：{{message}}"
+  },
+  "preferencesError": {
+    "title": "讀取偏好設定時發生錯誤",
+    "message": "無法解析使用者偏好設定。將使用預設偏好設定。"
   }
 }

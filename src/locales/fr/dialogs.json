@@ -34,5 +34,9 @@
   "error": {
     "title": "Erreur",
     "generic": "Une erreur s'est produite : {{message}}"
+  },
+  "preferencesError": {
+    "title": "Erreur de lecture des préférences",
+    "message": "Impossible d'analyser les préférences utilisateur. Utilisation des préférences par défaut."
   }
 }

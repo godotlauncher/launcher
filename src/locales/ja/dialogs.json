@@ -34,5 +34,9 @@
   "error": {
     "title": "エラー",
     "generic": "エラーが発生しました：{{message}}"
+  },
+  "preferencesError": {
+    "title": "設定の読み取りエラー",
+    "message": "ユーザー設定を解析できませんでした。デフォルト設定を使用します。"
   }
 }

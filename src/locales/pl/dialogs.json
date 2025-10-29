@@ -34,5 +34,9 @@
   "error": {
     "title": "Błąd",
     "generic": "Wystąpił błąd: {{message}}"
+  },
+  "preferencesError": {
+    "title": "Błąd odczytu preferencji",
+    "message": "Nie można przeanalizować preferencji użytkownika. Zostają użyte domyślne preferencje."
   }
 }

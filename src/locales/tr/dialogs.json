@@ -34,5 +34,9 @@
   "error": {
     "title": "Hata",
     "generic": "Bir hata oluştu: {{message}}"
+  },
+  "preferencesError": {
+    "title": "Tercihler okunurken hata oluştu",
+    "message": "Kullanıcı tercihleri ayrıştırılamadı. Varsayılan tercihler kullanılıyor."
   }
 }

@@ -34,5 +34,9 @@
   "error": {
     "title": "Fehler",
     "generic": "Es ist ein Fehler aufgetreten: {{message}}"
+  },
+  "preferencesError": {
+    "title": "Fehler beim Lesen der Einstellungen",
+    "message": "Benutzereinstellungen konnten nicht gelesen werden. Standardeinstellungen werden verwendet."
   }
 }

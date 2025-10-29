@@ -34,5 +34,9 @@
   "error": {
     "title": "错误",
     "generic": "发生错误：{{message}}"
+  },
+  "preferencesError": {
+    "title": "读取首选项时出错",
+    "message": "无法解析用户首选项。将使用默认首选项。"
   }
 }
