@@ -24,7 +24,8 @@
     "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
     "windowedMode": "Bu proje pencere modunda açık",
     "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
-    "invalidRelease": "Editör kullanılamıyor"
+    "invalidRelease": "Editör kullanılamıyor",
+    "gitProject": "Proje sürüm kontrolü için Git kullanıyor"
   },
   "addProject": {
     "selectFile": "Proje Dosyasını Seç",
@@ -95,6 +96,12 @@
       "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
       "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
       "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
+    }
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "Proje bulunamadı",
+      "initFailed": "Git deposu başlatılamadı."
     }
   }
 }

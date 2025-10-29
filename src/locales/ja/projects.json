@@ -24,7 +24,8 @@
     "prerelease": "プレリリース版のGodotエディタを使用しています",
     "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
     "invalidRelease": "Editor unavailable",
-    "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています"
+    "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています",
+    "gitProject": "このプロジェクトはバージョン管理に Git を使用しています"
   },
   "addProject": {
     "selectFile": "プロジェクトファイルを選択",
@@ -96,5 +97,11 @@
     "alreadyExists": "{{version}} [.NET]のエディタ設定は既に存在しており、設定を保護するために変更は行われませんでした。",
     "switchingToDotNet": "GDScriptから.NETバージョンに切り替える場合は、<strong>エディタ設定 -> Dotnent</strong>から外部エディタを手動で設定できます（高度なスイッチ：true）。",
     "readMore": "詳細を読む"
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "プロジェクトが見つかりません",
+      "initFailed": "Git リポジトリの初期化に失敗しました。"
+    }
   }
 }

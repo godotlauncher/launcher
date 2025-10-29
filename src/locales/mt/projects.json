@@ -24,7 +24,8 @@
     "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
     "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
     "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
-    "invalidRelease": "L-editur mhux disponibbli"
+    "invalidRelease": "L-editur mhux disponibbli",
+    "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni"
   },
   "addProject": {
     "selectFile": "Agħżel Fajl tal-Proġett",
@@ -96,5 +97,11 @@
     "alreadyExists": "Settings tal-editur għal {{version}} [.NET] diġà jeżistu u ebda tibdil ma sar biex nipproteġu s-setup tiegħek.",
     "switchingToDotNet": "Jekk qed tibdel għal verżjoni .NET minn GDScript, tista' manwalment tikkonfigura External Editor minn <strong>Editor Settings -> Dotnent</strong> (advanced switch: true).",
     "readMore": "Aqra Iktar"
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "Il-proġett ma nstabx",
+      "initFailed": "Il-bidu tar-repositorju Git falla."
+    }
   }
 }

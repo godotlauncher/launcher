@@ -20,7 +20,9 @@
         "importEditorSettings": "從檔案匯入編輯器設定",
         "removeFromList": "從清單移除專案",
         "useVSCode": "將 Visual Studio Code 作為文字編輯器",
-        "useVSCodeTooltip": "啟用或停用 Visual Studio Code 作為此專案的外部腳本編輯器。"
+        "useVSCodeTooltip": "啟用或停用 Visual Studio Code 作為此專案的外部腳本編輯器。",
+        "initGit": "初始化 Git 儲存庫",
+        "initGitTooltip": "在此專案資料夾中建立新的 Git 儲存庫。"
     },
     "release": {
         "openInstalledFolder": "開啟已安裝資料夾",

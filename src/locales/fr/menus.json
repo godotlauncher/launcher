@@ -18,6 +18,8 @@
         "openWindowedTooltip": "Lorsque cette option est cochée, Godot se lancera en mode fenêtré.",
         "useVSCode": "Utiliser Visual Studio Code comme éditeur de texte",
         "useVSCodeTooltip": "Activer ou désactiver Visual Studio Code comme éditeur externe pour ce projet.",
+        "initGit": "Initialiser le dépôt Git",
+        "initGitTooltip": "Crée un nouveau dépôt Git dans ce dossier projet.",
         "exportEditorSettings": "Exporter les paramètres de l'éditeur vers un fichier",
         "importEditorSettings": "Importer les paramètres de l'éditeur depuis un fichier",
         "removeFromList": "Retirer le projet de la liste"

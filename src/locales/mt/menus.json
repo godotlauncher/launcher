@@ -20,7 +20,9 @@
         "importEditorSettings": "Importa Settings tal-Editur minn Fajl",
         "removeFromList": "Neħħi Proġett mil-Lista",
         "useVSCode": "Uza Visual Studio Code bhala editur tat-test",
-        "useVSCodeTooltip": "Ixgħel jew itfi Visual Studio Code bhala l-editur estern ta' dan il-proġett."
+        "useVSCodeTooltip": "Ixgħel jew itfi Visual Studio Code bhala l-editur estern ta' dan il-proġett.",
+        "initGit": "Inizjalizza Repositorju Git",
+        "initGitTooltip": "Oħloq repositorju Git ġdid f'din il-folder tal-proġett."
     },
     "release": {
         "openInstalledFolder": "Iftaħ Folder tal-Installazzjoni",

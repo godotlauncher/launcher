@@ -24,7 +24,8 @@
     "vsCodeProject": "Visual Studio Code integration is enabled for this project",
     "prerelease": "Using a pre-release Godot editor version",
     "windowedMode": "This project is open in windowed mode",
-    "invalidRelease": "Editor unavailable"
+    "invalidRelease": "Editor unavailable",
+    "gitProject": "Project uses Git version control"
   },
   "addProject": {
     "selectFile": "Select Project File",
@@ -72,6 +73,12 @@
       "vscodeNotInstalled": "Visual Studio Code is not installed on this computer.",
       "missingLaunchPath": "Godot launch path is missing for this project.",
       "invalidProjectDefinition": "Unable to determine editor settings template for this Godot version."
+    }
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "Project not found",
+      "initFailed": "Failed to initialize Git repository."
     }
   },
   "createProject": {

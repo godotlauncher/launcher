@@ -24,7 +24,8 @@
     "prerelease": "Używa wersji testowej edytora Godot",
     "windowedMode": "Ten projekt otwiera się w trybie okienkowym",
     "vsCodeProject": "Visual Studio Code jest włączony jako zewnętrzny edytor dla tego projektu",
-    "invalidRelease": "Edytor niedostępny"
+    "invalidRelease": "Edytor niedostępny",
+    "gitProject": "Projekt używa systemu kontroli wersji Git"
   },
   "addProject": {
     "selectFile": "Wybierz plik projektu",
@@ -95,6 +96,12 @@
       "vscodeNotInstalled": "Visual Studio Code nie jest zainstalowany na tym komputerze.",
       "missingLaunchPath": "Brakuje ścieżki uruchamiania Godot dla tego projektu.",
       "invalidProjectDefinition": "Nie można ustalić szablonu ustawień edytora dla tej wersji Godot."
+    }
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "Nie znaleziono projektu",
+      "initFailed": "Nie udało się zainicjować repozytorium Git."
     }
   }
 }

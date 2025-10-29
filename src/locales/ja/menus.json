@@ -20,7 +20,9 @@
         "importEditorSettings": "ファイルからエディタ設定をインポート",
         "removeFromList": "リストからプロジェクトを削除",
         "useVSCode": "Visual Studio Code をテキストエディターとして使用する",
-        "useVSCodeTooltip": "このプロジェクトの外部スクリプトエディターとして Visual Studio Code を有効または無効にします。"
+        "useVSCodeTooltip": "このプロジェクトの外部スクリプトエディターとして Visual Studio Code を有効または無効にします。",
+        "initGit": "Git リポジトリを初期化",
+        "initGitTooltip": "このプロジェクトフォルダーに新しい Git リポジトリを作成します。"
     },
     "release": {
         "openInstalledFolder": "インストールフォルダを開く",

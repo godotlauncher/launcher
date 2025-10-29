@@ -24,7 +24,8 @@
     "vsCodeProject": "Visual Studio Code ist als externer Editor aktiviert",
     "prerelease": "Verwende eine Vorabversion des Godot-Editors",
     "windowedMode": "Dieses Projekt ist im Fenstermodus geöffnet",
-    "invalidRelease": "Editor unavailable"
+    "invalidRelease": "Editor unavailable",
+    "gitProject": "Projekt verwendet Git zur Versionsverwaltung"
   },
   "addProject": {
     "selectFile": "Projektdatei auswählen",
@@ -96,5 +97,11 @@
     "alreadyExists": "Editor-Einstellungen für {{version}} [.NET] sind bereits vorhanden und es wurden keine Änderungen vorgenommen, um Ihre Konfiguration zu schützen.",
     "switchingToDotNet": "Wenn Sie von GDScript zu einer .NET-Version wechseln, können Sie den externen Editor manuell unter <strong>Editor-Einstellungen -> Dotnent</strong> konfigurieren (erweiterter Schalter: true).",
     "readMore": "Mehr erfahren"
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "Projekt nicht gefunden",
+      "initFailed": "Git-Repository konnte nicht initialisiert werden."
+    }
   }
 }

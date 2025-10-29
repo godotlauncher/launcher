@@ -20,7 +20,9 @@
         "importEditorSettings": "从文件导入编辑器设置",
         "removeFromList": "从列表中移除项目",
         "useVSCode": "将 Visual Studio Code 用作文本编辑器",
-        "useVSCodeTooltip": "为此项目启用或禁用 Visual Studio Code 作为外部脚本编辑器。"
+        "useVSCodeTooltip": "为此项目启用或禁用 Visual Studio Code 作为外部脚本编辑器。",
+        "initGit": "初始化 Git 仓库",
+        "initGitTooltip": "在此项目文件夹中创建新的 Git 仓库。"
     },
     "release": {
         "openInstalledFolder": "打开已安装文件夹",

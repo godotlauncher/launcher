@@ -20,7 +20,9 @@
         "importEditorSettings": "Импортировать настройки редактора из файла",
         "removeFromList": "Удалить проект из списка",
         "useVSCode": "Использовать Visual Studio Code как текстовый редактор",
-        "useVSCodeTooltip": "Включить или отключить Visual Studio Code как внешний редактор скриптов для этого проекта."
+        "useVSCodeTooltip": "Включить или отключить Visual Studio Code как внешний редактор скриптов для этого проекта.",
+        "initGit": "Инициализировать репозиторий Git",
+        "initGitTooltip": "Создает новый репозиторий Git в этой папке проекта."
     },
     "release": {
         "openInstalledFolder": "Открыть папку установки",

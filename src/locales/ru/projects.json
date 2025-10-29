@@ -24,7 +24,8 @@
     "prerelease": "Используется пререлизная версия редактора Godot",
     "windowedMode": "Этот проект открыт в оконном режиме",
     "vsCodeProject": "Для этого проекта Visual Studio Code включен как внешний редактор",
-    "invalidRelease": "Редактор недоступен"
+    "invalidRelease": "Редактор недоступен",
+    "gitProject": "Проект использует Git для контроля версий"
   },
   "addProject": {
     "selectFile": "Выбрать файл проекта",
@@ -95,6 +96,12 @@
       "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере.",
       "missingLaunchPath": "Не найден путь запуска Godot для этого проекта.",
       "invalidProjectDefinition": "Не удалось определить шаблон настроек редактора для этой версии Godot."
+    }
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "Проект не найден",
+      "initFailed": "Не удалось инициализировать репозиторий Git."
     }
   }
 }

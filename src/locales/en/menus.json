@@ -18,6 +18,8 @@
         "openWindowedTooltip": "When this option is checked, Godot will launch in windowed mode.",
         "useVSCode": "Use Visual Studio Code as Text Editor",
         "useVSCodeTooltip": "Toggle Visual Studio Code as the external script editor for this project.",
+        "initGit": "Initialize Git Repository",
+        "initGitTooltip": "Create a new Git repository in this project folder.",
         "exportEditorSettings": "Export Editor Settings to File",
         "importEditorSettings": "Import Editor Settings from File",
         "removeFromList": "Remove Project From List"

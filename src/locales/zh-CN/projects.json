@@ -24,7 +24,8 @@
     "prerelease": "使用预发行版 Godot 编辑器",
     "windowedMode": "此项目以窗口模式打开",
     "vsCodeProject": "此项目已启用 Visual Studio Code 作为外部编辑器",
-    "invalidRelease": "编辑器不可用"
+    "invalidRelease": "编辑器不可用",
+    "gitProject": "该项目使用 Git 进行版本控制"
   },
   "addProject": {
     "selectFile": "选择项目文件",
@@ -95,6 +96,12 @@
       "vscodeNotInstalled": "此计算机上未安装 Visual Studio Code。",
       "missingLaunchPath": "缺少此项目的 Godot 启动路径。",
       "invalidProjectDefinition": "无法确定此 Godot 版本的编辑器设置模板。"
+    }
+  },
+  "initGit": {
+    "errors": {
+      "projectNotFound": "未找到项目",
+      "initFailed": "初始化 Git 仓库失败。"
     }
   }
 }
