@@ -57,6 +57,7 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
         return { ...defaultPrefs, ...prefs };
     } catch (e) {
         logger.debug('Could not parse user preferences, using defaults', e);
+        // todo: translate message to all locales
         await dialog.showMessageBox(getMainWindow(), {
             type: 'error',
             title: 'Error reading preferences',
