@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -18,7 +17,9 @@ vi.mock('react-i18next', () => {
     return {
         useTranslation: (namespaces?: string[]) => ({
             t: (key: string, opts?: { ns?: string }) => {
-                const namespace = opts?.ns ?? (Array.isArray(namespaces) ? namespaces[0] : namespaces);
+                const namespace =
+                    opts?.ns ??
+                    (Array.isArray(namespaces) ? namespaces[0] : namespaces);
                 const dictKey = namespace ? `${namespace}:${key}` : key;
                 return dictionary[dictKey] ?? key;
             },
