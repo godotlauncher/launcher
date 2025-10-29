@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
-import { beforeEach, describe, expect, it, MockedObject, suite, vi } from 'vitest';
-import { getConfigDir, getDefaultPrefs, getPrefsPath, readPrefsFromDisk, writePrefsToDisk } from './prefs.utils';
+import { afterEach, beforeEach, describe, expect, it, MockedObject, suite, vi } from 'vitest';
+import { __resetPrefsCacheForTesting, getConfigDir, getDefaultPrefs, getPrefsPath, readPrefsFromDisk, writePrefsToDisk } from './prefs.utils';
 
 import { APP_INTERNAL_NAME } from '../constants';
 import { getDefaultDirs } from "./platform.utils";
@@ -82,6 +82,9 @@ const fsMock = fs as unknown as MockedObject<typeof fs>;
 const fsPromisesMock = fs.promises as unknown as MockedObject<typeof fs.promises>;
 
 suite('prefs.util', test => {
+    afterEach(() => {
+        __resetPrefsCacheForTesting();
+    });
     describe('should be able to get default data and config locations for Windows', () => {
         beforeEach(() => {
             (os.platform as any).mockReturnValue('win32');
@@ -224,7 +227,7 @@ suite('prefs.util', test => {
 
 
         const prefsPath = "/home/user/.godot/prefs.json";
-        const prefs = writePrefsToDisk(prefsPath, { a: 1 });
+        await writePrefsToDisk(prefsPath, { a: 1 });
 
         expect(fsPromisesMock.writeFile).toBeCalledWith(prefsPath, JSON.stringify({ a: 1 }, null, 4), "utf-8");
         expect(fsPromisesMock.writeFile).toHaveBeenCalledTimes(1);

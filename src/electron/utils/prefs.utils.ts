@@ -4,12 +4,56 @@ import { dialog } from 'electron';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { createHash } from 'node:crypto';
 
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
 import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
 import { getDefaultDirs } from './platform.utils.js';
 
 const loadedPrefs: UserPreferences | null = null;
+type CachedPrefs = {
+    value: UserPreferences;
+    hash: string;
+};
+
+const prefsCache = new Map<string, CachedPrefs>();
+const writeQueue = new Map<string, Promise<void>>();
+
+function clonePrefs<T>(prefs: T): T {
+    return JSON.parse(JSON.stringify(prefs));
+}
+
+function hashPrefs(prefs: UserPreferences): string {
+    return createHash('md5').update(JSON.stringify(prefs)).digest('hex');
+}
+
+async function waitForPendingWrite(prefsPath: string): Promise<void> {
+    const pending = writeQueue.get(prefsPath);
+    if (!pending) {
+        return;
+    }
+
+    try {
+        await pending;
+    } catch (error) {
+        logger.error('Failed to persist user preferences', error);
+    }
+}
+
+function enqueueWrite(prefsPath: string, action: () => Promise<void>): Promise<void> {
+    const previous = writeQueue.get(prefsPath) ?? Promise.resolve();
+    const finalPromise = previous
+        .catch(() => undefined)
+        .then(action)
+        .finally(() => {
+            if (writeQueue.get(prefsPath) === finalPromise) {
+                writeQueue.delete(prefsPath);
+            }
+        });
+
+    writeQueue.set(prefsPath, finalPromise);
+    return finalPromise;
+}
 
 export async function getPrefsPath(): Promise<string> {
     const defaultPaths = getDefaultDirs();
@@ -45,16 +89,25 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
 }
 
 export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPreferences): Promise<UserPreferences> {
+    await waitForPendingWrite(prefsPath);
+
+    const cached = prefsCache.get(prefsPath);
+    if (cached) {
+        return clonePrefs(cached.value);
+    }
+
     if (!fs.existsSync(prefsPath)) {
-        // load defaults
-        return defaultPrefs;
+        const cachedDefaults = clonePrefs(defaultPrefs);
+        prefsCache.set(prefsPath, { value: cachedDefaults, hash: hashPrefs(cachedDefaults) });
+        return clonePrefs(cachedDefaults);
     }
 
     // Read prefs from disk
     const prefsData = await fs.promises.readFile(prefsPath, 'utf-8');
+    let mergedPrefs = clonePrefs(defaultPrefs);
     try {
         const prefs = JSON.parse(prefsData);
-        return { ...defaultPrefs, ...prefs };
+        mergedPrefs = { ...defaultPrefs, ...prefs };
     } catch (e) {
         logger.debug('Could not parse user preferences, using defaults', e);
         // todo: translate message to all locales
@@ -64,14 +117,32 @@ export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPre
             message: 'Could not parse user preferences. Using default preferences.',
             buttons: ['OK'],
         });
-        return defaultPrefs;
     }
+
+    const cachedPrefs = clonePrefs(mergedPrefs);
+    prefsCache.set(prefsPath, { value: cachedPrefs, hash: hashPrefs(cachedPrefs) });
+    return clonePrefs(cachedPrefs);
 }
 
 export async function writePrefsToDisk(prefsPath: string, prefs: UserPreferences): Promise<void> {
+    const existing = prefsCache.get(prefsPath);
+    const normalizedPrefs = clonePrefs(prefs);
+    const newHash = hashPrefs(normalizedPrefs);
+
+    if (existing && existing.hash === newHash) {
+        await waitForPendingWrite(prefsPath);
+        return;
+    }
+
+    prefsCache.set(prefsPath, { value: normalizedPrefs, hash: newHash });
+
     // Write prefs to disk
-    const prefsData = JSON.stringify(prefs, null, 4);
-    await fs.promises.writeFile(prefsPath, prefsData, 'utf-8');
+    const prefsData = JSON.stringify(normalizedPrefs, null, 4);
+    const writePromise = enqueueWrite(prefsPath, async () => {
+        await fs.promises.writeFile(prefsPath, prefsData, 'utf-8');
+    });
+
+    await writePromise;
 }
 
 export async function getLoadedPrefs(): Promise<UserPreferences> {
@@ -99,4 +170,9 @@ export async function setAutoCheckUpdates(enabled: boolean): Promise<boolean> {
 
     return enabled;
 
+}
+
+export function __resetPrefsCacheForTesting(): void {
+    prefsCache.clear();
+    writeQueue.clear();
 }
