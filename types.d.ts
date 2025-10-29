@@ -38,6 +38,14 @@ type UserPreferences = {
     windows_symlink_win_notify: boolean;
     vs_code_path?: string;
     language?: string; // 'system' for auto-detect, or locale code like 'en', 'es', 'fr'
+    installed_tools?: {
+        last_scan: number; // timestamp
+        tools: Array<{
+            name: string;
+            path: string;
+            verified: boolean; // true if path exists
+        }>;
+    };
 };
 
 type InstalledRelease = {
