@@ -22,6 +22,8 @@ import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
 import { CreateProjectSubView } from './subViews/createProject.subview';
 
+import vscodeIcon from '../assets/icons/vscode.svg';
+
 TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
@@ -390,7 +392,22 @@ export const ProjectsView: React.FC = () => {
                                                     {' '}
                                                     {row.name}
                                                 </button>
-
+                                                {row.withVSCode && (
+                                                    <p
+                                                        className="tooltip tooltip-right tooltip-primary flex items-center"
+                                                        data-tip={t(
+                                                            'table.vsCodeProject'
+                                                        )}
+                                                    >
+                                                        <span className="text-xs text-base-content/50 ">
+                                                            <img
+                                                                src={vscodeIcon}
+                                                                className="w-4 h-4"
+                                                                alt="VSCode"
+                                                            />
+                                                        </span>
+                                                    </p>
+                                                )}
                                                 {row.release.mono && (
                                                     <p
                                                         className="tooltip tooltip-right tooltip-primary flex items-center"
@@ -427,13 +444,6 @@ export const ProjectsView: React.FC = () => {
                                                         </span>
                                                     </p>
                                                 )}
-
-                                                {/* {row.release.valid === false && (
-                                                        <span className="badge badge-warning text-xs flex items-center gap-1">
-                                                            <TriangleAlert className="w-3 h-3" />
-                                                            {t('table.invalidRelease')}
-                                                        </span>
-                                                    )} */}
                                             </div>
                                             <div
                                                 role="button"
