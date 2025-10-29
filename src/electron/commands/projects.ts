@@ -18,6 +18,7 @@ import { addVSCodeNETLaunchConfig, addOrUpdateVSCodeRecommendedExtensions, updat
 import { getAssetPath } from '../pathResolver.js';
 import { t } from '../i18n/index.js';
 import { getCachedTools } from '../services/toolCache.js';
+import { gitInit } from '../utils/git.utils.js';
 
 
 export async function getProjectsDetails(): Promise<ProjectDetails[]> {
@@ -263,6 +264,41 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
     project.withVSCode = enable;
     project.editor_settings_file = targetProject.editor_settings_file;
     project.editor_settings_path = targetProject.editor_settings_path;
+
+    return targetProject;
+}
+
+export async function initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails> {
+    const { configDir } = getDefaultDirs();
+    const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
+
+    const projects = await getStoredProjectsList(projectListPath);
+    const projectIndex = projects.findIndex(p => p.path === project.path);
+
+    if (projectIndex === -1) {
+        throw new Error(t('projects:initGit.errors.projectNotFound'));
+    }
+
+    const targetProject = projects[projectIndex];
+
+    if (targetProject.withGit) {
+        return targetProject;
+    }
+
+    const gitInitialized = await gitInit(targetProject.path);
+    const gitFolderExists = fs.existsSync(path.resolve(targetProject.path, '.git'));
+
+    if (!gitInitialized || !gitFolderExists) {
+        throw new Error(t('projects:initGit.errors.initFailed'));
+    }
+
+    targetProject.withGit = true;
+
+    projects[projectIndex] = targetProject;
+    const storedProjects = await storeProjectsList(projectListPath, projects);
+    ipcWebContentsSend('projects-updated', getMainWindow()?.webContents, storedProjects);
+
+    project.withGit = true;
 
     return targetProject;
 }

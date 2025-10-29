@@ -13,6 +13,7 @@ import {
     getStoredInstalledReleases,
     saveStoredInstalledReleases,
 } from './utils/releases.utils.js';
+import { parseGodotProjectFile } from './utils/godotProject.utils.js';
 
 export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
     logger.info('Checking and updating releases');
@@ -83,6 +84,44 @@ export async function checkProjectValid(
         }
         project.release.valid = true;
     }
+
+    const gitDirPath = path.resolve(project.path, '.git');
+    project.withGit = fs.existsSync(gitDirPath);
+
+    const vscodeDirPath = path.resolve(project.path, '.vscode');
+    const vscodeDirExists = fs.existsSync(vscodeDirPath);
+    let editorSettingsEnableExternal = false;
+
+    if (
+        project.editor_settings_file &&
+        fs.existsSync(project.editor_settings_file)
+    ) {
+        try {
+            const editorSettingsContent = await fs.promises.readFile(
+                project.editor_settings_file,
+                'utf-8'
+            );
+            const parsedSettings = parseGodotProjectFile(editorSettingsContent);
+            const resourceSection = parsedSettings.get('resource');
+
+            const useExternalValue =
+                resourceSection?.get(
+                    'text_editor/external/use_external_editor'
+                ) ?? '';
+
+            editorSettingsEnableExternal =
+                useExternalValue.trim().toLowerCase() === 'true';
+        } catch (error) {
+            logger.warn(
+                `Failed to read editor settings for project '${project.name}': ${String(
+                    error
+                )}`
+            );
+            editorSettingsEnableExternal = false;
+        }
+    }
+
+    project.withVSCode = vscodeDirExists && editorSettingsEnableExternal;
 
     return project;
 }

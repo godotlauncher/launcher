@@ -1,5 +1,7 @@
+import path from 'node:path';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { setProjectVSCode } from './projects';
+import { initializeProjectGit, setProjectVSCode } from './projects';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -48,6 +50,12 @@ const vscodeUtilsMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../utils/vscode.utils.js', () => vscodeUtilsMocks);
+
+const gitUtilsMocks = vi.hoisted(() => ({
+    gitInit: vi.fn(),
+}));
+
+vi.mock('../utils/git.utils.js', () => gitUtilsMocks);
 
 const installedToolsMocks = vi.hoisted(() => ({
     getInstalledTools: vi.fn(),
@@ -156,6 +164,7 @@ const {
     addVSCodeNETLaunchConfig,
     addOrUpdateVSCodeRecommendedExtensions,
 } = vscodeUtilsMocks;
+const { gitInit } = gitUtilsMocks;
 const { getInstalledTools } = installedToolsMocks;
 const { getCachedTools } = toolCacheMocks;
 const { getAssetPath } = pathResolverMocks;
@@ -420,5 +429,104 @@ describe('setProjectVSCode', () => {
             'projects:toggleVSCode.errors.vscodeNotInstalled'
         );
         expect(storeProjectsList).not.toHaveBeenCalled();
+    });
+});
+
+describe('initializeProjectGit', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        windowMock = { webContents: {} };
+        getMainWindow.mockReturnValue(windowMock);
+    });
+
+    it('initializes git repository and updates project metadata', async () => {
+        const storedProject: ProjectDetails = {
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.2',
+            version_number: 4.2,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.2',
+                version_number: 4.2,
+                install_path: '/godot',
+                editor_path: '/godot/godot.exe',
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/godot/godot.exe',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        const storedProjects = [storedProject];
+        getStoredProjectsList.mockResolvedValue(storedProjects);
+        storeProjectsList.mockImplementation(async (_path, projects) => projects);
+
+        gitInit.mockResolvedValue(true);
+        existsSync.mockImplementation((target: unknown) =>
+            typeof target === 'string' && target.endsWith(`${path.sep}.git`)
+        );
+
+        const result = await initializeProjectGit({ ...storedProject });
+
+        expect(gitInit).toHaveBeenCalledWith(storedProject.path);
+        expect(storeProjectsList).toHaveBeenCalledWith(expect.stringContaining('projects.json'), storedProjects);
+        expect(ipcWebContentsSend).toHaveBeenCalledWith('projects-updated', windowMock.webContents, storedProjects);
+        expect(storedProject.withGit).toBe(true);
+        expect(result.withGit).toBe(true);
+    });
+
+    it('throws when git initialization fails', async () => {
+        const storedProject: ProjectDetails = {
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.2',
+            version_number: 4.2,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.2',
+                version_number: 4.2,
+                install_path: '/godot',
+                editor_path: '/godot/godot.exe',
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/godot/godot.exe',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        getStoredProjectsList.mockResolvedValue([storedProject]);
+        gitInit.mockResolvedValue(false);
+        existsSync.mockReturnValue(false);
+
+        await expect(initializeProjectGit({ ...storedProject })).rejects.toThrow('projects:initGit.errors.initFailed');
+
+        expect(storeProjectsList).not.toHaveBeenCalled();
+        expect(ipcWebContentsSend).not.toHaveBeenCalled();
     });
 });

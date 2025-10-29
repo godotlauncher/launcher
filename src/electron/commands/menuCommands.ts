@@ -2,25 +2,34 @@ import * as fs from 'node:fs';
 import * as os from 'os';
 import * as path from 'node:path';
 
-import { dialog, Menu, shell } from 'electron';
+import { dialog, Menu, nativeImage, shell } from 'electron';
 import { getMainWindow } from '../main.js';
 import { getThemedMenuIcon, ipcWebContentsSend } from '../utils.js';
 import {
     removeProject,
     setProjectWindowed,
     setProjectVSCode,
+    initializeProjectGit,
 } from './projects.js';
 import { getUserPreferences, setUserPreferences } from './userPreferences.js';
 import { removeRelease } from './removeRelease.js';
 import { openProjectManager } from './releases.js';
 import { t } from '../i18n/index.js';
 import { isToolAvailable } from '../services/toolCache.js';
+import { getAssetPath } from '../pathResolver.js';
 
 export async function showProjectMenu(project: ProjectDetails): Promise<void> {
     const mainWindow = getMainWindow();
 
     // Fast cache lookup instead of full tool detection
     const hasVSCode = await isToolAvailable('VSCode');
+    const hasGit = await isToolAvailable('Git');
+
+    const gitMenuIcon = nativeImage
+        .createFromPath(
+            path.join(getAssetPath(), 'menu_icons', 'git_icon_color.png')
+        )
+        .resize({ width: 18, height: 18 });
 
     const menu = Menu.buildFromTemplate([
         {
@@ -82,6 +91,29 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                 }
             },
         },
+        ...(project.valid && hasGit && !project.withGit
+            ? [
+                {
+                    icon: gitMenuIcon,
+                    label: t('menus:project.initGit'),
+                    toolTip: t('menus:project.initGitTooltip'),
+                    click: async () => {
+                        try {
+                            project = await initializeProjectGit(project);
+                        } catch (error) {
+                            const message =
+                                  error instanceof Error
+                                      ? error.message
+                                      : String(error);
+                            dialog.showErrorBox(
+                                t('dialogs:error.title'),
+                                message
+                            );
+                        }
+                    },
+                },
+            ]
+            : []),
         {
             type: 'separator',
         },

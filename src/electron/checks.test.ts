@@ -144,4 +144,110 @@ describe('checkProjectValid', () => {
 
         fs.rmSync(projectDir, { recursive: true, force: true });
     });
+
+    it('updates withGit flag based on .git directory presence', async () => {
+        const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-project-git-'));
+        const releaseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-release-'));
+
+        fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
+        fs.mkdirSync(path.join(projectDir, '.git'));
+
+        const project: ProjectDetails = {
+            name: 'Git Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.withGit).toBe(true);
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
+
+    it('disables VSCode flag when external editor setting is not enabled', async () => {
+        const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-project-vscode-'));
+        const releaseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-release-'));
+
+        fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
+        fs.mkdirSync(path.join(projectDir, '.vscode'));
+
+        const editorDataDir = path.join(projectDir, 'editor_data');
+        fs.mkdirSync(editorDataDir);
+
+        const editorSettingsPath = path.join(editorDataDir, 'editor_settings-4.2.tres');
+        fs.writeFileSync(
+            editorSettingsPath,
+            `
+[resource]
+text_editor/external/use_external_editor = false
+`
+        );
+
+        const project: ProjectDetails = {
+            name: 'VSCode Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: editorDataDir,
+            editor_settings_file: editorSettingsPath,
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: true,
+            withGit: false,
+            valid: true,
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.withVSCode).toBe(false);
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
 });
