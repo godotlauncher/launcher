@@ -18,7 +18,9 @@
         "openWindowedTooltip": "Когда эта опция включена, Godot запустится в оконном режиме.",
         "exportEditorSettings": "Экспортировать настройки редактора в файл",
         "importEditorSettings": "Импортировать настройки редактора из файла",
-        "removeFromList": "Удалить проект из списка"
+        "removeFromList": "Удалить проект из списка",
+        "useVSCode": "Использовать Visual Studio Code как текстовый редактор",
+        "useVSCodeTooltip": "Включить или отключить Visual Studio Code как внешний редактор скриптов для этого проекта."
     },
     "release": {
         "openInstalledFolder": "Открыть папку установки",

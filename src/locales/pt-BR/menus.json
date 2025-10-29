@@ -1,33 +1,35 @@
 {
-  "app": {
-    "label": "Aplicativo",
-    "about": "Sobre",
-    "close": "Fechar",
-    "quit": "Sair"
-  },
-  "developer": {
-    "label": "Desenvolvedor",
-    "reload": "Recarregar",
-    "toggleDevTools": "Alternar ferramentas de desenvolvedor",
-    "openConfigFolder": "Abrir pasta de configuração"
-  },
-  "project": {
-    "openProjectFolder": "Abrir pasta do projeto",
-    "openEditorSettingsFolder": "Abrir pasta de configurações do editor",
-    "openWindowed": "Abrir em janela",
-    "openWindowedTooltip": "Quando esta opção está marcada, o Godot será iniciado no modo janela.",
-    "exportEditorSettings": "Exportar configurações do editor para arquivo",
-    "importEditorSettings": "Importar configurações do editor de arquivo",
-    "removeFromList": "Remover projeto da lista"
-  },
-  "release": {
-    "openInstalledFolder": "Abrir pasta instalada",
-    "startProjectManager": "Iniciar o gerenciador de projetos",
-    "deleteRelease": "Excluir versão deste dispositivo"
-  },
-  "tray": {
-    "recentProjects": "Projetos recentes",
-    "showGodotLauncher": "Mostrar Godot Launcher",
-    "quit": "Sair"
-  }
+    "app": {
+        "label": "Aplicativo",
+        "about": "Sobre",
+        "close": "Fechar",
+        "quit": "Sair"
+    },
+    "developer": {
+        "label": "Desenvolvedor",
+        "reload": "Recarregar",
+        "toggleDevTools": "Alternar ferramentas de desenvolvedor",
+        "openConfigFolder": "Abrir pasta de configuração"
+    },
+    "project": {
+        "openProjectFolder": "Abrir pasta do projeto",
+        "openEditorSettingsFolder": "Abrir pasta de configurações do editor",
+        "openWindowed": "Abrir em janela",
+        "openWindowedTooltip": "Quando esta opção está marcada, o Godot será iniciado no modo janela.",
+        "exportEditorSettings": "Exportar configurações do editor para arquivo",
+        "importEditorSettings": "Importar configurações do editor de arquivo",
+        "removeFromList": "Remover projeto da lista",
+        "useVSCode": "Usar o Visual Studio Code como editor de texto",
+        "useVSCodeTooltip": "Ative ou desative o Visual Studio Code como editor externo deste projeto."
+    },
+    "release": {
+        "openInstalledFolder": "Abrir pasta instalada",
+        "startProjectManager": "Iniciar o gerenciador de projetos",
+        "deleteRelease": "Excluir versão deste dispositivo"
+    },
+    "tray": {
+        "recentProjects": "Projetos recentes",
+        "showGodotLauncher": "Mostrar Godot Launcher",
+        "quit": "Sair"
+    }
 }

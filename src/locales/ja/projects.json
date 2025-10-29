@@ -23,7 +23,8 @@
     "dotNetProject": "これは.Netプロジェクトです",
     "prerelease": "プレリリース版のGodotエディタを使用しています",
     "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
-    "invalidRelease": "Editor unavailable"
+    "invalidRelease": "Editor unavailable",
+    "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています"
   },
   "addProject": {
     "selectFile": "プロジェクトファイルを選択",
@@ -82,6 +83,14 @@
     }
   },
   "searchPlaceholder": "プロジェクトを検索...",
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "プロジェクトが見つかりません",
+      "vscodeNotInstalled": "このコンピューターに Visual Studio Code がインストールされていません。",
+      "missingLaunchPath": "このプロジェクトの Godot 起動パスが見つかりません。",
+      "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。"
+    }
+  },
   "editorSettings": {
     "title": "エディタ設定",
     "alreadyExists": "{{version}} [.NET]のエディタ設定は既に存在しており、設定を保護するために変更は行われませんでした。",

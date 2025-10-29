@@ -16,6 +16,8 @@
         "openEditorSettingsFolder": "Editor-Einstellungsordner öffnen",
         "openWindowed": "Im Fenster öffnen",
         "openWindowedTooltip": "Wenn diese Option aktiviert ist, wird Godot im Fenstermodus gestartet.",
+        "useVSCode": "Visual Studio Code als Texteditor verwenden",
+        "useVSCodeTooltip": "Visual Studio Code als externen Skripteditor für dieses Projekt ein- oder ausschalten.",
         "exportEditorSettings": "Editor-Einstellungen in Datei exportieren",
         "importEditorSettings": "Editor-Einstellungen aus Datei importieren",
         "removeFromList": "Projekt aus Liste entfernen"

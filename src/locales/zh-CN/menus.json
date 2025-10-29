@@ -18,7 +18,9 @@
         "openWindowedTooltip": "选中此选项时，Godot 将以窗口模式启动。",
         "exportEditorSettings": "将编辑器设置导出到文件",
         "importEditorSettings": "从文件导入编辑器设置",
-        "removeFromList": "从列表中移除项目"
+        "removeFromList": "从列表中移除项目",
+        "useVSCode": "将 Visual Studio Code 用作文本编辑器",
+        "useVSCodeTooltip": "为此项目启用或禁用 Visual Studio Code 作为外部脚本编辑器。"
     },
     "release": {
         "openInstalledFolder": "打开已安装文件夹",

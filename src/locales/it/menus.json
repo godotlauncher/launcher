@@ -1,33 +1,35 @@
 {
-  "app": {
-    "label": "Applicazione",
-    "about": "Informazioni",
-    "close": "Chiudi",
-    "quit": "Esci"
-  },
-  "developer": {
-    "label": "Sviluppatore",
-    "reload": "Ricarica",
-    "toggleDevTools": "Attiva strumenti di sviluppo",
-    "openConfigFolder": "Apri cartella di configurazione"
-  },
-  "project": {
-    "openProjectFolder": "Apri cartella progetto",
-    "openEditorSettingsFolder": "Apri cartella impostazioni editor",
-    "openWindowed": "Apri in finestra",
-    "openWindowedTooltip": "Quando questa opzione è selezionata, Godot verrà avviato in modalità finestra.",
-    "exportEditorSettings": "Esporta impostazioni dell'editor su file",
-    "importEditorSettings": "Importa impostazioni dell'editor da file",
-    "removeFromList": "Rimuovi progetto dall'elenco"
-  },
-  "release": {
-    "openInstalledFolder": "Apri cartella installata",
-    "startProjectManager": "Avvia Project Manager",
-    "deleteRelease": "Elimina versione da questo dispositivo"
-  },
-  "tray": {
-    "recentProjects": "Progetti recenti",
-    "showGodotLauncher": "Mostra Godot Launcher",
-    "quit": "Esci"
-  }
+    "app": {
+        "label": "Applicazione",
+        "about": "Informazioni",
+        "close": "Chiudi",
+        "quit": "Esci"
+    },
+    "developer": {
+        "label": "Sviluppatore",
+        "reload": "Ricarica",
+        "toggleDevTools": "Attiva strumenti di sviluppo",
+        "openConfigFolder": "Apri cartella di configurazione"
+    },
+    "project": {
+        "openProjectFolder": "Apri cartella progetto",
+        "openEditorSettingsFolder": "Apri cartella impostazioni editor",
+        "openWindowed": "Apri in finestra",
+        "openWindowedTooltip": "Quando questa opzione è selezionata, Godot verrà avviato in modalità finestra.",
+        "useVSCode": "Usa Visual Studio Code come editor di testo",
+        "useVSCodeTooltip": "Attiva o disattiva Visual Studio Code come editor esterno per questo progetto.",
+        "exportEditorSettings": "Esporta impostazioni dell'editor su file",
+        "importEditorSettings": "Importa impostazioni dell'editor da file",
+        "removeFromList": "Rimuovi progetto dall'elenco"
+    },
+    "release": {
+        "openInstalledFolder": "Apri cartella installata",
+        "startProjectManager": "Avvia Project Manager",
+        "deleteRelease": "Elimina versione da questo dispositivo"
+    },
+    "tray": {
+        "recentProjects": "Progetti recenti",
+        "showGodotLauncher": "Mostra Godot Launcher",
+        "quit": "Esci"
+    }
 }

@@ -21,6 +21,7 @@
     "actions": "Aktionen",
     "invalidProject": "Dieses Projekt ist ungültig, überprüfen Sie die Projekt- und Editorpfade!",
     "dotNetProject": "Dies ist ein .NET-Projekt",
+    "vsCodeProject": "Visual Studio Code ist als externer Editor aktiviert",
     "prerelease": "Verwende eine Vorabversion des Godot-Editors",
     "windowedMode": "Dieses Projekt ist im Fenstermodus geöffnet",
     "invalidRelease": "Editor unavailable"
@@ -38,6 +39,14 @@
       "noStableReleases": "Keine installierten stabilen Releases für Godot {{version}}.x gefunden\nBitte installieren Sie ein stabiles Release für Godot {{version}}.x und versuchen Sie erneut, das Projekt hinzuzufügen.",
       "noDotNetRelease": "Projekt scheint ein .NET-Projekt zu sein, aber kein Editor mit .NET-Release gefunden",
       "noCompatibleRelease": "Keine installierten Releases für Godot {{version}}.x gefunden, die config_version {{configVersion}} unterstützen."
+    }
+  },
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "Projekt nicht gefunden",
+      "vscodeNotInstalled": "Visual Studio Code ist auf diesem Computer nicht installiert.",
+      "missingLaunchPath": "Godot-Startpfad für dieses Projekt fehlt.",
+      "invalidProjectDefinition": "Vorlage für Editor-Einstellungen für diese Godot-Version konnte nicht ermittelt werden."
     }
   },
   "messages": {

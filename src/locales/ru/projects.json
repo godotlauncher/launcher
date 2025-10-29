@@ -23,7 +23,8 @@
     "dotNetProject": "Это .Net проект",
     "prerelease": "Используется пререлизная версия редактора Godot",
     "windowedMode": "Этот проект открыт в оконном режиме",
-    "invalidRelease": "Editor unavailable"
+    "vsCodeProject": "Для этого проекта Visual Studio Code включен как внешний редактор",
+    "invalidRelease": "Редактор недоступен"
   },
   "addProject": {
     "selectFile": "Выбрать файл проекта",
@@ -56,7 +57,7 @@
     "addProjectError": "Что-то пошло не так при добавлении проекта",
     "setEditorError": "Что-то пошло не так при установке редактора проекта",
     "projectNotValid": "Проект недействителен, убедитесь, что проект и версия действительны на вашем компьютере.",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "Выбранный редактор недоступен. Подключите диск или переустановите релиз."
   },
   "changeEditor": {
     "errors": {
@@ -84,8 +85,16 @@
   "searchPlaceholder": "Поиск проектов...",
   "editorSettings": {
     "title": "Настройки редактора",
-    "alreadyExists": "Настройки редактора для {{version}} [.NET] уже существуют, и никаких изменений не было внесено для защиты вашей конфигурации.",
-    "switchingToDotNet": "Если вы переходите на версию .NET с GDScript, вы можете вручную настроить внешний редактор в <strong>Настройки редактора -> Dotnent</strong> (расширенный переключатель: true).",
+    "alreadyExists": "Настройки редактора для {{version}} [.NET] уже существуют, и никаких изменений не внесено, чтобы защитить вашу конфигурацию.",
+    "switchingToDotNet": "Если вы переходите на версию .NET с GDScript, вы можете вручную настроить внешний редактор в <strong>Editor Settings -> Dotnent</strong> (расширенный переключатель: true).",
     "readMore": "Подробнее"
+  },
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "Проект не найден",
+      "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере.",
+      "missingLaunchPath": "Не найден путь запуска Godot для этого проекта.",
+      "invalidProjectDefinition": "Не удалось определить шаблон настроек редактора для этой версии Godot."
+    }
   }
 }

@@ -23,7 +23,8 @@
     "dotNetProject": "To jest projekt .Net",
     "prerelease": "Używa wersji testowej edytora Godot",
     "windowedMode": "Ten projekt otwiera się w trybie okienkowym",
-    "invalidRelease": "Editor unavailable"
+    "vsCodeProject": "Visual Studio Code jest włączony jako zewnętrzny edytor dla tego projektu",
+    "invalidRelease": "Edytor niedostępny"
   },
   "addProject": {
     "selectFile": "Wybierz plik projektu",
@@ -56,7 +57,7 @@
     "addProjectError": "Coś poszło nie tak podczas dodawania projektu",
     "setEditorError": "Coś poszło nie tak podczas ustawiania edytora projektu",
     "projectNotValid": "Projekt jest nieprawidłowy, upewnij się, że projekt i wydanie są prawidłowe na twoim komputerze.",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "Wybrany edytor jest niedostępny. Podłącz dysk lub zainstaluj wydanie ponownie."
   },
   "changeEditor": {
     "errors": {
@@ -83,9 +84,17 @@
   },
   "searchPlaceholder": "Szukaj projektów...",
   "editorSettings": {
-    "title": "Ustawienia Edytora",
-    "alreadyExists": "Ustawienia edytora dla {{version}} [.NET] już istnieją i nie wprowadzono żadnych zmian, aby chronić twoją konfigurację.",
-    "switchingToDotNet": "Jeśli przełączasz się na wersję .NET z GDScript, możesz ręcznie skonfigurować Zewnętrzny Edytor w <strong>Ustawienia Edytora -> Dotnent</strong> (przełącznik zaawansowany: true).",
+    "title": "Ustawienia edytora",
+    "alreadyExists": "Ustawienia edytora dla {{version}} [.NET] już istnieją i nie wprowadzono żadnych zmian, aby chronić Twoją konfigurację.",
+    "switchingToDotNet": "Jeśli przechodzisz na wersję .NET z GDScript, możesz ręcznie skonfigurować zewnętrzny edytor w <strong>Editor Settings -> Dotnent</strong> (przełącznik zaawansowany: true).",
     "readMore": "Czytaj więcej"
+  },
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "Nie znaleziono projektu",
+      "vscodeNotInstalled": "Visual Studio Code nie jest zainstalowany na tym komputerze.",
+      "missingLaunchPath": "Brakuje ścieżki uruchamiania Godot dla tego projektu.",
+      "invalidProjectDefinition": "Nie można ustalić szablonu ustawień edytora dla tej wersji Godot."
+    }
   }
 }

@@ -23,7 +23,8 @@
     "dotNetProject": "這是一個 .NET 專案",
     "prerelease": "使用預先釋出的 Godot 編輯器版本",
     "windowedMode": "此專案以視窗模式開啟",
-    "invalidRelease": "Editor unavailable"
+    "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
+    "invalidRelease": "編輯器不可用"
   },
   "addProject": {
     "selectFile": "選擇專案檔",
@@ -56,7 +57,7 @@
     "addProjectError": "新增專案時發生錯誤",
     "setEditorError": "設定專案編輯器時發生錯誤",
     "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "所選的編輯器不可用。請掛載磁碟機或重新安裝此版本。"
   },
   "changeEditor": {
     "errors": {
@@ -84,8 +85,16 @@
   "searchPlaceholder": "搜尋專案…",
   "editorSettings": {
     "title": "編輯器設定",
-    "alreadyExists": "{{version}} [.NET] 的編輯器設定已存在，為保護您的配置未進行任何變更。",
-    "switchingToDotNet": "如果您從 GDScript 切換到 .NET 版本，可以從<strong>編輯器設定 -> Dotnent</strong>手動配置外部編輯器（進階開關：true）。",
-    "readMore": "閱讀更多"
+    "alreadyExists": "用於 {{version}} [.NET] 的編輯器設定已經存在，為保護你的設定未進行任何變更。",
+    "switchingToDotNet": "如果你正從 GDScript 切換到 .NET 版本，可以在 <strong>Editor Settings -> Dotnent</strong>（進階開關：true）中手動設定外部編輯器。",
+    "readMore": "了解更多"
+  },
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "找不到專案",
+      "vscodeNotInstalled": "此電腦上未安裝 Visual Studio Code。",
+      "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
+      "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
+    }
   }
 }

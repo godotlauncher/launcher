@@ -18,7 +18,9 @@
         "openWindowedTooltip": "Gdy ta opcja jest zaznaczona, Godot uruchomi się w trybie okienkowym.",
         "exportEditorSettings": "Eksportuj ustawienia edytora do pliku",
         "importEditorSettings": "Importuj ustawienia edytora z pliku",
-        "removeFromList": "Usuń projekt z listy"
+        "removeFromList": "Usuń projekt z listy",
+        "useVSCode": "Użyj Visual Studio Code jako edytora tekstu",
+        "useVSCodeTooltip": "Włącz lub wyłącz Visual Studio Code jako zewnętrzny edytor skryptów dla tego projektu."
     },
     "release": {
         "openInstalledFolder": "Otwórz folder instalacji",

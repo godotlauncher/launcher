@@ -18,7 +18,9 @@
         "openWindowedTooltip": "このオプションをオンにすると、Godotがウィンドウモードで起動します。",
         "exportEditorSettings": "エディタ設定をファイルにエクスポート",
         "importEditorSettings": "ファイルからエディタ設定をインポート",
-        "removeFromList": "リストからプロジェクトを削除"
+        "removeFromList": "リストからプロジェクトを削除",
+        "useVSCode": "Visual Studio Code をテキストエディターとして使用する",
+        "useVSCodeTooltip": "このプロジェクトの外部スクリプトエディターとして Visual Studio Code を有効または無効にします。"
     },
     "release": {
         "openInstalledFolder": "インストールフォルダを開く",

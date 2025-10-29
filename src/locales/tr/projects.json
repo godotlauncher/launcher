@@ -23,7 +23,8 @@
     "dotNetProject": "Bu bir .Net Projesidir",
     "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
     "windowedMode": "Bu proje pencere modunda açık",
-    "invalidRelease": "Editor unavailable"
+    "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
+    "invalidRelease": "Editör kullanılamıyor"
   },
   "addProject": {
     "selectFile": "Proje Dosyasını Seç",
@@ -56,7 +57,7 @@
     "addProjectError": "Proje eklenirken bir şeyler ters gitti",
     "setEditorError": "Proje editörü ayarlanırken bir şeyler ters gitti",
     "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun.",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "Seçilen editör kullanılamıyor. Sürücüyü bağlayın veya sürümü yeniden yükleyin."
   },
   "changeEditor": {
     "errors": {
@@ -84,8 +85,16 @@
   "searchPlaceholder": "Projelerde ara...",
   "editorSettings": {
     "title": "Editör Ayarları",
-    "alreadyExists": "{{version}} [.NET] için editör ayarları zaten mevcut ve kurulumunuzu korumak için hiçbir değişiklik yapılmadı.",
-    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editör Ayarları -> Dotnent</strong> bölümünden Harici Editörü manuel olarak yapılandırabilirsiniz (gelişmiş anahtar: true).",
-    "readMore": "Daha Fazla Bilgi"
+    "alreadyExists": "{{version}} [.NET] için editör ayarları zaten mevcut ve kurulumunuzu korumak için herhangi bir değişiklik yapılmadı.",
+    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editor Settings -> Dotnent</strong> (gelişmiş anahtar: true) üzerinden Dış Editörü manuel olarak yapılandırabilirsiniz.",
+    "readMore": "Daha fazla bilgi"
+  },
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "Proje bulunamadı",
+      "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
+      "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
+      "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
+    }
   }
 }

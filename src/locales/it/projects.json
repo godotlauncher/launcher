@@ -21,6 +21,7 @@
     "actions": "Azioni",
     "invalidProject": "Questo progetto non è valido, controlla percorso del progetto ed editor!",
     "dotNetProject": "Questo è un progetto .NET",
+    "vsCodeProject": "Visual Studio Code è abilitato come editor esterno per questo progetto",
     "prerelease": "Utilizza una versione pre-release dell'editor Godot",
     "windowedMode": "Questo progetto si apre in modalità finestra",
     "invalidRelease": "Editor unavailable"
@@ -63,6 +64,14 @@
       "projectNotFound": "Progetto non trovato",
       "invalidEditorVersion": "Versione editor non valida",
       "differentMajorVersion": "Non è possibile utilizzare una versione principale diversa dell'editor\nPer proteggere il tuo progetto consulta la guida ufficiale alla migrazione su https://godotengine.org"
+    }
+  },
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "Progetto non trovato",
+      "vscodeNotInstalled": "Visual Studio Code non è installato su questo computer.",
+      "missingLaunchPath": "Percorso di avvio di Godot mancante per questo progetto.",
+      "invalidProjectDefinition": "Impossibile determinare il modello di impostazioni dell'editor per questa versione di Godot."
     }
   },
   "createProject": {

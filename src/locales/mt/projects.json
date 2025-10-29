@@ -23,7 +23,8 @@
     "dotNetProject": "Dan huwa Proġett .Net",
     "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
     "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
-    "invalidRelease": "Editor unavailable"
+    "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
+    "invalidRelease": "L-editur mhux disponibbli"
   },
   "addProject": {
     "selectFile": "Agħżel Fajl tal-Proġett",
@@ -56,7 +57,7 @@
     "addProjectError": "Xi ħaġa marret ħażin meta żdiedt il-proġett",
     "setEditorError": "Xi ħaġa marret ħażin meta ssettjajt l-editur tal-proġett",
     "projectNotValid": "Il-proġett mhuwiex validu, jekk jogħġbok kun żgur li l-proġett u r-release huma validi fuq il-kompjuter tiegħek.",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "L-editur maghzul mhux disponibbli. Qabbad id-drajv jew erga' installa r-release."
   },
   "changeEditor": {
     "errors": {
@@ -82,6 +83,14 @@
     }
   },
   "searchPlaceholder": "Fittex proġetti...",
+  "toggleVSCode": {
+    "errors": {
+      "projectNotFound": "Il-proġett ma nstabx",
+      "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter.",
+      "missingLaunchPath": "Il-perkors tat-tnedija ta' Godot għal dan il-proġett mhux magħruf.",
+      "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
+    }
+  },
   "editorSettings": {
     "title": "Settings tal-Editur",
     "alreadyExists": "Settings tal-editur għal {{version}} [.NET] diġà jeżistu u ebda tibdil ma sar biex nipproteġu s-setup tiegħek.",

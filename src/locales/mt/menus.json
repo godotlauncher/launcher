@@ -18,7 +18,9 @@
         "openWindowedTooltip": "Meta din l-għażla hija magħżula, Godot se jinħoloq f'window mode.",
         "exportEditorSettings": "Esporta Settings tal-Editur għal Fajl",
         "importEditorSettings": "Importa Settings tal-Editur minn Fajl",
-        "removeFromList": "Neħħi Proġett mil-Lista"
+        "removeFromList": "Neħħi Proġett mil-Lista",
+        "useVSCode": "Uza Visual Studio Code bhala editur tat-test",
+        "useVSCodeTooltip": "Ixgħel jew itfi Visual Studio Code bhala l-editur estern ta' dan il-proġett."
     },
     "release": {
         "openInstalledFolder": "Iftaħ Folder tal-Installazzjoni",
