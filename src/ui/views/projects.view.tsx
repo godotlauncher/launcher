@@ -23,11 +23,13 @@ import { useRelease } from '../hooks/useRelease';
 import { CreateProjectSubView } from './subViews/createProject.subview';
 
 import vscodeIcon from '../assets/icons/vscode.svg';
+import gitIconColor from '../assets/icons/git_icon_color.svg';
 
 TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
 export const ProjectsView: React.FC = () => {
+
     const { t } = useTranslation(['projects', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [createOpen, setCreateOpen] = useState<boolean>(false);
@@ -308,7 +310,7 @@ export const ProjectsView: React.FC = () => {
                                                         field: 'name',
                                                         order:
                                                             sortData.order ===
-                                                            'asc'
+                                                                'asc'
                                                                 ? 'desc'
                                                                 : 'asc',
                                                     });
@@ -336,7 +338,7 @@ export const ProjectsView: React.FC = () => {
                                                         field: 'modified',
                                                         order:
                                                             sortData.order ===
-                                                            'asc'
+                                                                'asc'
                                                                 ? 'desc'
                                                                 : 'asc',
                                                     });
@@ -404,6 +406,22 @@ export const ProjectsView: React.FC = () => {
                                                                 src={vscodeIcon}
                                                                 className="w-4 h-4"
                                                                 alt="VSCode"
+                                                            />
+                                                        </span>
+                                                    </p>
+                                                )}
+                                                {row.withGit && (
+                                                    <p
+                                                        className="tooltip tooltip-right tooltip-primary flex items-center"
+                                                        data-tip={t(
+                                                            'table.gitProject'
+                                                        )}
+                                                    >
+                                                        <span className="text-xs text-base-content/50 ">
+                                                            <img
+                                                                src={gitIconColor}
+                                                                className="w-4 h-4 "
+                                                                alt="Git"
                                                             />
                                                         </span>
                                                     </p>
