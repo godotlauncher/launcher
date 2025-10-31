@@ -114,6 +114,17 @@
     "openConfigFolder": "Ouvrir le dossier de configuration"
   },
   "tools": {
+    "overview": "Le lanceur valide rapidement les chemins d'outils mis en cache lorsque cet onglet reçoit le focus. Lancez une nouvelle analyse complète si vous avez modifié des installations sur ce système.",
+    "actions": {
+      "refresh": "Réanalyser les outils",
+      "scanning": "Réanalyse en cours..."
+    },
+    "status": {
+      "available": "Disponible",
+      "missing": "Introuvable",
+      "invalid": "Chemin introuvable",
+      "unknown": "Inconnu"
+    },
     "git": {
       "title": "Git",
       "description": "Git est un système de contrôle de version distribué pour gérer les modifications du code et la collaboration.",

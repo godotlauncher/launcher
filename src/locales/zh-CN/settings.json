@@ -114,6 +114,17 @@
     "openConfigFolder": "打开配置文件夹"
   },
   "tools": {
+    "overview": "当此选项卡获得焦点时，启动器会快速验证缓存的工具路径。如果你在此系统上更改了安装，请运行完整重新扫描。",
+    "actions": {
+      "refresh": "重新扫描工具",
+      "scanning": "正在重新扫描..."
+    },
+    "status": {
+      "available": "可用",
+      "missing": "未找到",
+      "invalid": "路径未找到",
+      "unknown": "未知"
+    },
     "git": {
       "title": "Git",
       "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",

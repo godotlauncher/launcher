@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AutoStartSetting } from '../components/settings/AutoStartSetting.component';
 import { CheckForUpdates } from '../components/settings/checkForUpdates.component';
@@ -20,6 +20,71 @@ export const SettingsView: React.FC = () => {
 
     const { theme, setTheme } = useTheme();
 
+    const [cachedTools, setCachedTools] = useState<CachedTool[]>([]);
+    const [rescanCount, setRescanCount] = useState(0);
+
+    const isRescanningTools = rescanCount > 0;
+
+    const quickCheckTools = useCallback(async () => {
+        return await window.electron.getCachedTools({ refreshIfStale: false });
+    }, []);
+
+    const rescanTools = useCallback(async () => {
+        setRescanCount(count => count + 1);
+        try {
+            const tools = await window.electron.refreshToolCache();
+            setCachedTools(tools);
+        }
+        catch (error) {
+            console.error('Failed to refresh tool cache', error);
+        }
+        finally {
+            setRescanCount(count => Math.max(0, count - 1));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activeTab !== 'tools') {
+            return;
+        }
+
+        let disposed = false;
+
+        const syncTools = async () => {
+            try {
+                const tools = await quickCheckTools();
+                if (!disposed) {
+                    setCachedTools(tools);
+                }
+            }
+            catch (error) {
+                console.error('Failed to load cached tools', error);
+            }
+        };
+
+        void syncTools();
+
+        const handleFocus = () => {
+            void syncTools();
+        };
+
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            disposed = true;
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [activeTab, quickCheckTools]);
+
+    const gitTool = useMemo(
+        () => cachedTools.find(tool => tool.name === 'Git'),
+        [cachedTools]
+    );
+
+    const vsCodeTool = useMemo(
+        () => cachedTools.find(tool => tool.name === 'VSCode'),
+        [cachedTools]
+    );
 
 
     return (
@@ -123,11 +188,36 @@ export const SettingsView: React.FC = () => {
 
                             {/* Tools */}
                             <div className={clsx('flex flex-col h-0 gap-4 ', { 'hidden': (activeTab !== 'tools') })}>
-
-                                <GitToolSettings />
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <p className="text-sm text-base-content/70">
+                                        {t('tools.overview')}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline"
+                                        onClick={() => { void rescanTools(); }}
+                                        disabled={isRescanningTools}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            {isRescanningTools && (
+                                                <span
+                                                    className="loading loading-spinner loading-xs"
+                                                    aria-hidden="true"
+                                                ></span>
+                                            )}
+                                            {isRescanningTools
+                                                ? t('tools.actions.scanning')
+                                                : t('tools.actions.refresh')}
+                                        </span>
+                                    </button>
+                                </div>
+                                <GitToolSettings tool={gitTool} />
                                 <div className="divider"></div>
-                                <VSCodeToolSettings />
-
+                                <VSCodeToolSettings
+                                    tool={vsCodeTool}
+                                    refreshing={isRescanningTools}
+                                    onRescan={rescanTools}
+                                />
                             </div>
 
                             {/* Updates */}

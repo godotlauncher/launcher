@@ -22,6 +22,13 @@ type AssetSummary = {
     mono: boolean;
 };
 
+type CachedTool = {
+    name: string;
+    path: string;
+    version: string | null;
+    verified: boolean;
+};
+
 
 type UserPreferences = {
     prefs_version: number;
@@ -40,11 +47,7 @@ type UserPreferences = {
     language?: string; // 'system' for auto-detect, or locale code like 'en', 'es', 'fr'
     installed_tools?: {
         last_scan: number; // timestamp
-        tools: Array<{
-            name: string;
-            path: string;
-            verified: boolean; // true if path exists
-        }>;
+        tools: CachedTool[];
     };
 };
 
@@ -152,7 +155,7 @@ type EventChannelMapping = {
     'get-user-preferences': Promise<UserPreferences>;
     'set-user-preferences': Promise<UserPreferences>;
     'set-auto-start': Promise<SetAutoStartResult>;
-    'set-auto-check-updates': Promise<bool>;
+    'set-auto-check-updates': Promise<boolean>;
 
     // ##### app #####
     'get-version': Promise<string>;
@@ -195,6 +198,8 @@ type EventChannelMapping = {
 
     // ##### tools #####
     'get-installed-tools': Promise<InstalledTool[]>;
+    'get-cached-tools': Promise<CachedTool[]>;
+    'refresh-tool-cache': Promise<CachedTool[]>;
 
     'projects-updated': ProjectDetails[];
     'releases-updated': InstalledRelease[];
@@ -274,6 +279,8 @@ interface Window {
 
         // ##### tools #####
         getInstalledTools: () => Promise<InstalledTool[]>;
+        getCachedTools: (options?: { refreshIfStale?: boolean }) => Promise<CachedTool[]>;
+        refreshToolCache: () => Promise<CachedTool[]>;
 
         getPlatform: () => Promise<string>;
         getAppVersion: () => Promise<string>;

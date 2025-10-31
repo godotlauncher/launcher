@@ -62,7 +62,12 @@ describe('toolCache service', () => {
                 installed_tools: {
                     last_scan: Date.now(),
                     tools: [
-                        { name: 'VSCode', path: '/usr/bin/code', verified: true },
+                        {
+                            name: 'VSCode',
+                            path: '/usr/bin/code',
+                            version: '1.0.0',
+                            verified: true,
+                        },
                     ],
                 },
             });
@@ -70,7 +75,12 @@ describe('toolCache service', () => {
             const tools = await getCachedTools();
 
             expect(tools).toEqual([
-                { name: 'VSCode', path: '/usr/bin/code', verified: true },
+                {
+                    name: 'VSCode',
+                    path: '/usr/bin/code',
+                    version: '1.0.0',
+                    verified: true,
+                },
             ]);
             expect(getInstalledTools).not.toHaveBeenCalled();
         });
@@ -88,17 +98,28 @@ describe('toolCache service', () => {
                 expect.objectContaining({
                     installed_tools: {
                         last_scan: expect.any(Number),
-                        tools: sampleTools.map(({ name, path }) => ({
+                        tools: sampleTools.map(({ name, path, version }) => ({
                             name,
                             path,
+                            version,
                             verified: true,
                         })),
                     },
                 })
             );
             expect(tools).toEqual([
-                { name: 'VSCode', path: '/usr/bin/code', verified: true },
-                { name: 'Git', path: '/usr/bin/git', verified: true },
+                {
+                    name: 'VSCode',
+                    path: '/usr/bin/code',
+                    version: '1.0.0',
+                    verified: true,
+                },
+                {
+                    name: 'Git',
+                    path: '/usr/bin/git',
+                    version: '2.44.0',
+                    verified: true,
+                },
             ]);
         });
 
@@ -108,7 +129,12 @@ describe('toolCache service', () => {
                 installed_tools: {
                     last_scan: Date.now() - 1000 * 60 * 60 * 25, // 25 hours ago
                     tools: [
-                        { name: 'VSCode', path: '/usr/bin/code', verified: true },
+                        {
+                            name: 'VSCode',
+                            path: '/usr/bin/code',
+                            version: '1.0.0',
+                            verified: true,
+                        },
                     ],
                 },
             };
@@ -167,17 +193,28 @@ describe('toolCache service', () => {
                 expect.objectContaining({
                     installed_tools: {
                         last_scan: expect.any(Number),
-                        tools: sampleTools.map(({ name, path }) => ({
+                        tools: sampleTools.map(({ name, path, version }) => ({
                             name,
                             path,
+                            version,
                             verified: true,
                         })),
                     },
                 })
             );
             expect(tools).toEqual([
-                { name: 'VSCode', path: '/usr/bin/code', verified: true },
-                { name: 'Git', path: '/usr/bin/git', verified: true },
+                {
+                    name: 'VSCode',
+                    path: '/usr/bin/code',
+                    version: '1.0.0',
+                    verified: true,
+                },
+                {
+                    name: 'Git',
+                    path: '/usr/bin/git',
+                    version: '2.44.0',
+                    verified: true,
+                },
             ]);
         });
     });
@@ -189,7 +226,12 @@ describe('toolCache service', () => {
                 installed_tools: {
                     last_scan: Date.now(),
                     tools: [
-                        { name: 'VSCode', path: '/usr/bin/code', verified: true },
+                        {
+                            name: 'VSCode',
+                            path: '/usr/bin/code',
+                            version: '1.0.0',
+                            verified: true,
+                        },
                     ],
                 },
             });
@@ -204,7 +246,12 @@ describe('toolCache service', () => {
                 installed_tools: {
                     last_scan: Date.now(),
                     tools: [
-                        { name: 'VSCode', path: '/usr/bin/code', verified: true },
+                        {
+                            name: 'VSCode',
+                            path: '/usr/bin/code',
+                            version: '1.0.0',
+                            verified: true,
+                        },
                     ],
                 },
             });

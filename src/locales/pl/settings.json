@@ -114,6 +114,17 @@
     "openConfigFolder": "Otwórz folder konfiguracji"
   },
   "tools": {
+    "overview": "Launcher szybko sprawdza pamiętane ścieżki narzędzi, gdy ta karta otrzymuje fokus. Wykonaj pełne ponowne skanowanie, jeśli zmieniłeś instalacje na tym systemie.",
+    "actions": {
+      "refresh": "Ponownie przeskanuj narzędzia",
+      "scanning": "Ponowne skanowanie..."
+    },
+    "status": {
+      "available": "Dostępne",
+      "missing": "Nie znaleziono",
+      "invalid": "Ścieżka nie znaleziona",
+      "unknown": "Nieznane"
+    },
     "git": {
       "title": "Git",
       "description": "Git to rozproszony system kontroli wersji do zarządzania zmianami w kodzie i współpracy.",

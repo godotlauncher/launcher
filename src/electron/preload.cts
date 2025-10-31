@@ -78,6 +78,9 @@ electron.contextBridge.exposeInMainWorld("electron", {
     // ##### tools #####
 
     getInstalledTools: () => ipcInvoke("get-installed-tools"),
+    getCachedTools: (options?: { refreshIfStale?: boolean }) =>
+        ipcInvoke("get-cached-tools", options),
+    refreshToolCache: () => ipcInvoke("refresh-tool-cache"),
 
     subscribeProjects: (callback) => ipcOn("projects-updated", callback),
     subscribeReleases: (callback) => ipcOn("releases-updated", callback),

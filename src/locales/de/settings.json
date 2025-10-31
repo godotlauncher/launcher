@@ -114,6 +114,17 @@
     "openConfigFolder": "Konfigurationsordner öffnen"
   },
   "tools": {
+    "overview": "Der Launcher überprüft schnell die zwischengespeicherten Tool-Pfade, wenn dieser Reiter den Fokus erhält. Führe eine vollständige Neuscan aus, wenn du Installationen auf diesem System geändert hast.",
+    "actions": {
+      "refresh": "Werkzeuge neu scannen",
+      "scanning": "Scanne..."
+    },
+    "status": {
+      "available": "Verfügbar",
+      "missing": "Nicht gefunden",
+      "invalid": "Pfad nicht gefunden",
+      "unknown": "Unbekannt"
+    },
     "git": {
       "title": "Git",
       "description": "Git ist ein verteiltes Versionskontrollsystem zur Verwaltung von Codeänderungen und Zusammenarbeit.",

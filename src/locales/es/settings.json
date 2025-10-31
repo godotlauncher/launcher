@@ -114,6 +114,17 @@
     "openConfigFolder": "Abrir carpeta de configuración"
   },
   "tools": {
+    "overview": "El lanzador valida rápidamente las rutas de herramientas en caché cuando esta pestaña recibe el foco. Ejecuta un reescaneo completo si cambiaste instalaciones en este sistema.",
+    "actions": {
+      "refresh": "Volver a escanear herramientas",
+      "scanning": "Reescanear..."
+    },
+    "status": {
+      "available": "Disponible",
+      "missing": "No encontrado",
+      "invalid": "Ruta no encontrada",
+      "unknown": "Desconocido"
+    },
     "git": {
       "title": "Git",
       "description": "Git es un sistema de control de versiones distribuido para gestionar cambios en el código y colaboración.",

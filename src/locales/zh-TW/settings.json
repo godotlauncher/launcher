@@ -114,6 +114,17 @@
     "openConfigFolder": "開啟設定資料夾"
   },
   "tools": {
+    "overview": "當此索引標籤獲得焦點時，啟動器會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
+    "actions": {
+      "refresh": "重新掃描工具",
+      "scanning": "正在重新掃描..."
+    },
+    "status": {
+      "available": "可用",
+      "missing": "未找到",
+      "invalid": "找不到路徑",
+      "unknown": "未知"
+    },
     "git": {
       "title": "Git",
       "description": "Git 是分散式版本控制系統，用於管理程式碼變更與協作。",

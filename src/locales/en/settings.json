@@ -114,6 +114,17 @@
     "openConfigFolder": "Open Config Folder"
   },
   "tools": {
+    "overview": "Launcher quickly validates cached tool paths when this tab gains focus. Run a full rescan if you changed installations on this system.",
+    "actions": {
+      "refresh": "Rescan tools",
+      "scanning": "Rescanning..."
+    },
+    "status": {
+      "available": "Available",
+      "missing": "Not found",
+      "invalid": "Path not found",
+      "unknown": "Unknown"
+    },
     "git": {
       "title": "Git",
       "description": "Git is a distributed version control system for managing code changes and collaboration.",

@@ -235,6 +235,18 @@ export function registerHandlers() {
         await refreshToolCache(tools);
         return tools;
     });
+    ipcMainHandler(
+        'get-cached-tools',
+        async (_, options?: { refreshIfStale?: boolean }) => {
+            const { getCachedTools } = await import('./services/toolCache.js');
+            return await getCachedTools(options);
+        }
+    );
+
+    ipcMainHandler('refresh-tool-cache', async () => {
+        const { refreshToolCache } = await import('./services/toolCache.js');
+        return await refreshToolCache();
+    });
 
     ipcMainHandler('relaunch-app', async () => {
         app.relaunch();

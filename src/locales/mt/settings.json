@@ -114,6 +114,17 @@
     "openConfigFolder": "Iftaħ Folder tal-Konfigurazzjoni"
   },
   "tools": {
+    "overview": "Il-launcher jivvalida malajr il-paths tal-għodda fil-cache meta din it-tab tkun fil-fokus. Esegwix skannatura sħiħa jekk biddilt l-installazzjonijiet fuq dan is-sistema.",
+    "actions": {
+      "refresh": "Skannja mill-ġdid l-għodod",
+      "scanning": "Qed jerskanna..."
+    },
+    "status": {
+      "available": "Disponibbli",
+      "missing": "Ma nstabx",
+      "invalid": "Path mhux misjub",
+      "unknown": "Mhux magħruf"
+    },
     "git": {
       "title": "Git",
       "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",

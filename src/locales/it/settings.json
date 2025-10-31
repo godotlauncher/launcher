@@ -114,6 +114,17 @@
     "openConfigFolder": "Apri cartella di configurazione"
   },
   "tools": {
+    "overview": "Il launcher verifica rapidamente i percorsi degli strumenti memorizzati nella cache quando questa scheda riceve il focus. Esegui una scansione completa se hai modificato le installazioni su questo sistema.",
+    "actions": {
+      "refresh": "Riscansiona gli strumenti",
+      "scanning": "Riscansionamento..."
+    },
+    "status": {
+      "available": "Disponibile",
+      "missing": "Non trovato",
+      "invalid": "Percorso non trovato",
+      "unknown": "Sconosciuto"
+    },
     "git": {
       "title": "Git",
       "description": "Git è un sistema di controllo versione distribuito per gestire modifiche al codice e collaborazioni.",

@@ -7,6 +7,7 @@ const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 type ToolCacheEntry = {
     name: string;
     path: string;
+    version: string | null;
     verified: boolean;
 };
 
@@ -39,6 +40,7 @@ async function readToolCache(): Promise<ToolCacheRecord | null> {
         last_scan: prefs.installed_tools.last_scan,
         tools: prefs.installed_tools.tools.map((tool) => ({
             ...tool,
+            version: tool.version ?? null,
             verified: tool.verified ?? verifyToolPath(tool.path),
         })),
     };
@@ -50,6 +52,7 @@ async function writeToolCache(entries: ToolCacheEntry[]): Promise<ToolCacheRecor
         last_scan: Date.now(),
         tools: entries.map((entry) => ({
             ...entry,
+            version: entry.version ?? null,
             verified: entry.verified ?? verifyToolPath(entry.path),
         })),
     };
@@ -77,6 +80,7 @@ export async function getCachedTools(options?: { refreshIfStale?: boolean }): Pr
 
     return cache.tools.map((tool) => ({
         ...tool,
+        version: tool.version ?? null,
         verified: verifyToolPath(tool.path),
     }));
 }
@@ -95,6 +99,7 @@ export async function refreshToolCache(preScannedTools?: InstalledTool[]): Promi
     const entries: ToolCacheEntry[] = tools.map((tool) => ({
         name: tool.name,
         path: tool.path,
+        version: tool.version ?? null,
         verified: verifyToolPath(tool.path),
     }));
 

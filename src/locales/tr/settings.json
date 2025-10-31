@@ -114,6 +114,17 @@
     "openConfigFolder": "Yapılandırma Klasörünü Aç"
   },
   "tools": {
+    "overview": "Bu sekme odaklandığında başlatıcı önbelleğe alınmış araç yollarını hızlıca doğrular. Bu sistemde kurulumları değiştirdiyseniz tam bir yeniden tarama çalıştırın.",
+    "actions": {
+      "refresh": "Araçları yeniden tara",
+      "scanning": "Yeniden taranıyor..."
+    },
+    "status": {
+      "available": "Mevcut",
+      "missing": "Bulunamadı",
+      "invalid": "Yol bulunamadı",
+      "unknown": "Bilinmiyor"
+    },
     "git": {
       "title": "Git",
       "description": "Git, kod değişikliklerini yönetmek ve işbirliği yapmak için dağıtık bir sürüm kontrol sistemidir.",

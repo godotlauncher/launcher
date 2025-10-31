@@ -19,6 +19,7 @@ dist-electron
 build.local
 build.local/*
 *.p12
+.internal*
 
 # Editor directories and files
 .vscode

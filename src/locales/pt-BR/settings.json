@@ -114,6 +114,17 @@
     "openConfigFolder": "Abrir pasta de configuração"
   },
   "tools": {
+    "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma varredura completa se você alterou instalações neste sistema.",
+    "actions": {
+      "refresh": "Reescaneie ferramentas",
+      "scanning": "Reescaneando..."
+    },
+    "status": {
+      "available": "Disponível",
+      "missing": "Não encontrado",
+      "invalid": "Caminho não encontrado",
+      "unknown": "Desconhecido"
+    },
     "git": {
       "title": "Git",
       "description": "Git é um sistema de controle de versão distribuído para gerenciar alterações de código e colaboração.",
