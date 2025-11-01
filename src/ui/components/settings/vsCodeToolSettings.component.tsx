@@ -1,3 +1,4 @@
+import logger from 'electron-log';
 import { Folder, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +49,7 @@ export const VSCodeToolSettings: React.FC<VSCodeToolSettingsProps> = ({
             await onRescan();
         }
         catch (error) {
-            console.error('Failed to clear VS Code path', error);
+            logger.error('Failed to clear VS Code path', error);
         }
     };
 
@@ -72,7 +73,7 @@ export const VSCodeToolSettings: React.FC<VSCodeToolSettingsProps> = ({
             }
         }
         catch (error) {
-            console.error('Failed to select VS Code path', error);
+            logger.error('Failed to select VS Code path', error);
         }
         finally {
             setDialogOpen(false);

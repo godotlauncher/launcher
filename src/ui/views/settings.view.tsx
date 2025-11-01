@@ -1,3 +1,5 @@
+import logger from 'electron-log';
+
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +38,7 @@ export const SettingsView: React.FC = () => {
             setCachedTools(tools);
         }
         catch (error) {
-            console.error('Failed to refresh tool cache', error);
+            logger.error('Failed to refresh tool cache', error);
         }
         finally {
             setRescanCount(count => Math.max(0, count - 1));
@@ -58,7 +60,7 @@ export const SettingsView: React.FC = () => {
                 }
             }
             catch (error) {
-                console.error('Failed to load cached tools', error);
+                logger.error('Failed to load cached tools', error);
             }
         };
 
