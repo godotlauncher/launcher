@@ -66,8 +66,9 @@ function buildFallbackChain(locale?: string): string[] {
         pushIfMissing(chain, baseLanguage);
     }
 
-    const configuredFallbacks =
-        (canonical && LOCALE_FALLBACKS[canonical]) ?? LOCALE_FALLBACKS.default;
+    const configuredFallbacks = canonical
+        ? LOCALE_FALLBACKS[canonical] ?? LOCALE_FALLBACKS.default
+        : LOCALE_FALLBACKS.default;
 
     configuredFallbacks.forEach((fallback) => pushIfMissing(chain, fallback));
 
