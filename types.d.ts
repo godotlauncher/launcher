@@ -121,6 +121,12 @@ type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
 };
 
+type PromotionClickPayload = {
+    id: string;
+    externalLink?: string | null;
+    expiresAt: string;
+};
+
 
 /**
  * Defines the types of renderers available for Godot Engine config version 5 (godot 4+).
@@ -206,6 +212,7 @@ type EventChannelMapping = {
 
     'get-platform': Promise<string>;
     'get-app-version': Promise<string>;
+    'promotion-clicked': Promise<void>;
 
     // ##### i18n #####
     'i18n:get-current-language': Promise<string>;
@@ -286,6 +293,7 @@ interface Window {
         getAppVersion: () => Promise<string>;
 
         // ##### OTHER #####
+        promotionClicked: (payload: PromotionClickPayload) => Promise<void>;
         subscribeProjects: (
             callback: (projects: ProjectDetails[]) => void
         ) => UnsubscribeFunction;

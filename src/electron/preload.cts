@@ -49,6 +49,8 @@ electron.contextBridge.exposeInMainWorld("electron", {
         ipcInvoke("show-release-menu", release),
 
     openExternal: (url: string) => ipcInvoke("open-external", url),
+    promotionClicked: (payload: PromotionClickPayload) =>
+        ipcInvoke("promotion-clicked", payload),
 
     // ##### projects #####
 

@@ -1,5 +1,7 @@
 import * as fs from 'node:fs';
 
+import logger from 'electron-log/main.js';
+
 import { ipcMainHandler, isDev } from './utils.js';
 import {
     getConfigDir,
@@ -254,6 +256,12 @@ export function registerHandlers() {
     });
 
     ipcMainHandler('check-updates', async () => checkForUpdates());
+    ipcMainHandler(
+        'promotion-clicked',
+        async (_, payload: PromotionClickPayload) => {
+            logger.info('[promotion] click', payload?.id ?? 'unknown');
+        }
+    );
 
     ipcMainHandler('get-platform', async () => {
         return process.platform;

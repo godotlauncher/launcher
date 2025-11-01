@@ -11,6 +11,7 @@ import { COMMUNITY_DISCORD_URL } from './constants';
 import { useApp } from './hooks/useApp';
 import { useAppNavigation, View } from './hooks/useAppNavigation';
 import { usePreferences } from './hooks/usePreferences';
+import { usePromotion } from './hooks/usePromotion';
 import { useRelease } from './hooks/useRelease';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
@@ -20,6 +21,7 @@ import { WelcomeView } from './views/welcome.view';
 
 import logo from './assets/logo.png';
 import { WindowsStep } from './components/welcomeSteps/WindowsStep';
+import { PromotionCTA } from './promotion';
 
 function App() {
     const { t } = useTranslation('common');
@@ -29,6 +31,7 @@ function App() {
 
     const { installedReleases, loading: releaseLoading } = useRelease();
     const { preferences, platform, updatePreferences } = usePreferences();
+    const { promotion, countdown, buildClickPayload } = usePromotion();
 
     const { updateAvailable, installAndRelaunch } = useApp();
 
@@ -56,6 +59,21 @@ function App() {
     const changeView = (view: View) => {
         setCurrentView(view);
     };
+
+    const handlePromotionClick = React.useCallback(() => {
+        if (!promotion) {
+            return;
+        }
+
+        const payload = buildClickPayload();
+        if (payload) {
+            void window.electron.promotionClicked(payload);
+        }
+
+        if (promotion.externalLink) {
+            void openExternalLink(promotion.externalLink);
+        }
+    }, [promotion, buildClickPayload, openExternalLink]);
 
     const ShowView = () => {
         switch (currentView) {
@@ -132,6 +150,17 @@ function App() {
                                 }}
                             />
                         )}
+                    </div>
+                )}
+                {promotion && (
+                    <div className="pb-2">
+                        <ul className="menu rounded-box w-56 gap-1">
+                            <PromotionCTA
+                                promotion={promotion}
+                                countdown={countdown}
+                                onClick={handlePromotionClick}
+                            />
+                        </ul>
                     </div>
                 )}
                 <div className="border-t-2 border-solid border-base-200">
