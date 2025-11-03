@@ -216,6 +216,21 @@ suite("Releases Utils", () => {
             });
         });
 
+        test('should correctly summarize a Windows ARM64 asset', () => {
+            const asset: ReleaseAsset = {
+                name: 'Godot_v4.5.1-stable_windows_arm64.exe.zip',
+                browser_download_url: 'https://example.com/download/Godot_v4.5.1-stable_windows_arm64.exe.zip',
+                ...baseAssetProps
+            };
+            const summary = createAssetSummary(asset);
+            expect(summary).toEqual({
+                name: 'Godot_v4.5.1-stable_windows_arm64.exe.zip',
+                download_url: 'https://example.com/download/Godot_v4.5.1-stable_windows_arm64.exe.zip',
+                platform_tags: ['win32', 'arm64'],
+                mono: false,
+            });
+        });
+
         test('should correctly identify a mono asset (win64 mono)', () => {
             const asset: ReleaseAsset = {
                 name: 'Godot_v3.6-stable_mono_win64.exe.zip',
@@ -225,6 +240,17 @@ suite("Releases Utils", () => {
             const summary = createAssetSummary(asset);
             expect(summary.mono).toBe(true);
             expect(summary.platform_tags).toEqual(['win32', 'x64']);
+        });
+
+        test('should correctly identify a mono asset (windows arm64 mono)', () => {
+            const asset: ReleaseAsset = {
+                name: 'Godot_v4.5.1-stable_mono_windows_arm64.zip',
+                browser_download_url: 'https://example.com/download/Godot_v4.5.1-stable_mono_windows_arm64.zip',
+                ...baseAssetProps
+            };
+            const summary = createAssetSummary(asset);
+            expect(summary.mono).toBe(true);
+            expect(summary.platform_tags).toEqual(['win32', 'arm64']);
         });
 
         test('should correctly summarize a Linux 64-bit asset', () => {
@@ -265,6 +291,8 @@ suite("Releases Utils", () => {
             { name: 'osx_arm64.zip', download_url: 'url3', platform_tags: ['darwin', 'arm64'], mono: true },
             { name: 'linux_arm64.zip', download_url: 'url4', platform_tags: ['linux', 'arm64'], mono: false },
             { name: 'win32.zip', download_url: 'url5', platform_tags: ['win32', 'ia32'], mono: false },
+            { name: 'windows_arm64.zip', download_url: 'url6', platform_tags: ['win32', 'arm64'], mono: false },
+            { name: 'windows_arm64_mono.zip', download_url: 'url7', platform_tags: ['win32', 'arm64'], mono: true },
         ];
 
         test('should find a matching asset for windows x64', () => {
@@ -282,9 +310,14 @@ suite("Releases Utils", () => {
             expect(result).toEqual([]);
         });
 
-        test('should return an empty array if no matching asset is found for arch', () => {
+        test('should find matching assets for windows arm64', () => {
             const result = getPlatformAsset('win32', 'arm64', assets);
-            expect(result).toEqual([]);
+            expect(result).toEqual([assets[5], assets[6]]);
+        });
+
+        test('should filter mono windows arm64 assets when provided', () => {
+            const result = getPlatformAsset('win32', 'arm64', assets.filter(asset => asset.mono));
+            expect(result).toEqual([assets[6]]);
         });
     });
 

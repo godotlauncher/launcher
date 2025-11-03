@@ -198,6 +198,20 @@ suite("Github Utils Tests", () => {
             expect(asset?.[0].name).toBe("Godot_v4.3-stable_mono_win32.zip");
         });
 
+        it("finds Windows arm64 asset (non-mono)", () => {
+            const asset = getPlatformAsset("win32", "arm64", summaries.filter(a => !a.mono));
+            expect(asset?.length).toBe(1);
+            expect(asset?.[0].mono).toBeFalsy();
+            expect(asset?.[0].name).toBe("Godot_v4.3-stable_windows_arm64.exe.zip");
+        });
+
+        it("finds Windows arm64 asset (mono)", () => {
+            const asset = getPlatformAsset("win32", "arm64", summaries.filter(a => a.mono));
+            expect(asset?.length).toBe(1);
+            expect(asset?.[0].mono).toBeTruthy();
+            expect(asset?.[0].name).toBe("Godot_v4.3-stable_mono_windows_arm64.zip");
+        });
+
         it("finds macOS universal asset (non-mono)", () => {
             const x64Asset = getPlatformAsset("darwin", "x64", summaries.filter(a => !a.mono));
             const arm64Asset = getPlatformAsset("darwin", "arm64", summaries.filter(a => !a.mono));

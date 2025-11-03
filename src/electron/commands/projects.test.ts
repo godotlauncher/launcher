@@ -242,10 +242,15 @@ describe('setProjectVSCode', () => {
 
         const result = await setProjectVSCode(project, true);
 
+        const expectedExecPath =
+            process.platform === 'darwin'
+                ? path.resolve('/Applications/Code', 'Contents', 'MacOS', 'Electron')
+                : '/Applications/Code';
+
         expect(updateEditorSettings).toHaveBeenCalledWith(
             '/projects/demo/editor_data/editor_settings-4.2.tres',
             expect.objectContaining({
-                execPath: '/Applications/Code',
+                execPath: expectedExecPath,
                 execFlags: '{project} --goto {file}:{line}:{col}',
                 useExternalEditor: true,
                 isMono: true,
