@@ -5,7 +5,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
         title: 'Gestalte den Godot Launcher mit',
         description:
             'Hilf mit, die Zukunft des Godot Launchers zu gestalten 🚀',
-        ctaLabel: 'Feedback geben',
+        ctaLabel: 'Umfrage 2025 ausfüllen',
         countdownSingularLabel: 'Noch {count} Tag',
         countdownPluralLabel: 'Noch {count} Tage',
         countdownHourLabel: 'Noch {count} Stunden',
@@ -14,7 +14,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     es: {
         title: 'Ayuda a mejorar Godot Launcher',
         description: 'Ayúdanos a definir el futuro de Godot Launcher 🚀',
-        ctaLabel: 'Compartir comentarios',
+        ctaLabel: 'Completa la encuesta 2025',
         countdownSingularLabel: 'Queda {count} día',
         countdownPluralLabel: 'Quedan {count} días',
         countdownHourLabel: 'Quedan {count} horas',
@@ -23,7 +23,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     fr: {
         title: 'Aidez à améliorer Godot Launcher',
         description: 'Participez à façonner l\'avenir de Godot Launcher 🚀',
-        ctaLabel: 'Partager mon avis',
+        ctaLabel: 'Remplir le sondage 2025',
         countdownSingularLabel: 'Il reste {count} jour',
         countdownPluralLabel: 'Il reste {count} jours',
         countdownHourLabel: 'Il reste {count} heures',
@@ -42,7 +42,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     pt: {
         title: 'Ajuda a melhorar o Godot Launcher',
         description: 'Ajuda-nos a moldar o futuro do Godot Launcher 🚀',
-        ctaLabel: 'Partilhar feedback',
+        ctaLabel: 'Preencha a pesquisa 2025',
         countdownSingularLabel: 'Falta {count} dia',
         countdownPluralLabel: 'Faltam {count} dias',
         countdownHourLabel: 'Faltam {count} horas',
@@ -51,7 +51,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     'pt-BR': {
         title: 'Ajude a melhorar o Godot Launcher',
         description: 'Ajude a definir o futuro do Godot Launcher 🚀',
-        ctaLabel: 'Enviar feedback',
+        ctaLabel: 'Preencha a pesquisa 2025',
         countdownSingularLabel: 'Resta {count} dia',
         countdownPluralLabel: 'Restam {count} dias',
         countdownHourLabel: 'Restam {count} horas',
@@ -60,7 +60,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     pl: {
         title: 'Pomóż ulepszyć Godot Launcher',
         description: 'Pomóż nam kształtować przyszłość Godot Launchera 🚀',
-        ctaLabel: 'Podziel się opinią',
+        ctaLabel: 'Wypełnij ankietę 2025',
         countdownSingularLabel: 'Pozostał {count} dzień',
         countdownPluralLabel: 'Pozostało {count} dni',
         countdownHourLabel: 'Pozostało {count} godzin',
@@ -69,7 +69,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     ru: {
         title: 'Помогите улучшить Godot Launcher',
         description: 'Помогите нам сформировать будущее Godot Launcher 🚀',
-        ctaLabel: 'Поделиться мнением',
+        ctaLabel: 'Заполнить опрос 2025',
         countdownSingularLabel: 'Остался {count} день',
         countdownPluralLabel: 'Осталось {count} дней',
         countdownHourLabel: 'Осталось {count} часов',
@@ -78,7 +78,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     ja: {
         title: 'Godot Launcher の改善にご協力ください',
         description: 'Godot Launcher の未来づくりに参加しませんか？🚀',
-        ctaLabel: 'フィードバックを送る',
+        ctaLabel: '2025年のアンケートに回答',
         countdownSingularLabel: '残り {count} 日',
         countdownPluralLabel: '残り {count} 日',
         countdownHourLabel: '残り {count} 時間',
@@ -87,7 +87,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     tr: {
         title: 'Godot Launcher\'ı geliştirmemize yardım et',
         description: 'Godot Launcher\'ın geleceğini birlikte şekillendirelim 🚀',
-        ctaLabel: 'Geri bildirim gönder',
+        ctaLabel: '2025 anketini doldur',
         countdownSingularLabel: '{count} gün kaldı',
         countdownPluralLabel: '{count} gün kaldı',
         countdownHourLabel: '{count} saat kaldı',
@@ -96,7 +96,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     mt: {
         title: 'Għinna ntejbu l-Godot Launcher',
         description: 'Għin biex tiffurma l-futur tal-Godot Launcher 🚀',
-        ctaLabel: 'Ibgħat il-feedback',
+        ctaLabel: 'Imla l-istħarriġ 2025',
         countdownSingularLabel: 'Fadal {count} jum',
         countdownPluralLabel: 'Fadal {count} jiem',
         countdownHourLabel: 'Fadal {count} sigħat',
@@ -105,7 +105,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     'zh-CN': {
         title: '帮助改进 Godot Launcher',
         description: '一起塑造 Godot Launcher 的未来 🚀',
-        ctaLabel: '提交反馈',
+        ctaLabel: '填写 2025 年调查',
         countdownSingularLabel: '还剩 {count} 天',
         countdownPluralLabel: '还剩 {count} 天',
         countdownHourLabel: '还剩 {count} 小时',
@@ -114,7 +114,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     'zh-TW': {
         title: '協助改進 Godot Launcher',
         description: '一起塑造 Godot Launcher 的未來 🚀',
-        ctaLabel: '提供回饋',
+        ctaLabel: '填寫 2025 年問卷',
         countdownSingularLabel: '還有 {count} 天',
         countdownPluralLabel: '還有 {count} 天',
         countdownHourLabel: '還有 {count} 小時',

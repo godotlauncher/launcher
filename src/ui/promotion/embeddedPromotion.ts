@@ -5,7 +5,7 @@ export const EMBEDDED_PROMOTION: PromotionManifestEntry | null = {
     id: 'survey-dec-2025',
     title: 'Help shape Godot Launcher',
     description: 'Help Shape the Future of Godot Launcher 🚀',
-    ctaLabel: 'Share feedback',
+    ctaLabel: 'Fill Out The 2025 Survey',
     expiresAt: '2025-12-31T23:59:59Z',
     countdownThresholdDays: 10,
     countdownSingularLabel: '{count} day left',
