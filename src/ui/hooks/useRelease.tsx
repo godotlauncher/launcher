@@ -8,6 +8,7 @@ type ReleaseContext = {
     loading: boolean;
     hasError: string | undefined;
     refreshAvailableReleases: () => Promise<void>;
+    clearReleaseCache: () => Promise<void>;
     installRelease: (release: ReleaseSummary, mono: boolean) => Promise<InstallReleaseResult>;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     removeRelease: (release: InstalledRelease) => Promise<void>;
@@ -67,6 +68,17 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
 
     const refreshAvailableReleases = async () => {
         updateAllReleases();
+    };
+
+    const clearReleaseCache = async () => {
+        setLoading(true);
+        try {
+            await window.electron.clearReleaseCache();
+            updateAllReleases();
+        }
+        finally {
+            setLoading(false);
+        }
     };
 
     const isDownloadingRelease = (version: string, mono: boolean): boolean => {
@@ -138,6 +150,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
             loading,
             hasError,
             refreshAvailableReleases,
+            clearReleaseCache,
             installRelease,
             isInstalledRelease,
             removeRelease,

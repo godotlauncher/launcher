@@ -24,6 +24,7 @@ electron.contextBridge.exposeInMainWorld("electron", {
     openEditorProjectManager: (release: InstalledRelease) =>
         ipcInvoke("open-editor-project-manager", release),
     checkAllReleasesValid: () => ipcInvoke("check-all-releases-valid"),
+    clearReleaseCache: () => ipcInvoke("clear-release-cache"),
 
     // ##### dialogs #####
     openDirectoryDialog: (

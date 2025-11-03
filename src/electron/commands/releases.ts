@@ -1,3 +1,5 @@
+import logger from 'electron-log';
+import { promises as fs } from 'node:fs';
 import * as os from 'os';
 import * as path from 'node:path';
 
@@ -56,6 +58,56 @@ export async function getAvailablePrereleases(): Promise<ReleaseSummary[]> {
     }
 
     return releases.releases;
+}
+
+async function removeCacheIfExists(cachePath: string): Promise<void> {
+    try {
+        await fs.unlink(cachePath);
+        logger.debug(`Removed release cache file at ${cachePath}`);
+    } catch (error) {
+        const err = error as NodeJS.ErrnoException;
+        if (err?.code === 'ENOENT') {
+            logger.debug(`Release cache file not found at ${cachePath}, skipping removal`);
+            return;
+        }
+
+        logger.error(`Failed to remove release cache file at ${cachePath}`, err);
+        throw err;
+    }
+}
+
+export async function clearReleaseCaches(): Promise<void> {
+    const { releaseCachePath, prereleaseCachePath } = getDefaultDirs();
+
+    logger.info('Clearing cached release manifests');
+    await Promise.all([
+        removeCacheIfExists(releaseCachePath),
+        removeCacheIfExists(prereleaseCachePath)
+    ]);
+
+    try {
+        const [latestReleases, latestPrereleases] = await Promise.all([
+            getReleases('RELEASES', new Date(0), MIN_VERSION, 1, 100),
+            getReleases('BUILDS', new Date(0), MIN_VERSION, 1, 100)
+        ]);
+
+        await Promise.all([
+            storeAvailableReleases(
+                releaseCachePath,
+                latestReleases.lastPublishDate,
+                [...latestReleases.releases].sort(sortByPublishDate)
+            ),
+            storeAvailableReleases(
+                prereleaseCachePath,
+                latestPrereleases.lastPublishDate,
+                [...latestPrereleases.releases].sort(sortByPublishDate)
+            )
+        ]);
+        logger.info('Release caches rebuilt successfully');
+    } catch (error) {
+        logger.error('Failed to rebuild release caches', error);
+        throw error;
+    }
 }
 
 export async function openProjectManager(release: InstalledRelease): Promise<void> {

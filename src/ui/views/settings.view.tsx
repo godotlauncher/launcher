@@ -14,6 +14,8 @@ import { VSCodeToolSettings } from '../components/settings/vsCodeToolSettings.co
 import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
+import { useRelease } from '../hooks/useRelease';
+import { useAlerts } from '../hooks/useAlerts';
 
 export const SettingsView: React.FC = () => {
     const { t } = useTranslation('settings');
@@ -21,6 +23,9 @@ export const SettingsView: React.FC = () => {
     const { preferences, savePreferences } = usePreferences();
 
     const { theme, setTheme } = useTheme();
+    const { clearReleaseCache, refreshAvailableReleases, loading: releaseLoading } = useRelease();
+    const { addAlert } = useAlerts();
+    const [clearingCache, setClearingCache] = useState(false);
 
     const [cachedTools, setCachedTools] = useState<CachedTool[]>([]);
     const [rescanCount, setRescanCount] = useState(0);
@@ -125,6 +130,39 @@ export const SettingsView: React.FC = () => {
                             {/* Installs */}
                             <div className={clsx('flex flex-col h-0 gap-4 ', { 'hidden': (activeTab !== 'installs') })}>
                                 <EditorsLocation />
+                                <div className="divider"></div>
+                                {/* Clear Release Cache */}
+                                <div className='flex flex-col gap-4'>
+                                    <div>
+                                        <h2 className="font-bold">{t('behavior.clearReleaseCache.title')}</h2>
+                                        <p className="text-sm text-base-content/70">{t('behavior.clearReleaseCache.description')}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline w-fit"
+                                        disabled={clearingCache || releaseLoading}
+                                        onClick={async () => {
+                                            if (clearingCache) {
+                                                return;
+                                            }
+                                            setClearingCache(true);
+                                            try {
+                                                await clearReleaseCache();
+                                                await refreshAvailableReleases();
+                                                addAlert(t('behavior.clearReleaseCache.successTitle'), t('behavior.clearReleaseCache.successMessage'));
+                                            }
+                                            catch (error) {
+                                                logger.error('Failed to clear release cache', error);
+                                                addAlert(t('behavior.clearReleaseCache.errorTitle'), t('behavior.clearReleaseCache.errorMessage'));
+                                            }
+                                            finally {
+                                                setClearingCache(false);
+                                            }
+                                        }}
+                                    >
+                                        {clearingCache ? t('behavior.clearReleaseCache.clearing') : t('behavior.clearReleaseCache.cta')}
+                                    </button>
+                                </div>
 
                             </div>
 
@@ -230,7 +268,7 @@ export const SettingsView: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
         </>);
 };

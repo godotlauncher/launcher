@@ -190,6 +190,7 @@ type EventChannelMapping = {
 
     'open-editor-project-manager': Promise<void>;
     'check-all-releases-valid': Promise<InstalledRelease[]>;
+    'clear-release-cache': Promise<void>;
 
     // ##### projects #####
 
@@ -263,6 +264,7 @@ interface Window {
 
         openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
         checkAllReleasesValid: () => Promise<InstalledRelease[]>;
+        clearReleaseCache: () => Promise<void>;
 
         // ##### projects #####
 

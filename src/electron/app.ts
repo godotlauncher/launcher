@@ -25,6 +25,7 @@ import {
     removeProject,
 } from './commands/projects.js';
 import {
+    clearReleaseCaches,
     getAvailablePrereleases,
     getAvailableReleases,
     getInstalledReleases,
@@ -149,6 +150,16 @@ export function registerHandlers() {
         'check-all-releases-valid',
         async () => await checkAndUpdateReleases()
     );
+
+    let clearReleaseCachePromise: Promise<void> | null = null;
+    ipcMainHandler('clear-release-cache', async () => {
+        if (!clearReleaseCachePromise) {
+            clearReleaseCachePromise = clearReleaseCaches().finally(() => {
+                clearReleaseCachePromise = null;
+            });
+        }
+        return await clearReleaseCachePromise;
+    });
 
     // ##### projects #####
 
