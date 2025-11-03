@@ -49,6 +49,16 @@
       "installLocation": "インストールの場所",
       "waitingForDialog": "ダイアログを待機中..."
     },
+    "clearReleaseCache": {
+      "title": "リリースキャッシュをクリア",
+      "description": "キャッシュされたリリースのメタデータを削除し、GitHub から最新のビルドを取得します。",
+      "cta": "キャッシュをクリア",
+      "clearing": "クリア中...",
+      "successTitle": "キャッシュをクリアしました",
+      "successMessage": "リリース一覧が最新のビルドで更新されました。",
+      "errorTitle": "キャッシュのクリアに失敗しました",
+      "errorMessage": "リリースキャッシュのクリア中に問題が発生しました。後でもう一度お試しください。"
+    },
     "checkForUpdates": {
       "title": "アップデートの確認",
       "description": "Godot Launcher起動時に自動的にアップデートを確認",

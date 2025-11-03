@@ -49,6 +49,16 @@
       "installLocation": "Local de instalação",
       "waitingForDialog": "A aguardar diálogo..."
     },
+    "clearReleaseCache": {
+      "title": "Limpar cache de versões",
+      "description": "Eliminar metadados de versões em cache e buscar as builds mais recentes do GitHub.",
+      "cta": "Limpar cache",
+      "clearing": "A limpar...",
+      "successTitle": "Cache limpa",
+      "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
+      "errorTitle": "Não foi possível limpar a cache",
+      "errorMessage": "Ocorreu um erro ao limpar a cache de versões. Tente novamente mais tarde."
+    },
     "checkForUpdates": {
       "title": "Procurar atualizações",
       "description": "Verificar atualizações automaticamente quando o Godot Launcher inicia",

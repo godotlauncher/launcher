@@ -49,6 +49,16 @@
       "installLocation": "安装位置",
       "waitingForDialog": "等待对话框..."
     },
+    "clearReleaseCache": {
+      "title": "清除发行缓存",
+      "description": "删除缓存的发行元数据并从 GitHub 获取最新的构建。",
+      "cta": "清除缓存",
+      "clearing": "正在清除...",
+      "successTitle": "已清除缓存",
+      "successMessage": "发行列表已用最新的构建刷新。",
+      "errorTitle": "无法清除缓存",
+      "errorMessage": "清除发行缓存时出错。请稍后再试。"
+    },
     "checkForUpdates": {
       "title": "检查更新",
       "description": "当 Godot 启动器 启动时自动检查更新",

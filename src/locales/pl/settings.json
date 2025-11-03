@@ -49,6 +49,16 @@
       "installLocation": "Lokalizacja instalacji",
       "waitingForDialog": "Oczekiwanie na okno dialogowe..."
     },
+    "clearReleaseCache": {
+      "title": "Wyczyść pamięć podręczną release'ów",
+      "description": "Usuń pamięć podręczną metadanych wydań i pobierz najnowsze buildy z GitHub.",
+      "cta": "Wyczyść pamięć podręczną",
+      "clearing": "Trwa czyszczenie...",
+      "successTitle": "Pamięć podręczna wyczyszczona",
+      "successMessage": "Listy wydań zostały odświeżone z najnowszymi buildami.",
+      "errorTitle": "Nie można wyczyścić pamięci podręcznej",
+      "errorMessage": "Wystąpił problem podczas czyszczenia pamięci podręcznej release'ów. Spróbuj ponownie później."
+    },
     "checkForUpdates": {
       "title": "Sprawdzanie aktualizacji",
       "description": "Automatycznie sprawdzaj aktualizacje przy uruchamianiu Godot Launcher",

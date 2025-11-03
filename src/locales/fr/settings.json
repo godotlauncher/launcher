@@ -49,6 +49,16 @@
       "installLocation": "Emplacement d'installation",
       "waitingForDialog": "En attente du dialogue..."
     },
+    "clearReleaseCache": {
+      "title": "Vider le cache des releases",
+      "description": "Supprimer les métadonnées de release mises en cache et récupérer les dernières builds depuis GitHub.",
+      "cta": "Vider le cache",
+      "clearing": "Vidage en cours...",
+      "successTitle": "Cache vidé",
+      "successMessage": "Les listes de releases ont été mises à jour avec les dernières builds.",
+      "errorTitle": "Impossible de vider le cache",
+      "errorMessage": "Une erreur est survenue lors du vidage du cache des releases. Réessayez plus tard."
+    },
     "checkForUpdates": {
       "title": "Vérifier les mises à jour",
       "description": "Vérifier automatiquement les mises à jour au démarrage de Godot Launcher",

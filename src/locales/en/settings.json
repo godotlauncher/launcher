@@ -49,6 +49,16 @@
       "installLocation": "Install Location",
       "waitingForDialog": "Waiting for dialog..."
     },
+    "clearReleaseCache": {
+      "title": "Clear release cache",
+      "description": "Delete cached release metadata and fetch the latest builds from GitHub.",
+      "cta": "Clear cache",
+      "clearing": "Clearing...",
+      "successTitle": "Cache cleared",
+      "successMessage": "Release lists were refreshed with the latest builds.",
+      "errorTitle": "Unable to clear cache",
+      "errorMessage": "Something went wrong while clearing the release cache. Try again later."
+    },
     "checkForUpdates": {
       "title": "Check for Updates",
       "description": "Automatically check for updates when Godot Launcher starts",

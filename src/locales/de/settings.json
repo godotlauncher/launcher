@@ -49,6 +49,16 @@
       "installLocation": "Installationsverzeichnis",
       "waitingForDialog": "Warte auf Dialog..."
     },
+    "clearReleaseCache": {
+      "title": "Cache für Releases löschen",
+      "description": "Zwischengespeicherte Release-Metadaten löschen und die neuesten Builds von GitHub abrufen.",
+      "cta": "Cache löschen",
+      "clearing": "Wird gelöscht...",
+      "successTitle": "Cache gelöscht",
+      "successMessage": "Die Release-Listen wurden mit den neuesten Builds aktualisiert.",
+      "errorTitle": "Cache konnte nicht gelöscht werden",
+      "errorMessage": "Beim Löschen des Release-Cache ist ein Fehler aufgetreten. Versuchen Sie es später erneut."
+    },
     "checkForUpdates": {
       "title": "Nach Updates suchen",
       "description": "Beim Start des Godot Launchers automatisch nach Updates suchen",
