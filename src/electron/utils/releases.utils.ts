@@ -40,51 +40,55 @@ export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
  */
 export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
     // Check if it's mono by name
-    const mono = asset.name.includes('mono');
+    const name = asset.name.toLowerCase();
+    const mono = name.includes('mono');
 
     // Default to empty tags
     let platform_tags: string[] = [];
 
     // Windows 64-bit
-    if (asset.name.includes('win64')) {
+    if (name.includes('windows_arm64')) {
+        platform_tags = ['win32', 'arm64'];
+    }
+    else if (name.includes('win64')) {
         platform_tags = ['win32', 'x64'];
     }
     // Windows 32-bit
-    else if (asset.name.includes('win32')) {
+    else if (name.includes('win32')) {
         platform_tags = ['win32', 'ia32'];
     }
     // macOS (darwin)
-    else if (asset.name.includes('osx') || asset.name.includes('macos') || asset.name.includes('universal')) {
+    else if (name.includes('osx') || name.includes('macos') || name.includes('universal')) {
         platform_tags = ['darwin', 'x64', 'arm64'];
     }
     // Linux
-    else if (asset.name.includes('linux')) {
+    else if (name.includes('linux')) {
         // arm32
-        if (asset.name.includes('arm32')) {
+        if (name.includes('arm32')) {
             platform_tags = ['linux', 'arm'];
         }
         // arm64
-        else if (asset.name.includes('arm64')) {
+        else if (name.includes('arm64')) {
             platform_tags = ['linux', 'arm64'];
         }
         // x64
-        else if (asset.name.includes('64')) {
+        else if (name.includes('64')) {
             platform_tags = ['linux', 'x64'];
         }
         // ia32
-        else if (asset.name.includes('32')) {
+        else if (name.includes('32')) {
             platform_tags = ['linux', 'ia32'];
         }
     }
     // Linux 64-bit (headless/server/x11)
     else if (
-        asset.name.includes('x11')
+        name.includes('x11')
     ) {
-        if (asset.name.includes('64')) {
+        if (name.includes('64')) {
             platform_tags = ['linux', 'x64'];
         }
         // Linux 32-bit (x11)
-        else if (asset.name.includes('32')) {
+        else if (name.includes('32')) {
             platform_tags = ['linux', 'ia32'];
         }
     }
