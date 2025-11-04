@@ -80,7 +80,7 @@ describe('ClearReleaseCacheControl', () => {
     });
 
     afterEach(() => {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+         
         delete (globalThis as { window?: Partial<Window> }).window;
     });
 
