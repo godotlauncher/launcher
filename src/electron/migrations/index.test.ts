@@ -4,6 +4,8 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+const MIGRATION_ID = '2024-11-clear-release-cache';
+
 const platformMocks = vi.hoisted(() => ({
     getDefaultDirs: vi.fn(),
 }));
@@ -16,7 +18,22 @@ const releasesMocks = vi.hoisted(() => ({
 
 vi.mock('../commands/releases.js', () => releasesMocks);
 
-const MIGRATION_ID = '2024-03-clear-release-cache';
+// Mock the migrations registry so tests don't import real migration code/data.
+const registryMocks = vi.hoisted(() => ({
+    migrations: [
+        {
+            id: '2024-11-clear-release-cache',
+            options: { targetVersion: '1.6.1' },
+            // no predicate to force execution by default (evaluatePredicate treats undefined as true)
+            run: async () => {
+                await releasesMocks.clearReleaseCaches();
+                return { id: MIGRATION_ID, status: 'completed' as const };
+            },
+        },
+    ],
+}));
+
+vi.mock('./registry.js', () => registryMocks);
 
 describe('runMigrations', () => {
     let runMigrations: typeof import('./index.js').runMigrations;
@@ -40,7 +57,7 @@ describe('runMigrations', () => {
             migrationStatePath: statePath,
         });
 
-        releasesMocks.clearReleaseCaches.mockResolvedValue();
+    releasesMocks.clearReleaseCaches.mockResolvedValue(undefined);
 
         ({ runMigrations } = await import('./index.js'));
     });
