@@ -502,8 +502,8 @@ export const ProjectsView: React.FC = () => {
                                                         row.release.version,
                                                         row.release.mono
                                                     ) ? (
-                                                            <div className="flex flex-row items-center gap-4">
-                                                                <TriangleAlert className="stroke-warning" />
+                                                            <div className="flex flex-row items-center gap-2">
+                                                                <TriangleAlert size={16} className="stroke-warning" />
                                                                 <p className="line-through">
                                                                     {row.version}{' '}
                                                                     {row.release
