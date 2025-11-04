@@ -2,8 +2,14 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import path from 'node:path';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getStoredInstalledReleases } from './releases.utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getStoredInstalledReleases, __resetInstalledReleasesStoreForTesting } from './releases.utils';
+
+const platformUtilsMock = vi.hoisted(() => ({
+    getDefaultDirs: vi.fn(),
+}));
+
+vi.mock('./platform.utils.js', () => platformUtilsMock);
 
 vi.mock('electron-updater', () => ({
     default: {
@@ -57,6 +63,10 @@ vi.mock('electron', () => ({
 
 const tempDirs: string[] = [];
 
+beforeEach(() => {
+    platformUtilsMock.getDefaultDirs.mockReset();
+});
+
 afterEach(() => {
     while (tempDirs.length > 0) {
         const dir = tempDirs.pop();
@@ -64,6 +74,7 @@ afterEach(() => {
             fs.rmSync(dir, { recursive: true, force: true });
         }
     }
+    __resetInstalledReleasesStoreForTesting();
 });
 
 describe('getStoredInstalledReleases', () => {
@@ -71,6 +82,9 @@ describe('getStoredInstalledReleases', () => {
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-releases-utils-'));
         tempDirs.push(tempDir);
         const releasesPath = path.join(tempDir, 'installed.json');
+        platformUtilsMock.getDefaultDirs.mockReturnValue({
+            installedReleasesCachePath: releasesPath,
+        });
 
         const data = [
             {
@@ -102,7 +116,7 @@ describe('getStoredInstalledReleases', () => {
 
         fs.writeFileSync(releasesPath, JSON.stringify(data), 'utf-8');
 
-        const releases = await getStoredInstalledReleases(releasesPath);
+        const releases = await getStoredInstalledReleases();
 
         expect(releases).toHaveLength(2);
         expect(releases.find(r => r.version === '4.2.0')?.valid).toBe(true);

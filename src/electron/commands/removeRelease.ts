@@ -1,16 +1,14 @@
 import * as fs from 'node:fs';
 import logger from 'electron-log';
 
-import { getDefaultDirs } from '../utils/platform.utils.js';
 import { removeStoredInstalledRelease, removeProjectEditorUsingRelease } from '../utils/releases.utils.js';
 import { checkAndUpdateProjects } from '../checks.js';
 
 
 export async function removeRelease(release: InstalledRelease): Promise<RemovedReleaseResult> {
-    const installedReleasesCachePath = getDefaultDirs().installedReleasesCachePath;
     try {
         logger.info(`Removing release '${release.version}'`);
-        const releases = await removeStoredInstalledRelease(installedReleasesCachePath, release);
+        const releases = await removeStoredInstalledRelease(release);
 
         await removeProjectEditorUsingRelease(release);
 

@@ -58,6 +58,25 @@ vi.mock('decompress', () => ({
     default: decompressMocks.decompress,
 }));
 
+vi.mock('electron-updater', () => ({
+    default: {
+        autoUpdater: {
+            on: vi.fn(),
+            logger: null,
+            channel: null,
+            checkForUpdates: vi.fn(),
+            checkForUpdatesAndNotify: vi.fn(),
+            downloadUpdate: vi.fn(),
+            quitAndInstall: vi.fn(),
+            setFeedURL: vi.fn(),
+            addAuthHeader: vi.fn(),
+            isUpdaterActive: vi.fn(),
+            currentVersion: '1.0.0',
+        },
+    },
+    UpdateCheckResult: {},
+}));
+
 const releasesUtilsMocks = vi.hoisted(() => ({
     downloadReleaseAsset: vi.fn(),
     addStoredInstalledRelease: vi.fn(),
@@ -73,7 +92,16 @@ vi.mock('../utils/releases.utils.js', async () => {
 });
 
 const platformUtilsMocks = vi.hoisted(() => ({
-    getDefaultDirs: vi.fn(),
+    getDefaultDirs: vi.fn(() => ({
+        configDir: '/config',
+        dataDir: '/data',
+        projectDir: '/projects',
+        prefsPath: '/prefs.json',
+        releaseCachePath: '/config/releases.json',
+        installedReleasesCachePath: '/cache/installed.json',
+        prereleaseCachePath: '/config/prereleases.json',
+        migrationStatePath: '/config/migrations.json',
+    })),
 }));
 
 vi.mock('../utils/platform.utils.js', () => platformUtilsMocks);
@@ -113,8 +141,16 @@ describe('installRelease', () => {
         releasesUtilsMocks.addStoredInstalledRelease.mockResolvedValue(undefined);
 
         platformUtilsMocks.getDefaultDirs.mockReturnValue({
+            configDir: '/config',
+            dataDir: '/data',
+            projectDir: '/projects',
+            prefsPath: '/prefs.json',
+            releaseCachePath: '/config/releases.json',
             installedReleasesCachePath: '/cache/installed.json',
+            prereleaseCachePath: '/config/prereleases.json',
+            migrationStatePath: '/config/migrations.json',
         });
+
         userPreferencesMocks.getUserPreferences.mockResolvedValue({
             install_location: '/installs',
         });
@@ -165,7 +201,6 @@ describe('installRelease', () => {
             expectedInstallPath
         );
         expect(releasesUtilsMocks.addStoredInstalledRelease).toHaveBeenCalledWith(
-            '/cache/installed.json',
             expect.objectContaining({
                 arch: 'arm64',
                 platform: 'win32',

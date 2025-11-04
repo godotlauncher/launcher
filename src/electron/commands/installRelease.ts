@@ -6,7 +6,6 @@ import logger from 'electron-log';
 
 import decompress from 'decompress';
 
-import { getDefaultDirs } from '../utils/platform.utils.js';
 import { getUserPreferences } from './userPreferences.js';
 import { addStoredInstalledRelease, downloadReleaseAsset, getPlatformAsset } from '../utils/releases.utils.js';
 import { DEFAULT_PROJECT_DEFINITION, getProjectDefinition } from '../utils/godot.utils.js';
@@ -21,7 +20,6 @@ export async function installRelease(
     logger.info(`Installing release '${release.version}'`);
 
     // get install locations
-    const { installedReleasesCachePath: installedReleasesCachePath } = getDefaultDirs();
     const { install_location: installLocation } = await getUserPreferences();
     let releasePath = path.resolve(installLocation, `${release.version}${mono ? '-mono' : ''}`);
     const downloadPath = path.resolve(installLocation, 'tmp', `${release.version}${mono ? '-mono' : ''}`);
@@ -168,10 +166,7 @@ export async function installRelease(
             valid: true,
         };
         // update installed releases
-        await addStoredInstalledRelease(
-            installedReleasesCachePath,
-            installedRelease
-        );
+        await addStoredInstalledRelease(installedRelease);
 
         // remove temp folder
         await fs.promises.rm(path.resolve(downloadPath), {

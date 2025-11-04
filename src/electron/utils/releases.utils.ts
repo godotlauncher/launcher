@@ -9,6 +9,8 @@ import { getStoredProjectsList } from './projects.utils.js';
 import { getDefaultDirs } from './platform.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { removeProjectEditor } from './godot.utils.js';
+import { createTypedJsonStore, __resetJsonStoreFactoryForTesting, type TypedJsonStore } from './jsonStoreFactory.js';
+import { __resetJsonStoreForTesting } from './jsonStore.js';
 
 export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
 
@@ -196,58 +198,75 @@ export async function storeAvailableReleases(releasesCachePath: string, lastPubl
     return cache;
 }
 
-export async function getStoredInstalledReleases(installedReleasesPath: string): Promise<InstalledRelease[]> {
+let installedReleasesStore: TypedJsonStore<InstalledRelease[]> | null = null;
+let installedReleasesPath: string | null = null;
 
-    try {
-        if (fs.existsSync(installedReleasesPath)) {
-            const releasesData = await fs.promises.readFile(installedReleasesPath, 'utf-8');
-            const releases = JSON.parse(releasesData) as InstalledRelease[];
-            const normalized = releases
-                .map(release => ({
-                    ...release,
-                    valid: typeof release.valid === 'boolean' ? release.valid : true,
-                }))
-                .sort((a, b) => a.version_number - b.version_number);
-            return normalized;
-        }
-    } catch (error) {
-        logger.error('Failed to read installed releases', error);
+function normalizeInstalledReleases(releases: InstalledRelease[]): InstalledRelease[] {
+    return releases
+        .map((release) => ({
+            ...release,
+            valid: typeof release.valid === 'boolean' ? release.valid : true,
+        }))
+        .sort((a, b) => a.version_number - b.version_number);
+}
+
+function ensureInstalledReleasesPath(): string {
+    if (installedReleasesPath) {
+        return installedReleasesPath;
     }
 
-    return [];
+    const { installedReleasesCachePath } = getDefaultDirs();
+    installedReleasesPath = installedReleasesCachePath;
+    return installedReleasesPath;
 }
 
-export async function addStoredInstalledRelease(installedReleaseCachePath: string, releases: InstalledRelease): Promise<InstalledRelease[]> {
+function ensureInstalledReleasesStore(): TypedJsonStore<InstalledRelease[]> {
+    if (installedReleasesStore) {
+        return installedReleasesStore;
+    }
 
-    const allInstalledReleases = await getStoredInstalledReleases(installedReleaseCachePath);
-    allInstalledReleases.push(releases);
+    const path = ensureInstalledReleasesPath();
+    installedReleasesStore = createTypedJsonStore<InstalledRelease[]>({
+        id: 'installed-releases',
+        logLabel: 'installed releases',
+        pathProvider: () => path,
+        defaultValue: () => [],
+        normalize: async (releases) => normalizeInstalledReleases(releases),
+        onParseError: (error) => {
+            logger.error('Failed to read installed releases', error);
+            return [];
+        },
+    });
 
-    const cacheData = JSON.stringify(allInstalledReleases, null, 4);
-
-    await fs.promises.writeFile(installedReleaseCachePath, cacheData, 'utf-8');
-
-    return allInstalledReleases;
+    return installedReleasesStore;
 }
 
-export async function removeStoredInstalledRelease(installedReleaseCachePath: string, release: InstalledRelease): Promise<InstalledRelease[]> {
-
-    const allInstalledReleases = await getStoredInstalledReleases(installedReleaseCachePath);
-
-    const updatedInstalledReleases = allInstalledReleases.filter(r => !(r.version === release.version && r.mono === release.mono));
-
-    const cacheData = JSON.stringify(updatedInstalledReleases, null, 4);
-
-    await fs.promises.writeFile(installedReleaseCachePath, cacheData, 'utf-8');
-
-    return updatedInstalledReleases;
+export async function getStoredInstalledReleases(): Promise<InstalledRelease[]> {
+    return ensureInstalledReleasesStore().read();
 }
 
-export async function saveStoredInstalledReleases(installedReleaseCachePath: string, releases: InstalledRelease[]): Promise<InstalledRelease[]> {
+export async function addStoredInstalledRelease(release: InstalledRelease): Promise<InstalledRelease[]> {
+    return ensureInstalledReleasesStore().update((releases) => {
+        releases.push(release);
+        return releases;
+    });
+}
 
-    const cacheData = JSON.stringify(releases, null, 4);
+export async function removeStoredInstalledRelease(release: InstalledRelease): Promise<InstalledRelease[]> {
+    return ensureInstalledReleasesStore().update((releases) =>
+        releases.filter(r => !(r.version === release.version && r.mono === release.mono))
+    );
+}
 
-    await fs.promises.writeFile(installedReleaseCachePath, cacheData, 'utf-8');
-    return releases;
+export async function saveStoredInstalledReleases(releases: InstalledRelease[]): Promise<InstalledRelease[]> {
+    return ensureInstalledReleasesStore().write(releases);
+}
+
+export function __resetInstalledReleasesStoreForTesting(): void {
+    __resetJsonStoreFactoryForTesting();
+    __resetJsonStoreForTesting();
+    installedReleasesStore = null;
+    installedReleasesPath = null;
 }
 
 export async function removeProjectEditorUsingRelease(release: InstalledRelease): Promise<void> {

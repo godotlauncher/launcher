@@ -79,13 +79,13 @@ describe('checkAndUpdateReleases', () => {
             { ...validRelease },
             { ...invalidRelease },
         ]);
-        vi.mocked(saveStoredInstalledReleases).mockImplementation(async (_, releases: InstalledRelease[]) => releases);
+        vi.mocked(saveStoredInstalledReleases).mockImplementation(async (releases: InstalledRelease[]) => releases);
 
         const result = await checkAndUpdateReleases();
 
         expect(saveStoredInstalledReleases).toHaveBeenCalledTimes(1);
 
-        const savedReleases = vi.mocked(saveStoredInstalledReleases).mock.calls[0][1] as InstalledRelease[];
+        const savedReleases = vi.mocked(saveStoredInstalledReleases).mock.calls[0][0] as InstalledRelease[];
         expect(savedReleases).toHaveLength(2);
         expect(savedReleases.find(r => r.version === '4.2.0')?.valid).toBe(true);
         expect(savedReleases.find(r => r.version === '4.1.0')?.valid).toBe(false);

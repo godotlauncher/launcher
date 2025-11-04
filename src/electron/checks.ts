@@ -2,7 +2,7 @@ import logger from 'electron-log';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { INSTALLED_RELEASES_FILENAME, PROJECTS_FILENAME } from './constants.js';
+import { PROJECTS_FILENAME } from './constants.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import { getDefaultDirs } from './utils/platform.utils.js';
 import {
@@ -18,11 +18,8 @@ import { parseGodotProjectFile } from './utils/godotProject.utils.js';
 export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
     logger.info('Checking and updating releases');
 
-    const { configDir } = getDefaultDirs();
-
     // get releases
-    const releasesFile = path.resolve(configDir, INSTALLED_RELEASES_FILENAME);
-    const releases = await getStoredInstalledReleases(releasesFile);
+    const releases = await getStoredInstalledReleases();
 
     // check that release path exist
     for (const release of releases) {
@@ -34,7 +31,7 @@ export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
     }
 
     // persist all releases, including invalid ones for recovery scenarios
-    return await saveStoredInstalledReleases(releasesFile, releases);
+    return await saveStoredInstalledReleases(releases);
 }
 
 export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {

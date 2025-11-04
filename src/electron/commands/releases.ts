@@ -11,12 +11,7 @@ import { sortByPublishDate } from '../utils/releaseSorting.utils.js';
 import { spawn } from 'child_process';
 
 export async function getInstalledReleases(): Promise<InstalledRelease[]> {
-    const { installedReleasesCachePath: installedReleasesPath } = getDefaultDirs();
-
-    const installedReleases = await getStoredInstalledReleases(
-        installedReleasesPath
-    );
-    return installedReleases;
+    return getStoredInstalledReleases();
 }
 
 export async function getAvailableReleases(): Promise<ReleaseSummary[]> {
