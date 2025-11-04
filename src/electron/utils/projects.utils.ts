@@ -1,5 +1,74 @@
-import * as fs from 'node:fs';
+import * as path from 'node:path';
 import logger from 'electron-log';
+
+import { createTypedJsonStore, __resetJsonStoreFactoryForTesting, type TypedJsonStore } from './jsonStoreFactory.js';
+import { __resetJsonStoreForTesting } from './jsonStore.js';
+import { getDefaultDirs } from './platform.utils.js';
+import { PROJECTS_FILENAME } from '../constants.js';
+
+let projectsStore: TypedJsonStore<ProjectDetails[]> | null = null;
+let projectsPath: string | null = null;
+
+function resolveProjectsPath(pathOverride?: string): string {
+    if (pathOverride) {
+        projectsPath = pathOverride;
+        return pathOverride;
+    }
+
+    if (!projectsPath) {
+        const { configDir } = getDefaultDirs();
+        projectsPath = path.resolve(configDir, PROJECTS_FILENAME);
+    }
+
+    return projectsPath;
+}
+
+function normalizeProjects(projects: ProjectDetails[]): ProjectDetails[] {
+    return projects
+        .map((project) => ({
+            ...project,
+            last_opened: project.last_opened ? new Date(project.last_opened) : null,
+        }))
+        .sort(
+            (a, b) =>
+                (a.last_opened ?? new Date(0)).getTime() -
+                (b.last_opened ?? new Date(0)).getTime()
+        );
+}
+
+function toDate(value: Date | string | null | undefined): Date | null {
+    if (!value) {
+        return null;
+    }
+
+    if (value instanceof Date) {
+        return value;
+    }
+
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function ensureProjectsStore(pathOverride?: string): TypedJsonStore<ProjectDetails[]> {
+    const resolvedPath = resolveProjectsPath(pathOverride);
+    if (projectsStore && projectsPath === resolvedPath) {
+        return projectsStore;
+    }
+
+    projectsStore = createTypedJsonStore<ProjectDetails[]>({
+        id: `projects:${resolvedPath}`,
+        logLabel: 'projects list',
+        pathProvider: () => resolvedPath,
+        defaultValue: async () => [],
+        normalize: async (projects) => normalizeProjects(projects),
+        onParseError: (error) => {
+            logger.error('Failed to read stored project list', error);
+            return [];
+        },
+    });
+
+    return projectsStore;
+}
 
 /**
  * Stores a list of projects to a JSON file.
@@ -9,10 +78,9 @@ import logger from 'electron-log';
  * @returns A Promise that resolves to the same projects array that was provided
  */
 export async function storeProjectsList(storeDir: string, projects: ProjectDetails[]): Promise<ProjectDetails[]> {
-
-    const data = JSON.stringify(projects, null, 4);
-    await fs.promises.writeFile(storeDir, data, 'utf-8');
-    return projects;
+    const store = ensureProjectsStore(storeDir);
+    const persisted = await store.write(projects);
+    return normalizeProjects(persisted);
 }
 
 /**
@@ -25,22 +93,9 @@ export async function storeProjectsList(storeDir: string, projects: ProjectDetai
  * @throws Will throw an error if the file does not exist
  */
 export async function getStoredProjectsList(storeDir: string): Promise<ProjectDetails[]> {
-
-    try {
-        if (fs.existsSync(storeDir)) {
-            const storedProjects = await fs.promises.readFile(storeDir, 'utf-8');
-            const parsed = JSON.parse(storedProjects) as ProjectDetails[];
-            return parsed.map(p => {
-                p.last_opened = p.last_opened ? new Date(p.last_opened) : null;
-                return p;
-            });
-
-        }
-    } catch (error) {
-        logger.error('Failed to read stored project list', error);
-    }
-
-    return [];
+    const store = ensureProjectsStore(storeDir);
+    const projects = await store.read();
+    return normalizeProjects(projects);
 }
 
 /**
@@ -52,10 +107,9 @@ export async function getStoredProjectsList(storeDir: string): Promise<ProjectDe
  */
 export async function removeProjectFromList(storeDir: string, projectPath: string): Promise<ProjectDetails[]> {
 
-    const projects = await getStoredProjectsList(storeDir);
-    const updatedProjects = projects.filter(p => p.path !== projectPath);
-
-    return storeProjectsList(storeDir, updatedProjects);
+    const store = ensureProjectsStore(storeDir);
+    const updated = await store.update((projects) => projects.filter(p => p.path !== projectPath));
+    return normalizeProjects(updated);
 }
 
 /**
@@ -72,18 +126,38 @@ export async function removeProjectFromList(storeDir: string, projectPath: strin
  */
 export async function addProjectToList(storeDir: string, project: ProjectDetails): Promise<ProjectDetails[]> {
 
-    const projects = await getStoredProjectsList(storeDir);
+    const store = ensureProjectsStore(storeDir);
 
-    // check if project path is already there and replace
-    const existing = projects.findIndex(p => p.path === project.path);
-    if (existing !== -1) {
-        projects[existing] = project;
-    }
-    else {
-        projects.push(project);
-    }
+    const updated = await store.update((projects) => {
+        const list = [...projects];
+        const incoming = {
+            ...project,
+            last_opened: toDate(project.last_opened),
+        };
 
-    projects.sort((a, b) => (a.last_opened ?? new Date(0)).getTime() - (b.last_opened ?? new Date(0)).getTime());
+        const existingIndex = list.findIndex(p => p.path === incoming.path);
 
-    return storeProjectsList(storeDir, projects);
+        if (existingIndex !== -1) {
+            list[existingIndex] = incoming;
+        } else {
+            list.push(incoming);
+        }
+
+        list.sort(
+            (a, b) =>
+                (toDate(a.last_opened)?.getTime() ?? 0) -
+                (toDate(b.last_opened)?.getTime() ?? 0)
+        );
+
+        return list;
+    });
+
+    return normalizeProjects(updated);
+}
+
+export function __resetProjectsStoreForTesting(): void {
+    projectsStore = null;
+    projectsPath = null;
+    __resetJsonStoreFactoryForTesting();
+    __resetJsonStoreForTesting();
 }
