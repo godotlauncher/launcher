@@ -3,7 +3,7 @@ import semver from 'semver';
 import { clearReleaseCaches } from '../commands/releases.js';
 import type { MigrationRegistry } from './types.js';
 
-export const CLEAR_RELEASE_CACHE_MIGRATION_ID = '2024-03-clear-release-cache';
+export const CLEAR_RELEASE_CACHE_MIGRATION_ID = '2024-11-clear-release-cache';
 
 function normalizeVersion(version: string): string {
     const coerced = semver.coerce(version);
