@@ -1,64 +1,86 @@
 import logger from 'electron-log';
 import { getMainWindow } from '../main.js';
 import { dialog } from 'electron';
-import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { createHash } from 'node:crypto';
 
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
 import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
 import { getDefaultDirs } from './platform.utils.js';
 import { t } from '../i18n/index.js';
+import { createTypedJsonStore, __resetJsonStoreFactoryForTesting, type TypedJsonStore } from './jsonStoreFactory.js';
+import { __resetJsonStoreForTesting } from './jsonStore.js';
 
-const loadedPrefs: UserPreferences | null = null;
-type CachedPrefs = {
-    value: UserPreferences;
-    hash: string;
-};
+type StoredUserPreferences = Partial<UserPreferences>;
 
-const prefsCache = new Map<string, CachedPrefs>();
-const writeQueue = new Map<string, Promise<void>>();
+let prefsPathCache: string | null = null;
+let prefsStore: TypedJsonStore<StoredUserPreferences> | null = null;
 
 function clonePrefs<T>(prefs: T): T {
+    if (prefs === undefined || prefs === null) {
+        return prefs;
+    }
     return JSON.parse(JSON.stringify(prefs));
 }
 
-function hashPrefs(prefs: UserPreferences): string {
-    return createHash('md5').update(JSON.stringify(prefs)).digest('hex');
+function mergeWithDefaults(defaultPrefs: UserPreferences, prefs: StoredUserPreferences): UserPreferences {
+    return {
+        ...clonePrefs(defaultPrefs),
+        ...clonePrefs(prefs),
+    };
 }
 
-async function waitForPendingWrite(prefsPath: string): Promise<void> {
-    const pending = writeQueue.get(prefsPath);
-    if (!pending) {
-        return;
+function resolvePrefsPath(pathOverride?: string): string {
+    if (pathOverride) {
+        prefsPathCache = pathOverride;
+        return pathOverride;
     }
 
+    if (!prefsPathCache) {
+        const defaultPaths = getDefaultDirs();
+        prefsPathCache = defaultPaths.prefsPath;
+    }
+
+    return prefsPathCache;
+}
+
+async function showPreferencesParseError(raw: string, error: unknown): Promise<void> {
+    logger.debug('Could not parse user preferences, using defaults', error);
+    logger.debug('Corrupted preferences data:', raw);
     try {
-        await pending;
-    } catch (error) {
-        logger.error('Failed to persist user preferences', error);
+        await dialog.showMessageBox(getMainWindow(), {
+            type: 'error',
+            title: t('dialogs:preferencesError.title'),
+            message: t('dialogs:preferencesError.message'),
+            buttons: ['OK'],
+        });
+    } catch (dialogError) {
+        logger.error('Failed to show preferences error dialog', dialogError);
     }
 }
 
-function enqueueWrite(prefsPath: string, action: () => Promise<void>): Promise<void> {
-    const previous = writeQueue.get(prefsPath) ?? Promise.resolve();
-    const finalPromise = previous
-        .catch(() => undefined)
-        .then(action)
-        .finally(() => {
-            if (writeQueue.get(prefsPath) === finalPromise) {
-                writeQueue.delete(prefsPath);
-            }
-        });
+function ensurePrefsStore(pathOverride?: string): TypedJsonStore<StoredUserPreferences> {
+    const resolvedPath = resolvePrefsPath(pathOverride);
+    if (prefsStore && prefsPathCache === resolvedPath) {
+        return prefsStore;
+    }
 
-    writeQueue.set(prefsPath, finalPromise);
-    return finalPromise;
+    prefsStore = createTypedJsonStore<StoredUserPreferences>({
+        id: `user-preferences:${resolvedPath}`,
+        logLabel: 'user preferences',
+        pathProvider: () => resolvedPath,
+        defaultValue: async () => ({} as StoredUserPreferences),
+        onParseError: async (error, raw) => {
+            await showPreferencesParseError(raw, error);
+            return {} as StoredUserPreferences;
+        },
+    });
+
+    return prefsStore;
 }
 
 export async function getPrefsPath(): Promise<string> {
-    const defaultPaths = getDefaultDirs();
-    return defaultPaths.prefsPath;
+    return resolvePrefsPath();
 }
 
 export async function getConfigDir(): Promise<string> {
@@ -90,67 +112,18 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
 }
 
 export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPreferences): Promise<UserPreferences> {
-    await waitForPendingWrite(prefsPath);
-
-    const cached = prefsCache.get(prefsPath);
-    if (cached) {
-        return clonePrefs(cached.value);
-    }
-
-    if (!fs.existsSync(prefsPath)) {
-        const cachedDefaults = clonePrefs(defaultPrefs);
-        prefsCache.set(prefsPath, { value: cachedDefaults, hash: hashPrefs(cachedDefaults) });
-        return clonePrefs(cachedDefaults);
-    }
-
-    // Read prefs from disk
-    const prefsData = await fs.promises.readFile(prefsPath, 'utf-8');
-    let mergedPrefs = clonePrefs(defaultPrefs);
-    try {
-        const prefs = JSON.parse(prefsData);
-        mergedPrefs = { ...defaultPrefs, ...prefs };
-    } catch (e) {
-        logger.debug('Could not parse user preferences, using defaults', e);
-        logger.debug('Corrupted preferences data:', prefsData);
-        await dialog.showMessageBox(getMainWindow(), {
-            type: 'error',
-            title: t('dialogs:preferencesError.title'),
-            message: t('dialogs:preferencesError.message'),
-            buttons: ['OK'],
-        });
-    }
-
-    const cachedPrefs = clonePrefs(mergedPrefs);
-    prefsCache.set(prefsPath, { value: cachedPrefs, hash: hashPrefs(cachedPrefs) });
-    return clonePrefs(cachedPrefs);
+    const store = ensurePrefsStore(prefsPath);
+    const storedPrefs = await store.read();
+    const merged = mergeWithDefaults(defaultPrefs, storedPrefs);
+    return clonePrefs(merged);
 }
 
 export async function writePrefsToDisk(prefsPath: string, prefs: UserPreferences): Promise<void> {
-    const existing = prefsCache.get(prefsPath);
-    const normalizedPrefs = clonePrefs(prefs);
-    const newHash = hashPrefs(normalizedPrefs);
-
-    if (existing && existing.hash === newHash) {
-        await waitForPendingWrite(prefsPath);
-        return;
-    }
-
-    prefsCache.set(prefsPath, { value: normalizedPrefs, hash: newHash });
-
-    // Write prefs to disk
-    const prefsData = JSON.stringify(normalizedPrefs, null, 4);
-    const writePromise = enqueueWrite(prefsPath, async () => {
-        await fs.promises.writeFile(prefsPath, prefsData, 'utf-8');
-    });
-
-    await writePromise;
+    const store = ensurePrefsStore(prefsPath);
+    await store.write(clonePrefs(prefs));
 }
 
 export async function getLoadedPrefs(): Promise<UserPreferences> {
-
-    if (loadedPrefs) {
-        return loadedPrefs;
-    }
 
     const prefsPath = await getPrefsPath();
     const defaultPrefs = await getDefaultPrefs();
@@ -174,6 +147,8 @@ export async function setAutoCheckUpdates(enabled: boolean): Promise<boolean> {
 }
 
 export function __resetPrefsCacheForTesting(): void {
-    prefsCache.clear();
-    writeQueue.clear();
+    prefsStore = null;
+    prefsPathCache = null;
+    __resetJsonStoreFactoryForTesting();
+    __resetJsonStoreForTesting();
 }
