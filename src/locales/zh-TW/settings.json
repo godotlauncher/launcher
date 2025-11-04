@@ -50,14 +50,15 @@
       "waitingForDialog": "等待對話框…"
     },
     "clearReleaseCache": {
-      "title": "清除發行快取",
-      "description": "刪除快取的發行描述資料並從 GitHub 取得最新的建置。",
-      "cta": "清除快取",
-      "clearing": "清除中...",
-      "successTitle": "快取已清除",
-      "successMessage": "發行清單已使用最新建置重新整理。",
-      "errorTitle": "無法清除快取",
-      "errorMessage": "清除發行快取時出現問題。請稍後再試。"
+        "title": "重新整理發行快取",
+        "description": "移除儲存的 Godot 發行版中繼資料，並從 GitHub 取得最新建置。",
+        "cta": "重新整理快取",
+        "clearing": "重新整理中...",
+        "cooldownNotice": "為避免觸發 GitHub 速率限制，快取重新整理已暫時停用。",
+        "successTitle": "快取重新整理成功",
+        "successMessage": "發行清單已更新為最新建置。",
+        "errorTitle": "無法重新整理快取",
+        "errorMessage": "重新整理發行快取時發生問題，請稍後再試。"
     },
     "checkForUpdates": {
       "title": "檢查更新",

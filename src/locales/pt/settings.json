@@ -50,14 +50,15 @@
       "waitingForDialog": "A aguardar diálogo..."
     },
     "clearReleaseCache": {
-      "title": "Limpar cache de versões",
-      "description": "Eliminar metadados de versões em cache e buscar as builds mais recentes do GitHub.",
-      "cta": "Limpar cache",
-      "clearing": "A limpar...",
-      "successTitle": "Cache limpa",
-      "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
-      "errorTitle": "Não foi possível limpar a cache",
-      "errorMessage": "Ocorreu um erro ao limpar a cache de versões. Tente novamente mais tarde."
+        "title": "Atualizar Cache De Versões",
+        "description": "Remove os metadados de versões de Godot guardados e obtém as builds mais recentes do GitHub.",
+        "cta": "Atualizar cache",
+        "clearing": "A atualizar...",
+        "cooldownNotice": "A atualização da cache está temporariamente desativada para evitar atingir os limites do GitHub.",
+        "successTitle": "Cache Atualizada Com Sucesso",
+        "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
+        "errorTitle": "Não Foi Possível Atualizar A Cache",
+        "errorMessage": "Ocorreu um problema ao atualizar a cache de versões. Tente novamente mais tarde."
     },
     "checkForUpdates": {
       "title": "Procurar atualizações",

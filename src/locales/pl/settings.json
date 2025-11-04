@@ -50,14 +50,15 @@
       "waitingForDialog": "Oczekiwanie na okno dialogowe..."
     },
     "clearReleaseCache": {
-      "title": "Wyczyść pamięć podręczną release'ów",
-      "description": "Usuń pamięć podręczną metadanych wydań i pobierz najnowsze buildy z GitHub.",
-      "cta": "Wyczyść pamięć podręczną",
-      "clearing": "Trwa czyszczenie...",
-      "successTitle": "Pamięć podręczna wyczyszczona",
-      "successMessage": "Listy wydań zostały odświeżone z najnowszymi buildami.",
-      "errorTitle": "Nie można wyczyścić pamięci podręcznej",
-      "errorMessage": "Wystąpił problem podczas czyszczenia pamięci podręcznej release'ów. Spróbuj ponownie później."
+        "title": "Odśwież Pamięć Podręczną Wydań",
+        "description": "Usuń zachowane metadane wydań Godot i pobierz najnowsze buildy z GitHub.",
+        "cta": "Odśwież pamięć podręczną",
+        "clearing": "Odświeżanie...",
+        "cooldownNotice": "Odświeżanie pamięci podręcznej jest tymczasowo wyłączone, aby uniknąć limitów GitHub.",
+        "successTitle": "Pamięć Podręczna Odświeżona",
+        "successMessage": "Listy wydań zostały uzupełnione o najnowsze buildy.",
+        "errorTitle": "Nie Można Odświeżyć Pamięci Podręcznej",
+        "errorMessage": "Wystąpił problem podczas odświeżania pamięci podręcznej wydań. Spróbuj ponownie później."
     },
     "checkForUpdates": {
       "title": "Sprawdzanie aktualizacji",

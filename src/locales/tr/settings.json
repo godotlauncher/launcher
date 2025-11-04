@@ -50,14 +50,15 @@
       "waitingForDialog": "İletişim kutusu bekleniyor..."
     },
     "clearReleaseCache": {
-      "title": "Sürüm önbelleğini temizle",
-      "description": "Önbelleğe alınmış sürüm meta verilerini sil ve GitHub'dan en son yapıları getir.",
-      "cta": "Önbelleği temizle",
-      "clearing": "Temizleniyor...",
-      "successTitle": "Önbellek temizlendi",
-      "successMessage": "Sürüm listeleri en son yapılar ile güncellendi.",
-      "errorTitle": "Önbellek temizlenemedi",
-      "errorMessage": "Sürüm önbelleği temizlenirken bir hata oluştu. Daha sonra tekrar deneyin."
+        "title": "Sürüm Önbelleğini Yenile",
+        "description": "Önbelleğe alınmış Godot sürüm meta verilerini sil ve GitHub’dan en yeni yapıları çek.",
+        "cta": "Önbelleği yenile",
+        "clearing": "Yenileniyor...",
+        "cooldownNotice": "GitHub hız sınırlarına takılmamak için önbellek yenileme geçici olarak devre dışı bırakıldı.",
+        "successTitle": "Önbellek Başarıyla Yenilendi",
+        "successMessage": "Sürüm listeleri en yeni yapılarla güncellendi.",
+        "errorTitle": "Önbellek Yenilenemedi",
+        "errorMessage": "Sürüm önbelleği yenilenirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin."
     },
     "checkForUpdates": {
       "title": "Güncellemeleri Kontrol Et",

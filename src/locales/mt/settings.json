@@ -50,14 +50,15 @@
       "waitingForDialog": "Qed nistennew id-djalogu..."
     },
     "clearReleaseCache": {
-      "title": "Ħassar cache tal-release",
-      "description": "Ħassar il-metadata tal-release mniżżla fil-cache u ġib l-aktar builds riċenti minn GitHub.",
-      "cta": "Ħassar cache",
-      "clearing": "Qed nħassar...",
-      "successTitle": "Cache ħassret",
-      "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
-      "errorTitle": "Ma setgħetx tħassar il-cache",
-      "errorMessage": "Seħħ żball waqt li qed tħassar il-cache tar-release. Erġa' pprova aktar tard."
+        "title": "Aġġorna L-Cache Tar-Release",
+        "description": "Neħħi l-metadata tal-release ta’ Godot miżmuma fil-cache u iġbor l-aħħar builds minn GitHub.",
+        "cta": "Aġġorna l-cache",
+        "clearing": "Qed naġġorna...",
+        "cooldownNotice": "L-aġġornament tal-cache huwa diżattivat temporanjament biex nevitaw li nilħqu l-limiti ta’ GitHub.",
+        "successTitle": "Cache Aġġornata B’Suċċess",
+        "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
+        "errorTitle": "Ma Stajniex Naġġornaw Il-Cache",
+        "errorMessage": "Seħħ żball waqt l-aġġornament tal-cache tar-release. Erġa’ pprova aktar tard."
     },
     "checkForUpdates": {
       "title": "Iċċekkja għal Aġġornamenti",

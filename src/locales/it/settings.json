@@ -50,14 +50,15 @@
       "waitingForDialog": "In attesa della finestra di dialogo..."
     },
     "clearReleaseCache": {
-      "title": "Svuota la cache delle release",
-      "description": "Elimina i metadati delle release nella cache e recupera le build più recenti da GitHub.",
-      "cta": "Svuota cache",
-      "clearing": "Sto svuotando...",
-      "successTitle": "Cache svuotata",
-      "successMessage": "Le liste delle release sono state aggiornate con le build più recenti.",
-      "errorTitle": "Impossibile svuotare la cache",
-      "errorMessage": "Si è verificato un errore durante lo svuotamento della cache delle release. Riprova più tardi."
+        "title": "Aggiorna La Cache Delle Release",
+        "description": "Elimina i metadati delle release di Godot memorizzati e scarica le build più recenti da GitHub.",
+        "cta": "Aggiorna cache",
+        "clearing": "Aggiornamento...",
+        "cooldownNotice": "L’aggiornamento della cache è temporaneamente disattivato per evitare di raggiungere i limiti di GitHub.",
+        "successTitle": "Cache Aggiornata Con Successo",
+        "successMessage": "Le liste delle release sono state aggiornate con le build più recenti.",
+        "errorTitle": "Impossibile Aggiornare La Cache",
+        "errorMessage": "Si è verificato un problema durante l’aggiornamento della cache delle release. Riprova più tardi."
     },
     "checkForUpdates": {
       "title": "Controlla aggiornamenti",

@@ -50,14 +50,15 @@
       "waitingForDialog": "Waiting for dialog..."
     },
     "clearReleaseCache": {
-      "title": "Clear release cache",
-      "description": "Delete cached release metadata and fetch the latest builds from GitHub.",
-      "cta": "Clear cache",
-      "clearing": "Clearing...",
-      "successTitle": "Cache cleared",
+        "title": "Refresh Release Cache",
+      "description": "Delete cached Godot release metadata and fetch the latest builds from GitHub.",
+      "cta": "Refresh cache",
+      "clearing": "Refreshing...",
+      "cooldownNotice": "Cache refreshing is temporarily disabled to avoid hitting GitHub rate limits.",
+      "successTitle": "Cache Refreshed Successfully",
       "successMessage": "Release lists were refreshed with the latest builds.",
-      "errorTitle": "Unable to clear cache",
-      "errorMessage": "Something went wrong while clearing the release cache. Try again later."
+      "errorTitle": "Unable to Refresh Cache",
+      "errorMessage": "Something went wrong while refreshing the release cache. Try again later."
     },
     "checkForUpdates": {
       "title": "Check for Updates",
@@ -160,9 +161,9 @@
     "description": "Configure how GD Launcher checks for updates",
     "autoCheck": "Automatically check for updates",
     "checkNow": "Check for updates",
-  "updateAvailable": "Version {{version}} is available, restart Godot Launcher to install. <Button>Restart now</Button>",
-  "updateReady": "A new version is available, restart Godot Launcher to install. <Button>Restart now</Button>",
-  "restartNow": "Restart now."
+    "updateAvailable": "Version {{version}} is available, restart Godot Launcher to install. <Button>Restart now</Button>",
+    "updateReady": "A new version is available, restart Godot Launcher to install. <Button>Restart now</Button>",
+    "restartNow": "Restart now."
   },
   "windowsSymlinks": {
     "title": "Editor symlinks",

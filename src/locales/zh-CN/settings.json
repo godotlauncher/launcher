@@ -50,14 +50,15 @@
       "waitingForDialog": "等待对话框..."
     },
     "clearReleaseCache": {
-      "title": "清除发行缓存",
-      "description": "删除缓存的发行元数据并从 GitHub 获取最新的构建。",
-      "cta": "清除缓存",
-      "clearing": "正在清除...",
-      "successTitle": "已清除缓存",
-      "successMessage": "发行列表已用最新的构建刷新。",
-      "errorTitle": "无法清除缓存",
-      "errorMessage": "清除发行缓存时出错。请稍后再试。"
+        "title": "刷新发行缓存",
+        "description": "删除缓存的 Godot 发行版本元数据，并从 GitHub 获取最新构建。",
+        "cta": "刷新缓存",
+        "clearing": "正在刷新...",
+        "cooldownNotice": "为避免触发 GitHub 速率限制，缓存刷新已暂时禁用。",
+        "successTitle": "缓存刷新成功",
+        "successMessage": "发行列表已更新为最新构建。",
+        "errorTitle": "无法刷新缓存",
+        "errorMessage": "刷新发行缓存时出现问题，请稍后重试。"
     },
     "checkForUpdates": {
       "title": "检查更新",

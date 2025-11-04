@@ -50,14 +50,15 @@
       "waitingForDialog": "ダイアログを待機中..."
     },
     "clearReleaseCache": {
-      "title": "リリースキャッシュをクリア",
-      "description": "キャッシュされたリリースのメタデータを削除し、GitHub から最新のビルドを取得します。",
-      "cta": "キャッシュをクリア",
-      "clearing": "クリア中...",
-      "successTitle": "キャッシュをクリアしました",
-      "successMessage": "リリース一覧が最新のビルドで更新されました。",
-      "errorTitle": "キャッシュのクリアに失敗しました",
-      "errorMessage": "リリースキャッシュのクリア中に問題が発生しました。後でもう一度お試しください。"
+        "title": "リリースキャッシュを更新",
+        "description": "保存された Godot リリースのメタデータを削除し、GitHub から最新のビルドを取得します。",
+        "cta": "キャッシュを更新",
+        "clearing": "更新しています…",
+        "cooldownNotice": "GitHub のレート制限を避けるため、キャッシュ更新は一時的に無効化されています。",
+        "successTitle": "キャッシュを更新しました",
+        "successMessage": "リリース一覧が最新のビルドで更新されました。",
+        "errorTitle": "キャッシュを更新できませんでした",
+        "errorMessage": "リリースキャッシュの更新中に問題が発生しました。後でもう一度お試しください。"
     },
     "checkForUpdates": {
       "title": "アップデートの確認",
