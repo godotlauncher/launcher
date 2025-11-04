@@ -11,6 +11,7 @@ export const PREFS_FILENAME = 'prefs.json';
 export const RELEASES_FILENAME = 'releases.json';
 export const INSTALLED_RELEASES_FILENAME = 'installed-releases.json';
 export const PRERELEASES_FILENAME = 'prereleases.json';
+export const MIGRATIONS_FILENAME = 'migrations.json';
 export const EDITOR_CONFIG_DIRNAME = '.editor_config';
 
 export const EDITOR_SETTINGS_TEMPLATE_FILENAME = 'editor_settings.template.mst';

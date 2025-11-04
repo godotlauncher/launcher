@@ -99,6 +99,7 @@ suite('prefs.util', test => {
                 prefsPath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'prefs.json'),
                 installedReleasesCachePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'installed-releases.json'),
                 prereleaseCachePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'prereleases.json'),
+                migrationStatePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'migrations.json'),
                 projectDir: path.win32.join(mockedHomeDir, 'Godot', 'Projects'),
                 releaseCachePath: path.win32.join(mockedHomeDir, `.${APP_INTERNAL_NAME}`, 'releases.json')
             });
@@ -118,6 +119,7 @@ suite('prefs.util', test => {
                 prefsPath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/prefs.json`),
                 installedReleasesCachePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/installed-releases.json`),
                 prereleaseCachePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/prereleases.json`),
+                migrationStatePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/migrations.json`),
                 projectDir: path.posix.resolve(`/home/user/Godot/Projects`),
                 releaseCachePath: path.posix.resolve(`/home/user/.${APP_INTERNAL_NAME}/releases.json`)
             });

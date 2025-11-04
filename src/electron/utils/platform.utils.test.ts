@@ -78,6 +78,7 @@ describe("platform.utils", () => {
                 prefsPath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prefs.json'),
                 installedReleasesCachePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'installed-releases.json'),
                 prereleaseCachePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prereleases.json'),
+                migrationStatePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'migrations.json'),
                 projectDir: path.win32.join(expectedHomeDir, 'Godot', 'Projects'),
                 releaseCachePath: path.win32.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'releases.json')
             });
@@ -99,6 +100,7 @@ describe("platform.utils", () => {
                 prefsPath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prefs.json'),
                 installedReleasesCachePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'installed-releases.json'),
                 prereleaseCachePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'prereleases.json'),
+                migrationStatePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'migrations.json'),
                 projectDir: path.posix.join(expectedHomeDir, 'Godot', 'Projects'),
                 releaseCachePath: path.posix.join(expectedHomeDir, `.${APP_INTERNAL_NAME}`, 'releases.json')
             });

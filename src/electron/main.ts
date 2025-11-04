@@ -5,6 +5,7 @@ import { createDefaultFolder, registerHandlers, initI18n } from './app.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { getUserPreferences } from './commands/userPreferences.js';
+import { runMigrations } from './migrations/index.js';
 import { createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
@@ -123,6 +124,12 @@ app.on('ready', async () => {
     }
 
     await createDefaultFolder();
+
+    try {
+        await runMigrations(app.getVersion());
+    } catch (error) {
+        logger.error('Failed to execute migrations', error);
+    }
 
     // Initialize i18n before creating windows
     logger.debug('Initializing i18n...');

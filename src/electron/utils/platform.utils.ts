@@ -6,7 +6,7 @@ import which from 'which';
 
 import { exec } from 'child_process';
 import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
-import { APP_INTERNAL_NAME, INSTALLED_RELEASES_FILENAME, PREFS_FILENAME, PRERELEASES_FILENAME, RELEASES_FILENAME } from '../constants.js';
+import { APP_INTERNAL_NAME, INSTALLED_RELEASES_FILENAME, MIGRATIONS_FILENAME, PREFS_FILENAME, PRERELEASES_FILENAME, RELEASES_FILENAME } from '../constants.js';
 import { isDev } from '../utils.js';
 
 
@@ -27,6 +27,7 @@ export function getDefaultDirs(): {
     releaseCachePath: string,
     installedReleasesCachePath: string;
     prereleaseCachePath: string;
+    migrationStatePath: string;
     } {
     // Select the correct path module based on the platform
     // this is to make the function testable on all platforms
@@ -43,6 +44,7 @@ export function getDefaultDirs(): {
     const releaseCachePath = pathModule.resolve(configDir, RELEASES_FILENAME);
     const prereleaseCachePath = pathModule.resolve(configDir, PRERELEASES_FILENAME);
     const installedReleasesCachePath = pathModule.resolve(configDir, INSTALLED_RELEASES_FILENAME);
+    const migrationStatePath = pathModule.resolve(configDir, MIGRATIONS_FILENAME);
 
     return {
         prefsPath,
@@ -51,7 +53,8 @@ export function getDefaultDirs(): {
         projectDir,
         releaseCachePath,
         prereleaseCachePath,
-        installedReleasesCachePath
+        installedReleasesCachePath,
+        migrationStatePath
     };
 }
 
