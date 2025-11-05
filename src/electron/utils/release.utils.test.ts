@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi, suite } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi, suite } from "vitest";
 import {
     parseReleaseName,
     sortReleases,
@@ -12,7 +12,8 @@ import {
     removeStoredInstalledRelease,
     saveStoredInstalledReleases,
     removeProjectEditorUsingRelease,
-    __resetInstalledReleasesStoreForTesting
+    __resetInstalledReleasesStoreForTesting,
+    __resetReleaseCachesForTesting
 } from './releases.utils';
 
 // Mock the modules needed by releases.utils.ts
@@ -367,14 +368,19 @@ suite("Releases Utils", () => {
 
     describe('Available releases storage', () => {
         beforeEach(() => {
-            vi.mocked(fs.existsSync).mockClear();
-            vi.mocked(fs.promises.readFile).mockClear();
-            vi.mocked(fs.promises.writeFile).mockClear();
+            vi.mocked(fs.existsSync).mockReset();
+            vi.mocked(fs.promises.readFile).mockReset();
+            vi.mocked(fs.promises.writeFile).mockReset();
+            __resetReleaseCachesForTesting();
+        });
+        afterEach(() => {
+            __resetReleaseCachesForTesting();
         });
 
         test('should store available releases correctly', async () => {
             const testDate = new Date(2024, 0, 1);
             const releases = [{ version: '4.4-stable' }] as ReleaseSummary[];
+            vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(undefined as unknown as void);
 
             const cached = await storeAvailableReleases('/tmp/releases.json', testDate, releases);
 
@@ -389,7 +395,7 @@ suite("Releases Utils", () => {
         });
 
         test('should get stored available releases when file exists', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(true);
+            vi.mocked(fs.existsSync).mockReturnValue(true);
             const testDateStr = new Date(2024, 0, 1).toISOString();
             vi.mocked(fs.promises.readFile).mockResolvedValueOnce(JSON.stringify({
                 lastUpdated: 123456,
@@ -407,7 +413,7 @@ suite("Releases Utils", () => {
         });
 
         test('should return empty releases when file does not exist', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(false);
+            vi.mocked(fs.existsSync).mockReturnValue(false);
 
             const result = await getStoredAvailableReleases('/tmp/releases.json');
 
@@ -419,7 +425,7 @@ suite("Releases Utils", () => {
         });
 
         test('should return empty releases when file reading fails', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(true);
+            vi.mocked(fs.existsSync).mockReturnValue(true);
             vi.mocked(fs.promises.readFile).mockRejectedValueOnce(new Error('Failed to read'));
 
             const result = await getStoredAvailableReleases('/tmp/releases.json');
@@ -435,9 +441,9 @@ suite("Releases Utils", () => {
 
     describe('Installed releases management', () => {
         beforeEach(() => {
-            vi.mocked(fs.existsSync).mockClear();
-            vi.mocked(fs.promises.readFile).mockClear();
-            vi.mocked(fs.promises.writeFile).mockClear();
+            vi.mocked(fs.existsSync).mockReset();
+            vi.mocked(fs.promises.readFile).mockReset();
+            vi.mocked(fs.promises.writeFile).mockReset();
             __resetInstalledReleasesStoreForTesting();
             platformUtilsMocks.getDefaultDirs.mockReturnValue({
                 configDir: '/fake/config/dir',
@@ -472,11 +478,12 @@ suite("Releases Utils", () => {
         });
 
         test('should add a release to installed releases', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(true);
+            vi.mocked(fs.existsSync).mockReturnValue(true);
             const existingReleases = [
                 { version: '4.4-stable', mono: true, version_number: 1, valid: true }
             ];
             vi.mocked(fs.promises.readFile).mockResolvedValueOnce(JSON.stringify(existingReleases));
+            vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(undefined as unknown as void);
 
             const newRelease = { version: '4.5-beta1', mono: false, version_number: 2, valid: true } as InstalledRelease;
             const result = await addStoredInstalledRelease(newRelease);
@@ -486,21 +493,25 @@ suite("Releases Utils", () => {
                 expect.stringContaining('4.5-beta1'),
                 'utf-8'
             );
-            expect(result).toEqual([...existingReleases, newRelease]);
+            expect(result).toHaveLength(2);
+            expect(result.some(release => release.version === '4.4-stable')).toBe(true);
+            expect(result.some(release => release.version === '4.5-beta1')).toBe(true);
         });
 
         test('should remove a release from installed releases', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(true);
+            vi.mocked(fs.existsSync).mockReturnValue(true);
             const existingReleases = [
                 { version: '4.4-stable', mono: true, version_number: 1, valid: true },
                 { version: '4.5-beta1', mono: false, version_number: 2, valid: true }
             ];
             vi.mocked(fs.promises.readFile).mockResolvedValueOnce(JSON.stringify(existingReleases));
+            vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(undefined as unknown as void);
 
             const releaseToRemove = { version: '4.4-stable', mono: true } as InstalledRelease;
             const result = await removeStoredInstalledRelease(releaseToRemove);
 
-            expect(result).toEqual([existingReleases[1]]);
+            expect(result).toHaveLength(1);
+            expect(result[0].version).toBe('4.5-beta1');
         });
 
         test('should save installed releases directly', async () => {

@@ -154,48 +154,73 @@ export async function downloadReleaseAsset(asset: AssetSummary, downloadPath: st
  * @param releasesCachePath - The path to the cached releases file.
  * @returns The path to the cached releases file.
  */
-export async function getStoredAvailableReleases(releasesCachePath: string): Promise<ReleaseSummaryCache> {
+type ReleaseCacheStore = TypedJsonStore<ReleaseSummaryCache>;
 
-    try {
-        logger.debug(`Checking for cached releases at: ${releasesCachePath}`);
-
-        if (fs.existsSync(releasesCachePath)) {
-
-            const releasesData = await fs.promises.readFile(releasesCachePath, 'utf-8');
-
-            const parsed = JSON.parse(releasesData) as ReleaseSummaryCache;
-
-            parsed.lastPublishDate = new Date(parsed.lastPublishDate);
-
-            return parsed;
-
-        }
-
-
-    } catch (error) {
-
-        logger.error('Failed to read cached releases', error);
-    }
-
-    return { lastPublishDate: new Date(0), lastUpdated: 0, releases: [] };
+function normalizeReleaseCache(cache: ReleaseSummaryCache): ReleaseSummaryCache {
+    return {
+        ...cache,
+        lastPublishDate:
+            cache.lastPublishDate instanceof Date
+                ? cache.lastPublishDate
+                : new Date(cache.lastPublishDate ?? 0),
+        lastUpdated: cache.lastUpdated ?? 0,
+        releases: [...(cache.releases ?? [])],
+    };
 }
 
-/**
- * Saves the release summaries to a cache file.
- * @param releasesCachePath - The path to the cached releases file.
- * @param releases - The release summaries to cache.
- */
-export async function storeAvailableReleases(releasesCachePath: string, lastPublishDate: Date, releases: ReleaseSummary[]): Promise<ReleaseSummaryCache> {
+const availableReleaseStores = new Map<string, ReleaseCacheStore>();
+const prereleaseStores = new Map<string, ReleaseCacheStore>();
 
-    const cache: ReleaseSummaryCache = {
+function createReleaseStore(cachePath: string, id: string, logLabel: string): ReleaseCacheStore {
+    const existing = id.startsWith('prereleases') ? prereleaseStores.get(cachePath) : availableReleaseStores.get(cachePath);
+    if (existing) {
+        return existing;
+    }
+
+    const store = createTypedJsonStore<ReleaseSummaryCache>({
+        id,
+        logLabel,
+        pathProvider: () => cachePath,
+        defaultValue: async () => ({
+            lastPublishDate: new Date(0),
+            lastUpdated: 0,
+            releases: [],
+        }),
+        normalize: async (cache) => normalizeReleaseCache(cache),
+        onParseError: () => {
+            logger.error(`Failed to read ${logLabel}`);
+            return {
+                lastPublishDate: new Date(0),
+                lastUpdated: 0,
+                releases: [],
+            };
+        },
+    });
+
+    if (id.startsWith('prereleases')) {
+        prereleaseStores.set(cachePath, store);
+    }
+    else {
+        availableReleaseStores.set(cachePath, store);
+    }
+
+    return store;
+}
+
+export async function getStoredAvailableReleases(releasesCachePath: string): Promise<ReleaseSummaryCache> {
+    const store = createReleaseStore(releasesCachePath, `available-releases:${releasesCachePath}`, 'available releases cache');
+    const cache = await store.read();
+    return normalizeReleaseCache(cache);
+}
+
+export async function storeAvailableReleases(releasesCachePath: string, lastPublishDate: Date, releases: ReleaseSummary[]): Promise<ReleaseSummaryCache> {
+    const store = createReleaseStore(releasesCachePath, `available-releases:${releasesCachePath}`, 'available releases cache');
+    const persisted = await store.write({
         lastPublishDate,
         lastUpdated: Date.now(),
         releases,
-    };
-
-    const cacheData = JSON.stringify(cache, null, 4);
-    await fs.promises.writeFile(releasesCachePath, cacheData, 'utf-8');
-    return cache;
+    });
+    return normalizeReleaseCache(persisted);
 }
 
 let installedReleasesStore: TypedJsonStore<InstalledRelease[]> | null = null;
@@ -267,6 +292,21 @@ export function __resetInstalledReleasesStoreForTesting(): void {
     __resetJsonStoreForTesting();
     installedReleasesStore = null;
     installedReleasesPath = null;
+    availableReleaseStores.clear();
+    prereleaseStores.clear();
+}
+
+export function __resetReleaseCachesForTesting(): void {
+    availableReleaseStores.forEach((store) => {
+        void store.clear();
+    });
+    prereleaseStores.forEach((store) => {
+        void store.clear();
+    });
+    availableReleaseStores.clear();
+    prereleaseStores.clear();
+    __resetJsonStoreFactoryForTesting();
+    __resetJsonStoreForTesting();
 }
 
 export async function removeProjectEditorUsingRelease(release: InstalledRelease): Promise<void> {
