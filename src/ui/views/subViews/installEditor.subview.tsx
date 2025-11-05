@@ -144,7 +144,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 data-testid="tabInstallsRelease"
                                 className={clsx('tab w-[150px] justify-start', { 'tab-active': (tab === 'RELEASE') })}
                             >
-                                <p className="flex gap-2 items-center">
+                                <div className="flex gap-2 items-center">
                                     {t('tabs.released')}
                                     ({
                                         installedReleases.reduce((acc, i) => acc += (i.prerelease ? 0 : 1), 0).toString()
@@ -152,7 +152,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                     {
                                         downloadingReleases.reduce((acc, i) => acc += (i.prerelease ? 0 : 1), 0) > 0 && <div className="loading loading-ring loading-xs m-0 p-0"></div>
                                     }
-                                </p></a>
+                                </div></a>
                             <a role="tab"
                                 onClick={() => setTab('PRERELEASE')}
                                 data-testid="tabInstallsPrerelease"
