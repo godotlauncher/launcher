@@ -4,7 +4,7 @@ import * as path from 'node:path';
 
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 
-import { createJsonStore, __resetJsonStoreForTesting } from './jsonStore.js';
+import { createJsonStore, __resetJsonStoreForTesting, JsonStoreConflictError } from './jsonStore.js';
 
 const TEMP_DIR = path.resolve(os.tmpdir(), 'godot-launcher-json-store-tests');
 
@@ -32,8 +32,8 @@ describe('jsonStore', () => {
             defaultValue: () => ({ count: 42 }),
         });
 
-        const value = await store.read();
-        expect(value).toEqual({ count: 42 });
+        const snapshot = await store.read();
+        expect(snapshot.value).toEqual({ count: 42 });
         expect(fs.existsSync(filePath)).toBe(false);
     });
 
@@ -47,8 +47,8 @@ describe('jsonStore', () => {
         await store.write({ items: [1, 2, 3] });
         expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({ items: [1, 2, 3] });
 
-        const value = await store.read();
-        expect(value).toEqual({ items: [1, 2, 3] });
+        const snapshot = await store.read();
+        expect(snapshot.value).toEqual({ items: [1, 2, 3] });
     });
 
     it('skips disk write when content hash is unchanged', async () => {
@@ -87,8 +87,44 @@ describe('jsonStore', () => {
             }),
         ]);
 
-        const value = await store.read();
-        expect(value).toEqual([1, 2]);
+        const snapshot = await store.read();
+        expect(snapshot.value).toEqual([1, 2]);
+    });
+
+    it('detects write conflicts when expected version is stale', async () => {
+        const filePath = createTempFile('conflict-write.json');
+        const store = createJsonStore<{ count: number }>({
+            pathProvider: () => filePath,
+            defaultValue: () => ({ count: 0 }),
+        });
+
+        const snapshot = await store.write({ count: 1 });
+        await store.write({ count: 2 });
+
+        await expect(
+            store.write({ count: 3 }, { expectedVersion: snapshot.version })
+        ).rejects.toBeInstanceOf(JsonStoreConflictError);
+    });
+
+    it('detects update conflicts when expected version is stale', async () => {
+        const filePath = createTempFile('conflict-update.json');
+        const store = createJsonStore<{ count: number }>({
+            pathProvider: () => filePath,
+            defaultValue: () => ({ count: 0 }),
+        });
+
+        const snapshot = await store.write({ count: 1 });
+        await store.write({ count: 2 });
+
+        await expect(
+            store.update(
+                (current) => {
+                    current.count = 5;
+                    return current;
+                },
+                { expectedVersion: snapshot.version }
+            )
+        ).rejects.toBeInstanceOf(JsonStoreConflictError);
     });
 
     it('recovers using onParseError when file is corrupted', async () => {
@@ -101,7 +137,7 @@ describe('jsonStore', () => {
             onParseError: () => ({ recovered: true }),
         });
 
-        const value = await store.read();
-        expect(value).toEqual({ recovered: true });
+        const snapshot = await store.read();
+        expect(snapshot.value).toEqual({ recovered: true });
     });
 });

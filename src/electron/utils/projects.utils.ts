@@ -9,6 +9,10 @@ import { PROJECTS_FILENAME } from '../constants.js';
 let projectsStore: TypedJsonStore<ProjectDetails[]> | null = null;
 let projectsPath: string | null = null;
 
+export type ProjectsWriteOptions = {
+    expectedVersion?: string;
+};
+
 function resolveProjectsPath(pathOverride?: string): string {
     if (pathOverride) {
         projectsPath = pathOverride;
@@ -77,10 +81,19 @@ function ensureProjectsStore(pathOverride?: string): TypedJsonStore<ProjectDetai
  * @param projects - The array of ProjectDetails to store
  * @returns A Promise that resolves to the same projects array that was provided
  */
-export async function storeProjectsList(storeDir: string, projects: ProjectDetails[]): Promise<ProjectDetails[]> {
+export async function storeProjectsList(storeDir: string, projects: ProjectDetails[], options?: ProjectsWriteOptions): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
-    const persisted = await store.write(projects);
+    const persisted = await store.write(projects, options);
     return normalizeProjects(persisted);
+}
+
+export async function getProjectsSnapshot(storeDir: string): Promise<{ projects: ProjectDetails[]; version: string }> {
+    const store = ensureProjectsStore(storeDir);
+    const snapshot = await store.readSnapshot();
+    return {
+        projects: normalizeProjects(snapshot.value),
+        version: snapshot.version,
+    };
 }
 
 /**
@@ -93,9 +106,8 @@ export async function storeProjectsList(storeDir: string, projects: ProjectDetai
  * @throws Will throw an error if the file does not exist
  */
 export async function getStoredProjectsList(storeDir: string): Promise<ProjectDetails[]> {
-    const store = ensureProjectsStore(storeDir);
-    const projects = await store.read();
-    return normalizeProjects(projects);
+    const { projects } = await getProjectsSnapshot(storeDir);
+    return projects;
 }
 
 /**

@@ -13,6 +13,11 @@ const godotUtilsMocks = vi.hoisted(() => ({
     SetProjectEditorRelease: vi.fn(),
 }));
 
+const projectsUtilsMocks = vi.hoisted(() => ({
+    getProjectsSnapshot: vi.fn(),
+    storeProjectsList: vi.fn(),
+}));
+
 vi.mock('./utils/releases.utils.js', () => releaseUtilsMocks);
 
 vi.mock('./utils/platform.utils.js', () => ({
@@ -22,6 +27,8 @@ vi.mock('./utils/platform.utils.js', () => ({
 }));
 
 vi.mock('./utils/godot.utils.js', () => godotUtilsMocks);
+
+vi.mock('./utils/projects.utils.js', () => projectsUtilsMocks);
 
 vi.mock('electron-log', () => ({
     default: {
@@ -34,7 +41,11 @@ vi.mock('electron-log', () => ({
 
 import { getStoredInstalledReleases, saveStoredInstalledReleases } from './utils/releases.utils.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
-import { checkAndUpdateReleases, checkProjectValid } from './checks';
+import * as checksModule from './checks';
+import { checkAndUpdateReleases, checkProjectValid, checkAndUpdateProjects } from './checks';
+import { JsonStoreConflictError } from './utils/jsonStore.js';
+
+const { getProjectsSnapshot, storeProjectsList } = projectsUtilsMocks;
 
 describe('checkAndUpdateReleases', () => {
     beforeEach(() => {
@@ -249,5 +260,60 @@ text_editor/external/use_external_editor = false
 
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
+});
+
+describe('checkAndUpdateProjects', () => {
+    beforeEach(() => {
+        vi.mocked(getProjectsSnapshot).mockReset();
+        vi.mocked(storeProjectsList).mockReset();
+    });
+
+    it('retries when project snapshot becomes stale during validation', async () => {
+        const project: ProjectDetails = {
+            name: 'Sample',
+            path: '/projects/sample',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/godot',
+                editor_path: '/godot/Godot.exe',
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/godot/Godot.exe',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        vi.mocked(getProjectsSnapshot)
+            .mockResolvedValueOnce({ projects: [project], version: 'v1' })
+            .mockResolvedValueOnce({ projects: [project], version: 'v2' });
+
+        vi.mocked(storeProjectsList)
+            .mockRejectedValueOnce(new JsonStoreConflictError('/tmp/godot-launcher/projects.json'))
+            .mockResolvedValue([{ ...project, valid: true }]);
+
+        const result = await checkAndUpdateProjects();
+
+        // The important behaviour here is that the call retries and the
+        // updated project list is persisted; we assert that happened and the
+        // resulting project is marked valid.
+        expect(storeProjectsList).toHaveBeenCalledTimes(2);
+        expect(result[0].valid).toBe(true);
     });
 });

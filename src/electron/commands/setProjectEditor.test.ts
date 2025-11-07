@@ -25,6 +25,7 @@ const userPreferencesMocks = vi.hoisted(() => ({
 vi.mock('./userPreferences.js', () => userPreferencesMocks);
 
 const projectUtilsMocks = vi.hoisted(() => ({
+    getProjectsSnapshot: vi.fn(),
     getStoredProjectsList: vi.fn(),
     storeProjectsList: vi.fn(),
 }));
@@ -117,7 +118,7 @@ vi.mock('electron-log', () => ({
 const { existsSync } = fsMocks;
 const { getDefaultDirs } = platformMocks;
 const { getUserPreferences } = userPreferencesMocks;
-const { getStoredProjectsList, storeProjectsList } = projectUtilsMocks;
+const { getProjectsSnapshot, storeProjectsList } = projectUtilsMocks;
 const { getProjectDefinition, SetProjectEditorRelease } = godotUtilsMocks;
 const { createNewEditorSettings, updateEditorSettings } = godotProjectMocks;
 const { getInstalledTools } = installedToolsMocks;
@@ -199,8 +200,8 @@ describe('setProjectEditor', () => {
             first_run: false,
         });
 
-        getStoredProjectsList.mockResolvedValue([mockProject]);
-        storeProjectsList.mockImplementation(async (_path, projects) => projects);
+        getProjectsSnapshot.mockResolvedValue({ projects: [mockProject], version: 'v1' });
+        storeProjectsList.mockImplementation(async (_path, projects, _options) => projects);
 
         getProjectDefinition.mockReturnValue({
             editorConfigFilename: () => 'editor_settings-4.3.tres',
@@ -347,7 +348,7 @@ describe('setProjectEditor', () => {
     });
 
     it('should return error when project is not found', async () => {
-        getStoredProjectsList.mockResolvedValue([]);
+        getProjectsSnapshot.mockResolvedValue({ projects: [], version: 'v1' });
 
         const result = await setProjectEditor(mockProject, mockNewRelease);
 

@@ -14,6 +14,22 @@ export type JsonStoreOptions<T> = {
     onParseError?: (error: unknown, raw: string) => MaybePromise<T>;
 };
 
+export type JsonStoreSnapshot<T> = {
+    value: T;
+    version: string;
+};
+
+export type JsonStoreWriteOptions = {
+    expectedVersion?: string;
+};
+
+export class JsonStoreConflictError extends Error {
+    constructor(path: string) {
+        super(`Json store at ${path} changed while writing`);
+        this.name = 'JsonStoreConflictError';
+    }
+}
+
 type CachedEntry = {
     value: unknown;
     hash: string;
@@ -64,9 +80,12 @@ function enqueueOperation<T>(path: string, action: () => Promise<T>): Promise<T>
 }
 
 export type JsonStore<T> = {
-    read(): Promise<T>;
-    write(value: T): Promise<T>;
-    update(mutator: (current: T) => MaybePromise<T>): Promise<T>;
+    read(): Promise<JsonStoreSnapshot<T>>;
+    write(value: T, options?: JsonStoreWriteOptions): Promise<JsonStoreSnapshot<T>>;
+    update(
+        mutator: (current: T) => MaybePromise<T>,
+        options?: JsonStoreWriteOptions
+    ): Promise<JsonStoreSnapshot<T>>;
     clearCache(): Promise<void>;
 };
 
@@ -114,56 +133,79 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
         }
     }
 
-    async function loadValue(path: string): Promise<T> {
+    function snapshotFromCache(path: string, entry: CachedEntry): JsonStoreSnapshot<T> {
+        return {
+            value: cloneJson(entry.value as T),
+            version: entry.hash,
+        };
+    }
+
+    async function loadValue(path: string): Promise<JsonStoreSnapshot<T>> {
         const cached = storeCache.get(path);
         if (cached) {
-            return cloneJson(cached.value as T);
+            return snapshotFromCache(path, cached);
         }
 
         const fromDisk = await readFromDisk(path);
         const normalized = await normalizeValue(fromDisk);
         const cachedValue = cloneJson(normalized);
-        storeCache.set(path, { value: cachedValue, hash: hashJson(cachedValue) });
-        return cloneJson(cachedValue);
+        const hash = hashJson(cachedValue);
+        const entry = { value: cachedValue, hash };
+        storeCache.set(path, entry);
+        return snapshotFromCache(path, entry);
     }
 
-    async function persistValue(path: string, value: T): Promise<T> {
+    async function persistValue(
+        path: string,
+        value: T,
+        options?: JsonStoreWriteOptions
+    ): Promise<JsonStoreSnapshot<T>> {
         const normalized = await normalizeValue(value);
         const cachedValue = cloneJson(normalized);
         const newHash = hashJson(cachedValue);
         const existing = storeCache.get(path);
 
-        if (existing && existing.hash === newHash) {
-            storeCache.set(path, existing);
-            return cloneJson(existing.value as T);
+        if (options?.expectedVersion && existing?.hash !== options.expectedVersion) {
+            throw new JsonStoreConflictError(path);
         }
 
-        storeCache.set(path, { value: cachedValue, hash: newHash });
+        if (existing && existing.hash === newHash) {
+            storeCache.set(path, existing);
+            return snapshotFromCache(path, existing);
+        }
 
         const serialized = await serialize(cachedValue);
         await fs.promises.writeFile(path, serialized, 'utf-8');
 
-        return cloneJson(cachedValue);
+        const nextEntry = { value: cachedValue, hash: newHash };
+        storeCache.set(path, nextEntry);
+        return snapshotFromCache(path, nextEntry);
     }
 
     return {
-        async read(): Promise<T> {
+        async read(): Promise<JsonStoreSnapshot<T>> {
             const path = await resolvePath();
             await waitForPendingOperation(path);
             return loadValue(path);
         },
 
-        async write(value: T): Promise<T> {
+        async write(value: T, options?: JsonStoreWriteOptions): Promise<JsonStoreSnapshot<T>> {
             const path = await resolvePath();
-            return enqueueOperation(path, async () => persistValue(path, value));
+            return enqueueOperation(path, async () => persistValue(path, value, options));
         },
 
-        async update(mutator: (current: T) => MaybePromise<T>): Promise<T> {
+        async update(
+            mutator: (current: T) => MaybePromise<T>,
+            options?: JsonStoreWriteOptions
+        ): Promise<JsonStoreSnapshot<T>> {
             const path = await resolvePath();
             return enqueueOperation(path, async () => {
                 const current = await loadValue(path);
-                const nextValue = await mutator(cloneJson(current));
-                return persistValue(path, nextValue);
+                const nextValue = await mutator(cloneJson(current.value));
+                return persistValue(path, nextValue, {
+                    expectedVersion: current.version,
+                    ...options,
+                });
             });
         },
 

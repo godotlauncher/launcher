@@ -6,7 +6,7 @@ import { PROJECTS_FILENAME } from './constants.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import { getDefaultDirs } from './utils/platform.utils.js';
 import {
-    getStoredProjectsList,
+    getProjectsSnapshot,
     storeProjectsList,
 } from './utils/projects.utils.js';
 import {
@@ -14,6 +14,9 @@ import {
     saveStoredInstalledReleases,
 } from './utils/releases.utils.js';
 import { parseGodotProjectFile } from './utils/godotProject.utils.js';
+import { JsonStoreConflictError } from './utils/jsonStore.js';
+
+const PROJECT_VALIDATION_MAX_ATTEMPTS = 2;
 
 export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
     logger.info('Checking and updating releases');
@@ -40,16 +43,26 @@ export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
     const { configDir } = getDefaultDirs();
     // get projects
     const projectsFile = path.resolve(configDir, PROJECTS_FILENAME);
-    const projects = await getStoredProjectsList(projectsFile);
+    for (let attempt = 0; attempt < PROJECT_VALIDATION_MAX_ATTEMPTS; attempt++) {
+        const { projects, version } = await getProjectsSnapshot(projectsFile);
+        const validated: ProjectDetails[] = [];
 
-    // check that project path exist and has a project.godot file
-    for (let i = 0; i < projects.length; i++) {
-        const project = projects[i];
-        projects[i] = await checkProjectValid(project);
+        for (const project of projects) {
+            validated.push(await checkProjectValid(project));
+        }
+
+        try {
+            return await storeProjectsList(projectsFile, validated, { expectedVersion: version });
+        } catch (error) {
+            if (error instanceof JsonStoreConflictError && attempt < PROJECT_VALIDATION_MAX_ATTEMPTS - 1) {
+                logger.warn('Project list changed during validation, retrying');
+                continue;
+            }
+            throw error;
+        }
     }
 
-    // update the projects file
-    return await storeProjectsList(projectsFile, projects);
+    throw new Error('Failed to validate project list due to concurrent modifications');
 }
 
 export async function checkProjectValid(
