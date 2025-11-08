@@ -329,7 +329,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="flex-0">
+                        <div className="flex-1">
                             <div className="flex flex-col gap-2">
                                 <h2 className="text-md flex items-center gap-4">{t('otherSettings.title')} {loadingTools && <span className="loading loading-dots loading-xs"></span>}</h2>
 

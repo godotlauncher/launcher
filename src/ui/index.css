@@ -1,8 +1,10 @@
-@import './styles/buttons.css';
+/* @config "../../tailwind.config.js"; */
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './styles/buttons.css';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 /* @custom-variant dark (&:where(.dark, .dark *)); */

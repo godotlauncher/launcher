@@ -105,7 +105,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
     return (
         <>
-            <div className="absolute inset-0 z-100 w-full h-full p-4 bg-black/80 z-10"></div >
+            <div className="absolute inset-0 w-full h-full p-4 bg-black/80 z-10"></div >
             <div className="absolute inset-0 px-8 pb-8 flex flex-col w-full h-full overflow-hidden items-center z-20">
                 <div className="flex flex-col p-4 rounded-b-lg overflow-hidden bg-base-300  min-w-[900px]">
 
