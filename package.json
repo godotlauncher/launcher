@@ -84,7 +84,7 @@
         "auto-changelog": "^2.5.0",
         "autoprefixer": "^10.4.21",
         "cross-env": "^10.1.0",
-        "daisyui": "^4.12.24",
+        "daisyui": "^5.4.7",
         "electron": "^38.3.0",
         "electron-builder": "^26.1.0",
         "eslint": "^9.38.0",
