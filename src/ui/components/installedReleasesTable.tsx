@@ -12,8 +12,8 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({ re
     const { t } = useTranslation(['installEditor', 'common']);
 
     return (
-        <table className="table  table-pin-rows table-sm h-full">
-            <thead className="sticky top-0 bg-base-200 z-10">
+        <table className="table  table-pin-rows table-md h-full">
+            <thead className="sticky top-0 bg-base-200 z-10 text-xs">
                 <tr >
                     <th className="min-w-44">{t('table.headers.version')}</th>
                     <th>{t('table.headers.released')}</th>

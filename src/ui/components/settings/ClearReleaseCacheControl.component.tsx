@@ -144,7 +144,7 @@ export const ClearReleaseCacheControl: React.FC = () => {
                 <p className="text-sm text-base-content/70">{t('behavior.clearReleaseCache.description')}</p>
             </div>
             {isCooldownActive && (
-                <div className="alert alert-warning bg-warning/10 text-warning flex items-center gap-2 py-2 px-3 w-fit sm:w-auto">
+                <div className="alert alert-warning flex items-center gap-2 py-2 px-3 w-fit sm:w-auto">
                     <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span className="text-sm">{t('behavior.clearReleaseCache.cooldownNotice')}</span>
                 </div>

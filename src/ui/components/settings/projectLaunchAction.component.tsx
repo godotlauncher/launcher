@@ -24,15 +24,15 @@ export const ProjectLaunchAction: React.FC = () => {
             <div className=" flex flex-col gap-8">
                 <div className=" flex flex-row  gap-4">
                     <div className="flex flex-row flex-shrink items-center justify-start gap-4 ">
-                        <input onChange={setProjectLaunchAction} value="none" data-testid="radioLaunchActionNone" type="radio" name="launch-action" className="radio checked:bg-current" checked={preferences?.post_launch_action === 'none'} />
+                        <input onChange={setProjectLaunchAction} value="none" data-testid="radioLaunchActionNone" type="radio" name="launch-action" className="radio" checked={preferences?.post_launch_action === 'none'} />
                         <span className="">{t('behavior.projectLaunch.none')}</span>
                     </div>
                     <div className="flex flex-row flex-shrink items-center justify-start gap-4 ">
-                        <input onChange={setProjectLaunchAction} value="minimize" data-testid="radioLaunchActionMinimize" type="radio" name="launch-action" className="radio checked:bg-current" checked={preferences?.post_launch_action === 'minimize'} />
+                        <input onChange={setProjectLaunchAction} value="minimize" data-testid="radioLaunchActionMinimize" type="radio" name="launch-action" className="radio" checked={preferences?.post_launch_action === 'minimize'} />
                         <span className="">{t('behavior.projectLaunch.minimize')}</span>
                     </div>
                     <div className="flex flex-row flex-shrink items-center justify-start gap-4 ">
-                        <input onChange={setProjectLaunchAction} value="close_to_tray" data-testid="radioLaunchActionClose" type="radio" name="launch-action" className="radio checked:bg-current" checked={preferences?.post_launch_action === 'close_to_tray'} />
+                        <input onChange={setProjectLaunchAction} value="close_to_tray" data-testid="radioLaunchActionClose" type="radio" name="launch-action" className="radio" checked={preferences?.post_launch_action === 'close_to_tray'} />
                         <span className="">{t('behavior.projectLaunch.closeToTray')}</span>
                     </div>
                 </div>

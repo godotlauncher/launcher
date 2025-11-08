@@ -123,8 +123,8 @@ function App() {
         <div className="flex h-full overflow-hidden">
             <div className="flex flex-col h-full w-56 border-r-2 border-solid border-base-200">
                 <ul className="menu rounded-box w-56 gap-2">
-                    <li><a data-testid='btnProjects' className={clsx({ active: currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> {t('app.navigation.projects')}</a></li>
-                    <li><a data-testid="btnInstalls" className={clsx({ active: currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />{t('app.navigation.installs')}</a>
+                    <li><a data-testid='btnProjects' className={clsx('py-2 rounded-md', { 'menu-active': currentView === 'projects' })} onClick={() => changeView('projects')}><Package /> {t('app.navigation.projects')}</a></li>
+                    <li><a data-testid="btnInstalls" className={clsx('py-2 rounded-md', { 'menu-active': currentView === 'installs' })} onClick={() => changeView('installs')}> <HardDrive />{t('app.navigation.installs')}</a>
                         {installedReleases.length < 1 &&
                             <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
                         }</li>
@@ -165,20 +165,20 @@ function App() {
                 )}
                 <div className="border-t-2 border-solid border-base-200">
                     {/* <div className="flex flex-row items-center mx-2 rounded p-2 bg-info/50 h-10 text-xs text-white">Update Available</div> */}
-                    <ul className="menu rounded-box w-56 gap-1 ">
+                    <ul className="menu menu-md rounded-box w-56 gap-1 ">
                         <li>
-                            <button data-testid="btnDiscord" className="relative" onClick={() => openExternalLink(COMMUNITY_DISCORD_URL)}>
+                            <button data-testid="btnDiscord" className="py-2 rounded-md relative" onClick={() => openExternalLink(COMMUNITY_DISCORD_URL)}>
                                 <img src={IconDiscord} alt="Discord" className="w-6 h-6" />{t('app.navigation.joinCommunity')}
                             </button>
                         </li>
 
                         <li>
-                            <a data-testid="btnHelp" className={clsx('relative', { active: currentView === 'help' })} onClick={() => changeView('help')}>
+                            <a data-testid="btnHelp" className={clsx('py-2 rounded-md relative', { 'menu-active': currentView === 'help' })} onClick={() => changeView('help')}>
                                 <CircleHelp />{t('app.navigation.help')}</a>
                         </li>
 
                         <li className="">
-                            <a data-testid="btnSettings" className={clsx('relative', { active: currentView === 'settings' })} onClick={() => changeView('settings')}>
+                            <a data-testid="btnSettings" className={clsx('py-2 rounded-md relative', { 'menu-active': currentView === 'settings' })} onClick={() => changeView('settings')}>
                                 <Settings />{t('app.navigation.settings')}
 
                             </a></li>

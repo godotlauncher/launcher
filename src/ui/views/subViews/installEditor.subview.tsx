@@ -138,7 +138,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                     </div>
                     <div className="flex flex-row justify-between">
                         {/* Tabs */}
-                        <div role="tablist" className="tabs tabs-bordered flex flex-row ">
+                        <div role="tablist" className="tabs tabs-border flex flex-row ">
                             <a role="tab"
                                 onClick={() => setTab('RELEASE')}
                                 data-testid="tabInstallsRelease"

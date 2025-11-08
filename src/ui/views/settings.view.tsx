@@ -105,7 +105,7 @@ export const SettingsView: React.FC = () => {
 
                 <div className="flex flex-col gap-0 flex-1">
                     {/* Tabs */}
-                    <div role="tablist" className="flex tabs tabs-lifted">
+                    <div role="tablist" className="flex tabs tabs-lift">
                         <a data-testid="tabProjects" onClick={() => setActiveTab('projects')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'projects') })}>{t('tabs.projects')}</a>
                         <a data-testid="tabInstalls" onClick={() => setActiveTab('installs')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'installs') })}>{t('tabs.installs')}</a>
                         <a data-testid="tabAppearance" onClick={() => setActiveTab('appearance')} role="tab" className={clsx('tab', { 'tab-active': (activeTab === 'appearance') })}>{t('tabs.appearance')}</a>
@@ -140,15 +140,15 @@ export const SettingsView: React.FC = () => {
                                     <p data-testid="themeSubHeader" className="text-sm">{t('appearance.theme.description')}</p>
                                     <div className=" flex flex-row flex-0 p-4 gap-4">
                                         <label className="flex flex-row  items-center justify-start  gap-4 cursor-pointer ">
-                                            <input onChange={(e) => { if (e.target.checked) setTheme('light'); }} data-testid="themeLight" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'light'} />
+                                            <input onChange={(e) => { if (e.target.checked) setTheme('light'); }} data-testid="themeLight" type="radio" name="theme-select" className="radio" checked={theme === 'light'} />
                                             <span className="">{t('appearance.theme.light')}</span>
                                         </label>
                                         <label className="flex flex-row   items-center justify-start gap-4 cursor-pointer ">
-                                            <input onChange={(e) => { if (e.target.checked) setTheme('dark'); }} data-testid="themeDark" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'dark'} />
+                                            <input onChange={(e) => { if (e.target.checked) setTheme('dark'); }} data-testid="themeDark" type="radio" name="theme-select" className="radio" checked={theme === 'dark'} />
                                             <span className="">{t('appearance.theme.dark')}</span>
                                         </label>
                                         <label className="flex flex-row  items-center justify-start gap-4 cursor-pointer">
-                                            <input onChange={(e) => { if (e.target.checked) setTheme('auto'); }} data-testid="themeAuto" type="radio" name="theme-select" className="radio checked:bg-current" checked={theme === 'auto'} />
+                                            <input onChange={(e) => { if (e.target.checked) setTheme('auto'); }} data-testid="themeAuto" type="radio" name="theme-select" className="radio" checked={theme === 'auto'} />
                                             <span className="">{t('appearance.theme.system')}</span>
                                         </label>
 

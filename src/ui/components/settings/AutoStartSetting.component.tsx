@@ -15,9 +15,9 @@ export const AutoStartSetting: React.FC = () => {
                 <h1 data-testid="startupSettingsHeader" className="font-bold">{t('behavior.autoStart.title')}</h1>
                 <p data-testid="startupSettingsSubHeader" className="text-sm">{t('behavior.autoStart.description')}</p>
             </div>
-            <div className="flex flex-col flex-shrink items-start justify-center gap-0 ">
+            <div className="flex flex-col shrink items-start justify-center gap-0 ">
                 {platform === 'linux'
-                    ? (<span className="text-warning/50 flex flex-row gap-2 items-center"><TriangleAlert className='w-6' />{t('behavior.autoStart.linuxWarning')}</span>)
+                    ? (<span className="alert alert-warning flex flex-row gap-2 items-center"><TriangleAlert className='w-6' />{t('behavior.autoStart.linuxWarning')}</span>)
                     : (<>
                         <label className="label flex flex-row gap-4 ">
                             <input onChange={(e) => setAutoStart(e.target.checked, preferences?.start_in_tray || false)} data-testid="chkAutoStartCheckbox" type="checkbox" checked={preferences?.auto_start} className="checkbox" />

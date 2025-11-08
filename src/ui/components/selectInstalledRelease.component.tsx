@@ -75,8 +75,8 @@ export const InstalledReleaseSelector: React.FC<InstalledReleaseSelectorProps> =
                     </div>
                     <div className="divider"></div>
                     <div className="flex flex-col gap-4">
-                        <table className="table table-sm">
-                            <thead className="sticky top-0 bg-base-200">
+                        <table className="table table-md">
+                            <thead className="sticky top-0 bg-base-200 text-xs">
                                 <tr >
                                     <th className="w-12"></th>
                                     <th>{t('selectRelease.tableHeaders.name')}</th>
