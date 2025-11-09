@@ -30,6 +30,14 @@ if (process.platform === 'linux') {
     );
 }
 
+
+
+const devNoMenu = process.argv.includes('--no-dev-menu') || process.env.GODOT_LAUNCHER_NO_DEV_MENU === '1';
+if(isDev() && devNoMenu)
+{
+    logger.info('Developer menu disabled via --no-dev-menu flag');
+}
+
 // --- sandbox flag passthrough (must be before app.whenReady / any windows) ---
 const userRequestedNoSandbox =
     process.argv.includes('--no-sandbox') ||
@@ -188,7 +196,7 @@ app.on('ready', async () => {
     handleCloseEvents(mainWindow);
 
     // No menu bar
-    if (isDev()) {
+    if (isDev() && !devNoMenu) {
         createMenu(mainWindow);
     }
 

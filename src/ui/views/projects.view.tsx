@@ -298,8 +298,8 @@ export const ProjectsView: React.FC = () => {
                 )}
                 {!loading && (
                     <div className="overflow-auto h-full">
-                        <table className="table table-sm">
-                            <thead className="sticky z-10 top-0 bg-base-200">
+                        <table className="table table-md">
+                            <thead className="sticky z-10 top-0 bg-base-200 text-xs">
                                 <tr>
                                     <th className="min-w-48 w-full">
                                         <label

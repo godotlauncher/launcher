@@ -233,7 +233,7 @@ export const InstallsView: React.FC = () => {
                     ) : (
                         <div className="overflow-auto h-full">
                             <table className="table table-md">
-                                <thead className="sticky top-0 bg-base-200 text-sm">
+                                <thead className="sticky top-0 bg-base-200 text-xs">
                                     <tr>
                                         <th>{t('table.name')}</th>
                                         <th></th>
