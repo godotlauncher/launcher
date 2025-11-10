@@ -6,14 +6,6 @@ import {
     useEffect,
     useState,
 } from 'react';
-import type {
-    AddProjectToListResult,
-    ChangeProjectEditorResult,
-    CreateProjectResult,
-    InstalledRelease,
-    ProjectDetails,
-    RendererType,
-} from '../../types';
 
 interface ProjectsContext {
     projects: ProjectDetails[];

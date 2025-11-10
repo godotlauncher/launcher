@@ -1,7 +1,6 @@
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { InstalledRelease } from '../../types';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from '../views/subViews/installEditor.subview';

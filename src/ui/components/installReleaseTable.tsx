@@ -1,6 +1,5 @@
 import { HardDrive, HardDriveDownload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { ReleaseSummary } from '../../types';
 import { useRelease } from '../hooks/useRelease';
 
 type InstallReleaseTableProps = {

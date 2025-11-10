@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import type { CachedTool } from '../../../types';
 
 type GitToolSettingsProps = {
     tool?: CachedTool;

@@ -1,5 +1,4 @@
 import logger from 'electron-log';
-import type { PromotionClickPayload } from '../../types';
 
 import { PROMOTION_MANIFEST_URL } from '../constants';
 import i18n from '../i18n';

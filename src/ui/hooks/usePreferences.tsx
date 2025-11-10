@@ -6,7 +6,6 @@ import {
     useEffect,
     useState,
 } from 'react';
-import type { SetAutoStartResult, UserPreferences } from '../../types';
 
 interface AppPreferences {
     preferences: UserPreferences | null;

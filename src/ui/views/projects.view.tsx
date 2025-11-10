@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import type { InstalledRelease, ProjectDetails } from '../../types';
 import gitIconColor from '../assets/icons/git_icon_color.svg';
 import vscodeIcon from '../assets/icons/vscode.svg';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';

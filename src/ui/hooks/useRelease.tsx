@@ -1,9 +1,4 @@
 import React from 'react';
-import type {
-    InstalledRelease,
-    InstallReleaseResult,
-    ReleaseSummary,
-} from '../../types';
 
 type ReleaseContext = {
     availableReleases: ReleaseSummary[];

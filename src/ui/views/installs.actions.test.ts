@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { InstalledRelease } from '../../types';
 
 import { createReleaseActions } from './installs.view';
 

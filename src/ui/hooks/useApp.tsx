@@ -6,7 +6,6 @@ import {
     useEffect,
     useState,
 } from 'react';
-import type { AppUpdateMessage } from '../../types';
 
 type AppContext = {
     appVersion: string | undefined;

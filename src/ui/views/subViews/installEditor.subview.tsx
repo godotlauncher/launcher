@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import type { InstalledRelease, ReleaseSummary } from '../../../types';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { useAlerts } from '../../hooks/useAlerts';

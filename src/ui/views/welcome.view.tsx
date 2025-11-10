@@ -3,7 +3,6 @@ import log from 'electron-log/renderer';
 import type React from 'react';
 import { type JSX, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { UserPreferences } from '../../types';
 import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
 import { CustomizeBehaviorStep } from '../components/welcomeSteps/CustomizeBehaviorStep';
 import { CurrentSettingsStep } from '../components/welcomeSteps/currentSettingsStep';

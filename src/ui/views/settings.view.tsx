@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import logger from 'electron-log';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CachedTool } from '../../types';
 import { AutoStartSetting } from '../components/settings/AutoStartSetting.component';
 import { ClearReleaseCacheControl } from '../components/settings/ClearReleaseCacheControl.component';
 import { CheckForUpdates } from '../components/settings/checkForUpdates.component';

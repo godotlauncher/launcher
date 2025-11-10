@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import type { InstalledRelease } from '../../types';
 import { useAlerts } from '../hooks/useAlerts';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';

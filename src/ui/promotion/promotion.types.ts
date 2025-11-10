@@ -1,5 +1,3 @@
-import type { PromotionClickPayload } from '../../types';
-
 export const DEFAULT_COUNTDOWN_THRESHOLD_DAYS = 10;
 
 export type PromotionLocalizedFields = {
@@ -66,5 +64,3 @@ export type PromotionCountdownMeta =
           secondsRemaining: number;
           percentageRemaining: number;
       };
-
-export type { PromotionClickPayload };
