@@ -1,23 +1,8 @@
 import path from 'node:path';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { installRelease } from './installRelease';
+import { installRelease } from '../../../electron/commands/installRelease.js';
 
-type AssetSummary = {
-    name: string;
-    download_url: string;
-    platform_tags: string[];
-    mono: boolean;
-};
-
-type ReleaseSummary = {
-    version: string;
-    version_number: number;
-    prerelease: boolean;
-    draft: boolean;
-    published_at: string | null;
-    assets: AssetSummary[];
-};
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -84,7 +69,7 @@ const releasesUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/releases.utils.js', async () => {
     const actual = await vi.importActual<
-        typeof import('../utils/releases.utils.js')
+        typeof import('../../../electron/utils/releases.utils.js')
     >('../utils/releases.utils.js');
     return {
         ...actual,
@@ -180,6 +165,7 @@ describe('installRelease', () => {
         };
 
         const release: ReleaseSummary = {
+            name: 'Godot_v4.5.1-stable',
             version: 'Godot_v4.5.1-stable',
             version_number: 4.5,
             prerelease: false,

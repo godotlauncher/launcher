@@ -1,5 +1,5 @@
 import { describe, expect, it, test, vi } from 'vitest';
-import { validateEventFrame } from './utils';
+import { validateEventFrame } from '../../electron/utils';
 
 // Mock imported modules
 vi.mock('electron-updater', () => ({

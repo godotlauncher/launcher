@@ -1,3 +1,4 @@
+/* ts-expect-error TS2304 */
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import path from 'node:path';
@@ -39,18 +40,17 @@ vi.mock('electron-log', () => ({
     },
 }));
 
-import * as checksModule from './checks';
 import {
     checkAndUpdateProjects,
     checkAndUpdateReleases,
     checkProjectValid,
-} from './checks';
-import { SetProjectEditorRelease } from './utils/godot.utils.js';
-import { JsonStoreConflictError } from './utils/jsonStore.js';
+} from '../../electron/checks.js';
+import { SetProjectEditorRelease } from '../../electron/utils/godot.utils.js';
+import { JsonStoreConflictError } from '../../electron/utils/jsonStore.js';
 import {
     getStoredInstalledReleases,
     saveStoredInstalledReleases,
-} from './utils/releases.utils.js';
+} from '../../electron/utils/releases.utils.js';
 
 const { getProjectsSnapshot, storeProjectsList } = projectsUtilsMocks;
 

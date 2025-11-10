@@ -36,7 +36,7 @@ const registryMocks = vi.hoisted(() => ({
 vi.mock('./registry.js', () => registryMocks);
 
 describe('runMigrations', () => {
-    let runMigrations: typeof import('./index.js').runMigrations;
+    let runMigrations: typeof import('../../../electron/migrations/index.js').runMigrations;
     let tmpDir: string;
     let statePath: string;
 
@@ -59,7 +59,7 @@ describe('runMigrations', () => {
 
         releasesMocks.clearReleaseCaches.mockResolvedValue(undefined);
 
-        ({ runMigrations } = await import('./index.js'));
+        ({ runMigrations } = await import('../../../electron/migrations/index.js'));
     });
 
     afterEach(() => {

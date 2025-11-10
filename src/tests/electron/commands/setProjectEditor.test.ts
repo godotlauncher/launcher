@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { setProjectEditor } from './setProjectEditor';
+import { setProjectEditor } from '../../../electron/commands/setProjectEditor';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),

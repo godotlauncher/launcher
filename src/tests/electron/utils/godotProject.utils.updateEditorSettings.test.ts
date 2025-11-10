@@ -2,7 +2,7 @@
 
 import * as fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { updateEditorSettings } from './godotProject.utils.js';
+import { updateEditorSettings } from '../../../electron/utils/godotProject.utils.js';
 
 // Mock the fs module
 vi.mock('node:fs', () => ({

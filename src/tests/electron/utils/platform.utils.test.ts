@@ -1,8 +1,8 @@
 import * as os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { APP_INTERNAL_NAME } from '../constants';
-import { getDefaultDirs } from './platform.utils';
+import { APP_INTERNAL_NAME } from '../../../electron/constants';
+import { getDefaultDirs } from '../../../electron/utils/platform.utils';
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({

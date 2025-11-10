@@ -22,7 +22,7 @@ import {
     saveStoredInstalledReleases,
     sortReleases,
     storeAvailableReleases,
-} from './releases.utils';
+} from '../../../electron/utils/releases.utils.js';
 
 // Mock the modules needed by releases.utils.ts
 vi.mock('node:fs', () => ({
@@ -121,9 +121,9 @@ import * as fs from 'node:fs';
 import { Readable } from 'node:stream';
 import * as streamPromises from 'node:stream/promises';
 import logger from 'electron-log';
-import { removeProjectEditor } from './godot.utils.js';
-import { getDefaultDirs } from './platform.utils.js';
-import { getStoredProjectsList } from './projects.utils.js';
+import { removeProjectEditor } from '../../../electron/utils/godot.utils.js';
+import { getDefaultDirs } from '../../../electron/utils/platform.utils.js';
+import { getStoredProjectsList } from '../../../electron/utils/projects.utils.js';
 
 // Test data
 const versions = [

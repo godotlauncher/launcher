@@ -1,5 +1,5 @@
 import { beforeEach, expect, test, vi } from 'vitest';
-import { createTray } from './tray.helper.js';
+import { createTray } from '../../../electron/helpers/tray.helper.js';
 
 // Define platform before mocks
 Object.defineProperty(process, 'platform', {
@@ -149,7 +149,7 @@ test('Should have tray menu with show and quit', async () => {
 
     // Mac platform will not show menu on load but Linux would
     // Force call updateMenu to test template creation
-    const { updateMenu } = await import('./tray.helper.js');
+    const { updateMenu } = await import('../../../electron/helpers/tray.helper.js');
     await updateMenu(mockTrayInstance as any, mainWindow as any);
 
     // Verify the template structure

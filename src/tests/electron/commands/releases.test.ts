@@ -1,11 +1,11 @@
 import * as fs from 'node:fs';
 import logger from 'electron-log';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MIN_VERSION } from '../constants.js';
-import * as githubUtils from '../utils/github.utils.js';
-import * as platformUtils from '../utils/platform.utils.js';
-import * as releasesUtils from '../utils/releases.utils.js';
-import { clearReleaseCaches } from './releases.js';
+import { clearReleaseCaches } from '../../../electron/commands/releases.js';
+import { MIN_VERSION } from '../../../electron/constants.js';
+import * as githubUtils from '../../../electron/utils/github.utils.js';
+import * as platformUtils from '../../../electron/utils/platform.utils.js';
+import * as releasesUtils from '../../../electron/utils/releases.utils.js';
 
 const unlinkMock = vi.hoisted(() => vi.fn());
 const electronMock = vi.hoisted(() => ({
@@ -106,7 +106,16 @@ const loggerInfo = vi.mocked(logger.info);
 const loggerDebug = vi.mocked(logger.debug);
 const loggerError = vi.mocked(logger.error);
 
-const defaultDirs = {
+const defaultDirs: {
+    dataDir: string;
+    configDir: string;
+    projectDir: string;
+    prefsPath: string;
+    releaseCachePath: string;
+    installedReleasesCachePath: string;
+    prereleaseCachePath: string;
+    migrationStatePath: string;
+} = {
     dataDir: '/data',
     configDir: '/config',
     projectDir: '/projects',
@@ -114,6 +123,7 @@ const defaultDirs = {
     releaseCachePath: '/config/releases.json',
     prereleaseCachePath: '/config/prereleases.json',
     installedReleasesCachePath: '/config/installed-releases.json',
+    migrationStatePath: '/config/migrations.json',
 };
 
 describe('clearReleaseCaches', () => {

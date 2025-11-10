@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
-import { createProjectFile, getProjectDefinition } from './godot.utils.js';
+import { createProjectFile, getProjectDefinition } from '../../../electron/utils/godot.utils.js';
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({
