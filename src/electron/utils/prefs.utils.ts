@@ -2,6 +2,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { dialog } from 'electron';
 import logger from 'electron-log';
+import type { UserPreferences } from '../../types/index.js';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
 import {
     getUserPreferences,
@@ -169,3 +170,4 @@ export function __resetPrefsCacheForTesting(): void {
     __resetJsonStoreFactoryForTesting();
     __resetJsonStoreForTesting();
 }
+

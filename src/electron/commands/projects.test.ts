@@ -1,6 +1,7 @@
 import path from 'node:path';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ProjectDetails } from '../../types/index.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import { initializeProjectGit, setProjectVSCode } from './projects.js';
 

@@ -72,9 +72,6 @@ importers:
       '@types/decompress':
         specifier: ^4.2.7
         version: 4.2.7
-      '@types/i18next':
-        specifier: ^13.0.0
-        version: 13.0.0(typescript@5.9.3)
       '@types/mustache':
         specifier: ^4.2.6
         version: 4.2.6
@@ -890,10 +887,6 @@ packages:
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
-
-  '@types/i18next@13.0.0':
-    resolution: {integrity: sha512-gp/SIShAuf4WOqi8ey0nuI7qfWaVpMNCcs/xLygrh/QTQIXmlDC1E0TtVejweNW+7SGDY7g0lyxyKZIJuCKIJw==}
-    deprecated: This is a stub types definition. i18next provides its own type definitions, so you do not need this installed.
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -4175,12 +4168,6 @@ snapshots:
       '@types/node': 24.10.0
 
   '@types/http-cache-semantics@4.0.4': {}
-
-  '@types/i18next@13.0.0(typescript@5.9.3)':
-    dependencies:
-      i18next: 25.6.1(typescript@5.9.3)
-    transitivePeerDependencies:
-      - typescript
 
   '@types/json-schema@7.0.15': {}
 

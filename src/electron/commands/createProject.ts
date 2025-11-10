@@ -1,6 +1,11 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
+import type {
+    CreateProjectResult,
+    InstalledRelease,
+    RendererType,
+} from '../../types/index.js';
 import {
     EDITOR_CONFIG_DIRNAME,
     MIN_VERSION,
@@ -248,9 +253,13 @@ export async function createProject(
 
         // add project to list
         const { configDir } = getDefaultDirs();
+        const projectDetails = result.projectDetails;
+        if (!projectDetails) {
+            throw new Error('Missing project details after creation');
+        }
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),
-            result.projectDetails!,
+            projectDetails,
         );
         return result;
     } catch (error) {

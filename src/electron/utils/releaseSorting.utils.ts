@@ -1,3 +1,5 @@
+import type { ReleaseSummary } from '../../types/index.js';
+
 // Map release type to a sort priority (lower is "higher" in final sort).
 // stable -> 0 (highest), beta -> 1, dev -> 2 (lowest)
 const RELEASE_TYPE_PRIORITY: Record<string, number> = {
@@ -155,8 +157,7 @@ export function sortReleases(a: SortableRelease, b: SortableRelease) {
 }
 
 export function sortByPublishDate(a: ReleaseSummary, b: ReleaseSummary) {
-    return (
-        new Date(b.published_at!).getTime() -
-        new Date(a.published_at!).getTime()
-    );
+    const dateB = new Date(b.published_at ?? 0).getTime();
+    const dateA = new Date(a.published_at ?? 0).getTime();
+    return dateB - dateA;
 }

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { InstalledRelease, ProjectDetails } from '../../types/index.js';
 import { setProjectEditor } from './setProjectEditor';
 
 const fsMocks = vi.hoisted(() => ({
@@ -242,8 +243,8 @@ describe('setProjectEditor', () => {
 
         expect(result.success).toBe(true);
         expect(result.projects).toBeDefined();
-        expect(result.projects![0].version).toBe('4.3-stable');
-        expect(result.projects![0].release.version).toBe('4.3-stable');
+        expect(result.projects?.[0].version).toBe('4.3-stable');
+        expect(result.projects?.[0].release.version).toBe('4.3-stable');
     });
 
     it('should not return additionalInfo in the result', async () => {

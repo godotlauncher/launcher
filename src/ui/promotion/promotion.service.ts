@@ -1,4 +1,5 @@
 import logger from 'electron-log';
+import type { PromotionClickPayload } from '../../types';
 
 import { PROMOTION_MANIFEST_URL } from '../constants';
 import i18n from '../i18n';
@@ -7,7 +8,6 @@ import { resolvePromotionCopy } from './promotion.localization';
 import {
     DEFAULT_COUNTDOWN_THRESHOLD_DAYS,
     type Promotion,
-    type PromotionClickPayload,
     type PromotionCountdownMeta,
     type PromotionManifest,
     type PromotionManifestEntry,

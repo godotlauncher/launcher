@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import logger from 'electron-log';
+import type { InstalledRelease, ReleaseSummary } from '../../types/index.js';
 import { CACHE_LENGTH, MIN_VERSION } from '../constants.js';
 import { getReleases } from '../utils/github.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';

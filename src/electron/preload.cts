@@ -1,3 +1,12 @@
+import type {
+    InstalledRelease,
+    ProjectDetails,
+    PromotionClickPayload,
+    ReleaseSummary,
+    RendererType,
+    UserPreferences,
+} from '../types/index.js';
+
 const electron = require("electron");
 
 electron.contextBridge.exposeInMainWorld("electron", {
@@ -128,3 +137,4 @@ function ipcSend<Key extends keyof EventChannelMapping>(
 ) {
     electron.ipcRenderer.send(key, payload);
 }
+

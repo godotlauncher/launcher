@@ -30,6 +30,7 @@
   ],
   "exclude": [
     "src/electron",
+    "node_modules"
   ],
   "references": [
     {

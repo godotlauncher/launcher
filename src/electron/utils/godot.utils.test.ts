@@ -118,29 +118,31 @@ describe(' Godot Utils ', () => {
         it('should get the closest project definition for version if not exist ', () => {
             const projectDefinition = getProjectDefinition(4.4);
             expect(projectDefinition).toBeDefined();
-            expect(projectDefinition!.configVersion).toBe(5);
-            expect(projectDefinition!.defaultRenderer).toBe('FORWARD_PLUS');
-            expect(projectDefinition!.resources).toEqual([
+            expect(projectDefinition?.configVersion).toBe(5);
+            expect(projectDefinition?.defaultRenderer).toBe('FORWARD_PLUS');
+            expect(projectDefinition?.resources).toEqual([
                 {
                     dst: 'assets/icon.svg',
                     src: 'icon.svg',
                 },
             ]);
-            expect(projectDefinition!.projectFilename).toBe('project.godot');
+            expect(projectDefinition?.projectFilename).toBe('project.godot');
         });
 
         it('should get the closest project definition for version if not exist ', () => {
             const projectDefinition = getProjectDefinition(4.0);
             expect(projectDefinition).toBeDefined();
-            expect(projectDefinition!.configVersion).toBe(5);
-            expect(projectDefinition!.defaultRenderer).toBe('FORWARD_PLUS');
-            expect(projectDefinition!.resources).toEqual([
+            expect(projectDefinition?.configVersion).toBe(5);
+            expect(projectDefinition?.defaultRenderer).toBe('FORWARD_PLUS');
+            expect(projectDefinition?.resources).toEqual([
                 {
                     dst: 'assets/icon.svg',
                     src: 'icon.svg',
                 },
             ]);
-            expect(projectDefinition!.projectFilename).toBe('project.godot');
+            expect(projectDefinition?.projectFilename).toBe('project.godot');
         });
     });
 });
+
+

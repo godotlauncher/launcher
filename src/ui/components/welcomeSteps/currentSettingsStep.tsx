@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import type { UserPreferences } from '../../../types';
 import { usePreferences } from '../../hooks/usePreferences';
 
 type CurrentSettingsStepProps = {

@@ -49,8 +49,8 @@ async function testSymlink(linkPath: string) {
             );
         }
     } catch (err) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((err as any).code === 'ENOENT') {
+        const error = err as NodeJS.ErrnoException;
+        if (error.code === 'ENOENT') {
             logger.error(
                 `Link '${linkPath}' was not created or does not exist.`,
             );

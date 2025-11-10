@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import type { CachedTool, InstalledTool } from '../../types/index.js';
 import { getInstalledTools } from '../commands/installedTools.js';
 import {
     getUserPreferences,
@@ -7,19 +8,10 @@ import {
 
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-type ToolCacheEntry = {
-    name: string;
-    path: string;
-    version: string | null;
-    verified: boolean;
-};
-
 type ToolCacheRecord = {
     last_scan: number;
-    tools: ToolCacheEntry[];
+    tools: CachedTool[];
 };
-
-export type CachedTool = ToolCacheEntry;
 
 function verifyToolPath(toolPath: string): boolean {
     try {
@@ -41,7 +33,7 @@ async function readToolCache(): Promise<ToolCacheRecord | null> {
 
     return {
         last_scan: prefs.installed_tools.last_scan,
-        tools: prefs.installed_tools.tools.map((tool) => ({
+        tools: prefs.installed_tools.tools.map((tool: CachedTool) => ({
             ...tool,
             version: tool.version ?? null,
             verified: tool.verified ?? verifyToolPath(tool.path),
@@ -49,9 +41,7 @@ async function readToolCache(): Promise<ToolCacheRecord | null> {
     };
 }
 
-async function writeToolCache(
-    entries: ToolCacheEntry[],
-): Promise<ToolCacheRecord> {
+async function writeToolCache(entries: CachedTool[]): Promise<ToolCacheRecord> {
     const prefs = await getUserPreferences();
     const record: ToolCacheRecord = {
         last_scan: Date.now(),
@@ -105,7 +95,7 @@ export async function refreshToolCache(
     preScannedTools?: InstalledTool[],
 ): Promise<CachedTool[]> {
     const tools = preScannedTools ?? (await getInstalledTools());
-    const entries: ToolCacheEntry[] = tools.map((tool) => ({
+    const entries: CachedTool[] = tools.map((tool) => ({
         name: tool.name,
         path: tool.path,
         version: tool.version ?? null,

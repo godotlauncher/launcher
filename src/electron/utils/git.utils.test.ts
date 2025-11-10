@@ -1,8 +1,5 @@
-import { exec } from 'child_process';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { gitConfig, gitConfigGetUser, gitExists } from './git.utils';
-
-const execMock = vi.mocked(exec);
 
 describe('git.utils', () => {
     it('should check if git exists', async () => {

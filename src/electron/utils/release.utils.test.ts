@@ -7,6 +7,7 @@ import {
     test,
     vi,
 } from 'vitest';
+import type { AssetSummary, InstalledRelease, ReleaseSummary } from '../../types/index.js';
 import {
     __resetInstalledReleasesStoreForTesting,
     __resetReleaseCachesForTesting,
@@ -734,3 +735,4 @@ suite('Releases Utils', () => {
         });
     });
 });
+

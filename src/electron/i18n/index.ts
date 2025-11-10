@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { app } from 'electron';
 import logger from 'electron-log/main.js';
-import i18next from 'i18next';
+import i18next, { type TOptions } from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { isDev } from '../utils.js';
 
@@ -170,12 +170,16 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
  * @param options Interpolation options
  * @returns Translated string
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function t(key: string, options?: any): string {
+export function t(key: string, options?: string | TOptions): string {
     if (!i18nInstance) {
         logger.error('i18n not initialized, returning key as-is');
         return key;
     }
+    
+    if (typeof options === 'string') {
+        return i18nInstance.t(key, options) as string;
+    }
+    
     return i18nInstance.t(key, options) as string;
 }
 

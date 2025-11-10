@@ -2,6 +2,14 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
 import mst from 'mustache';
+import type {
+    InstalledRelease,
+    LaunchPath,
+    ProjectConfig,
+    ProjectDefinition,
+    ProjectDetails,
+    RendererType,
+} from '../../types/index.js';
 import {
     removeProjectEditorDarwin,
     setProjectEditorReleaseDarwin,
@@ -69,7 +77,7 @@ export function getProjectDefinition(
     editorVersion: number,
     definitions: ProjectDefinition = DEFAULT_PROJECT_DEFINITION,
 ): ProjectConfig | null {
-    const keys = Array.from(definitions.keys());
+    const keys = Array.from(definitions.keys()) as number[];
 
     // get key that is >= editorVersion
     // keys are descending order
@@ -95,7 +103,11 @@ export function getProjectDefinition(
  * @returns A Promise that resolves to the rendered project file content
  * @throws Error if the specified configuration version is not supported
  */
-export async function createProjectFile<version extends keyof RendererType>(
+type RendererConfigVersion = Extract<keyof RendererType, number>;
+
+export async function createProjectFile<
+    version extends RendererConfigVersion,
+>(
     templateDir: string,
     configVersion: version,
     editorVersion: number,
@@ -105,7 +117,7 @@ export async function createProjectFile<version extends keyof RendererType>(
     const template = await fs.promises.readFile(
         path.resolve(
             templateDir,
-            `project.godot_v${configVersion}.template.mst`,
+            `project.godot_v${String(configVersion)}.template.mst`,
         ),
         'utf-8',
     );
@@ -125,7 +137,7 @@ export async function createProjectFile<version extends keyof RendererType>(
         }
 
         default:
-            throw new Error(`Invalid config version ${configVersion}`);
+            throw new Error(`Invalid config version ${String(configVersion)}`);
     }
 }
 
@@ -247,3 +259,4 @@ export async function SetProjectEditorRelease(
 //   // return the path to the symlink (the new launch path)
 //   return projectLinkPath;
 // }
+

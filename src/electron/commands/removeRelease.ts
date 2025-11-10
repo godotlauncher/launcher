@@ -1,5 +1,9 @@
 import * as fs from 'node:fs';
 import logger from 'electron-log';
+import type {
+    InstalledRelease,
+    RemovedReleaseResult,
+} from '../../types/index.js';
 import { checkAndUpdateProjects } from '../checks.js';
 import {
     removeProjectEditorUsingRelease,

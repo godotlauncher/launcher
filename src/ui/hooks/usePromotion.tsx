@@ -8,9 +8,9 @@ import {
     fetchPromotion,
     isPromotionActive,
     type Promotion,
-    type PromotionClickPayload,
     type PromotionCountdownMeta,
 } from '../promotion';
+import type { PromotionClickPayload } from '../../types';
 
 const TICK_DAY_MS = 60 * 60 * 1000; // 1 hour
 const TICK_HOUR_MS = 60 * 1000; // 1 minute

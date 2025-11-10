@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import mustache from 'mustache';
+import type { RendererType } from '../../types/index.js';
 
 import { EDITOR_SETTINGS_TEMPLATE_FILENAME } from '../constants.js';
 
@@ -384,3 +385,4 @@ export async function updateEditorSettings(
     await fs.promises.writeFile(tmpPath, content, 'utf-8');
     await fs.promises.rename(tmpPath, editorSettingsPath);
 }
+

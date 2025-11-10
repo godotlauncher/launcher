@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '../components/alert.component';
-import { Confirm, type ConfirmButtons } from '../components/confirm.component';
+import { Confirm, type ConfirmButton } from '../components/confirm.component';
 
 interface IAlert {
     icon?: React.ReactNode;
@@ -18,7 +18,7 @@ interface IConfirm {
     icon?: React.ReactNode;
     title: string;
     content: ReactNode;
-    buttons?: ConfirmButtons[];
+    buttons?: ConfirmButton[];
 }
 
 type AlertContext = {
@@ -32,14 +32,14 @@ type AlertContext = {
     addConfirm: (
         title: string,
         content: ReactNode,
-        onOk: () => void,
-        onCancel?: () => void,
+        onOk: ConfirmButton['onClick'],
+        onCancel?: ConfirmButton['onClick'],
         icon?: ReactNode,
     ) => void;
     addCustomConfirm: (
         title: string,
         content: ReactNode,
-        buttons: ConfirmButtons[],
+        buttons: ConfirmButton[],
         icon?: ReactNode,
     ) => void;
 };
@@ -73,7 +73,7 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const addCustomConfirm = (
         title: string,
         content: ReactNode,
-        buttons: ConfirmButtons[],
+        buttons: ConfirmButton[],
         icon?: ReactNode,
     ) => {
         setConfirm({ title, content, buttons, icon });
@@ -82,8 +82,8 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const addConfirm = (
         title: string,
         content: ReactNode,
-        onOk: () => void,
-        onCancel?: () => void,
+        onOk: ConfirmButton['onClick'],
+        onCancel?: ConfirmButton['onClick'],
         icon?: ReactNode,
     ) => {
         setConfirm({

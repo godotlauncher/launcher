@@ -1,3 +1,4 @@
+import type { BrowserWindow, MenuItemConstructorOptions, Tray } from 'electron';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createTray } from './tray.helper.js';
 
@@ -80,15 +81,13 @@ const mockTrayInstance = {
     on: vi.fn(),
     popUpContextMenu: vi.fn(),
 };
+const trayInstance = mockTrayInstance as unknown as Tray;
 
 // Create a mock for electron
 vi.mock('electron', () => {
-    // Mock Menu.buildFromTemplate to return a menu
-    const buildFromTemplate = vi.fn().mockImplementation((template) => {
-        // Store the template in a closure variable for later access
-        (buildFromTemplate as any).mockTemplate = template;
-        return mockMenu;
-    });
+    const buildFromTemplate = vi
+        .fn<(template: MenuItemConstructorOptions[]) => typeof mockMenu>()
+        .mockImplementation(() => mockMenu);
 
     return {
         Tray: vi.fn().mockImplementation(() => mockTrayInstance),
@@ -128,29 +127,30 @@ vi.mock('electron', () => {
 const electron = await import('electron');
 const { Menu, app } = electron;
 
-const mainWindow = {
+const mainWindowMock = {
     show: vi.fn(),
     isVisible: vi.fn().mockReturnValue(false),
 };
+const browserWindow = mainWindowMock as unknown as BrowserWindow;
 
 beforeEach(() => {
     vi.clearAllMocks();
 });
 
 test('Should have tray menu with show and quit', async () => {
-    // Mock implementation for Menu.buildFromTemplate to capture the template
-    let capturedTemplate: any[] = [];
-    (Menu.buildFromTemplate as any).mockImplementation((template: any[]) => {
+    const buildFromTemplateMock = vi.mocked(Menu.buildFromTemplate);
+    let capturedTemplate: MenuItemConstructorOptions[] = [];
+    buildFromTemplateMock.mockImplementation((template) => {
         capturedTemplate = template;
         return mockMenu;
     });
 
-    await createTray(mainWindow as any);
+    await createTray(browserWindow);
 
     // Mac platform will not show menu on load but Linux would
     // Force call updateMenu to test template creation
     const { updateMenu } = await import('./tray.helper.js');
-    await updateMenu(mockTrayInstance as any, mainWindow as any);
+    await updateMenu(trayInstance, browserWindow);
 
     // Verify the template structure
     expect(capturedTemplate.length).toBeGreaterThan(0);
@@ -171,7 +171,7 @@ test('Should have tray menu with show and quit', async () => {
 
     // Test the click handlers
     showMenuItem?.click?.();
-    expect(mainWindow.show).toHaveBeenCalled();
+    expect(mainWindowMock.show).toHaveBeenCalled();
     expect(app.dock?.show).toHaveBeenCalled();
 
     quitMenuItem?.click?.();
@@ -179,7 +179,7 @@ test('Should have tray menu with show and quit', async () => {
 });
 
 test('Should show window on tray click', async () => {
-    await createTray(mainWindow as any);
+    await createTray(browserWindow);
 
     // Check that the event handler was registered
     expect(mockTrayInstance.on).toHaveBeenCalledWith(
@@ -188,8 +188,9 @@ test('Should show window on tray click', async () => {
     );
 
     // Extract the handler function
-    const clickHandlerCall = (mockTrayInstance.on as any).mock.calls.find(
-        (call: { [key: string]: any }) => call[0] === 'click',
+    const onMock = vi.mocked(mockTrayInstance.on);
+    const clickHandlerCall = onMock.mock.calls.find(
+        ([event]) => event === 'click',
     );
 
     // Make sure the handler was found

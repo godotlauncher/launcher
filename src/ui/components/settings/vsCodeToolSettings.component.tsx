@@ -2,6 +2,7 @@ import logger from 'electron-log';
 import { Folder, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { CachedTool } from '../../../types';
 import { usePreferences } from '../../hooks/usePreferences';
 
 type VSCodeToolSettingsProps = {

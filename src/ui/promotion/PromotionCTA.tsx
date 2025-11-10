@@ -27,7 +27,7 @@ export function PromotionCTA({
                     'border border-base-200',
                     disabled
                         ? 'cursor-default opacity-60'
-                        : 'hover:bg-base-200/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                        : 'hover:bg-base-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
                 )}
                 onClick={disabled ? undefined : onClick}
                 disabled={disabled}

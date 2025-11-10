@@ -1,6 +1,6 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
-import * as fs from 'fs';
-import * as os from 'os';
 import {
     afterEach,
     beforeEach,
@@ -21,6 +21,9 @@ import {
     readPrefsFromDisk,
     writePrefsToDisk,
 } from './prefs.utils';
+
+const platformMock = os.platform as unknown as vi.Mock<[], string>;
+const homedirMock = os.homedir as unknown as vi.Mock<[], string>;
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({
@@ -96,14 +99,14 @@ const fsPromisesMock = fs.promises as unknown as MockedObject<
     typeof fs.promises
 >;
 
-suite('prefs.util', (test) => {
+suite('prefs.util', (_test) => {
     afterEach(() => {
         __resetPrefsCacheForTesting();
     });
     describe('should be able to get default data and config locations for Windows', () => {
         beforeEach(() => {
-            (os.platform as any).mockReturnValue('win32');
-            (os.homedir as any).mockReturnValue('c:\\Users\\User');
+            platformMock.mockReturnValue('win32');
+            homedirMock.mockReturnValue('c:\\Users\\User');
         });
         it('should return correct data and config locations (Windows)', () => {
             const dirs = getDefaultDirs();
@@ -146,8 +149,8 @@ suite('prefs.util', (test) => {
 
     describe('should be able to get default data and config locations for Linux', () => {
         beforeEach(() => {
-            (os.platform as any).mockReturnValue('linux');
-            (os.homedir as any).mockReturnValue('/home/user');
+            platformMock.mockReturnValue('linux');
+            homedirMock.mockReturnValue('/home/user');
         });
         it('should return correct data and config locations (Linux)', () => {
             const dirs = getDefaultDirs();
@@ -178,8 +181,8 @@ suite('prefs.util', (test) => {
 
     describe('prefs.util Windows', () => {
         beforeEach(() => {
-            (os.platform as any).mockReturnValue('win32');
-            (os.homedir as any).mockReturnValue('c:\\Users\\User');
+            platformMock.mockReturnValue('win32');
+            homedirMock.mockReturnValue('c:\\Users\\User');
         });
 
         it('should get default prefs path (Windows)', async () => {
@@ -222,8 +225,8 @@ suite('prefs.util', (test) => {
 
     describe('prefs.util Linux', () => {
         beforeEach(() => {
-            (os.platform as any).mockReturnValue('linux');
-            (os.homedir as any).mockReturnValue('/home/user');
+            platformMock.mockReturnValue('linux');
+            homedirMock.mockReturnValue('/home/user');
         });
 
         it('should get default prefs path (Linux)', async () => {

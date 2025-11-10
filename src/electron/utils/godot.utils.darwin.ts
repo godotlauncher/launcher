@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
-// import { ProjectDetails } from "../types/types.js"; // Removed as ProjectDetails should be globally available
+import type { InstalledRelease, LaunchPath, ProjectDetails } from '../../types/index.js';
 
 export async function removeProjectEditorDarwin(
     project: ProjectDetails,
@@ -48,3 +48,4 @@ export async function setProjectEditorReleaseDarwin(
 
     return dstEditorPath;
 }
+

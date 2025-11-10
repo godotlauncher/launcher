@@ -1,11 +1,12 @@
 import * as fs from 'node:fs';
 import logger from 'electron-log';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearReleaseCaches } from './releases.js';
+import type { ReleaseSummary } from '../../types/index.js';
 import { MIN_VERSION } from '../constants.js';
 import * as githubUtils from '../utils/github.utils.js';
 import * as platformUtils from '../utils/platform.utils.js';
 import * as releasesUtils from '../utils/releases.utils.js';
+import { clearReleaseCaches } from './releases.js';
 
 const unlinkMock = vi.hoisted(() => vi.fn());
 const electronMock = vi.hoisted(() => ({
@@ -226,7 +227,7 @@ describe('clearReleaseCaches', () => {
         // which writes to fs.promises.writeFile; assert that writeFile was
         // called with the expected paths and content instead.
         const writeFileMock = vi.mocked(
-            fs.promises.writeFile as unknown as (...args: any[]) => any,
+            fs.promises.writeFile as unknown as (...args: unknown[]) => unknown,
         );
         expect(writeFileMock).toHaveBeenCalledTimes(2);
         const releaseWrite = writeFileMock.mock.calls.find(

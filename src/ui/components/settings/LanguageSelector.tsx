@@ -102,7 +102,7 @@ export const LanguageSelector: React.FC = () => {
                 disabled={isChanging}
             >
                 {LANGUAGE_OPTIONS.map((option) => (
-                    <option key={option.code} value={option.code}>
+                    <option key={option.code} value={option.code} className=''>
                         {option.code === 'system'
                             ? t('general.language.system', option.name)
                             : option.name}

@@ -4,11 +4,11 @@ interface AlertProps {
     icon?: React.ReactNode;
     title: string;
     content: ReactNode;
-    buttons?: ConfirmButtons[];
+    buttons?: ConfirmButton[];
     shouldClose: (callback?: () => void) => void;
 }
 
-export interface ConfirmButtons {
+export interface ConfirmButton {
     isCancel?: boolean;
     typeClass: string;
     text: string;

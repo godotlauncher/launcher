@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { APP_INTERNAL_NAME } from '../constants';
 import { getDefaultDirs } from './platform.utils';
 
+const platformMock = os.platform as unknown as vi.Mock<[], string>;
+const homedirMock = os.homedir as unknown as vi.Mock<[], string>;
+
 // Mock electron-updater
 vi.mock('electron-updater', () => ({
     default: {
@@ -65,8 +68,8 @@ vi.mock('node:os', () => ({
 describe('platform.utils', () => {
     describe('Windows paths', () => {
         beforeEach(() => {
-            (os.platform as any).mockReturnValue('win32');
-            (os.homedir as any).mockReturnValue('c:\\Users\\User');
+            platformMock.mockReturnValue('win32');
+            homedirMock.mockReturnValue('c:\\Users\\User');
         });
 
         it('should get default paths for Windows', () => {
@@ -114,8 +117,8 @@ describe('platform.utils', () => {
 
     describe('Linux paths', () => {
         beforeEach(() => {
-            (os.platform as any).mockReturnValue('linux');
-            (os.homedir as any).mockReturnValue('/home/user');
+            platformMock.mockReturnValue('linux');
+            homedirMock.mockReturnValue('/home/user');
         });
 
         it('should get default paths for Linux', () => {

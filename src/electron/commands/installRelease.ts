@@ -3,6 +3,11 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import decompress from 'decompress';
 import logger from 'electron-log';
+import type {
+    InstalledRelease,
+    InstallReleaseResult,
+    ReleaseSummary,
+} from '../../types/index.js';
 import { checkAndUpdateProjects } from '../checks.js';
 import { t } from '../i18n/index.js';
 import {

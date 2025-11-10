@@ -73,7 +73,11 @@ export async function updateMenu(
             (p) =>
                 p.valid && p.last_opened != null && p.last_opened.getTime() > 0,
         )
-        .sort((a, b) => (b.last_opened?.getTime() || 0) - (a.last_opened?.getTime() || 0));
+        .sort(
+            (a, b) =>
+                (b.last_opened?.getTime() || 0) -
+                (a.last_opened?.getTime() || 0),
+        );
 
     const last3 = filteredProjects.slice(0, 3);
 

@@ -1,4 +1,5 @@
 import { describe, expect, it, suite, vi } from 'vitest';
+import type { AssetSummary } from '../../types/index.js';
 import { getReleases } from './github.utils';
 import { createAssetSummary, getPlatformAsset } from './releases.utils';
 
@@ -26,14 +27,6 @@ vi.mock('electron-updater', () => ({
 type ReleaseAsset = {
     name: string;
     browser_download_url: string;
-    [key: string]: any;
-};
-
-type AssetSummary = {
-    name: string;
-    download_url: string;
-    platform_tags: string[];
-    mono: boolean;
     [key: string]: any;
 };
 
@@ -649,3 +642,4 @@ suite('Github Utils Tests', () => {
         });
     });
 });
+
