@@ -86,7 +86,7 @@ describe('projects.utils', () => {
             path: '/projects/first',
             editor_settings_file: '',
             editor_settings_path: '',
-            last_opened: null,
+            last_opened: new Date('2024-01-02T00:00:00.000Z'),
             config_version: 5,
             launch_path: '',
             renderer: 'forward_plus',
