@@ -1,4 +1,5 @@
 import { describe, expect, it, suite, vi } from 'vitest';
+import type { ReleaseAsset } from '../types/github.js';
 import { getReleases } from './github.utils.js';
 import { createAssetSummary, getPlatformAsset } from './releases.utils.js';
 
@@ -21,13 +22,6 @@ vi.mock('electron-updater', () => ({
     },
     UpdateCheckResult: {},
 }));
-
-// Define necessary types for the test file
-type ReleaseAsset = {
-    name: string;
-    browser_download_url: string;
-    [key: string]: any;
-};
 
 // Mock electron
 vi.mock('electron', () => ({
@@ -98,6 +92,17 @@ function makeReleaseAsset(name: string): ReleaseAsset {
     return {
         name,
         browser_download_url: `https://example.com/${name}`,
+        content_type: 'application/zip',
+        created_at: new Date().toISOString(),
+        download_count: 0,
+        id: 0,
+        label: null,
+        node_id: '',
+        size: 0,
+        state: 'uploaded',
+        url: '',
+        updated_at: new Date().toISOString(),
+        uploader: null,
     } satisfies ReleaseAsset;
 }
 
