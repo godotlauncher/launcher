@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import logger from 'electron-log';
 import * as fs from 'node:fs';
-import * as platformUtils from '../utils/platform.utils.js';
+import logger from 'electron-log';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MIN_VERSION } from '../constants.js';
 import * as githubUtils from '../utils/github.utils.js';
+import * as platformUtils from '../utils/platform.utils.js';
 import * as releasesUtils from '../utils/releases.utils.js';
 import { clearReleaseCaches } from './releases.js';
-import { MIN_VERSION } from '../constants.js';
 
 const unlinkMock = vi.hoisted(() => vi.fn());
 const electronMock = vi.hoisted(() => ({
@@ -188,19 +188,43 @@ describe('clearReleaseCaches', () => {
         await clearReleaseCaches();
 
         expect(unlinkMock).toHaveBeenCalledTimes(2);
-        expect(unlinkMock).toHaveBeenNthCalledWith(1, defaultDirs.releaseCachePath);
-        expect(unlinkMock).toHaveBeenNthCalledWith(2, defaultDirs.prereleaseCachePath);
+        expect(unlinkMock).toHaveBeenNthCalledWith(
+            1,
+            defaultDirs.releaseCachePath,
+        );
+        expect(unlinkMock).toHaveBeenNthCalledWith(
+            2,
+            defaultDirs.prereleaseCachePath,
+        );
 
-        expect(getReleases).toHaveBeenCalledWith('RELEASES', expect.any(Date), MIN_VERSION, 1, 100);
-        expect(getReleases).toHaveBeenCalledWith('BUILDS', expect.any(Date), MIN_VERSION, 1, 100);
+        expect(getReleases).toHaveBeenCalledWith(
+            'RELEASES',
+            expect.any(Date),
+            MIN_VERSION,
+            1,
+            100,
+        );
+        expect(getReleases).toHaveBeenCalledWith(
+            'BUILDS',
+            expect.any(Date),
+            MIN_VERSION,
+            1,
+            100,
+        );
 
         // The module-level `storeAvailableReleases` may be the real function
         // which writes to fs.promises.writeFile; assert that writeFile was
         // called with the expected paths and content instead.
-        const writeFileMock = vi.mocked(fs.promises.writeFile as unknown as (...args: any[]) => any);
+        const writeFileMock = vi.mocked(
+            fs.promises.writeFile as unknown as (...args: any[]) => any,
+        );
         expect(writeFileMock).toHaveBeenCalledTimes(2);
-        const releaseWrite = writeFileMock.mock.calls.find(([path]) => path === defaultDirs.releaseCachePath);
-        const prereleaseWrite = writeFileMock.mock.calls.find(([path]) => path === defaultDirs.prereleaseCachePath);
+        const releaseWrite = writeFileMock.mock.calls.find(
+            ([path]) => path === defaultDirs.releaseCachePath,
+        );
+        const prereleaseWrite = writeFileMock.mock.calls.find(
+            ([path]) => path === defaultDirs.prereleaseCachePath,
+        );
 
         expect(releaseWrite).toBeDefined();
         expect(prereleaseWrite).toBeDefined();
@@ -211,13 +235,19 @@ describe('clearReleaseCaches', () => {
         expect(releaseData.releases).toEqual([stableNew, stableOld]);
         expect(prereleaseData.releases).toEqual([buildNew, buildOld]);
 
-        expect(loggerInfo).toHaveBeenCalledWith('Clearing cached release manifests');
-        expect(loggerInfo).toHaveBeenCalledWith('Release caches rebuilt successfully');
+        expect(loggerInfo).toHaveBeenCalledWith(
+            'Clearing cached release manifests',
+        );
+        expect(loggerInfo).toHaveBeenCalledWith(
+            'Release caches rebuilt successfully',
+        );
         expect(loggerError).not.toHaveBeenCalled();
     });
 
     it('continues when cache files are missing', async () => {
-        const enoentError = Object.assign(new Error('missing'), { code: 'ENOENT' });
+        const enoentError = Object.assign(new Error('missing'), {
+            code: 'ENOENT',
+        });
         unlinkMock
             .mockRejectedValueOnce(enoentError)
             .mockResolvedValueOnce(undefined);
@@ -235,13 +265,15 @@ describe('clearReleaseCaches', () => {
         await expect(clearReleaseCaches()).resolves.toBeUndefined();
 
         expect(loggerDebug).toHaveBeenCalledWith(
-            `Release cache file not found at ${defaultDirs.releaseCachePath}, skipping removal`
+            `Release cache file not found at ${defaultDirs.releaseCachePath}, skipping removal`,
         );
         expect(loggerError).not.toHaveBeenCalled();
     });
 
     it('propagates errors when cache removal fails', async () => {
-        const removalError = Object.assign(new Error('permission denied'), { code: 'EACCES' });
+        const removalError = Object.assign(new Error('permission denied'), {
+            code: 'EACCES',
+        });
         unlinkMock.mockRejectedValueOnce(removalError);
 
         await expect(clearReleaseCaches()).rejects.toBe(removalError);
@@ -249,7 +281,7 @@ describe('clearReleaseCaches', () => {
         expect(storeAvailableReleases).not.toHaveBeenCalled();
         expect(loggerError).toHaveBeenCalledWith(
             `Failed to remove release cache file at ${defaultDirs.releaseCachePath}`,
-            removalError
+            removalError,
         );
     });
 });

@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
-import { getUIPath, getAssetPath, getPreloadPath } from './pathResolver';
+import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver';
 
 vi.mock('electron-updater', () => ({
     default: {
@@ -16,16 +16,17 @@ vi.mock('electron-updater', () => ({
             setFeedURL: vi.fn(),
             addAuthHeader: vi.fn(),
             isUpdaterActive: vi.fn(),
-            currentVersion: '1.0.0'
-        }
+            currentVersion: '1.0.0',
+        },
     },
-    UpdateCheckResult: {}
+    UpdateCheckResult: {},
 }));
 
 vi.mock('electron', () => ({
     Menu: {
-        setApplicationMenu: vi.fn()
-    }, app: {
+        setApplicationMenu: vi.fn(),
+    },
+    app: {
         getAppPath: vi.fn(() => '/app/path'),
         isPackaged: false,
         getName: vi.fn(),
@@ -38,18 +39,18 @@ vi.mock('electron', () => ({
         requestSingleInstanceLock: vi.fn(() => true),
         dock: {
             show: vi.fn(),
-            hide: vi.fn()
-        }
+            hide: vi.fn(),
+        },
     },
     BrowserWindow: vi.fn(),
     shell: {
         showItemInFolder: vi.fn(),
-        openExternal: vi.fn()
+        openExternal: vi.fn(),
     },
     dialog: {
         showOpenDialog: vi.fn(),
-        showMessageBox: vi.fn()
-    }
+        showMessageBox: vi.fn(),
+    },
 }));
 
 describe('Path Resolver', () => {
@@ -77,14 +78,17 @@ describe('Path Resolver', () => {
         vi.stubEnv('NODE_ENV', 'development');
 
         const preloadPath = getPreloadPath();
-        expect(preloadPath).toBe(path.join('/app/path', 'dist-electron/preload.cjs'));
+        expect(preloadPath).toBe(
+            path.join('/app/path', 'dist-electron/preload.cjs'),
+        );
     });
 
     it('should get preload path for prod', () => {
         vi.stubEnv('NODE_ENV', 'production');
 
         const preloadPath = getPreloadPath();
-        expect(preloadPath).toBe(path.join('/app', 'dist-electron/preload.cjs'));
+        expect(preloadPath).toBe(
+            path.join('/app', 'dist-electron/preload.cjs'),
+        );
     });
-
 });

@@ -1,11 +1,20 @@
-import { createContext, FC, PropsWithChildren, useContext, useEffect, useState } from 'react';
-
+import {
+    createContext,
+    type FC,
+    type PropsWithChildren,
+    useContext,
+    useEffect,
+    useState,
+} from 'react';
 
 interface ProjectsContext {
     projects: ProjectDetails[];
     loading: boolean;
     addProject: (projectPath: string) => Promise<AddProjectToListResult>;
-    setProjectEditor: (project: ProjectDetails, release: InstalledRelease) => Promise<ChangeProjectEditorResult>;
+    setProjectEditor: (
+        project: ProjectDetails,
+        release: InstalledRelease,
+    ) => Promise<ChangeProjectEditorResult>;
     openProjectFolder: (project: ProjectDetails) => Promise<void>;
     showProjectMenu: (project: ProjectDetails) => Promise<void>;
     openProjectEditorFolder: (project: ProjectDetails) => Promise<void>;
@@ -13,10 +22,18 @@ interface ProjectsContext {
     launchProject: (project: ProjectDetails) => Promise<boolean>;
     refreshProjects: () => Promise<void>;
     checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
-    createProject: (name: string, release: InstalledRelease, renderer: RendererType[5], withVSCode: boolean, withGit: boolean) => Promise<CreateProjectResult>;
+    createProject: (
+        name: string,
+        release: InstalledRelease,
+        renderer: RendererType[5],
+        withVSCode: boolean,
+        withGit: boolean,
+    ) => Promise<CreateProjectResult>;
 }
 
-export const projectsContext = createContext<ProjectsContext>({} as ProjectsContext);
+export const projectsContext = createContext<ProjectsContext>(
+    {} as ProjectsContext,
+);
 
 export const useProjects = () => {
     const context = useContext(projectsContext);
@@ -29,7 +46,6 @@ export const useProjects = () => {
 type ProjectsProviderProps = PropsWithChildren;
 
 export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
-
     const [projects, setProjects] = useState<ProjectDetails[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -40,13 +56,20 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         setLoading(false);
     };
 
-    const createProject = async (projectName: string, release: InstalledRelease, renderer: RendererType[5], withVSCode: boolean, withGit: boolean) => {
+    const createProject = async (
+        projectName: string,
+        release: InstalledRelease,
+        renderer: RendererType[5],
+        withVSCode: boolean,
+        withGit: boolean,
+    ) => {
         const result = await window.electron.createProject(
             projectName,
             release,
             renderer,
             withVSCode,
-            withGit);
+            withGit,
+        );
 
         if (result.success) {
             await refreshProjects();
@@ -57,16 +80,19 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     const addProject = async (projectPath: string) => {
         const addResult = await window.electron.addProject(projectPath);
-        if (addResult.success) {
-            setProjects(addResult.projects!);
+        if (addResult.success && addResult.projects) {
+            setProjects(addResult.projects);
         }
         return addResult;
     };
 
-    const setProjectEditor = async (project: ProjectDetails, release: InstalledRelease) => {
+    const setProjectEditor = async (
+        project: ProjectDetails,
+        release: InstalledRelease,
+    ) => {
         const result = await window.electron.setProjectEditor(project, release);
-        if (result.success) {
-            setProjects(result.projects!);
+        if (result.success && result.projects) {
+            setProjects(result.projects);
         }
 
         return result;
@@ -89,14 +115,13 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         const all = await window.electron.checkAllProjectsValid();
         setProjects(all);
 
-        const p = all.find(p => p.path === project.path);
+        const p = all.find((p) => p.path === project.path);
 
-        if (p && p?.valid) {
+        if (p?.valid) {
             await window.electron.launchProject(project);
         }
 
         return p?.valid ?? false;
-
     };
 
     const refreshProjects = async () => {
@@ -115,7 +140,6 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     useEffect(() => {
         const off = window.electron.subscribeProjects(setProjects);
         // Initial data fetching on mount
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         getProjects();
 
         return () => {
@@ -124,22 +148,23 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     }, []);
 
     return (
-        <projectsContext.Provider value={{
-            projects,
-            loading,
-            addProject,
-            setProjectEditor,
-            openProjectFolder,
-            openProjectEditorFolder,
-            removeProject,
-            launchProject,
-            refreshProjects,
-            checkProjectValid,
-            createProject,
-            showProjectMenu
-        }}>
+        <projectsContext.Provider
+            value={{
+                projects,
+                loading,
+                addProject,
+                setProjectEditor,
+                openProjectFolder,
+                openProjectEditorFolder,
+                removeProject,
+                launchProject,
+                refreshProjects,
+                checkProjectValid,
+                createProject,
+                showProjectMenu,
+            }}
+        >
             {children}
         </projectsContext.Provider>
     );
-
 };

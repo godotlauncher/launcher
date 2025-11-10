@@ -49,21 +49,21 @@ export type Promotion = {
 
 export type PromotionCountdownMeta =
     | {
-        mode: 'days';
-        daysRemaining: number;
-        percentageRemaining: number;
-    }
+          mode: 'days';
+          daysRemaining: number;
+          percentageRemaining: number;
+      }
     | {
-        mode: 'hours';
-        hoursRemaining: number;
-        percentageRemaining: number;
-    }
+          mode: 'hours';
+          hoursRemaining: number;
+          percentageRemaining: number;
+      }
     | {
-        mode: 'minutes';
-        minutesRemaining: number;
-        secondsRemaining: number;
-        percentageRemaining: number;
-    };
+          mode: 'minutes';
+          minutesRemaining: number;
+          secondsRemaining: number;
+          percentageRemaining: number;
+      };
 
 export type PromotionClickPayload = {
     id: string;

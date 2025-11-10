@@ -1,25 +1,42 @@
-import logger from 'electron-log';
+import {
+    type ChildProcess,
+    type ChildProcessByStdio,
+    spawn,
+} from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-
-import { getDefaultDirs } from '../utils/platform.utils.js';
-import { getProjectsSnapshot, removeProjectFromList, storeProjectsList } from '../utils/projects.utils.js';
-import { getUserPreferences } from './userPreferences.js';
-
-import { ChildProcess, ChildProcessByStdio, spawn } from 'node:child_process';
+import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import { PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
-import { getMainWindow } from '../main.js';
-import { ipcWebContentsSend } from '../utils.js';
-import { removeProjectEditor, getProjectDefinition, DEFAULT_PROJECT_DEFINITION } from '../utils/godot.utils.js';
-import { createNewEditorSettings, updateEditorSettings } from '../utils/godotProject.utils.js';
-import { addVSCodeNETLaunchConfig, addOrUpdateVSCodeRecommendedExtensions, updateVSCodeSettings } from '../utils/vscode.utils.js';
-import { getAssetPath } from '../pathResolver.js';
 import { t } from '../i18n/index.js';
+import { getMainWindow } from '../main.js';
+import { getAssetPath } from '../pathResolver.js';
 import { getCachedTools } from '../services/toolCache.js';
 import { gitInit } from '../utils/git.utils.js';
+import {
+    DEFAULT_PROJECT_DEFINITION,
+    getProjectDefinition,
+    removeProjectEditor,
+} from '../utils/godot.utils.js';
+import {
+    createNewEditorSettings,
+    updateEditorSettings,
+} from '../utils/godotProject.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
+import { getDefaultDirs } from '../utils/platform.utils.js';
+import {
+    getProjectsSnapshot,
+    removeProjectFromList,
+    storeProjectsList,
+} from '../utils/projects.utils.js';
+import {
+    addOrUpdateVSCodeRecommendedExtensions,
+    addVSCodeNETLaunchConfig,
+    updateVSCodeSettings,
+} from '../utils/vscode.utils.js';
+import { ipcWebContentsSend } from '../utils.js';
+import { getUserPreferences } from './userPreferences.js';
 
 const PROJECT_WRITE_MAX_ATTEMPTS = 2;
 
@@ -28,14 +45,15 @@ function resolveProjectListPath(): string {
     return path.resolve(configDir, PROJECTS_FILENAME);
 }
 
-
 export async function getProjectsDetails(): Promise<ProjectDetails[]> {
     const projectListPath = resolveProjectListPath();
     const { projects } = await getProjectsSnapshot(projectListPath);
     return projects;
 }
 
-export async function removeProject(project: ProjectDetails): Promise<ProjectDetails[]> {
+export async function removeProject(
+    project: ProjectDetails,
+): Promise<ProjectDetails[]> {
     const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
@@ -43,7 +61,6 @@ export async function removeProject(project: ProjectDetails): Promise<ProjectDet
     // remove .editor_settings link to godot
     // await removeEditorSymlink(project.launch_path);
     await removeProjectEditor(project);
-
 
     const projects = await removeProjectFromList(projectListPath, project.path);
     if (process.platform === 'linux') {
@@ -62,8 +79,9 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     let persistedProjects: ProjectDetails[] | null = null;
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
-        const { projects, version } = await getProjectsSnapshot(projectListPath);
-        const projectIndex = projects.findIndex(p => p.path === project.path);
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
 
         if (projectIndex === -1) {
             persistedProjects = projects;
@@ -77,10 +95,17 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
         };
 
         try {
-            persistedProjects = await storeProjectsList(projectListPath, updatedProjects, { expectedVersion: version });
+            persistedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
             break;
         } catch (error) {
-            if (error instanceof JsonStoreConflictError && attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
                 continue;
             }
             throw error;
@@ -91,15 +116,16 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
         throw new Error('Failed to update project last opened time');
     }
 
-    let projects = persistedProjects;
+    const projects = persistedProjects;
 
-    let editor: ChildProcess | ChildProcessByStdio<null, null, null> | null = null;
+    let editor: ChildProcess | ChildProcessByStdio<null, null, null> | null =
+        null;
 
     // const stdio = ['ignore', 'inherit', 'inherit'];
 
     if (process.platform === 'linux') {
         // Linux, get the saved project as the tray does not update correctly
-        project = projects.find(p => p.path === project.path) || project;
+        project = projects.find((p) => p.path === project.path) || project;
     }
 
     if (process.platform === 'darwin') {
@@ -110,8 +136,7 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
         }
 
         editor = spawn('open', options, { detached: true, stdio: 'ignore' });
-    }
-    else {
+    } else {
         const options = ['--path', project.path, '-e'];
         if (project.open_windowed) {
             options.push('-w');
@@ -149,23 +174,32 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
         await updateLinuxTray();
     }
 
-    ipcWebContentsSend('projects-updated', currentMainWindow?.webContents, projects);
+    ipcWebContentsSend(
+        'projects-updated',
+        currentMainWindow?.webContents,
+        projects,
+    );
 }
 
-export async function checkProjectIsValid(project: ProjectDetails): Promise<ProjectDetails> {
+export async function checkProjectIsValid(
+    project: ProjectDetails,
+): Promise<ProjectDetails> {
     return await checkProjectValid(project);
 }
 
-export async function setProjectWindowed(project: ProjectDetails, openWindowed: boolean): Promise<ProjectDetails> {
-
+export async function setProjectWindowed(
+    project: ProjectDetails,
+    openWindowed: boolean,
+): Promise<ProjectDetails> {
     project.open_windowed = openWindowed;
 
     const projectListPath = resolveProjectListPath();
     let storedProjects: ProjectDetails[] | null = null;
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
-        const { projects, version } = await getProjectsSnapshot(projectListPath);
-        const projectIndex = projects.findIndex(p => p.path === project.path);
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
 
         if (projectIndex === -1) {
             storedProjects = projects;
@@ -179,10 +213,17 @@ export async function setProjectWindowed(project: ProjectDetails, openWindowed: 
         };
 
         try {
-            storedProjects = await storeProjectsList(projectListPath, updatedProjects, { expectedVersion: version });
+            storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
             break;
         } catch (error) {
-            if (error instanceof JsonStoreConflictError && attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
                 continue;
             }
             throw error;
@@ -193,18 +234,27 @@ export async function setProjectWindowed(project: ProjectDetails, openWindowed: 
         return project;
     }
 
-    const updatedProject = storedProjects.find(p => p.path === project.path) ?? project;
-    ipcWebContentsSend('projects-updated', getMainWindow()?.webContents, storedProjects);
+    const updatedProject =
+        storedProjects.find((p) => p.path === project.path) ?? project;
+    ipcWebContentsSend(
+        'projects-updated',
+        getMainWindow()?.webContents,
+        storedProjects,
+    );
 
     return updatedProject;
 }
 
-export async function setProjectVSCode(project: ProjectDetails, enable: boolean): Promise<ProjectDetails> {
+export async function setProjectVSCode(
+    project: ProjectDetails,
+    enable: boolean,
+): Promise<ProjectDetails> {
     const projectListPath = resolveProjectListPath();
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
-        const { projects, version } = await getProjectsSnapshot(projectListPath);
-        const projectIndex = projects.findIndex(p => p.path === project.path);
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
 
         if (projectIndex === -1) {
             throw new Error(t('projects:toggleVSCode.errors.projectNotFound'));
@@ -222,40 +272,59 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
 
         if (enable) {
             const cachedTools = await getCachedTools();
-            const vsCodeTool = cachedTools.find(t => t.name === 'VSCode' && t.verified);
+            const vsCodeTool = cachedTools.find(
+                (t) => t.name === 'VSCode' && t.verified,
+            );
 
             if (!vsCodeTool) {
-                throw new Error(t('projects:toggleVSCode.errors.vscodeNotInstalled'));
+                throw new Error(
+                    t('projects:toggleVSCode.errors.vscodeNotInstalled'),
+                );
             }
 
             if (!targetProject.launch_path) {
-                throw new Error(t('projects:toggleVSCode.errors.missingLaunchPath'));
+                throw new Error(
+                    t('projects:toggleVSCode.errors.missingLaunchPath'),
+                );
             }
 
             const projectDefinition = getProjectDefinition(
                 targetProject.release.version_number,
-                DEFAULT_PROJECT_DEFINITION
+                DEFAULT_PROJECT_DEFINITION,
             );
 
             if (!projectDefinition) {
-                throw new Error(t('projects:toggleVSCode.errors.invalidProjectDefinition'));
+                throw new Error(
+                    t('projects:toggleVSCode.errors.invalidProjectDefinition'),
+                );
             }
 
-            const templatesDir = path.resolve(getAssetPath(), TEMPLATE_DIR_NAME);
+            const templatesDir = path.resolve(
+                getAssetPath(),
+                TEMPLATE_DIR_NAME,
+            );
 
             let vscodeExecPath = vsCodeTool.path;
             if (process.platform === 'darwin') {
-                vscodeExecPath = path.resolve(vscodeExecPath, 'Contents', 'MacOS', 'Electron');
+                vscodeExecPath = path.resolve(
+                    vscodeExecPath,
+                    'Contents',
+                    'MacOS',
+                    'Electron',
+                );
             }
 
-            const editorSettingsFilename = projectDefinition.editorConfigFilename(targetProject.release.version_number);
+            const editorSettingsFilename =
+                projectDefinition.editorConfigFilename(
+                    targetProject.release.version_number,
+                );
             let editorSettingsFile = targetProject.editor_settings_file;
 
             if (!editorSettingsFile) {
                 editorSettingsFile = path.resolve(
                     path.dirname(targetProject.launch_path),
                     'editor_data',
-                    editorSettingsFilename
+                    editorSettingsFilename,
                 );
             }
 
@@ -266,8 +335,7 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
                     useExternalEditor: true,
                     isMono: targetProject.release.mono,
                 });
-            }
-            else {
+            } else {
                 const createdEditorSettings = await createNewEditorSettings(
                     templatesDir,
                     targetProject.launch_path,
@@ -282,7 +350,8 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
             }
 
             targetProject.editor_settings_file = editorSettingsFile;
-            targetProject.editor_settings_path = path.dirname(editorSettingsFile);
+            targetProject.editor_settings_path =
+                path.dirname(editorSettingsFile);
 
             await updateVSCodeSettings(
                 targetProject.path,
@@ -290,13 +359,21 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
                 targetProject.release.version_number,
                 targetProject.release.mono,
             );
-            await addOrUpdateVSCodeRecommendedExtensions(targetProject.path, targetProject.release.mono);
+            await addOrUpdateVSCodeRecommendedExtensions(
+                targetProject.path,
+                targetProject.release.mono,
+            );
 
             if (targetProject.release.mono) {
-                await addVSCodeNETLaunchConfig(targetProject.path, targetProject.launch_path);
+                await addVSCodeNETLaunchConfig(
+                    targetProject.path,
+                    targetProject.launch_path,
+                );
             }
-        }
-        else if (targetProject.editor_settings_file && fs.existsSync(targetProject.editor_settings_file)) {
+        } else if (
+            targetProject.editor_settings_file &&
+            fs.existsSync(targetProject.editor_settings_file)
+        ) {
             await updateEditorSettings(targetProject.editor_settings_file, {
                 useExternalEditor: false,
             });
@@ -306,10 +383,20 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
         updatedProjects[projectIndex] = targetProject;
 
         try {
-            const storedProjects = await storeProjectsList(projectListPath, updatedProjects, { expectedVersion: version });
-            const latestProject = storedProjects.find(p => p.path === targetProject.path) ?? targetProject;
+            const storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
+            const latestProject =
+                storedProjects.find((p) => p.path === targetProject.path) ??
+                targetProject;
 
-            ipcWebContentsSend('projects-updated', getMainWindow()?.webContents, storedProjects);
+            ipcWebContentsSend(
+                'projects-updated',
+                getMainWindow()?.webContents,
+                storedProjects,
+            );
 
             project.withVSCode = latestProject.withVSCode;
             project.editor_settings_file = latestProject.editor_settings_file;
@@ -317,7 +404,10 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
 
             return latestProject;
         } catch (error) {
-            if (error instanceof JsonStoreConflictError && attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
                 continue;
             }
             throw error;
@@ -327,12 +417,15 @@ export async function setProjectVSCode(project: ProjectDetails, enable: boolean)
     throw new Error('Failed to update VSCode integration for project');
 }
 
-export async function initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails> {
+export async function initializeProjectGit(
+    project: ProjectDetails,
+): Promise<ProjectDetails> {
     const projectListPath = resolveProjectListPath();
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
-        const { projects, version } = await getProjectsSnapshot(projectListPath);
-        const projectIndex = projects.findIndex(p => p.path === project.path);
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
 
         if (projectIndex === -1) {
             throw new Error(t('projects:initGit.errors.projectNotFound'));
@@ -349,7 +442,9 @@ export async function initializeProjectGit(project: ProjectDetails): Promise<Pro
         }
 
         const gitInitialized = await gitInit(targetProject.path);
-        const gitFolderExists = fs.existsSync(path.resolve(targetProject.path, '.git'));
+        const gitFolderExists = fs.existsSync(
+            path.resolve(targetProject.path, '.git'),
+        );
 
         if (!gitInitialized || !gitFolderExists) {
             throw new Error(t('projects:initGit.errors.initFailed'));
@@ -359,16 +454,29 @@ export async function initializeProjectGit(project: ProjectDetails): Promise<Pro
         updatedProjects[projectIndex] = targetProject;
 
         try {
-            const storedProjects = await storeProjectsList(projectListPath, updatedProjects, { expectedVersion: version });
-            const latestProject = storedProjects.find(p => p.path === targetProject.path) ?? targetProject;
+            const storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
+            const latestProject =
+                storedProjects.find((p) => p.path === targetProject.path) ??
+                targetProject;
 
-            ipcWebContentsSend('projects-updated', getMainWindow()?.webContents, storedProjects);
+            ipcWebContentsSend(
+                'projects-updated',
+                getMainWindow()?.webContents,
+                storedProjects,
+            );
 
             project.withGit = latestProject.withGit;
 
             return latestProject;
         } catch (error) {
-            if (error instanceof JsonStoreConflictError && attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
                 continue;
             }
             throw error;

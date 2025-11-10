@@ -1,10 +1,14 @@
 import * as os from 'node:os';
 import { getDefaultDirs } from '../utils/platform.utils.js';
-import { getDefaultPrefs, readPrefsFromDisk, writePrefsToDisk } from '../utils/prefs.utils.js';
+import {
+    getDefaultPrefs,
+    readPrefsFromDisk,
+    writePrefsToDisk,
+} from '../utils/prefs.utils.js';
 
 function migrateUserPreferences(
     prefs: UserPreferences,
-    defaultPrefs: UserPreferences
+    defaultPrefs: UserPreferences,
 ): { updated: boolean; value: UserPreferences } {
     let updated = false;
     const nextPrefs: UserPreferences = { ...prefs };
@@ -16,13 +20,17 @@ function migrateUserPreferences(
     }
 
     if (typeof nextPrefs.windows_enable_symlinks === 'undefined') {
-        nextPrefs.windows_enable_symlinks = defaultPrefs.windows_enable_symlinks;
+        nextPrefs.windows_enable_symlinks =
+            defaultPrefs.windows_enable_symlinks;
         updated = true;
     }
 
     if (typeof nextPrefs.windows_symlink_win_notify === 'undefined') {
-        const receivedWindowsPrefsUpgrade = platform === 'win32' && prefs.prefs_version < 3;
-        nextPrefs.windows_symlink_win_notify = receivedWindowsPrefsUpgrade ? false : defaultPrefs.windows_symlink_win_notify;
+        const receivedWindowsPrefsUpgrade =
+            platform === 'win32' && prefs.prefs_version < 3;
+        nextPrefs.windows_symlink_win_notify = receivedWindowsPrefsUpgrade
+            ? false
+            : defaultPrefs.windows_symlink_win_notify;
         updated = true;
     }
 
@@ -30,7 +38,6 @@ function migrateUserPreferences(
 }
 
 export async function getUserPreferences(): Promise<UserPreferences> {
-
     const { prefsPath } = getDefaultDirs();
 
     const defaultPrefs = await getDefaultPrefs();
@@ -45,9 +52,8 @@ export async function getUserPreferences(): Promise<UserPreferences> {
 }
 
 export async function setUserPreferences(
-    prefs: UserPreferences
+    prefs: UserPreferences,
 ): Promise<UserPreferences> {
-
     const { prefsPath } = getDefaultDirs();
 
     await writePrefsToDisk(prefsPath, prefs);

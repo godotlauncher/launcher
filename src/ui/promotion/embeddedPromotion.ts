@@ -1,5 +1,5 @@
 import { LOCALIZED_EMBEDDED_PROMOTION_COPY } from './embeddedPromotion.locales';
-import { PromotionManifestEntry } from './promotion.types';
+import type { PromotionManifestEntry } from './promotion.types';
 
 export const EMBEDDED_PROMOTION: PromotionManifestEntry | null = {
     id: 'survey-dec-2025',

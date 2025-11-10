@@ -12,23 +12,27 @@ export const WelcomeStep: React.FC = () => {
                     i18nKey="welcomeStep.description"
                     ns="welcome"
                     components={{
-                        strong: <strong />
+                        strong: <strong />,
                     }}
                 />
             </p>
             <p>{t('welcomeStep.feedback')}</p>
-            <p>{t('welcomeStep.enjoy')}
-                <button className="btn btn-link p-0 flex gap-1"
-                    onClick={() => window.electron.openExternal('https://godotlauncher.com')}
-                >https://godotlauncher.com
-                    <ExternalLinkIcon className='w-4 h-4' /></button>
+            <p>
+                {t('welcomeStep.enjoy')}
+                <button
+                    type="button"
+                    className="btn btn-link p-0 flex gap-1"
+                    onClick={() =>
+                        window.electron.openExternal(
+                            'https://godotlauncher.com',
+                        )
+                    }
+                >
+                    https://godotlauncher.com
+                    <ExternalLinkIcon className="w-4 h-4" />
+                </button>
             </p>
-            <div>
-            </div>
+            <div></div>
         </div>
-
-
-
-
     );
 };

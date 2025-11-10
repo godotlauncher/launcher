@@ -1,22 +1,21 @@
 import * as fs from 'node:fs';
-import * as os from 'os';
 import * as path from 'node:path';
-
 import { dialog, Menu, nativeImage, shell } from 'electron';
+import * as os from 'os';
+import { t } from '../i18n/index.js';
 import { getMainWindow } from '../main.js';
+import { getAssetPath } from '../pathResolver.js';
+import { isToolAvailable } from '../services/toolCache.js';
 import { getThemedMenuIcon, ipcWebContentsSend } from '../utils.js';
 import {
-    removeProject,
-    setProjectWindowed,
-    setProjectVSCode,
     initializeProjectGit,
+    removeProject,
+    setProjectVSCode,
+    setProjectWindowed,
 } from './projects.js';
-import { getUserPreferences, setUserPreferences } from './userPreferences.js';
-import { removeRelease } from './removeRelease.js';
 import { openProjectManager } from './releases.js';
-import { t } from '../i18n/index.js';
-import { isToolAvailable } from '../services/toolCache.js';
-import { getAssetPath } from '../pathResolver.js';
+import { removeRelease } from './removeRelease.js';
+import { getUserPreferences, setUserPreferences } from './userPreferences.js';
 
 export async function showProjectMenu(project: ProjectDetails): Promise<void> {
     const mainWindow = getMainWindow();
@@ -27,7 +26,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
 
     const gitMenuIcon = nativeImage
         .createFromPath(
-            path.join(getAssetPath(), 'menu_icons', 'git_icon_color.png')
+            path.join(getAssetPath(), 'menu_icons', 'git_icon_color.png'),
         )
         .resize({ width: 18, height: 18 });
 
@@ -56,7 +55,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         },
         {
             icon: getThemedMenuIcon(
-                project.open_windowed ? 'checkbox-checked' : 'checkbox'
+                project.open_windowed ? 'checkbox-checked' : 'checkbox',
             ),
             label: t('menus:project.openWindowed'),
             toolTip: t('menus:project.openWindowedTooltip'),
@@ -65,13 +64,13 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
             click: async () => {
                 project = await setProjectWindowed(
                     project,
-                    !project.open_windowed
+                    !project.open_windowed,
                 );
             },
         },
         {
             icon: getThemedMenuIcon(
-                project.withVSCode ? 'checkbox-checked' : 'checkbox'
+                project.withVSCode ? 'checkbox-checked' : 'checkbox',
             ),
             label: t('menus:project.useVSCode'),
             toolTip: t('menus:project.useVSCodeTooltip'),
@@ -82,7 +81,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                 try {
                     project = await setProjectVSCode(
                         project,
-                        !project.withVSCode
+                        !project.withVSCode,
                     );
                 } catch (error) {
                     const message =
@@ -93,26 +92,26 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
         },
         ...(project.valid && hasGit && !project.withGit
             ? [
-                {
-                    icon: gitMenuIcon,
-                    label: t('menus:project.initGit'),
-                    toolTip: t('menus:project.initGitTooltip'),
-                    click: async () => {
-                        try {
-                            project = await initializeProjectGit(project);
-                        } catch (error) {
-                            const message =
+                  {
+                      icon: gitMenuIcon,
+                      label: t('menus:project.initGit'),
+                      toolTip: t('menus:project.initGitTooltip'),
+                      click: async () => {
+                          try {
+                              project = await initializeProjectGit(project);
+                          } catch (error) {
+                              const message =
                                   error instanceof Error
                                       ? error.message
                                       : String(error);
-                            dialog.showErrorBox(
-                                t('dialogs:error.title'),
-                                message
-                            );
-                        }
-                    },
-                },
-            ]
+                              dialog.showErrorBox(
+                                  t('dialogs:error.title'),
+                                  message,
+                              );
+                          }
+                      },
+                  },
+              ]
             : []),
         {
             type: 'separator',
@@ -127,7 +126,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                     title: t('dialogs:exportSettings.title'),
                     defaultPath: path.resolve(
                         os.homedir(),
-                        `${path.basename(project.editor_settings_file)}`
+                        `${path.basename(project.editor_settings_file)}`,
                     ),
 
                     filters: [
@@ -141,7 +140,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                 if (!result.canceled) {
                     await fs.promises.copyFile(
                         project.editor_settings_file,
-                        result.filePath
+                        result.filePath,
                     );
                 }
             },
@@ -191,7 +190,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                         path.resolve(
                             path.dirname(project.launch_path),
                             'editor_data',
-                            path.basename(result.filePaths[0])
+                            path.basename(result.filePaths[0]),
                         );
 
                     if (fs.existsSync(project.editor_settings_file)) {
@@ -199,8 +198,8 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                             project.editor_settings_file,
                             path.resolve(
                                 path.dirname(project.editor_settings_file),
-                                `${path.basename(project.editor_settings_file)}.${Date.now()}.bak`
-                            )
+                                `${path.basename(project.editor_settings_file)}.${Date.now()}.bak`,
+                            ),
                         );
                     }
 
@@ -243,7 +242,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                         ipcWebContentsSend(
                             'projects-updated',
                             mainWindow?.webContents,
-                            projects
+                            projects,
                         );
                     }
                 } else {
@@ -251,7 +250,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
                     ipcWebContentsSend(
                         'projects-updated',
                         mainWindow?.webContents,
-                        projects
+                        projects,
                     );
                 }
             },
@@ -261,7 +260,7 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
 }
 
 export async function showReleaseMenu(
-    release: InstalledRelease
+    release: InstalledRelease,
 ): Promise<void> {
     const menu = Menu.buildFromTemplate([
         {
@@ -310,13 +309,13 @@ export async function showReleaseMenu(
                         ipcWebContentsSend(
                             'releases-updated',
                             getMainWindow()?.webContents,
-                            result.releases
+                            result.releases,
                         );
                     } else {
                         dialog.showErrorBox(
                             t('dialogs:removeRelease.error'),
                             result.error ||
-                                t('dialogs:removeRelease.errorMessage')
+                                t('dialogs:removeRelease.errorMessage'),
                         );
                     }
                 }

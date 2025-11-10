@@ -3,7 +3,10 @@ import * as os from 'node:os';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getStoredInstalledReleases, __resetInstalledReleasesStoreForTesting } from './releases.utils';
+import {
+    __resetInstalledReleasesStoreForTesting,
+    getStoredInstalledReleases,
+} from './releases.utils';
 
 const platformUtilsMock = vi.hoisted(() => ({
     getDefaultDirs: vi.fn(),
@@ -79,7 +82,9 @@ afterEach(() => {
 
 describe('getStoredInstalledReleases', () => {
     it('defaults missing valid flag to true for legacy entries', async () => {
-        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-releases-utils-'));
+        const tempDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-releases-utils-'),
+        );
         tempDirs.push(tempDir);
         const releasesPath = path.join(tempDir, 'installed.json');
         platformUtilsMock.getDefaultDirs.mockReturnValue({
@@ -119,7 +124,7 @@ describe('getStoredInstalledReleases', () => {
         const releases = await getStoredInstalledReleases();
 
         expect(releases).toHaveLength(2);
-        expect(releases.find(r => r.version === '4.2.0')?.valid).toBe(true);
-        expect(releases.find(r => r.version === '4.1.0')?.valid).toBe(false);
+        expect(releases.find((r) => r.version === '4.2.0')?.valid).toBe(true);
+        expect(releases.find((r) => r.version === '4.1.0')?.valid).toBe(false);
     });
 });

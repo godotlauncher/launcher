@@ -1,6 +1,13 @@
 import logger from 'electron-log';
 
-import { createJsonStore, type JsonStore, type JsonStoreOptions, type JsonStoreSnapshot, type JsonStoreWriteOptions, type MaybePromise } from './jsonStore.js';
+import {
+    createJsonStore,
+    type JsonStore,
+    type JsonStoreOptions,
+    type JsonStoreSnapshot,
+    type JsonStoreWriteOptions,
+    type MaybePromise,
+} from './jsonStore.js';
 
 type ChangeListener<T> = (value: T) => MaybePromise<void>;
 
@@ -15,7 +22,10 @@ export type TypedJsonStore<T> = {
     read(): Promise<T>;
     readSnapshot(): Promise<JsonStoreSnapshot<T>>;
     write(value: T, options?: JsonStoreWriteOptions): Promise<T>;
-    update(mutator: (current: T) => MaybePromise<T>, options?: JsonStoreWriteOptions): Promise<T>;
+    update(
+        mutator: (current: T) => MaybePromise<T>,
+        options?: JsonStoreWriteOptions,
+    ): Promise<T>;
     refresh(): Promise<T>;
     clear(): Promise<void>;
     getSchemaVersion(): number | undefined;
@@ -38,7 +48,10 @@ function cloneValue<T>(value: T): T {
     return JSON.parse(JSON.stringify(value)) as T;
 }
 
-async function emitChange<T>(options: StoreFactoryOptions<T>, value: T): Promise<void> {
+async function emitChange<T>(
+    options: StoreFactoryOptions<T>,
+    value: T,
+): Promise<void> {
     if (!options.onChange) {
         return;
     }
@@ -76,7 +89,10 @@ function registerStore<T>(options: StoreFactoryOptions<T>): InternalStore<T> {
 
         readSnapshot: () => store.read(),
 
-        write: async (value: T, writeOptions?: JsonStoreWriteOptions): Promise<T> => {
+        write: async (
+            value: T,
+            writeOptions?: JsonStoreWriteOptions,
+        ): Promise<T> => {
             const persisted = await store.write(value, writeOptions);
             // emitChange expects the store factory options (contains onChange),
             // not the per-write options. Pass the outer `options` from the
@@ -85,7 +101,10 @@ function registerStore<T>(options: StoreFactoryOptions<T>): InternalStore<T> {
             return persisted.value;
         },
 
-        update: async (mutator: (current: T) => MaybePromise<T>, writeOptions?: JsonStoreWriteOptions): Promise<T> => {
+        update: async (
+            mutator: (current: T) => MaybePromise<T>,
+            writeOptions?: JsonStoreWriteOptions,
+        ): Promise<T> => {
             const persisted = await store.update(mutator, writeOptions);
             await emitChange(options, persisted.value);
             return persisted.value;
@@ -110,8 +129,12 @@ function registerStore<T>(options: StoreFactoryOptions<T>): InternalStore<T> {
     return internal;
 }
 
-export function createTypedJsonStore<T>(options: StoreFactoryOptions<T>): TypedJsonStore<T> {
-    const existing = factoryRegistry.get(options.id) as InternalStore<T> | undefined;
+export function createTypedJsonStore<T>(
+    options: StoreFactoryOptions<T>,
+): TypedJsonStore<T> {
+    const existing = factoryRegistry.get(options.id) as
+        | InternalStore<T>
+        | undefined;
     const internal = existing ?? registerStore(options);
     return internal.api;
 }

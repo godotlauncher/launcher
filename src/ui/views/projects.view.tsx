@@ -1,10 +1,6 @@
 import logger from 'electron-log';
-import { useEffect, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
-
 import {
     ChevronDown,
     ChevronsUpDown,
@@ -14,6 +10,10 @@ import {
     EllipsisVertical,
     TriangleAlert,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
+import gitIconColor from '../assets/icons/git_icon_color.svg';
+import vscodeIcon from '../assets/icons/vscode.svg';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -22,14 +22,10 @@ import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
 import { CreateProjectSubView } from './subViews/createProject.subview';
 
-import vscodeIcon from '../assets/icons/vscode.svg';
-import gitIconColor from '../assets/icons/git_icon_color.svg';
-
 TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
 export const ProjectsView: React.FC = () => {
-
     const { t } = useTranslation(['projects', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [createOpen, setCreateOpen] = useState<boolean>(false);
@@ -82,7 +78,7 @@ export const ProjectsView: React.FC = () => {
 
     const onProjectMoreOptions = (
         e: React.MouseEvent,
-        project: ProjectDetails
+        project: ProjectDetails,
     ) => {
         e.stopPropagation();
         showProjectMenu(project);
@@ -92,9 +88,9 @@ export const ProjectsView: React.FC = () => {
         if (addingProject) return;
         setAddingProject(true);
         const result = await window.electron.openFileDialog(
-            preferences!.projects_location!,
+            preferences?.projects_location ?? '',
             t('addProject.selectFile'),
-            [{ name: t('addProject.godotProject'), extensions: ['godot'] }]
+            [{ name: t('addProject.godotProject'), extensions: ['godot'] }],
         );
         setAddingProject(false);
 
@@ -105,7 +101,7 @@ export const ProjectsView: React.FC = () => {
                 addAlert(
                     t('common:error'),
                     t('messages.needReleaseInstalled'),
-                    <TriangleAlert className="stroke-error" />
+                    <TriangleAlert className="stroke-error" />,
                 );
                 return;
             }
@@ -117,7 +113,7 @@ export const ProjectsView: React.FC = () => {
                 addAlert(
                     t('common:error'),
                     addResult.error || t('messages.addProjectError'),
-                    <TriangleAlert className="stroke-error" />
+                    <TriangleAlert className="stroke-error" />,
                 );
                 return;
             }
@@ -126,7 +122,7 @@ export const ProjectsView: React.FC = () => {
 
     const onChangeProjectEditor = async (
         project: ProjectDetails,
-        release: InstalledRelease
+        release: InstalledRelease,
     ) => {
         setChangeEditorFor(null);
         setBusyProjects([...busyProjects, project.path]);
@@ -136,13 +132,13 @@ export const ProjectsView: React.FC = () => {
             if (!result.success) {
                 addAlert(
                     t('common:error'),
-                    result.error || t('messages.setEditorError')
+                    result.error || t('messages.setEditorError'),
                 );
                 return;
             }
         } finally {
             setBusyProjects((prevValues) =>
-                prevValues.filter((p) => p !== project.path)
+                prevValues.filter((p) => p !== project.path),
             );
         }
     };
@@ -187,13 +183,13 @@ export const ProjectsView: React.FC = () => {
         if (textSearch === '') return projects.sort(sortFunction);
         return projects
             .filter((row) =>
-                row.name.toLowerCase().includes(textSearch.toLowerCase())
+                row.name.toLowerCase().includes(textSearch.toLowerCase()),
             )
             .sort(sortFunction);
     };
 
     const getSortIcon = (field: string) => {
-        if (sortData.field !== field) return <></>;
+        if (sortData.field !== field) return null;
         else if (sortData.order === 'asc') {
             return <ChevronUp className="w-4 h-4 ml-2 cursor-pointer" />;
         } else {
@@ -236,6 +232,7 @@ export const ProjectsView: React.FC = () => {
                         </div>
                         <div className="flex gap-2">
                             <button
+                                type="button"
                                 disabled={installedReleases.length < 1}
                                 data-testid="btnProjectAdd"
                                 onClick={() => onAddProject()}
@@ -244,6 +241,7 @@ export const ProjectsView: React.FC = () => {
                                 {t('buttons.add')}
                             </button>
                             <button
+                                type="button"
                                 disabled={installedReleases.length < 1}
                                 data-testid="btnProjectCreate"
                                 className="btn btn-primary"
@@ -263,6 +261,7 @@ export const ProjectsView: React.FC = () => {
                         />
                         {textSearch.length > 0 && (
                             <button
+                                type="button"
                                 tabIndex={-1}
                                 onClick={() => setTextSearch('')}
                                 className="absolute right-4 w-6 h-6"
@@ -281,7 +280,8 @@ export const ProjectsView: React.FC = () => {
                             i18nKey="messages.noReleasesCta"
                             components={{
                                 Link: (
-                                    <a
+                                    <button
+                                        type="button"
                                         onClick={() =>
                                             setCurrentView('installs')
                                         }
@@ -298,11 +298,12 @@ export const ProjectsView: React.FC = () => {
                 )}
                 {!loading && (
                     <div className="overflow-auto h-full">
-                        <table className="table table-md">
-                            <thead className="sticky z-10 top-0 bg-base-200 text-xs">
+                        <table className="table table-md table-pin-rows">
+                            <thead className="bg-base-200 text-xs">
                                 <tr>
                                     <th className="min-w-48 w-full">
-                                        <label
+                                        <button
+                                            type="button"
                                             className="flex items-center gap-2 cursor-pointer"
                                             onClick={() => {
                                                 if (sortData.field === 'name') {
@@ -310,7 +311,7 @@ export const ProjectsView: React.FC = () => {
                                                         field: 'name',
                                                         order:
                                                             sortData.order ===
-                                                                'asc'
+                                                            'asc'
                                                                 ? 'desc'
                                                                 : 'asc',
                                                     });
@@ -324,10 +325,11 @@ export const ProjectsView: React.FC = () => {
                                         >
                                             {t('table.name')}
                                             {getSortIcon('name')}
-                                        </label>
+                                        </button>
                                     </th>
                                     <th className="w-44 min-w-44">
-                                        <label
+                                        <button
+                                            type="button"
                                             className="flex items-center gap-2 cursor-pointer"
                                             onClick={() => {
                                                 if (
@@ -338,7 +340,7 @@ export const ProjectsView: React.FC = () => {
                                                         field: 'modified',
                                                         order:
                                                             sortData.order ===
-                                                                'asc'
+                                                            'asc'
                                                                 ? 'desc'
                                                                 : 'asc',
                                                     });
@@ -352,7 +354,7 @@ export const ProjectsView: React.FC = () => {
                                         >
                                             {t('table.modified')}
                                             {getSortIcon('modified')}
-                                        </label>
+                                        </button>
                                     </th>
                                     <th className="w-60 min-w-60">
                                         {t('table.editor')}
@@ -363,12 +365,12 @@ export const ProjectsView: React.FC = () => {
                             <tbody className="overflow-y-auto">
                                 {getFilteredRows().map((row, index) => (
                                     <tr
-                                        key={index}
+                                        key={`projectRow_${row.path}_${index}`}
                                         className="relative hover:bg-base-content/5"
                                     >
                                         <td className="p-2 flex flex-col gap-1">
                                             {busyProjects.includes(
-                                                row.path
+                                                row.path,
                                             ) && (
                                                 <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg ">
                                                     <div className="loading loading-bars"></div>
@@ -379,13 +381,14 @@ export const ProjectsView: React.FC = () => {
                                                     <span
                                                         className="tooltip tooltip-right"
                                                         data-tip={t(
-                                                            'table.invalidProject'
+                                                            'table.invalidProject',
                                                         )}
                                                     >
                                                         <TriangleAlert className="stroke-warning" />
                                                     </span>
                                                 )}
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         onLaunchProject(row)
                                                     }
@@ -398,7 +401,7 @@ export const ProjectsView: React.FC = () => {
                                                     <p
                                                         className="tooltip tooltip-right tooltip-primary flex items-center"
                                                         data-tip={t(
-                                                            'table.vsCodeProject'
+                                                            'table.vsCodeProject',
                                                         )}
                                                     >
                                                         <span className="text-xs text-base-content/50 ">
@@ -414,12 +417,14 @@ export const ProjectsView: React.FC = () => {
                                                     <p
                                                         className="tooltip tooltip-right tooltip-primary flex items-center"
                                                         data-tip={t(
-                                                            'table.gitProject'
+                                                            'table.gitProject',
                                                         )}
                                                     >
                                                         <span className="text-xs text-base-content/50 ">
                                                             <img
-                                                                src={gitIconColor}
+                                                                src={
+                                                                    gitIconColor
+                                                                }
                                                                 className="w-4 h-4 "
                                                                 alt="Git"
                                                             />
@@ -430,7 +435,7 @@ export const ProjectsView: React.FC = () => {
                                                     <p
                                                         className="tooltip tooltip-right tooltip-primary flex items-center"
                                                         data-tip={t(
-                                                            'table.dotNetProject'
+                                                            'table.dotNetProject',
                                                         )}
                                                     >
                                                         <span className="badge badge-outline text-xs text-base-content/50 ">
@@ -442,7 +447,7 @@ export const ProjectsView: React.FC = () => {
                                                     <p
                                                         className="tooltip tooltip-right right-0 tooltip-secondary flex items-center"
                                                         data-tip={t(
-                                                            'table.prerelease'
+                                                            'table.prerelease',
                                                         )}
                                                     >
                                                         <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
@@ -454,7 +459,7 @@ export const ProjectsView: React.FC = () => {
                                                     <p
                                                         className="tooltip tooltip-right tooltip-primary flex items-center"
                                                         data-tip={t(
-                                                            'table.windowedMode'
+                                                            'table.windowedMode',
                                                         )}
                                                     >
                                                         <span className="badge badge-outline text-xs text-base-content/50">
@@ -463,12 +468,12 @@ export const ProjectsView: React.FC = () => {
                                                     </p>
                                                 )}
                                             </div>
-                                            <div
-                                                role="button"
+                                            <button
+                                                type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     window.navigator.clipboard.writeText(
-                                                        row.path
+                                                        row.path,
                                                     );
                                                 }}
                                                 className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
@@ -477,21 +482,22 @@ export const ProjectsView: React.FC = () => {
                                                     {row.path}
                                                 </p>
                                                 <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary" />
-                                            </div>
+                                            </button>
                                         </td>
 
                                         <td className="">
                                             <p>
                                                 {row.last_opened
                                                     ? timeAgo.format(
-                                                        row.last_opened
-                                                    )
+                                                          row.last_opened,
+                                                      )
                                                     : '-'}
                                             </p>
                                         </td>
                                         <td className="">
                                             <div>
                                                 <button
+                                                    type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setChangeEditorFor(row);
@@ -500,30 +506,34 @@ export const ProjectsView: React.FC = () => {
                                                 >
                                                     {!isInstalledRelease(
                                                         row.release.version,
-                                                        row.release.mono
+                                                        row.release.mono,
                                                     ) ? (
-                                                            <div className="flex flex-row items-center gap-2">
-                                                                <TriangleAlert size={16} className="stroke-warning" />
-                                                                <p className="line-through">
-                                                                    {row.version}{' '}
-                                                                    {row.release
-                                                                        .mono &&
-                                                                    '(.NET)'}
-                                                                </p>
-                                                            </div>
-                                                        ) : (
-                                                            <>
+                                                        <div className="flex flex-row items-center gap-2">
+                                                            <TriangleAlert
+                                                                size={16}
+                                                                className="stroke-warning"
+                                                            />
+                                                            <p className="line-through">
                                                                 {row.version}{' '}
-                                                                {row.release.mono &&
+                                                                {row.release
+                                                                    .mono &&
+                                                                    '(.NET)'}
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {row.version}{' '}
+                                                            {row.release.mono &&
                                                                 '(.NET)'}
-                                                            </>
-                                                        )}
+                                                        </>
+                                                    )}
                                                     <ChevronsUpDown />
                                                 </button>
                                             </div>
                                         </td>
                                         <td className="p-0 pr-2">
                                             <button
+                                                type="button"
                                                 onClick={(e) =>
                                                     onProjectMoreOptions(e, row)
                                                 }

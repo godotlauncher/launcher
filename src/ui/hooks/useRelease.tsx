@@ -4,22 +4,30 @@ type ReleaseContext = {
     availableReleases: ReleaseSummary[];
     availablePrereleases: ReleaseSummary[];
     installedReleases: InstalledRelease[];
-    downloadingReleases: Array<{ version: string, mono: boolean, prerelease: boolean; published_at: string; }>;
+    downloadingReleases: Array<{
+        version: string;
+        mono: boolean;
+        prerelease: boolean;
+        published_at: string;
+    }>;
     loading: boolean;
     hasError: string | undefined;
     refreshAvailableReleases: () => Promise<void>;
     clearReleaseCache: () => Promise<void>;
-    installRelease: (release: ReleaseSummary, mono: boolean) => Promise<InstallReleaseResult>;
+    installRelease: (
+        release: ReleaseSummary,
+        mono: boolean,
+    ) => Promise<InstallReleaseResult>;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     removeRelease: (release: InstalledRelease) => Promise<void>;
     isDownloadingRelease: (version: string, mono: boolean) => boolean;
 
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;
     showReleaseMenu: (release: InstalledRelease) => Promise<void>;
-
-
 };
-const releaseContext = React.createContext<ReleaseContext>({} as ReleaseContext);
+const releaseContext = React.createContext<ReleaseContext>(
+    {} as ReleaseContext,
+);
 
 export const useRelease = () => {
     const context = React.useContext(releaseContext);
@@ -31,24 +39,40 @@ export const useRelease = () => {
 
 type ReleaseProviderProps = React.PropsWithChildren;
 
-export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) => {
+export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
+    children,
+}) => {
     const [hasError, setHasError] = React.useState<string>();
-    const [availableReleases, setAvailableReleases] = React.useState<ReleaseSummary[]>([]);
-    const [availablePrereleases, setAvailablePrereleases] = React.useState<ReleaseSummary[]>([]);
-    const [installedReleases, setInstalledReleases] = React.useState<InstalledRelease[]>([]);
-    const [downloadingReleases, setDownloadingReleases] = React.useState<{ version: string, mono: boolean, prerelease: boolean; published_at: string; }[]>([]);
+    const [availableReleases, setAvailableReleases] = React.useState<
+        ReleaseSummary[]
+    >([]);
+    const [availablePrereleases, setAvailablePrereleases] = React.useState<
+        ReleaseSummary[]
+    >([]);
+    const [installedReleases, setInstalledReleases] = React.useState<
+        InstalledRelease[]
+    >([]);
+    const [downloadingReleases, setDownloadingReleases] = React.useState<
+        {
+            version: string;
+            mono: boolean;
+            prerelease: boolean;
+            published_at: string;
+        }[]
+    >([]);
     const [loading, setLoading] = React.useState<boolean>(true);
-
 
     const updateAllReleases = () => {
         setLoading(true);
         setHasError(undefined);
         Promise.all([
             window.electron.getAvailableReleases().then(setAvailableReleases),
-            window.electron.getAvailablePrereleases().then(setAvailablePrereleases),
-            window.electron.getInstalledReleases().then(setInstalledReleases)
+            window.electron
+                .getAvailablePrereleases()
+                .then(setAvailablePrereleases),
+            window.electron.getInstalledReleases().then(setInstalledReleases),
         ])
-            .catch(e => setHasError(e.message))
+            .catch((e) => setHasError(e.message))
             .finally(() => setLoading(false));
     };
 
@@ -60,7 +84,6 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
             off();
         };
     }, []);
-
 
     const showReleaseMenu = async (release: InstalledRelease) => {
         await window.electron.showReleaseMenu(release);
@@ -75,22 +98,25 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
         try {
             await window.electron.clearReleaseCache();
             updateAllReleases();
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     };
 
     const isDownloadingRelease = (version: string, mono: boolean): boolean => {
-        return downloadingReleases.some(r => r.version === version && r.mono === mono);
+        return downloadingReleases.some(
+            (r) => r.version === version && r.mono === mono,
+        );
     };
 
     const isInstalledRelease = (version: string, mono: boolean): boolean => {
-        return installedReleases.some(r => r.version === version && r.mono === mono && r.valid !== false);
+        return installedReleases.some(
+            (r) =>
+                r.version === version && r.mono === mono && r.valid !== false,
+        );
     };
 
     const removeRelease = async (release: InstalledRelease): Promise<void> => {
-
         const result = await window.electron.removeRelease(release);
 
         if (result.success) {
@@ -98,25 +124,39 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
         }
     };
 
-    const installRelease = async (release: ReleaseSummary, mono: boolean): Promise<InstallReleaseResult> => {
-
-        setDownloadingReleases(prevValue => [...prevValue, { version: release.version, mono, prerelease: release.prerelease, published_at: release.published_at ?? '' }]);
+    const installRelease = async (
+        release: ReleaseSummary,
+        mono: boolean,
+    ): Promise<InstallReleaseResult> => {
+        setDownloadingReleases((prevValue) => [
+            ...prevValue,
+            {
+                version: release.version,
+                mono,
+                prerelease: release.prerelease,
+                published_at: release.published_at ?? '',
+            },
+        ]);
 
         const result = await window.electron.installRelease(release, mono);
 
         if (result.success) {
-
             setLoading(true);
 
             Promise.all([
-                window.electron.getAvailableReleases().then(setAvailableReleases),
-                window.electron.getInstalledReleases().then(setInstalledReleases)
+                window.electron
+                    .getAvailableReleases()
+                    .then(setAvailableReleases),
+                window.electron
+                    .getInstalledReleases()
+                    .then(setInstalledReleases),
             ]).finally(() => setLoading(false));
         }
 
-        setDownloadingReleases(prevReleases => {
-
-            const index = prevReleases.findIndex(r => r.version === release.version && r.mono === mono);
+        setDownloadingReleases((prevReleases) => {
+            const index = prevReleases.findIndex(
+                (r) => r.version === release.version && r.mono === mono,
+            );
 
             if (index > -1) {
                 const newDownloadingReleases = [...prevReleases];
@@ -125,7 +165,6 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
             }
 
             return prevReleases;
-
         });
         return result;
     };
@@ -141,23 +180,27 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({ children }) =>
         }
     };
 
-    return <releaseContext.Provider value={
-        {
-            availableReleases,
-            availablePrereleases,
-            installedReleases,
-            downloadingReleases,
-            loading,
-            hasError,
-            refreshAvailableReleases,
-            clearReleaseCache,
-            installRelease,
-            isInstalledRelease,
-            removeRelease,
-            isDownloadingRelease,
-            checkAllReleasesValid,
-            showReleaseMenu
-
-        }
-    } > {children}</ releaseContext.Provider>;
+    return (
+        <releaseContext.Provider
+            value={{
+                availableReleases,
+                availablePrereleases,
+                installedReleases,
+                downloadingReleases,
+                loading,
+                hasError,
+                refreshAvailableReleases,
+                clearReleaseCache,
+                installRelease,
+                isInstalledRelease,
+                removeRelease,
+                isDownloadingRelease,
+                checkAllReleasesValid,
+                showReleaseMenu,
+            }}
+        >
+            {' '}
+            {children}
+        </releaseContext.Provider>
+    );
 };

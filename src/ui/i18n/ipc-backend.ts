@@ -1,5 +1,5 @@
-import type { BackendModule, ReadCallback } from 'i18next';
 import logger from 'electron-log';
+import type { BackendModule, ReadCallback } from 'i18next';
 
 /**
  * Custom i18next backend that fetches translations from Electron main process via IPC
@@ -39,9 +39,9 @@ class IPCBackend implements BackendModule {
             if (!data) {
                 callback(
                     new Error(
-                        `Namespace ${namespace} not found for ${language}`
+                        `Namespace ${namespace} not found for ${language}`,
                     ),
-                    false
+                    false,
                 );
                 return;
             }
@@ -50,7 +50,7 @@ class IPCBackend implements BackendModule {
         } catch (error) {
             logger.error(
                 `Failed to load translations for ${language}/${namespace}:`,
-                error
+                error,
             );
             callback(error as Error, false);
         }

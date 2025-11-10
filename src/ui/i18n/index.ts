@@ -1,7 +1,7 @@
+import logger from 'electron-log';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import IPCBackend from './ipc-backend';
-import logger from 'electron-log';
 
 const ipcBackend = new IPCBackend();
 
@@ -13,16 +13,17 @@ async function initializeI18n() {
     try {
         // Get current language from main process
         const currentLang = await window.electron.i18n.getCurrentLanguage();
-        const availableLanguages = await window.electron.i18n.getAvailableLanguages();
+        const availableLanguages =
+            await window.electron.i18n.getAvailableLanguages();
 
         logger.info(`[i18n] Initializing with language: ${currentLang}`);
         logger.info('[i18n] Available languages:', availableLanguages);
 
         const fallbackLng = {
-            'de': ['en'],
-            'fr': ['en'],
-            'es': ['en'],
-            'pl': ['en'],
+            de: ['en'],
+            fr: ['en'],
+            es: ['en'],
+            pl: ['en'],
             'pt-BR': ['pt', 'en'],
             pt: ['en'],
             'zh-CN': ['zh-CN', 'en'],
@@ -41,7 +42,16 @@ async function initializeI18n() {
                 lng: currentLang,
                 fallbackLng,
                 supportedLngs: availableLanguages,
-                ns: ['common', 'projects', 'installs', 'settings', 'help', 'createProject', 'installEditor', 'welcome'],
+                ns: [
+                    'common',
+                    'projects',
+                    'installs',
+                    'settings',
+                    'help',
+                    'createProject',
+                    'installEditor',
+                    'welcome',
+                ],
                 defaultNS: 'common',
                 interpolation: {
                     escapeValue: false, // React already escapes
@@ -51,7 +61,9 @@ async function initializeI18n() {
                 },
             });
 
-        logger.info(`[i18n] Initialized successfully with language: ${i18n.language}`);
+        logger.info(
+            `[i18n] Initialized successfully with language: ${i18n.language}`,
+        );
     } catch (error) {
         logger.error('[i18n] Failed to initialize:', error);
     }
@@ -67,22 +79,31 @@ initializeI18n();
 export async function changeLanguage(language: string): Promise<void> {
     try {
         logger.info(`[i18n] Changing language to: ${language}`);
-    
+
         // Request language change from main process (also updates preferences)
-        const newTranslations = await window.electron.i18n.changeLanguage(language);
-    
+        const newTranslations =
+            await window.electron.i18n.changeLanguage(language);
+
         // Clear backend cache
         ipcBackend.clearCache();
-    
+
         // Change language in i18next (this will trigger re-fetch from backend)
         await i18n.changeLanguage(language);
-    
+
         // Manually add new translations to ensure immediate update
-        Object.keys(newTranslations).forEach(ns => {
-            i18n.addResourceBundle(language, ns, newTranslations[ns], true, true);
+        Object.keys(newTranslations).forEach((ns) => {
+            i18n.addResourceBundle(
+                language,
+                ns,
+                newTranslations[ns],
+                true,
+                true,
+            );
         });
 
-        logger.info(`[i18n] Language changed successfully to: ${i18n.language}`);
+        logger.info(
+            `[i18n] Language changed successfully to: ${i18n.language}`,
+        );
     } catch (error) {
         logger.error('[i18n] Failed to change language:', error);
         throw error;

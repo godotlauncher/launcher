@@ -1,0 +1,39 @@
+{
+    "name": "@godotlauncher/json-db",
+    "version": "1.0.0",
+    "description": "Tiny durable JSON database with locking, atomic writes, and expressive query helpers.",
+    "main": "lib/index.js",
+    "type": "module",
+    "private": true,
+    "keywords": [
+        "json",
+        "database",
+        "json-db",
+        "jsonDb",
+        "file-database",
+        "file-based-database",
+        "lightweight-database",
+        "godot-launcher"
+    ],
+    "author": {
+        "name": "Mario Debono",
+        "email": "mario@godotlauncher.org",
+        "url": "https://godotlauncher.org"
+    },
+    "license": "MIT",
+    "packageManager": "pnpm@10.20.0",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "types": "dist/index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/godotlauncher/json-db.git"
+    },
+    "bugs": {
+        "url": "https://github.com/godotlauncher/json-db/issues"
+    },
+    "homepage": "https://github.com/godotlauncher/json-db#readme",
+    "devDependencies": {}
+}

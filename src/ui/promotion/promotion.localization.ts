@@ -1,4 +1,4 @@
-import {
+import type {
     PromotionLocalizedFields,
     PromotionManifestEntry,
 } from './promotion.types';
@@ -61,16 +61,18 @@ function buildFallbackChain(locale?: string): string[] {
 
     pushIfMissing(chain, canonical);
 
-    if (canonical && canonical.includes('-')) {
+    if (canonical?.includes('-')) {
         const [baseLanguage] = canonical.split('-');
         pushIfMissing(chain, baseLanguage);
     }
 
     const configuredFallbacks = canonical
-        ? LOCALE_FALLBACKS[canonical] ?? LOCALE_FALLBACKS.default
+        ? (LOCALE_FALLBACKS[canonical] ?? LOCALE_FALLBACKS.default)
         : LOCALE_FALLBACKS.default;
 
-    configuredFallbacks.forEach((fallback) => pushIfMissing(chain, fallback));
+    configuredFallbacks.forEach((fallback) => {
+        pushIfMissing(chain, fallback);
+    });
 
     pushIfMissing(chain, DEFAULT_LOCALE);
 
@@ -79,7 +81,7 @@ function buildFallbackChain(locale?: string): string[] {
 
 export function resolvePromotionCopy(
     entry: PromotionManifestEntry,
-    locale?: string
+    locale?: string,
 ): PromotionLocalizedFields | null {
     if (!entry.localizedCopy) {
         return null;

@@ -8,17 +8,21 @@ const STORAGE_KEY = 'gdlauncher.clearReleaseCache.lastClearedAt';
 vi.mock('react-i18next', () => {
     const dictionary: Record<string, string> = {
         'settings:behavior.clearReleaseCache.title': 'Clear release cache',
-        'settings:behavior.clearReleaseCache.description': 'Delete cached release metadata and fetch the latest builds from GitHub.',
+        'settings:behavior.clearReleaseCache.description':
+            'Delete cached release metadata and fetch the latest builds from GitHub.',
         'settings:behavior.clearReleaseCache.cta': 'Clear cache',
         'settings:behavior.clearReleaseCache.clearing': 'Clearing...',
-        'settings:behavior.clearReleaseCache.cooldownNotice': 'Cache clearing is temporarily disabled to avoid hitting GitHub rate limits.',
+        'settings:behavior.clearReleaseCache.cooldownNotice':
+            'Cache clearing is temporarily disabled to avoid hitting GitHub rate limits.',
     };
 
     return {
         useTranslation: (namespace?: string) => ({
             t: (key: string, opts?: { ns?: string }) => {
                 const resolvedNamespace = opts?.ns ?? namespace;
-                const dictKey = resolvedNamespace ? `${resolvedNamespace}:${key}` : key;
+                const dictKey = resolvedNamespace
+                    ? `${resolvedNamespace}:${key}`
+                    : key;
                 return dictionary[dictKey] ?? key;
             },
         }),
@@ -80,14 +84,11 @@ describe('ClearReleaseCacheControl', () => {
     });
 
     afterEach(() => {
-         
         delete (globalThis as { window?: Partial<Window> }).window;
     });
 
     it('renders an enabled button when no cooldown is stored', () => {
-        const html = renderToStaticMarkup(
-            <ClearReleaseCacheControl />
-        );
+        const html = renderToStaticMarkup(<ClearReleaseCacheControl />);
 
         expect(html).toContain('Clear cache');
         expect(html).not.toContain('(');
@@ -98,11 +99,11 @@ describe('ClearReleaseCacheControl', () => {
     it('renders cooldown messaging when a recent timestamp exists', () => {
         const now = Date.now();
         const thirtySecondsAgo = now - 30_000;
-        (globalThis as { window: { localStorage: Storage } }).window.localStorage.setItem(STORAGE_KEY, thirtySecondsAgo.toString());
+        (
+            globalThis as { window: { localStorage: Storage } }
+        ).window.localStorage.setItem(STORAGE_KEY, thirtySecondsAgo.toString());
 
-        const html = renderToStaticMarkup(
-            <ClearReleaseCacheControl />
-        );
+        const html = renderToStaticMarkup(<ClearReleaseCacheControl />);
 
         expect(html).toContain('disabled');
         expect(html).toContain('(30)');

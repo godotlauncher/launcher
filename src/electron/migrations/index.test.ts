@@ -57,7 +57,7 @@ describe('runMigrations', () => {
             migrationStatePath: statePath,
         });
 
-    releasesMocks.clearReleaseCaches.mockResolvedValue(undefined);
+        releasesMocks.clearReleaseCaches.mockResolvedValue(undefined);
 
         ({ runMigrations } = await import('./index.js'));
     });
@@ -71,7 +71,11 @@ describe('runMigrations', () => {
         const appVersion = '1.6.1';
         writeFileSync(
             statePath,
-            JSON.stringify({ lastSeenVersion: '1.5.0', completed: [] }, null, 4)
+            JSON.stringify(
+                { lastSeenVersion: '1.5.0', completed: [] },
+                null,
+                4,
+            ),
         );
 
         await runMigrations(appVersion);
@@ -94,8 +98,8 @@ describe('runMigrations', () => {
             JSON.stringify(
                 { lastSeenVersion: '1.6.1', completed: [MIGRATION_ID] },
                 null,
-                4
-            )
+                4,
+            ),
         );
 
         await runMigrations(appVersion);
@@ -107,7 +111,9 @@ describe('runMigrations', () => {
             completed: string[];
         };
 
-        expect(state.completed.filter((value) => value === MIGRATION_ID)).toHaveLength(1);
+        expect(
+            state.completed.filter((value) => value === MIGRATION_ID),
+        ).toHaveLength(1);
         expect(state.lastSeenVersion).toBe(appVersion);
     });
 
@@ -118,8 +124,8 @@ describe('runMigrations', () => {
             JSON.stringify(
                 { lastSeenVersion: '1.6.2', completed: [MIGRATION_ID] },
                 null,
-                4
-            )
+                4,
+            ),
         );
 
         await runMigrations(appVersion);
@@ -141,7 +147,11 @@ describe('runMigrations', () => {
 
         writeFileSync(
             statePath,
-            JSON.stringify({ lastSeenVersion: '1.5.0', completed: [] }, null, 4)
+            JSON.stringify(
+                { lastSeenVersion: '1.5.0', completed: [] },
+                null,
+                4,
+            ),
         );
 
         releasesMocks.clearReleaseCaches.mockReset();
@@ -151,7 +161,9 @@ describe('runMigrations', () => {
 
         await expect(runMigrations(appVersion)).rejects.toThrow(failure);
 
-        const stateAfterFailure = JSON.parse(readFileSync(statePath, 'utf-8')) as {
+        const stateAfterFailure = JSON.parse(
+            readFileSync(statePath, 'utf-8'),
+        ) as {
             lastSeenVersion: string;
             completed: string[];
         };

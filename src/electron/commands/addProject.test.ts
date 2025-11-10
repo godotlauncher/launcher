@@ -155,15 +155,18 @@ const { getInstalledReleases } = releasesMocks;
 const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsDetails } = projectsMocks;
 const { getInstalledTools } = installedToolsMocks;
-const { getProjectDefinition, SetProjectEditorRelease: setProjectEditorRelease } =
-    godotUtilsMocks;
+const {
+    getProjectDefinition,
+    SetProjectEditorRelease: setProjectEditorRelease,
+} = godotUtilsMocks;
 
 describe('addProject', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
-        existsSync.mockImplementation((target) =>
-            typeof target === 'string' && target.endsWith('project.godot')
+        existsSync.mockImplementation(
+            (target) =>
+                typeof target === 'string' && target.endsWith('project.godot'),
         );
         readdirSync.mockReturnValue(['project.godot']);
         readFile.mockResolvedValue('dummy');
@@ -213,13 +216,15 @@ describe('addProject', () => {
         ]);
 
         getInstalledTools.mockResolvedValue([]);
-        addProjectToList.mockImplementation(async (_path, project) => [project]);
+        addProjectToList.mockImplementation(async (_path, project) => [
+            project,
+        ]);
         getProjectDefinition.mockReturnValue({
             editorConfigFilename: () => 'editor_settings-4.tres',
             editorConfigFormat: 3,
         });
         setProjectEditorRelease.mockResolvedValue('/fake/launch');
-        
+
         // Mock VSCode utilities
         updateVSCodeSettings.mockResolvedValue(undefined);
         addVSCodeNETLaunchConfig.mockResolvedValue(undefined);
@@ -236,7 +241,7 @@ describe('addProject', () => {
         expect(result.newProject?.release.version).toBe('4.3-stable');
         expect(setProjectEditorRelease).toHaveBeenCalledWith(
             expect.any(String),
-            expect.objectContaining({ mono: true, version: '4.3-stable' })
+            expect.objectContaining({ mono: true, version: '4.3-stable' }),
         );
     });
 
@@ -309,7 +314,7 @@ describe('addProject', () => {
                 execFlags: '{project} --goto {file}:{line}:{col}',
                 useExternalEditor: true,
                 isMono: true,
-            })
+            }),
         );
         expect(createNewEditorSettings).not.toHaveBeenCalled();
         expect(updateVSCodeSettings).toHaveBeenCalledTimes(1);
@@ -341,7 +346,7 @@ describe('addProject', () => {
             expect.stringContaining('/fake/project'),
             '/fake/launch',
             4.3,
-            true
+            true,
         );
     });
 
@@ -368,7 +373,7 @@ describe('addProject', () => {
         expect(result.success).toBe(true);
         expect(addVSCodeNETLaunchConfig).toHaveBeenCalledWith(
             expect.stringContaining('/fake/project'),
-            '/fake/launch'
+            '/fake/launch',
         );
     });
 

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import { Promotion, PromotionCountdownMeta } from './promotion.types';
 import { PromotionCountdownBadge } from './PromotionCountdownBadge';
+import type { Promotion, PromotionCountdownMeta } from './promotion.types';
 
 type PromotionCTAProps = {
     promotion: Promotion;
@@ -9,7 +9,12 @@ type PromotionCTAProps = {
     disabled?: boolean;
 };
 
-export function PromotionCTA({ promotion, countdown, onClick, disabled = false }: PromotionCTAProps) {
+export function PromotionCTA({
+    promotion,
+    countdown,
+    onClick,
+    disabled = false,
+}: PromotionCTAProps) {
     const label = promotion.ctaLabel ?? promotion.title;
 
     return (
@@ -22,12 +27,14 @@ export function PromotionCTA({ promotion, countdown, onClick, disabled = false }
                     'border border-base-200',
                     disabled
                         ? 'cursor-default opacity-60'
-                        : 'hover:bg-base-200/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+                        : 'hover:bg-base-200/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
                 )}
                 onClick={disabled ? undefined : onClick}
                 disabled={disabled}
             >
-                <span className="text-sm font-medium text-base-content">{label}</span>
+                <span className="text-sm font-medium text-base-content">
+                    {label}
+                </span>
                 {promotion.description && (
                     <span className="text-xs text-base-content/70">
                         {promotion.description}

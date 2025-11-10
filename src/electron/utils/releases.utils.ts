@@ -1,19 +1,21 @@
-import { Readable } from 'node:stream';
-import { finished } from 'node:stream/promises';
-import { ReadableStream } from 'node:stream/web';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { Readable } from 'node:stream';
+import { finished } from 'node:stream/promises';
+import type { ReadableStream } from 'node:stream/web';
 import logger from 'electron-log';
-
-import { getStoredProjectsList } from './projects.utils.js';
-import { getDefaultDirs } from './platform.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { removeProjectEditor } from './godot.utils.js';
-import { createTypedJsonStore, __resetJsonStoreFactoryForTesting, type TypedJsonStore } from './jsonStoreFactory.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
+import {
+    __resetJsonStoreFactoryForTesting,
+    createTypedJsonStore,
+    type TypedJsonStore,
+} from './jsonStoreFactory.js';
+import { getDefaultDirs } from './platform.utils.js';
+import { getStoredProjectsList } from './projects.utils.js';
 
 export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
-
 
 /**
  * Creates a summary of a release asset with relevant tags and download URL.
@@ -51,8 +53,7 @@ export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
     // Windows 64-bit
     if (name.includes('windows_arm64')) {
         platform_tags = ['win32', 'arm64'];
-    }
-    else if (name.includes('win64')) {
+    } else if (name.includes('win64')) {
         platform_tags = ['win32', 'x64'];
     }
     // Windows 32-bit
@@ -60,7 +61,11 @@ export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
         platform_tags = ['win32', 'ia32'];
     }
     // macOS (darwin)
-    else if (name.includes('osx') || name.includes('macos') || name.includes('universal')) {
+    else if (
+        name.includes('osx') ||
+        name.includes('macos') ||
+        name.includes('universal')
+    ) {
         platform_tags = ['darwin', 'x64', 'arm64'];
     }
     // Linux
@@ -83,9 +88,7 @@ export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
         }
     }
     // Linux 64-bit (headless/server/x11)
-    else if (
-        name.includes('x11')
-    ) {
+    else if (name.includes('x11')) {
         if (name.includes('64')) {
             platform_tags = ['linux', 'x64'];
         }
@@ -101,7 +104,7 @@ export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
         name: asset.name,
         download_url: asset.browser_download_url,
         platform_tags,
-        mono
+        mono,
     };
 }
 
@@ -116,11 +119,12 @@ export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
 export function getPlatformAsset(
     platform: string,
     arch: string,
-    assets: AssetSummary[]
+    assets: AssetSummary[],
 ): AssetSummary[] | undefined {
-    const platformAsset = assets.filter(asset =>
-        asset.platform_tags.includes(platform) &&
-        asset.platform_tags.includes(arch)
+    const platformAsset = assets.filter(
+        (asset) =>
+            asset.platform_tags.includes(platform) &&
+            asset.platform_tags.includes(arch),
     );
 
     return platformAsset;
@@ -132,9 +136,10 @@ type ReleaseSummaryCache = {
     releases: ReleaseSummary[];
 };
 
-
-export async function downloadReleaseAsset(asset: AssetSummary, downloadPath: string): Promise<void> {
-
+export async function downloadReleaseAsset(
+    asset: AssetSummary,
+    downloadPath: string,
+): Promise<void> {
     const res = await fetch(asset.download_url);
     if (!res.ok) {
         throw new Error(`Failed to download asset: ${res.statusText}`);
@@ -142,12 +147,14 @@ export async function downloadReleaseAsset(asset: AssetSummary, downloadPath: st
 
     const fileStream = fs.createWriteStream(downloadPath, { flags: 'wx' });
     if (res.body) {
-        await finished(Readable.fromWeb(res.body as unknown as ReadableStream).pipe(fileStream));
+        await finished(
+            Readable.fromWeb(res.body as unknown as ReadableStream).pipe(
+                fileStream,
+            ),
+        );
         fileStream.close();
     }
-
 }
-
 
 /**
  * Retrieves the path to the cached releases file.
@@ -156,7 +163,9 @@ export async function downloadReleaseAsset(asset: AssetSummary, downloadPath: st
  */
 type ReleaseCacheStore = TypedJsonStore<ReleaseSummaryCache>;
 
-function normalizeReleaseCache(cache: ReleaseSummaryCache): ReleaseSummaryCache {
+function normalizeReleaseCache(
+    cache: ReleaseSummaryCache,
+): ReleaseSummaryCache {
     return {
         ...cache,
         lastPublishDate:
@@ -171,8 +180,14 @@ function normalizeReleaseCache(cache: ReleaseSummaryCache): ReleaseSummaryCache 
 const availableReleaseStores = new Map<string, ReleaseCacheStore>();
 const prereleaseStores = new Map<string, ReleaseCacheStore>();
 
-function createReleaseStore(cachePath: string, id: string, logLabel: string): ReleaseCacheStore {
-    const existing = id.startsWith('prereleases') ? prereleaseStores.get(cachePath) : availableReleaseStores.get(cachePath);
+function createReleaseStore(
+    cachePath: string,
+    id: string,
+    logLabel: string,
+): ReleaseCacheStore {
+    const existing = id.startsWith('prereleases')
+        ? prereleaseStores.get(cachePath)
+        : availableReleaseStores.get(cachePath);
     if (existing) {
         return existing;
     }
@@ -199,22 +214,35 @@ function createReleaseStore(cachePath: string, id: string, logLabel: string): Re
 
     if (id.startsWith('prereleases')) {
         prereleaseStores.set(cachePath, store);
-    }
-    else {
+    } else {
         availableReleaseStores.set(cachePath, store);
     }
 
     return store;
 }
 
-export async function getStoredAvailableReleases(releasesCachePath: string): Promise<ReleaseSummaryCache> {
-    const store = createReleaseStore(releasesCachePath, `available-releases:${releasesCachePath}`, 'available releases cache');
+export async function getStoredAvailableReleases(
+    releasesCachePath: string,
+): Promise<ReleaseSummaryCache> {
+    const store = createReleaseStore(
+        releasesCachePath,
+        `available-releases:${releasesCachePath}`,
+        'available releases cache',
+    );
     const cache = await store.read();
     return normalizeReleaseCache(cache);
 }
 
-export async function storeAvailableReleases(releasesCachePath: string, lastPublishDate: Date, releases: ReleaseSummary[]): Promise<ReleaseSummaryCache> {
-    const store = createReleaseStore(releasesCachePath, `available-releases:${releasesCachePath}`, 'available releases cache');
+export async function storeAvailableReleases(
+    releasesCachePath: string,
+    lastPublishDate: Date,
+    releases: ReleaseSummary[],
+): Promise<ReleaseSummaryCache> {
+    const store = createReleaseStore(
+        releasesCachePath,
+        `available-releases:${releasesCachePath}`,
+        'available releases cache',
+    );
     const persisted = await store.write({
         lastPublishDate,
         lastUpdated: Date.now(),
@@ -226,7 +254,9 @@ export async function storeAvailableReleases(releasesCachePath: string, lastPubl
 let installedReleasesStore: TypedJsonStore<InstalledRelease[]> | null = null;
 let installedReleasesPath: string | null = null;
 
-function normalizeInstalledReleases(releases: InstalledRelease[]): InstalledRelease[] {
+function normalizeInstalledReleases(
+    releases: InstalledRelease[],
+): InstalledRelease[] {
     return releases
         .map((release) => ({
             ...release,
@@ -266,24 +296,34 @@ function ensureInstalledReleasesStore(): TypedJsonStore<InstalledRelease[]> {
     return installedReleasesStore;
 }
 
-export async function getStoredInstalledReleases(): Promise<InstalledRelease[]> {
+export async function getStoredInstalledReleases(): Promise<
+    InstalledRelease[]
+> {
     return ensureInstalledReleasesStore().read();
 }
 
-export async function addStoredInstalledRelease(release: InstalledRelease): Promise<InstalledRelease[]> {
+export async function addStoredInstalledRelease(
+    release: InstalledRelease,
+): Promise<InstalledRelease[]> {
     return ensureInstalledReleasesStore().update((releases) => {
         releases.push(release);
         return releases;
     });
 }
 
-export async function removeStoredInstalledRelease(release: InstalledRelease): Promise<InstalledRelease[]> {
+export async function removeStoredInstalledRelease(
+    release: InstalledRelease,
+): Promise<InstalledRelease[]> {
     return ensureInstalledReleasesStore().update((releases) =>
-        releases.filter(r => !(r.version === release.version && r.mono === release.mono))
+        releases.filter(
+            (r) => !(r.version === release.version && r.mono === release.mono),
+        ),
     );
 }
 
-export async function saveStoredInstalledReleases(releases: InstalledRelease[]): Promise<InstalledRelease[]> {
+export async function saveStoredInstalledReleases(
+    releases: InstalledRelease[],
+): Promise<InstalledRelease[]> {
     return ensureInstalledReleasesStore().write(releases);
 }
 
@@ -309,8 +349,9 @@ export function __resetReleaseCachesForTesting(): void {
     __resetJsonStoreForTesting();
 }
 
-export async function removeProjectEditorUsingRelease(release: InstalledRelease): Promise<void> {
-
+export async function removeProjectEditorUsingRelease(
+    release: InstalledRelease,
+): Promise<void> {
     const { configDir } = getDefaultDirs();
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
     const projects = await getStoredProjectsList(projectListPath);

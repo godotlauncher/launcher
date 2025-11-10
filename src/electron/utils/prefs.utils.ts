@@ -1,15 +1,21 @@
-import logger from 'electron-log';
-import { getMainWindow } from '../main.js';
-import { dialog } from 'electron';
 import * as os from 'node:os';
 import * as path from 'node:path';
-
+import { dialog } from 'electron';
+import logger from 'electron-log';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
-import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
-import { getDefaultDirs } from './platform.utils.js';
+import {
+    getUserPreferences,
+    setUserPreferences,
+} from '../commands/userPreferences.js';
 import { t } from '../i18n/index.js';
-import { createTypedJsonStore, __resetJsonStoreFactoryForTesting, type TypedJsonStore } from './jsonStoreFactory.js';
+import { getMainWindow } from '../main.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
+import {
+    __resetJsonStoreFactoryForTesting,
+    createTypedJsonStore,
+    type TypedJsonStore,
+} from './jsonStoreFactory.js';
+import { getDefaultDirs } from './platform.utils.js';
 
 type StoredUserPreferences = Partial<UserPreferences>;
 
@@ -23,7 +29,10 @@ function clonePrefs<T>(prefs: T): T {
     return JSON.parse(JSON.stringify(prefs));
 }
 
-function mergeWithDefaults(defaultPrefs: UserPreferences, prefs: StoredUserPreferences): UserPreferences {
+function mergeWithDefaults(
+    defaultPrefs: UserPreferences,
+    prefs: StoredUserPreferences,
+): UserPreferences {
     return {
         ...clonePrefs(defaultPrefs),
         ...clonePrefs(prefs),
@@ -44,7 +53,10 @@ function resolvePrefsPath(pathOverride?: string): string {
     return prefsPathCache;
 }
 
-async function showPreferencesParseError(raw: string, error: unknown): Promise<void> {
+async function showPreferencesParseError(
+    raw: string,
+    error: unknown,
+): Promise<void> {
     logger.debug('Could not parse user preferences, using defaults', error);
     logger.debug('Corrupted preferences data:', raw);
     try {
@@ -59,7 +71,9 @@ async function showPreferencesParseError(raw: string, error: unknown): Promise<v
     }
 }
 
-function ensurePrefsStore(pathOverride?: string): TypedJsonStore<StoredUserPreferences> {
+function ensurePrefsStore(
+    pathOverride?: string,
+): TypedJsonStore<StoredUserPreferences> {
     const resolvedPath = resolvePrefsPath(pathOverride);
     if (prefsStore && prefsPathCache === resolvedPath) {
         return prefsStore;
@@ -69,7 +83,7 @@ function ensurePrefsStore(pathOverride?: string): TypedJsonStore<StoredUserPrefe
         id: `user-preferences:${resolvedPath}`,
         logLabel: 'user preferences',
         pathProvider: () => resolvedPath,
-        defaultValue: async () => ({} as StoredUserPreferences),
+        defaultValue: async () => ({}) as StoredUserPreferences,
         onParseError: async (error, raw) => {
             await showPreferencesParseError(raw, error);
             return {} as StoredUserPreferences;
@@ -111,20 +125,25 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     };
 }
 
-export async function readPrefsFromDisk(prefsPath: string, defaultPrefs: UserPreferences): Promise<UserPreferences> {
+export async function readPrefsFromDisk(
+    prefsPath: string,
+    defaultPrefs: UserPreferences,
+): Promise<UserPreferences> {
     const store = ensurePrefsStore(prefsPath);
     const storedPrefs = await store.read();
     const merged = mergeWithDefaults(defaultPrefs, storedPrefs);
     return clonePrefs(merged);
 }
 
-export async function writePrefsToDisk(prefsPath: string, prefs: UserPreferences): Promise<void> {
+export async function writePrefsToDisk(
+    prefsPath: string,
+    prefs: UserPreferences,
+): Promise<void> {
     const store = ensurePrefsStore(prefsPath);
     await store.write(clonePrefs(prefs));
 }
 
 export async function getLoadedPrefs(): Promise<UserPreferences> {
-
     const prefsPath = await getPrefsPath();
     const defaultPrefs = await getDefaultPrefs();
     return readPrefsFromDisk(prefsPath, defaultPrefs);
@@ -137,13 +156,11 @@ export async function setAutoCheckUpdates(enabled: boolean): Promise<boolean> {
 
     if (enabled) {
         startAutoUpdateChecks();
-    }
-    else {
+    } else {
         stopAutoUpdateChecks();
     }
 
     return enabled;
-
 }
 
 export function __resetPrefsCacheForTesting(): void {

@@ -1,6 +1,9 @@
 import * as fs from 'node:fs';
-import { getUserPreferences, setUserPreferences } from '../commands/userPreferences.js';
 import { getInstalledTools } from '../commands/installedTools.js';
+import {
+    getUserPreferences,
+    setUserPreferences,
+} from '../commands/userPreferences.js';
 
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -46,7 +49,9 @@ async function readToolCache(): Promise<ToolCacheRecord | null> {
     };
 }
 
-async function writeToolCache(entries: ToolCacheEntry[]): Promise<ToolCacheRecord> {
+async function writeToolCache(
+    entries: ToolCacheEntry[],
+): Promise<ToolCacheRecord> {
     const prefs = await getUserPreferences();
     const record: ToolCacheRecord = {
         last_scan: Date.now(),
@@ -65,7 +70,9 @@ async function writeToolCache(entries: ToolCacheEntry[]): Promise<ToolCacheRecor
     return record;
 }
 
-export async function getCachedTools(options?: { refreshIfStale?: boolean }): Promise<CachedTool[]> {
+export async function getCachedTools(options?: {
+    refreshIfStale?: boolean;
+}): Promise<CachedTool[]> {
     const { refreshIfStale = true } = options ?? {};
 
     const cache = await readToolCache();
@@ -94,7 +101,9 @@ export async function isCacheStale(): Promise<boolean> {
     return isExpired(cache.last_scan);
 }
 
-export async function refreshToolCache(preScannedTools?: InstalledTool[]): Promise<CachedTool[]> {
+export async function refreshToolCache(
+    preScannedTools?: InstalledTool[],
+): Promise<CachedTool[]> {
     const tools = preScannedTools ?? (await getInstalledTools());
     const entries: ToolCacheEntry[] = tools.map((tool) => ({
         name: tool.name,

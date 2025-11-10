@@ -1,12 +1,27 @@
+import path from 'node:path';
 import { app } from 'electron';
 import logger from 'electron-log/main.js';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
-import path from 'node:path';
 import { isDev } from '../utils.js';
 
 const DEFAULT_LANGUAGE = 'en';
-const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR', 'zh-CN', 'zh-TW', 'de', 'fr', 'es', 'pl', 'ru', 'ja', 'tr', 'mt'] as const;
+const AVAILABLE_LANGUAGES = [
+    'en',
+    'it',
+    'pt',
+    'pt-BR',
+    'zh-CN',
+    'zh-TW',
+    'de',
+    'fr',
+    'es',
+    'pl',
+    'ru',
+    'ja',
+    'tr',
+    'mt',
+] as const;
 const LANGUAGE_SET = new Set<string>(AVAILABLE_LANGUAGES);
 
 const FALLBACK_LANGUAGES = {
@@ -64,7 +79,7 @@ function resolveToSupportedLocale(locale: string): string {
     }
 
     logger.warn(
-        `Locale "${locale}" not supported, falling back to default language "${DEFAULT_LANGUAGE}"`
+        `Locale "${locale}" not supported, falling back to default language "${DEFAULT_LANGUAGE}"`,
     );
     return DEFAULT_LANGUAGE;
 }
@@ -139,7 +154,7 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
 
         i18nInstance = i18next;
         logger.info(
-            `i18n initialized successfully with language: ${i18nInstance.language}`
+            `i18n initialized successfully with language: ${i18nInstance.language}`,
         );
 
         return i18next;
@@ -181,7 +196,7 @@ export async function changeLanguage(lng: string): Promise<void> {
         await i18nInstance.changeLanguage(resolvedLocale);
 
         logger.info(
-            `Language changed successfully to: ${i18nInstance.language}`
+            `Language changed successfully to: ${i18nInstance.language}`,
         );
     } catch (error) {
         logger.error(`Failed to change language to ${resolvedLocale}:`, error);
@@ -216,7 +231,7 @@ export function getAvailableLanguages(): string[] {
  * @returns Object with all namespaces and their translations
  */
 export function getAllTranslations(
-    language?: string
+    language?: string,
 ): Record<string, Record<string, unknown>> {
     if (!i18nInstance) {
         logger.error('i18n not initialized, returning empty translations');
@@ -234,7 +249,7 @@ export function getAllTranslations(
     const namespaces = i18nInstance.options.ns as string[];
 
     logger.debug(
-        `Exporting translations for language: ${lang}, namespaces: ${namespaces.join(', ')}`
+        `Exporting translations for language: ${lang}, namespaces: ${namespaces.join(', ')}`,
     );
 
     for (const ns of namespaces) {
@@ -243,13 +258,13 @@ export function getAllTranslations(
             translations[ns] = bundle;
         } else {
             logger.warn(
-                `No translations found for namespace: ${ns} in language: ${lang}`
+                `No translations found for namespace: ${ns} in language: ${lang}`,
             );
         }
     }
 
     logger.debug(
-        `Exported ${Object.keys(translations).length} namespaces for ${lang}`
+        `Exported ${Object.keys(translations).length} namespaces for ${lang}`,
     );
     return translations;
 }

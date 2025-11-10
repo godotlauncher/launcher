@@ -23,7 +23,9 @@ export async function openShellFolder(pathToOpen: string): Promise<void> {
 export async function openFileDialog(
     defaultPath: string,
     title: string = 'Select File',
-    filters: Electron.FileFilter[] = [{ name: 'Any File', extensions: ['*.*'] }]
+    filters: Electron.FileFilter[] = [
+        { name: 'Any File', extensions: ['*.*'] },
+    ],
 ): Promise<Electron.OpenDialogReturnValue> {
     return await dialog.showOpenDialog({
         defaultPath: path.resolve(defaultPath),
@@ -36,7 +38,7 @@ export async function openFileDialog(
 export async function openDirectoryDialog(
     defaultPath: string,
     title: string = 'Select Folder',
-    filters: Electron.FileFilter[] = []
+    filters: Electron.FileFilter[] = [],
 ): Promise<Electron.OpenDialogReturnValue> {
     defaultPath = path.resolve(defaultPath + path.sep);
 

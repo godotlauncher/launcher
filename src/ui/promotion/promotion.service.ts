@@ -6,11 +6,11 @@ import { EMBEDDED_PROMOTION } from './embeddedPromotion';
 import { resolvePromotionCopy } from './promotion.localization';
 import {
     DEFAULT_COUNTDOWN_THRESHOLD_DAYS,
-    Promotion,
-    PromotionClickPayload,
-    PromotionCountdownMeta,
-    PromotionManifest,
-    PromotionManifestEntry,
+    type Promotion,
+    type PromotionClickPayload,
+    type PromotionCountdownMeta,
+    type PromotionManifest,
+    type PromotionManifestEntry,
 } from './promotion.types';
 
 const STORAGE_KEY = 'godot-launcher:promotion-cache';
@@ -75,7 +75,7 @@ async function fetchRemoteManifest(): Promise<PromotionManifestEntry | null> {
             logger.warn(
                 '[promotion] Manifest request failed',
                 response.status,
-                response.statusText
+                response.statusText,
             );
             return null;
         }
@@ -105,7 +105,7 @@ async function fetchRemoteManifest(): Promise<PromotionManifestEntry | null> {
 export function normalizePromotion(
     entry: PromotionManifestEntry | null | undefined,
     now = new Date(),
-    locale?: string
+    locale?: string,
 ): Promotion | null {
     if (!entry) {
         return null;
@@ -130,7 +130,7 @@ export function normalizePromotion(
 
     const countdownThresholdDays = Math.max(
         0,
-        entry.countdownThresholdDays ?? DEFAULT_COUNTDOWN_THRESHOLD_DAYS
+        entry.countdownThresholdDays ?? DEFAULT_COUNTDOWN_THRESHOLD_DAYS,
     );
 
     const localized = resolvePromotionCopy(entry, locale);
@@ -156,7 +156,7 @@ export function normalizePromotion(
 
 export function isPromotionActive(
     promotion: Promotion | null,
-    now = new Date()
+    now = new Date(),
 ): promotion is Promotion {
     if (!promotion) {
         return false;
@@ -166,7 +166,7 @@ export function isPromotionActive(
 
 export function calculateCountdownMeta(
     promotion: Promotion,
-    now = new Date()
+    now = new Date(),
 ): PromotionCountdownMeta | null {
     if (promotion.countdownThresholdDays <= 0) {
         return null;
@@ -185,13 +185,13 @@ export function calculateCountdownMeta(
 
     const percentageRemaining = Math.min(
         1,
-        Math.max(0, msRemaining / windowMs)
+        Math.max(0, msRemaining / windowMs),
     );
 
     if (msRemaining <= MS_PER_HOUR) {
         const totalSeconds = Math.max(
             0,
-            Math.ceil(msRemaining / MS_PER_SECOND)
+            Math.ceil(msRemaining / MS_PER_SECOND),
         );
         const minutesRemaining = Math.floor(totalSeconds / 60);
         const secondsRemaining = totalSeconds % 60;
@@ -206,7 +206,7 @@ export function calculateCountdownMeta(
     if (msRemaining <= MS_PER_DAY) {
         const hoursRemaining = Math.max(
             1,
-            Math.ceil(msRemaining / MS_PER_HOUR)
+            Math.ceil(msRemaining / MS_PER_HOUR),
         );
         return {
             mode: 'hours',
@@ -225,7 +225,7 @@ export function calculateCountdownMeta(
 
 async function fetchRemotePromotion(
     now = new Date(),
-    locale?: string
+    locale?: string,
 ): Promise<Promotion | null> {
     const remoteEntry = await fetchRemoteManifest();
 
@@ -240,13 +240,13 @@ async function fetchRemotePromotion(
 
 export function getEmbeddedPromotion(
     now = new Date(),
-    locale?: string
+    locale?: string,
 ): Promotion | null {
     return normalizePromotion(EMBEDDED_PROMOTION, now, locale);
 }
 
 async function resolvePromotionLocale(
-    options?: PromotionLocaleOptions
+    options?: PromotionLocaleOptions,
 ): Promise<string | undefined> {
     if (options?.locale) {
         return options.locale;
@@ -260,7 +260,7 @@ async function resolvePromotionLocale(
     } catch (error) {
         logger.warn(
             '[promotion] Failed to resolve locale from Electron.',
-            error
+            error,
         );
     }
 
@@ -277,7 +277,7 @@ async function resolvePromotionLocale(
 
 export async function fetchPromotion(
     now = new Date(),
-    options?: PromotionLocaleOptions
+    options?: PromotionLocaleOptions,
 ): Promise<Promotion | null> {
     const locale = await resolvePromotionLocale(options);
 
@@ -290,7 +290,7 @@ export async function fetchPromotion(
 }
 
 export function buildPromotionClickPayload(
-    promotion: Promotion
+    promotion: Promotion,
 ): PromotionClickPayload {
     return {
         id: promotion.id,

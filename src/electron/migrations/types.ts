@@ -8,7 +8,7 @@ export interface MigrationContext {
 export type MigrationOptions = {
     targetVersion?: string;
     [key: string]: unknown;
-}
+};
 
 export interface MigrationExecutionContext extends MigrationContext {
     options?: MigrationOptions;
@@ -20,14 +20,18 @@ export interface MigrationResult {
     message?: string;
 }
 
-export type MigrationPredicate = (context: MigrationExecutionContext) => boolean | Promise<boolean>;
+export type MigrationPredicate = (
+    context: MigrationExecutionContext,
+) => boolean | Promise<boolean>;
 
 export interface Migration {
     id: MigrationId;
     description?: string;
     options?: MigrationOptions;
     predicate?: MigrationPredicate;
-    run: (context: MigrationExecutionContext) => Promise<MigrationResult | void> | MigrationResult | void;
+    run: (
+        context: MigrationExecutionContext,
+    ) => Promise<MigrationResult | void> | MigrationResult | void;
 }
 
 export type MigrationRegistry = readonly Migration[];

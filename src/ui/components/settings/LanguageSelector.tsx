@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import logger from 'electron-log';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../../i18n';
-import logger from 'electron-log';
 
 interface LanguageOption {
     code: string;
@@ -40,14 +41,19 @@ export const LanguageSelector: React.FC = () => {
                 const prefs = await window.electron.getUserPreferences();
                 setSelectedLanguage(prefs.language || 'system');
             } catch (error) {
-                logger.error('[LanguageSelector] Failed to load language preference:', error);
+                logger.error(
+                    '[LanguageSelector] Failed to load language preference:',
+                    error,
+                );
             }
         };
 
         loadCurrentLanguage();
     }, []);
 
-    const handleLanguageChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleLanguageChange = async (
+        event: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
         const newLanguage = event.target.value;
 
         if (newLanguage === selectedLanguage) {
@@ -57,7 +63,9 @@ export const LanguageSelector: React.FC = () => {
         setIsChanging(true);
 
         try {
-            logger.info(`[LanguageSelector] Changing language to: ${newLanguage}`);
+            logger.info(
+                `[LanguageSelector] Changing language to: ${newLanguage}`,
+            );
 
             // Change language (this updates preferences in backend and fetches new translations)
             await changeLanguage(newLanguage);
@@ -65,9 +73,14 @@ export const LanguageSelector: React.FC = () => {
             // Update local state
             setSelectedLanguage(newLanguage);
 
-            logger.info(`[LanguageSelector] Language changed successfully to: ${newLanguage}`);
+            logger.info(
+                `[LanguageSelector] Language changed successfully to: ${newLanguage}`,
+            );
         } catch (error) {
-            logger.error('[LanguageSelector] Failed to change language:', error);
+            logger.error(
+                '[LanguageSelector] Failed to change language:',
+                error,
+            );
             // Revert to previous selection on error
             event.target.value = selectedLanguage;
         } finally {
@@ -76,14 +89,14 @@ export const LanguageSelector: React.FC = () => {
     };
 
     return (
-        <div className="form-control w-full">
-            <label className="label">
+        <div className="form-control w-full ">
+            <div className="label">
                 <span className="label-text font-semibold">
                     {t('general.language.label', 'Language')}
                 </span>
-            </label>
+            </div>
             <select
-                className="select select-bordered w-full"
+                className="select outline-0 w-full"
                 value={selectedLanguage}
                 onChange={handleLanguageChange}
                 disabled={isChanging}
@@ -92,21 +105,25 @@ export const LanguageSelector: React.FC = () => {
                     <option key={option.code} value={option.code}>
                         {option.code === 'system'
                             ? t('general.language.system', option.name)
-                            : option.name
-                        }
+                            : option.name}
                     </option>
                 ))}
             </select>
-            <label className="label">
+            <div className="label">
                 <span className="label-text-alt text-base-content/70">
-                    {t('general.language.description', 'Select your preferred language')}
+                    {t(
+                        'general.language.description',
+                        'Select your preferred language',
+                    )}
                 </span>
-            </label>
+            </div>
 
             {isChanging && (
                 <div className="flex items-center gap-2 mt-2">
                     <span className="loading loading-spinner loading-sm"></span>
-                    <span className="text-sm text-base-content/70">Changing language...</span>
+                    <span className="text-sm text-base-content/70">
+                        Changing language...
+                    </span>
                 </div>
             )}
         </div>

@@ -4,7 +4,7 @@ import logger from 'electron-log';
 // import { ProjectDetails } from "../types/types.js"; // Removed as ProjectDetails should be globally available
 
 export async function removeProjectEditorDarwin(
-    project: ProjectDetails
+    project: ProjectDetails,
 ): Promise<void> {
     // remove editor files
     if (fs.existsSync(project.launch_path)) {
@@ -18,13 +18,13 @@ export async function removeProjectEditorDarwin(
 export async function setProjectEditorReleaseDarwin(
     projectEditorPath: string,
     release: InstalledRelease,
-    previousRelease?: InstalledRelease
+    previousRelease?: InstalledRelease,
 ): Promise<LaunchPath> {
     // remove previous editor
     if (previousRelease) {
         const appPath = path.resolve(
             projectEditorPath,
-            previousRelease.mono ? 'Godot_mono.app' : 'Godot.app'
+            previousRelease.mono ? 'Godot_mono.app' : 'Godot.app',
         );
         logger.debug(`Previous editor at ${appPath}`);
         if (fs.existsSync(appPath)) {
@@ -37,7 +37,7 @@ export async function setProjectEditorReleaseDarwin(
     const srcEditorPath = path.resolve(release.editor_path);
     const dstEditorPath = path.resolve(
         projectEditorPath,
-        path.basename(release.editor_path)
+        path.basename(release.editor_path),
     );
 
     logger.debug(`Copying editor from ${srcEditorPath} to ${dstEditorPath}`);

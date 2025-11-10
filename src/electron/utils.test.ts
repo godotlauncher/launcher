@@ -1,4 +1,4 @@
-import { vi, describe, it, test, expect } from 'vitest';
+import { describe, expect, it, test, vi } from 'vitest';
 import { validateEventFrame } from './utils';
 
 // Mock imported modules
@@ -15,19 +15,19 @@ vi.mock('electron-updater', () => ({
             setFeedURL: vi.fn(),
             addAuthHeader: vi.fn(),
             isUpdaterActive: vi.fn(),
-            currentVersion: '1.0.0'
-        }
+            currentVersion: '1.0.0',
+        },
     },
-    UpdateCheckResult: {}
+    UpdateCheckResult: {},
 }));
 
 vi.mock('electron', () => ({
     Menu: {
-        setApplicationMenu: vi.fn()
+        setApplicationMenu: vi.fn(),
     },
     ipcMain: {
         on: vi.fn(),
-        handle: vi.fn()
+        handle: vi.fn(),
     },
     app: {
         isPackaged: false,
@@ -42,75 +42,76 @@ vi.mock('electron', () => ({
         requestSingleInstanceLock: vi.fn(() => true),
         dock: {
             show: vi.fn(),
-            hide: vi.fn()
-        }
+            hide: vi.fn(),
+        },
     },
     BrowserWindow: vi.fn(),
     shell: {
         showItemInFolder: vi.fn(),
-        openExternal: vi.fn()
+        openExternal: vi.fn(),
     },
     dialog: {
         showOpenDialog: vi.fn(),
-        showMessageBox: vi.fn()
+        showMessageBox: vi.fn(),
     },
     nativeImage: {
         createFromPath: vi.fn(() => ({
-            resize: vi.fn(() => ({}))
-        }))
+            resize: vi.fn(() => ({})),
+        })),
     },
     nativeTheme: {
-        shouldUseDarkColors: false
+        shouldUseDarkColors: false,
     },
     WebFrameMain: class {
         url: string = '';
         constructor(url: string = '') {
             this.url = url;
         }
-    }
+    },
 }));
 
-describe("Utils", () => {
-    describe("Validation", async () => {
-        it("should error without a frame", () => {
-            expect(() => validateEventFrame(null)).toThrowError(/Invalid Frame/i);
+describe('Utils', () => {
+    describe('Validation', async () => {
+        it('should error without a frame', () => {
+            expect(() => validateEventFrame(null)).toThrowError(
+                /Invalid Frame/i,
+            );
         });
 
-        it("should return undefined if dev and localhost:5123", () => {
-            vi.stubEnv("NODE_ENV", 'development');
+        it('should return undefined if dev and localhost:5123', () => {
+            vi.stubEnv('NODE_ENV', 'development');
             const frame = {
-                url: "http://localhost:5123"
+                url: 'http://localhost:5123',
             };
 
             expect(validateEventFrame(frame as any)).toBeUndefined();
         });
 
-        it("should throw if not dev and localhost:5123", () => {
-            vi.stubEnv("NODE_ENV", 'production');
+        it('should throw if not dev and localhost:5123', () => {
+            vi.stubEnv('NODE_ENV', 'production');
             const frame = {
-                url: "http://localhost:5123"
+                url: 'http://localhost:5123',
             };
 
             expect(() => validateEventFrame(frame as any)).toThrow();
         });
 
-        it("should throw if dev and not localhost:5123", () => {
-            vi.stubEnv("NODE_ENV", 'development');
+        it('should throw if dev and not localhost:5123', () => {
+            vi.stubEnv('NODE_ENV', 'development');
             const frame = {
-                url: "http://localhost:123"
+                url: 'http://localhost:123',
             };
 
             expect(() => validateEventFrame(frame as any)).toThrow();
         });
 
-        it("it should throw if not dev and path is not file://", () => {
-            vi.stubEnv("NODE_ENV", 'production');
+        it('it should throw if not dev and path is not file://', () => {
+            vi.stubEnv('NODE_ENV', 'production');
             const frame = {
-                url: "file://localhost:5123"
+                url: 'file://localhost:5123',
             };
 
             expect(() => validateEventFrame(frame as any)).toThrow();
         });
-
     });
 });

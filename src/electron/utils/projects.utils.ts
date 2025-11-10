@@ -1,10 +1,13 @@
 import * as path from 'node:path';
 import logger from 'electron-log';
-
-import { createTypedJsonStore, __resetJsonStoreFactoryForTesting, type TypedJsonStore } from './jsonStoreFactory.js';
-import { __resetJsonStoreForTesting } from './jsonStore.js';
-import { getDefaultDirs } from './platform.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
+import { __resetJsonStoreForTesting } from './jsonStore.js';
+import {
+    __resetJsonStoreFactoryForTesting,
+    createTypedJsonStore,
+    type TypedJsonStore,
+} from './jsonStoreFactory.js';
+import { getDefaultDirs } from './platform.utils.js';
 
 let projectsStore: TypedJsonStore<ProjectDetails[]> | null = null;
 let projectsPath: string | null = null;
@@ -31,12 +34,14 @@ function normalizeProjects(projects: ProjectDetails[]): ProjectDetails[] {
     return projects
         .map((project) => ({
             ...project,
-            last_opened: project.last_opened ? new Date(project.last_opened) : null,
+            last_opened: project.last_opened
+                ? new Date(project.last_opened)
+                : null,
         }))
         .sort(
             (a, b) =>
                 (a.last_opened ?? new Date(0)).getTime() -
-                (b.last_opened ?? new Date(0)).getTime()
+                (b.last_opened ?? new Date(0)).getTime(),
         );
 }
 
@@ -53,7 +58,9 @@ function toDate(value: Date | string | null | undefined): Date | null {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function ensureProjectsStore(pathOverride?: string): TypedJsonStore<ProjectDetails[]> {
+function ensureProjectsStore(
+    pathOverride?: string,
+): TypedJsonStore<ProjectDetails[]> {
     const resolvedPath = resolveProjectsPath(pathOverride);
     if (projectsStore && projectsPath === resolvedPath) {
         return projectsStore;
@@ -76,18 +83,24 @@ function ensureProjectsStore(pathOverride?: string): TypedJsonStore<ProjectDetai
 
 /**
  * Stores a list of projects to a JSON file.
- * 
+ *
  * @param storeDir - The file path where project data will be stored
  * @param projects - The array of ProjectDetails to store
  * @returns A Promise that resolves to the same projects array that was provided
  */
-export async function storeProjectsList(storeDir: string, projects: ProjectDetails[], options?: ProjectsWriteOptions): Promise<ProjectDetails[]> {
+export async function storeProjectsList(
+    storeDir: string,
+    projects: ProjectDetails[],
+    options?: ProjectsWriteOptions,
+): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
     const persisted = await store.write(projects, options);
     return normalizeProjects(persisted);
 }
 
-export async function getProjectsSnapshot(storeDir: string): Promise<{ projects: ProjectDetails[]; version: string }> {
+export async function getProjectsSnapshot(
+    storeDir: string,
+): Promise<{ projects: ProjectDetails[]; version: string }> {
     const store = ensureProjectsStore(storeDir);
     const snapshot = await store.readSnapshot();
     return {
@@ -98,29 +111,35 @@ export async function getProjectsSnapshot(storeDir: string): Promise<{ projects:
 
 /**
  * Retrieves a list of stored projects from a JSON file.
- * 
+ *
  * @param storeDir - The file path where project data is stored
  * @returns A Promise that resolves to an array of ProjectDetails
  * @throws Will throw an error if the file cannot be read
  * @throws Will throw an error if the file cannot be parsed
  * @throws Will throw an error if the file does not exist
  */
-export async function getStoredProjectsList(storeDir: string): Promise<ProjectDetails[]> {
+export async function getStoredProjectsList(
+    storeDir: string,
+): Promise<ProjectDetails[]> {
     const { projects } = await getProjectsSnapshot(storeDir);
     return projects;
 }
 
 /**
  * Removes a project from the stored projects list based on its path.
- * 
+ *
  * @param storeDir - The directory path where project data is stored
  * @param projectPath - The path of the project to be removed from the list
  * @returns A Promise that resolves to the updated array of ProjectDetails after removal
  */
-export async function removeProjectFromList(storeDir: string, projectPath: string): Promise<ProjectDetails[]> {
-
+export async function removeProjectFromList(
+    storeDir: string,
+    projectPath: string,
+): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
-    const updated = await store.update((projects) => projects.filter(p => p.path !== projectPath));
+    const updated = await store.update((projects) =>
+        projects.filter((p) => p.path !== projectPath),
+    );
     return normalizeProjects(updated);
 }
 
@@ -136,8 +155,10 @@ export async function removeProjectFromList(storeDir: string, projectPath: strin
  * @param {ProjectDetails} project - The project details to add or update.
  * @returns {Promise<ProjectDetails[]>} A promise that resolves to the updated list of project details.
  */
-export async function addProjectToList(storeDir: string, project: ProjectDetails): Promise<ProjectDetails[]> {
-
+export async function addProjectToList(
+    storeDir: string,
+    project: ProjectDetails,
+): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
 
     const updated = await store.update((projects) => {
@@ -147,7 +168,7 @@ export async function addProjectToList(storeDir: string, project: ProjectDetails
             last_opened: toDate(project.last_opened),
         };
 
-        const existingIndex = list.findIndex(p => p.path === incoming.path);
+        const existingIndex = list.findIndex((p) => p.path === incoming.path);
 
         if (existingIndex !== -1) {
             list[existingIndex] = incoming;
@@ -158,7 +179,7 @@ export async function addProjectToList(storeDir: string, project: ProjectDetails
         list.sort(
             (a, b) =>
                 (toDate(a.last_opened)?.getTime() ?? 0) -
-                (toDate(b.last_opened)?.getTime() ?? 0)
+                (toDate(b.last_opened)?.getTime() ?? 0),
         );
 
         return list;

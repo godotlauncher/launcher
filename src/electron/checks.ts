@@ -1,9 +1,11 @@
-import logger from 'electron-log';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import logger from 'electron-log';
 
 import { PROJECTS_FILENAME } from './constants.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
+import { parseGodotProjectFile } from './utils/godotProject.utils.js';
+import { JsonStoreConflictError } from './utils/jsonStore.js';
 import { getDefaultDirs } from './utils/platform.utils.js';
 import {
     getProjectsSnapshot,
@@ -13,8 +15,6 @@ import {
     getStoredInstalledReleases,
     saveStoredInstalledReleases,
 } from './utils/releases.utils.js';
-import { parseGodotProjectFile } from './utils/godotProject.utils.js';
-import { JsonStoreConflictError } from './utils/jsonStore.js';
 
 const PROJECT_VALIDATION_MAX_ATTEMPTS = 2;
 
@@ -43,7 +43,11 @@ export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
     const { configDir } = getDefaultDirs();
     // get projects
     const projectsFile = path.resolve(configDir, PROJECTS_FILENAME);
-    for (let attempt = 0; attempt < PROJECT_VALIDATION_MAX_ATTEMPTS; attempt++) {
+    for (
+        let attempt = 0;
+        attempt < PROJECT_VALIDATION_MAX_ATTEMPTS;
+        attempt++
+    ) {
         const { projects, version } = await getProjectsSnapshot(projectsFile);
         const validated: ProjectDetails[] = [];
 
@@ -52,9 +56,14 @@ export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
         }
 
         try {
-            return await storeProjectsList(projectsFile, validated, { expectedVersion: version });
+            return await storeProjectsList(projectsFile, validated, {
+                expectedVersion: version,
+            });
         } catch (error) {
-            if (error instanceof JsonStoreConflictError && attempt < PROJECT_VALIDATION_MAX_ATTEMPTS - 1) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_VALIDATION_MAX_ATTEMPTS - 1
+            ) {
                 logger.warn('Project list changed during validation, retrying');
                 continue;
             }
@@ -62,11 +71,13 @@ export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
         }
     }
 
-    throw new Error('Failed to validate project list due to concurrent modifications');
+    throw new Error(
+        'Failed to validate project list due to concurrent modifications',
+    );
 }
 
 export async function checkProjectValid(
-    project: ProjectDetails
+    project: ProjectDetails,
 ): Promise<ProjectDetails> {
     logger.info(`Checking project '${project.name}'`);
 
@@ -89,7 +100,7 @@ export async function checkProjectValid(
             // await setEditorSymlink(path.dirname(project.launch_path), project.release.editor_path);
             await SetProjectEditorRelease(
                 path.dirname(project.launch_path),
-                project.release
+                project.release,
             );
         }
         project.release.valid = true;
@@ -109,14 +120,14 @@ export async function checkProjectValid(
         try {
             const editorSettingsContent = await fs.promises.readFile(
                 project.editor_settings_file,
-                'utf-8'
+                'utf-8',
             );
             const parsedSettings = parseGodotProjectFile(editorSettingsContent);
             const resourceSection = parsedSettings.get('resource');
 
             const useExternalValue =
                 resourceSection?.get(
-                    'text_editor/external/use_external_editor'
+                    'text_editor/external/use_external_editor',
                 ) ?? '';
 
             editorSettingsEnableExternal =
@@ -124,8 +135,8 @@ export async function checkProjectValid(
         } catch (error) {
             logger.warn(
                 `Failed to read editor settings for project '${project.name}': ${String(
-                    error
-                )}`
+                    error,
+                )}`,
             );
             editorSettingsEnableExternal = false;
         }

@@ -32,8 +32,7 @@ const getStoredTimestamp = (): number | null => {
 
         const parsed = Number.parseInt(preset, 10);
         return Number.isFinite(parsed) ? parsed : null;
-    }
-    catch {
+    } catch {
         return null;
     }
 };
@@ -50,19 +49,24 @@ const persistTimestamp = (timestamp: number | null) => {
         }
 
         window.localStorage.setItem(STORAGE_KEY, timestamp.toString());
-    }
-    catch {
+    } catch {
         // Intentionally ignore storage errors (e.g. quota exceeded, sandboxed env).
     }
 };
 
 export const ClearReleaseCacheControl: React.FC = () => {
     const { t } = useTranslation('settings');
-    const { clearReleaseCache, refreshAvailableReleases, loading: releaseLoading } = useRelease();
+    const {
+        clearReleaseCache,
+        refreshAvailableReleases,
+        loading: releaseLoading,
+    } = useRelease();
     const { addAlert } = useAlerts();
-    const [lastClearedAt, setLastClearedAt] = useState<number | null>(() => getStoredTimestamp());
+    const [lastClearedAt, setLastClearedAt] = useState<number | null>(() =>
+        getStoredTimestamp(),
+    );
     const [remainingSeconds, setRemainingSeconds] = useState(() =>
-        calculateRemainingSeconds(getStoredTimestamp())
+        calculateRemainingSeconds(getStoredTimestamp()),
     );
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -122,38 +126,60 @@ export const ClearReleaseCacheControl: React.FC = () => {
         try {
             await clearReleaseCache();
             await refreshAvailableReleases();
-            addAlert(t('behavior.clearReleaseCache.successTitle'), t('behavior.clearReleaseCache.successMessage'));
+            addAlert(
+                t('behavior.clearReleaseCache.successTitle'),
+                t('behavior.clearReleaseCache.successMessage'),
+            );
             const timestamp = Date.now();
             setLastClearedAt(timestamp);
             setRemainingSeconds(COOLDOWN_SECONDS);
             persistTimestamp(timestamp);
-        }
-        catch (error) {
+        } catch (error) {
             logger.error('Failed to clear release cache', error);
-            addAlert(t('behavior.clearReleaseCache.errorTitle'), t('behavior.clearReleaseCache.errorMessage'));
-        }
-        finally {
+            addAlert(
+                t('behavior.clearReleaseCache.errorTitle'),
+                t('behavior.clearReleaseCache.errorMessage'),
+            );
+        } finally {
             setIsProcessing(false);
         }
-    }, [addAlert, buttonDisabled, clearReleaseCache, isProcessing, refreshAvailableReleases, t]);
+    }, [
+        addAlert,
+        buttonDisabled,
+        clearReleaseCache,
+        isProcessing,
+        refreshAvailableReleases,
+        t,
+    ]);
 
     return (
         <div className="flex flex-col gap-4">
             <div>
-                <h2 className="font-bold">{t('behavior.clearReleaseCache.title')}</h2>
-                <p className="text-sm text-base-content/70">{t('behavior.clearReleaseCache.description')}</p>
+                <h2 className="font-bold">
+                    {t('behavior.clearReleaseCache.title')}
+                </h2>
+                <p className="text-sm text-base-content/70">
+                    {t('behavior.clearReleaseCache.description')}
+                </p>
             </div>
             {isCooldownActive && (
                 <div className="alert alert-warning flex items-center gap-2 py-2 px-3 w-fit sm:w-auto">
-                    <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="text-sm">{t('behavior.clearReleaseCache.cooldownNotice')}</span>
+                    <AlertTriangle
+                        className="h-4 w-4 shrink-0"
+                        aria-hidden="true"
+                    />
+                    <span className="text-sm">
+                        {t('behavior.clearReleaseCache.cooldownNotice')}
+                    </span>
                 </div>
             )}
             <button
                 type="button"
                 className="btn btn-outline w-fit"
                 disabled={buttonDisabled}
-                onClick={() => { void handleClear(); }}
+                onClick={() => {
+                    void handleClear();
+                }}
             >
                 {buttonLabel}
             </button>

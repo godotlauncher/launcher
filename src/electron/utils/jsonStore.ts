@@ -1,5 +1,5 @@
-import * as fs from 'node:fs';
 import { createHash } from 'node:crypto';
+import * as fs from 'node:fs';
 
 import logger from 'electron-log';
 
@@ -62,7 +62,10 @@ async function waitForPendingOperation(path: string): Promise<void> {
     }
 }
 
-function enqueueOperation<T>(path: string, action: () => Promise<T>): Promise<T> {
+function enqueueOperation<T>(
+    path: string,
+    action: () => Promise<T>,
+): Promise<T> {
     const previous = operationQueue.get(path) ?? Promise.resolve();
     const operationResult = previous.catch(() => undefined).then(action);
 
@@ -81,17 +84,23 @@ function enqueueOperation<T>(path: string, action: () => Promise<T>): Promise<T>
 
 export type JsonStore<T> = {
     read(): Promise<JsonStoreSnapshot<T>>;
-    write(value: T, options?: JsonStoreWriteOptions): Promise<JsonStoreSnapshot<T>>;
+    write(
+        value: T,
+        options?: JsonStoreWriteOptions,
+    ): Promise<JsonStoreSnapshot<T>>;
     update(
         mutator: (current: T) => MaybePromise<T>,
-        options?: JsonStoreWriteOptions
+        options?: JsonStoreWriteOptions,
     ): Promise<JsonStoreSnapshot<T>>;
     clearCache(): Promise<void>;
 };
 
 export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
-    const parse = options.parse ?? (async (raw: string) => JSON.parse(raw) as T);
-    const serialize = options.serialize ?? (async (value: T) => JSON.stringify(value, null, 4));
+    const parse =
+        options.parse ?? (async (raw: string) => JSON.parse(raw) as T);
+    const serialize =
+        options.serialize ??
+        (async (value: T) => JSON.stringify(value, null, 4));
     const normalize = options.normalize ?? (async (value: T) => value);
 
     async function resolvePath(): Promise<string> {
@@ -133,7 +142,10 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
         }
     }
 
-    function snapshotFromCache(path: string, entry: CachedEntry): JsonStoreSnapshot<T> {
+    function snapshotFromCache(
+        path: string,
+        entry: CachedEntry,
+    ): JsonStoreSnapshot<T> {
         return {
             value: cloneJson(entry.value as T),
             version: entry.hash,
@@ -158,14 +170,17 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
     async function persistValue(
         path: string,
         value: T,
-        options?: JsonStoreWriteOptions
+        options?: JsonStoreWriteOptions,
     ): Promise<JsonStoreSnapshot<T>> {
         const normalized = await normalizeValue(value);
         const cachedValue = cloneJson(normalized);
         const newHash = hashJson(cachedValue);
         const existing = storeCache.get(path);
 
-        if (options?.expectedVersion && existing?.hash !== options.expectedVersion) {
+        if (
+            options?.expectedVersion &&
+            existing?.hash !== options.expectedVersion
+        ) {
             throw new JsonStoreConflictError(path);
         }
 
@@ -189,14 +204,19 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
             return loadValue(path);
         },
 
-        async write(value: T, options?: JsonStoreWriteOptions): Promise<JsonStoreSnapshot<T>> {
+        async write(
+            value: T,
+            options?: JsonStoreWriteOptions,
+        ): Promise<JsonStoreSnapshot<T>> {
             const path = await resolvePath();
-            return enqueueOperation(path, async () => persistValue(path, value, options));
+            return enqueueOperation(path, async () =>
+                persistValue(path, value, options),
+            );
         },
 
         async update(
             mutator: (current: T) => MaybePromise<T>,
-            options?: JsonStoreWriteOptions
+            options?: JsonStoreWriteOptions,
         ): Promise<JsonStoreSnapshot<T>> {
             const path = await resolvePath();
             return enqueueOperation(path, async () => {

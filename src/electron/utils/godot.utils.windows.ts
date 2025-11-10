@@ -1,8 +1,8 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { SymlinkOptions, trySymlinkOrElevateAsync } from './fs.utils.js';
 import logger from 'electron-log';
 import { getUserPreferences } from '../commands/userPreferences.js';
+import { type SymlinkOptions, trySymlinkOrElevateAsync } from './fs.utils.js';
 
 async function removeExistingTarget(targetPath: string) {
     if (!fs.existsSync(targetPath)) {
@@ -19,7 +19,7 @@ async function copyReleaseArtifacts(
     srcSharpDir: string,
     dstExePath: string,
     dstConsolePath: string,
-    dstSharpDir: string
+    dstSharpDir: string,
 ) {
     await removeExistingTarget(dstExePath);
     await removeExistingTarget(dstConsolePath);
@@ -39,15 +39,15 @@ async function copyReleaseArtifacts(
 
 export async function removeProjectReleaseEditorWindows(
     projectEditorPath: string,
-    release: InstalledRelease
+    release: InstalledRelease,
 ) {
     if (fs.existsSync(projectEditorPath)) {
-    // remove all files based on mono or not
+        // remove all files based on mono or not
         const baseFileName = path.basename(release.editor_path);
         const exePath = path.resolve(projectEditorPath, baseFileName);
         const consolePath = path.resolve(
             projectEditorPath,
-            baseFileName.replace('.exe', '_console.exe')
+            baseFileName.replace('.exe', '_console.exe'),
         );
 
         logger.debug('Removing project editor exe and console exe');
@@ -59,7 +59,7 @@ export async function removeProjectReleaseEditorWindows(
         logger.debug('base file name:', baseFileName);
         logger.debug(
             'Project editor path exists:',
-            fs.existsSync(projectEditorPath)
+            fs.existsSync(projectEditorPath),
         );
         logger.debug('Exe path exists:', fs.existsSync(exePath));
         logger.debug('Console path exists:', fs.existsSync(consolePath));
@@ -81,24 +81,27 @@ export async function removeProjectReleaseEditorWindows(
 }
 
 export async function removeProjectEditorWindows(
-    project: ProjectDetails
+    project: ProjectDetails,
 ): Promise<void> {
     await removeProjectReleaseEditorWindows(
         path.dirname(project.launch_path),
-        project.release
+        project.release,
     );
 }
 
 export async function setProjectEditorReleaseWindows(
     projectEditorPath: string,
     release: InstalledRelease,
-    previousRelease?: InstalledRelease
+    previousRelease?: InstalledRelease,
 ): Promise<LaunchPath> {
     // remove previous editor
     if (previousRelease) {
         logger.debug('Removing previous editor');
         // remove exe, console.exe and GodotSharp folder
-        await removeProjectReleaseEditorWindows(projectEditorPath, previousRelease);
+        await removeProjectReleaseEditorWindows(
+            projectEditorPath,
+            previousRelease,
+        );
     }
 
     logger.debug('Setting new editor');
@@ -110,7 +113,7 @@ export async function setProjectEditorReleaseWindows(
     const dstExePath = path.resolve(projectEditorPath, baseFileName);
     const dstConsolePath = path.resolve(
         projectEditorPath,
-        baseFileName.replace('.exe', '_console.exe')
+        baseFileName.replace('.exe', '_console.exe'),
     );
     const dstSharpDir = path.resolve(projectEditorPath, 'GodotSharp');
 
@@ -118,7 +121,7 @@ export async function setProjectEditorReleaseWindows(
     const srcExePath = path.resolve(release.install_path, baseFileName);
     const srcConsolePath = path.resolve(
         release.install_path,
-        baseFileName.replace('.exe', '_console.exe')
+        baseFileName.replace('.exe', '_console.exe'),
     );
     const srcSharpDir = path.resolve(release.install_path, 'GodotSharp');
 
@@ -142,7 +145,9 @@ export async function setProjectEditorReleaseWindows(
         const shouldUseSymlinks = Boolean(windows_enable_symlinks);
 
         if (!shouldUseSymlinks) {
-            logger.info('Windows symlink preference disabled; copying editor files instead.');
+            logger.info(
+                'Windows symlink preference disabled; copying editor files instead.',
+            );
             await copyReleaseArtifacts(
                 release,
                 srcExePath,
@@ -150,7 +155,7 @@ export async function setProjectEditorReleaseWindows(
                 srcSharpDir,
                 dstExePath,
                 dstConsolePath,
-                dstSharpDir
+                dstSharpDir,
             );
         } else {
             try {
@@ -162,7 +167,7 @@ export async function setProjectEditorReleaseWindows(
             } catch (error) {
                 logger.warn(
                     'Symlink creation failed, using copy fallback instead.',
-                    error
+                    error,
                 );
                 await copyReleaseArtifacts(
                     release,
@@ -171,7 +176,7 @@ export async function setProjectEditorReleaseWindows(
                     srcSharpDir,
                     dstExePath,
                     dstConsolePath,
-                    dstSharpDir
+                    dstSharpDir,
                 );
             }
         }

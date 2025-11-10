@@ -157,10 +157,7 @@ const { existsSync } = fsMocks;
 const { getDefaultDirs } = platformMocks;
 const { getProjectsSnapshot, storeProjectsList } = projectUtilsMocks;
 const { getProjectDefinition } = godotUtilsMocks;
-const {
-    createNewEditorSettings,
-    updateEditorSettings,
-} = godotProjectMocks;
+const { createNewEditorSettings, updateEditorSettings } = godotProjectMocks;
 const {
     updateVSCodeSettings,
     addVSCodeNETLaunchConfig,
@@ -188,7 +185,10 @@ describe('setProjectVSCode', () => {
         ]);
         // By default, have storeProjectsList return the updated array it was
         // called with. Tests that need special behavior can override this.
-        storeProjectsList.mockImplementation(async (_p: string, updated: ProjectDetails[]) => updated as ProjectDetails[]);
+        storeProjectsList.mockImplementation(
+            async (_p: string, updated: ProjectDetails[]) =>
+                updated as ProjectDetails[],
+        );
     });
 
     it('enables VS Code integration using existing editor settings', async () => {
@@ -199,7 +199,8 @@ describe('setProjectVSCode', () => {
             version_number: 4.2,
             renderer: 'FORWARD_PLUS',
             editor_settings_path: '/projects/demo/editor_data',
-            editor_settings_file: '/projects/demo/editor_data/editor_settings-4.2.tres',
+            editor_settings_file:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
             last_opened: null,
             open_windowed: false,
             release: {
@@ -222,10 +223,18 @@ describe('setProjectVSCode', () => {
             valid: true,
         };
 
-        const storedProjects = [JSON.parse(JSON.stringify(project)) as ProjectDetails];
+        const storedProjects = [
+            JSON.parse(JSON.stringify(project)) as ProjectDetails,
+        ];
 
-    getProjectsSnapshot.mockResolvedValue({ projects: storedProjects, version: 'v1' });
-    storeProjectsList.mockImplementation(async (_p: string, updated: ProjectDetails[]) => updated as ProjectDetails[]);
+        getProjectsSnapshot.mockResolvedValue({
+            projects: storedProjects,
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_p: string, updated: ProjectDetails[]) =>
+                updated as ProjectDetails[],
+        );
         getProjectDefinition.mockReturnValue({
             editorConfigFilename: () => 'editor_settings-4.2.tres',
             editorConfigFormat: 3,
@@ -237,8 +246,10 @@ describe('setProjectVSCode', () => {
         getInstalledTools.mockResolvedValue([
             { name: 'VSCode', version: '', path: '/Applications/Code' },
         ]);
-        existsSync.mockImplementation((target: unknown) =>
-            target === '/projects/demo/editor_data/editor_settings-4.2.tres'
+        existsSync.mockImplementation(
+            (target: unknown) =>
+                target ===
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
         );
         updateEditorSettings.mockResolvedValue(undefined);
         updateVSCodeSettings.mockResolvedValue(undefined);
@@ -249,7 +260,12 @@ describe('setProjectVSCode', () => {
 
         const expectedExecPath =
             process.platform === 'darwin'
-                ? path.resolve('/Applications/Code', 'Contents', 'MacOS', 'Electron')
+                ? path.resolve(
+                      '/Applications/Code',
+                      'Contents',
+                      'MacOS',
+                      'Electron',
+                  )
                 : '/Applications/Code';
 
         expect(updateEditorSettings).toHaveBeenCalledWith(
@@ -259,25 +275,31 @@ describe('setProjectVSCode', () => {
                 execFlags: '{project} --goto {file}:{line}:{col}',
                 useExternalEditor: true,
                 isMono: true,
-            })
+            }),
         );
         expect(updateVSCodeSettings).toHaveBeenCalledWith(
             '/projects/demo',
             '/godot/godot.exe',
             4.2,
-            true
+            true,
         );
-        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledWith('/projects/demo', true);
-        expect(addVSCodeNETLaunchConfig).toHaveBeenCalledWith('/projects/demo', '/godot/godot.exe');
+        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledWith(
+            '/projects/demo',
+            true,
+        );
+        expect(addVSCodeNETLaunchConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            '/godot/godot.exe',
+        );
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             expect.any(Array),
-            expect.objectContaining({ expectedVersion: 'v1' })
+            expect.objectContaining({ expectedVersion: 'v1' }),
         );
         expect(ipcWebContentsSend).toHaveBeenCalledWith(
             'projects-updated',
             windowMock.webContents,
-            expect.any(Array)
+            expect.any(Array),
         );
         expect(result.withVSCode).toBe(true);
     });
@@ -313,10 +335,18 @@ describe('setProjectVSCode', () => {
             valid: true,
         };
 
-        const storedProjects = [JSON.parse(JSON.stringify(project)) as ProjectDetails];
+        const storedProjects = [
+            JSON.parse(JSON.stringify(project)) as ProjectDetails,
+        ];
 
-    getProjectsSnapshot.mockResolvedValue({ projects: storedProjects, version: 'v1' });
-    storeProjectsList.mockImplementation(async (_p: string, updated: ProjectDetails[]) => updated as ProjectDetails[]);
+        getProjectsSnapshot.mockResolvedValue({
+            projects: storedProjects,
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_p: string, updated: ProjectDetails[]) =>
+                updated as ProjectDetails[],
+        );
         getProjectDefinition.mockReturnValue({
             editorConfigFilename: () => 'editor_settings-4.2.tres',
             editorConfigFormat: 3,
@@ -329,14 +359,18 @@ describe('setProjectVSCode', () => {
             { name: 'VSCode', version: '', path: '/Applications/Code' },
         ]);
         existsSync.mockReturnValue(false);
-        createNewEditorSettings.mockResolvedValue('/projects/demo/editor_data/editor_settings-4.2.tres');
+        createNewEditorSettings.mockResolvedValue(
+            '/projects/demo/editor_data/editor_settings-4.2.tres',
+        );
         updateVSCodeSettings.mockResolvedValue(undefined);
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
 
         const result = await setProjectVSCode(project, true);
 
         expect(createNewEditorSettings).toHaveBeenCalled();
-        expect(result.editor_settings_file).toBe('/projects/demo/editor_data/editor_settings-4.2.tres');
+        expect(result.editor_settings_file).toBe(
+            '/projects/demo/editor_data/editor_settings-4.2.tres',
+        );
         expect(result.editor_settings_path).toBe('/projects/demo/editor_data');
     });
 
@@ -348,7 +382,8 @@ describe('setProjectVSCode', () => {
             version_number: 4.2,
             renderer: 'FORWARD_PLUS',
             editor_settings_path: '/projects/demo/editor_data',
-            editor_settings_file: '/projects/demo/editor_data/editor_settings-4.2.tres',
+            editor_settings_file:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
             last_opened: null,
             open_windowed: false,
             release: {
@@ -371,14 +406,21 @@ describe('setProjectVSCode', () => {
             valid: true,
         };
 
-        const storedProjects = [JSON.parse(JSON.stringify(project)) as ProjectDetails];
+        const storedProjects = [
+            JSON.parse(JSON.stringify(project)) as ProjectDetails,
+        ];
 
         getProjectsSnapshot
             .mockResolvedValueOnce({ projects: storedProjects, version: 'v1' })
             .mockResolvedValueOnce({ projects: storedProjects, version: 'v2' });
         storeProjectsList
-            .mockRejectedValueOnce(new JsonStoreConflictError('/config/projects.json'))
-            .mockImplementationOnce(async (_p: string, updated: ProjectDetails[]) => updated as ProjectDetails[]);
+            .mockRejectedValueOnce(
+                new JsonStoreConflictError('/config/projects.json'),
+            )
+            .mockImplementationOnce(
+                async (_p: string, updated: ProjectDetails[]) =>
+                    updated as ProjectDetails[],
+            );
         getProjectDefinition.mockReturnValue({
             editorConfigFilename: () => 'editor_settings-4.2.tres',
             editorConfigFormat: 3,
@@ -413,7 +455,8 @@ describe('setProjectVSCode', () => {
             version_number: 4.2,
             renderer: 'FORWARD_PLUS',
             editor_settings_path: '/projects/demo/editor_data',
-            editor_settings_file: '/projects/demo/editor_data/editor_settings-4.2.tres',
+            editor_settings_file:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
             last_opened: null,
             open_windowed: false,
             release: {
@@ -436,12 +479,22 @@ describe('setProjectVSCode', () => {
             valid: true,
         };
 
-        const storedProjects = [JSON.parse(JSON.stringify(project)) as ProjectDetails];
+        const storedProjects = [
+            JSON.parse(JSON.stringify(project)) as ProjectDetails,
+        ];
 
-    getProjectsSnapshot.mockResolvedValue({ projects: storedProjects, version: 'v1' });
-    storeProjectsList.mockImplementation(async (_p: string, updated: ProjectDetails[]) => updated as ProjectDetails[]);
-        existsSync.mockImplementation((target: unknown) =>
-            target === '/projects/demo/editor_data/editor_settings-4.2.tres'
+        getProjectsSnapshot.mockResolvedValue({
+            projects: storedProjects,
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_p: string, updated: ProjectDetails[]) =>
+                updated as ProjectDetails[],
+        );
+        existsSync.mockImplementation(
+            (target: unknown) =>
+                target ===
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
         );
         updateEditorSettings.mockResolvedValue(undefined);
 
@@ -449,7 +502,7 @@ describe('setProjectVSCode', () => {
 
         expect(updateEditorSettings).toHaveBeenCalledWith(
             '/projects/demo/editor_data/editor_settings-4.2.tres',
-            { useExternalEditor: false }
+            { useExternalEditor: false },
         );
         expect(result.withVSCode).toBe(false);
         expect(updateVSCodeSettings).not.toHaveBeenCalled();
@@ -487,9 +540,14 @@ describe('setProjectVSCode', () => {
             valid: true,
         };
 
-        const storedProjects = [JSON.parse(JSON.stringify(project)) as ProjectDetails];
+        const storedProjects = [
+            JSON.parse(JSON.stringify(project)) as ProjectDetails,
+        ];
 
-        getProjectsSnapshot.mockResolvedValue({ projects: storedProjects, version: 'v1' });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: storedProjects,
+            version: 'v1',
+        });
         storeProjectsList.mockResolvedValue(storedProjects);
         // Mock cache as having no VSCode
         getCachedTools.mockResolvedValue([]);
@@ -505,7 +563,7 @@ describe('setProjectVSCode', () => {
         });
 
         await expect(setProjectVSCode(project, true)).rejects.toThrow(
-            'projects:toggleVSCode.errors.vscodeNotInstalled'
+            'projects:toggleVSCode.errors.vscodeNotInstalled',
         );
         expect(storeProjectsList).not.toHaveBeenCalled();
     });
@@ -551,14 +609,19 @@ describe('initializeProjectGit', () => {
         };
 
         const storedProjects = [storedProject];
-        getProjectsSnapshot.mockResolvedValue({ projects: storedProjects, version: 'v1' });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: storedProjects,
+            version: 'v1',
+        });
         storeProjectsList.mockImplementation(
-            async (_path, projects, _options) => projects
+            async (_path, projects, _options) => projects,
         );
 
         gitInit.mockResolvedValue(true);
-        existsSync.mockImplementation((target: unknown) =>
-            typeof target === 'string' && target.endsWith(`${path.sep}.git`)
+        existsSync.mockImplementation(
+            (target: unknown) =>
+                typeof target === 'string' &&
+                target.endsWith(`${path.sep}.git`),
         );
 
         const result = await initializeProjectGit({ ...storedProject });
@@ -567,14 +630,20 @@ describe('initializeProjectGit', () => {
         expect(storeProjectsList).toHaveBeenCalledWith(
             expect.stringContaining('projects.json'),
             expect.any(Array),
-            expect.objectContaining({ expectedVersion: 'v1' })
+            expect.objectContaining({ expectedVersion: 'v1' }),
         );
-        const persisted = storeProjectsList.mock.calls[0][1] as ProjectDetails[];
+        const persisted = storeProjectsList.mock
+            .calls[0][1] as ProjectDetails[];
         expect(persisted[0].withGit).toBe(true);
         expect(ipcWebContentsSend).toHaveBeenCalledWith(
             'projects-updated',
             windowMock.webContents,
-            expect.arrayContaining([expect.objectContaining({ path: storedProject.path, withGit: true })])
+            expect.arrayContaining([
+                expect.objectContaining({
+                    path: storedProject.path,
+                    withGit: true,
+                }),
+            ]),
         );
         expect(result.withGit).toBe(true);
     });
@@ -610,11 +679,16 @@ describe('initializeProjectGit', () => {
             valid: true,
         };
 
-        getProjectsSnapshot.mockResolvedValue({ projects: [storedProject], version: 'v1' });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [storedProject],
+            version: 'v1',
+        });
         gitInit.mockResolvedValue(false);
         existsSync.mockReturnValue(false);
 
-        await expect(initializeProjectGit({ ...storedProject })).rejects.toThrow('projects:initGit.errors.initFailed');
+        await expect(
+            initializeProjectGit({ ...storedProject }),
+        ).rejects.toThrow('projects:initGit.errors.initFailed');
 
         expect(storeProjectsList).not.toHaveBeenCalled();
         expect(ipcWebContentsSend).not.toHaveBeenCalled();

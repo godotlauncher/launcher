@@ -43,7 +43,7 @@ vi.mock('../i18n/index.js', () => {
     return {
         t: vi.fn(
             (key: string) =>
-                translations[key as keyof typeof translations] ?? key
+                translations[key as keyof typeof translations] ?? key,
         ),
     };
 });
@@ -157,10 +157,10 @@ test('Should have tray menu with show and quit', async () => {
 
     // Find the relevant menu items for testing
     const showMenuItem = capturedTemplate.find(
-        (item) => item.label === 'Show Godot Launcher'
+        (item) => item.label === 'Show Godot Launcher',
     );
     const separatorItem = capturedTemplate.find(
-        (item) => item.type === 'separator'
+        (item) => item.type === 'separator',
     );
     const quitMenuItem = capturedTemplate.find((item) => item.label === 'Quit');
 
@@ -184,12 +184,12 @@ test('Should show window on tray click', async () => {
     // Check that the event handler was registered
     expect(mockTrayInstance.on).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
     );
 
     // Extract the handler function
     const clickHandlerCall = (mockTrayInstance.on as any).mock.calls.find(
-        (call: { [key: string]: any }) => call[0] === 'click'
+        (call: { [key: string]: any }) => call[0] === 'click',
     );
 
     // Make sure the handler was found

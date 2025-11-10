@@ -10,17 +10,17 @@ export const GitToolSettings: React.FC<GitToolSettingsProps> = ({ tool }) => {
     const status = tool
         ? tool.verified
             ? {
-                label: t('tools.status.available'),
-                appearance: 'badge-success',
-            }
+                  label: t('tools.status.available'),
+                  appearance: 'badge-success',
+              }
             : {
-                label: t('tools.status.invalid'),
-                appearance: 'badge-warning',
-            }
+                  label: t('tools.status.invalid'),
+                  appearance: 'badge-warning',
+              }
         : {
-            label: t('tools.status.missing'),
-            appearance: 'badge-error',
-        };
+              label: t('tools.status.missing'),
+              appearance: 'badge-error',
+          };
 
     const version =
         tool?.version && tool.version.trim().length > 0

@@ -34,128 +34,143 @@ export const WelcomeView: React.FC = () => {
 
     const { updatePreferences, platform } = usePreferences();
 
-    const macSteps: StepDetails[] = useMemo(() => [
-        {
-            title: t('steps.welcome'),
-            nextButton: t('navigation.nextMacOS'),
-            prevButton: '',
-            component: <WelcomeStep />,
-        },
-        {
-            title: t('steps.macos'),
-            nextButton: t('navigation.nextCurrentSettings'),
-            prevButton: t('navigation.backWelcome'),
-            component: <MacOSStep />,
-        },
-        {
-            title: t('steps.currentSettings'),
-            nextButton: t('navigation.nextSetLocations'),
-            prevButton: t('navigation.backMacOS'),
-            component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} />,
-        },
-        {
-            title: t('steps.setLocations'),
-            nextButton: t('navigation.nextCustomizeBehavior'),
-            prevButton: t('navigation.backCurrentSettings'),
-            component: <SetLocationStep />,
-        },
-        {
-            title: t('steps.customizeBehavior'),
-            nextButton: t('navigation.nextReady'),
-            prevButton: t('navigation.backSetLocations'),
-            component: <CustomizeBehaviorStep />,
-        },
-        {
-            title: t('steps.ready'),
-            nextButton: t('navigation.start'),
-            prevButton: t('navigation.backCustomizeBehavior'),
-            component: <StartStep />,
-        },
-    ], [t]);
+    const macSteps: StepDetails[] = useMemo(
+        () => [
+            {
+                title: t('steps.welcome'),
+                nextButton: t('navigation.nextMacOS'),
+                prevButton: '',
+                component: <WelcomeStep />,
+            },
+            {
+                title: t('steps.macos'),
+                nextButton: t('navigation.nextCurrentSettings'),
+                prevButton: t('navigation.backWelcome'),
+                component: <MacOSStep />,
+            },
+            {
+                title: t('steps.currentSettings'),
+                nextButton: t('navigation.nextSetLocations'),
+                prevButton: t('navigation.backMacOS'),
+                component: (
+                    <CurrentSettingsStep onSkip={() => setStepIndex(4)} />
+                ),
+            },
+            {
+                title: t('steps.setLocations'),
+                nextButton: t('navigation.nextCustomizeBehavior'),
+                prevButton: t('navigation.backCurrentSettings'),
+                component: <SetLocationStep />,
+            },
+            {
+                title: t('steps.customizeBehavior'),
+                nextButton: t('navigation.nextReady'),
+                prevButton: t('navigation.backSetLocations'),
+                component: <CustomizeBehaviorStep />,
+            },
+            {
+                title: t('steps.ready'),
+                nextButton: t('navigation.start'),
+                prevButton: t('navigation.backCustomizeBehavior'),
+                component: <StartStep />,
+            },
+        ],
+        [t],
+    );
 
-    const winSteps: StepDetails[] = useMemo(() => [
-        {
-            title: t('steps.welcome'),
-            nextButton: t('navigation.nextWindows'),
-            prevButton: '',
-            component: <WelcomeStep />,
-        },
-        {
-            title: t('steps.windows'),
-            nextButton: t('navigation.nextCurrentSettings'),
-            prevButton: t('navigation.backWelcome'),
-            component: <WindowsStep />,
-        },
-        {
-            title: t('steps.currentSettings'),
-            nextButton: t('navigation.nextSetLocations'),
-            prevButton: t('navigation.backWindows'),
-            component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} />,
-        },
-        {
-            title: t('steps.setLocations'),
-            nextButton: t('navigation.nextCustomizeBehavior'),
-            prevButton: t('navigation.backCurrentSettings'),
-            component: <SetLocationStep />,
-        },
-        {
-            title: t('steps.customizeBehavior'),
-            nextButton: t('navigation.nextReady'),
-            prevButton: t('navigation.backSetLocations'),
-            component: <CustomizeBehaviorStep />,
-        },
-        {
-            title: t('steps.windowsSymlink'),
-            nextButton: t('navigation.nextReady'),
-            prevButton: t('navigation.backCustomizeBehavior'),
-            component: <WindowsSymlinkSetting />,
-        },
-        {
-            title: t('steps.ready'),
-            nextButton: t('navigation.start'),
-            prevButton: t('navigation.backCustomizeBehavior'),
-            component: <StartStep />,
-        },
-    ], [t]);
+    const winSteps: StepDetails[] = useMemo(
+        () => [
+            {
+                title: t('steps.welcome'),
+                nextButton: t('navigation.nextWindows'),
+                prevButton: '',
+                component: <WelcomeStep />,
+            },
+            {
+                title: t('steps.windows'),
+                nextButton: t('navigation.nextCurrentSettings'),
+                prevButton: t('navigation.backWelcome'),
+                component: <WindowsStep />,
+            },
+            {
+                title: t('steps.currentSettings'),
+                nextButton: t('navigation.nextSetLocations'),
+                prevButton: t('navigation.backWindows'),
+                component: (
+                    <CurrentSettingsStep onSkip={() => setStepIndex(4)} />
+                ),
+            },
+            {
+                title: t('steps.setLocations'),
+                nextButton: t('navigation.nextCustomizeBehavior'),
+                prevButton: t('navigation.backCurrentSettings'),
+                component: <SetLocationStep />,
+            },
+            {
+                title: t('steps.customizeBehavior'),
+                nextButton: t('navigation.nextReady'),
+                prevButton: t('navigation.backSetLocations'),
+                component: <CustomizeBehaviorStep />,
+            },
+            {
+                title: t('steps.windowsSymlink'),
+                nextButton: t('navigation.nextReady'),
+                prevButton: t('navigation.backCustomizeBehavior'),
+                component: <WindowsSymlinkSetting />,
+            },
+            {
+                title: t('steps.ready'),
+                nextButton: t('navigation.start'),
+                prevButton: t('navigation.backCustomizeBehavior'),
+                component: <StartStep />,
+            },
+        ],
+        [t],
+    );
 
-    const linuxSteps: StepDetails[] = useMemo(() => [
-        {
-            title: t('steps.welcome'),
-            nextButton: t('navigation.nextLinux'),
-            prevButton: '',
-            component: <WelcomeStep />,
-        },
-        {
-            title: t('steps.linux'),
-            nextButton: t('navigation.nextCurrentSettings'),
-            prevButton: t('navigation.backWelcome'),
-            component: <LinuxStep />,
-        },
-        {
-            title: t('steps.currentSettings'),
-            nextButton: t('navigation.nextSetLocations'),
-            prevButton: t('navigation.backWindows'),
-            component: <CurrentSettingsStep onSkip={() => setStepIndex(4)} />,
-        },
-        {
-            title: t('steps.setLocations'),
-            nextButton: t('navigation.nextCustomizeBehavior'),
-            prevButton: t('navigation.backCurrentSettings'),
-            component: <SetLocationStep />,
-        },
-        {
-            title: t('steps.customizeBehavior'),
-            nextButton: t('navigation.nextReady'),
-            prevButton: t('navigation.backCustomizeBehavior'),
-            component: <CustomizeBehaviorStep />,
-        },
-        {
-            title: t('steps.ready'),
-            nextButton: t('navigation.start'),
-            prevButton: t('navigation.backCustomizeBehavior'),
-            component: <StartStep />,
-        },
-    ], [t]);
+    const linuxSteps: StepDetails[] = useMemo(
+        () => [
+            {
+                title: t('steps.welcome'),
+                nextButton: t('navigation.nextLinux'),
+                prevButton: '',
+                component: <WelcomeStep />,
+            },
+            {
+                title: t('steps.linux'),
+                nextButton: t('navigation.nextCurrentSettings'),
+                prevButton: t('navigation.backWelcome'),
+                component: <LinuxStep />,
+            },
+            {
+                title: t('steps.currentSettings'),
+                nextButton: t('navigation.nextSetLocations'),
+                prevButton: t('navigation.backWindows'),
+                component: (
+                    <CurrentSettingsStep onSkip={() => setStepIndex(4)} />
+                ),
+            },
+            {
+                title: t('steps.setLocations'),
+                nextButton: t('navigation.nextCustomizeBehavior'),
+                prevButton: t('navigation.backCurrentSettings'),
+                component: <SetLocationStep />,
+            },
+            {
+                title: t('steps.customizeBehavior'),
+                nextButton: t('navigation.nextReady'),
+                prevButton: t('navigation.backCustomizeBehavior'),
+                component: <CustomizeBehaviorStep />,
+            },
+            {
+                title: t('steps.ready'),
+                nextButton: t('navigation.start'),
+                prevButton: t('navigation.backCustomizeBehavior'),
+                component: <StartStep />,
+            },
+        ],
+        [t],
+    );
 
     const getMaxSteps = useCallback(() => {
         switch (platform) {
@@ -186,7 +201,12 @@ export const WelcomeView: React.FC = () => {
     // Derive button text from current step instead of storing in state
     const currentStep = useMemo(() => {
         const steps = getPlatformSteps();
-        return steps[stepIndex || 0] || { nextButton: 'Next', prevButton: 'Previous' };
+        return (
+            steps[stepIndex || 0] || {
+                nextButton: 'Next',
+                prevButton: 'Previous',
+            }
+        );
     }, [getPlatformSteps, stepIndex]);
 
     const nextStepText = currentStep.nextButton;
@@ -213,7 +233,7 @@ export const WelcomeView: React.FC = () => {
         }
 
         localStorage?.setItem('stepIndex', stepIndex.toString());
-        
+
         // Validate and correct stepIndex bounds
         if (stepIndex < 0) {
             setTimeout(() => setStepIndex(0), 0);
@@ -253,15 +273,16 @@ export const WelcomeView: React.FC = () => {
                     <ul className="steps">
                         {/* Steps */}
                         {getPlatformSteps().map((step, index) => (
-                            <li
+                            <button
+                                type="button"
                                 onClick={() => setStepIndex(index)}
-                                key={index}
+                                key={`welcomeStepButton_${step.title}_${index}`}
                                 className={clsx('step cursor-pointer', {
                                     'step-primary': stepIndex >= index,
                                 })}
                             >
                                 {step.title}
-                            </li>
+                            </button>
                         ))}
                     </ul>
                 </div>
@@ -273,6 +294,7 @@ export const WelcomeView: React.FC = () => {
                 <div className="flex flex-row justify-between gap-2 flex-0">
                     {stepIndex > 0 ? (
                         <button
+                            type="button"
                             disabled={stepIndex === 0}
                             className="btn btn-primary"
                             onClick={() => setStepIndex(stepIndex - 1)}
@@ -284,6 +306,7 @@ export const WelcomeView: React.FC = () => {
                     )}
 
                     <button
+                        type="button"
                         className="btn btn-primary"
                         onClick={() => setStepIndex(stepIndex + 1)}
                     >

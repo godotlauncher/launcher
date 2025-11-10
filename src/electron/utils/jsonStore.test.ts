@@ -2,9 +2,13 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createJsonStore, __resetJsonStoreForTesting, JsonStoreConflictError } from './jsonStore.js';
+import {
+    __resetJsonStoreForTesting,
+    createJsonStore,
+    JsonStoreConflictError,
+} from './jsonStore.js';
 
 const TEMP_DIR = path.resolve(os.tmpdir(), 'godot-launcher-json-store-tests');
 
@@ -45,7 +49,9 @@ describe('jsonStore', () => {
         });
 
         await store.write({ items: [1, 2, 3] });
-        expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({ items: [1, 2, 3] });
+        expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({
+            items: [1, 2, 3],
+        });
 
         const snapshot = await store.read();
         expect(snapshot.value).toEqual({ items: [1, 2, 3] });
@@ -64,7 +70,9 @@ describe('jsonStore', () => {
         await store.write({ flag: true });
 
         expect(writeSpy).toHaveBeenCalledTimes(1);
-        expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({ flag: true });
+        expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({
+            flag: true,
+        });
     });
 
     it('serialises concurrent updates', async () => {
@@ -102,7 +110,7 @@ describe('jsonStore', () => {
         await store.write({ count: 2 });
 
         await expect(
-            store.write({ count: 3 }, { expectedVersion: snapshot.version })
+            store.write({ count: 3 }, { expectedVersion: snapshot.version }),
         ).rejects.toBeInstanceOf(JsonStoreConflictError);
     });
 
@@ -122,8 +130,8 @@ describe('jsonStore', () => {
                     current.count = 5;
                     return current;
                 },
-                { expectedVersion: snapshot.version }
-            )
+                { expectedVersion: snapshot.version },
+            ),
         ).rejects.toBeInstanceOf(JsonStoreConflictError);
     });
 

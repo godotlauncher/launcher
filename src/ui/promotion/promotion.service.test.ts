@@ -7,7 +7,10 @@ import {
     isPromotionActive,
     normalizePromotion,
 } from './promotion.service';
-import { DEFAULT_COUNTDOWN_THRESHOLD_DAYS, Promotion } from './promotion.types';
+import {
+    DEFAULT_COUNTDOWN_THRESHOLD_DAYS,
+    type Promotion,
+} from './promotion.types';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -29,12 +32,20 @@ describe('normalizePromotion', () => {
         const promotion = normalizePromotion(entry, now);
         expect(promotion).toBeTruthy();
         expect(promotion?.id).toBe(entry.id);
-        expect(promotion?.countdownThresholdDays).toBe(DEFAULT_COUNTDOWN_THRESHOLD_DAYS);
+        expect(promotion?.countdownThresholdDays).toBe(
+            DEFAULT_COUNTDOWN_THRESHOLD_DAYS,
+        );
         expect(promotion?.externalLink).toBe(entry.externalLink);
-        expect(promotion?.countdownSingularLabel).toBe(entry.countdownSingularLabel);
-        expect(promotion?.countdownPluralLabel).toBe(entry.countdownPluralLabel);
+        expect(promotion?.countdownSingularLabel).toBe(
+            entry.countdownSingularLabel,
+        );
+        expect(promotion?.countdownPluralLabel).toBe(
+            entry.countdownPluralLabel,
+        );
         expect(promotion?.countdownHourLabel).toBe(entry.countdownHourLabel);
-        expect(promotion?.countdownMinuteLabel).toBe(entry.countdownMinuteLabel);
+        expect(promotion?.countdownMinuteLabel).toBe(
+            entry.countdownMinuteLabel,
+        );
     });
 
     it('returns null when entry is disabled or expired', () => {
@@ -158,42 +169,42 @@ describe('calculateCountdownMeta', () => {
     });
 });
 
-    it('returns hours countdown within last day', () => {
-        const now = new Date('2025-12-24T12:00:00Z');
-        const promotion: Promotion = {
-            id: 'survey',
-            title: 'Survey',
-            expiresAt: new Date(now.getTime() + 6 * 60 * 60 * 1000),
-            countdownThresholdDays: 5,
-            externalLink: null,
-        };
+it('returns hours countdown within last day', () => {
+    const now = new Date('2025-12-24T12:00:00Z');
+    const promotion: Promotion = {
+        id: 'survey',
+        title: 'Survey',
+        expiresAt: new Date(now.getTime() + 6 * 60 * 60 * 1000),
+        countdownThresholdDays: 5,
+        externalLink: null,
+    };
 
-        const result = calculateCountdownMeta(promotion, now);
-        expect(result).toBeTruthy();
-        expect(result?.mode).toBe('hours');
-        if (result && result.mode === 'hours') {
-            expect(result.hoursRemaining).toBe(6);
-        }
-    });
+    const result = calculateCountdownMeta(promotion, now);
+    expect(result).toBeTruthy();
+    expect(result?.mode).toBe('hours');
+    if (result && result.mode === 'hours') {
+        expect(result.hoursRemaining).toBe(6);
+    }
+});
 
-    it('returns minute countdown within last hour', () => {
-        const now = new Date('2025-12-24T12:00:00Z');
-        const promotion: Promotion = {
-            id: 'survey',
-            title: 'Survey',
-            expiresAt: new Date(now.getTime() + 15 * 60 * 1000 + 5 * 1000),
-            countdownThresholdDays: 5,
-            externalLink: null,
-        };
+it('returns minute countdown within last hour', () => {
+    const now = new Date('2025-12-24T12:00:00Z');
+    const promotion: Promotion = {
+        id: 'survey',
+        title: 'Survey',
+        expiresAt: new Date(now.getTime() + 15 * 60 * 1000 + 5 * 1000),
+        countdownThresholdDays: 5,
+        externalLink: null,
+    };
 
-        const result = calculateCountdownMeta(promotion, now);
-        expect(result).toBeTruthy();
-        expect(result?.mode).toBe('minutes');
-        if (result && result.mode === 'minutes') {
-            expect(result.minutesRemaining).toBe(15);
-            expect(result.secondsRemaining).toBe(5);
-        }
-    });
+    const result = calculateCountdownMeta(promotion, now);
+    expect(result).toBeTruthy();
+    expect(result?.mode).toBe('minutes');
+    if (result && result.mode === 'minutes') {
+        expect(result.minutesRemaining).toBe(15);
+        expect(result.secondsRemaining).toBe(5);
+    }
+});
 describe('isPromotionActive', () => {
     it('checks if promotion is active at given time', () => {
         const now = new Date('2025-12-01T00:00:00Z');
@@ -206,13 +217,20 @@ describe('isPromotionActive', () => {
         };
 
         expect(isPromotionActive(promotion, now)).toBe(true);
-        expect(isPromotionActive(promotion, new Date(now.getTime() + 2 * MS_PER_DAY))).toBe(false);
+        expect(
+            isPromotionActive(
+                promotion,
+                new Date(now.getTime() + 2 * MS_PER_DAY),
+            ),
+        ).toBe(false);
     });
 });
 
 describe('getEmbeddedPromotion', () => {
     it('returns embedded promotion when it is active', () => {
-        const promotion = getEmbeddedPromotion(new Date('2025-07-01T00:00:00Z'));
+        const promotion = getEmbeddedPromotion(
+            new Date('2025-07-01T00:00:00Z'),
+        );
         expect(promotion).toBeTruthy();
         expect(promotion?.id).toBe('survey-dec-2025');
     });
@@ -220,14 +238,16 @@ describe('getEmbeddedPromotion', () => {
     it('returns localized embedded promotion copy when locale provided', () => {
         const promotion = getEmbeddedPromotion(
             new Date('2025-07-01T00:00:00Z'),
-            'it'
+            'it',
         );
         expect(promotion?.title).toBe('Aiuta a migliorare Godot Launcher');
         expect(promotion?.ctaLabel).toBe('Invia il tuo feedback');
     });
 
     it('returns null when embedded promotion is expired', () => {
-        const promotion = getEmbeddedPromotion(new Date('2026-01-02T00:00:00Z'));
+        const promotion = getEmbeddedPromotion(
+            new Date('2026-01-02T00:00:00Z'),
+        );
         expect(promotion).toBeNull();
     });
 });

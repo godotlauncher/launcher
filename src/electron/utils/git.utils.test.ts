@@ -1,7 +1,6 @@
+import { exec } from 'child_process';
 import { describe, expect, it, vi } from 'vitest';
 import { gitConfig, gitConfigGetUser, gitExists } from './git.utils';
-
-import { exec } from "child_process";
 
 const execMock = vi.mocked(exec);
 
@@ -13,13 +12,11 @@ describe('git.utils', () => {
 
     it('should get git config', async () => {
         const result = await gitConfig();
-        expect(result).not.toBe("");
+        expect(result).not.toBe('');
     });
 
     it('should get git user', async () => {
         const result = await gitConfigGetUser();
         expect(result).not.toBeNull();
     });
-
-
 });

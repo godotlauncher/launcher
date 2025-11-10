@@ -3,7 +3,7 @@ import * as path from 'node:path';
 // import { ProjectDetails } from "../types/types.js"; // Removed as ProjectDetails should be globally available
 
 export async function removeProjectEditorLinux(
-    project: ProjectDetails
+    project: ProjectDetails,
 ): Promise<void> {
     // remove editor files
     if (fs.existsSync(project.launch_path)) {
@@ -28,7 +28,7 @@ export async function removeProjectEditorLinux(
 export async function setProjectEditorReleaseLinux(
     projectEditorPath: string,
     release: InstalledRelease,
-    previousRelease?: InstalledRelease
+    previousRelease?: InstalledRelease,
 ): Promise<LaunchPath> {
     // remove previous editor
     if (previousRelease) {

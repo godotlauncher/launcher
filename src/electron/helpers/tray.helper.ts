@@ -1,22 +1,27 @@
 import * as path from 'node:path';
 
-import { app, BrowserWindow, Menu, Tray } from 'electron';
-import { getAssetPath } from '../pathResolver.js';
-import { getStoredProjectsList } from '../utils/projects.utils.js';
-import { getConfigDir } from '../utils/prefs.utils.js';
-import { PROJECTS_FILENAME } from '../constants.js';
+import { app, type BrowserWindow, Menu, Tray } from 'electron';
 import { launchProject } from '../commands/projects.js';
+import { PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
+import { getAssetPath } from '../pathResolver.js';
+import { getConfigDir } from '../utils/prefs.utils.js';
+import { getStoredProjectsList } from '../utils/projects.utils.js';
 
 let tray: Tray;
 let mainWindow: BrowserWindow;
 
 export async function createTray(window: BrowserWindow): Promise<Tray> {
-
     mainWindow = window;
 
-    tray = new Tray(path.resolve(getAssetPath(), 'icons',
-        process.platform === 'darwin' ? 'darwin/trayIconTemplate.png' : 'default/trayIcon.png')
+    tray = new Tray(
+        path.resolve(
+            getAssetPath(),
+            'icons',
+            process.platform === 'darwin'
+                ? 'darwin/trayIconTemplate.png'
+                : 'default/trayIcon.png',
+        ),
     );
 
     tray.setToolTip('Godot Launcher');
@@ -31,7 +36,6 @@ export async function createTray(window: BrowserWindow): Promise<Tray> {
     }
 
     if (process.platform === 'win32') {
-
         tray.on('click', async () => {
             mainWindow.show();
             if (app.dock) {
@@ -48,46 +52,54 @@ export async function createTray(window: BrowserWindow): Promise<Tray> {
     }
 
     return tray;
-
 }
 
 export async function updateLinuxTray(): Promise<void> {
     tray.setContextMenu(await updateMenu(tray, mainWindow));
 }
 
-export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise<Electron.Menu> {
-    const projectListFIle = path.resolve(await getConfigDir(), PROJECTS_FILENAME);
+export async function updateMenu(
+    tray: Tray,
+    mainWindow: BrowserWindow,
+): Promise<Electron.Menu> {
+    const projectListFIle = path.resolve(
+        await getConfigDir(),
+        PROJECTS_FILENAME,
+    );
 
     const projects = await getStoredProjectsList(projectListFIle);
-    const filteredProjects = projects.filter(p => p.valid && p.last_opened != null && p.last_opened.getTime() > 0)
+    const filteredProjects = projects
+        .filter(
+            (p) =>
+                p.valid && p.last_opened != null && p.last_opened.getTime() > 0,
+        )
         .sort((a, b) => b.last_opened!.getTime() - a.last_opened!.getTime());
 
     const last3 = filteredProjects.slice(0, 3);
 
-    let quickLaunchMenu: Array<(Electron.MenuItemConstructorOptions)> = [];
+    let quickLaunchMenu: Array<Electron.MenuItemConstructorOptions> = [];
 
     if (last3.length > 0) {
         quickLaunchMenu = [
             {
                 label: t('menus:tray.recentProjects'),
-                enabled: false
-            }
+                enabled: false,
+            },
         ];
 
-        last3.forEach(p => {
+        last3.forEach((p) => {
             quickLaunchMenu.push({
                 label: p.name,
                 click: async () => {
                     await launchProject(p);
-                }
+                },
             });
         });
 
         quickLaunchMenu.push({
-            type: 'separator'
+            type: 'separator',
         });
     }
-
 
     const menu = Menu.buildFromTemplate([
         ...quickLaunchMenu,
@@ -105,17 +117,14 @@ export async function updateMenu(tray: Tray, mainWindow: BrowserWindow): Promise
             label: t('menus:tray.quit'),
             click: () => {
                 app.quit();
-            }
-        }
+            },
+        },
     ]);
     return menu;
 }
 
-
 async function popMenu(tray: Tray, mainWindow: BrowserWindow): Promise<void> {
-
     const menu = await updateMenu(tray, mainWindow);
 
     tray.popUpContextMenu(menu);
-
 }

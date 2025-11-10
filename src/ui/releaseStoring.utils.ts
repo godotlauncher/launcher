@@ -6,7 +6,10 @@ const RELEASE_TYPE_PRIORITY: Record<string, number> = {
     dev: 2,
 };
 
-interface SortableRelease { version: string, prerelease?: boolean; }
+interface SortableRelease {
+    version: string;
+    prerelease?: boolean;
+}
 
 /**
  * Parses a release name string and extracts version components (major, minor, patch, revision),
@@ -70,7 +73,8 @@ export function parseReleaseName(version: string) {
     // - If there's no patch part, default it to 0.
     // - If there's no revision part, default it to 0.
     // - If there's no suffix for beta/dev, default it to 0.
-    const regex = /^(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-(stable|beta|dev)(\d+)?)?$/;
+    const regex =
+        /^(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-(stable|beta|dev)(\d+)?)?$/;
     const match = version.match(regex);
     if (!match) {
         // Fallback if it doesn't match
@@ -151,5 +155,8 @@ export function sortReleases(a: SortableRelease, b: SortableRelease) {
 }
 
 export function sortByPublishDate(a: ReleaseSummary, b: ReleaseSummary) {
-    return new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime();
+    return (
+        new Date(b.published_at!).getTime() -
+        new Date(a.published_at!).getTime()
+    );
 }

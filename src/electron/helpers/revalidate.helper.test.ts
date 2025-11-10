@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BrowserWindow } from 'electron';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const moduleMocks = vi.hoisted(() => ({
     checkAndUpdateReleases: vi.fn(),
@@ -39,10 +39,14 @@ const createMockBrowserWindow = () => {
             return windowRef;
         }),
         removeListener: vi.fn((event: string, listener: FocusListener) => {
-            listeners[event] = (listeners[event] ?? []).filter((l) => l !== listener);
+            listeners[event] = (listeners[event] ?? []).filter(
+                (l) => l !== listener,
+            );
         }),
         emit: (event: string) => {
-            (listeners[event] ?? []).forEach((listener) => listener());
+            (listeners[event] ?? []).forEach((listener) => {
+                listener();
+            });
         },
         listeners,
         isDestroyed: () => false,
@@ -70,7 +74,9 @@ describe('setupFocusRevalidation', () => {
     });
 
     it('debounces focus-triggered revalidation and broadcasts updates', async () => {
-        const dispose = setupFocusRevalidation(mockWindow as unknown as BrowserWindow);
+        const dispose = setupFocusRevalidation(
+            mockWindow as unknown as BrowserWindow,
+        );
 
         mockWindow.emit('focus');
         mockWindow.emit('focus');
@@ -83,19 +89,21 @@ describe('setupFocusRevalidation', () => {
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
             'releases-updated',
             mockWindow.webContents,
-            []
+            [],
         );
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
             'projects-updated',
             mockWindow.webContents,
-            []
+            [],
         );
 
         dispose();
     });
 
     it('stops scheduling once disposed', async () => {
-        const dispose = setupFocusRevalidation(mockWindow as unknown as BrowserWindow);
+        const dispose = setupFocusRevalidation(
+            mockWindow as unknown as BrowserWindow,
+        );
 
         mockWindow.emit('focus');
         await vi.runOnlyPendingTimersAsync();

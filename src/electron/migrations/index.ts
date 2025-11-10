@@ -1,9 +1,14 @@
 import logger from 'electron-log';
 
 import { getDefaultDirs } from '../utils/platform.utils.js';
-import { loadMigrationState, saveMigrationState } from './state.js';
 import { migrations } from './registry.js';
-import type { Migration, MigrationContext, MigrationExecutionContext, MigrationResult } from './types.js';
+import { loadMigrationState, saveMigrationState } from './state.js';
+import type {
+    Migration,
+    MigrationContext,
+    MigrationExecutionContext,
+    MigrationResult,
+} from './types.js';
 
 function hasCompleted(state: readonly string[], migration: Migration): boolean {
     return state.includes(migration.id);
@@ -11,7 +16,7 @@ function hasCompleted(state: readonly string[], migration: Migration): boolean {
 
 async function evaluatePredicate(
     migration: Migration,
-    context: MigrationExecutionContext
+    context: MigrationExecutionContext,
 ): Promise<boolean> {
     if (!migration.predicate) {
         return true;
@@ -23,11 +28,12 @@ async function evaluatePredicate(
 
 function assertMigrationResult(
     migration: Migration,
-    outcome: MigrationResult | void
+    outcome: MigrationResult | void,
 ): void {
     const normalizedStatus = outcome?.status ?? 'completed';
     if (normalizedStatus === 'failed') {
-        const message = outcome?.message ?? `Migration ${migration.id} reported failure`;
+        const message =
+            outcome?.message ?? `Migration ${migration.id} reported failure`;
         throw new Error(message);
     }
 }
@@ -47,32 +53,39 @@ export async function runMigrations(appVersion: string): Promise<void> {
     const initialLastSeenVersion = state.lastSeenVersion;
     const context: MigrationContext = {
         currentVersion: appVersion,
-        lastSeenVersion: initialLastSeenVersion
+        lastSeenVersion: initialLastSeenVersion,
     };
 
     let completedAny = false;
 
     for (const migration of migrations) {
         if (hasCompleted(state.completed, migration)) {
-            logger.debug(`Migration ${migration.id} already completed, skipping`);
+            logger.debug(
+                `Migration ${migration.id} already completed, skipping`,
+            );
             continue;
         }
 
         const executionContext: MigrationExecutionContext = {
             ...context,
-            ...(migration.options ? { options: migration.options } : {})
+            ...(migration.options ? { options: migration.options } : {}),
         };
 
         let shouldRun: boolean;
         try {
             shouldRun = await evaluatePredicate(migration, executionContext);
         } catch (error) {
-            logger.error(`Migration predicate for ${migration.id} threw`, error);
+            logger.error(
+                `Migration predicate for ${migration.id} threw`,
+                error,
+            );
             throw error;
         }
 
         if (!shouldRun) {
-            logger.debug(`Migration ${migration.id} predicate returned false, skipping`);
+            logger.debug(
+                `Migration ${migration.id} predicate returned false, skipping`,
+            );
             continue;
         }
 

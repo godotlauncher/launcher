@@ -1,18 +1,18 @@
-import electronUpdater, { UpdateCheckResult } from 'electron-updater';
+import { app, type BrowserWindow, type WebContents } from 'electron';
 import logger from 'electron-log';
-
+import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import { setInterval } from 'timers';
 import { ipcWebContentsSend } from './utils.js';
-import { app, BrowserWindow, WebContents } from 'electron';
 
 let interval: NodeJS.Timeout;
 
 let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
 
-export async function startAutoUpdateChecks(intervalMs: number = (60 * 60 * 1000)) {
+export async function startAutoUpdateChecks(
+    intervalMs: number = 60 * 60 * 1000,
+) {
     if (!interval || !interval.hasRef()) {
-
         logger.info('Starting auto update check');
         // run as soon as it starts
         await checkForUpdates();
@@ -31,7 +31,6 @@ export function installUpdateAndRestart() {
     autoUpdater.quitAndInstall(true, true);
     app.quit();
 }
-
 
 export function stopAutoUpdateChecks() {
     if (interval && interval.hasRef()) {
@@ -53,38 +52,41 @@ export async function checkForUpdates() {
     let result: UpdateCheckResult | null = null;
     try {
         result = await autoUpdater.checkForUpdates();
-
     } catch (e) {
         logger.error('Error checking for updates', e);
     }
 
     if (result) {
         logger.info(`New version available: ${result?.updateInfo.version}`);
-    }
-    else {
+    } else {
         logger.info('No updates available');
     }
 
-    const hasNewVersion = result !== null && result.updateInfo.version !== autoUpdater.currentVersion.version;
+    const hasNewVersion =
+        result !== null &&
+        result.updateInfo.version !== autoUpdater.currentVersion.version;
     const newVersion = result?.updateInfo.version;
     ipcWebContentsSend('app-updates', webContents, {
         available: hasNewVersion,
         downloaded: false,
         type: hasNewVersion ? 'available' : 'none',
         version: newVersion,
-        message: hasNewVersion ? `New version available: ${newVersion}` : 'No updates available',
+        message: hasNewVersion
+            ? `New version available: ${newVersion}`
+            : 'No updates available',
     });
 }
 
 export async function setupAutoUpdate(
     mainWindow: BrowserWindow,
     checkForUpdates: boolean = true,
-    intervalMs: number = (60 * 60 * 1000),
+    intervalMs: number = 60 * 60 * 1000,
     autoDownload: boolean = false,
-    installOnQuit: boolean = true
+    installOnQuit: boolean = true,
 ) {
-
-    logger.info(`Starting auto updates, enabled: ${checkForUpdates}; autoDownload: ${autoDownload}; installOnQuit: ${installOnQuit}`);
+    logger.info(
+        `Starting auto updates, enabled: ${checkForUpdates}; autoDownload: ${autoDownload}; installOnQuit: ${installOnQuit}`,
+    );
 
     webContents = mainWindow.webContents;
 
@@ -141,9 +143,6 @@ export async function setupAutoUpdate(
             type: 'ready',
             version: event.version,
             message: 'Update downloaded, restart to install.',
-
         });
     });
-
 }
-

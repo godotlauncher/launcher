@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import logger from 'electron-log';
 
 import { checkAndUpdateProjects, checkAndUpdateReleases } from '../checks.js';
@@ -23,7 +23,9 @@ async function performRevalidation(targetWindow: BrowserWindow): Promise<void> {
 
         const webContents = targetWindow.webContents;
         if (!webContents || webContents.isDestroyed()) {
-            logger.warn('Skipping revalidation broadcast: webContents destroyed');
+            logger.warn(
+                'Skipping revalidation broadcast: webContents destroyed',
+            );
             return;
         }
 

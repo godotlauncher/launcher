@@ -55,7 +55,7 @@ describe('InstalledReleaseTable', () => {
                 onRetry={vi.fn()}
                 onRemove={vi.fn()}
                 loading={false}
-            />
+            />,
         );
 
         expect(html).toContain('Unavailable');
@@ -70,7 +70,7 @@ describe('InstalledReleaseTable', () => {
                 onRetry={vi.fn()}
                 onRemove={vi.fn()}
                 loading={false}
-            />
+            />,
         );
 
         expect(html).not.toContain('Unavailable');
@@ -88,7 +88,7 @@ describe('InstalledReleaseTable', () => {
                 onRetry={vi.fn()}
                 onRemove={vi.fn()}
                 loading={true}
-            />
+            />,
         );
 
         expect(html).toContain('disabled');

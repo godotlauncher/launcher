@@ -21,8 +21,7 @@ export const WindowsSymlinkSetting: React.FC = () => {
                 ...preferences,
                 windows_enable_symlinks: nextValue,
             });
-        }
-        finally {
+        } finally {
             setSaving(false);
         }
 
@@ -34,35 +33,42 @@ export const WindowsSymlinkSetting: React.FC = () => {
             return;
         }
 
-        const title = checked ? t('windowsSymlinks.enableTitle') : t('windowsSymlinks.disableTitle');
-        const actionLabel = checked ? t('windowsSymlinks.enableAction') : t('windowsSymlinks.disableAction');
-        const description = checked
-            ? (
-                <div className="flex flex-col gap-2 text-sm">
-                    <p>{t('windowsSymlinks.enableDescription.line1')}</p>
-                    <p>{t('windowsSymlinks.enableDescription.line2')}</p>
-                    <p>{t('windowsSymlinks.enableDescription.line3')}</p>
-                </div>
-            )
-            : (
-                <div className="flex flex-col gap-2 text-sm">
-                    <p>{t('windowsSymlinks.disableDescription.line1')}</p>
-                    <p>{t('windowsSymlinks.disableDescription.line2')}</p>
-                </div>
-            );
+        const title = checked
+            ? t('windowsSymlinks.enableTitle')
+            : t('windowsSymlinks.disableTitle');
+        const actionLabel = checked
+            ? t('windowsSymlinks.enableAction')
+            : t('windowsSymlinks.disableAction');
+        const description = checked ? (
+            <div className="flex flex-col gap-2 text-sm">
+                <p>{t('windowsSymlinks.enableDescription.line1')}</p>
+                <p>{t('windowsSymlinks.enableDescription.line2')}</p>
+                <p>{t('windowsSymlinks.enableDescription.line3')}</p>
+            </div>
+        ) : (
+            <div className="flex flex-col gap-2 text-sm">
+                <p>{t('windowsSymlinks.disableDescription.line1')}</p>
+                <p>{t('windowsSymlinks.disableDescription.line2')}</p>
+            </div>
+        );
 
-        addCustomConfirm(title, description, [
-            {
-                isCancel: true,
-                typeClass: 'btn-neutral',
-                text: 'Cancel',
-            },
-            {
-                typeClass: 'btn-primary',
-                text: actionLabel,
-                onClick: () => applyPreferenceChange(checked),
-            },
-        ], <TriangleAlert className="text-warning" />);
+        addCustomConfirm(
+            title,
+            description,
+            [
+                {
+                    isCancel: true,
+                    typeClass: 'btn-neutral',
+                    text: 'Cancel',
+                },
+                {
+                    typeClass: 'btn-primary',
+                    text: actionLabel,
+                    onClick: () => applyPreferenceChange(checked),
+                },
+            ],
+            <TriangleAlert className="text-warning" />,
+        );
     };
 
     return (
@@ -70,7 +76,12 @@ export const WindowsSymlinkSetting: React.FC = () => {
             <div className="divider"></div>
             <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                    <h2 className="font-bold">{t('windowsSymlinks.title')} <span className='badge badge-sm badge-info'>{t('windowsSymlinks.windowsOnly')}</span></h2>
+                    <h2 className="font-bold">
+                        {t('windowsSymlinks.title')}{' '}
+                        <span className="badge badge-sm badge-info">
+                            {t('windowsSymlinks.windowsOnly')}
+                        </span>
+                    </h2>
                     <p className="text-sm text-base-content/80">
                         {t('windowsSymlinks.description')}
                     </p>

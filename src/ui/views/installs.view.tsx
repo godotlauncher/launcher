@@ -19,7 +19,7 @@ type ReleaseActionDependencies = {
 };
 
 export const createReleaseActions = (
-    dependencies: ReleaseActionDependencies
+    dependencies: ReleaseActionDependencies,
 ) => ({
     retry: async () => dependencies.checkAllReleasesValid(),
     remove: async (release: InstalledRelease) => {
@@ -44,7 +44,7 @@ export const InstallsView: React.FC = () => {
 
     const onOpenReleaseMoreOptions = (
         e: React.MouseEvent,
-        release: InstalledRelease
+        release: InstalledRelease,
     ) => {
         e.stopPropagation();
         showReleaseMenu(release);
@@ -65,19 +65,19 @@ export const InstallsView: React.FC = () => {
                 config_version: 5,
                 published_at: r.published_at,
                 valid: true,
-            }))
+            })),
         );
 
         if (textSearch === '') return all.sort(sortReleases);
         const selection = all.filter((row) =>
-            row.version.toLowerCase().includes(textSearch.toLowerCase())
+            row.version.toLowerCase().includes(textSearch.toLowerCase()),
         );
         return selection.sort(sortReleases);
     };
 
     const releaseActions = useMemo(
         () => createReleaseActions({ checkAllReleasesValid, removeRelease }),
-        [checkAllReleasesValid, removeRelease]
+        [checkAllReleasesValid, removeRelease],
     );
 
     const handleRetry = async (release: InstalledRelease) => {
@@ -87,7 +87,7 @@ export const InstallsView: React.FC = () => {
             const refreshedRelease = releases.find(
                 (candidate) =>
                     candidate.version === release.version &&
-                    candidate.mono === release.mono
+                    candidate.mono === release.mono,
             );
 
             if (refreshedRelease?.valid) {
@@ -95,7 +95,7 @@ export const InstallsView: React.FC = () => {
                     t('common:success'),
                     t('messages.revalidatedRelease', {
                         version: release.version,
-                    })
+                    }),
                 );
                 return;
             }
@@ -108,9 +108,9 @@ export const InstallsView: React.FC = () => {
 
             const candidatePath = rawPath
                 ? (rawPath.endsWith('/')
-                    ? rawPath
-                    : rawPath.substring(0, rawPath.lastIndexOf('/') + 1)) ||
-                rawPath
+                      ? rawPath
+                      : rawPath.substring(0, rawPath.lastIndexOf('/') + 1)) ||
+                  rawPath
                 : undefined;
 
             if (candidatePath) {
@@ -125,20 +125,22 @@ export const InstallsView: React.FC = () => {
                         </span>
                         <span className="flex flex-row gap-2">
                             <button
+                                type="button"
                                 className="btn btn-xs btn-outline"
                                 onClick={async () => {
                                     await navigator.clipboard.writeText(
-                                        candidatePath
+                                        candidatePath,
                                     );
                                 }}
                             >
                                 {t('buttons.copyPath', { ns: 'common' })}
                             </button>
                             <button
+                                type="button"
                                 className="btn btn-xs btn-outline"
                                 onClick={() =>
                                     window.electron.openShellFolder(
-                                        candidatePath
+                                        candidatePath,
                                     )
                                 }
                             >
@@ -146,7 +148,7 @@ export const InstallsView: React.FC = () => {
                             </button>
                         </span>
                     </span>,
-                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />
+                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
                 );
             } else {
                 addAlert(
@@ -154,14 +156,14 @@ export const InstallsView: React.FC = () => {
                     t('messages.revalidationStillMissingNoPath', {
                         version: release.version,
                     }),
-                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />
+                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
                 );
             }
         } catch (error) {
             addAlert(
                 t('common:error'),
                 t('messages.revalidationFailed'),
-                <TriangleAlertIcon className="inline w-4 h-4 text-error" />
+                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
             logger.error(error);
         }
@@ -184,6 +186,7 @@ export const InstallsView: React.FC = () => {
                         </h1>
                         <div className="flex gap-2">
                             <button
+                                type="button"
                                 data-testid="btnInstallEditor"
                                 className="btn btn-primary"
                                 onClick={() => setInstallOpen(true)}
@@ -202,6 +205,7 @@ export const InstallsView: React.FC = () => {
                         />
                         {textSearch.length > 0 && (
                             <button
+                                type="button"
                                 tabIndex={-1}
                                 onClick={() => setTextSearch('')}
                                 className="absolute right-4 w-6 h-6"
@@ -214,126 +218,130 @@ export const InstallsView: React.FC = () => {
                 <div className="divider m-0"></div>
 
                 {installedReleases.length < 1 &&
-                    downloadingReleases.length < 1 ? (
-                        <div className="text-warning flex gap-2">
-                            <TriangleAlert className="stroke-warning" />
-                            <Trans
-                                ns="installs"
-                                i18nKey="messages.noReleasesCta"
-                                components={{
-                                    Link: (
-                                        <a
-                                            onClick={() => setInstallOpen(true)}
-                                            className="underline cursor-pointer"
-                                        />
-                                    ),
-                                }}
-                            />
-                        </div>
-                    ) : (
-                        <div className="overflow-auto h-full">
-                            <table className="table table-md">
-                                <thead className="sticky top-0 bg-base-200 text-xs">
-                                    <tr>
-                                        <th>{t('table.name')}</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
+                downloadingReleases.length < 1 ? (
+                    <div className="text-warning flex gap-2">
+                        <TriangleAlert className="stroke-warning" />
+                        <Trans
+                            ns="installs"
+                            i18nKey="messages.noReleasesCta"
+                            components={{
+                                Link: (
+                                    <button
+                                        type="button"
+                                        onClick={() => setInstallOpen(true)}
+                                        className="underline cursor-pointer"
+                                    />
+                                ),
+                            }}
+                        />
+                    </div>
+                ) : (
+                    <div className="overflow-auto h-full">
+                        <table className="table table-md">
+                            <thead className="sticky top-0 bg-base-200 text-xs">
+                                <tr>
+                                    <th>{t('table.name')}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
 
-                                <tbody className="overflow-y-auto">
-                                    {getFilteredRows().map((row, index) => (
-                                        <tr
-                                            key={index}
-                                            className="even:bg-base-100 hover:bg-base-content/10"
-                                        >
-                                            <td>
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="flex flex-row gap-2 flex-wrap items-center">
-                                                        {row.valid === false && (
-                                                            <TriangleAlert className="w-4 h-4 text-warning" />
-                                                        )}
-                                                        {row.version}
-                                                        {row.mono && (
-                                                            <span className="badge">
-                                                                {t('badges.dotNet')}
-                                                            </span>
-                                                        )}
-                                                        {row.prerelease && (
-                                                            <span className="badge badge-secondary">
+                            <tbody className="overflow-y-auto">
+                                {getFilteredRows().map((row, index) => (
+                                    <tr
+                                        key={`installedReleaseRow_${row.version}_${index}`}
+                                        className="even:bg-base-100 hover:bg-base-content/10"
+                                    >
+                                        <td>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex flex-row gap-2 flex-wrap items-center">
+                                                    {row.valid === false && (
+                                                        <TriangleAlert className="w-4 h-4 text-warning" />
+                                                    )}
+                                                    {row.version}
+                                                    {row.mono && (
+                                                        <span className="badge">
+                                                            {t('badges.dotNet')}
+                                                        </span>
+                                                    )}
+                                                    {row.prerelease && (
+                                                        <span className="badge badge-secondary">
+                                                            {t(
+                                                                'badges.prerelease',
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-base-content/50 flex flex-col gap-1">
+                                                    {row.valid === false ? (
+                                                        <>
+                                                            <span>
                                                                 {t(
-                                                                    'badges.prerelease'
+                                                                    'messages.unavailableHint',
                                                                 )}
                                                             </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-xs text-base-content/50 flex flex-col gap-1">
-                                                        {row.valid === false ? (
-                                                            <>
-                                                                <span>
-                                                                    {t(
-                                                                        'messages.unavailableHint'
+                                                            <div className="flex flex-row flex-wrap gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-ghost btn-xs flex items-center gap-2"
+                                                                    onClick={() =>
+                                                                        handleRetry(
+                                                                            row,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        releasesLoading
+                                                                    }
+                                                                >
+                                                                    {releasesLoading && (
+                                                                        <span className="loading loading-spinner loading-xs"></span>
                                                                     )}
-                                                                </span>
-                                                                <div className="flex flex-row flex-wrap gap-2">
-                                                                    <button
-                                                                        className="btn btn-ghost btn-xs flex items-center gap-2"
-                                                                        onClick={() =>
-                                                                            handleRetry(
-                                                                                row
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            releasesLoading
-                                                                        }
-                                                                    >
-                                                                        {releasesLoading && (
-                                                                            <span className="loading loading-spinner loading-xs"></span>
-                                                                        )}
-                                                                        {t(
-                                                                            'buttons.retry',
-                                                                            {
-                                                                                ns: 'common',
-                                                                            }
-                                                                        )}
-                                                                    </button>
-                                                                    <button
-                                                                        className="btn btn-ghost btn-xs"
-                                                                        onClick={() =>
-                                                                            handleRemove(
-                                                                                row
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            releasesLoading
-                                                                        }
-                                                                    >
-                                                                        {t(
-                                                                            'buttons.uninstall'
-                                                                        )}
-                                                                    </button>
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            row.install_path || (
-                                                                <div className="flex flex-row gap-2 items-center">
-                                                                    <div className="loading loading-ring loading-sm"></div>
                                                                     {t(
-                                                                        'status.installing'
+                                                                        'buttons.retry',
+                                                                        {
+                                                                            ns: 'common',
+                                                                        },
                                                                     )}
-                                                                </div>
-                                                            )
-                                                        )}
-                                                    </div>
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-ghost btn-xs"
+                                                                    onClick={() =>
+                                                                        handleRemove(
+                                                                            row,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        releasesLoading
+                                                                    }
+                                                                >
+                                                                    {t(
+                                                                        'buttons.uninstall',
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        row.install_path || (
+                                                            <div className="flex flex-row gap-2 items-center">
+                                                                <div className="loading loading-ring loading-sm"></div>
+                                                                {t(
+                                                                    'status.installing',
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    )}
                                                 </div>
-                                            </td>
-                                            <td className="flex flex-row justify-end">
-                                                {row.install_path &&
+                                            </div>
+                                        </td>
+                                        <td className="flex flex-row justify-end">
+                                            {row.install_path &&
                                                 row.valid !== false && (
                                                     <button
+                                                        type="button"
                                                         onClick={(e) =>
                                                             onOpenReleaseMoreOptions(
                                                                 e,
-                                                                row
+                                                                row,
                                                             )
                                                         }
                                                         className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"
@@ -341,13 +349,13 @@ export const InstallsView: React.FC = () => {
                                                         <EllipsisVertical />
                                                     </button>
                                                 )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
             {installOpen && (
                 <InstallEditorSubView onClose={() => setInstallOpen(false)} />

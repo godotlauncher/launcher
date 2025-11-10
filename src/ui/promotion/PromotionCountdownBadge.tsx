@@ -1,4 +1,4 @@
-import { PromotionCountdownMeta } from './promotion.types';
+import type { PromotionCountdownMeta } from './promotion.types';
 
 type PromotionCountdownBadgeProps = {
     countdown: PromotionCountdownMeta;
@@ -11,7 +11,7 @@ type PromotionCountdownBadgeProps = {
 function formatTemplate(
     template: string | undefined,
     replacements: Record<string, string>,
-    fallback: string
+    fallback: string,
 ): string {
     if (!template) {
         return fallback;
@@ -32,7 +32,7 @@ export function PromotionCountdownBadge({
 }: PromotionCountdownBadgeProps) {
     const progress = Math.max(
         0,
-        Math.min(100, Math.round(countdown.percentageRemaining * 100))
+        Math.min(100, Math.round(countdown.percentageRemaining * 100)),
     );
 
     let label: string;
@@ -48,18 +48,17 @@ export function PromotionCountdownBadge({
                     minutes: minutes.toString(),
                     seconds: paddedSeconds,
                 },
-                `${minutes}m ${paddedSeconds}s left`
+                `${minutes}m ${paddedSeconds}s left`,
             );
             break;
         }
         case 'hours': {
             const hours = Math.max(countdown.hoursRemaining, 0);
-            const base =
-                hours === 1 ? '1 hour left' : `${hours} hours left`;
+            const base = hours === 1 ? '1 hour left' : `${hours} hours left`;
             label = formatTemplate(
                 hourLabel,
                 { count: hours.toString() },
-                base
+                base,
             );
             break;
         }
@@ -69,12 +68,12 @@ export function PromotionCountdownBadge({
             const singular = formatTemplate(
                 singularLabel,
                 { count: '1' },
-                '1 day left'
+                '1 day left',
             );
             const plural = formatTemplate(
                 pluralLabel,
                 { count: days.toString() },
-                `${days} days left`
+                `${days} days left`,
             );
             label = days === 1 ? singular : plural;
             break;

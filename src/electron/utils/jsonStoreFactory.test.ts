@@ -3,15 +3,20 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-import { createTypedJsonStore, __resetJsonStoreFactoryForTesting } from './jsonStoreFactory.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
+import {
+    __resetJsonStoreFactoryForTesting,
+    createTypedJsonStore,
+} from './jsonStoreFactory.js';
 
 type SampleData = {
     value: number;
 };
 
-const TEMP_DIR = path.join(os.tmpdir(), 'godot-launcher-json-store-factory-tests');
+const TEMP_DIR = path.join(
+    os.tmpdir(),
+    'godot-launcher-json-store-factory-tests',
+);
 
 function filePath(name: string): string {
     return path.join(TEMP_DIR, name);

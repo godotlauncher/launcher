@@ -7,6 +7,7 @@ import {
     PROJECTS_FILENAME,
     TEMPLATE_DIR_NAME,
 } from '../constants.js';
+import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
@@ -15,6 +16,7 @@ import {
 } from '../utils/godot.utils.js';
 import {
     createNewEditorSettings,
+    type GodotProjectFile,
     getProjectConfigVersionFromParsed,
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
@@ -23,20 +25,19 @@ import {
 } from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
+import { sortReleases } from '../utils/releaseSorting.utils.js';
+import {
+    addOrUpdateVSCodeRecommendedExtensions,
+    addVSCodeNETLaunchConfig,
+    updateVSCodeSettings,
+} from '../utils/vscode.utils.js';
+import { getInstalledTools } from './installedTools.js';
+import { getProjectsDetails } from './projects.js';
 import { getInstalledReleases } from './releases.js';
 import { getUserPreferences } from './userPreferences.js';
-import { sortReleases } from '../utils/releaseSorting.utils.js';
-import { getProjectsDetails } from './projects.js';
-import { getInstalledTools } from './installedTools.js';
-import { t } from '../i18n/index.js';
-import {
-    updateVSCodeSettings,
-    addVSCodeNETLaunchConfig,
-    addOrUpdateVSCodeRecommendedExtensions,
-} from '../utils/vscode.utils.js';
 
 export async function addProject(
-    projectPath: string
+    projectPath: string,
 ): Promise<AddProjectToListResult> {
     const { configDir } = getDefaultDirs();
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
@@ -50,7 +51,9 @@ export async function addProject(
     if (projects.find((p) => p.path === dirname)) {
         return {
             success: false,
-            error: t('projects:addProject.errors.projectExists', { path: dirname }),
+            error: t('projects:addProject.errors.projectExists', {
+                path: dirname,
+            }),
         };
     }
 
@@ -61,9 +64,9 @@ export async function addProject(
             error: t('projects:addProject.errors.invalidPath'),
         };
     }
-    let parsedConfig;
+    let parsedConfig: GodotProjectFile | null = null;
     try {
-    // read project file
+        // read project file
         const projectFile = await fs.promises.readFile(projectPath, 'utf-8');
         parsedConfig = parseGodotProjectFile(projectFile);
         if (!parsedConfig) {
@@ -78,7 +81,7 @@ export async function addProject(
         }
         return {
             success: false,
-            error: t('projects:addProject.errors.invalidProjectFile') + ' ' + e,
+            error: `${t('projects:addProject.errors.invalidProjectFile')} ${e}`,
         };
     }
 
@@ -89,7 +92,9 @@ export async function addProject(
     if (projects.find((p) => p.name === projectName)) {
         return {
             success: false,
-            error: t('projects:addProject.errors.nameExists', { name: projectName }),
+            error: t('projects:addProject.errors.nameExists', {
+                name: projectName,
+            }),
         };
     }
 
@@ -127,20 +132,22 @@ export async function addProject(
     // get the highest version number for that major version
 
     const releases =
-    installedReleases
-        .filter(
-            (r) =>
-                parseInt(r.version_number.toString()) ==
-            parseInt(releaseBaseVersion.toString()) &&
-          r.valid &&
-          r.version.toLowerCase().includes('stable')
-        )
-        .sort(sortReleases) || [];
+        installedReleases
+            .filter(
+                (r) =>
+                    parseInt(r.version_number.toString(), 10) ===
+                        parseInt(releaseBaseVersion.toString(), 10) &&
+                    r.valid &&
+                    r.version.toLowerCase().includes('stable'),
+            )
+            .sort(sortReleases) || [];
 
     if (releases.length === 0) {
         return {
             success: false,
-            error: t('projects:addProject.errors.noStableReleases', { version: releaseBaseVersion }),
+            error: t('projects:addProject.errors.noStableReleases', {
+                version: releaseBaseVersion,
+            }),
         };
     }
 
@@ -153,7 +160,7 @@ export async function addProject(
     }
 
     const compatibleReleases = releases.filter(
-        (r) => r.config_version >= configVersion
+        (r) => r.config_version >= configVersion,
     );
 
     release =
@@ -163,9 +170,9 @@ export async function addProject(
     if (!release) {
         return {
             success: false,
-            error: t('projects:addProject.errors.noCompatibleRelease', { 
-                version: releaseBaseVersion, 
-                configVersion: configVersion 
+            error: t('projects:addProject.errors.noCompatibleRelease', {
+                version: releaseBaseVersion,
+                configVersion: configVersion,
             }),
         };
     }
@@ -174,7 +181,7 @@ export async function addProject(
     if (release) {
         config = getProjectDefinition(
             release?.version_number || 0,
-            DEFAULT_PROJECT_DEFINITION
+            DEFAULT_PROJECT_DEFINITION,
         );
     }
     if (!config) {
@@ -188,7 +195,7 @@ export async function addProject(
     const projectEditorPath = path.resolve(
         prefs.install_location,
         EDITOR_CONFIG_DIRNAME,
-        projectName
+        projectName,
     );
     let editorConfigFileName = '';
     let editorSettingsFile = '';
@@ -199,7 +206,9 @@ export async function addProject(
         logger.debug('Setting project editor release', release);
         // launch_path = await setEditorSymlink(projectEditorPath, release.editor_path);
         launch_path = await SetProjectEditorRelease(projectEditorPath, release);
-        editorConfigFileName = config.editorConfigFilename(release.version_number);
+        editorConfigFileName = config.editorConfigFilename(
+            release.version_number,
+        );
     }
 
     const withGit = fs.existsSync(path.resolve(dirname, '.git'));
@@ -213,7 +222,7 @@ export async function addProject(
         editorSettingsFile = path.resolve(
             projectEditorPath,
             'editor_data',
-            editorConfigFileName
+            editorConfigFileName,
         );
 
         let vscodeSettingsPath = vsCodeTool.path;
@@ -223,7 +232,7 @@ export async function addProject(
                 vscodeSettingsPath,
                 'Contents',
                 'MacOS',
-                'Electron'
+                'Electron',
             );
         }
 
@@ -248,7 +257,7 @@ export async function addProject(
                 true,
                 vscodeSettingsPath,
                 '{project} --goto {file}:{line}:{col}',
-                release.mono
+                release.mono,
             );
         }
 
@@ -257,7 +266,7 @@ export async function addProject(
             dirname,
             launch_path,
             release.version_number,
-            release.mono
+            release.mono,
         );
 
         // Always update VSCode recommended extensions
@@ -272,7 +281,8 @@ export async function addProject(
     const project: ProjectDetails = {
         path: dirname,
         name: projectName,
-        version: release?.version ?? releaseBaseVersion.toFixed(1) + ' (missing)',
+        version:
+            release?.version ?? `${releaseBaseVersion.toFixed(1)} (missing)`,
         version_number: release?.version_number ?? releaseBaseVersion,
         renderer,
         last_opened: null,
@@ -281,7 +291,10 @@ export async function addProject(
             ? path.dirname(editorSettingsFile)
             : '',
         editor_settings_file: editorSettingsFile
-            ? path.resolve(path.dirname(editorSettingsFile), editorConfigFileName)
+            ? path.resolve(
+                  path.dirname(editorSettingsFile),
+                  editorConfigFileName,
+              )
             : '',
         config_version: configVersion as 5,
         withGit,

@@ -83,7 +83,9 @@ const releasesUtilsMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../utils/releases.utils.js', async () => {
-    const actual = await vi.importActual<typeof import('../utils/releases.utils.js')>('../utils/releases.utils.js');
+    const actual = await vi.importActual<
+        typeof import('../utils/releases.utils.js')
+    >('../utils/releases.utils.js');
     return {
         ...actual,
         downloadReleaseAsset: releasesUtilsMocks.downloadReleaseAsset,
@@ -138,7 +140,9 @@ describe('installRelease', () => {
         fsMocks.promises.rm.mockResolvedValue(undefined);
 
         releasesUtilsMocks.downloadReleaseAsset.mockResolvedValue(undefined);
-        releasesUtilsMocks.addStoredInstalledRelease.mockResolvedValue(undefined);
+        releasesUtilsMocks.addStoredInstalledRelease.mockResolvedValue(
+            undefined,
+        );
 
         platformUtilsMocks.getDefaultDirs.mockReturnValue({
             configDir: '/config',
@@ -169,7 +173,8 @@ describe('installRelease', () => {
     it('downloads and registers the Windows arm64 editor asset', async () => {
         const arm64Asset: AssetSummary = {
             name: 'Godot_v4.5.1-stable_windows_arm64.exe.zip',
-            download_url: 'https://example.com/Godot_v4.5.1-stable_windows_arm64.exe.zip',
+            download_url:
+                'https://example.com/Godot_v4.5.1-stable_windows_arm64.exe.zip',
             platform_tags: ['win32', 'arm64'],
             mono: false,
         };
@@ -185,29 +190,38 @@ describe('installRelease', () => {
 
         const result = await installRelease(release, false);
 
-        const expectedInstallPath = path.resolve('/installs', 'Godot_v4.5.1-stable');
-        const expectedDownloadPath = path.resolve('/installs', 'tmp', 'Godot_v4.5.1-stable');
+        const expectedInstallPath = path.resolve(
+            '/installs',
+            'Godot_v4.5.1-stable',
+        );
+        const expectedDownloadPath = path.resolve(
+            '/installs',
+            'tmp',
+            'Godot_v4.5.1-stable',
+        );
         const expectedEditorPath = path.resolve(
             expectedInstallPath,
-            'Godot_v4.5.1-stable_windows_arm64.exe'
+            'Godot_v4.5.1-stable_windows_arm64.exe',
         );
 
         expect(releasesUtilsMocks.downloadReleaseAsset).toHaveBeenCalledWith(
             arm64Asset,
-            path.resolve(expectedDownloadPath, arm64Asset.name)
+            path.resolve(expectedDownloadPath, arm64Asset.name),
         );
         expect(decompressMocks.decompress).toHaveBeenCalledWith(
             path.resolve(expectedDownloadPath, arm64Asset.name),
-            expectedInstallPath
+            expectedInstallPath,
         );
-        expect(releasesUtilsMocks.addStoredInstalledRelease).toHaveBeenCalledWith(
+        expect(
+            releasesUtilsMocks.addStoredInstalledRelease,
+        ).toHaveBeenCalledWith(
             expect.objectContaining({
                 arch: 'arm64',
                 platform: 'win32',
                 mono: false,
                 install_path: expectedInstallPath,
                 editor_path: expectedEditorPath,
-            })
+            }),
         );
         expect(result.success).toBe(true);
         expect(result.release?.arch).toBe('arm64');

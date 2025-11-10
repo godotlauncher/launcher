@@ -1,0 +1,7 @@
+packages:
+  - 'src/libs/**'
+
+onlyBuiltDependencies:
+  - electron
+  - electron-winstaller
+  - esbuild

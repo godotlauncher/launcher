@@ -1,11 +1,21 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
+import {
+    createContext,
+    type PropsWithChildren,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+} from 'react';
 
 interface AppPreferences {
     preferences: UserPreferences | null;
     savePreferences: (preferences: UserPreferences) => void;
     loadPreferences: () => Promise<UserPreferences>;
     updatePreferences: (preferences: Partial<UserPreferences>) => void;
-    setAutoStart: (autoStart: boolean, hidden: boolean) => Promise<SetAutoStartResult>;
+    setAutoStart: (
+        autoStart: boolean,
+        hidden: boolean,
+    ) => Promise<SetAutoStartResult>;
     setAutoUpdates: (enabled: boolean) => Promise<boolean>;
     platform: string;
 }
@@ -22,8 +32,12 @@ export const usePreferences = () => {
 
 type AppPreferencesProviderProps = PropsWithChildren;
 
-export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({ children }) => {
-    const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
+    children,
+}) => {
+    const [preferences, setPreferences] = useState<UserPreferences | null>(
+        null,
+    );
     const [platform, setPlatform] = useState<string>('');
 
     const loadPreferences = useCallback(async () => {
@@ -32,11 +46,15 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({ chi
         return preferences;
     }, []);
 
-    const savePreferences = useCallback(async (preferences: UserPreferences) => {
-        const newPreferences = await window.electron.setUserPreferences(preferences);
-        setPreferences({ ...newPreferences });
-        return newPreferences;
-    }, []);
+    const savePreferences = useCallback(
+        async (preferences: UserPreferences) => {
+            const newPreferences =
+                await window.electron.setUserPreferences(preferences);
+            setPreferences({ ...newPreferences });
+            return newPreferences;
+        },
+        [],
+    );
 
     useEffect(() => {
         window.electron.getPlatform().then(setPlatform);
@@ -45,17 +63,21 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({ chi
         void loadPreferences();
     }, [loadPreferences]);
 
-    const updatePreferences = useCallback(async (newPrefs: Partial<UserPreferences>) => {
-        const prefs = { ...preferences, ...newPrefs } as UserPreferences;
-        savePreferences(prefs).then(setPreferences);
-    }, [preferences, savePreferences]);
+    const updatePreferences = useCallback(
+        async (newPrefs: Partial<UserPreferences>) => {
+            const prefs = { ...preferences, ...newPrefs } as UserPreferences;
+            savePreferences(prefs).then(setPreferences);
+        },
+        [preferences, savePreferences],
+    );
 
-    const setAutoStart = async (autoStart: boolean, hidden: boolean): Promise<SetAutoStartResult> => {
-
+    const setAutoStart = async (
+        autoStart: boolean,
+        hidden: boolean,
+    ): Promise<SetAutoStartResult> => {
         const result = await window.electron.setAutoStart(autoStart, hidden);
         await loadPreferences();
         return result;
-
     };
 
     const setAutoUpdates = async (enabled: boolean): Promise<boolean> => {
@@ -64,14 +86,20 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({ chi
         return result;
     };
 
-    return <preferencesContext.Provider value={
-        {
-            platform,
-            preferences,
-            savePreferences,
-            loadPreferences,
-            updatePreferences,
-            setAutoStart,
-            setAutoUpdates
-        }} > {children}</ preferencesContext.Provider>;
+    return (
+        <preferencesContext.Provider
+            value={{
+                platform,
+                preferences,
+                savePreferences,
+                loadPreferences,
+                updatePreferences,
+                setAutoStart,
+                setAutoUpdates,
+            }}
+        >
+            {' '}
+            {children}
+        </preferencesContext.Provider>
+    );
 };

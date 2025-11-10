@@ -1,4 +1,4 @@
-import { PromotionLocalizedCopy } from './promotion.types';
+import type { PromotionLocalizedCopy } from './promotion.types';
 
 export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     de: {
@@ -22,7 +22,7 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
     },
     fr: {
         title: 'Aidez à améliorer Godot Launcher',
-        description: 'Participez à façonner l\'avenir de Godot Launcher 🚀',
+        description: "Participez à façonner l'avenir de Godot Launcher 🚀",
         ctaLabel: 'Remplir le sondage 2025',
         countdownSingularLabel: 'Il reste {count} jour',
         countdownPluralLabel: 'Il reste {count} jours',
@@ -85,8 +85,8 @@ export const LOCALIZED_EMBEDDED_PROMOTION_COPY: PromotionLocalizedCopy = {
         countdownMinuteLabel: '残り {minutes} 分 {seconds} 秒',
     },
     tr: {
-        title: 'Godot Launcher\'ı geliştirmemize yardım et',
-        description: 'Godot Launcher\'ın geleceğini birlikte şekillendirelim 🚀',
+        title: "Godot Launcher'ı geliştirmemize yardım et",
+        description: "Godot Launcher'ın geleceğini birlikte şekillendirelim 🚀",
         ctaLabel: '2025 anketini doldur',
         countdownSingularLabel: '{count} gün kaldı',
         countdownPluralLabel: '{count} gün kaldı',

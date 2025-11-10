@@ -1,7 +1,7 @@
-import { BrowserWindow, Menu, shell } from 'electron';
+import { type BrowserWindow, Menu, shell } from 'electron';
 import { t } from '../i18n/index.js';
-import { isDev } from '../utils.js';
 import { getPrefsPath } from '../utils/prefs.utils.js';
+import { isDev } from '../utils.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mainWindow: BrowserWindow;

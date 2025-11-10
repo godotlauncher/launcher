@@ -39,11 +39,18 @@ vi.mock('electron-log', () => ({
     },
 }));
 
-import { getStoredInstalledReleases, saveStoredInstalledReleases } from './utils/releases.utils.js';
-import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import * as checksModule from './checks';
-import { checkAndUpdateReleases, checkProjectValid, checkAndUpdateProjects } from './checks';
+import {
+    checkAndUpdateProjects,
+    checkAndUpdateReleases,
+    checkProjectValid,
+} from './checks';
+import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import { JsonStoreConflictError } from './utils/jsonStore.js';
+import {
+    getStoredInstalledReleases,
+    saveStoredInstalledReleases,
+} from './utils/releases.utils.js';
 
 const { getProjectsSnapshot, storeProjectsList } = projectsUtilsMocks;
 
@@ -54,7 +61,9 @@ describe('checkAndUpdateReleases', () => {
     });
 
     it('marks invalid releases but keeps them stored for recovery', async () => {
-        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-release-valid-'));
+        const tempDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-valid-'),
+        );
         const validEditorPath = path.join(tempDir, 'Godot');
         fs.mkdirSync(validEditorPath, { recursive: true });
 
@@ -90,19 +99,26 @@ describe('checkAndUpdateReleases', () => {
             { ...validRelease },
             { ...invalidRelease },
         ]);
-        vi.mocked(saveStoredInstalledReleases).mockImplementation(async (releases: InstalledRelease[]) => releases);
+        vi.mocked(saveStoredInstalledReleases).mockImplementation(
+            async (releases: InstalledRelease[]) => releases,
+        );
 
         const result = await checkAndUpdateReleases();
 
         expect(saveStoredInstalledReleases).toHaveBeenCalledTimes(1);
 
-        const savedReleases = vi.mocked(saveStoredInstalledReleases).mock.calls[0][0] as InstalledRelease[];
+        const savedReleases = vi.mocked(saveStoredInstalledReleases).mock
+            .calls[0][0] as InstalledRelease[];
         expect(savedReleases).toHaveLength(2);
-        expect(savedReleases.find(r => r.version === '4.2.0')?.valid).toBe(true);
-        expect(savedReleases.find(r => r.version === '4.1.0')?.valid).toBe(false);
+        expect(savedReleases.find((r) => r.version === '4.2.0')?.valid).toBe(
+            true,
+        );
+        expect(savedReleases.find((r) => r.version === '4.1.0')?.valid).toBe(
+            false,
+        );
 
         expect(result).toHaveLength(2);
-        expect(result.find(r => r.version === '4.1.0')?.valid).toBe(false);
+        expect(result.find((r) => r.version === '4.1.0')?.valid).toBe(false);
 
         fs.rmSync(tempDir, { recursive: true, force: true });
     });
@@ -114,7 +130,9 @@ describe('checkProjectValid', () => {
     });
 
     it('keeps project with invalid release and flags it accordingly', async () => {
-        const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-project-'));
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-'),
+        );
         fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
 
         const project: ProjectDetails = {
@@ -124,7 +142,11 @@ describe('checkProjectValid', () => {
             renderer: 'forward_plus',
             path: projectDir,
             editor_settings_path: path.join(projectDir, '.godot'),
-            editor_settings_file: path.join(projectDir, '.godot', 'editor_settings-4.tres'),
+            editor_settings_file: path.join(
+                projectDir,
+                '.godot',
+                'editor_settings-4.tres',
+            ),
             last_opened: null,
             release: {
                 version: '4.2.0',
@@ -157,8 +179,12 @@ describe('checkProjectValid', () => {
     });
 
     it('updates withGit flag based on .git directory presence', async () => {
-        const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-project-git-'));
-        const releaseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-release-'));
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-git-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-'),
+        );
 
         fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
         fs.mkdirSync(path.join(projectDir, '.git'));
@@ -204,8 +230,12 @@ describe('checkProjectValid', () => {
     });
 
     it('disables VSCode flag when external editor setting is not enabled', async () => {
-        const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-project-vscode-'));
-        const releaseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'launcher-release-'));
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-vscode-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-'),
+        );
 
         fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
         fs.mkdirSync(path.join(projectDir, '.vscode'));
@@ -213,13 +243,16 @@ describe('checkProjectValid', () => {
         const editorDataDir = path.join(projectDir, 'editor_data');
         fs.mkdirSync(editorDataDir);
 
-        const editorSettingsPath = path.join(editorDataDir, 'editor_settings-4.2.tres');
+        const editorSettingsPath = path.join(
+            editorDataDir,
+            'editor_settings-4.2.tres',
+        );
         fs.writeFileSync(
             editorSettingsPath,
             `
 [resource]
 text_editor/external/use_external_editor = false
-`
+`,
         );
 
         const project: ProjectDetails = {
@@ -305,7 +338,9 @@ describe('checkAndUpdateProjects', () => {
             .mockResolvedValueOnce({ projects: [project], version: 'v2' });
 
         vi.mocked(storeProjectsList)
-            .mockRejectedValueOnce(new JsonStoreConflictError('/tmp/godot-launcher/projects.json'))
+            .mockRejectedValueOnce(
+                new JsonStoreConflictError('/tmp/godot-launcher/projects.json'),
+            )
             .mockResolvedValue([{ ...project, valid: true }]);
 
         const result = await checkAndUpdateProjects();

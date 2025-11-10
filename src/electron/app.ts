@@ -1,16 +1,6 @@
 import * as fs from 'node:fs';
-
-import logger from 'electron-log/main.js';
-
-import { ipcMainHandler, isDev } from './utils.js';
-import {
-    getConfigDir,
-    getDefaultPrefs,
-    getPrefsPath,
-    setAutoCheckUpdates,
-} from './utils/prefs.utils.js';
-
 import { app, shell } from 'electron';
+import logger from 'electron-log/main.js';
 import { checkForUpdates, installUpdateAndRestart } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { addProject } from './commands/addProject.js';
@@ -50,6 +40,13 @@ import {
     getCurrentLanguage,
 } from './i18n/index.js';
 import { setAutoStart } from './utils/platform.utils.js';
+import {
+    getConfigDir,
+    getDefaultPrefs,
+    getPrefsPath,
+    setAutoCheckUpdates,
+} from './utils/prefs.utils.js';
+import { ipcMainHandler, isDev } from './utils.js';
 
 // create default folder if not exist
 async function createDefaultFolder() {
@@ -64,7 +61,7 @@ async function createDefaultFolder() {
         const defaultPrefs = await getDefaultPrefs();
         await fs.promises.writeFile(
             prefsPath,
-            JSON.stringify(defaultPrefs, null, 4)
+            JSON.stringify(defaultPrefs, null, 4),
         );
     }
 }
@@ -81,74 +78,74 @@ export function registerHandlers() {
 
     ipcMainHandler(
         'get-user-preferences',
-        async () => await getUserPreferences()
+        async () => await getUserPreferences(),
     );
 
     ipcMainHandler(
         'set-user-preferences',
         async (_, newPrefs: UserPreferences) =>
-            await setUserPreferences(newPrefs)
+            await setUserPreferences(newPrefs),
     );
 
     ipcMainHandler(
         'shell-open-folder',
-        async (_, pathToOpen) => await openShellFolder(pathToOpen)
+        async (_, pathToOpen) => await openShellFolder(pathToOpen),
     );
 
     ipcMainHandler(
         'open-external',
-        async (_, url) => await shell.openExternal(url)
+        async (_, url) => await shell.openExternal(url),
     );
 
     ipcMainHandler(
         'set-auto-start',
-        async (_, autoStart, hidden) => await setAutoStart(autoStart, hidden)
+        async (_, autoStart, hidden) => await setAutoStart(autoStart, hidden),
     );
 
     ipcMainHandler(
         'set-auto-check-updates',
-        async (_, enabled) => await setAutoCheckUpdates(enabled)
+        async (_, enabled) => await setAutoCheckUpdates(enabled),
     );
 
     ipcMainHandler(
         'install-update-and-restart',
-        async () => await installUpdateAndRestart()
+        async () => await installUpdateAndRestart(),
     );
 
     // ##### releases #####
 
     ipcMainHandler(
         'get-available-releases',
-        async () => await getAvailableReleases()
+        async () => await getAvailableReleases(),
     );
 
     ipcMainHandler(
         'get-available-prereleases',
-        async () => await getAvailablePrereleases()
+        async () => await getAvailablePrereleases(),
     );
 
     ipcMainHandler(
         'get-installed-releases',
-        async () => await getInstalledReleases()
+        async () => await getInstalledReleases(),
     );
 
     ipcMainHandler(
         'install-release',
-        async (_, release, mono) => await installRelease(release, mono)
+        async (_, release, mono) => await installRelease(release, mono),
     );
 
     ipcMainHandler(
         'remove-release',
-        async (_, installedRelease) => await removeRelease(installedRelease)
+        async (_, installedRelease) => await removeRelease(installedRelease),
     );
 
     ipcMainHandler(
         'open-editor-project-manager',
-        async (_, release) => await openProjectManager(release)
+        async (_, release) => await openProjectManager(release),
     );
     ipcMainHandler(
         'check-all-releases-valid',
-        async () => await checkAndUpdateReleases()
+        async () => await checkAndUpdateReleases(),
     );
 
     let clearReleaseCachePromise: Promise<void> | null = null;
@@ -171,43 +168,44 @@ export function registerHandlers() {
             release: InstalledRelease,
             renderer: RendererType,
             withVSCode: boolean,
-            withGit: boolean
-        ) => await createProject(name, release, renderer, withVSCode, withGit)
+            withGit: boolean,
+        ) => await createProject(name, release, renderer, withVSCode, withGit),
     );
 
     ipcMainHandler(
         'get-projects-details',
-        async () => await getProjectsDetails()
+        async () => await getProjectsDetails(),
     );
 
     ipcMainHandler(
         'remove-project',
-        async (_, project: ProjectDetails) => await removeProject(project)
+        async (_, project: ProjectDetails) => await removeProject(project),
     );
 
     ipcMainHandler(
         'add-project',
-        async (_, projectPath: string) => await addProject(projectPath)
+        async (_, projectPath: string) => await addProject(projectPath),
     );
 
     ipcMainHandler(
         'set-project-editor',
         async (_, project: ProjectDetails, newRelease: InstalledRelease) =>
-            await setProjectEditor(project, newRelease)
+            await setProjectEditor(project, newRelease),
     );
 
     ipcMainHandler('launch-project', async (_, project: ProjectDetails) =>
-        launchProject(project)
+        launchProject(project),
     );
 
     ipcMainHandler(
         'check-project-valid',
-        async (_, project: ProjectDetails) => await checkProjectIsValid(project)
+        async (_, project: ProjectDetails) =>
+            await checkProjectIsValid(project),
     );
 
     ipcMainHandler(
         'check-all-projects-valid',
-        async () => await checkAndUpdateProjects()
+        async () => await checkAndUpdateProjects(),
     );
 
     // ##### dialogs #####
@@ -218,8 +216,8 @@ export function registerHandlers() {
             _,
             defaultPath: string,
             title: string,
-            filters: Electron.FileFilter[]
-        ) => openFileDialog(defaultPath, title, filters)
+            filters: Electron.FileFilter[],
+        ) => openFileDialog(defaultPath, title, filters),
     );
 
     ipcMainHandler(
@@ -228,16 +226,16 @@ export function registerHandlers() {
             _,
             defaultPath: string,
             title?: string,
-            filters?: Electron.FileFilter[]
-        ) => openDirectoryDialog(defaultPath, title, filters)
+            filters?: Electron.FileFilter[],
+        ) => openDirectoryDialog(defaultPath, title, filters),
     );
 
     ipcMainHandler('show-project-menu', (_, project: ProjectDetails) =>
-        showProjectMenu(project)
+        showProjectMenu(project),
     );
 
     ipcMainHandler('show-release-menu', (_, release: InstalledRelease) =>
-        showReleaseMenu(release)
+        showReleaseMenu(release),
     );
 
     // ##### tools #####
@@ -253,7 +251,7 @@ export function registerHandlers() {
         async (_, options?: { refreshIfStale?: boolean }) => {
             const { getCachedTools } = await import('./services/toolCache.js');
             return await getCachedTools(options);
-        }
+        },
     );
 
     ipcMainHandler('refresh-tool-cache', async () => {
@@ -271,7 +269,7 @@ export function registerHandlers() {
         'promotion-clicked',
         async (_, payload: PromotionClickPayload) => {
             logger.info('[promotion] click', payload?.id ?? 'unknown');
-        }
+        },
     );
 
     ipcMainHandler('get-platform', async () => {
@@ -296,7 +294,7 @@ export function registerHandlers() {
         'i18n:get-all-translations',
         async (_, language?: string) => {
             return getAllTranslations(language);
-        }
+        },
     );
 
     ipcMainHandler('i18n:change-language', async (_, lang: string) => {

@@ -1,13 +1,13 @@
 import path from 'node:path';
 
 import {
+    type IpcMainInvokeEvent,
     ipcMain,
-    IpcMainInvokeEvent,
+    type NativeImage,
     nativeImage,
-    NativeImage,
     nativeTheme,
-    WebContents,
-    WebFrameMain,
+    type WebContents,
+    type WebFrameMain,
 } from 'electron';
 import { pathToFileURL } from 'url';
 import { getMainWindow } from './main.js';
@@ -22,7 +22,7 @@ export function getThemedMenuIcon(iconName: string): NativeImage {
     const iconPath = path.join(
         getAssetPath(),
         'menu_icons',
-        `${iconName}-${theme}.png`
+        `${iconName}-${theme}.png`,
     );
     const image = nativeImage.createFromPath(iconPath);
     return image.resize({ width: 24, height: 24 });
@@ -31,10 +31,10 @@ export function getThemedMenuIcon(iconName: string): NativeImage {
 export function ipcMainHandler<Channel extends keyof EventChannelMapping>(
     key: Channel,
     handler: (
-    event: IpcMainInvokeEvent,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...args: any[]
-  ) => EventChannelMapping[Channel]
+        event: IpcMainInvokeEvent,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...args: any[]
+    ) => EventChannelMapping[Channel],
 ) {
     ipcMain.handle(key, (event, ...args) => {
         validateEventFrame(event.senderFrame);
@@ -57,7 +57,7 @@ export function validateEventFrame(frame: WebFrameMain | null) {
 
 export function ipcMainOn<Key extends keyof EventChannelMapping>(
     key: Key,
-    handler: (payload: EventChannelMapping[Key]) => void
+    handler: (payload: EventChannelMapping[Key]) => void,
 ) {
     ipcMain.on(key, (event, payload) => {
         validateEventFrame(event.senderFrame);
@@ -68,14 +68,14 @@ export function ipcMainOn<Key extends keyof EventChannelMapping>(
 export function ipcWebContentsSend<Key extends keyof EventChannelMapping>(
     key: Key,
     webContents: WebContents,
-    payload: EventChannelMapping[Key]
+    payload: EventChannelMapping[Key],
 ) {
     webContents.send(key, payload);
 }
 
 export function ipcSendToMainWindowSync<Key extends keyof EventChannelMapping>(
     key: Key,
-    payload: EventChannelMapping[Key]
+    payload: EventChannelMapping[Key],
 ) {
     getMainWindow().webContents.send(key, payload);
 }
