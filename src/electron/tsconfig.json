@@ -6,7 +6,7 @@
         "outDir": "../../dist-electron",
         "skipLibCheck": true,
         "types": [
-            "../../types",
+            "../types/globals.d.ts",
         ],
     },
     "exclude": [

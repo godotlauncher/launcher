@@ -22,14 +22,14 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "types": [
-      "./types"
+      "./src/types/globals.d.ts",
     ]
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "src/electron"
+    "src/electron",
   ],
   "references": [
     {
