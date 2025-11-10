@@ -23,7 +23,7 @@ const themeContext = React.createContext<ThemeProviderContext>(
     {} as ThemeProviderContext,
 );
 
-/* eslint-disable-next-line react-refresh/only-export-components */
+
 export const useTheme = () => React.useContext(themeContext);
 
 type ThemeProviderProps = PropsWithChildren;

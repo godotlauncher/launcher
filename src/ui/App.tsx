@@ -47,7 +47,6 @@ function App() {
     useEffect(() => {
         if (!releaseLoading) {
             // Coordinating loading states is a valid use case
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(false);
             if (installedReleases.length < 1) {
                 setCurrentView('installs');

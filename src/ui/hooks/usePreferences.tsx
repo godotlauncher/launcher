@@ -59,7 +59,6 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
     useEffect(() => {
         window.electron.getPlatform().then(setPlatform);
         // Load preferences on mount - this is intentional initial data fetching
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadPreferences();
     }, [loadPreferences]);
 
