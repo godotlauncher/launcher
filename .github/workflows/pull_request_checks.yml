@@ -12,22 +12,37 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      # Set up pnpm
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
 
       # Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22' # Adjust the version as needed
+          cache: 'pnpm'
 
       # Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       # Run lint
       - name: Run lint
-        run: npm run lint
+        run: pnpm biome check --reporter summary
 
       # Run build:sources
       - name: Run build:sources
-        run: npm run build:sources
+        run: pnpm build:sources
+        
+      # Run Unit tests
+      - name: Run Unit tests
+        run: pnpm test:unit
+      
+
+      
