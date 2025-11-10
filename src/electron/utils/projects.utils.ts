@@ -195,4 +195,3 @@ export function __resetProjectsStoreForTesting(): void {
     __resetJsonStoreFactoryForTesting();
     __resetJsonStoreForTesting();
 }
-

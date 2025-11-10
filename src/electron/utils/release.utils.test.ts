@@ -7,7 +7,12 @@ import {
     test,
     vi,
 } from 'vitest';
-import type { AssetSummary, InstalledRelease, ReleaseSummary } from '../../types/index.js';
+import type {
+    AssetSummary,
+    InstalledRelease,
+    ReleaseSummary,
+} from '../../types/index.js';
+import type { ReleaseAsset } from '../types/github.js';
 import {
     __resetInstalledReleasesStoreForTesting,
     __resetReleaseCachesForTesting,
@@ -117,10 +122,10 @@ vi.mock('electron', () => ({
     },
 }));
 
-// Import modules for direct access to mocks in tests
 import * as fs from 'node:fs';
 import { Readable } from 'node:stream';
 import * as streamPromises from 'node:stream/promises';
+// Import modules for direct access to mocks in tests
 import logger from 'electron-log';
 import { removeProjectEditor } from './godot.utils.js';
 import { getDefaultDirs } from './platform.utils.js';
@@ -136,28 +141,6 @@ const versions = [
     { version: '3.6-beta10' },
     { version: '4.4-stable' },
 ];
-
-// Some helper types to avoid errors in tests
-type ReleaseSummary = { version: string; [key: string]: any };
-type InstalledRelease = {
-    version: string;
-    mono: boolean;
-    version_number?: number;
-    editor_path?: string;
-    [key: string]: any;
-};
-type ReleaseAsset = {
-    name: string;
-    browser_download_url: string;
-    [key: string]: any;
-};
-type AssetSummary = {
-    name: string;
-    download_url: string;
-    platform_tags: string[];
-    mono: boolean;
-    [key: string]: any;
-};
 
 suite('Releases Utils', () => {
     beforeEach(() => {
@@ -228,14 +211,17 @@ suite('Releases Utils', () => {
     });
 
     describe('createAssetSummary', () => {
-        const baseAssetProps = {
+        const baseAssetProps: Omit<
+            ReleaseAsset,
+            'name' | 'browser_download_url'
+        > = {
             id: 1,
             url: '',
             node_id: '',
+            state: 'uploaded',
+            uploader: null,
             label: '',
-            uploader: {},
             content_type: '',
-            state: '',
             size: 0,
             download_count: 0,
             created_at: '',
@@ -696,16 +682,64 @@ suite('Releases Utils', () => {
                 installedReleasesCachePath: '/fake/config/dir/installed.json',
                 prereleaseCachePath: '/fake/config/dir/prereleases.json',
                 migrationStatePath: '/fake/config/dir/migrations.json',
-            });
+            } satisfies ReturnType<typeof getDefaultDirs>);
 
             vi.mocked(getStoredProjectsList).mockResolvedValue([
                 {
                     name: 'Project1',
-                    release: { editor_path: '/fake/path/godot' },
+                    config_version: 5,
+                    editor_settings_file: 'settings.cfg',
+                    launch_path: '',
+                    editor_settings_path: '',
+                    last_opened: null,
+                    path: '',
+                    renderer: '',
+                    version: '',
+                    version_number: 0,
+                    withGit: false,
+                    withVSCode: false,
+                    valid: true,
+                    release: {
+                        editor_path: '/fake/path/godot',
+                        arch: 'x64',
+                        config_version: 5,
+                        install_path: '',
+                        platform: 'win32',
+                        prerelease: false,
+                        published_at: null,
+                        valid: true,
+                        version: '4.4-stable',
+                        version_number: 4.4,
+                        mono: false,
+                    },
                 },
                 {
                     name: 'Project2',
-                    release: { editor_path: '/other/path/godot' },
+                    config_version: 5,
+                    editor_settings_file: 'settings.cfg',
+                    launch_path: '',
+                    editor_settings_path: '',
+                    last_opened: null,
+                    path: '',
+                    renderer: '',
+                    version: '',
+                    version_number: 0,
+                    withGit: false,
+                    withVSCode: false,
+                    valid: true,
+                    release: {
+                        arch: 'x64',
+                        editor_path: '/other/path/godot',
+                        config_version: 5,
+                        install_path: '',
+                        platform: 'win32',
+                        prerelease: false,
+                        published_at: null,
+                        valid: true,
+                        version: '4.5-stable',
+                        version_number: 4.5,
+                        mono: false,
+                    },
                 },
             ]);
 
@@ -735,4 +769,3 @@ suite('Releases Utils', () => {
         });
     });
 });
-

@@ -175,11 +175,11 @@ export function t(key: string, options?: string | TOptions): string {
         logger.error('i18n not initialized, returning key as-is');
         return key;
     }
-    
+
     if (typeof options === 'string') {
         return i18nInstance.t(key, options) as string;
     }
-    
+
     return i18nInstance.t(key, options) as string;
 }
 

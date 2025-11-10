@@ -1,7 +1,7 @@
 import React from 'react';
 import type {
-    InstallReleaseResult,
     InstalledRelease,
+    InstallReleaseResult,
     ReleaseSummary,
 } from '../../types';
 

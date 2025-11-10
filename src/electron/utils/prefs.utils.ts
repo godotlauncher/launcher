@@ -170,4 +170,3 @@ export function __resetPrefsCacheForTesting(): void {
     __resetJsonStoreFactoryForTesting();
     __resetJsonStoreForTesting();
 }
-

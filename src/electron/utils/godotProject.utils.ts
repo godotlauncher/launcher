@@ -385,4 +385,3 @@ export async function updateEditorSettings(
     await fs.promises.writeFile(tmpPath, content, 'utf-8');
     await fs.promises.rename(tmpPath, editorSettingsPath);
 }
-

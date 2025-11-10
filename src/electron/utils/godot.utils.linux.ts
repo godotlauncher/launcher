@@ -1,6 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { InstalledRelease, LaunchPath, ProjectDetails } from '../../types/index.js';
+import type {
+    InstalledRelease,
+    LaunchPath,
+    ProjectDetails,
+} from '../../types/index.js';
 
 export async function removeProjectEditorLinux(
     project: ProjectDetails,
@@ -70,4 +74,3 @@ export async function setProjectEditorReleaseLinux(
 
     return dstBinPath;
 }
-

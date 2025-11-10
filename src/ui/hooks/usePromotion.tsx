@@ -2,6 +2,7 @@ import logger from 'electron-log';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { PromotionClickPayload } from '../../types';
 import {
     buildPromotionClickPayload,
     calculateCountdownMeta,
@@ -10,7 +11,6 @@ import {
     type Promotion,
     type PromotionCountdownMeta,
 } from '../promotion';
-import type { PromotionClickPayload } from '../../types';
 
 const TICK_DAY_MS = 60 * 60 * 1000; // 1 hour
 const TICK_HOUR_MS = 60 * 1000; // 1 minute

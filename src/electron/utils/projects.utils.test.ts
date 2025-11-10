@@ -171,4 +171,3 @@ describe('projects.utils', () => {
         expect(updated[0].path).toBe('/projects/keep');
     });
 });
-

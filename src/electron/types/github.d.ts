@@ -1,4 +1,4 @@
-interface ReleaseAsset {
+export interface ReleaseAsset {
     id: number;
     name: string;
     content_type: string;
@@ -14,7 +14,7 @@ interface ReleaseAsset {
     updated_at: string;
 }
 
-interface ReactionRollup {
+export interface ReactionRollup {
     url: string;
     total_count: number;
     '+1': number;
@@ -27,7 +27,7 @@ interface ReactionRollup {
     rocket: number;
 }
 
-interface User {
+export interface User {
     avatar_url: string;
     events_url: string;
     followers_url: string;
@@ -50,7 +50,7 @@ interface User {
     user_view_type: string;
 }
 
-interface Release {
+export interface Release {
     assets_url: string;
     upload_url: string;
     tarball_url: string | null;

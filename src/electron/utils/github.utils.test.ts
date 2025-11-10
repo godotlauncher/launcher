@@ -642,4 +642,3 @@ suite('Github Utils Tests', () => {
         });
     });
 });
-

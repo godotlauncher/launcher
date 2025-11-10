@@ -105,9 +105,7 @@ export function getProjectDefinition(
  */
 type RendererConfigVersion = Extract<keyof RendererType, number>;
 
-export async function createProjectFile<
-    version extends RendererConfigVersion,
->(
+export async function createProjectFile<version extends RendererConfigVersion>(
     templateDir: string,
     configVersion: version,
     editorVersion: number,
@@ -259,4 +257,3 @@ export async function SetProjectEditorRelease(
 //   // return the path to the symlink (the new launch path)
 //   return projectLinkPath;
 // }
-

@@ -1,4 +1,3 @@
-
 // biome-ignore lint/correctness/noUnusedVariables: Used but not explicitly
 type EventChannelMapping = {
     // ##### user-preferences #####
@@ -65,9 +64,7 @@ type EventChannelMapping = {
     'i18n:get-all-translations': Promise<
         Record<string, Record<string, unknown>>
     >;
-    'i18n:change-language': Promise<
-        Record<string, Record<string, unknown>>
-    >;
+    'i18n:change-language': Promise<Record<string, Record<string, unknown>>>;
 };
 
 // biome-ignore lint/correctness/noUnusedVariables: Used but not explicitly
@@ -114,9 +111,7 @@ interface Window {
             release: InstalledRelease,
         ) => Promise<RemovedReleaseResult>;
 
-        openEditorProjectManager: (
-            release: InstalledRelease,
-        ) => Promise<void>;
+        openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
         checkAllReleasesValid: () => Promise<InstalledRelease[]>;
         clearReleaseCache: () => Promise<void>;
 
@@ -130,18 +125,14 @@ interface Window {
             withVSCode: boolean,
             withGit: boolean,
         ) => Promise<CreateProjectResult>;
-        removeProject: (
-            project: ProjectDetails,
-        ) => Promise<ProjectDetails[]>;
+        removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
         addProject: (path: string) => Promise<AddProjectToListResult>;
         setProjectEditor: (
             project: ProjectDetails,
             release: InstalledRelease,
         ) => Promise<ChangeProjectEditorResult>;
         launchProject: (project: ProjectDetails) => Promise<void>;
-        checkProjectValid: (
-            project: ProjectDetails,
-        ) => Promise<ProjectDetails>;
+        checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
         checkAllProjectsValid: () => Promise<ProjectDetails[]>;
 
         // ##### tools #####
@@ -155,9 +146,7 @@ interface Window {
         getAppVersion: () => Promise<string>;
 
         // ##### OTHER #####
-        promotionClicked: (
-            payload: PromotionClickPayload,
-        ) => Promise<void>;
+        promotionClicked: (payload: PromotionClickPayload) => Promise<void>;
         subscribeProjects: (
             callback: (projects: ProjectDetails[]) => void,
         ) => UnsubscribeFunction;
@@ -188,4 +177,3 @@ interface Window {
         };
     };
 }
-

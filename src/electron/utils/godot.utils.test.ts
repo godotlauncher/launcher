@@ -144,5 +144,3 @@ describe(' Godot Utils ', () => {
         });
     });
 });
-
-

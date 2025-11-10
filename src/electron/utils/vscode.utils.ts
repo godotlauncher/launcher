@@ -193,6 +193,7 @@ export async function addVSCodeNETLaunchConfig(
                 preLaunchTask: 'build',
                 program: path.resolve(programPath),
                 args: [],
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: it is the template for the vscode config
                 cwd: '${workspaceFolder}',
                 stopAtEntry: false,
             },
