@@ -81,8 +81,8 @@ export async function setProjectEditor(
         }
 
         if (
-            parseInt(currentProject.version_number.toString()) !==
-            parseInt(newRelease.version_number.toString())
+            parseInt(currentProject.version_number.toString(), 10) !==
+            parseInt(newRelease.version_number.toString(), 10)
         ) {
             return {
                 success: false,

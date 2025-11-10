@@ -28,7 +28,7 @@ async function evaluatePredicate(
 
 function assertMigrationResult(
     migration: Migration,
-    outcome: MigrationResult | void,
+    outcome: MigrationResult | undefined,
 ): void {
     const normalizedStatus = outcome?.status ?? 'completed';
     if (normalizedStatus === 'failed') {

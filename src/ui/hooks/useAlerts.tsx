@@ -152,11 +152,9 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
                 addCustomConfirm,
             }}
         >
-            <>
-                {showConfirm()}
-                {showAlerts()}
-                {children}
-            </>
+            {showConfirm()}
+            {showAlerts()}
+            {children}
         </AlertsContext.Provider>
     );
 };

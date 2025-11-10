@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec } from 'node:child_process';
 import logger from 'electron-log';
 
 export async function gitExists(): Promise<boolean> {

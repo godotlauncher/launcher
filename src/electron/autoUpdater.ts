@@ -1,7 +1,7 @@
+import { setInterval } from 'node:timers';
 import { app, type BrowserWindow, type WebContents } from 'electron';
 import logger from 'electron-log';
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
-import { setInterval } from 'timers';
 import { ipcWebContentsSend } from './utils.js';
 
 let interval: NodeJS.Timeout;
@@ -33,7 +33,7 @@ export function installUpdateAndRestart() {
 }
 
 export function stopAutoUpdateChecks() {
-    if (interval && interval.hasRef()) {
+    if (interval?.hasRef()) {
         clearInterval(interval);
         interval.unref();
         logger.log('Stopped auto update checks');

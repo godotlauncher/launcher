@@ -31,7 +31,7 @@ export interface Migration {
     predicate?: MigrationPredicate;
     run: (
         context: MigrationExecutionContext,
-    ) => Promise<MigrationResult | void> | MigrationResult | void;
+    ) => Promise<MigrationResult | undefined> | MigrationResult | undefined;
 }
 
 export type MigrationRegistry = readonly Migration[];

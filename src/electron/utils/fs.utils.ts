@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
 import logger from 'electron-log';
-import path from 'path';
 import { getAssetPath } from '../pathResolver.js';
 
 export type SymlinkOptions = {

@@ -29,7 +29,6 @@ type CachedTool = {
     verified: boolean;
 };
 
-
 type UserPreferences = {
     prefs_version: number;
     install_location: string;
@@ -63,7 +62,6 @@ type InstalledRelease = {
     config_version: 4 | 5;
     published_at: string | null;
     valid: boolean;
-
 };
 
 type ProjectDetails = {
@@ -82,7 +80,6 @@ type ProjectDetails = {
     withVSCode: boolean;
     withGit: boolean;
     valid: boolean;
-
 };
 
 type BackendResult = {
@@ -127,10 +124,9 @@ type PromotionClickPayload = {
     expiresAt: string;
 };
 
-
 /**
  * Defines the types of renderers available for Godot Engine config version 5 (godot 4+).
- * 
+ *
  * @property {('FORWARD_PLUS' | 'MOBILE' | 'COMPATIBLE')} 5 - The renderer options for Godot 4+:
  *   - FORWARD_PLUS: Default renderer with advanced lighting features
  *   - MOBILE: Optimized renderer for mobile devices with limited capabilities
@@ -155,8 +151,8 @@ type AppUpdateMessage = {
     message?: string;
 };
 
+// biome-ignore lint/correctness/noUnusedVariables: Used but not explicitly
 type EventChannelMapping = {
-
     // ##### user-preferences #####
     'get-user-preferences': Promise<UserPreferences>;
     'set-user-preferences': Promise<UserPreferences>;
@@ -218,32 +214,36 @@ type EventChannelMapping = {
     // ##### i18n #####
     'i18n:get-current-language': Promise<string>;
     'i18n:get-available-languages': Promise<string[]>;
-    'i18n:get-all-translations': Promise<Record<string, Record<string, unknown>>>;
+    'i18n:get-all-translations': Promise<
+        Record<string, Record<string, unknown>>
+    >;
     'i18n:change-language': Promise<Record<string, Record<string, unknown>>>;
 };
 
+// biome-ignore lint/correctness/noUnusedVariables: Used but not explicitly
 interface Window {
     electron: {
-
         // ##### user-preferences #####
 
         getUserPreferences: () => Promise<UserPreferences>;
-        setUserPreferences: (prefs: UserPreferences) => Promise<UserPreferences>;
+        setUserPreferences: (
+            prefs: UserPreferences,
+        ) => Promise<UserPreferences>;
         setAutoStart: (
             autoStart: boolean,
-            hidden: boolean
+            hidden: boolean,
         ) => Promise<SetAutoStartResult>;
         setAutoCheckUpdates: (enabled: boolean) => Promise<boolean>;
 
         openFileDialog: (
             defaultPath: string,
             title: string,
-            filters?: Electron.FileFilter[]
+            filters?: Electron.FileFilter[],
         ) => Promise<Electron.OpenDialogReturnValue>;
         openDirectoryDialog: (
             defaultPath: string,
             title: string,
-            filters?: Electron.FileFilter[]
+            filters?: Electron.FileFilter[],
         ) => Promise<Electron.OpenDialogReturnValue>;
         openShellFolder: (pathToOpen: string) => Promise<void>;
 
@@ -258,9 +258,11 @@ interface Window {
 
         installRelease: (
             release: ReleaseSummary,
-            mono: boolean
+            mono: boolean,
         ) => Promise<InstallReleaseResult>;
-        removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
+        removeRelease: (
+            release: InstalledRelease,
+        ) => Promise<RemovedReleaseResult>;
 
         openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
         checkAllReleasesValid: () => Promise<InstalledRelease[]>;
@@ -274,13 +276,13 @@ interface Window {
             release: InstalledRelease,
             renderer: RendererType[4 | 5],
             withVSCode: boolean,
-            withGit: boolean
+            withGit: boolean,
         ) => Promise<CreateProjectResult>;
         removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
         addProject: (path: string) => Promise<AddProjectToListResult>;
         setProjectEditor: (
             project: ProjectDetails,
-            release: InstalledRelease
+            release: InstalledRelease,
         ) => Promise<ChangeProjectEditorResult>;
         launchProject: (project: ProjectDetails) => Promise<void>;
         checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
@@ -288,7 +290,9 @@ interface Window {
 
         // ##### tools #####
         getInstalledTools: () => Promise<InstalledTool[]>;
-        getCachedTools: (options?: { refreshIfStale?: boolean }) => Promise<CachedTool[]>;
+        getCachedTools: (options?: {
+            refreshIfStale?: boolean;
+        }) => Promise<CachedTool[]>;
         refreshToolCache: () => Promise<CachedTool[]>;
 
         getPlatform: () => Promise<string>;
@@ -297,14 +301,14 @@ interface Window {
         // ##### OTHER #####
         promotionClicked: (payload: PromotionClickPayload) => Promise<void>;
         subscribeProjects: (
-            callback: (projects: ProjectDetails[]) => void
+            callback: (projects: ProjectDetails[]) => void,
         ) => UnsubscribeFunction;
         subscribeReleases: (
-            callback: (releases: InstallRelease[]) => void
+            callback: (releases: InstallRelease[]) => void,
         ) => UnsubscribeFunction;
 
         subscribeAppUpdates: (
-            callback: (message: AppUpdateMessage) => void
+            callback: (message: AppUpdateMessage) => void,
         ) => UnsubscribeFunction;
 
         openExternal: (url: string) => Promise<void>;
@@ -317,8 +321,12 @@ interface Window {
         i18n: {
             getCurrentLanguage: () => Promise<string>;
             getAvailableLanguages: () => Promise<string[]>;
-            getAllTranslations: (language?: string) => Promise<Record<string, Record<string, unknown>>>;
-            changeLanguage: (lang: string) => Promise<Record<string, Record<string, unknown>>>;
+            getAllTranslations: (
+                language?: string,
+            ) => Promise<Record<string, Record<string, unknown>>>;
+            changeLanguage: (
+                lang: string,
+            ) => Promise<Record<string, Record<string, unknown>>>;
         };
     };
 }

@@ -59,7 +59,7 @@ export async function updateLinuxTray(): Promise<void> {
 }
 
 export async function updateMenu(
-    tray: Tray,
+    _tray: Tray,
     mainWindow: BrowserWindow,
 ): Promise<Electron.Menu> {
     const projectListFIle = path.resolve(
@@ -73,7 +73,7 @@ export async function updateMenu(
             (p) =>
                 p.valid && p.last_opened != null && p.last_opened.getTime() > 0,
         )
-        .sort((a, b) => b.last_opened!.getTime() - a.last_opened!.getTime());
+        .sort((a, b) => (b.last_opened?.getTime() || 0) - (a.last_opened?.getTime() || 0));
 
     const last3 = filteredProjects.slice(0, 3);
 

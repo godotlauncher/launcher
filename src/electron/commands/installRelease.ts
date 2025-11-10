@@ -1,9 +1,8 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 import decompress from 'decompress';
-
 import logger from 'electron-log';
-import * as os from 'os';
 import { checkAndUpdateProjects } from '../checks.js';
 import { t } from '../i18n/index.js';
 import {

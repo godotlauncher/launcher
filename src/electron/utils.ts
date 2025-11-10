@@ -1,5 +1,5 @@
 import path from 'node:path';
-
+import { pathToFileURL } from 'node:url';
 import {
     type IpcMainInvokeEvent,
     ipcMain,
@@ -9,7 +9,6 @@ import {
     type WebContents,
     type WebFrameMain,
 } from 'electron';
-import { pathToFileURL } from 'url';
 import { getMainWindow } from './main.js';
 import { getAssetPath, getUIPath } from './pathResolver.js';
 

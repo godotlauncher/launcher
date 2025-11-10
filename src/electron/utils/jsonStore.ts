@@ -143,7 +143,7 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
     }
 
     function snapshotFromCache(
-        path: string,
+        _path: string,
         entry: CachedEntry,
     ): JsonStoreSnapshot<T> {
         return {

@@ -84,7 +84,7 @@ export function parseReleaseName(version: string) {
             patch: 0,
             revision: 0,
             type: 'dev' as const,
-            typePriority: RELEASE_TYPE_PRIORITY['dev'],
+            typePriority: RELEASE_TYPE_PRIORITY.dev,
             suffixNumber: 0,
         };
     }
@@ -156,7 +156,7 @@ export function sortReleases(a: SortableRelease, b: SortableRelease) {
 
 export function sortByPublishDate(a: ReleaseSummary, b: ReleaseSummary) {
     return (
-        new Date(b.published_at!).getTime() -
-        new Date(a.published_at!).getTime()
+        new Date(b.published_at || 0).getTime() -
+        new Date(a.published_at || 0).getTime()
     );
 }

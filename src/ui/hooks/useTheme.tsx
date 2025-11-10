@@ -23,7 +23,6 @@ const themeContext = React.createContext<ThemeProviderContext>(
     {} as ThemeProviderContext,
 );
 
-
 export const useTheme = () => React.useContext(themeContext);
 
 type ThemeProviderProps = PropsWithChildren;
@@ -57,6 +56,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         ? 'dark'
         : 'light';
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: updateDocumentTheme would refresh infinitely
     React.useEffect(() => {
         const storedTheme = localStorage.getItem('theme') as ThemeMode | null;
 
@@ -69,6 +69,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         updateDocumentTheme(storedTheme || 'auto');
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: updateDocumentTheme would refresh infinitely
     React.useEffect(() => {
         updateDocumentTheme(theme);
         localStorage.setItem('theme', theme);

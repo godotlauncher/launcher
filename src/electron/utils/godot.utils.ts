@@ -47,7 +47,7 @@ export const DEFAULT_PROJECT_DEFINITION: ProjectDefinition = new Map([
             ],
             projectFilename: 'project.godot',
             editorConfigFilename: (editor_version: number) =>
-                `editor_settings-${parseInt(editor_version.toString())}.tres`,
+                `editor_settings-${parseInt(editor_version.toString(), 10)}.tres`,
             editorConfigFormat: 3,
         },
     ],

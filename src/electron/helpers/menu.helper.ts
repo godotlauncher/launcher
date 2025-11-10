@@ -4,10 +4,10 @@ import { getPrefsPath } from '../utils/prefs.utils.js';
 import { isDev } from '../utils.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-let mainWindow: BrowserWindow;
+let _mainWindow: BrowserWindow;
 
 export function createMenu(window: BrowserWindow) {
-    mainWindow = window;
+    _mainWindow = window;
     const menu = buildMenu();
     Menu.setApplicationMenu(menu);
 }

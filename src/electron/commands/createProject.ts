@@ -72,7 +72,7 @@ export async function createProject(
 
     // get the editor version, make sure it's a number and greater than the minimum version
     const version = release.version_number;
-    if (!version || isNaN(version) || version < MIN_VERSION) {
+    if (!version || Number.isNaN(version) || version < MIN_VERSION) {
         return {
             success: false,
             error: t('createProject:errors.invalidEditorVersion', {

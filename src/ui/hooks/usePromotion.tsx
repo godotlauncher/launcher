@@ -108,7 +108,7 @@ export function usePromotion(): UsePromotionResult {
         );
 
         return () => window.clearInterval(intervalId);
-    }, [promotion, countdown?.mode, updateCountdown]);
+    }, [promotion, countdown?.mode, updateCountdown, countdown]);
 
     const buildClickPayload = useCallback(() => {
         if (!promotion) {

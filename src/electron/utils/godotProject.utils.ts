@@ -367,20 +367,20 @@ export async function updateEditorSettings(
             if (resourceSectionRegex.test(content)) {
                 content = content.replace(
                     resourceSectionRegex,
-                    (match, resourceSection, nextPart) => {
+                    (_match, resourceSection, nextPart) => {
                         // append the new key at the end of the resource section
                         return `${resourceSection}${key} = ${value}\n${nextPart}`;
                     },
                 );
             } else {
                 // fallback: append at end if no [resource] section found (shouldn't happen)
-                content = content.trimEnd() + `\n${key} = ${value}\n`;
+                content = `${content.trimEnd()}\n${key} = ${value}\n`;
             }
         }
     }
 
     // atomic write: write to temp file then rename
-    const tmpPath = editorSettingsPath + '.tmp';
+    const tmpPath = `${editorSettingsPath}.tmp`;
     await fs.promises.writeFile(tmpPath, content, 'utf-8');
     await fs.promises.rename(tmpPath, editorSettingsPath);
 }

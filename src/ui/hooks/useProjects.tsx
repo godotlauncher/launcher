@@ -137,6 +137,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         await window.electron.showProjectMenu(project);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
         const off = window.electron.subscribeProjects(setProjects);
         // Initial data fetching on mount

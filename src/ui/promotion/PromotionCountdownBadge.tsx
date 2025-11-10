@@ -62,7 +62,6 @@ export function PromotionCountdownBadge({
             );
             break;
         }
-        case 'days':
         default: {
             const days = Math.max(countdown.daysRemaining, 0);
             const singular = formatTemplate(

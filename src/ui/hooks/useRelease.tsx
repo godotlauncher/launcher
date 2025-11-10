@@ -76,6 +76,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             .finally(() => setLoading(false));
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Only want to run on mount
     React.useEffect(() => {
         const off = window.electron.subscribeReleases(setInstalledReleases);
         updateAllReleases();

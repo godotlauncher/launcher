@@ -1,8 +1,8 @@
+import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
-import { spawn } from 'child_process';
 import logger from 'electron-log';
-import * as os from 'os';
 import { CACHE_LENGTH, MIN_VERSION } from '../constants.js';
 import { getReleases } from '../utils/github.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';

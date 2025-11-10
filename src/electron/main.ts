@@ -67,6 +67,7 @@ Menu.setApplicationMenu(null);
 
 let disposeFocusRevalidation: (() => void) | undefined;
 let _mainWindow: BrowserWindow | null = null;
+// biome-ignore lint/style/noNonNullAssertion: safer to use non-null assertion here
 export const getMainWindow: () => BrowserWindow = () => _mainWindow!;
 
 if (!isDev()) {
@@ -77,7 +78,7 @@ if (!isDev()) {
         app.quit();
     } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        app.on('second-instance', (event, commandLine, workingDirectory) => {
+        app.on('second-instance', (_event, _commandLine, _workingDirectory) => {
             if (_mainWindow) {
                 if (_mainWindow.isMinimized()) {
                     _mainWindow.restore();

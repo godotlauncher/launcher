@@ -1,6 +1,6 @@
+import { exec } from 'node:child_process';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { exec } from 'child_process';
 import { app } from 'electron';
 import logger from 'electron-log';
 import which from 'which';

@@ -84,7 +84,7 @@ export function parseReleaseName(version: string) {
             patch: 0,
             revision: 0,
             type: 'dev' as const,
-            typePriority: RELEASE_TYPE_PRIORITY['dev'],
+            typePriority: RELEASE_TYPE_PRIORITY.dev,
             suffixNumber: 0,
         };
     }
