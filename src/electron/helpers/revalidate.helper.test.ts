@@ -25,7 +25,7 @@ vi.mock('electron-log', () => ({
     },
 }));
 
-import { setupFocusRevalidation } from '../../../electron/helpers/revalidate.helper';
+import { setupFocusRevalidation } from './revalidate.helper';
 
 type FocusListener = () => void;
 

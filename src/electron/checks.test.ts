@@ -44,13 +44,13 @@ import {
     checkAndUpdateProjects,
     checkAndUpdateReleases,
     checkProjectValid,
-} from '../../electron/checks.js';
-import { SetProjectEditorRelease } from '../../electron/utils/godot.utils.js';
-import { JsonStoreConflictError } from '../../electron/utils/jsonStore.js';
+} from './checks.js';
+import { SetProjectEditorRelease } from './utils/godot.utils.js';
+import { JsonStoreConflictError } from './utils/jsonStore.js';
 import {
     getStoredInstalledReleases,
     saveStoredInstalledReleases,
-} from '../../electron/utils/releases.utils.js';
+} from './utils/releases.utils.js';
 
 const { getProjectsSnapshot, storeProjectsList } = projectsUtilsMocks;
 

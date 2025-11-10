@@ -5,7 +5,7 @@ import {
     addVSCodeNETLaunchConfig,
     addVSCodeSettings,
     updateVSCodeSettings,
-} from '../../../electron/utils/vscode.utils.js';
+} from './vscode.utils.js';
 
 // Mock electron-log to suppress expected warnings in tests
 vi.mock('electron-log', () => ({
@@ -37,7 +37,7 @@ vi.mock('node:fs', () => ({
 // Mock addVSCodeNETLaunchConfig
 vi.mock('./vscode.utils.js', async () => {
     const actual =
-        await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+        await vi.importActual<typeof import('./vscode.utils.js')>(
             './vscode.utils.js',
         );
     return {
@@ -145,7 +145,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         await (
-            await import('../../../electron/utils/vscode.utils.js')
+            await import('./vscode.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         const writeCall = vi
@@ -163,7 +163,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         await (
-            await import('../../../electron/utils/vscode.utils.js')
+            await import('./vscode.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         const writeCall = vi
@@ -185,7 +185,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         );
 
         await (
-            await import('../../../electron/utils/vscode.utils.js')
+            await import('./vscode.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         const writeCall = vi
@@ -215,7 +215,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         // Current implementation does not catch JSON.parse errors, expect rejection
         await expect(
             (
-                await import('../../../electron/utils/vscode.utils.js')
+                await import('./vscode.utils.js')
             ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false),
         ).rejects.toThrow();
 
@@ -239,7 +239,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         );
 
         await (
-            await import('../../../electron/utils/vscode.utils.js')
+            await import('./vscode.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         const writeCall = vi
@@ -271,7 +271,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
@@ -311,7 +311,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         await mod.addVSCodeNETLaunchConfig(
@@ -352,7 +352,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         );
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
@@ -378,7 +378,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         vi.mocked(fs.promises.readFile).mockResolvedValue('{ invalid json }');
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
@@ -402,7 +402,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         );
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
@@ -427,7 +427,7 @@ describe('getVSCodeInstallPath', () => {
         });
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         const res = await mod.getVSCodeInstallPath();
@@ -444,7 +444,7 @@ describe('getVSCodeInstallPath', () => {
             (p) => p === '/custom/code',
         );
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         const res = await mod.getVSCodeInstallPath('/custom/code');
@@ -462,7 +462,7 @@ describe('getVSCodeInstallPath', () => {
         );
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         const res = await mod.getVSCodeInstallPath();
@@ -490,7 +490,7 @@ describe('getVSCodeInstallPath', () => {
         );
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         const res = await mod.getVSCodeInstallPath();
@@ -517,7 +517,7 @@ describe('getVSCodeInstallPath', () => {
         );
 
         const mod =
-            await vi.importActual<typeof import('../../../electron/utils/vscode.utils.js')>(
+            await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
         const res = await mod.getVSCodeInstallPath();

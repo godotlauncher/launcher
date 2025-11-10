@@ -1,6 +1,6 @@
 import { describe, expect, it, suite, vi } from 'vitest';
-import { getReleases } from '../../../electron/utils/github.utils';
-import { createAssetSummary, getPlatformAsset } from '../../../electron/utils/releases.utils';
+import { getReleases } from './github.utils';
+import { createAssetSummary, getPlatformAsset } from './releases.utils';
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({

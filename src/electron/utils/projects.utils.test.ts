@@ -10,7 +10,7 @@ import {
     getStoredProjectsList,
     removeProjectFromList,
     storeProjectsList,
-} from '../../../electron/utils/projects.utils.js';
+} from './projects.utils.js';
 
 vi.mock('electron-updater', () => ({
     default: {

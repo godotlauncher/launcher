@@ -1,13 +1,13 @@
 import * as fs from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as installedToolsModule from '../../../electron/commands/installedTools.js';
-import * as userPreferencesModule from '../../../electron/commands/userPreferences.js';
+import * as installedToolsModule from '../commands/installedTools.js';
+import * as userPreferencesModule from '../commands/userPreferences.js';
 import {
     getCachedTools,
     isCacheStale,
     isToolAvailable,
     refreshToolCache,
-} from '../../../electron/services/toolCache.js';
+} from './toolCache.js';
 
 vi.mock('node:fs', () => ({
     existsSync: vi.fn(),

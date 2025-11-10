@@ -3,11 +3,11 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { __resetJsonStoreForTesting } from '../../../electron/utils/jsonStore.js';
+import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
     __resetJsonStoreFactoryForTesting,
     createTypedJsonStore,
-} from '../../../electron/utils/jsonStoreFactory.js';
+} from './jsonStoreFactory.js';
 
 type SampleData = {
     value: number;

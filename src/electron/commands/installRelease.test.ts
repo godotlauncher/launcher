@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { installRelease } from '../../../electron/commands/installRelease.js';
+import { installRelease } from './installRelease.js';
 
 
 const fsMocks = vi.hoisted(() => ({
@@ -69,7 +69,7 @@ const releasesUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/releases.utils.js', async () => {
     const actual = await vi.importActual<
-        typeof import('../../../electron/utils/releases.utils.js')
+        typeof import('../utils/releases.utils.js')
     >('../utils/releases.utils.js');
     return {
         ...actual,

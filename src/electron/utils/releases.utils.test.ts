@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     __resetInstalledReleasesStoreForTesting,
     getStoredInstalledReleases,
-} from '../../../electron/utils/releases.utils';
+} from './releases.utils';
 
 const platformUtilsMock = vi.hoisted(() => ({
     getDefaultDirs: vi.fn(),

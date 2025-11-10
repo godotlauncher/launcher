@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
-import { getAssetPath, getPreloadPath, getUIPath } from '../../electron/pathResolver';
+import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver';
 
 vi.mock('electron-updater', () => ({
     default: {

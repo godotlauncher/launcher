@@ -8,7 +8,7 @@ import {
     __resetJsonStoreForTesting,
     createJsonStore,
     JsonStoreConflictError,
-} from '../../../electron/utils/jsonStore.js';
+} from './jsonStore.js';
 
 const TEMP_DIR = path.resolve(os.tmpdir(), 'godot-launcher-json-store-tests');
 

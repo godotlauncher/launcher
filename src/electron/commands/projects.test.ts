@@ -1,8 +1,8 @@
 import path from 'node:path';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { JsonStoreConflictError } from '../../../electron/utils/jsonStore.js';
-import { initializeProjectGit, setProjectVSCode } from '../../../electron/commands/projects.js';
+import { JsonStoreConflictError } from '../utils/jsonStore.js';
+import { initializeProjectGit, setProjectVSCode } from './projects.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),

@@ -11,8 +11,8 @@ import {
     suite,
     vi,
 } from 'vitest';
-import { APP_INTERNAL_NAME } from '../../../electron/constants';
-import { getDefaultDirs } from '../../../electron/utils/platform.utils';
+import { APP_INTERNAL_NAME } from '../constants';
+import { getDefaultDirs } from './platform.utils';
 import {
     __resetPrefsCacheForTesting,
     getConfigDir,
@@ -20,7 +20,7 @@ import {
     getPrefsPath,
     readPrefsFromDisk,
     writePrefsToDisk,
-} from '../../../electron/utils/prefs.utils';
+} from './prefs.utils';
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({

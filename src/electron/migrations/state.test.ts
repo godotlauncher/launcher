@@ -8,7 +8,7 @@ import {
     DEFAULT_MIGRATION_STATE,
     loadMigrationState,
     saveMigrationState,
-} from '../../../electron/migrations/state.js';
+} from './state.js';
 
 describe('migration state persistence', () => {
     let tmpDir: string;

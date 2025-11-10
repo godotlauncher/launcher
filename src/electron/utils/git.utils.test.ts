@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { describe, expect, it, vi } from 'vitest';
-import { gitConfig, gitConfigGetUser, gitExists } from '../../../electron/utils/git.utils';
+import { gitConfig, gitConfigGetUser, gitExists } from './git.utils';
 
 const execMock = vi.mocked(exec);
 
