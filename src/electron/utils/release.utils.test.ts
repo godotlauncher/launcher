@@ -7,11 +7,6 @@ import {
     test,
     vi,
 } from 'vitest';
-import type {
-    AssetSummary,
-    InstalledRelease,
-    ReleaseSummary,
-} from '../../types/index.js';
 import type { ReleaseAsset } from '../types/github.js';
 import {
     __resetInstalledReleasesStoreForTesting,

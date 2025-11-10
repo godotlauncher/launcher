@@ -1,5 +1,3 @@
-import type { ReleaseSummary } from '../../types/index.js';
-
 // Map release type to a sort priority (lower is "higher" in final sort).
 // stable -> 0 (highest), beta -> 1, dev -> 2 (lowest)
 const RELEASE_TYPE_PRIORITY: Record<string, number> = {

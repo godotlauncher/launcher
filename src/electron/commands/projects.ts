@@ -6,7 +6,6 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
-import type { ProjectDetails } from '../../types/index.js';
 import { checkProjectValid } from '../checks.js';
 import { PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';

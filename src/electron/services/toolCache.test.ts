@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InstalledTool, UserPreferences } from '../../types/index.js';
+
 import * as installedToolsModule from '../commands/installedTools.js';
 import * as userPreferencesModule from '../commands/userPreferences.js';
 import {

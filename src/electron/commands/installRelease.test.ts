@@ -1,7 +1,5 @@
 import path from 'node:path';
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AssetSummary, ReleaseSummary } from '../../types/index.js';
 import { installRelease } from './installRelease.js';
 
 const fsMocks = vi.hoisted(() => ({

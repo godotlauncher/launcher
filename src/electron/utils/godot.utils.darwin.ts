@@ -1,11 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
-import type {
-    InstalledRelease,
-    LaunchPath,
-    ProjectDetails,
-} from '../../types/index.js';
 
 export async function removeProjectEditorDarwin(
     project: ProjectDetails,

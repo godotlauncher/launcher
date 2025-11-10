@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { addProject } from './addProject';
+import { addProject } from './addProject.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),

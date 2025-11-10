@@ -1,11 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
-import type {
-    ChangeProjectEditorResult,
-    InstalledRelease,
-    ProjectDetails,
-} from '../../types/index.js';
 import {
     EDITOR_CONFIG_DIRNAME,
     PROJECTS_FILENAME,

@@ -1,6 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: safer to use non-null assertion here */
 import logger from 'electron-log';
-import type { PublishedReleases, ReleaseSummary } from '../../types/index.js';
 import type { Release } from '../types/github.js';
 import { createAssetSummary, sortReleases } from './releases.utils.js';
 

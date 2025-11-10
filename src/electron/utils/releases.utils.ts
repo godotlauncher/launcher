@@ -4,11 +4,6 @@ import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
 import logger from 'electron-log';
-import type {
-    AssetSummary,
-    InstalledRelease,
-    ReleaseSummary,
-} from '../../types/index.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import type { ReleaseAsset } from '../types/github.js';
 import { removeProjectEditor } from './godot.utils.js';

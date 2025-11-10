@@ -4,7 +4,6 @@ import * as path from 'node:path';
 import { app } from 'electron';
 import logger from 'electron-log';
 import which from 'which';
-import type { SetAutoStartResult } from '../../types/index.js';
 import {
     getUserPreferences,
     setUserPreferences,

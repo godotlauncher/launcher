@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import type { CachedTool, InstalledTool } from '../../types/index.js';
+
 import { getInstalledTools } from '../commands/installedTools.js';
 import {
     getUserPreferences,

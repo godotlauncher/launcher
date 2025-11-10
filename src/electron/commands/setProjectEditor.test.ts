@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InstalledRelease, ProjectDetails } from '../../types/index.js';
-import { setProjectEditor } from './setProjectEditor';
+import { setProjectEditor } from './setProjectEditor.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),

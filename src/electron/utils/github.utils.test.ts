@@ -1,7 +1,6 @@
 import { describe, expect, it, suite, vi } from 'vitest';
-import type { AssetSummary } from '../../types/index.js';
-import { getReleases } from './github.utils';
-import { createAssetSummary, getPlatformAsset } from './releases.utils';
+import { getReleases } from './github.utils.js';
+import { createAssetSummary, getPlatformAsset } from './releases.utils.js';
 
 // Mock electron-updater
 vi.mock('electron-updater', () => ({
@@ -95,18 +94,16 @@ const allAssetNames = [
 ];
 
 // Utility to create ReleaseAsset objects from just a name
-function makeReleaseAsset(name: string): Partial<ReleaseAsset> {
+function makeReleaseAsset(name: string): ReleaseAsset {
     return {
         name,
         browser_download_url: `https://example.com/${name}`,
-    };
+    } satisfies ReleaseAsset;
 }
 
 suite('Github Utils Tests', () => {
-    describe('createAssetSummery (simplified tests)', () => {
+    describe('createAssetSummary (simplified tests)', () => {
         // Generate a subset of ReleaseAssets from allAssetNames
-        const assets: Partial<ReleaseAsset>[] =
-            allAssetNames.map(makeReleaseAsset);
 
         it('tags each asset properly', () => {
             // Just do a quick check for a few samples

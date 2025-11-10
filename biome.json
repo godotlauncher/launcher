@@ -11,7 +11,11 @@
             "src/**/*.ts",
             "src/**/*.js",
             "src/**/*.tsx",
-            "!**/node_modules"
+            "!**/node_modules",
+            "!build",
+            "!dist",
+            "!dist-electron",
+            "!dist-react"
         ]
     },
     "formatter": {

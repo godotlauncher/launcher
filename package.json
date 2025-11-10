@@ -32,7 +32,7 @@
         "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
         "dev:react": "vite",
         "build": "tsc && vite build",
-        "transpile:electron": "tsc --project src/electron/tsconfig.json",
+        "transpile:electron": "tsc --project src/electron/tsconfig.build.json",
         "lint": "biome check",
         "lint:fix": "biome check --write",
         "lint:report": "biome check --reporter=summary --diagnostic-level=error",

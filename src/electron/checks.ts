@@ -1,7 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
-import type { InstalledRelease, ProjectDetails } from '../types/index.js';
 
 import { PROJECTS_FILENAME } from './constants.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';

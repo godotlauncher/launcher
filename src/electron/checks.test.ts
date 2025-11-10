@@ -3,7 +3,6 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InstalledRelease, ProjectDetails } from '../types/index.js';
 
 const releaseUtilsMocks = vi.hoisted(() => ({
     getStoredInstalledReleases: vi.fn(),

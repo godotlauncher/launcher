@@ -2,14 +2,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
 import mst from 'mustache';
-import type {
-    InstalledRelease,
-    LaunchPath,
-    ProjectConfig,
-    ProjectDefinition,
-    ProjectDetails,
-    RendererType,
-} from '../../types/index.js';
 import {
     removeProjectEditorDarwin,
     setProjectEditorReleaseDarwin,

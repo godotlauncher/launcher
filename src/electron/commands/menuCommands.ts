@@ -2,7 +2,6 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { dialog, Menu, nativeImage, shell } from 'electron';
-import type { InstalledRelease, ProjectDetails } from '../../types/index.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../main.js';
 import { getAssetPath } from '../pathResolver.js';

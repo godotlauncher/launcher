@@ -22,15 +22,15 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "types": [
-      "./src/types/globals.d.ts",
+      "./globals.d.ts",
     ]
   },
   "include": [
-    "src"
+    "src/ui"
   ],
   "exclude": [
-    "src/electron",
-    "node_modules"
+    "node_modules",
+    "src/electron"
   ],
   "references": [
     {

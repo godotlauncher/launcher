@@ -1,7 +1,6 @@
 import * as fs from 'node:fs';
 import logger from 'electron-log';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ReleaseSummary } from '../../types/index.js';
 import { MIN_VERSION } from '../constants.js';
 import * as githubUtils from '../utils/github.utils.js';
 import * as platformUtils from '../utils/platform.utils.js';

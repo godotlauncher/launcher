@@ -1,6 +1,5 @@
 import * as path from 'node:path';
 import logger from 'electron-log';
-import type { ProjectDetails } from '../../types/index.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {

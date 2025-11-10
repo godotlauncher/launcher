@@ -1,13 +1,6 @@
 import * as fs from 'node:fs';
 import { app, shell } from 'electron';
 import logger from 'electron-log/main.js';
-import type {
-    InstalledRelease,
-    ProjectDetails,
-    PromotionClickPayload,
-    RendererType,
-    UserPreferences,
-} from '../types/index.js';
 import { checkForUpdates, installUpdateAndRestart } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { addProject } from './commands/addProject.js';

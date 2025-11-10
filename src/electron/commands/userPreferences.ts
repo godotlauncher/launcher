@@ -1,5 +1,4 @@
 import * as os from 'node:os';
-import type { UserPreferences } from '../../types/index.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import {
     getDefaultPrefs,
