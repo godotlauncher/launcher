@@ -344,10 +344,14 @@ export const SettingsView: React.FC = () => {
                                 hidden: activeTab !== 'tools',
                             })}
                         >
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <p className="text-sm text-base-content/70">
+                                        {t('tools.overview')}
+                                    </p>
+                                </div>
+                            </div>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <p className="text-sm text-base-content/70">
-                                    {t('tools.overview')}
-                                </p>
                                 <button
                                     type="button"
                                     className="btn btn-sm btn-outline"
@@ -369,6 +373,7 @@ export const SettingsView: React.FC = () => {
                                     </span>
                                 </button>
                             </div>
+                            <div className="divider"></div>
                             <GitToolSettings tool={gitTool} />
                             <div className="divider"></div>
                             <VSCodeToolSettings
