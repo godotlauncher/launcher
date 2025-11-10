@@ -10,6 +10,7 @@ import type {
     ReleaseSummary,
 } from '../../types/index.js';
 import { PROJECTS_FILENAME } from '../constants.js';
+import type { ReleaseAsset } from '../types/github.js';
 import { removeProjectEditor } from './godot.utils.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
