@@ -496,12 +496,12 @@ describe('updateEditorSettings (mocked)', () => {
 
             // Verify temp file is created and then renamed
             expect(fs.promises.writeFile).toHaveBeenCalledWith(
-                editorSettingsPath + '.tmp',
+                `${editorSettingsPath}.tmp`,
                 expect.any(String),
                 'utf-8',
             );
             expect(fs.promises.rename).toHaveBeenCalledWith(
-                editorSettingsPath + '.tmp',
+                `${editorSettingsPath}.tmp`,
                 editorSettingsPath,
             );
         });

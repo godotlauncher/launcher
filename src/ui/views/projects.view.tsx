@@ -34,7 +34,10 @@ export const ProjectsView: React.FC = () => {
         useState<ProjectDetails | null>();
     const [addingProject, setAddingProject] = useState<boolean>(false);
     const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
-    const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number } | null>(null);
+    const [loadingProgress, setLoadingProgress] = useState<{
+        current: number;
+        total: number;
+    } | null>(null);
     const dragCounterRef = useRef<number>(0);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
@@ -264,7 +267,8 @@ export const ProjectsView: React.FC = () => {
         if (godotFiles.length === 0) {
             addAlert(
                 t('common:error'),
-                t('messages.dropGodotFileOnly') || 'Please drop a project.godot file',
+                t('messages.dropGodotFileOnly') ||
+                    'Please drop a project.godot file',
                 <TriangleAlert className="stroke-error" />,
             );
             return;
@@ -277,23 +281,38 @@ export const ProjectsView: React.FC = () => {
             logger.info(`Starting to add ${godotFiles.length} projects`);
             for (let i = 0; i < godotFiles.length; i++) {
                 const projectPath = godotFiles[i];
-                setLoadingProgress({ current: i + 1, total: godotFiles.length });
-                logger.info(`[${i + 1}/${godotFiles.length}] Adding project from:`, projectPath);
+                setLoadingProgress({
+                    current: i + 1,
+                    total: godotFiles.length,
+                });
+                logger.info(
+                    `[${i + 1}/${godotFiles.length}] Adding project from:`,
+                    projectPath,
+                );
                 try {
                     const addResult = await addProject(projectPath);
-                    
+
                     if (!addResult.success) {
-                        logger.error(`[${i + 1}/${godotFiles.length}] Failed:`, addResult.error);
+                        logger.error(
+                            `[${i + 1}/${godotFiles.length}] Failed:`,
+                            addResult.error,
+                        );
                         addAlert(
                             t('common:error'),
                             addResult.error || t('messages.addProjectError'),
                             <TriangleAlert className="stroke-error" />,
                         );
                     } else {
-                        logger.info(`[${i + 1}/${godotFiles.length}] Successfully added project:`, addResult.newProject?.name);
+                        logger.info(
+                            `[${i + 1}/${godotFiles.length}] Successfully added project:`,
+                            addResult.newProject?.name,
+                        );
                     }
                 } catch (error) {
-                    logger.error(`[${i + 1}/${godotFiles.length}] Exception while adding project:`, error);
+                    logger.error(
+                        `[${i + 1}/${godotFiles.length}] Exception while adding project:`,
+                        error,
+                    );
                     addAlert(
                         t('common:error'),
                         `Failed to add project: ${error instanceof Error ? error.message : String(error)}`,
@@ -315,13 +334,15 @@ export const ProjectsView: React.FC = () => {
                     <p className="loading loading-infinity loading-lg"></p>
                     {loadingProgress ? (
                         <p className="text-white text-xl font-semibold">
-                            {t('messages.addingProjects', { 
-                                current: loadingProgress.current, 
-                                total: loadingProgress.total 
+                            {t('messages.addingProjects', {
+                                current: loadingProgress.current,
+                                total: loadingProgress.total,
                             })}
                         </p>
                     ) : (
-                        <p className="text-white text-xl font-semibold">{t('messages.waitingForDialog')}</p>
+                        <p className="text-white text-xl font-semibold">
+                            {t('messages.waitingForDialog')}
+                        </p>
                     )}
                 </div>
             )}
@@ -336,7 +357,9 @@ export const ProjectsView: React.FC = () => {
                     onClose={() => setChangeEditorFor(null)}
                 />
             )}
-            <div className="flex flex-col h-full w-full overflow-auto p-1"
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag-and-drop requires event handlers on container */}
+            <div
+                className="flex flex-col h-full w-full overflow-auto p-1"
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -346,7 +369,8 @@ export const ProjectsView: React.FC = () => {
                     <div className="absolute inset-0 z-30 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center pointer-events-none">
                         <div className="bg-base-100 p-8 rounded-lg shadow-xl">
                             <p className="text-2xl font-bold text-primary">
-                                {t('messages.dropProjectHere') || 'Drop project.godot file here'}
+                                {t('messages.dropProjectHere') ||
+                                    'Drop project.godot file here'}
                             </p>
                         </div>
                     </div>

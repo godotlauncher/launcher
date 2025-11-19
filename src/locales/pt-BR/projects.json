@@ -58,7 +58,10 @@
     "addProjectError": "Algo deu errado ao adicionar o projeto",
     "setEditorError": "Algo deu errado ao definir o editor do projeto",
     "projectNotValid": "O projeto não é válido; certifique-se de que o projeto e a versão sejam válidos no seu computador.",
-    "invalidReleaseEditor": "O editor selecionado está indisponível. Monte a unidade ou instale a versão novamente."
+    "invalidReleaseEditor": "O editor selecionado está indisponível. Monte a unidade ou instale a versão novamente.",
+    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
+    "dropProjectHere": "Drop project.godot file here to add project",
+    "addingProjects": "Adding projects: {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

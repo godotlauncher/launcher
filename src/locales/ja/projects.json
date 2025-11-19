@@ -58,7 +58,10 @@
     "addProjectError": "プロジェクトの追加中に問題が発生しました",
     "setEditorError": "プロジェクトエディタの設定中に問題が発生しました",
     "projectNotValid": "プロジェクトが無効です。プロジェクトとリリースがコンピュータ上で有効であることを確認してください。",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again.",
+    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
+    "dropProjectHere": "Drop project.godot file here to add project",
+    "addingProjects": "Adding projects: {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

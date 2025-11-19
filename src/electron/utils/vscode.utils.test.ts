@@ -1,11 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import {
-    addVSCodeNETLaunchConfig,
-    addVSCodeSettings,
-    updateVSCodeSettings,
-} from './vscode.utils.js';
+import { addVSCodeSettings, updateVSCodeSettings } from './vscode.utils.js';
 
 // Mock electron-log to suppress expected warnings in tests
 vi.mock('electron-log', () => ({
@@ -75,7 +71,7 @@ describe('addVSCodeSettings', () => {
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
         expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall![1] as string);
+        const settings = JSON.parse(writeCall?.[1] as string);
         expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
         expect(settings['files.exclude']['**/*.gd.uid']).toBe(true);
     });
@@ -95,7 +91,7 @@ describe('addVSCodeSettings', () => {
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
         expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall![1] as string);
+        const settings = JSON.parse(writeCall?.[1] as string);
         expect(settings['editor.fontSize']).toBe(12);
         expect(settings['some.key']).toBe('value');
         expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
@@ -109,7 +105,7 @@ describe('addVSCodeSettings', () => {
         const writeCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        const settings = JSON.parse(writeCall![1] as string);
+        const settings = JSON.parse(writeCall?.[1] as string);
         expect(settings['godotTools.editorPath.godot3']).toBe(launchPath);
     });
 
@@ -123,7 +119,7 @@ describe('addVSCodeSettings', () => {
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
         expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall![1] as string);
+        const settings = JSON.parse(writeCall?.[1] as string);
         expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
     });
 });
@@ -131,7 +127,7 @@ describe('addVSCodeSettings', () => {
 describe('addOrUpdateVSCodeRecommendedExtensions', () => {
     const projectDir = '/some/ext-project';
     const settingsPath = path.join(projectDir, '.vscode');
-    const settingsFile = path.join(settingsPath, 'extensions.json');
+    const _settingsFile = path.join(settingsPath, 'extensions.json');
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -154,7 +150,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
                 c[0].toString().endsWith('extensions.json'),
             );
         expect(writeCall).toBeDefined();
-        const payload = JSON.parse(writeCall![1] as string);
+        const payload = JSON.parse(writeCall?.[1] as string);
         expect(payload.recommendations).toContain('geequlim.godot-tools');
         expect(payload.recommendations).not.toContain('ms-dotnettools.csharp');
     });
@@ -171,7 +167,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
             .mock.calls.find((c) =>
                 c[0].toString().endsWith('extensions.json'),
             );
-        const payload = JSON.parse(writeCall![1] as string);
+        const payload = JSON.parse(writeCall?.[1] as string);
         expect(payload.recommendations).toContain('ms-dotnettools.csharp');
     });
 
@@ -194,7 +190,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
                 c[0].toString().endsWith('extensions.json'),
             );
         expect(writeCall).toBeDefined();
-        const payload = JSON.parse(writeCall![1] as string);
+        const payload = JSON.parse(writeCall?.[1] as string);
         // should include eslint, godot-tools, and csharp
         expect(payload.recommendations).toEqual(
             expect.arrayContaining([
@@ -247,7 +243,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
             .mock.calls.find((c) =>
                 c[0].toString().endsWith('extensions.json'),
             );
-        const payload = JSON.parse(writeCall![1] as string);
+        const payload = JSON.parse(writeCall?.[1] as string);
         expect(payload.unwanted).toEqual(['x']);
     });
 });
@@ -256,8 +252,8 @@ describe('addVSCodeNETLaunchConfig', () => {
     const projectDir = '/some/net-project';
     const launchPath = '/path/to/godot';
     const vscodeDir = path.join(projectDir, '.vscode');
-    const launchJson = path.join(vscodeDir, 'launch.json');
-    const tasksJson = path.join(vscodeDir, 'tasks.json');
+    const _launchJson = path.join(vscodeDir, 'launch.json');
+    const _tasksJson = path.join(vscodeDir, 'tasks.json');
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -291,14 +287,14 @@ describe('addVSCodeNETLaunchConfig', () => {
         expect(launchCall).toBeDefined();
         expect(tasksCall).toBeDefined();
 
-        const launchCfg = JSON.parse(launchCall![1] as string);
+        const launchCfg = JSON.parse(launchCall?.[1] as string);
         expect(launchCfg.configurations).toBeDefined();
         expect(launchCfg.configurations[0].type).toBe('coreclr');
         expect(String(launchCfg.configurations[0].program)).toEqual(
             expect.stringContaining('path'),
         );
 
-        const tasksCfg = JSON.parse(tasksCall![1] as string);
+        const tasksCfg = JSON.parse(tasksCall?.[1] as string);
         expect(tasksCfg.tasks[0].command).toBe('dotnet');
     });
 
@@ -322,7 +318,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         const launchCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('launch.json'));
-        const launchCfg = JSON.parse(launchCall![1] as string);
+        const launchCfg = JSON.parse(launchCall?.[1] as string);
 
         // match mac .app path regardless of path separators or drive letters
         expect(String(launchCfg.configurations[0].program)).toMatch(
@@ -360,7 +356,7 @@ describe('addVSCodeNETLaunchConfig', () => {
         const launchCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('launch.json'));
-        const launchCfg = JSON.parse(launchCall![1] as string);
+        const launchCfg = JSON.parse(launchCall?.[1] as string);
 
         expect(launchCfg.configurations).toHaveLength(2);
         // ensure the old program path was replaced and at least one configuration references Godot
@@ -387,7 +383,7 @@ describe('addVSCodeNETLaunchConfig', () => {
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('launch.json'));
         expect(launchCall).toBeDefined();
-        const launchCfg = JSON.parse(launchCall![1] as string);
+        const launchCfg = JSON.parse(launchCall?.[1] as string);
         expect(launchCfg.configurations[0].type).toBe('coreclr');
     });
 
@@ -533,8 +529,8 @@ describe('getVSCodeInstallPath', () => {
 
 describe('updateVSCodeSettings', () => {
     const testProjectDir = '/test/project';
-    const vscodePath = '/test/project/.vscode';
-    const settingsFile = '/test/project/.vscode/settings.json';
+    const _vscodePath = '/test/project/.vscode';
+    const _settingsFile = '/test/project/.vscode/settings.json';
 
     beforeEach(() => {
         // Reset all mocks before each test
@@ -552,7 +548,7 @@ describe('updateVSCodeSettings', () => {
 
     test('should create new settings.json when file does not exist', async () => {
         // Mock: .vscode directory doesn't exist, settings.json doesn't exist
-        vi.mocked(fs.existsSync).mockImplementation((path) => false);
+        vi.mocked(fs.existsSync).mockImplementation((_path) => false);
 
         await updateVSCodeSettings(testProjectDir, '/path/to/godot', 4, false);
 
