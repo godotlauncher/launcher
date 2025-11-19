@@ -34,6 +34,7 @@ export const ProjectsView: React.FC = () => {
         useState<ProjectDetails | null>();
     const [addingProject, setAddingProject] = useState<boolean>(false);
     const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
+    const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number } | null>(null);
     const dragCounterRef = useRef<number>(0);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
@@ -270,11 +271,13 @@ export const ProjectsView: React.FC = () => {
         }
 
         setAddingProject(true);
+        setLoadingProgress({ current: 0, total: godotFiles.length });
 
         try {
             logger.info(`Starting to add ${godotFiles.length} projects`);
             for (let i = 0; i < godotFiles.length; i++) {
                 const projectPath = godotFiles[i];
+                setLoadingProgress({ current: i + 1, total: godotFiles.length });
                 logger.info(`[${i + 1}/${godotFiles.length}] Adding project from:`, projectPath);
                 try {
                     const addResult = await addProject(projectPath);
@@ -301,15 +304,22 @@ export const ProjectsView: React.FC = () => {
             logger.info('Finished adding all projects');
         } finally {
             setAddingProject(false);
+            setLoadingProgress(null);
         }
     };
 
     return (
         <>
             {addingProject && (
-                <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p>
-                    <p>{t('messages.waitingForDialog')}</p>
+                <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
+                    <p className="loading loading-infinity loading-lg"></p>
+                    {loadingProgress ? (
+                        <p className="text-white text-xl font-semibold">
+                            Adding projects: {loadingProgress.current}/{loadingProgress.total}
+                        </p>
+                    ) : (
+                        <p className="text-white text-xl font-semibold">{t('messages.waitingForDialog')}</p>
+                    )}
                 </div>
             )}
 
