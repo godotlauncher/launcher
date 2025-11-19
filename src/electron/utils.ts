@@ -31,7 +31,7 @@ export function ipcMainHandler<Channel extends keyof EventChannelMapping>(
     key: Channel,
     handler: (
         event: IpcMainInvokeEvent,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: required for variadic args
         ...args: any[]
     ) => EventChannelMapping[Channel],
 ) {
