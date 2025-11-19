@@ -50,15 +50,15 @@
       "waitingForDialog": "Warte auf Dialog..."
     },
     "clearReleaseCache": {
-        "title": "Release-Cache Aktualisieren",
-        "description": "Zwischengespeicherte Godot-Release-Metadaten löschen und die neuesten Builds von GitHub abrufen.",
-        "cta": "Cache aktualisieren",
-        "clearing": "Aktualisiere...",
-        "cooldownNotice": "Die Cache-Aktualisierung ist vorübergehend deaktiviert, um GitHub-Rate-Limits zu vermeiden.",
-        "successTitle": "Cache Erfolgreich Aktualisiert",
-        "successMessage": "Die Release-Listen wurden mit den neuesten Builds aktualisiert.",
-        "errorTitle": "Cache Konnte Nicht Aktualisiert Werden",
-        "errorMessage": "Beim Aktualisieren des Release-Caches ist ein Fehler aufgetreten. Versuchen Sie es später erneut."
+      "title": "Release-Cache Aktualisieren",
+      "description": "Zwischengespeicherte Godot-Release-Metadaten löschen und die neuesten Builds von GitHub abrufen.",
+      "cta": "Cache aktualisieren",
+      "clearing": "Aktualisiere...",
+      "cooldownNotice": "Die Cache-Aktualisierung ist vorübergehend deaktiviert, um GitHub-Rate-Limits zu vermeiden.",
+      "successTitle": "Cache Erfolgreich Aktualisiert",
+      "successMessage": "Die Release-Listen wurden mit den neuesten Builds aktualisiert.",
+      "errorTitle": "Cache Konnte Nicht Aktualisiert Werden",
+      "errorMessage": "Beim Aktualisieren des Release-Caches ist ein Fehler aufgetreten. Versuchen Sie es später erneut."
     },
     "checkForUpdates": {
       "title": "Nach Updates suchen",
@@ -160,6 +160,8 @@
     "title": "Updates",
     "description": "Konfigurieren Sie, wie der GD Launcher nach Updates sucht",
     "autoCheck": "Automatisch nach Updates suchen",
+    "betaChannel": "Beta-Updates erhalten",
+    "betaChannelDescription": "Lade Vorabversionen von GitHub herunter; diese können weniger stabil sein als offizielle Releases.",
     "checkNow": "Nach Updates suchen",
     "updateAvailable": "Version {{version}} ist verfügbar, starte Godot Launcher neu, um zu installieren. <Button>Jetzt neu starten</Button>",
     "updateReady": "Eine neue Version ist verfügbar, starte Godot Launcher neu, um zu installieren. <Button>Jetzt neu starten</Button>",

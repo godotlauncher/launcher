@@ -50,15 +50,15 @@
       "waitingForDialog": "En attente du dialogue..."
     },
     "clearReleaseCache": {
-        "title": "Actualiser Le Cache Des Versions",
-        "description": "Supprime les métadonnées de versions Godot mises en cache et récupère les dernières builds depuis GitHub.",
-        "cta": "Actualiser le cache",
-        "clearing": "Actualisation...",
-        "cooldownNotice": "L’actualisation du cache est temporairement désactivée afin d’éviter d’atteindre les limites de GitHub.",
-        "successTitle": "Cache Actualisé Avec Succès",
-        "successMessage": "Les listes de versions ont été mises à jour avec les dernières builds.",
-        "errorTitle": "Impossible D’Actualiser Le Cache",
-        "errorMessage": "Une erreur est survenue lors de l’actualisation du cache des versions. Réessayez plus tard."
+      "title": "Actualiser Le Cache Des Versions",
+      "description": "Supprime les métadonnées de versions Godot mises en cache et récupère les dernières builds depuis GitHub.",
+      "cta": "Actualiser le cache",
+      "clearing": "Actualisation...",
+      "cooldownNotice": "L’actualisation du cache est temporairement désactivée afin d’éviter d’atteindre les limites de GitHub.",
+      "successTitle": "Cache Actualisé Avec Succès",
+      "successMessage": "Les listes de versions ont été mises à jour avec les dernières builds.",
+      "errorTitle": "Impossible D’Actualiser Le Cache",
+      "errorMessage": "Une erreur est survenue lors de l’actualisation du cache des versions. Réessayez plus tard."
     },
     "checkForUpdates": {
       "title": "Vérifier les mises à jour",
@@ -160,10 +160,12 @@
     "title": "Mises à jour",
     "description": "Configurer comment GD Launcher vérifie les mises à jour",
     "autoCheck": "Vérifier automatiquement les mises à jour",
+    "betaChannel": "Recevoir les mises à jour beta",
+    "betaChannelDescription": "Téléchargez les versions préliminaires depuis GitHub ; elles peuvent être moins stables que les versions officielles.",
     "checkNow": "Vérifier les mises à jour",
-  "updateAvailable": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
-  "updateReady": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
-  "restartNow": "Redémarrer maintenant."
+    "updateAvailable": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
+    "updateReady": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
+    "restartNow": "Redémarrer maintenant."
   },
   "windowsSymlinks": {
     "title": "Liens symboliques de l'éditeur",

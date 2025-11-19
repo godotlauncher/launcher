@@ -34,6 +34,11 @@ function migrateUserPreferences(
         updated = true;
     }
 
+    if (typeof nextPrefs.receive_beta_updates === 'undefined') {
+        nextPrefs.receive_beta_updates = defaultPrefs.receive_beta_updates;
+        updated = true;
+    }
+
     return { updated, value: nextPrefs };
 }
 

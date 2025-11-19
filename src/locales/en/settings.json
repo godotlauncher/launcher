@@ -160,6 +160,8 @@
     "title": "Updates",
     "description": "Configure how GD Launcher checks for updates",
     "autoCheck": "Automatically check for updates",
+    "betaChannel": "Receive beta updates",
+    "betaChannelDescription": "Download prerelease builds from GitHub; these may be less stable than official releases.",
     "checkNow": "Check for updates",
     "updateAvailable": "Version {{version}} is available, restart Godot Launcher to install. <Button>Restart now</Button>",
     "updateReady": "A new version is available, restart Godot Launcher to install. <Button>Restart now</Button>",

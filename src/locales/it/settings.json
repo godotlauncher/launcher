@@ -50,15 +50,15 @@
       "waitingForDialog": "In attesa della finestra di dialogo..."
     },
     "clearReleaseCache": {
-        "title": "Aggiorna La Cache Delle Release",
-        "description": "Elimina i metadati delle release di Godot memorizzati e scarica le build più recenti da GitHub.",
-        "cta": "Aggiorna cache",
-        "clearing": "Aggiornamento...",
-        "cooldownNotice": "L’aggiornamento della cache è temporaneamente disattivato per evitare di raggiungere i limiti di GitHub.",
-        "successTitle": "Cache Aggiornata Con Successo",
-        "successMessage": "Le liste delle release sono state aggiornate con le build più recenti.",
-        "errorTitle": "Impossibile Aggiornare La Cache",
-        "errorMessage": "Si è verificato un problema durante l’aggiornamento della cache delle release. Riprova più tardi."
+      "title": "Aggiorna La Cache Delle Release",
+      "description": "Elimina i metadati delle release di Godot memorizzati e scarica le build più recenti da GitHub.",
+      "cta": "Aggiorna cache",
+      "clearing": "Aggiornamento...",
+      "cooldownNotice": "L’aggiornamento della cache è temporaneamente disattivato per evitare di raggiungere i limiti di GitHub.",
+      "successTitle": "Cache Aggiornata Con Successo",
+      "successMessage": "Le liste delle release sono state aggiornate con le build più recenti.",
+      "errorTitle": "Impossibile Aggiornare La Cache",
+      "errorMessage": "Si è verificato un problema durante l’aggiornamento della cache delle release. Riprova più tardi."
     },
     "checkForUpdates": {
       "title": "Controlla aggiornamenti",
@@ -148,7 +148,7 @@
       "notDetectedTitle": "Visual Studio Code non rilevato!",
       "notDetectedMessage": "Godot Launcher può rilevare automaticamente VS Code solo se è stato aggiunto al PATH. Puoi invece specificare il percorso dell'eseguibile qui sotto",
       "pathLabel": "Percorso dell'eseguibile di Visual Studio Code",
-    "selectExecutable": "Seleziona l'eseguibile di Visual Studio Code",
+      "selectExecutable": "Seleziona l'eseguibile di Visual Studio Code",
       "autodetected": "(rilevato automaticamente)",
       "noPathSet": "nessun percorso impostato",
       "clearCustomPath": "Cancella percorso personalizzato",
@@ -160,10 +160,12 @@
     "title": "Aggiornamenti",
     "description": "Configura come GD Launcher controlla gli aggiornamenti",
     "autoCheck": "Controlla automaticamente gli aggiornamenti",
+    "betaChannel": "Ricevere aggiornamenti beta",
+    "betaChannelDescription": "Scarica build prerelease da GitHub; potrebbero essere meno stabili delle release ufficiali.",
     "checkNow": "Controlla aggiornamenti",
-  "updateAvailable": "La versione {{version}} è disponibile, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
-  "updateReady": "È disponibile una nuova versione, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
-  "restartNow": "Riavvia ora."
+    "updateAvailable": "La versione {{version}} è disponibile, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
+    "updateReady": "È disponibile una nuova versione, riavvia Godot Launcher per installarla. <Button>Riavvia ora</Button>",
+    "restartNow": "Riavvia ora."
   },
   "windowsSymlinks": {
     "title": "Collegamenti simbolici dell'editor",

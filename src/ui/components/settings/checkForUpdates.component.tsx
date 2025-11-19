@@ -8,10 +8,15 @@ export const CheckForUpdates: React.FC = () => {
 
     const { updateAvailable, installAndRelaunch, checkForAppUpdates } =
         useApp();
-    const { preferences, setAutoUpdates } = usePreferences();
+    const { preferences, setAutoUpdates, setReceiveBetaUpdates } =
+        usePreferences();
 
     const setAutoCheckUpdates = async (e: ChangeEvent<HTMLInputElement>) => {
         await setAutoUpdates(e.currentTarget.checked);
+    };
+
+    const toggleBetaUpdates = async (e: ChangeEvent<HTMLInputElement>) => {
+        await setReceiveBetaUpdates(e.currentTarget.checked);
     };
 
     return (
@@ -25,7 +30,7 @@ export const CheckForUpdates: React.FC = () => {
                 </p>
             </div>
             <div className=" flex flex-col gap-8">
-                <div className=" flex flex-row  gap-4">
+                <div className="flex flex-row gap-4">
                     <div className="flex flex-row shrink items-center justify-start gap-4 ">
                         <input
                             data-testid="chkAutoCheckUpdatesCheckbox"
@@ -37,6 +42,23 @@ export const CheckForUpdates: React.FC = () => {
                         <span className="">{t('updates.autoCheck')}</span>
                     </div>
                 </div>
+                <div className="flex flex-row gap-4">
+                    <div className="flex flex-row shrink items-center justify-start gap-4 ">
+                        <input
+                            data-testid="chkReceiveBetaUpdates"
+                            onChange={toggleBetaUpdates}
+                            type="checkbox"
+                            checked={preferences?.receive_beta_updates ?? false}
+                            className="checkbox"
+                        />
+                        <div>
+                            <span className="">{t('updates.betaChannel')}</span>
+                            <p className="text-xs text-muted">
+                                {t('updates.betaChannelDescription')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
                 <div className="flex flex-col gap-4 ">
                     <div>{updateAvailable?.message}</div>
 
@@ -44,14 +66,14 @@ export const CheckForUpdates: React.FC = () => {
                         {(!updateAvailable ||
                             (updateAvailable &&
                                 updateAvailable?.type === 'none')) && (
-                            <button
-                                type="button"
-                                onClick={() => checkForAppUpdates()}
-                                className="btn btn-primary"
-                            >
-                                {t('updates.checkNow')}
-                            </button>
-                        )}
+                                <button
+                                    type="button"
+                                    onClick={() => checkForAppUpdates()}
+                                    className="btn btn-primary"
+                                >
+                                    {t('updates.checkNow')}
+                                </button>
+                            )}
 
                         {updateAvailable &&
                             updateAvailable?.type === 'ready' && (

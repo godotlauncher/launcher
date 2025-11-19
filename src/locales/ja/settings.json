@@ -50,15 +50,15 @@
       "waitingForDialog": "ダイアログを待機中..."
     },
     "clearReleaseCache": {
-        "title": "リリースキャッシュを更新",
-        "description": "保存された Godot リリースのメタデータを削除し、GitHub から最新のビルドを取得します。",
-        "cta": "キャッシュを更新",
-        "clearing": "更新しています…",
-        "cooldownNotice": "GitHub のレート制限を避けるため、キャッシュ更新は一時的に無効化されています。",
-        "successTitle": "キャッシュを更新しました",
-        "successMessage": "リリース一覧が最新のビルドで更新されました。",
-        "errorTitle": "キャッシュを更新できませんでした",
-        "errorMessage": "リリースキャッシュの更新中に問題が発生しました。後でもう一度お試しください。"
+      "title": "リリースキャッシュを更新",
+      "description": "保存された Godot リリースのメタデータを削除し、GitHub から最新のビルドを取得します。",
+      "cta": "キャッシュを更新",
+      "clearing": "更新しています…",
+      "cooldownNotice": "GitHub のレート制限を避けるため、キャッシュ更新は一時的に無効化されています。",
+      "successTitle": "キャッシュを更新しました",
+      "successMessage": "リリース一覧が最新のビルドで更新されました。",
+      "errorTitle": "キャッシュを更新できませんでした",
+      "errorMessage": "リリースキャッシュの更新中に問題が発生しました。後でもう一度お試しください。"
     },
     "checkForUpdates": {
       "title": "アップデートの確認",
@@ -160,6 +160,8 @@
     "title": "アップデート",
     "description": "GD Launcherがアップデートを確認する方法を設定",
     "autoCheck": "自動的にアップデートを確認",
+    "betaChannel": "ベータ版アップデートを受け取る",
+    "betaChannelDescription": "GitHubからプレリリース版をダウンロードします。正式リリースより安定性が低い可能性があります。",
     "checkNow": "アップデートを確認",
     "updateAvailable": "バージョン {{version}}が利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>",
     "updateReady": "新しいバージョンが利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>",

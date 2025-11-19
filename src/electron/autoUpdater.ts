@@ -9,6 +9,23 @@ let interval: NodeJS.Timeout;
 let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
 
+function applyBetaChannelSettings(enabled: boolean) {
+    logger.info(`Beta releases ${enabled ? 'enabled' : 'disabled'}`);
+    autoUpdater.allowPrerelease = enabled;
+    autoUpdater.channel = enabled ? 'beta' : null;
+}
+
+export function setBetaChannel(
+    enabled: boolean,
+    checkForUpdatesNow: boolean = true,
+) {
+    applyBetaChannelSettings(enabled);
+
+    if (checkForUpdatesNow) {
+        void checkForUpdates();
+    }
+}
+
 export async function startAutoUpdateChecks(
     intervalMs: number = 60 * 60 * 1000,
 ) {
@@ -83,6 +100,7 @@ export async function setupAutoUpdate(
     intervalMs: number = 60 * 60 * 1000,
     autoDownload: boolean = false,
     installOnQuit: boolean = true,
+    receiveBetaUpdates: boolean = false,
 ) {
     logger.info(
         `Starting auto updates, enabled: ${checkForUpdates}; autoDownload: ${autoDownload}; installOnQuit: ${installOnQuit}`,
@@ -93,6 +111,7 @@ export async function setupAutoUpdate(
     autoUpdater.logger = logger;
     autoUpdater.autoDownload = autoDownload;
     autoUpdater.autoInstallOnAppQuit = installOnQuit;
+    setBetaChannel(receiveBetaUpdates, false);
 
     if (checkForUpdates) {
         await startAutoUpdateChecks(intervalMs);

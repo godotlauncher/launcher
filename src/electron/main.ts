@@ -212,6 +212,7 @@ app.on('ready', async () => {
         60 * 60 * 1000,
         true,
         true,
+        prefs.receive_beta_updates,
     );
 
     disposeFocusRevalidation = setupFocusRevalidation(mainWindow);
