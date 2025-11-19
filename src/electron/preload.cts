@@ -53,6 +53,9 @@ electron.contextBridge.exposeInMainWorld("electron", {
     promotionClicked: (payload: PromotionClickPayload) =>
         ipcInvoke("promotion-clicked", payload),
 
+    // ##### file utils #####
+    getPathForFile: (file: File) => electron.webUtils.getPathForFile(file),
+
     // ##### projects #####
 
     createProject: (

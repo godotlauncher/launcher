@@ -58,7 +58,10 @@
     "addProjectError": "Coś poszło nie tak podczas dodawania projektu",
     "setEditorError": "Coś poszło nie tak podczas ustawiania edytora projektu",
     "projectNotValid": "Projekt jest nieprawidłowy, upewnij się, że projekt i wydanie są prawidłowe na twoim komputerze.",
-    "invalidReleaseEditor": "Wybrany edytor jest niedostępny. Podłącz dysk lub zainstaluj wydanie ponownie."
+    "invalidReleaseEditor": "Wybrany edytor jest niedostępny. Podłącz dysk lub zainstaluj wydanie ponownie.",
+    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
+    "dropProjectHere": "Drop project.godot file here to add project",
+    "addingProjects": "Adding projects: {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

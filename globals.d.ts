@@ -262,6 +262,9 @@ interface Window {
         showProjectMenu: (project: ProjectDetails) => Promise<void>;
         showReleaseMenu: (release: InstalledRelease) => Promise<void>;
 
+        // ##### file utils #####
+        getPathForFile: (file: File) => string;
+
         // ##### releases #####
 
         getAvailableReleases: () => Promise<ReleaseSummary[]>;

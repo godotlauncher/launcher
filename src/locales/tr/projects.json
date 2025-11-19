@@ -58,7 +58,10 @@
     "addProjectError": "Proje eklenirken bir şeyler ters gitti",
     "setEditorError": "Proje editörü ayarlanırken bir şeyler ters gitti",
     "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun.",
-    "invalidReleaseEditor": "Seçilen editör kullanılamıyor. Sürücüyü bağlayın veya sürümü yeniden yükleyin."
+    "invalidReleaseEditor": "Seçilen editör kullanılamıyor. Sürücüyü bağlayın veya sürümü yeniden yükleyin.",
+    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
+    "dropProjectHere": "Drop project.godot file here to add project",
+    "addingProjects": "Adding projects: {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

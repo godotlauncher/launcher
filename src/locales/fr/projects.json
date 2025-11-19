@@ -58,7 +58,10 @@
     "addProjectError": "Une erreur s'est produite lors de l'ajout du projet",
     "setEditorError": "Une erreur s'est produite lors de la définition de l'éditeur du projet",
     "projectNotValid": "Le projet n'est pas valide, assurez-vous que le projet et la version sont valides sur votre ordinateur.",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again."
+    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again.",
+    "dropGodotFileOnly": "Veuillez déposer un fichier project.godot pour ajouter un projet",
+    "dropProjectHere": "Déposez le fichier project.godot ici pour ajouter un projet",
+    "addingProjects": "Ajout de projets : {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

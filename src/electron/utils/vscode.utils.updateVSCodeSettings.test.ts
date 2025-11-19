@@ -101,7 +101,7 @@ const sampleSettingsComplex = `{
 
 describe('updateVSCodeSettings (comprehensive)', () => {
     const projectDir = '/test/project';
-    const settingsPath = '/test/project/.vscode/settings.json';
+    const _settingsPath = '/test/project/.vscode/settings.json';
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -278,7 +278,7 @@ describe('updateVSCodeSettings (comprehensive)', () => {
             await updateVSCodeSettings(projectDir, '/path/to/godot', 4, false);
 
             const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
-            const writtenSettings = JSON.parse(writeCall[1] as string);
+            const _writtenSettings = JSON.parse(writeCall[1] as string);
             const content = writeCall[1] as string;
 
             // Count occurrences of the UID exclude pattern
@@ -640,7 +640,7 @@ describe('updateVSCodeSettings (comprehensive)', () => {
                 );
 
             expect(writeCall).toBeDefined();
-            const writtenSettings = JSON.parse(writeCall![1] as string);
+            const writtenSettings = JSON.parse(writeCall?.[1] as string);
             expect(writtenSettings['godotTools.editorPath.godot4']).toBe(
                 '/path/to/godot',
             );

@@ -451,7 +451,7 @@ suite('Releases Utils', () => {
             const testDate = new Date(2024, 0, 1);
             const releases = [{ version: '4.4-stable' }] as ReleaseSummary[];
             vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(
-                undefined as unknown as void,
+                undefined as unknown as undefined,
             );
 
             const cached = await storeAvailableReleases(
@@ -581,7 +581,7 @@ suite('Releases Utils', () => {
                 JSON.stringify(existingReleases),
             );
             vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(
-                undefined as unknown as void,
+                undefined as unknown as undefined,
             );
 
             const newRelease = {
@@ -626,7 +626,7 @@ suite('Releases Utils', () => {
                 JSON.stringify(existingReleases),
             );
             vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(
-                undefined as unknown as void,
+                undefined as unknown as undefined,
             );
 
             const releaseToRemove = {
