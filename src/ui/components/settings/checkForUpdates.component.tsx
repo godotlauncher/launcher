@@ -66,14 +66,14 @@ export const CheckForUpdates: React.FC = () => {
                         {(!updateAvailable ||
                             (updateAvailable &&
                                 updateAvailable?.type === 'none')) && (
-                                <button
-                                    type="button"
-                                    onClick={() => checkForAppUpdates()}
-                                    className="btn btn-primary"
-                                >
-                                    {t('updates.checkNow')}
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                onClick={() => checkForAppUpdates()}
+                                className="btn btn-primary"
+                            >
+                                {t('updates.checkNow')}
+                            </button>
+                        )}
 
                         {updateAvailable &&
                             updateAvailable?.type === 'ready' && (
