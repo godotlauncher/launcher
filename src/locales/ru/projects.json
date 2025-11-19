@@ -59,9 +59,9 @@
     "setEditorError": "Что-то пошло не так при установке редактора проекта",
     "projectNotValid": "Проект недействителен, убедитесь, что проект и версия действительны на вашем компьютере.",
     "invalidReleaseEditor": "Выбранный редактор недоступен. Подключите диск или переустановите релиз.",
-    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
-    "dropProjectHere": "Drop project.godot file here to add project",
-    "addingProjects": "Adding projects: {{current}}/{{total}}"
+    "dropGodotFileOnly": "Пожалуйста, перетащите файл project.godot, чтобы добавить проект",
+    "dropProjectHere": "Перетащите файл project.godot сюда, чтобы добавить проект",
+    "addingProjects": "Добавление проектов: {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

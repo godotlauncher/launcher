@@ -47,7 +47,7 @@
       "downloadDotNet": "Transferir {{version}} .NET"
     },
     "status": {
-      "unavailable": "Unavailable"
+      "unavailable": "Indisponível"
     }
   }
 }

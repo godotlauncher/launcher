@@ -24,7 +24,7 @@
     "vsCodeProject": "Visual Studio Code est activé comme éditeur externe pour ce projet",
     "prerelease": "Utilise une version préliminaire de l'éditeur Godot",
     "windowedMode": "Ce projet s'ouvre en mode fenêtré",
-    "invalidRelease": "Editor unavailable",
+    "invalidRelease": "Éditeur indisponible",
     "gitProject": "Le projet utilise Git pour le contrôle de version"
   },
   "addProject": {
@@ -58,10 +58,10 @@
     "addProjectError": "Une erreur s'est produite lors de l'ajout du projet",
     "setEditorError": "Une erreur s'est produite lors de la définition de l'éditeur du projet",
     "projectNotValid": "Le projet n'est pas valide, assurez-vous que le projet et la version sont valides sur votre ordinateur.",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again.",
+        "invalidReleaseEditor": "L'éditeur sélectionné est indisponible. Montez le lecteur ou réinstallez la version.",
     "dropGodotFileOnly": "Veuillez déposer un fichier project.godot pour ajouter un projet",
-    "dropProjectHere": "Déposez le fichier project.godot ici pour ajouter un projet",
-    "addingProjects": "Ajout de projets : {{current}}/{{total}}"
+    "dropProjectHere": "Déposez le fichier project.godot ici pour ajouter le projet",
+    "addingProjects": "Ajout des projets : {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

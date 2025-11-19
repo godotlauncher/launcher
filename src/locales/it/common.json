@@ -48,7 +48,7 @@
       "dotnet": ".NET",
       "prerelease": "pre-release"
     },
-    "unavailable": "Unavailable release",
-    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
+    "unavailable": "Versione non disponibile",
+    "unavailableHint": "Monta l'unità o scegli un editor diverso prima di procedere."
   }
 }

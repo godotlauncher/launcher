@@ -47,7 +47,7 @@
       "downloadDotNet": "下载 {{version}} .NET"
     },
     "status": {
-      "unavailable": "Unavailable"
+      "unavailable": "不可用"
     }
   }
 }

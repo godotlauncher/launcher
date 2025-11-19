@@ -48,7 +48,7 @@
       "dotnet": ".NET",
       "prerelease": "預先釋出"
     },
-    "unavailable": "Unavailable release",
-    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
+    "unavailable": "版本無法使用",
+    "unavailableHint": "在繼續之前，請掛載磁碟機或選擇其他編輯器。"
   }
 }

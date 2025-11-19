@@ -48,7 +48,7 @@
       "dotnet": ".NET",
       "prerelease": "プレリリース"
     },
-    "unavailable": "Unavailable release",
-    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
+    "unavailable": "利用不可能なバージョン",
+    "unavailableHint": "続行する前にドライブをマウントするか、別のエディタを選択してください。"
   }
 }

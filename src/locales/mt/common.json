@@ -46,9 +46,9 @@
     "installReleases": "Installa releases",
     "badges": {
       "dotnet": ".NET",
-      "prerelease": "prerelease"
+      "prerelease": "pre-rilaxx"
     },
-    "unavailable": "Unavailable release",
-    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
+    "unavailable": "Verżjoni mhux disponibbli",
+    "unavailableHint": "Immonta d-drajv jew agħżel editur differenti qabel tkompli."
   }
 }
