@@ -1,5 +1,9 @@
 const dotenv = require('dotenv');
 dotenv.config();
+const {version} = require('./package.json');
+
+const isPrerelease = version.includes('beta') || version.includes('alpha') || version.includes('rc');
+console.log(`Building version ${version} as ${isPrerelease ? 'prerelease' : 'release'}`);
 
 module.exports = {
     appId: 'org.godotlauncher.app',
@@ -95,7 +99,7 @@ module.exports = {
         provider: 'github',
         owner: 'godotlauncher',
         repo: 'launcher',
-        releaseType: 'release',
+        releaseType: isPrerelease ? 'prerelease' : 'release',
         vPrefixedTagName: true,
     },
 };

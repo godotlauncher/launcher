@@ -1,0 +1,45 @@
+name: Release Builds
+
+on:
+  push:
+    branches:
+      - 'release/**'
+
+jobs:
+  build-and-publish:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            distCommand: pnpm run dist:mac -- --publish always
+          - os: ubuntu-latest
+            distCommand: pnpm run dist:linux -- --publish always
+          - os: windows-latest
+            distCommand: pnpm run dist:win:publish
+    runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build sources
+        run: pnpm run build:sources
+
+      - name: Build and publish ${{ matrix.os }} artifacts
+        run: ${{ matrix.distCommand }}
