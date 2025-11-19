@@ -50,7 +50,8 @@
         "app:dir": "electron-builder --dir",
         "app:dist": "electron-builder",
         "postinstall": "electron-builder install-app-deps",
-        "changelog": "auto-changelog --ignore-commit-pattern \"[R|r]elease|[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG\""
+        "changelog": "auto-changelog --ignore-commit-pattern \"[R|r]elease|[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG\"",
+        "doc:screenshots": "playwright test e2e/documentationScreenshot.spec.ts"
     },
     "dependencies": {
         "clsx": "^2.1.1",

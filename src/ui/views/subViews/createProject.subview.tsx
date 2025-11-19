@@ -233,7 +233,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             {t('title')}
                         </h1>
                         <div className="flex gap-2">
-                            <button type="button" onClick={onClose}>
+                            <button type="button" onClick={onClose} data-testid="btnCloseCreateProject">
                                 <X />
                             </button>
                         </div>

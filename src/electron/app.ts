@@ -288,6 +288,9 @@ export function registerHandlers() {
     );
 
     ipcMainHandler('get-platform', async () => {
+        if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+            return 'win32';
+        }
         return process.platform;
     });
 

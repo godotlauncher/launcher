@@ -39,8 +39,12 @@ test.afterEach(async () => {
 test('Has the correct title', async () => {
   const { version } = JSON.parse(await fs.readFile('./package.json', 'utf-8'));
 
-  const title = await mainPage.title();
-  expect(title).toBe('Godot Launcher ' + version);
+  await expect
+    .poll(async () => await mainPage.title(), {
+      message: 'Waiting for window title to include full version',
+      timeout: 15000,
+    })
+    .toBe(`Godot Launcher ${version}`);
 });
 
 test('Can view projects', async () => {
@@ -66,4 +70,3 @@ test('Can view settings', async () => {
   expect(settingsView).toHaveCount(1);
 
 });
-
