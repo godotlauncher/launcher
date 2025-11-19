@@ -10,7 +10,7 @@ import {
     EllipsisVertical,
     TriangleAlert,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import gitIconColor from '../assets/icons/git_icon_color.svg';
 import vscodeIcon from '../assets/icons/vscode.svg';
@@ -33,6 +33,8 @@ export const ProjectsView: React.FC = () => {
     const [changeEditorFor, setChangeEditorFor] =
         useState<ProjectDetails | null>();
     const [addingProject, setAddingProject] = useState<boolean>(false);
+    const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
+    const dragCounterRef = useRef<number>(0);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
 
@@ -197,6 +199,111 @@ export const ProjectsView: React.FC = () => {
         }
     };
 
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current++;
+        if (dragCounterRef.current === 1) {
+            setIsDraggingOver(true);
+        }
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current--;
+        if (dragCounterRef.current === 0) {
+            setIsDraggingOver(false);
+        }
+    };
+
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDraggingOver(false);
+
+        if (installedReleases.length === 0) {
+            addAlert(
+                t('common:error'),
+                t('messages.needReleaseInstalled'),
+                <TriangleAlert className="stroke-error" />,
+            );
+            return;
+        }
+
+        // In Electron, we need to use getAsFile() which returns a File object
+        // Then use webUtils.getPathForFile() to get the full path
+        const items = Array.from(e.dataTransfer.items);
+        const godotFiles: string[] = [];
+
+        for (const item of items) {
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                // Match project.godot, project (1).godot, project (2).godot, etc.
+                if (file && /^project(\s*\(\d+\))?\.godot$/i.test(file.name)) {
+                    try {
+                        // Use Electron's webUtils to get the full file path
+                        const filePath = window.electron.getPathForFile(file);
+                        if (filePath) {
+                            godotFiles.push(filePath);
+                        }
+                    } catch (error) {
+                        logger.error('Error getting file path:', error);
+                    }
+                }
+            }
+        }
+
+        if (godotFiles.length === 0) {
+            addAlert(
+                t('common:error'),
+                t('messages.dropGodotFileOnly') || 'Please drop a project.godot file',
+                <TriangleAlert className="stroke-error" />,
+            );
+            return;
+        }
+
+        setAddingProject(true);
+
+        try {
+            logger.info(`Starting to add ${godotFiles.length} projects`);
+            for (let i = 0; i < godotFiles.length; i++) {
+                const projectPath = godotFiles[i];
+                logger.info(`[${i + 1}/${godotFiles.length}] Adding project from:`, projectPath);
+                try {
+                    const addResult = await addProject(projectPath);
+                    
+                    if (!addResult.success) {
+                        logger.error(`[${i + 1}/${godotFiles.length}] Failed:`, addResult.error);
+                        addAlert(
+                            t('common:error'),
+                            addResult.error || t('messages.addProjectError'),
+                            <TriangleAlert className="stroke-error" />,
+                        );
+                    } else {
+                        logger.info(`[${i + 1}/${godotFiles.length}] Successfully added project:`, addResult.newProject?.name);
+                    }
+                } catch (error) {
+                    logger.error(`[${i + 1}/${godotFiles.length}] Exception while adding project:`, error);
+                    addAlert(
+                        t('common:error'),
+                        `Failed to add project: ${error instanceof Error ? error.message : String(error)}`,
+                        <TriangleAlert className="stroke-error" />,
+                    );
+                }
+            }
+            logger.info('Finished adding all projects');
+        } finally {
+            setAddingProject(false);
+        }
+    };
+
     return (
         <>
             {addingProject && (
@@ -216,7 +323,21 @@ export const ProjectsView: React.FC = () => {
                     onClose={() => setChangeEditorFor(null)}
                 />
             )}
-            <div className="flex flex-col h-full w-full overflow-auto p-1">
+            <div className="flex flex-col h-full w-full overflow-auto p-1"
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                {isDraggingOver && (
+                    <div className="absolute inset-0 z-30 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center pointer-events-none">
+                        <div className="bg-base-100 p-8 rounded-lg shadow-xl">
+                            <p className="text-2xl font-bold text-primary">
+                                {t('messages.dropProjectHere') || 'Drop project.godot file here'}
+                            </p>
+                        </div>
+                    </div>
+                )}
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between items-start">
                         <div className="flex flex-col gap-1">
