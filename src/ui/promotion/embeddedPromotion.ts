@@ -13,6 +13,6 @@ export const EMBEDDED_PROMOTION: PromotionManifestEntry | null = {
     countdownHourLabel: '{count} hours left',
     countdownMinuteLabel: '{minutes} minutes {seconds} seconds left',
     externalLink: 'https://forms.gle/g6g3pc4gbnbPgvtdA',
-    enabled: false,
+    enabled: true,
     localizedCopy: LOCALIZED_EMBEDDED_PROMOTION_COPY,
 };

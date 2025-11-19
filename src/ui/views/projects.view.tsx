@@ -315,7 +315,10 @@ export const ProjectsView: React.FC = () => {
                     <p className="loading loading-infinity loading-lg"></p>
                     {loadingProgress ? (
                         <p className="text-white text-xl font-semibold">
-                            Adding projects: {loadingProgress.current}/{loadingProgress.total}
+                            {t('messages.addingProjects', { 
+                                current: loadingProgress.current, 
+                                total: loadingProgress.total 
+                            })}
                         </p>
                     ) : (
                         <p className="text-white text-xl font-semibold">{t('messages.waitingForDialog')}</p>
