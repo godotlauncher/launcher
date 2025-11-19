@@ -36,6 +36,7 @@
         "lint": "biome check",
         "lint:fix": "biome check --write",
         "lint:report": "biome check --reporter=summary --diagnostic-level=error",
+        "format": "biome format --write",
         "preview": "vite preview",
         "build:sources": "npm run build && npm run transpile:electron ",
         "dist:mac": "npm run build:sources && electron-builder --config electron-builder-config.cjs --mac",
