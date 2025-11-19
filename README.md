@@ -83,8 +83,11 @@ For major changes or new features, please open an issue and clearly mark the tit
 
 1. **Fork & Clone** this repository to your local machine.
 2. Ensure you have **Node.js 22+** installed.
-3. Run `npm install` to install all dependencies.
-4. Launch the app with `npm run dev`.
+
+   > **Note:** This project uses `pnpm` (v10+). Enable it via `corepack enable pnpm` or install it globally before running the commands below.
+
+3. Install dependencies with `pnpm install`.
+4. Launch the app with `pnpm run dev`.
 
 Once you have everything running, feel free to open pull requests with your improvements, fixes, or new features.
 

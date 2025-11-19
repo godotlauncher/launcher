@@ -72,7 +72,7 @@ export default defineConfig({
 
     /* Run your local dev server before starting the tests */
     webServer: {
-        command: 'npm run dev:react',
+        command: 'pnpm run dev:react',
         url: 'http://localhost:5123',
         reuseExistingServer: !process.env.CI,
     },
