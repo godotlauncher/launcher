@@ -12,7 +12,7 @@ const { autoUpdater } = electronUpdater;
 function applyBetaChannelSettings(enabled: boolean) {
     logger.info(`Beta releases ${enabled ? 'enabled' : 'disabled'}`);
     autoUpdater.allowPrerelease = enabled;
-    autoUpdater.channel = enabled ? 'beta' : null;
+    autoUpdater.channel = enabled ? 'beta' : 'latest';
 }
 
 export function setBetaChannel(

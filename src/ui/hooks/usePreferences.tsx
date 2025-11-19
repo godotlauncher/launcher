@@ -89,6 +89,9 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
     const setReceiveBetaUpdates = async (
         enabled: boolean,
     ): Promise<boolean> => {
+        setPreferences((prev) =>
+            prev ? { ...prev, receive_beta_updates: enabled } : prev,
+        );
         const result = await window.electron.setReceiveBetaUpdates(enabled);
         await loadPreferences();
         return result;
