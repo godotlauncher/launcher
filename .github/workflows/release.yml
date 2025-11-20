@@ -6,22 +6,95 @@ on:
       - 'release/**'
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm biome check --reporter summary
+
+      - name: Run build:sources
+        run: pnpm run build:sources
+
+      - name: Run Unit tests
+        run: pnpm run test:unit
+
+  tag-release:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a v${{ steps.get_version.outputs.VERSION }} -m "Release v${{ steps.get_version.outputs.VERSION }}"
+          git push origin v${{ steps.get_version.outputs.VERSION }}
+
   build-and-publish:
+    needs: tag-release
     strategy:
       matrix:
         include:
           - os: macos-latest
-            distCommand: pnpm run dist:mac -- --publish always
+            distCommand: pnpm run dist:mac -- --publish onTag
           - os: ubuntu-latest
-            distCommand: pnpm run dist:linux -- --publish always
+            distCommand: pnpm run dist:linux -- --publish onTag
           - os: windows-latest
-            distCommand: pnpm run dist:win:publish
+            distCommand: pnpm run dist:win -- --publish onTag
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      WIN_SIGN_PUBLISHER_NAME: ${{ vars.WIN_SIGN_PUBLISHER_NAME }}
+      WIN_SIGN_ENDPOINT: ${{ vars.WIN_SIGN_ENDPOINT }}
+      WIN_SIGN_CERTIFICATE_PROFILE_NAME: ${{ vars.WIN_SIGN_CERTIFICATE_PROFILE_NAME }}
+      WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME: ${{ vars.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TIMESTAMP_URL: ${{ vars.AZURE_TIMESTAMP_URL }}
+      AZURE_TIMESTAMP_DIGEST: ${{ vars.AZURE_TIMESTAMP_DIGEST }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Fetch tags
+        run: git fetch --tags --force
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4

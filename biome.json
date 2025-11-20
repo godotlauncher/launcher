@@ -8,6 +8,7 @@
     "files": {
         "ignoreUnknown": false,
         "includes": [
+            "electron-builder-config.ts",
             "src/**/*.ts",
             "src/**/*.js",
             "src/**/*.tsx",
