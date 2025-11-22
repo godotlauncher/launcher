@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: used by electron-builder */
 import { config } from 'dotenv';
 import { expand } from 'dotenv-expand';
 import type { Configuration } from 'electron-builder';
@@ -7,21 +8,24 @@ expand(config());
 
 const currentYear = new Date().getFullYear();
 
-
-const {version} = require('./package.json');
-const isPrerelease = version.includes('beta') || version.includes('alpha') || version.includes('rc');
-const channel: "beta" | "alpha" | "rc" | "latest" = version.includes('beta')
+const { version } = require('./package.json');
+const isPrerelease =
+    version.includes('beta') ||
+    version.includes('alpha') ||
+    version.includes('rc');
+const channel: 'beta' | 'alpha' | 'rc' | 'latest' = version.includes('beta')
     ? 'beta'
     : version.includes('alpha')
-        ? 'alpha'
-        : version.includes('rc')
-            ? 'rc'
-            : 'latest';
+      ? 'alpha'
+      : version.includes('rc')
+        ? 'rc'
+        : 'latest';
 
-console.log(`Building version ${version} as ${isPrerelease ? 'prerelease' : 'release'}`);
+console.log(
+    `Building version ${version} as ${isPrerelease ? 'prerelease' : 'release'}`,
+);
 
 export default (<Configuration>{
-
     appId: 'org.godotlauncher.launcher',
     productName: 'Godot Launcher',
     artifactName: 'Godot_Launcher-${version}-${os}.${arch}.${ext}',
@@ -38,7 +42,7 @@ export default (<Configuration>{
             filter: ['**/*'],
         },
     ],
-     mac: {
+    mac: {
         icon: 'build-resources/mac/icon26.icns',
         category: 'public.app-category.developer-tools',
 
@@ -94,8 +98,10 @@ export default (<Configuration>{
         azureSignOptions: {
             publisherName: process.env.WIN_SIGN_PUBLISHER_NAME,
             endpoint: process.env.WIN_SIGN_ENDPOINT,
-            certificateProfileName: process.env.WIN_SIGN_CERTIFICATE_PROFILE_NAME,
-            codeSigningAccountName: process.env.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME,
+            certificateProfileName:
+                process.env.WIN_SIGN_CERTIFICATE_PROFILE_NAME,
+            codeSigningAccountName:
+                process.env.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME,
             timestampRfc3161: process.env.AZURE_TIMESTAMP_URL,
             timestampDigest: process.env.AZURE_TIMESTAMP_DIGEST,
             fileDigest: 'SHA256',
