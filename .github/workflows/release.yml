@@ -1,9 +1,7 @@
 name: Release Builds
 
 on:
-  push:
-    branches:
-      - 'release/**'
+  workflow_dispatch:
 
 jobs:
   checks:
