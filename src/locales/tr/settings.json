@@ -50,15 +50,15 @@
       "waitingForDialog": "İletişim kutusu bekleniyor..."
     },
     "clearReleaseCache": {
-        "title": "Sürüm Önbelleğini Yenile",
-        "description": "Önbelleğe alınmış Godot sürüm meta verilerini sil ve GitHub’dan en yeni yapıları çek.",
-        "cta": "Önbelleği yenile",
-        "clearing": "Yenileniyor...",
-        "cooldownNotice": "GitHub hız sınırlarına takılmamak için önbellek yenileme geçici olarak devre dışı bırakıldı.",
-        "successTitle": "Önbellek Başarıyla Yenilendi",
-        "successMessage": "Sürüm listeleri en yeni yapılarla güncellendi.",
-        "errorTitle": "Önbellek Yenilenemedi",
-        "errorMessage": "Sürüm önbelleği yenilenirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin."
+      "title": "Sürüm Önbelleğini Yenile",
+      "description": "Önbelleğe alınmış Godot sürüm meta verilerini sil ve GitHub’dan en yeni yapıları çek.",
+      "cta": "Önbelleği yenile",
+      "clearing": "Yenileniyor...",
+      "cooldownNotice": "GitHub hız sınırlarına takılmamak için önbellek yenileme geçici olarak devre dışı bırakıldı.",
+      "successTitle": "Önbellek Başarıyla Yenilendi",
+      "successMessage": "Sürüm listeleri en yeni yapılarla güncellendi.",
+      "errorTitle": "Önbellek Yenilenemedi",
+      "errorMessage": "Sürüm önbelleği yenilenirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin."
     },
     "checkForUpdates": {
       "title": "Güncellemeleri Kontrol Et",
@@ -160,6 +160,8 @@
     "title": "Güncellemeler",
     "description": "GD Launcher'ın güncellemeleri nasıl kontrol edeceğini yapılandırın",
     "autoCheck": "Güncellemeleri otomatik kontrol et",
+    "betaChannel": "Beta güncellemeleri al",
+    "betaChannelDescription": "GitHub’dan ön sürüm paketlerini indirir; bunlar resmi sürümlere göre daha az kararlı olabilir.",
     "checkNow": "Güncellemeleri kontrol et",
     "updateAvailable": "Sürüm {{version}} mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
     "updateReady": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",

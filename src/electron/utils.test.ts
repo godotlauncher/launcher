@@ -1,5 +1,6 @@
+import type { WebFrameMain } from 'electron';
 import { describe, expect, it, vi } from 'vitest';
-import { validateEventFrame } from './utils';
+import { validateEventFrame } from './utils.js';
 
 // Mock imported modules
 vi.mock('electron-updater', () => ({
@@ -84,7 +85,7 @@ describe('Utils', () => {
                 url: 'http://localhost:5123',
             };
 
-            expect(validateEventFrame(frame as any)).toBeUndefined();
+            expect(validateEventFrame(frame as WebFrameMain)).toBeUndefined();
         });
 
         it('should throw if not dev and localhost:5123', () => {
@@ -93,7 +94,7 @@ describe('Utils', () => {
                 url: 'http://localhost:5123',
             };
 
-            expect(() => validateEventFrame(frame as any)).toThrow();
+            expect(() => validateEventFrame(frame as WebFrameMain)).toThrow();
         });
 
         it('should throw if dev and not localhost:5123', () => {
@@ -102,7 +103,7 @@ describe('Utils', () => {
                 url: 'http://localhost:123',
             };
 
-            expect(() => validateEventFrame(frame as any)).toThrow();
+            expect(() => validateEventFrame(frame as WebFrameMain)).toThrow();
         });
 
         it('it should throw if not dev and path is not file://', () => {
@@ -111,7 +112,7 @@ describe('Utils', () => {
                 url: 'file://localhost:5123',
             };
 
-            expect(() => validateEventFrame(frame as any)).toThrow();
+            expect(() => validateEventFrame(frame as WebFrameMain)).toThrow();
         });
     });
 });

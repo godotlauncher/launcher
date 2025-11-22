@@ -428,7 +428,7 @@ suite('Releases Utils', () => {
                 ok: false,
                 statusText: 'Network Error',
                 body: null,
-            } as any);
+            } as Response);
 
             await expect(
                 downloadReleaseAsset(mockAsset, downloadPath),

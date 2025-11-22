@@ -1,7 +1,11 @@
 import * as fs from 'node:fs';
 import { app, shell } from 'electron';
 import logger from 'electron-log/main.js';
-import { checkForUpdates, installUpdateAndRestart } from './autoUpdater.js';
+import {
+    checkForUpdates,
+    installUpdateAndRestart,
+    setBetaChannel,
+} from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { addProject } from './commands/addProject.js';
 import { createProject } from './commands/createProject.js';
@@ -106,6 +110,17 @@ export function registerHandlers() {
         'set-auto-check-updates',
         async (_, enabled) => await setAutoCheckUpdates(enabled),
     );
+
+    ipcMainHandler('set-receive-beta-updates', async (_, enabled: boolean) => {
+        const prefs = await getUserPreferences();
+        const updatedPrefs = {
+            ...prefs,
+            receive_beta_updates: enabled,
+        };
+        await setUserPreferences(updatedPrefs);
+        setBetaChannel(enabled);
+        return enabled;
+    });
 
     ipcMainHandler(
         'install-update-and-restart',
@@ -273,6 +288,9 @@ export function registerHandlers() {
     );
 
     ipcMainHandler('get-platform', async () => {
+        if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+            return 'win32';
+        }
         return process.platform;
     });
 

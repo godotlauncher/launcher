@@ -47,7 +47,7 @@
       "downloadDotNet": "{{version}} .NETをダウンロード"
     },
     "status": {
-      "unavailable": "Unavailable"
+      "unavailable": "利用不可"
     }
   }
 }

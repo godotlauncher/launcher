@@ -47,7 +47,7 @@
       "downloadDotNet": "{{version}} .NET İndir"
     },
     "status": {
-      "unavailable": "Unavailable"
+      "unavailable": "Kullanılamıyor"
     }
   }
 }

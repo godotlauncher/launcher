@@ -48,7 +48,7 @@
       "dotnet": ".NET",
       "prerelease": "ön sürüm"
     },
-    "unavailable": "Unavailable release",
-    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
+    "unavailable": "Sürüm kullanılamıyor",
+    "unavailableHint": "Devam etmeden önce sürücüyü bağlayın veya farklı bir editör seçin."
   }
 }

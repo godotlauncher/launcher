@@ -30,6 +30,7 @@ const basePrefs: UserPreferences = {
     projects_location: '/projects',
     post_launch_action: 'none',
     auto_check_updates: true,
+    receive_beta_updates: false,
     auto_start: false,
     start_in_tray: false,
     confirm_project_remove: true,

@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { app, BrowserWindow, dialog, Menu } from 'electron';
 import logger from 'electron-log/main.js';
 import { createDefaultFolder, initI18n, registerHandlers } from './app.js';
@@ -9,7 +8,7 @@ import { createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
 import { runMigrations } from './migrations/index.js';
-import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver.js';
+import { getAppIconPath, getPreloadPath, getUIPath } from './pathResolver.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { isDev } from './utils.js';
 
@@ -95,8 +94,6 @@ if (!isDev()) {
     }
 }
 
-const platformIconDir = process.platform === 'darwin' ? 'darwin' : 'default';
-
 app.on('activate', () => {
     logger.debug('App activated');
     if (_mainWindow) {
@@ -171,7 +168,7 @@ app.on('ready', async () => {
         height: 600,
         minWidth: 1024,
         minHeight: 600,
-        icon: path.join(getAssetPath(), 'icons', platformIconDir, 'icon.png'),
+        icon: getAppIconPath(),
         webPreferences: {
             preload: getPreloadPath(),
         },
@@ -179,12 +176,8 @@ app.on('ready', async () => {
         show: false,
     });
 
-    app.dock?.setIcon(
-        path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'),
-    );
-    mainWindow.setIcon(
-        path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'),
-    );
+    app.dock?.setIcon(getAppIconPath());
+    mainWindow.setIcon(getAppIconPath());
 
     if (isDev()) {
         mainWindow.loadURL('http://localhost:5123');
@@ -212,6 +205,7 @@ app.on('ready', async () => {
         60 * 60 * 1000,
         true,
         true,
+        prefs.receive_beta_updates,
     );
 
     disposeFocusRevalidation = setupFocusRevalidation(mainWindow);
@@ -290,16 +284,10 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
     mainWindow.on('show', () => {
         logger.debug('Showing window');
 
-        app.dock?.setIcon(
-            path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'),
-        );
-        mainWindow.setIcon(
-            path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png'),
-        );
+        app.dock?.setIcon(getAppIconPath());
+        mainWindow.setIcon(getAppIconPath());
 
-        logger.log(
-            `Showing Window, setting dock icon to ${path.join(getAssetPath(), 'icons', platformIconDir, 'appIcon.png')}`,
-        );
+        logger.log(`Showing Window, setting dock icon to ${getAppIconPath()}`);
 
         willClose = false;
     });

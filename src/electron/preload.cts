@@ -10,6 +10,8 @@ electron.contextBridge.exposeInMainWorld("electron", {
         ipcInvoke("set-auto-start", autoStart, hidden),
     setAutoCheckUpdates: (enabled: boolean) =>
         ipcInvoke("set-auto-check-updates", enabled),
+    setReceiveBetaUpdates: (enabled: boolean) =>
+        ipcInvoke("set-receive-beta-updates", enabled),
 
     // ##### releases #####
 
@@ -131,4 +133,3 @@ function ipcSend<Key extends keyof EventChannelMapping>(
 ) {
     electron.ipcRenderer.send(key, payload);
 }
-

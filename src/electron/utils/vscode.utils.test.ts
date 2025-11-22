@@ -3,6 +3,12 @@ import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { addVSCodeSettings, updateVSCodeSettings } from './vscode.utils.js';
 
+type LaunchConfiguration = {
+    program: unknown;
+    type?: string;
+    [key: string]: unknown;
+};
+
 // Mock electron-log to suppress expected warnings in tests
 vi.mock('electron-log', () => ({
     default: {
@@ -361,9 +367,9 @@ describe('addVSCodeNETLaunchConfig', () => {
         expect(launchCfg.configurations).toHaveLength(2);
         // ensure the old program path was replaced and at least one configuration references Godot
         expect(launchCfg.configurations[0].program).not.toBe('/old/path');
-        const programs = launchCfg.configurations.map((c: any) =>
-            String(c.program).toLowerCase(),
-        );
+        const programs = (
+            launchCfg.configurations as LaunchConfiguration[]
+        ).map((c) => String(c.program).toLowerCase());
         expect(programs.some((p: string) => p.includes('godot'))).toBe(true);
     });
 

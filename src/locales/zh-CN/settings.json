@@ -50,15 +50,15 @@
       "waitingForDialog": "等待对话框..."
     },
     "clearReleaseCache": {
-        "title": "刷新发行缓存",
-        "description": "删除缓存的 Godot 发行版本元数据，并从 GitHub 获取最新构建。",
-        "cta": "刷新缓存",
-        "clearing": "正在刷新...",
-        "cooldownNotice": "为避免触发 GitHub 速率限制，缓存刷新已暂时禁用。",
-        "successTitle": "缓存刷新成功",
-        "successMessage": "发行列表已更新为最新构建。",
-        "errorTitle": "无法刷新缓存",
-        "errorMessage": "刷新发行缓存时出现问题，请稍后重试。"
+      "title": "刷新发行缓存",
+      "description": "删除缓存的 Godot 发行版本元数据，并从 GitHub 获取最新构建。",
+      "cta": "刷新缓存",
+      "clearing": "正在刷新...",
+      "cooldownNotice": "为避免触发 GitHub 速率限制，缓存刷新已暂时禁用。",
+      "successTitle": "缓存刷新成功",
+      "successMessage": "发行列表已更新为最新构建。",
+      "errorTitle": "无法刷新缓存",
+      "errorMessage": "刷新发行缓存时出现问题，请稍后重试。"
     },
     "checkForUpdates": {
       "title": "检查更新",
@@ -160,10 +160,12 @@
     "title": "更新",
     "description": "配置 GD Launcher 如何检查更新",
     "autoCheck": "自动检查更新",
+    "betaChannel": "接收 Beta 更新",
+    "betaChannelDescription": "从 GitHub 下载预发布版本；这些版本可能不如正式发布稳定。",
     "checkNow": "立即检查更新",
-  "updateAvailable": "版本 {{version}} 可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
-  "updateReady": "有新版本可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
-  "restartNow": "立即重启。"
+    "updateAvailable": "版本 {{version}} 可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
+    "updateReady": "有新版本可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
+    "restartNow": "立即重启。"
   },
   "windowsSymlinks": {
     "title": "编辑器符号链接",

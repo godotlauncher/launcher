@@ -5,7 +5,7 @@
   },
   "tabs": {
     "released": "Rilaxxat",
-    "prerelease": "Prerelease",
+    "prerelease": "Pre-rilaxx",
     "installed": "Installat"
   },
   "filters": {
@@ -47,7 +47,7 @@
       "downloadDotNet": "Niżżel {{version}} .NET"
     },
     "status": {
-      "unavailable": "Unavailable"
+      "unavailable": "Mhux disponibbli"
     }
   }
 }

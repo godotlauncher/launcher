@@ -26,6 +26,11 @@ export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
 
     // check that release path exist
     for (const release of releases) {
+        if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+            release.valid = true;
+            continue;
+        }
+
         const editorPathExists = fs.existsSync(release.editor_path);
         if (!editorPathExists) {
             logger.warn(`Release '${release.version}' has an invalid path`);
@@ -79,6 +84,10 @@ export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
 export async function checkProjectValid(
     project: ProjectDetails,
 ): Promise<ProjectDetails> {
+    if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+        return project;
+    }
+
     logger.info(`Checking project '${project.name}'`);
 
     // check project path

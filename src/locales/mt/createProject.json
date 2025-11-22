@@ -3,7 +3,7 @@
   "project": {
     "title": "Proġett",
     "dotNetBadge": ".NET",
-    "prereleaseBadge": "prerelease",
+    "prereleaseBadge": "pre-rilaxx",
     "noVersionsInstalled": "Ebda verżjonijiet ta' Godot installati",
     "nameplaceholder": "Isem tal-Proġett",
     "downloading": "Qed jinżel...",
@@ -12,7 +12,7 @@
   "renderer": {
     "title": "Renderer",
     "forwardPlus": "Forward Plus",
-    "mobile": "Mobile",
+    "mobile": "Mobbli",
     "compatible": "Kompatibbli",
     "gles3": "GLES3",
     "gles2": "GLES2",

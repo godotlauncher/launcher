@@ -135,7 +135,11 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                 </p>
                             </div>
                             <div className="flex gap-2">
-                                <button type="button" onClick={onClose}>
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    data-testid="btnCloseInstallEditor"
+                                >
                                     <X />
                                 </button>
                             </div>

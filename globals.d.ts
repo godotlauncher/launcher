@@ -39,6 +39,7 @@ type UserPreferences = {
     projects_location: string;
     post_launch_action: 'none' | 'minimize' | 'close_to_tray';
     auto_check_updates: boolean;
+    receive_beta_updates: boolean;
     auto_start: boolean;
     start_in_tray: boolean;
     confirm_project_remove: boolean;
@@ -171,6 +172,7 @@ type EventChannelMapping = {
     'set-user-preferences': Promise<UserPreferences>;
     'set-auto-start': Promise<SetAutoStartResult>;
     'set-auto-check-updates': Promise<boolean>;
+    'set-receive-beta-updates': Promise<boolean>;
 
     // ##### app #####
     'get-version': Promise<string>;
@@ -246,6 +248,7 @@ interface Window {
             hidden: boolean,
         ) => Promise<SetAutoStartResult>;
         setAutoCheckUpdates: (enabled: boolean) => Promise<boolean>;
+        setReceiveBetaUpdates: (enabled: boolean) => Promise<boolean>;
 
         openFileDialog: (
             defaultPath: string,

@@ -50,15 +50,15 @@
       "waitingForDialog": "Qed nistennew id-djalogu..."
     },
     "clearReleaseCache": {
-        "title": "Aġġorna L-Cache Tar-Release",
-        "description": "Neħħi l-metadata tal-release ta’ Godot miżmuma fil-cache u iġbor l-aħħar builds minn GitHub.",
-        "cta": "Aġġorna l-cache",
-        "clearing": "Qed naġġorna...",
-        "cooldownNotice": "L-aġġornament tal-cache huwa diżattivat temporanjament biex nevitaw li nilħqu l-limiti ta’ GitHub.",
-        "successTitle": "Cache Aġġornata B’Suċċess",
-        "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
-        "errorTitle": "Ma Stajniex Naġġornaw Il-Cache",
-        "errorMessage": "Seħħ żball waqt l-aġġornament tal-cache tar-release. Erġa’ pprova aktar tard."
+      "title": "Aġġorna L-Cache Tar-Release",
+      "description": "Neħħi l-metadata tal-release ta’ Godot miżmuma fil-cache u iġbor l-aħħar builds minn GitHub.",
+      "cta": "Aġġorna l-cache",
+      "clearing": "Qed naġġorna...",
+      "cooldownNotice": "L-aġġornament tal-cache huwa diżattivat temporanjament biex nevitaw li nilħqu l-limiti ta’ GitHub.",
+      "successTitle": "Cache Aġġornata B’Suċċess",
+      "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
+      "errorTitle": "Ma Stajniex Naġġornaw Il-Cache",
+      "errorMessage": "Seħħ żball waqt l-aġġornament tal-cache tar-release. Erġa’ pprova aktar tard."
     },
     "checkForUpdates": {
       "title": "Iċċekkja għal Aġġornamenti",
@@ -160,6 +160,8 @@
     "title": "Aġġornamenti",
     "description": "Ikkonfigura kif GD Launcher jiċċekkja għal aġġornamenti",
     "autoCheck": "Awtomatikament iċċekkja għal aġġornamenti",
+    "betaChannel": "Irċievi aġġornamenti beta",
+    "betaChannelDescription": "Niżżel build ta’ qabel rilaxx minn GitHub; dawn jistgħu jkunu inqas stabbli mill-verżjonijiet uffiċjali.",
     "checkNow": "Iċċekkja għal aġġornamenti",
     "updateAvailable": "Verżjoni {{version}} hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
     "updateReady": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",

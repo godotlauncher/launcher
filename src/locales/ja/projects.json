@@ -23,7 +23,7 @@
     "dotNetProject": "これは.Netプロジェクトです",
     "prerelease": "プレリリース版のGodotエディタを使用しています",
     "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
-    "invalidRelease": "Editor unavailable",
+    "invalidRelease": "エディタ利用不可",
     "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています",
     "gitProject": "このプロジェクトはバージョン管理に Git を使用しています"
   },
@@ -58,10 +58,10 @@
     "addProjectError": "プロジェクトの追加中に問題が発生しました",
     "setEditorError": "プロジェクトエディタの設定中に問題が発生しました",
     "projectNotValid": "プロジェクトが無効です。プロジェクトとリリースがコンピュータ上で有効であることを確認してください。",
-    "invalidReleaseEditor": "The selected editor is unavailable. Mount the drive or install the release again.",
-    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
-    "dropProjectHere": "Drop project.godot file here to add project",
-    "addingProjects": "Adding projects: {{current}}/{{total}}"
+    "invalidReleaseEditor": "選択されたエディタは利用できません。ドライブをマウントするか、バージョンを再インストールしてください。",
+    "dropGodotFileOnly": "プロジェクトを追加するには project.godot ファイルをドロップしてください",
+    "dropProjectHere": "ここに project.godot ファイルをドロップしてプロジェクトを追加",
+    "addingProjects": "プロジェクトを追加中: {{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

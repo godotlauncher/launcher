@@ -6,7 +6,8 @@ import './App.css';
 import clsx from 'clsx';
 import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
-import logo from './assets/logo.png';
+import rocketBlack from './assets/icons/godot_launcher_black.svg';
+import rocketWhite from './assets/icons/godot_launcher_white.svg';
 import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 import { COMMUNITY_DISCORD_URL } from './constants';
 import { useApp } from './hooks/useApp';
@@ -14,6 +15,7 @@ import { useAppNavigation, type View } from './hooks/useAppNavigation';
 import { usePreferences } from './hooks/usePreferences';
 import { usePromotion } from './hooks/usePromotion';
 import { useRelease } from './hooks/useRelease';
+import { useTheme } from './hooks/useTheme';
 import { PromotionCTA } from './promotion';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
@@ -33,6 +35,8 @@ function App() {
     const { promotion, countdown, buildClickPayload } = usePromotion();
 
     const { updateAvailable, installAndRelaunch } = useApp();
+
+    const { theme, systemTheme } = useTheme();
 
     // Derive values from preferences and loading state
     const prefsLoading = !preferences;
@@ -87,12 +91,13 @@ function App() {
     };
 
     if (loading || prefsLoading) {
+        const themeToUse = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
         return (
             <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-base-100 gap-4">
                 <img
-                    src={logo}
+                    src={themeToUse === 'dark' ? rocketWhite : rocketBlack}
                     alt="Godot Launcher Logo"
-                    className="w-10 h-10 animate-pulse"
+                    className="w-10 h-10 animate-bounce"
                 />
                 <span className="">{t('app.loadingMessage')}</span>
             </div>

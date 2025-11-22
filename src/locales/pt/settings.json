@@ -50,15 +50,15 @@
       "waitingForDialog": "A aguardar diálogo..."
     },
     "clearReleaseCache": {
-        "title": "Atualizar Cache De Versões",
-        "description": "Remove os metadados de versões de Godot guardados e obtém as builds mais recentes do GitHub.",
-        "cta": "Atualizar cache",
-        "clearing": "A atualizar...",
-        "cooldownNotice": "A atualização da cache está temporariamente desativada para evitar atingir os limites do GitHub.",
-        "successTitle": "Cache Atualizada Com Sucesso",
-        "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
-        "errorTitle": "Não Foi Possível Atualizar A Cache",
-        "errorMessage": "Ocorreu um problema ao atualizar a cache de versões. Tente novamente mais tarde."
+      "title": "Atualizar Cache De Versões",
+      "description": "Remove os metadados de versões de Godot guardados e obtém as builds mais recentes do GitHub.",
+      "cta": "Atualizar cache",
+      "clearing": "A atualizar...",
+      "cooldownNotice": "A atualização da cache está temporariamente desativada para evitar atingir os limites do GitHub.",
+      "successTitle": "Cache Atualizada Com Sucesso",
+      "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
+      "errorTitle": "Não Foi Possível Atualizar A Cache",
+      "errorMessage": "Ocorreu um problema ao atualizar a cache de versões. Tente novamente mais tarde."
     },
     "checkForUpdates": {
       "title": "Procurar atualizações",
@@ -160,6 +160,8 @@
     "title": "Atualizações",
     "description": "Configure como o Godot Launcher procura atualizações",
     "autoCheck": "Procurar atualizações automaticamente",
+    "betaChannel": "Receber atualizações beta",
+    "betaChannelDescription": "Baixe builds pré-lançamento do GitHub; podem ser menos estáveis que os lançamentos oficiais.",
     "checkNow": "Procurar atualizações",
     "updateAvailable": "A versão {{version}} está disponível; reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
     "updateReady": "Está disponível uma nova versão; reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",

@@ -59,9 +59,9 @@
     "setEditorError": "設定專案編輯器時發生錯誤",
     "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。",
     "invalidReleaseEditor": "所選的編輯器不可用。請掛載磁碟機或重新安裝此版本。",
-    "dropGodotFileOnly": "Please drop a project.godot file to add a project",
-    "dropProjectHere": "Drop project.godot file here to add project",
-    "addingProjects": "Adding projects: {{current}}/{{total}}"
+    "dropGodotFileOnly": "請拖放 project.godot 檔案以新增專案",
+    "dropProjectHere": "將 project.godot 檔案拖放到此處以新增專案",
+    "addingProjects": "正在新增專案：{{current}}/{{total}}"
   },
   "changeEditor": {
     "errors": {

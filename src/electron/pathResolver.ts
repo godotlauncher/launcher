@@ -42,3 +42,24 @@ export function getUIPath() {
 export function getAssetPath() {
     return path.join(app.getAppPath(), isDev() ? '.' : '..', '/src/assets');
 }
+
+/**
+ * Gets the appropriate application icon path based on the operating system.
+ * @returns the runtime window icon path based on the platform
+ */
+export function getAppIconPath() {
+    const basePath = path.join(getAssetPath(), '/icons');
+    if (process.platform === 'darwin') {
+        const darwinVersion = parseInt(
+            process.getSystemVersion().split('.')[0],
+            10,
+        );
+
+        return path.join(
+            basePath,
+            darwinVersion >= 26
+                ? '/darwin/appIcon26.png'
+                : '/darwin/appIcon.png',
+        );
+    } else return path.join(basePath, '/default/appIcon.png');
+}
