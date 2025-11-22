@@ -19,7 +19,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
-          version: 10.22.0
+          version: 10.23.0
           run_install: false
 
       # Set up Node.js
