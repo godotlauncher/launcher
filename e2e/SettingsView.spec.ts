@@ -65,5 +65,3 @@ test('Can set theme auto', async () => {
   expect(theme).toBe('auto');
 
 });
-
-

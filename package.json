@@ -98,6 +98,7 @@
         "npm-run-all": "^4.1.5",
         "postcss": "^8.5.6",
         "prettier": "^3.6.2",
+        "sharp": "^0.33.5",
         "tailwindcss": "^4.1.17",
         "typescript": "^5.9.3",
         "vite": "^7.2.2",
