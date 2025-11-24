@@ -109,7 +109,7 @@ jobs:
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(PNPM_LOG_LEVEL=error pnpm --silent changelog -- --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs 2>/dev/null)
+          NOTES=$(PNPM_LOG_LEVEL=error pnpm auto-changelog --stdout --output - --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
           printf 'notes<<EOF\n%s\nEOF\n' "$NOTES" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
