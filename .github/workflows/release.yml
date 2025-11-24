@@ -98,12 +98,8 @@ jobs:
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(pnpm changelog --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
-          {
-            echo "notes<<EOF"
-            echo "${NOTES}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          NOTES=$(PNPM_LOG_LEVEL=error pnpm --silent changelog -- --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs 2>/dev/null)
+          printf 'notes<<EOF\n%s\nEOF\n' "$NOTES" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
