@@ -8,7 +8,7 @@ Spend less time configuring your environment and more time creating amazing game
 ✅ **Cross-platform support, available on Windows, MacOS, and Linux.**\
 ✅ **Designed for modern Godot workflows, focusing on widely used versions.**
 
-![Screen shot of the project view with menu open](docs/images/screen_projects_view_dark.png)
+![Screen shot of the project view with menu open](docs/images/screen_projects_view_dark.webp)
 
 ## How to Get Godot Launcher
 
