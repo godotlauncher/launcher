@@ -2,6 +2,17 @@ name: Release Builds
 
 on:
   workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create GitHub release as draft'
+        required: false
+        default: true
+        type: boolean
+      prerelease:
+        description: 'Mark GitHub release as prerelease'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   checks:
@@ -9,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -39,9 +52,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -50,18 +67,68 @@ jobs:
 
       - name: Get version
         id: get_version
-        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create and push tag
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git tag -a v${{ steps.get_version.outputs.VERSION }} -m "Release v${{ steps.get_version.outputs.VERSION }}"
-          git push origin v${{ steps.get_version.outputs.VERSION }}
+          git tag -a v${{ steps.get_version.outputs.version }} -m "Release v${{ steps.get_version.outputs.version }}"
+          git push origin v${{ steps.get_version.outputs.version }}
+
+  create-release:
+    needs: tag-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Extract release notes for version
+        id: release_notes
+        shell: bash
+        run: |
+          NOTES=$(PNPM_LOG_LEVEL=error pnpm auto-changelog --stdout --output - --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          printf 'notes<<EOF\n%s\nEOF\n' "$NOTES" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-publish:
-    needs: tag-release
+    needs: create-release
+    permissions:
+      contents: write
     strategy:
+      max-parallel: 1
       matrix:
         include:
           - os: macos-latest
@@ -69,7 +136,7 @@ jobs:
           - os: ubuntu-latest
             distCommand: pnpm run dist:linux -- --publish onTag
           - os: windows-latest
-            distCommand: pnpm run dist:win -- --publish onTag
+            distCommand: pnpm run dist:win -- --publish onTag 
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,6 +157,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Fetch tags
         run: git fetch --tags --force
@@ -97,7 +166,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.22.0
+          version: 10.23.0
           run_install: false
 
       - name: Setup Node.js

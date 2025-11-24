@@ -28,7 +28,7 @@ console.log(
 export default (<Configuration>{
     appId: 'org.godotlauncher.launcher',
     productName: 'Godot Launcher',
-    artifactName: 'Godot_Launcher-${version}-${os}.${arch}.${ext}',
+    artifactName: 'Godot_Launcher-${version}-${os}_${arch}.${ext}',
     copyright: `Copyright © 2024-${currentYear} ${'${author}'}`,
     executableName: 'Godot Launcher',
 
