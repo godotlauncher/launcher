@@ -100,7 +100,7 @@ jobs:
         run: |
           NOTES=$(pnpm changelog --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
           {
-            echo "notes<<'EOF'"
+            echo "notes<<EOF"
             echo "${NOTES}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
