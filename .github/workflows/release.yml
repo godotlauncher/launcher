@@ -120,11 +120,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            distCommand: pnpm run dist:mac -- --publish never
+            distCommand: pnpm run dist:mac -- --publish onTag
           - os: ubuntu-latest
-            distCommand: pnpm run dist:linux -- --publish never
+            distCommand: pnpm run dist:linux -- --publish onTag
           - os: windows-latest
-            distCommand: pnpm run dist:win -- --publish never
+            distCommand: pnpm run dist:win -- --publish onTag 
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
