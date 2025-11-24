@@ -2,6 +2,17 @@ name: Release Builds
 
 on:
   workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create GitHub release as draft'
+        required: false
+        default: true
+        type: boolean
+      prerelease:
+        description: 'Mark GitHub release as prerelease'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   checks:
@@ -107,8 +118,8 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: v${{ env.VERSION }}
           body: ${{ steps.release_notes.outputs.notes }}
-          draft: true
-          prerelease: false
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
