@@ -37,8 +37,8 @@ const THEMES: ThemeConfig[] = [
 type ScreenshotConfig = {
     fileBase: string;
     description: string;
-    navigate: (page: ElectronPage) => Promise<void>;
-    cleanup?: (page: ElectronPage) => Promise<void>;
+    navigate: (page: ElectronPage, electronApp: ElectronApplication) => Promise<void>;
+    cleanup?: (page: ElectronPage, electronApp: ElectronApplication) => Promise<void>;
 };
 
 const SCREENSHOTS: ScreenshotConfig[] = [
@@ -54,15 +54,65 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_new_project',
         description: 'New Project view',
-        navigate: async (page: ElectronPage) => {
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
             await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage) => {
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_git',
+        description: 'New Project view when Git is not installed',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, TOOLS_NO_GIT);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_vscode',
+        description: 'New Project view when VS Code is not installed',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, TOOLS_NO_VSCODE);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_tools',
+        description: 'New Project view when Git and VS Code are not installed',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, TOOLS_NONE);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
         },
     },
     {
@@ -268,6 +318,26 @@ const SAMPLE_PREFS = {
     language: 'system',
 };
 
+const DEFAULT_TOOLS: CachedTool[] = [
+    { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },
+    {
+        name: 'VSCode',
+        path: '/Applications/Visual Studio Code.app',
+        version: '1.95.0',
+        verified: true,
+    },
+];
+
+const TOOLS_NO_GIT: CachedTool[] = DEFAULT_TOOLS.filter(
+    (tool) => tool.name !== 'Git',
+);
+
+const TOOLS_NO_VSCODE: CachedTool[] = DEFAULT_TOOLS.filter(
+    (tool) => tool.name !== 'VSCode',
+);
+
+const TOOLS_NONE: CachedTool[] = [];
+
 async function writeJson(file: string, data: unknown) {
     await fs.mkdir(path.dirname(file), { recursive: true });
     await fs.writeFile(file, JSON.stringify(data, null, 2), 'utf-8');
@@ -370,12 +440,13 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         const mainPage = await electronApp.firstWindow();
         await waitForPreloadScript(mainPage);
         await mainPage.setViewportSize({ width: 1024, height: 600 });
+        await stubInstalledTools(electronApp, DEFAULT_TOOLS);
 
         for (const theme of THEMES) {
             await applyTheme(mainPage, theme);
 
             for (const shot of SCREENSHOTS) {
-                await shot.navigate(mainPage);
+                await shot.navigate(mainPage, electronApp);
                 const themedFileName = `${shot.fileBase}_${theme.name}`;
                 const themedDescription = `${shot.description} in ${theme.description}`;
                 await captureScreenshot(
@@ -385,7 +456,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
                     themedDescription,
                 );
                 if (shot.cleanup) {
-                    await shot.cleanup(mainPage);
+                    await shot.cleanup(mainPage, electronApp);
                 }
             }
         }
@@ -418,4 +489,32 @@ async function captureScreenshot(
         path: webpPath,
         contentType: 'image/webp',
     });
+}
+
+async function stubInstalledTools(
+    electronApp: ElectronApplication,
+    tools: CachedTool[],
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedTools: CachedTool[]) => {
+            ipcMain.removeHandler('get-installed-tools');
+            ipcMain.handle('get-installed-tools', async () =>
+                injectedTools.map((tool) => ({
+                    name: tool.name,
+                    path: tool.path,
+                    version: tool.version ?? null,
+                })),
+            );
+
+            ipcMain.removeHandler('get-cached-tools');
+            ipcMain.handle('get-cached-tools', async () =>
+                injectedTools.map((tool) => ({
+                    ...tool,
+                    version: tool.version ?? null,
+                    verified: true,
+                })),
+            );
+        },
+        tools,
+    );
 }
