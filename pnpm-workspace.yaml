@@ -5,6 +5,7 @@ onlyBuiltDependencies:
   - electron
   - electron-winstaller
   - esbuild
+  - sharp
 
 overrides:
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
