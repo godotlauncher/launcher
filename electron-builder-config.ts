@@ -62,7 +62,7 @@ export default (<Configuration>{
         cscLink: process.env.CSC_LINK,
         cscKeyPassword: process.env.CSC_KEY_PASSWORD,
 
-        notarize: false,
+        notarize: true,
     },
     linux: {
         icon: 'build-resources/linux/icon.png',
