@@ -17,6 +17,7 @@ jobs:
       contents: read
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout (for artifact upload path)
         uses: actions/checkout@v4
@@ -97,7 +98,8 @@ jobs:
           $manifestDir = Join-Path $PWD "winget-manifests"
           New-Item -ItemType Directory -Force -Path $manifestDir | Out-Null
 
-          & "$PWD/wingetcreate.exe" update GodotLauncher.Launcher --version $version --urls $urls --out $manifestDir --submit --token $env:GH_TOKEN
+          # wingetcreate will pick up the token from WINGET_CREATE_GITHUB_TOKEN; no --token flag needed.
+          & "$PWD/wingetcreate.exe" update GodotLauncher.Launcher --version $version --urls $urls --out $manifestDir --submit
 
       - name: Upload generated manifests
         uses: actions/upload-artifact@v4
