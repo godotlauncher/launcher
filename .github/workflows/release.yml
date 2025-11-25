@@ -190,6 +190,7 @@ jobs:
 
   finalize-release:
     needs:
+      - tag-release
       - create-release
       - build-and-publish
     if: ${{ success() && inputs.draft == false }}
