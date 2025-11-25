@@ -1,0 +1,106 @@
+name: Publish winget
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g., v1.8.0). Defaults to the release tag when triggered by release.'
+        required: false
+        type: string
+
+jobs:
+  publish-winget:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout (for artifact upload path)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag and version
+        id: vars
+        shell: pwsh
+        run: |
+          $tagInput = "${{ inputs.tag }}".Trim()
+          if ($tagInput) {
+            $tag = $tagInput
+          } elseif ("${{ github.event_name }}" -eq "release") {
+            $tag = "${{ github.event.release.tag_name }}"
+          } elseif ("${{ github.ref }}" -like "refs/tags/*") {
+            $tag = "${{ github.ref }}".Replace("refs/tags/","")
+          } else {
+            throw "Tag not provided and not running from a release event."
+          }
+
+          if (-not $tag.StartsWith("v")) {
+            throw "Expected tag to start with 'v' (got '$tag')."
+          }
+          $version = $tag.TrimStart("v")
+
+          Write-Host "Using tag $tag (version $version)"
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build installer URLs
+        id: assets
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.vars.outputs.tag }}"
+          $version = "${{ steps.vars.outputs.version }}"
+          $base = "https://github.com/godotlauncher/launcher/releases/download/$tag"
+
+          $candidateUrls = @(
+            "$base/Godot_Launcher-$version-win.exe"
+            "$base/Godot_Launcher-$version-win_x64.exe"
+            "$base/Godot_Launcher-$version-win_arm64.exe"
+          )
+
+          # Keep only URLs that exist (HEAD check)
+          $urls = foreach ($u in $candidateUrls) {
+            try {
+              $resp = Invoke-WebRequest -Uri $u -Method Head -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+              if ($resp.StatusCode -lt 400) { $u }
+            } catch { }
+          }
+
+          if (-not $urls) {
+            throw "No Windows installers accessible for release $tag (version $version)."
+          }
+
+          $urlsJoined = $urls -join "`n"
+          echo "urls<<EOF" >> $env:GITHUB_OUTPUT
+          echo "$urlsJoined" >> $env:GITHUB_OUTPUT
+          echo "EOF" >> $env:GITHUB_OUTPUT
+
+      - name: Download wingetcreate
+        shell: pwsh
+        run: |
+          $wingetCreateUrl = 'https://github.com/microsoft/winget-create/releases/download/v1.10.3.0/wingetcreate.exe'
+          Invoke-WebRequest -Uri $wingetCreateUrl -OutFile "$PWD/wingetcreate.exe"
+
+      - name: Update and submit manifest
+        shell: pwsh
+        run: |
+          $version = "${{ steps.vars.outputs.version }}"
+          $urls = @()
+          $raw = @'
+          ${{ steps.assets.outputs.urls }}
+          '@
+          $urls = $raw.Trim().Split("`n") | Where-Object { $_ -ne "" }
+
+          $manifestDir = Join-Path $PWD "winget-manifests"
+          New-Item -ItemType Directory -Force -Path $manifestDir | Out-Null
+
+          & "$PWD/wingetcreate.exe" update GodotLauncher.Launcher --version $version --urls $urls --out $manifestDir --submit --token $env:GH_TOKEN
+
+      - name: Upload generated manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-manifests-${{ steps.vars.outputs.version }}
+          path: winget-manifests

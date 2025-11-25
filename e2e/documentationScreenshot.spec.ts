@@ -4,6 +4,7 @@ import prereleasesCache from './fixtures/prereleases.json' with { type: 'json' }
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import sharp from 'sharp';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
 
@@ -11,43 +12,136 @@ type ElectronPage = Awaited<
     ReturnType<ElectronApplication['firstWindow']>
 >;
 
-const SCREENSHOTS = [
+type ThemeConfig = {
+    name: 'dark' | 'light';
+    description: string;
+    toggleTestId: 'themeDark' | 'themeLight' | 'themeAuto';
+    colorScheme: 'dark' | 'light';
+};
+
+const THEMES: ThemeConfig[] = [
+    {
+        name: 'dark',
+        description: 'dark mode',
+        toggleTestId: 'themeDark',
+        colorScheme: 'dark',
+    },
+    {
+        name: 'light',
+        description: 'light mode',
+        toggleTestId: 'themeLight',
+        colorScheme: 'light',
+    },
+];
+
+type ScreenshotConfig = {
+    fileBase: string;
+    description: string;
+    navigate: (page: ElectronPage, electronApp: ElectronApplication) => Promise<void>;
+    cleanup?: (page: ElectronPage, electronApp: ElectronApplication) => Promise<void>;
+};
+
+const SCREENSHOTS: ScreenshotConfig[] = [
     // Projects
     {
-        file: 'screen_projects_view_dark.png',
-        description: 'Projects view in dark mode',
+        fileBase: 'screen_projects_view',
+        description: 'Projects view',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnProjects').click();
             await page.waitForTimeout(600);
         },
     },
     {
-        file: 'screen_projects_new_project_dark.png',
-        description: 'New Project view in dark mode',
-        navigate: async (page: ElectronPage) => {
+        fileBase: 'screen_projects_new_project',
+        description: 'New Project view',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
             await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage) => {
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_git',
+        description: 'New Project view when Git is not installed',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, TOOLS_NO_GIT);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_vscode',
+        description: 'New Project view when VS Code is not installed',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, TOOLS_NO_VSCODE);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_tools',
+        description: 'New Project view when Git and VS Code are not installed',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, TOOLS_NONE);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_drop_overlay',
+        description: 'Projects view drag-and-drop prompt',
+        navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnProjects').click();
+            await page.waitForTimeout(600);
+            await showProjectsDropOverlay(page);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await hideProjectsDropOverlay(page);
+            await page.waitForTimeout(200);
         },
     },
 
     // Installs
     {
-        file: 'screen_installs_view_dark.png',
-        description: 'Installs view in dark mode',
+        fileBase: 'screen_installs_view',
+        description: 'Installs view',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnInstalls').click();
             await page.waitForTimeout(600);
         },
     },
     {
-        file: 'screen_installs_new_version_dark.png',
-        description: 'Install New Version view in dark mode',
+        fileBase: 'screen_installs_new_version',
+        description: 'Install New Version view',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnInstalls').click();
             await page.getByTestId('btnInstallEditor').click();
@@ -61,8 +155,8 @@ const SCREENSHOTS = [
 
     // Settings
     {
-        file: 'screen_settings_projects_dark.png',
-        description: 'Settings (Projects tab) in dark mode',
+        fileBase: 'screen_settings_projects',
+        description: 'Settings (Projects tab)',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabProjects').click();
@@ -70,8 +164,8 @@ const SCREENSHOTS = [
         },
     },
     {
-        file: 'screen_settings_installs_dark.png',
-        description: 'Settings (Installs tab) in dark mode',
+        fileBase: 'screen_settings_installs',
+        description: 'Settings (Installs tab)',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabInstalls').click();
@@ -79,8 +173,8 @@ const SCREENSHOTS = [
         },
     },
     {
-        file: 'screen_settings_appearance_dark.png',
-        description: 'Settings (Appearance tab) in dark mode',
+        fileBase: 'screen_settings_appearance',
+        description: 'Settings (Appearance tab)',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabAppearance').click();
@@ -88,8 +182,8 @@ const SCREENSHOTS = [
         },
     },
     {
-        file: 'screen_settings_behavior_dark.png',
-        description: 'Settings (Behavior tab) in dark mode',
+        fileBase: 'screen_settings_behavior',
+        description: 'Settings (Behavior tab)',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabBehavior').click();
@@ -101,8 +195,8 @@ const SCREENSHOTS = [
         },
     },
     {
-        file: 'screen_settings_tools_dark.png',
-        description: 'Settings (Tools tab) in dark mode',
+        fileBase: 'screen_settings_tools',
+        description: 'Settings (Tools tab)',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabTools').click();
@@ -114,8 +208,8 @@ const SCREENSHOTS = [
         },
     },
     {
-        file: 'screen_settings_updates_dark.png',
-        description: 'Settings (Updates tab) in dark mode',
+        fileBase: 'screen_settings_updates',
+        description: 'Settings (Updates tab)',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabUpdates').click();
@@ -125,8 +219,8 @@ const SCREENSHOTS = [
 
     // Help
     {
-        file: 'screen_help_view_dark.png',
-        description: 'Help view in dark mode',
+        fileBase: 'screen_help_view',
+        description: 'Help view',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnHelp').click();
             await page.waitForTimeout(600);
@@ -224,6 +318,26 @@ const SAMPLE_PREFS = {
     language: 'system',
 };
 
+const DEFAULT_TOOLS: CachedTool[] = [
+    { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },
+    {
+        name: 'VSCode',
+        path: '/Applications/Visual Studio Code.app',
+        version: '1.95.0',
+        verified: true,
+    },
+];
+
+const TOOLS_NO_GIT: CachedTool[] = DEFAULT_TOOLS.filter(
+    (tool) => tool.name !== 'Git',
+);
+
+const TOOLS_NO_VSCODE: CachedTool[] = DEFAULT_TOOLS.filter(
+    (tool) => tool.name !== 'VSCode',
+);
+
+const TOOLS_NONE: CachedTool[] = [];
+
 async function writeJson(file: string, data: unknown) {
     await fs.mkdir(path.dirname(file), { recursive: true });
     await fs.writeFile(file, JSON.stringify(data, null, 2), 'utf-8');
@@ -261,28 +375,53 @@ async function waitForPreloadScript(appWindow: ElectronPage) {
     );
 }
 
-async function captureScreenshot(
-    page: ElectronPage,
-    testInfo: any,
-    fileName: string,
-    description: string,
-) {
-    const outputPath = path.resolve('docs/images', fileName);
-    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+async function showProjectsDropOverlay(page: ElectronPage) {
+    await page.evaluate(() => {
+        const title = document.querySelector('[data-testid="projectsTitle"]');
+        const container =
+            title?.closest('div.flex.flex-col.h-full.w-full.overflow-auto.p-1') ??
+            document.querySelector('div.flex.flex-col.h-full.w-full.overflow-auto.p-1');
+        if (!container) return;
 
-    await page.screenshot({
-        path: outputPath,
-        fullPage: true,
-    });
-
-    await testInfo.attach(description, {
-        path: outputPath,
-        contentType: 'image/png',
+        const dataTransfer = new DataTransfer();
+        const dragEnter = new DragEvent('dragenter', {
+            dataTransfer,
+            bubbles: true,
+            cancelable: true,
+        });
+        container.dispatchEvent(dragEnter);
     });
 }
 
+async function hideProjectsDropOverlay(page: ElectronPage) {
+    await page.evaluate(() => {
+        const title = document.querySelector('[data-testid="projectsTitle"]');
+        const container =
+            title?.closest('div.flex.flex-col.h-full.w-full.overflow-auto.p-1') ??
+            document.querySelector('div.flex.flex-col.h-full.w-full.overflow-auto.p-1');
+        if (!container) return;
+
+        const dataTransfer = new DataTransfer();
+        const dragLeave = new DragEvent('dragleave', {
+            dataTransfer,
+            bubbles: true,
+            cancelable: true,
+        });
+        container.dispatchEvent(dragLeave);
+    });
+}
+
+async function applyTheme(page: ElectronPage, theme: ThemeConfig) {
+    await page.emulateMedia({ colorScheme: theme.colorScheme });
+    await page.getByTestId('btnSettings').click();
+    await page.getByTestId('tabAppearance').click();
+    await page.getByTestId(theme.toggleTestId).check();
+    await page.waitForTimeout(400);
+    await page.getByTestId('btnProjects').click();
+}
+
 test('captures documentation screenshots for each main view', async ({}, testInfo) => {
-    testInfo.setTimeout(180000);
+    testInfo.setTimeout(240000);
     const fixtureHome = await createFixtureHome();
     const electronApp = await _electron.launch({
         args: ['.'],
@@ -301,17 +440,24 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         const mainPage = await electronApp.firstWindow();
         await waitForPreloadScript(mainPage);
         await mainPage.setViewportSize({ width: 1024, height: 600 });
-        await mainPage.emulateMedia({ colorScheme: 'dark' });
+        await stubInstalledTools(electronApp, DEFAULT_TOOLS);
 
-        await mainPage.getByTestId('btnSettings').click();
-        await mainPage.getByTestId('tabAppearance').click();
-        await mainPage.getByTestId('themeAuto').check();
+        for (const theme of THEMES) {
+            await applyTheme(mainPage, theme);
 
-        for (const shot of SCREENSHOTS) {
-            await shot.navigate(mainPage);
-            await captureScreenshot(mainPage, testInfo, shot.file, shot.description);
-            if ('cleanup' in shot && shot.cleanup) {
-                await shot.cleanup(mainPage);
+            for (const shot of SCREENSHOTS) {
+                await shot.navigate(mainPage, electronApp);
+                const themedFileName = `${shot.fileBase}_${theme.name}`;
+                const themedDescription = `${shot.description} in ${theme.description}`;
+                await captureScreenshot(
+                    mainPage,
+                    testInfo,
+                    themedFileName,
+                    themedDescription,
+                );
+                if (shot.cleanup) {
+                    await shot.cleanup(mainPage, electronApp);
+                }
             }
         }
     } finally {
@@ -319,3 +465,56 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         await fs.rm(fixtureHome, { recursive: true, force: true });
     }
 });
+
+async function captureScreenshot(
+    page: ElectronPage,
+    testInfo: any,
+    baseName: string,
+    description: string,
+) {
+    const outputDir = path.resolve('docs/images');
+    const pngPath = path.join(outputDir, `${baseName}.png`);
+    const webpPath = path.join(outputDir, `${baseName}.webp`);
+    await fs.mkdir(outputDir, { recursive: true });
+
+    await page.screenshot({
+        path: pngPath,
+        fullPage: true,
+    });
+
+    await sharp(pngPath).webp({ lossless: true }).toFile(webpPath);
+    await fs.rm(pngPath, { force: true });
+
+    await testInfo.attach(description, {
+        path: webpPath,
+        contentType: 'image/webp',
+    });
+}
+
+async function stubInstalledTools(
+    electronApp: ElectronApplication,
+    tools: CachedTool[],
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedTools: CachedTool[]) => {
+            ipcMain.removeHandler('get-installed-tools');
+            ipcMain.handle('get-installed-tools', async () =>
+                injectedTools.map((tool) => ({
+                    name: tool.name,
+                    path: tool.path,
+                    version: tool.version ?? null,
+                })),
+            );
+
+            ipcMain.removeHandler('get-cached-tools');
+            ipcMain.handle('get-cached-tools', async () =>
+                injectedTools.map((tool) => ({
+                    ...tool,
+                    version: tool.version ?? null,
+                    verified: true,
+                })),
+            );
+        },
+        tools,
+    );
+}
