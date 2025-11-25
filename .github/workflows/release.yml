@@ -109,8 +109,12 @@ jobs:
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(PNPM_LOG_LEVEL=error pnpm auto-changelog --stdout --output - --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
-          printf 'notes<<\n%s\n' "$NOTES" >> "$GITHUB_OUTPUT"
+          NOTES=$(PNPM_LOG_LEVEL=error pnpm auto-changelog --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          {
+            echo "notes<<EOF"
+            echo "${NOTES}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
@@ -118,7 +122,7 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: v${{ env.VERSION }}
           body: ${{ steps.release_notes.outputs.notes }}
-          draft: ${{ inputs.draft }}
+          draft: true
           prerelease: ${{ inputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -183,3 +187,59 @@ jobs:
 
       - name: Build and publish ${{ matrix.os }} artifacts
         run: ${{ matrix.distCommand }}
+
+  finalize-release:
+    needs:
+      - tag-release
+      - create-release
+      - build-and-publish
+    if: ${{ success() && inputs.draft == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.tag-release.outputs.version }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Publish release
+        run: |
+          TAG="v${VERSION}"
+          gh release edit "$TAG" --draft=false --prerelease=${{ inputs.prerelease }}
+
+  cleanup-tag:
+    needs:
+      - tag-release
+      - create-release
+      - build-and-publish
+    if: ${{ failure() && needs.tag-release.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.tag-release.outputs.version }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete tag and release on failure
+        run: |
+          TAG="v${VERSION}"
+          echo "Deleting tag $TAG due to workflow failure."
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git push origin :refs/tags/$TAG || true
+
+          if command -v gh >/dev/null 2>&1; then
+            release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/$TAG" --jq '.id' 2>/dev/null || true)
+            if [ -n "$release_id" ]; then
+              echo "Deleting GitHub release $TAG (id: $release_id)"
+              gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/$release_id" || true
+            else
+              echo "No release found for $TAG; skipping release delete."
+            fi
+          else
+            echo "gh CLI not available; skipping release deletion."
+          fi
