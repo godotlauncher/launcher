@@ -7,7 +7,8 @@
     "noVersionsInstalled": "No Godot versions installed",
     "nameplaceholder": "Project Name",
     "downloading": "Downloading...",
-    "nameRequired": "Project name is required"
+    "nameRequired": "Project name is required",
+    "overwritePath": "Overwrite project path"
   },
   "renderer": {
     "title": "Renderer",

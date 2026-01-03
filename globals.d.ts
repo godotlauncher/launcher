@@ -295,6 +295,7 @@ interface Window {
             renderer: RendererType[4 | 5],
             withVSCode: boolean,
             withGit: boolean,
+            overwriteProjectPath?: string,
         ) => Promise<CreateProjectResult>;
         removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
         addProject: (path: string) => Promise<AddProjectToListResult>;
