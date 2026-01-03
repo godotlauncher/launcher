@@ -8,7 +8,7 @@
     "nameplaceholder": "Project Name",
     "downloading": "Downloading...",
     "nameRequired": "Project name is required",
-    "overwritePath": "Overwrite project path"
+    "overwritePath": "Overwrite Project Path"
   },
   "renderer": {
     "title": "Renderer",
