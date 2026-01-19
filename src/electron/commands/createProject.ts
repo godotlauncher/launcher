@@ -34,6 +34,7 @@ export async function createProject(
     renderer: RendererType,
     withVSCode: boolean,
     withGit: boolean,
+    overwriteProjectPath?: string,
 ): Promise<CreateProjectResult> {
     const tools = await getInstalledTools();
 
@@ -59,7 +60,10 @@ export async function createProject(
 
     const { projects_location: projectDir, install_location: installDir } =
         await getUserPreferences();
-    const projectPath = path.resolve(projectDir, projectName);
+    logger.info(overwriteProjectPath);
+    const projectPath = overwriteProjectPath
+        ? overwriteProjectPath
+        : path.resolve(projectDir, projectName);
 
     // check if path exist
     if (fs.existsSync(projectPath)) {

@@ -25,6 +25,9 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     const [tools, setTools] = useState<InstalledTool[]>([]);
 
+    const [overwriteProjectPath, setOverwriteProjectPath] =
+        useState<boolean>(false);
+
     const [withGit, setWithGit] = useState<boolean>(true);
     const [withVSCode, setWithVSCode] = useState<boolean>(true);
 
@@ -68,8 +71,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     // Update projectPath when derivedProjectPath changes
     useEffect(() => {
-        setProjectPath(derivedProjectPath);
-    }, [derivedProjectPath]);
+        if (!overwriteProjectPath) {
+            setProjectPath(derivedProjectPath);
+        }
+    }, [derivedProjectPath, overwriteProjectPath]);
 
     const onCreateProject = async () => {
         setError(undefined);
@@ -85,6 +90,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             renderer,
             withVSCode,
             withGit,
+            overwriteProjectPath ? projectPath : undefined,
         );
 
         setCreating(false);
@@ -265,45 +271,73 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             </p>
                         )}
                         <div className="flex flex-row gap-2">
-                            <input
-                                ref={inputNameRef}
-                                data-testid="inputProjectName"
-                                className="input input-bordered w-full"
-                                type="text"
-                                placeholder={t('project.nameplaceholder')}
-                                onChange={(e) =>
-                                    setProjectName(
-                                        e.target.value.replace(/\s/g, '-'),
-                                    )
-                                }
-                                onKeyDown={(event) => {
-                                    if (event.key === ' ') {
-                                        event.currentTarget.value = `${event.currentTarget.value}-`;
-                                        event.preventDefault();
+                            <div className="flex flex-col gap-2 w-full">
+                                <input
+                                    ref={inputNameRef}
+                                    data-testid="inputProjectName"
+                                    className="input input-bordered w-full"
+                                    type="text"
+                                    placeholder={t('project.nameplaceholder')}
+                                    onChange={(e) =>
+                                        setProjectName(
+                                            e.target.value.replace(/\s/g, '-'),
+                                        )
                                     }
-                                }}
-                            />
-                            <select
-                                className="select select-bordered w-[300px]"
-                                onChange={(e) => changeRelease(+e.target.value)}
-                            >
-                                {allReleases.map((release, i) => (
-                                    <option
-                                        disabled={
-                                            release.editor_path?.length === 0
+                                    onKeyDown={(event) => {
+                                        if (event.key === ' ') {
+                                            event.currentTarget.value = `${event.currentTarget.value}-`;
+                                            event.preventDefault();
                                         }
-                                        key={`createProjectReleaseOption_${release.version}`}
-                                        value={i}
-                                    >
-                                        {release.editor_path?.length > 0
-                                            ? `${release.version} ${`${release.mono ? `[${t('project.dotNetBadge')}]` : ''}`}`
-                                            : `${release.version} ${t('project.downloading')}`}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="badge py-3 text-sm text-base-content/50">
-                            {projectPath}
+                                    }}
+                                />
+                                <input
+                                    className="input input-bordered w-full"
+                                    type="text"
+                                    value={projectPath}
+                                    onChange={(e) =>
+                                        setProjectPath(e.target.value)
+                                    }
+                                    disabled={!overwriteProjectPath}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <select
+                                    className="select select-bordered w-[300px]"
+                                    onChange={(e) =>
+                                        changeRelease(+e.target.value)
+                                    }
+                                >
+                                    {allReleases.map((release, i) => (
+                                        <option
+                                            disabled={
+                                                release.editor_path?.length ===
+                                                0
+                                            }
+                                            key={`createProjectReleaseOption_${release.version}`}
+                                            value={i}
+                                        >
+                                            {release.editor_path?.length > 0
+                                                ? `${release.version} ${`${release.mono ? `[${t('project.dotNetBadge')}]` : ''}`}`
+                                                : `${release.version} ${t('project.downloading')}`}
+                                        </option>
+                                    ))}
+                                </select>
+                                <label className="flex h-10 cursor-pointer gap-2 items-center w-[300px]">
+                                    <input
+                                        type="checkbox"
+                                        className="checkbox"
+                                        checked={overwriteProjectPath}
+                                        onChange={(e) =>
+                                            setOverwriteProjectPath(
+                                                e.target.checked,
+                                            )
+                                        }
+                                    />
+                                    <span className="">
+                                        {t('project.overwritePath')}
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-row justify-between">

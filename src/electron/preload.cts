@@ -65,9 +65,10 @@ electron.contextBridge.exposeInMainWorld("electron", {
         release: InstalledRelease,
         renderer: RendererType[5],
         withVSCode: boolean,
-        withGit: boolean
+        withGit: boolean,
+        overwriteProjectPath?: string
     ) =>
-        ipcInvoke("create-project", name, release, renderer, withVSCode, withGit),
+        ipcInvoke("create-project", name, release, renderer, withVSCode, withGit, overwriteProjectPath),
 
     getProjectsDetails: () => ipcInvoke("get-projects-details"),
     removeProject: (project: ProjectDetails) =>
