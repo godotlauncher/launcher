@@ -636,7 +636,7 @@ export const ProjectsView: React.FC = () => {
                                                 }}
                                                 className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
                                             >
-                                                <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis">
+                                                <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis text-left">
                                                     {row.path}
                                                 </p>
                                                 <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary" />

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CircleHelp, X } from 'lucide-react';
+import { CircleHelp, Folder, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -157,6 +157,24 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         );
     };
 
+    const handleSelectProjectFolder = async () => {
+        const selectFolderResult = await window.electron.openDirectoryDialog(
+            projectPath,
+            t('project.selectFolderDialogTitle'),
+            [],
+        );
+
+        if (
+            selectFolderResult &&
+            !selectFolderResult.canceled &&
+            selectFolderResult.filePaths.length > 0
+        ) {
+            const basePath = selectFolderResult.filePaths[0];
+            const separator = platform === 'win32' ? '\\' : '/';
+            setProjectPath(`${basePath}${separator}`);
+        }
+    };
+
     const getRendererType = (versionInt: number) => {
         if (versionInt >= 4) {
             return (
@@ -290,15 +308,37 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                         }
                                     }}
                                 />
-                                <input
-                                    className="input input-bordered w-full"
-                                    type="text"
-                                    value={projectPath}
-                                    onChange={(e) =>
-                                        setProjectPath(e.target.value)
-                                    }
-                                    disabled={!overwriteProjectPath}
-                                />
+                                <label className="input w-full">
+                                    <input
+                                        className="input input-bordered w-full active:outline-0 outline-0"
+                                        type="text"
+                                        value={projectPath}
+                                        onChange={(e) =>
+                                            setProjectPath(e.target.value)
+                                        }
+                                        disabled={!overwriteProjectPath}
+                                    />
+                                    {overwriteProjectPath && (
+                                        <span
+                                            className="tooltip tooltip-top"
+                                            data-tip={t(
+                                                'project.selectFolderTooltip',
+                                            )}
+                                        >
+                                            <button
+                                                type="button"
+                                                data-testid="btnSelectProjectFolder"
+                                                className="flex items-center"
+                                                disabled={!overwriteProjectPath}
+                                                onClick={
+                                                    handleSelectProjectFolder
+                                                }
+                                            >
+                                                <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary"></Folder>
+                                            </button>
+                                        </span>
+                                    )}
+                                </label>
                             </div>
                             <div className="flex flex-col gap-2">
                                 <select
@@ -313,7 +353,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                                 release.editor_path?.length ===
                                                 0
                                             }
-                                            key={`createProjectReleaseOption_${release.version}`}
+                                            key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
                                             value={i}
                                         >
                                             {release.editor_path?.length > 0
@@ -325,6 +365,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                 <label className="flex h-10 cursor-pointer gap-2 items-center w-[300px]">
                                     <input
                                         type="checkbox"
+                                        data-testid="checkboxOverwriteProjectPath"
                                         className="checkbox"
                                         checked={overwriteProjectPath}
                                         onChange={(e) =>

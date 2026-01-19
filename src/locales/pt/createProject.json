@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Nenhuma versão do Godot instalada",
     "nameplaceholder": "Nome do projeto",
     "downloading": "A transferir...",
-    "nameRequired": "O nome do projeto é obrigatório"
+    "nameRequired": "O nome do projeto é obrigatório",
+    "overwritePath": "Substituir caminho do projeto",
+    "selectFolderDialogTitle": "Selecionar pasta do projeto",
+    "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto"
   },
   "renderer": {
     "title": "Motor de renderização",

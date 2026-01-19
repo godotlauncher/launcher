@@ -8,7 +8,9 @@
     "nameplaceholder": "Project Name",
     "downloading": "Downloading...",
     "nameRequired": "Project name is required",
-    "overwritePath": "Overwrite Project Path"
+    "overwritePath": "Overwrite Project Path",
+    "selectFolderDialogTitle": "Select Project Folder",
+    "selectFolderTooltip": "Open a dialog to select the project folder"
   },
   "renderer": {
     "title": "Renderer",

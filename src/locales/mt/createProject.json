@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Ebda verżjonijiet ta' Godot installati",
     "nameplaceholder": "Isem tal-Proġett",
     "downloading": "Qed jinżel...",
-    "nameRequired": "Isem tal-proġett huwa meħtieġ"
+    "nameRequired": "Isem tal-proġett huwa meħtieġ",
+    "overwritePath": "Ikteb fuq il-mogħdija tal-proġett",
+    "selectFolderDialogTitle": "Agħżel il-folder tal-proġett",
+    "selectFolderTooltip": "Iftaħ djalogu biex tagħżel il-folder tal-proġett"
   },
   "renderer": {
     "title": "Renderer",

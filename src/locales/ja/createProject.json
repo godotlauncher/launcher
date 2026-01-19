@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Godotバージョンがインストールされていません",
     "nameplaceholder": "プロジェクト名",
     "downloading": "ダウンロード中...",
-    "nameRequired": "プロジェクト名が必要です"
+    "nameRequired": "プロジェクト名が必要です",
+    "overwritePath": "プロジェクトパスを上書き",
+    "selectFolderDialogTitle": "プロジェクトフォルダを選択",
+    "selectFolderTooltip": "プロジェクトフォルダを選択するダイアログを開く"
   },
   "renderer": {
     "title": "レンダラー",

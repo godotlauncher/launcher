@@ -12,6 +12,13 @@ type ElectronPage = Awaited<
     ReturnType<ElectronApplication['firstWindow']>
 >;
 
+type CachedTool = {
+    name: string;
+    path: string;
+    version?: string;
+    verified: boolean;
+};
+
 type ThemeConfig = {
     name: 'dark' | 'light';
     description: string;
@@ -107,6 +114,23 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
             await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_overwrite_path',
+        description: 'New Project view with overwrite path enabled',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.getByTestId('checkboxOverwriteProjectPath').check();
             await page.waitForTimeout(600);
         },
         cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
