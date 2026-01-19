@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Godot sürümü yüklü değil",
     "nameplaceholder": "Proje Adı",
     "downloading": "İndiriliyor...",
-    "nameRequired": "Proje adı gerekli"
+    "nameRequired": "Proje adı gerekli",
+    "overwritePath": "Proje yolunun üzerine yaz",
+    "selectFolderDialogTitle": "Proje klasörünü seç",
+    "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç"
   },
   "renderer": {
     "title": "İşleyici",

@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Aucune version de Godot installée",
     "nameplaceholder": "Nom du projet",
     "downloading": "Téléchargement...",
-    "nameRequired": "Le nom du projet est requis"
+    "nameRequired": "Le nom du projet est requis",
+    "overwritePath": "Remplacer le chemin du projet",
+    "selectFolderDialogTitle": "Sélectionner le dossier du projet",
+    "selectFolderTooltip": "Ouvrir une boîte de dialogue pour sélectionner le dossier du projet"
   },
   "renderer": {
     "title": "Moteur de rendu",

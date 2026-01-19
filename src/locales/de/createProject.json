@@ -8,7 +8,9 @@
     "nameplaceholder": "Projektname",
     "downloading": "Wird heruntergeladen...",
     "nameRequired": "Projektname ist erforderlich",
-    "overwritePath": "Überschreibe Projektpfad"
+    "overwritePath": "Überschreibe Projektpfad",
+    "selectFolderDialogTitle": "Projektordner auswählen",
+    "selectFolderTooltip": "Öffne einen Dialog zum Auswählen des Projektordners"
   },
   "renderer": {
     "title": "Renderer",

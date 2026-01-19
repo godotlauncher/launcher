@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Brak zainstalowanych wersji Godot",
     "nameplaceholder": "Nazwa projektu",
     "downloading": "Pobieranie...",
-    "nameRequired": "Nazwa projektu jest wymagana"
+    "nameRequired": "Nazwa projektu jest wymagana",
+    "overwritePath": "Nadpisz ścieżkę projektu",
+    "selectFolderDialogTitle": "Wybierz folder projektu",
+    "selectFolderTooltip": "Otwórz okno dialogowe, aby wybrać folder projektu"
   },
   "renderer": {
     "title": "Renderer",

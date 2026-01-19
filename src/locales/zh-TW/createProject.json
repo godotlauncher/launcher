@@ -7,7 +7,10 @@
     "noVersionsInstalled": "尚未安裝任何 Godot 版本",
     "nameplaceholder": "專案名稱",
     "downloading": "下載中…",
-    "nameRequired": "必須輸入專案名稱"
+    "nameRequired": "必須輸入專案名稱",
+    "overwritePath": "覆蓋專案路徑",
+    "selectFolderDialogTitle": "選擇專案資料夾",
+    "selectFolderTooltip": "開啟對話框以選擇專案資料夾"
   },
   "renderer": {
     "title": "渲染器",

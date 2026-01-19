@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Версии Godot не установлены",
     "nameplaceholder": "Название проекта",
     "downloading": "Загрузка...",
-    "nameRequired": "Требуется название проекта"
+    "nameRequired": "Требуется название проекта",
+    "overwritePath": "Перезаписать путь проекта",
+    "selectFolderDialogTitle": "Выбрать папку проекта",
+    "selectFolderTooltip": "Открыть диалог для выбора папки проекта"
   },
   "renderer": {
     "title": "Рендерер",
