@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CircleHelp, X } from 'lucide-react';
+import { CircleHelp, Folder, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -75,6 +75,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             setProjectPath(derivedProjectPath);
         }
     }, [derivedProjectPath, overwriteProjectPath]);
+
 
     const onCreateProject = async () => {
         setError(undefined);
@@ -155,6 +156,25 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             <p>{t('otherSettings.vscodeHelp.message')}</p>,
             <CircleHelp />,
         );
+    };
+
+    const handleSelectProjectFolder = async () => {
+        console.log(t('project.selectFolderDialogTitle'));
+        const selectFolderResult = await window.electron.openDirectoryDialog(
+            projectPath,
+            t('project.selectFolderDialogTitle'),
+            []
+        );
+
+        if (
+            selectFolderResult &&
+            !selectFolderResult.canceled &&
+            selectFolderResult.filePaths.length > 0
+        ) {
+            const basePath = selectFolderResult.filePaths[0];
+            const separator = platform === 'win32' ? '\\' : '/';
+            setProjectPath(`${basePath}${separator}`);
+        }
     };
 
     const getRendererType = (versionInt: number) => {
@@ -290,15 +310,32 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                         }
                                     }}
                                 />
-                                <input
-                                    className="input input-bordered w-full"
-                                    type="text"
-                                    value={projectPath}
-                                    onChange={(e) =>
-                                        setProjectPath(e.target.value)
+                                <label className='input w-full'>
+
+                                    <input
+                                        className="input input-bordered w-full active:outline-0 outline-0"
+                                        type="text"
+                                        value={projectPath}
+                                        onChange={(e) =>
+                                            setProjectPath(e.target.value)
+                                        }
+                                        disabled={!overwriteProjectPath}
+                                    />
+                                    {
+                                        overwriteProjectPath && (
+                                            <span className='tooltip tooltip-top' data-tip={t('project.selectFolderTooltip')}>
+                                                <button
+
+                                                    type="button"
+                                                    className='flex items-center'
+                                                    disabled={!overwriteProjectPath}
+                                                    onClick={handleSelectProjectFolder}
+                                                >
+                                                    <Folder className='w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary'></Folder>
+                                                </button>
+                                            </span>)
                                     }
-                                    disabled={!overwriteProjectPath}
-                                />
+                                </label>
                             </div>
                             <div className="flex flex-col gap-2">
                                 <select
@@ -313,7 +350,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                                 release.editor_path?.length ===
                                                 0
                                             }
-                                            key={`createProjectReleaseOption_${release.version}`}
+                                            key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
                                             value={i}
                                         >
                                             {release.editor_path?.length > 0
