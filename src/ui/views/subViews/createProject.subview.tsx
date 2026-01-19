@@ -327,6 +327,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                         >
                                             <button
                                                 type="button"
+                                                data-testid="btnSelectProjectFolder"
                                                 className="flex items-center"
                                                 disabled={!overwriteProjectPath}
                                                 onClick={
@@ -364,6 +365,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                 <label className="flex h-10 cursor-pointer gap-2 items-center w-[300px]">
                                     <input
                                         type="checkbox"
+                                        data-testid="checkboxOverwriteProjectPath"
                                         className="checkbox"
                                         checked={overwriteProjectPath}
                                         onChange={(e) =>
