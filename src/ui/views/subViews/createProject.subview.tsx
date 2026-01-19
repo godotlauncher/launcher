@@ -76,7 +76,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         }
     }, [derivedProjectPath, overwriteProjectPath]);
 
-
     const onCreateProject = async () => {
         setError(undefined);
 
@@ -159,11 +158,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     };
 
     const handleSelectProjectFolder = async () => {
-        console.log(t('project.selectFolderDialogTitle'));
         const selectFolderResult = await window.electron.openDirectoryDialog(
             projectPath,
             t('project.selectFolderDialogTitle'),
-            []
+            [],
         );
 
         if (
@@ -310,8 +308,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                         }
                                     }}
                                 />
-                                <label className='input w-full'>
-
+                                <label className="input w-full">
                                     <input
                                         className="input input-bordered w-full active:outline-0 outline-0"
                                         type="text"
@@ -321,20 +318,25 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                         }
                                         disabled={!overwriteProjectPath}
                                     />
-                                    {
-                                        overwriteProjectPath && (
-                                            <span className='tooltip tooltip-top' data-tip={t('project.selectFolderTooltip')}>
-                                                <button
-
-                                                    type="button"
-                                                    className='flex items-center'
-                                                    disabled={!overwriteProjectPath}
-                                                    onClick={handleSelectProjectFolder}
-                                                >
-                                                    <Folder className='w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary'></Folder>
-                                                </button>
-                                            </span>)
-                                    }
+                                    {overwriteProjectPath && (
+                                        <span
+                                            className="tooltip tooltip-top"
+                                            data-tip={t(
+                                                'project.selectFolderTooltip',
+                                            )}
+                                        >
+                                            <button
+                                                type="button"
+                                                className="flex items-center"
+                                                disabled={!overwriteProjectPath}
+                                                onClick={
+                                                    handleSelectProjectFolder
+                                                }
+                                            >
+                                                <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary"></Folder>
+                                            </button>
+                                        </span>
+                                    )}
                                 </label>
                             </div>
                             <div className="flex flex-col gap-2">
