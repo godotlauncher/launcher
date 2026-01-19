@@ -19,14 +19,14 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
-          version: 10.23.0
+          version: 10.28.1
           run_install: false
 
       # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # Adjust the version as needed
+          node-version: '24' # Adjust the version as needed
           cache: 'pnpm'
 
       # Install dependencies
