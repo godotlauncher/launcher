@@ -13,7 +13,7 @@ type SubViewProps = {
 };
 
 export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
-    const { t } = useTranslation('createProject');
+    const { t } = useTranslation(['createProject', 'projects']);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseIndex, setReleaseIndex] = useState<number>(0);
     const [projectName, setProjectName] = useState<string>('');
@@ -22,6 +22,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     const [error, setError] = useState<string | undefined>();
     const [creating, setCreating] = useState<boolean>(false);
+    const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
 
     const [tools, setTools] = useState<InstalledTool[]>([]);
 
@@ -158,20 +159,26 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     };
 
     const handleSelectProjectFolder = async () => {
-        const selectFolderResult = await window.electron.openDirectoryDialog(
-            projectPath,
-            t('project.selectFolderDialogTitle'),
-            [],
-        );
+        setSelectingFolder(true);
+        try {
+            const selectFolderResult =
+                await window.electron.openDirectoryDialog(
+                    projectPath,
+                    t('project.selectFolderDialogTitle'),
+                    [],
+                );
 
-        if (
-            selectFolderResult &&
-            !selectFolderResult.canceled &&
-            selectFolderResult.filePaths.length > 0
-        ) {
-            const basePath = selectFolderResult.filePaths[0];
-            const separator = platform === 'win32' ? '\\' : '/';
-            setProjectPath(`${basePath}${separator}`);
+            if (
+                selectFolderResult &&
+                !selectFolderResult.canceled &&
+                selectFolderResult.filePaths.length > 0
+            ) {
+                const basePath = selectFolderResult.filePaths[0];
+                const separator = platform === 'win32' ? '\\' : '/';
+                setProjectPath(`${basePath}${separator}`);
+            }
+        } finally {
+            setSelectingFolder(false);
         }
     };
 
@@ -250,6 +257,14 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     return (
         <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
+            {selectingFolder && (
+                <div className="absolute inset-0 z-30 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
+                    <p className="loading loading-infinity loading-lg"></p>
+                    <p className="text-white text-xl font-semibold">
+                        {t('projects:messages.waitingForDialog')}
+                    </p>
+                </div>
+            )}
             <div className="flex flex-col w-[900px] h-full  overflow-hidden">
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between">
