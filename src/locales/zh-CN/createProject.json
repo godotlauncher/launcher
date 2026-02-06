@@ -61,6 +61,7 @@
     "invalidEditorVersion": "无效的编辑器版本：{{version}}",
     "failedProjectDefinition": "获取版本 {{version}} 的项目定义失败",
     "folderNotEmpty": "项目文件夹 '{{name}}' 已存在且非空，是否要添加现有项目？",
-    "failedCreateFile": "创建项目文件失败：{{error}}"
+    "failedCreateFile": "创建项目文件失败：{{error}}",
+    "pathNotDirectory": "所选路径已存在且不是文件夹"
   }
 }

@@ -61,6 +61,7 @@
     "invalidEditorVersion": "Ungültige Editor-Version: {{version}}",
     "failedProjectDefinition": "Projektdefinition für Version {{version}} konnte nicht abgerufen werden",
     "folderNotEmpty": "Projektordner '{{name}}' existiert bereits und ist nicht leer, möchten Sie ein bestehendes Projekt hinzufügen?",
-    "failedCreateFile": "Projektdatei konnte nicht erstellt werden: {{error}}"
+    "failedCreateFile": "Projektdatei konnte nicht erstellt werden: {{error}}",
+    "pathNotDirectory": "Der ausgewählte Pfad existiert bereits und ist kein Ordner"
   }
 }

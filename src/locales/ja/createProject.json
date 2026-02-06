@@ -61,6 +61,7 @@
     "invalidEditorVersion": "無効なエディタバージョン：{{version}}",
     "failedProjectDefinition": "バージョンのプロジェクト定義の取得に失敗しました：{{version}}",
     "folderNotEmpty": "プロジェクトフォルダ '{{name}}' は既に存在し、空ではありません。既存のプロジェクトを追加するつもりでしたか？",
-    "failedCreateFile": "プロジェクトファイルの作成に失敗しました：{{error}}"
+    "failedCreateFile": "プロジェクトファイルの作成に失敗しました：{{error}}",
+    "pathNotDirectory": "選択したパスは既に存在し、フォルダーではありません"
   }
 }

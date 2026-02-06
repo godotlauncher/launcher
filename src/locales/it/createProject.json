@@ -61,6 +61,7 @@
     "invalidEditorVersion": "Versione editor non valida: {{version}}",
     "failedProjectDefinition": "Impossibile ottenere la definizione del progetto per la versione: {{version}}",
     "folderNotEmpty": "La cartella del progetto '{{name}}' esiste già e non è vuota, volevi aggiungere un progetto esistente?",
-    "failedCreateFile": "Impossibile creare il file di progetto: {{error}}"
+    "failedCreateFile": "Impossibile creare il file di progetto: {{error}}",
+    "pathNotDirectory": "Il percorso selezionato esiste già e non è una cartella"
   }
 }

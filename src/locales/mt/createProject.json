@@ -61,6 +61,7 @@
     "invalidEditorVersion": "Verżjoni tal-editur invalida: {{version}}",
     "failedProjectDefinition": "Naqas milli jinkiseb id-definizzjoni tal-proġett għal verżjoni: {{version}}",
     "folderNotEmpty": "Folder tal-proġett '{{name}}' diġà jeżisti u mhuwiex vojt, ridt tgħid li żżid proġett eżistenti?",
-    "failedCreateFile": "Naqas milli jinħoloq il-fajl tal-proġett: {{error}}"
+    "failedCreateFile": "Naqas milli jinħoloq il-fajl tal-proġett: {{error}}",
+    "pathNotDirectory": "Il-perkors magħżul diġà jeżisti u mhux folder"
   }
 }

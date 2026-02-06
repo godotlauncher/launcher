@@ -61,6 +61,7 @@
     "invalidEditorVersion": "無效的編輯器版本：{{version}}",
     "failedProjectDefinition": "無法取得版本 {{version}} 的專案定義",
     "folderNotEmpty": "專案資料夾 '{{name}}' 已存在且非空，您是想新增現有專案嗎？",
-    "failedCreateFile": "建立專案檔案失敗：{{error}}"
+    "failedCreateFile": "建立專案檔案失敗：{{error}}",
+    "pathNotDirectory": "所選路徑已存在且不是資料夾"
   }
 }

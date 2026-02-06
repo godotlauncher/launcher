@@ -61,6 +61,7 @@
     "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",
     "failedProjectDefinition": "{{version}} sürümü için proje tanımı alınamadı",
     "folderNotEmpty": "'{{name}}' proje klasörü zaten mevcut ve boş değil, mevcut bir projeyi eklemek mi istediniz?",
-    "failedCreateFile": "Proje dosyası oluşturulamadı: {{error}}"
+    "failedCreateFile": "Proje dosyası oluşturulamadı: {{error}}",
+    "pathNotDirectory": "Seçilen yol zaten var ve bir klasör değil"
   }
 }

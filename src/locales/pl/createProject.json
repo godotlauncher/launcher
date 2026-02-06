@@ -61,6 +61,7 @@
     "invalidEditorVersion": "Nieprawidłowa wersja edytora: {{version}}",
     "failedProjectDefinition": "Nie udało się uzyskać definicji projektu dla wersji: {{version}}",
     "folderNotEmpty": "Folder projektu '{{name}}' już istnieje i nie jest pusty, czy chciałeś dodać istniejący projekt?",
-    "failedCreateFile": "Nie udało się utworzyć pliku projektu: {{error}}"
+    "failedCreateFile": "Nie udało się utworzyć pliku projektu: {{error}}",
+    "pathNotDirectory": "Wybrana ścieżka już istnieje i nie jest folderem"
   }
 }

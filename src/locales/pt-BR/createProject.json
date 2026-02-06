@@ -61,6 +61,7 @@
     "invalidEditorVersion": "Versão do editor inválida: {{version}}",
     "failedProjectDefinition": "Falha ao obter a definição do projeto para a versão: {{version}}",
     "folderNotEmpty": "A pasta do projeto '{{name}}' já existe e não está vazia; você queria adicionar um projeto existente?",
-    "failedCreateFile": "Falha ao criar o arquivo do projeto: {{error}}"
+    "failedCreateFile": "Falha ao criar o arquivo do projeto: {{error}}",
+    "pathNotDirectory": "O caminho selecionado já existe e não é uma pasta"
   }
 }
