@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Nenhuma versão do Godot instalada",
     "nameplaceholder": "Nome do projeto",
     "downloading": "A transferir...",
-    "nameRequired": "O nome do projeto é obrigatório"
+    "nameRequired": "O nome do projeto é obrigatório",
+    "overwritePath": "Substituir caminho do projeto",
+    "selectFolderDialogTitle": "Selecionar pasta do projeto",
+    "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto"
   },
   "renderer": {
     "title": "Motor de renderização",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Versão de editor inválida: {{version}}",
     "failedProjectDefinition": "Falha ao obter a definição do projeto para a versão: {{version}}",
     "folderNotEmpty": "A pasta do projeto '{{name}}' já existe e não está vazia; pretende adicionar um projeto existente?",
-    "failedCreateFile": "Falha ao criar o ficheiro do projeto: {{error}}"
+    "failedCreateFile": "Falha ao criar o ficheiro do projeto: {{error}}",
+    "pathNotDirectory": "O caminho selecionado já existe e não é uma pasta"
   }
 }

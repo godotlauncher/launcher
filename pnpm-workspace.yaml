@@ -8,5 +8,10 @@ onlyBuiltDependencies:
   - sharp
 
 overrides:
+  '@isaacs/brace-expansion@<=5.0.0': '>=5.0.1'
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
   js-yaml@>=4.0.0 <4.1.1: '>=4.1.1'
+  lodash@>=4.0.0 <=4.17.22: '>=4.17.23'
+  tar@<7.5.7: '>=7.5.7'
+  tar@<=7.5.2: '>=7.5.3'
+  tar@<=7.5.3: '>=7.5.4'

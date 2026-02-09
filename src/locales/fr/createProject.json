@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Aucune version de Godot installée",
     "nameplaceholder": "Nom du projet",
     "downloading": "Téléchargement...",
-    "nameRequired": "Le nom du projet est requis"
+    "nameRequired": "Le nom du projet est requis",
+    "overwritePath": "Remplacer le chemin du projet",
+    "selectFolderDialogTitle": "Sélectionner le dossier du projet",
+    "selectFolderTooltip": "Ouvrir une boîte de dialogue pour sélectionner le dossier du projet"
   },
   "renderer": {
     "title": "Moteur de rendu",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Version de l'éditeur invalide : {{version}}",
     "failedProjectDefinition": "Échec de l'obtention de la définition du projet pour la version : {{version}}",
     "folderNotEmpty": "Le dossier du projet '{{name}}' existe déjà et n'est pas vide, vouliez-vous ajouter un projet existant ?",
-    "failedCreateFile": "Échec de la création du fichier du projet : {{error}}"
+    "failedCreateFile": "Échec de la création du fichier du projet : {{error}}",
+    "pathNotDirectory": "Le chemin sélectionné existe déjà et n’est pas un dossier"
   }
 }

@@ -7,7 +7,10 @@
     "noVersionsInstalled": "未安装 Godot 版本",
     "nameplaceholder": "项目名称",
     "downloading": "正在下载...",
-    "nameRequired": "项目名称为必填项"
+    "nameRequired": "项目名称为必填项",
+    "overwritePath": "覆盖项目路径",
+    "selectFolderDialogTitle": "选择项目文件夹",
+    "selectFolderTooltip": "打开对话框以选择项目文件夹"
   },
   "renderer": {
     "title": "渲染器",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "无效的编辑器版本：{{version}}",
     "failedProjectDefinition": "获取版本 {{version}} 的项目定义失败",
     "folderNotEmpty": "项目文件夹 '{{name}}' 已存在且非空，是否要添加现有项目？",
-    "failedCreateFile": "创建项目文件失败：{{error}}"
+    "failedCreateFile": "创建项目文件失败：{{error}}",
+    "pathNotDirectory": "所选路径已存在且不是文件夹"
   }
 }

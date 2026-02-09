@@ -34,6 +34,7 @@ export async function createProject(
     renderer: RendererType,
     withVSCode: boolean,
     withGit: boolean,
+    overwriteProjectPath?: string,
 ): Promise<CreateProjectResult> {
     const tools = await getInstalledTools();
 
@@ -59,16 +60,31 @@ export async function createProject(
 
     const { projects_location: projectDir, install_location: installDir } =
         await getUserPreferences();
-    const projectPath = path.resolve(projectDir, projectName);
+    logger.info(overwriteProjectPath);
+    const projectPath = overwriteProjectPath
+        ? overwriteProjectPath
+        : path.resolve(projectDir, projectName);
 
-    // check if path exist
+    // If the target exists, allow it only when it's an empty directory.
     if (fs.existsSync(projectPath)) {
-        return {
-            success: false,
-            error: t('createProject:errors.projectExists', {
-                name: projectName,
-            }),
-        };
+        const stat = await fs.promises.lstat(projectPath);
+
+        if (!stat.isDirectory()) {
+            return {
+                success: false,
+                error: t('createProject:errors.pathNotDirectory'),
+            };
+        }
+
+        const entries = await fs.promises.readdir(projectPath);
+        if (entries.length > 0) {
+            return {
+                success: false,
+                error: t('createProject:errors.folderNotEmpty', {
+                    name: projectName,
+                }),
+            };
+        }
     }
 
     // get the editor version, make sure it's a number and greater than the minimum version
@@ -99,21 +115,6 @@ export async function createProject(
     }
 
     try {
-        // create project folder
-
-        // check if project folder exists and fail if not empty
-        if (
-            fs.existsSync(projectPath) &&
-            (await fs.promises.readdir(projectPath)).length > 0
-        ) {
-            return {
-                success: false,
-                error: t('createProject:errors.folderNotEmpty', {
-                    name: projectName,
-                }),
-            };
-        }
-
         // create project file
         let projectFile: string;
 

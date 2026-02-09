@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Godot sürümü yüklü değil",
     "nameplaceholder": "Proje Adı",
     "downloading": "İndiriliyor...",
-    "nameRequired": "Proje adı gerekli"
+    "nameRequired": "Proje adı gerekli",
+    "overwritePath": "Proje yolunun üzerine yaz",
+    "selectFolderDialogTitle": "Proje klasörünü seç",
+    "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç"
   },
   "renderer": {
     "title": "İşleyici",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",
     "failedProjectDefinition": "{{version}} sürümü için proje tanımı alınamadı",
     "folderNotEmpty": "'{{name}}' proje klasörü zaten mevcut ve boş değil, mevcut bir projeyi eklemek mi istediniz?",
-    "failedCreateFile": "Proje dosyası oluşturulamadı: {{error}}"
+    "failedCreateFile": "Proje dosyası oluşturulamadı: {{error}}",
+    "pathNotDirectory": "Seçilen yol zaten var ve bir klasör değil"
   }
 }

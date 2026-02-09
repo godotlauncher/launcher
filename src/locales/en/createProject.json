@@ -7,7 +7,10 @@
     "noVersionsInstalled": "No Godot versions installed",
     "nameplaceholder": "Project Name",
     "downloading": "Downloading...",
-    "nameRequired": "Project name is required"
+    "nameRequired": "Project name is required",
+    "overwritePath": "Overwrite Project Path",
+    "selectFolderDialogTitle": "Select Project Folder",
+    "selectFolderTooltip": "Open a dialog to select the project folder"
   },
   "renderer": {
     "title": "Renderer",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Invalid editor version: {{version}}",
     "failedProjectDefinition": "Failed to get project definition for version: {{version}}",
     "folderNotEmpty": "Project folder '{{name}}' already exists and is not empty, did you mean to add an existing project?",
-    "failedCreateFile": "Failed to create project file: {{error}}"
+    "failedCreateFile": "Failed to create project file: {{error}}",
+    "pathNotDirectory": "Selected path already exists and is not a folder"
   }
 }

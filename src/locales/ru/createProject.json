@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Версии Godot не установлены",
     "nameplaceholder": "Название проекта",
     "downloading": "Загрузка...",
-    "nameRequired": "Требуется название проекта"
+    "nameRequired": "Требуется название проекта",
+    "overwritePath": "Перезаписать путь проекта",
+    "selectFolderDialogTitle": "Выбрать папку проекта",
+    "selectFolderTooltip": "Открыть диалог для выбора папки проекта"
   },
   "renderer": {
     "title": "Рендерер",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Неверная версия редактора: {{version}}",
     "failedProjectDefinition": "Не удалось получить определение проекта для версии: {{version}}",
     "folderNotEmpty": "Папка проекта '{{name}}' уже существует и не пуста, вы хотели добавить существующий проект?",
-    "failedCreateFile": "Не удалось создать файл проекта: {{error}}"
+    "failedCreateFile": "Не удалось создать файл проекта: {{error}}",
+    "pathNotDirectory": "Выбранный путь уже существует и не является папкой"
   }
 }

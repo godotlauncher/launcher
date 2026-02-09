@@ -184,7 +184,16 @@ export function registerHandlers() {
             renderer: RendererType,
             withVSCode: boolean,
             withGit: boolean,
-        ) => await createProject(name, release, renderer, withVSCode, withGit),
+            overwriteProjectPath?: string,
+        ) =>
+            await createProject(
+                name,
+                release,
+                renderer,
+                withVSCode,
+                withGit,
+                overwriteProjectPath,
+            ),
     );
 
     ipcMainHandler(

@@ -7,7 +7,10 @@
     "noVersionsInstalled": "Brak zainstalowanych wersji Godot",
     "nameplaceholder": "Nazwa projektu",
     "downloading": "Pobieranie...",
-    "nameRequired": "Nazwa projektu jest wymagana"
+    "nameRequired": "Nazwa projektu jest wymagana",
+    "overwritePath": "Nadpisz ścieżkę projektu",
+    "selectFolderDialogTitle": "Wybierz folder projektu",
+    "selectFolderTooltip": "Otwórz okno dialogowe, aby wybrać folder projektu"
   },
   "renderer": {
     "title": "Renderer",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Nieprawidłowa wersja edytora: {{version}}",
     "failedProjectDefinition": "Nie udało się uzyskać definicji projektu dla wersji: {{version}}",
     "folderNotEmpty": "Folder projektu '{{name}}' już istnieje i nie jest pusty, czy chciałeś dodać istniejący projekt?",
-    "failedCreateFile": "Nie udało się utworzyć pliku projektu: {{error}}"
+    "failedCreateFile": "Nie udało się utworzyć pliku projektu: {{error}}",
+    "pathNotDirectory": "Wybrana ścieżka już istnieje i nie jest folderem"
   }
 }

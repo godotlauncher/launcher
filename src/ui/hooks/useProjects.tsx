@@ -28,6 +28,7 @@ interface ProjectsContext {
         renderer: RendererType[5],
         withVSCode: boolean,
         withGit: boolean,
+        overwriteProjectPath?: string,
     ) => Promise<CreateProjectResult>;
 }
 
@@ -62,6 +63,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         renderer: RendererType[5],
         withVSCode: boolean,
         withGit: boolean,
+        overwriteProjectPath?: string,
     ) => {
         const result = await window.electron.createProject(
             projectName,
@@ -69,6 +71,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             renderer,
             withVSCode,
             withGit,
+            overwriteProjectPath,
         );
 
         if (result.success) {

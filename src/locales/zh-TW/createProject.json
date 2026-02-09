@@ -7,7 +7,10 @@
     "noVersionsInstalled": "尚未安裝任何 Godot 版本",
     "nameplaceholder": "專案名稱",
     "downloading": "下載中…",
-    "nameRequired": "必須輸入專案名稱"
+    "nameRequired": "必須輸入專案名稱",
+    "overwritePath": "覆蓋專案路徑",
+    "selectFolderDialogTitle": "選擇專案資料夾",
+    "selectFolderTooltip": "開啟對話框以選擇專案資料夾"
   },
   "renderer": {
     "title": "渲染器",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "無效的編輯器版本：{{version}}",
     "failedProjectDefinition": "無法取得版本 {{version}} 的專案定義",
     "folderNotEmpty": "專案資料夾 '{{name}}' 已存在且非空，您是想新增現有專案嗎？",
-    "failedCreateFile": "建立專案檔案失敗：{{error}}"
+    "failedCreateFile": "建立專案檔案失敗：{{error}}",
+    "pathNotDirectory": "所選路徑已存在且不是資料夾"
   }
 }

@@ -7,7 +7,10 @@
     "noVersionsInstalled": "No hay versiones de Godot instaladas",
     "nameplaceholder": "Nombre del proyecto",
     "downloading": "Descargando...",
-    "nameRequired": "Se requiere el nombre del proyecto"
+    "nameRequired": "Se requiere el nombre del proyecto",
+    "overwritePath": "Sobrescribir ruta del proyecto",
+    "selectFolderDialogTitle": "Seleccionar carpeta del proyecto",
+    "selectFolderTooltip": "Abrir un diálogo para seleccionar la carpeta del proyecto"
   },
   "renderer": {
     "title": "Motor de renderizado",
@@ -58,6 +61,7 @@
     "invalidEditorVersion": "Versión del editor inválida: {{version}}",
     "failedProjectDefinition": "Error al obtener la definición del proyecto para la versión: {{version}}",
     "folderNotEmpty": "La carpeta del proyecto '{{name}}' ya existe y no está vacía, ¿querías añadir un proyecto existente?",
-    "failedCreateFile": "Error al crear el archivo del proyecto: {{error}}"
+    "failedCreateFile": "Error al crear el archivo del proyecto: {{error}}",
+    "pathNotDirectory": "La ruta seleccionada ya existe y no es una carpeta"
   }
 }

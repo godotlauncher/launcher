@@ -12,6 +12,13 @@ type ElectronPage = Awaited<
     ReturnType<ElectronApplication['firstWindow']>
 >;
 
+type CachedTool = {
+    name: string;
+    path: string;
+    version?: string;
+    verified: boolean;
+};
+
 type ThemeConfig = {
     name: 'dark' | 'light';
     description: string;
@@ -107,6 +114,23 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
             await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_overwrite_path',
+        description: 'New Project view with overwrite path enabled',
+        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page.getByTestId('checkboxOverwriteProjectPath').check();
             await page.waitForTimeout(600);
         },
         cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
@@ -284,7 +308,7 @@ const SAMPLE_PROJECTS = [
             '/Users/docs/Godot/Projects/my-awesome-game/.godot',
         editor_settings_file:
             '/Users/docs/Godot/Projects/my-awesome-game/.godot/editor_settings-4.5.tres',
-        last_opened: '2025-02-18T11:00:00.000Z',
+        last_opened: new Date((Date.now() - (2 * 24 * 60 * 60 * 1000))).toISOString(),
         open_windowed: false,
         release: SAMPLE_INSTALLED_RELEASES[0],
         launch_path:
@@ -472,7 +496,7 @@ async function captureScreenshot(
     baseName: string,
     description: string,
 ) {
-    const outputDir = path.resolve('docs/images');
+    const outputDir = path.resolve('docs/screenshots');
     const pngPath = path.join(outputDir, `${baseName}.png`);
     const webpPath = path.join(outputDir, `${baseName}.webp`);
     await fs.mkdir(outputDir, { recursive: true });

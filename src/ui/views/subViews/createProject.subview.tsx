@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CircleHelp, X } from 'lucide-react';
+import { CircleHelp, Folder, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -13,7 +13,7 @@ type SubViewProps = {
 };
 
 export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
-    const { t } = useTranslation('createProject');
+    const { t } = useTranslation(['createProject', 'projects']);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseIndex, setReleaseIndex] = useState<number>(0);
     const [projectName, setProjectName] = useState<string>('');
@@ -22,8 +22,12 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     const [error, setError] = useState<string | undefined>();
     const [creating, setCreating] = useState<boolean>(false);
+    const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
 
     const [tools, setTools] = useState<InstalledTool[]>([]);
+
+    const [overwriteProjectPath, setOverwriteProjectPath] =
+        useState<boolean>(false);
 
     const [withGit, setWithGit] = useState<boolean>(true);
     const [withVSCode, setWithVSCode] = useState<boolean>(true);
@@ -68,8 +72,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     // Update projectPath when derivedProjectPath changes
     useEffect(() => {
-        setProjectPath(derivedProjectPath);
-    }, [derivedProjectPath]);
+        if (!overwriteProjectPath) {
+            setProjectPath(derivedProjectPath);
+        }
+    }, [derivedProjectPath, overwriteProjectPath]);
 
     const onCreateProject = async () => {
         setError(undefined);
@@ -85,6 +91,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             renderer,
             withVSCode,
             withGit,
+            overwriteProjectPath ? projectPath : undefined,
         );
 
         setCreating(false);
@@ -149,6 +156,30 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             <p>{t('otherSettings.vscodeHelp.message')}</p>,
             <CircleHelp />,
         );
+    };
+
+    const handleSelectProjectFolder = async () => {
+        setSelectingFolder(true);
+        try {
+            const selectFolderResult =
+                await window.electron.openDirectoryDialog(
+                    projectPath,
+                    t('project.selectFolderDialogTitle'),
+                    [],
+                );
+
+            if (
+                selectFolderResult &&
+                !selectFolderResult.canceled &&
+                selectFolderResult.filePaths.length > 0
+            ) {
+                const basePath = selectFolderResult.filePaths[0];
+                const separator = platform === 'win32' ? '\\' : '/';
+                setProjectPath(`${basePath}${separator}`);
+            }
+        } finally {
+            setSelectingFolder(false);
+        }
     };
 
     const getRendererType = (versionInt: number) => {
@@ -226,6 +257,14 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     return (
         <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
+            {selectingFolder && (
+                <div className="absolute inset-0 z-30 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
+                    <p className="loading loading-infinity loading-lg"></p>
+                    <p className="text-white text-xl font-semibold">
+                        {t('projects:messages.waitingForDialog')}
+                    </p>
+                </div>
+            )}
             <div className="flex flex-col w-[900px] h-full  overflow-hidden">
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between">
@@ -265,45 +304,96 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             </p>
                         )}
                         <div className="flex flex-row gap-2">
-                            <input
-                                ref={inputNameRef}
-                                data-testid="inputProjectName"
-                                className="input input-bordered w-full"
-                                type="text"
-                                placeholder={t('project.nameplaceholder')}
-                                onChange={(e) =>
-                                    setProjectName(
-                                        e.target.value.replace(/\s/g, '-'),
-                                    )
-                                }
-                                onKeyDown={(event) => {
-                                    if (event.key === ' ') {
-                                        event.currentTarget.value = `${event.currentTarget.value}-`;
-                                        event.preventDefault();
+                            <div className="flex flex-col gap-2 w-full">
+                                <input
+                                    ref={inputNameRef}
+                                    data-testid="inputProjectName"
+                                    className="input input-bordered w-full"
+                                    type="text"
+                                    placeholder={t('project.nameplaceholder')}
+                                    onChange={(e) =>
+                                        setProjectName(
+                                            e.target.value.replace(/\s/g, '-'),
+                                        )
                                     }
-                                }}
-                            />
-                            <select
-                                className="select select-bordered w-[300px]"
-                                onChange={(e) => changeRelease(+e.target.value)}
-                            >
-                                {allReleases.map((release, i) => (
-                                    <option
-                                        disabled={
-                                            release.editor_path?.length === 0
+                                    onKeyDown={(event) => {
+                                        if (event.key === ' ') {
+                                            event.currentTarget.value = `${event.currentTarget.value}-`;
+                                            event.preventDefault();
                                         }
-                                        key={`createProjectReleaseOption_${release.version}`}
-                                        value={i}
-                                    >
-                                        {release.editor_path?.length > 0
-                                            ? `${release.version} ${`${release.mono ? `[${t('project.dotNetBadge')}]` : ''}`}`
-                                            : `${release.version} ${t('project.downloading')}`}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="badge py-3 text-sm text-base-content/50">
-                            {projectPath}
+                                    }}
+                                />
+                                <label className="input w-full">
+                                    <input
+                                        className="input input-bordered w-full active:outline-0 outline-0"
+                                        type="text"
+                                        value={projectPath}
+                                        onChange={(e) =>
+                                            setProjectPath(e.target.value)
+                                        }
+                                        disabled={!overwriteProjectPath}
+                                    />
+                                    {overwriteProjectPath && (
+                                        <span
+                                            className="tooltip tooltip-top"
+                                            data-tip={t(
+                                                'project.selectFolderTooltip',
+                                            )}
+                                        >
+                                            <button
+                                                type="button"
+                                                data-testid="btnSelectProjectFolder"
+                                                className="flex items-center"
+                                                disabled={!overwriteProjectPath}
+                                                onClick={
+                                                    handleSelectProjectFolder
+                                                }
+                                            >
+                                                <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary"></Folder>
+                                            </button>
+                                        </span>
+                                    )}
+                                </label>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <select
+                                    className="select select-bordered w-[300px]"
+                                    onChange={(e) =>
+                                        changeRelease(+e.target.value)
+                                    }
+                                >
+                                    {allReleases.map((release, i) => (
+                                        <option
+                                            disabled={
+                                                release.editor_path?.length ===
+                                                0
+                                            }
+                                            key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
+                                            value={i}
+                                        >
+                                            {release.editor_path?.length > 0
+                                                ? `${release.version} ${`${release.mono ? `[${t('project.dotNetBadge')}]` : ''}`}`
+                                                : `${release.version} ${t('project.downloading')}`}
+                                        </option>
+                                    ))}
+                                </select>
+                                <label className="flex h-10 cursor-pointer gap-2 items-center w-[300px]">
+                                    <input
+                                        type="checkbox"
+                                        data-testid="checkboxOverwriteProjectPath"
+                                        className="checkbox"
+                                        checked={overwriteProjectPath}
+                                        onChange={(e) =>
+                                            setOverwriteProjectPath(
+                                                e.target.checked,
+                                            )
+                                        }
+                                    />
+                                    <span className="">
+                                        {t('project.overwritePath')}
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-row justify-between">
