@@ -2,6 +2,7 @@ import { setInterval } from 'node:timers';
 import { app, type BrowserWindow, type WebContents } from 'electron';
 import logger from 'electron-log';
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
+import semver from 'semver';
 import { ipcWebContentsSend } from './utils.js';
 
 let interval: NodeJS.Timeout;
@@ -9,10 +10,66 @@ let interval: NodeJS.Timeout;
 let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
 
+type PrereleaseChannel = 'alpha' | 'beta' | 'rc';
+
+function getComparableVersion(version: string): string | null {
+    const validVersion = semver.valid(version);
+    if (validVersion) {
+        return validVersion;
+    }
+
+    return semver.coerce(version)?.version ?? null;
+}
+
+function getCurrentPrereleaseChannel(
+    appVersion: string,
+): PrereleaseChannel | null {
+    const prerelease = semver.prerelease(appVersion);
+    if (!prerelease || prerelease.length === 0) {
+        return null;
+    }
+
+    const identifier = prerelease[0];
+    if (
+        identifier === 'alpha' ||
+        identifier === 'beta' ||
+        identifier === 'rc'
+    ) {
+        return identifier;
+    }
+
+    return null;
+}
+
+function isNewerVersion(
+    candidateVersion: string,
+    currentVersion: string,
+): boolean {
+    const normalizedCandidateVersion = getComparableVersion(candidateVersion);
+    const normalizedCurrentVersion = getComparableVersion(currentVersion);
+
+    if (!normalizedCandidateVersion || !normalizedCurrentVersion) {
+        logger.warn(
+            `Unable to compare versions. candidate="${candidateVersion}", current="${currentVersion}"`,
+        );
+        return false;
+    }
+
+    return semver.gt(normalizedCandidateVersion, normalizedCurrentVersion);
+}
+
 function applyBetaChannelSettings(enabled: boolean) {
-    logger.info(`Beta releases ${enabled ? 'enabled' : 'disabled'}`);
+    const appVersion = app.getVersion();
+    const prereleaseChannel = getCurrentPrereleaseChannel(appVersion);
+    const channel: PrereleaseChannel | 'latest' = enabled
+        ? (prereleaseChannel ?? 'beta')
+        : 'latest';
+
+    logger.info(
+        `Prerelease updates ${enabled ? 'enabled' : 'disabled'} (appVersion: ${appVersion}, channel: ${channel})`,
+    );
     autoUpdater.allowPrerelease = enabled;
-    autoUpdater.channel = enabled ? 'beta' : 'latest';
+    autoUpdater.channel = channel;
 }
 
 export function setBetaChannel(
@@ -73,16 +130,21 @@ export async function checkForUpdates() {
         logger.error('Error checking for updates', e);
     }
 
-    if (result) {
-        logger.info(`New version available: ${result?.updateInfo.version}`);
-    } else {
-        logger.info('No updates available');
-    }
-
+    const newVersion = result?.updateInfo.version;
+    const currentVersion = autoUpdater.currentVersion.version;
     const hasNewVersion =
         result !== null &&
-        result.updateInfo.version !== autoUpdater.currentVersion.version;
-    const newVersion = result?.updateInfo.version;
+        newVersion !== undefined &&
+        isNewerVersion(newVersion, currentVersion);
+
+    if (hasNewVersion) {
+        logger.info(`New version available: ${newVersion}`);
+    } else {
+        logger.info(
+            `No updates available (current: ${currentVersion}${newVersion ? `, latest: ${newVersion}` : ''})`,
+        );
+    }
+
     ipcWebContentsSend('app-updates', webContents, {
         available: hasNewVersion,
         downloaded: false,
