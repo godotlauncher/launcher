@@ -109,7 +109,7 @@ jobs:
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(PNPM_LOG_LEVEL=error pnpm auto-changelog --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          NOTES=$(PNPM_LOG_LEVEL=error pnpm run changelog --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
           {
             echo "notes<<EOF"
             echo "${NOTES}"
