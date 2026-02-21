@@ -2,7 +2,7 @@
 
 This document is a summary of the key points for anyone interested in contributing to Godot Launcher via bug reports or pull requests.
 
-The Godot Launcher website has a dedicated [contributing section](https://godotlauncher.org/contributing) with more details and is a recommended read!
+The Godot Launcher website has a dedicated [contributing section](https://godotlauncher.org/contribute) with more details and is a recommended read!
 
 ## TOC
 
