@@ -275,8 +275,9 @@ export async function addOrUpdateVSCodeRecommendedExtensions(
     const extensions = {
         recommendations: [
             'geequlim.godot-tools',
-            'mariodebono.godot-4-vscode-theme',
             'eamodio.gitlens',
+            'ryanabx.godot-vscode-theme',
+            'mariodebono.godot-4-vscode-theme',
         ],
     };
 
@@ -312,14 +313,14 @@ export async function addOrUpdateVSCodeRecommendedExtensions(
 }
 
 /**
- * Retrieves the installation path of Visual Studio Code.
+ * Retrieves the installation path of Visual Studio Code or VSCodium.
  *
- * This function checks for the installation path of Visual Studio Code based on the current platform.
+ * This function checks for the installation path of Visual Studio Code or VSCodium based on the current platform.
  * It supports Windows (win32), macOS (darwin), and Linux (linux). If a specific path is provided and exists,
  * it returns that path. Otherwise, it checks the default installation locations for the respective platform.
  *
- * @param path - An optional path to check for the Visual Studio Code installation.
- * @returns A promise that resolves to the installation path of Visual Studio Code if found, or null if not found.
+ * @param path - An optional path to check for the Visual Studio Code or VSCodium installation.
+ * @returns A promise that resolves to the installation path of Visual Studio Code or VSCodium if found, or null if not found.
  */
 export async function getVSCodeInstallPath(
     path?: string,
@@ -338,14 +339,26 @@ export async function getVSCodeInstallPath(
 
     // default locations for vscode for each platform
     const defaultLocations = {
-        darwin: ['/Applications/Visual Studio Code.app'],
+        darwin: [
+            '/Applications/Visual Studio Code.app',
+            '/Applications/VSCodium.app',
+        ],
         win32: [
             'C:\\Program Files\\Microsoft VS Code\\Code.exe',
             'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe',
-            process.env.LOCALAPPDATA +
-                '\\Programs\\Microsoft VS Code\\Code.exe',
+            `${process.env.LOCALAPPDATA}\\Programs\\Microsoft VS Code\\Code.exe`,
+            'C:\\Program Files\\VSCodium\\VSCodium.exe',
+            'C:\\Program Files (x86)\\VSCodium\\VSCodium.exe',
+            `${process.env.LOCALAPPDATA}\\Programs\\VSCodium\\VSCodium.exe`,
         ],
-        linux: ['/usr/share/code/code', '/usr/bin/code', '/snap/bin/code'],
+        linux: [
+            '/usr/share/code/code',
+            '/usr/bin/code',
+            '/snap/bin/code',
+            '/usr/share/codium/codium',
+            '/usr/bin/codium',
+            '/snap/bin/codium',
+        ],
     };
 
     const locations: string[] | undefined = defaultLocations[platform];

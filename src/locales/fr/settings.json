@@ -143,12 +143,12 @@
       "version": "Version :"
     },
     "vscode": {
-      "title": "Visual Studio Code",
+      "title": "Visual Studio Code / VSCodium",
       "description": "Un éditeur de code rapide et extensible avec support GDScript et .NET pour Godot.",
-      "notDetectedTitle": "Visual Studio Code non détecté !",
-      "notDetectedMessage": "Godot Launcher ne peut détecter automatiquement VS Code que s'il a été installé dans le PATH. Vous pouvez à la place spécifier le chemin vers l'exécutable VS Code ci-dessous",
-      "pathLabel": "Chemin de l'exécutable Visual Studio Code",
-      "selectExecutable": "Sélectionner l'exécutable Visual Studio Code",
+      "notDetectedTitle": "Visual Studio Code ou VSCodium non détecté !",
+      "notDetectedMessage": "Godot Launcher ne peut détecter automatiquement Visual Studio Code ou VSCodium que s'ils ont été installés dans le PATH. Vous pouvez à la place spécifier le chemin vers l'exécutable Visual Studio Code ou VSCodium ci-dessous",
+      "pathLabel": "Chemin de l'exécutable Visual Studio Code ou VSCodium",
+      "selectExecutable": "Sélectionner l'exécutable Visual Studio Code ou VSCodium",
       "autodetected": "(détecté automatiquement)",
       "noPathSet": "aucun chemin défini",
       "clearCustomPath": "Effacer le chemin personnalisé",

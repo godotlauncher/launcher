@@ -21,7 +21,7 @@
     "actions": "Actions",
     "invalidProject": "Ce projet est invalide, vérifiez les emplacements du projet et de l'éditeur !",
     "dotNetProject": "Ceci est un projet .Net",
-    "vsCodeProject": "Visual Studio Code est activé comme éditeur externe pour ce projet",
+    "vsCodeProject": "Visual Studio Code ou VSCodium est activé comme éditeur externe pour ce projet",
     "prerelease": "Utilise une version préliminaire de l'éditeur Godot",
     "windowedMode": "Ce projet s'ouvre en mode fenêtré",
     "invalidRelease": "Éditeur indisponible",
@@ -73,7 +73,7 @@
   "toggleVSCode": {
     "errors": {
       "projectNotFound": "Projet introuvable",
-      "vscodeNotInstalled": "Visual Studio Code n'est pas installé sur cet ordinateur.",
+      "vscodeNotInstalled": "Visual Studio Code ou VSCodium ne sont pas installés sur cet ordinateur.",
       "missingLaunchPath": "Le chemin de lancement Godot pour ce projet est manquant.",
       "invalidProjectDefinition": "Impossible de déterminer le modèle de paramètres de l'éditeur pour cette version de Godot."
     }
@@ -85,8 +85,8 @@
     "selectVersion": "Sélectionner la version de Godot",
     "renderer": "Moteur de rendu",
     "editNow": "Modifier maintenant",
-    "setupVSCode": "Configurer Visual Studio Code comme éditeur de texte",
-    "vscodeNotInstalled": "Visual Studio Code n'est pas installé sur cet ordinateur",
+    "setupVSCode": "Configurer Visual Studio Code ou VSCodium comme éditeur de texte",
+    "vscodeNotInstalled": "Visual Studio Code ou VSCodium ne sont pas installés sur cet ordinateur",
     "noVersionsInstalled": "Aucune version de Godot installée",
     "errors": {
       "nameRequired": "Le nom du projet est requis",
