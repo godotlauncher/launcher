@@ -10,7 +10,9 @@
     "nameRequired": "Se requiere el nombre del proyecto",
     "overwritePath": "Sobrescribir ruta del proyecto",
     "selectFolderDialogTitle": "Seleccionar carpeta del proyecto",
-    "selectFolderTooltip": "Abrir un diálogo para seleccionar la carpeta del proyecto"
+    "selectFolderTooltip": "Abrir un diálogo para seleccionar la carpeta del proyecto",
+    "useDefaultPath": "Usar ruta predeterminada",
+    "overwritePathRequired": "La ruta es obligatoria cuando está activada la opción de sobrescribir la ruta del proyecto."
   },
   "renderer": {
     "title": "Motor de renderizado",

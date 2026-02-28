@@ -10,7 +10,9 @@
     "nameRequired": "Nazwa projektu jest wymagana",
     "overwritePath": "Nadpisz ścieżkę projektu",
     "selectFolderDialogTitle": "Wybierz folder projektu",
-    "selectFolderTooltip": "Otwórz okno dialogowe, aby wybrać folder projektu"
+    "selectFolderTooltip": "Otwórz okno dialogowe, aby wybrać folder projektu",
+    "useDefaultPath": "Użyj domyślnej ścieżki",
+    "overwritePathRequired": "Ścieżka jest wymagana, gdy włączone jest nadpisywanie ścieżki projektu."
   },
   "renderer": {
     "title": "Renderer",

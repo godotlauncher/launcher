@@ -10,7 +10,9 @@
     "nameRequired": "Proje adı gerekli",
     "overwritePath": "Proje yolunun üzerine yaz",
     "selectFolderDialogTitle": "Proje klasörünü seç",
-    "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç"
+    "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç",
+    "useDefaultPath": "Varsayılan yolu kullan",
+    "overwritePathRequired": "Proje yolu üzerine yazma etkinleştirildiğinde yol zorunludur."
   },
   "renderer": {
     "title": "İşleyici",

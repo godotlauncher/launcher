@@ -10,7 +10,9 @@
     "nameRequired": "O nome do projeto é obrigatório",
     "overwritePath": "Substituir caminho do projeto",
     "selectFolderDialogTitle": "Selecionar pasta do projeto",
-    "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto"
+    "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto",
+    "useDefaultPath": "Usar caminho predefinido",
+    "overwritePathRequired": "O caminho é obrigatório quando a opção de substituir o caminho do projeto está ativa."
   },
   "renderer": {
     "title": "Motor de renderização",

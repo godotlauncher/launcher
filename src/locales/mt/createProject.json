@@ -10,7 +10,9 @@
     "nameRequired": "Isem tal-proġett huwa meħtieġ",
     "overwritePath": "Ikteb fuq il-mogħdija tal-proġett",
     "selectFolderDialogTitle": "Agħżel il-folder tal-proġett",
-    "selectFolderTooltip": "Iftaħ djalogu biex tagħżel il-folder tal-proġett"
+    "selectFolderTooltip": "Iftaħ djalogu biex tagħżel il-folder tal-proġett",
+    "useDefaultPath": "Uża l-mogħdija awtomatika",
+    "overwritePathRequired": "Il-mogħdija hija meħtieġa meta tkun attivata l-għażla li tissostitwixxi l-mogħdija tal-proġett."
   },
   "renderer": {
     "title": "Renderer",

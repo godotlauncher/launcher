@@ -10,7 +10,9 @@
     "nameRequired": "Il nome del progetto è obbligatorio",
     "overwritePath": "Sovrascrivi percorso progetto",
     "selectFolderDialogTitle": "Seleziona cartella progetto",
-    "selectFolderTooltip": "Apri una finestra di dialogo per selezionare la cartella del progetto"
+    "selectFolderTooltip": "Apri una finestra di dialogo per selezionare la cartella del progetto",
+    "useDefaultPath": "Usa percorso predefinito",
+    "overwritePathRequired": "Il percorso è obbligatorio quando è attiva l'opzione di sovrascrittura del percorso del progetto."
   },
   "renderer": {
     "title": "Renderer",
