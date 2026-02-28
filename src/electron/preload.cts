@@ -52,8 +52,6 @@ electron.contextBridge.exposeInMainWorld("electron", {
         ipcInvoke("show-release-menu", release),
 
     openExternal: (url: string) => ipcInvoke("open-external", url),
-    promotionClicked: (payload: PromotionClickPayload) =>
-        ipcInvoke("promotion-clicked", payload),
 
     // ##### file utils #####
     getPathForFile: (file: File) => electron.webUtils.getPathForFile(file),

@@ -19,6 +19,3 @@ export const GODOT_DOCS_URL = 'https://docs.godotengine.org';
 // COMMUNITY
 export const COMMUNITY_PAGE_URL = 'https://godotlauncher.org/community';
 export const COMMUNITY_DISCORD_URL = 'https://discord.gg/Ju9jkFJGvz';
-
-// PROMOTIONS
-export const PROMOTION_MANIFEST_URL = 'https://placeholder.invalid/promo.json';
