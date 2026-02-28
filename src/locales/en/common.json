@@ -19,6 +19,13 @@
   "success": "Success",
   "warning": "Warning",
   "info": "Information",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Path must be a non-empty string.",
+      "pathMustBeAbsolute": "Path must be absolute.",
+      "targetNotDirectory": "Target path exists but is not a directory."
+    }
+  },
   "app": {
     "loadingMessage": "Getting things ready...",
     "navigation": {

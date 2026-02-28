@@ -19,6 +19,13 @@
   "success": "Успешно",
   "warning": "Предупреждение",
   "info": "Информация",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Путь должен быть непустой строкой.",
+      "pathMustBeAbsolute": "Путь должен быть абсолютным.",
+      "targetNotDirectory": "Целевой путь уже существует, но не является папкой."
+    }
+  },
   "app": {
     "loadingMessage": "Подготовка...",
     "navigation": {

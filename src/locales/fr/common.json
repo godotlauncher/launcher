@@ -19,6 +19,13 @@
   "success": "Succès",
   "warning": "Avertissement",
   "info": "Information",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Le chemin doit être une chaîne non vide.",
+      "pathMustBeAbsolute": "Le chemin doit être absolu.",
+      "targetNotDirectory": "Le chemin cible existe déjà, mais ce n'est pas un dossier."
+    }
+  },
   "app": {
     "loadingMessage": "Préparation en cours...",
     "navigation": {

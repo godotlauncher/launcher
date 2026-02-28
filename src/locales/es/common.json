@@ -19,6 +19,13 @@
   "success": "Éxito",
   "warning": "Advertencia",
   "info": "Información",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "La ruta debe ser una cadena no vacía.",
+      "pathMustBeAbsolute": "La ruta debe ser absoluta.",
+      "targetNotDirectory": "La ruta de destino ya existe, pero no es una carpeta."
+    }
+  },
   "app": {
     "loadingMessage": "Preparando todo...",
     "navigation": {

@@ -19,6 +19,13 @@
   "success": "Erfolg",
   "warning": "Warnung",
   "info": "Information",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Der Pfad muss eine nicht-leere Zeichenfolge sein.",
+      "pathMustBeAbsolute": "Der Pfad muss absolut sein.",
+      "targetNotDirectory": "Der Zielpfad existiert bereits, ist aber kein Ordner."
+    }
+  },
   "app": {
     "loadingMessage": "Bereite alles vor...",
     "navigation": {

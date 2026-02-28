@@ -10,7 +10,9 @@
     "nameRequired": "Project name is required",
     "overwritePath": "Overwrite Project Path",
     "selectFolderDialogTitle": "Select Project Folder",
-    "selectFolderTooltip": "Open a dialog to select the project folder"
+    "selectFolderTooltip": "Open a dialog to select the project folder",
+    "useDefaultPath": "Use default path",
+    "overwritePathRequired": "Path is required when overwrite path is enabled."
   },
   "renderer": {
     "title": "Renderer",

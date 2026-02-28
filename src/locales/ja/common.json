@@ -19,6 +19,13 @@
   "success": "成功",
   "warning": "警告",
   "info": "情報",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "パスには空ではない文字列を指定してください。",
+      "pathMustBeAbsolute": "パスは絶対パスである必要があります。",
+      "targetNotDirectory": "指定したパスは存在しますが、フォルダーではありません。"
+    }
+  },
   "app": {
     "loadingMessage": "準備中...",
     "navigation": {
