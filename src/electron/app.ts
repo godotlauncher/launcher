@@ -9,7 +9,11 @@ import {
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { addProject } from './commands/addProject.js';
 import { createProject } from './commands/createProject.js';
-import { fileExists, pathExists } from './commands/fileSystem.js';
+import {
+    ensureDirectory,
+    fileExists,
+    pathExists,
+} from './commands/fileSystem.js';
 import { getInstalledTools } from './commands/installedTools.js';
 import { installRelease } from './commands/installRelease.js';
 import { showProjectMenu, showReleaseMenu } from './commands/menuCommands.js';
@@ -263,6 +267,11 @@ export function registerHandlers() {
     ipcMainHandler(
         'file-exists',
         async (_, pathToCheck: string) => await fileExists(pathToCheck),
+    );
+
+    ipcMainHandler(
+        'ensure-directory',
+        async (_, pathToCheck: string) => await ensureDirectory(pathToCheck),
     );
 
     ipcMainHandler('show-project-menu', (_, project: ProjectDetails) =>

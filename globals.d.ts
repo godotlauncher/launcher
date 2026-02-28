@@ -185,6 +185,7 @@ type EventChannelMapping = {
     'shell-open-folder': Promise<void>;
     'path-exists': Promise<boolean>;
     'file-exists': Promise<boolean>;
+    'ensure-directory': Promise<boolean>;
 
     'show-project-menu': Promise<void>;
     'show-release-menu': Promise<void>;
@@ -271,6 +272,7 @@ interface Window {
         getPathForFile: (file: File) => string;
         pathExists: (pathToCheck: string) => Promise<boolean>;
         fileExists: (pathToCheck: string) => Promise<boolean>;
+        ensureDirectory: (pathToCheck: string) => Promise<boolean>;
 
         // ##### releases #####
 

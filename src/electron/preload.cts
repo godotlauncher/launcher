@@ -59,6 +59,8 @@ electron.contextBridge.exposeInMainWorld("electron", {
     getPathForFile: (file: File) => electron.webUtils.getPathForFile(file),
     pathExists: (pathToCheck: string) => ipcInvoke("path-exists", pathToCheck),
     fileExists: (pathToCheck: string) => ipcInvoke("file-exists", pathToCheck),
+    ensureDirectory: (pathToCheck: string) =>
+        ipcInvoke("ensure-directory", pathToCheck),
 
     // ##### projects #####
 

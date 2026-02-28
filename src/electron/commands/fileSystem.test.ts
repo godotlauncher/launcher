@@ -1,32 +1,37 @@
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fileExists, pathExists } from './fileSystem.js';
+import { ensureDirectory, fileExists, pathExists } from './fileSystem.js';
 
 const fsMocks = vi.hoisted(() => ({
     lstat: vi.fn(),
     stat: vi.fn(),
+    mkdir: vi.fn(),
 }));
 
 vi.mock('node:fs', () => ({
     promises: {
         lstat: fsMocks.lstat,
         stat: fsMocks.stat,
+        mkdir: fsMocks.mkdir,
     },
     default: {
         promises: {
             lstat: fsMocks.lstat,
             stat: fsMocks.stat,
+            mkdir: fsMocks.mkdir,
         },
     },
 }));
 
-const { lstat, stat } = fsMocks;
+const { lstat, stat, mkdir } = fsMocks;
 
 const absoluteDirectoryPath = path.resolve('tmp', 'existing-directory');
 const absoluteFilePath = path.resolve('tmp', 'existing-file.txt');
 const missingPath = path.resolve('tmp', 'missing');
 const invalidNestedPath = path.resolve('tmp', 'existing-file.txt', 'nested');
 const relativePath = 'relative/path';
+const ensureDirectoryConflictError =
+    'ensureDirectory target exists and is not a directory';
 
 describe('fileSystem command', () => {
     beforeEach(() => {
@@ -127,5 +132,108 @@ describe('fileSystem command', () => {
         stat.mockRejectedValue(accessError);
 
         await expect(fileExists(absoluteFilePath)).rejects.toBe(accessError);
+    });
+
+    it('ensureDirectory returns true for an existing absolute directory', async () => {
+        stat.mockResolvedValue({
+            isDirectory: () => true,
+        });
+
+        await expect(ensureDirectory(absoluteDirectoryPath)).resolves.toBe(
+            true,
+        );
+    });
+
+    it('ensureDirectory creates missing absolute directory and returns true', async () => {
+        const missingError = Object.assign(new Error('missing path'), {
+            code: 'ENOENT',
+        });
+
+        stat.mockRejectedValueOnce(missingError);
+        mkdir.mockResolvedValue(undefined);
+
+        await expect(ensureDirectory(missingPath)).resolves.toBe(true);
+        expect(mkdir).toHaveBeenCalledWith(missingPath, { recursive: true });
+    });
+
+    it('ensureDirectory throws for a relative path input', async () => {
+        await expect(ensureDirectory(relativePath)).rejects.toThrow(
+            'ensureDirectory requires an absolute path',
+        );
+    });
+
+    it('ensureDirectory throws for an empty path input', async () => {
+        await expect(ensureDirectory('')).rejects.toThrow(
+            'ensureDirectory requires a non-empty string path',
+        );
+    });
+
+    it('ensureDirectory throws when target exists as a file', async () => {
+        stat.mockResolvedValue({
+            isDirectory: () => false,
+        });
+
+        await expect(ensureDirectory(absoluteFilePath)).rejects.toThrow(
+            ensureDirectoryConflictError,
+        );
+    });
+
+    it('ensureDirectory rethrows unexpected stat errors', async () => {
+        const accessError = Object.assign(new Error('permission denied'), {
+            code: 'EACCES',
+        });
+        stat.mockRejectedValue(accessError);
+
+        await expect(ensureDirectory(absoluteDirectoryPath)).rejects.toBe(
+            accessError,
+        );
+    });
+
+    it('ensureDirectory rethrows unexpected mkdir errors', async () => {
+        const missingError = Object.assign(new Error('missing path'), {
+            code: 'ENOENT',
+        });
+        const accessError = Object.assign(new Error('permission denied'), {
+            code: 'EACCES',
+        });
+
+        stat.mockRejectedValueOnce(missingError);
+        mkdir.mockRejectedValueOnce(accessError);
+
+        await expect(ensureDirectory(missingPath)).rejects.toBe(accessError);
+    });
+
+    it('ensureDirectory handles EEXIST race by rechecking directory', async () => {
+        const missingError = Object.assign(new Error('missing path'), {
+            code: 'ENOENT',
+        });
+        const alreadyExistsError = Object.assign(new Error('already exists'), {
+            code: 'EEXIST',
+        });
+
+        stat.mockRejectedValueOnce(missingError).mockResolvedValueOnce({
+            isDirectory: () => true,
+        });
+        mkdir.mockRejectedValueOnce(alreadyExistsError);
+
+        await expect(ensureDirectory(missingPath)).resolves.toBe(true);
+    });
+
+    it('ensureDirectory throws conflict when EEXIST recheck is not a directory', async () => {
+        const missingError = Object.assign(new Error('missing path'), {
+            code: 'ENOENT',
+        });
+        const alreadyExistsError = Object.assign(new Error('already exists'), {
+            code: 'EEXIST',
+        });
+
+        stat.mockRejectedValueOnce(missingError).mockResolvedValueOnce({
+            isDirectory: () => false,
+        });
+        mkdir.mockRejectedValueOnce(alreadyExistsError);
+
+        await expect(ensureDirectory(missingPath)).rejects.toThrow(
+            ensureDirectoryConflictError,
+        );
     });
 });
