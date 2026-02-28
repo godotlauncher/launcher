@@ -2,10 +2,31 @@ import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ensureDirectory, fileExists, pathExists } from './fileSystem.js';
 
+const translatedErrors = {
+    pathRequired: 'Path must be a non-empty string.',
+    pathMustBeAbsolute: 'Path must be absolute.',
+    targetNotDirectory: 'Target path exists but is not a directory.',
+} as const;
+
 const fsMocks = vi.hoisted(() => ({
     lstat: vi.fn(),
     stat: vi.fn(),
     mkdir: vi.fn(),
+}));
+
+const i18nMocks = vi.hoisted(() => ({
+    t: vi.fn((key: string) => {
+        switch (key) {
+            case 'common:filesystem.errors.pathRequired':
+                return 'Path must be a non-empty string.';
+            case 'common:filesystem.errors.pathMustBeAbsolute':
+                return 'Path must be absolute.';
+            case 'common:filesystem.errors.targetNotDirectory':
+                return 'Target path exists but is not a directory.';
+            default:
+                return key;
+        }
+    }),
 }));
 
 vi.mock('node:fs', () => ({
@@ -23,6 +44,10 @@ vi.mock('node:fs', () => ({
     },
 }));
 
+vi.mock('../i18n/index.js', () => ({
+    t: i18nMocks.t,
+}));
+
 const { lstat, stat, mkdir } = fsMocks;
 
 const absoluteDirectoryPath = path.resolve('tmp', 'existing-directory');
@@ -30,8 +55,7 @@ const absoluteFilePath = path.resolve('tmp', 'existing-file.txt');
 const missingPath = path.resolve('tmp', 'missing');
 const invalidNestedPath = path.resolve('tmp', 'existing-file.txt', 'nested');
 const relativePath = 'relative/path';
-const ensureDirectoryConflictError =
-    'ensureDirectory target exists and is not a directory';
+const ensureDirectoryConflictError = translatedErrors.targetNotDirectory;
 
 describe('fileSystem command', () => {
     beforeEach(() => {
@@ -70,7 +94,7 @@ describe('fileSystem command', () => {
 
     it('pathExists throws for a relative path input', async () => {
         await expect(pathExists(relativePath)).rejects.toThrow(
-            'pathExists requires an absolute path',
+            translatedErrors.pathMustBeAbsolute,
         );
     });
 
@@ -121,7 +145,7 @@ describe('fileSystem command', () => {
 
     it('fileExists throws for a relative path input', async () => {
         await expect(fileExists(relativePath)).rejects.toThrow(
-            'fileExists requires an absolute path',
+            translatedErrors.pathMustBeAbsolute,
         );
     });
 
@@ -158,13 +182,13 @@ describe('fileSystem command', () => {
 
     it('ensureDirectory throws for a relative path input', async () => {
         await expect(ensureDirectory(relativePath)).rejects.toThrow(
-            'ensureDirectory requires an absolute path',
+            translatedErrors.pathMustBeAbsolute,
         );
     });
 
     it('ensureDirectory throws for an empty path input', async () => {
         await expect(ensureDirectory('')).rejects.toThrow(
-            'ensureDirectory requires a non-empty string path',
+            translatedErrors.pathRequired,
         );
     });
 

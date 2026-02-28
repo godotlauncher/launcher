@@ -1,16 +1,20 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { t } from '../i18n/index.js';
 
-function resolveAbsolutePath(
-    methodName: 'pathExists' | 'fileExists' | 'ensureDirectory',
-    pathToCheck: string,
-): string {
+const FILESYSTEM_ERROR_KEYS = {
+    pathRequired: 'common:filesystem.errors.pathRequired',
+    pathMustBeAbsolute: 'common:filesystem.errors.pathMustBeAbsolute',
+    targetNotDirectory: 'common:filesystem.errors.targetNotDirectory',
+} as const;
+
+function resolveAbsolutePath(pathToCheck: string): string {
     if (typeof pathToCheck !== 'string' || pathToCheck.trim().length === 0) {
-        throw new Error(`${methodName} requires a non-empty string path`);
+        throw new Error(t(FILESYSTEM_ERROR_KEYS.pathRequired));
     }
 
     if (!path.isAbsolute(pathToCheck)) {
-        throw new Error(`${methodName} requires an absolute path`);
+        throw new Error(t(FILESYSTEM_ERROR_KEYS.pathMustBeAbsolute));
     }
 
     return path.resolve(pathToCheck);
@@ -26,11 +30,8 @@ function isAlreadyExistsError(error: unknown): boolean {
     return errorCode === 'EEXIST';
 }
 
-const ENSURE_DIRECTORY_CONFLICT_ERROR =
-    'ensureDirectory target exists and is not a directory';
-
 export async function pathExists(pathToCheck: string): Promise<boolean> {
-    const absolutePath = resolveAbsolutePath('pathExists', pathToCheck);
+    const absolutePath = resolveAbsolutePath(pathToCheck);
 
     try {
         await fs.promises.lstat(absolutePath);
@@ -44,7 +45,7 @@ export async function pathExists(pathToCheck: string): Promise<boolean> {
 }
 
 export async function fileExists(pathToCheck: string): Promise<boolean> {
-    const absolutePath = resolveAbsolutePath('fileExists', pathToCheck);
+    const absolutePath = resolveAbsolutePath(pathToCheck);
 
     try {
         const stats = await fs.promises.stat(absolutePath);
@@ -58,12 +59,12 @@ export async function fileExists(pathToCheck: string): Promise<boolean> {
 }
 
 export async function ensureDirectory(pathToCheck: string): Promise<boolean> {
-    const absolutePath = resolveAbsolutePath('ensureDirectory', pathToCheck);
+    const absolutePath = resolveAbsolutePath(pathToCheck);
 
     try {
         const stats = await fs.promises.stat(absolutePath);
         if (!stats.isDirectory()) {
-            throw new Error(ENSURE_DIRECTORY_CONFLICT_ERROR);
+            throw new Error(t(FILESYSTEM_ERROR_KEYS.targetNotDirectory));
         }
         return true;
     } catch (error) {
@@ -83,7 +84,7 @@ export async function ensureDirectory(pathToCheck: string): Promise<boolean> {
 
     const stats = await fs.promises.stat(absolutePath);
     if (!stats.isDirectory()) {
-        throw new Error(ENSURE_DIRECTORY_CONFLICT_ERROR);
+        throw new Error(t(FILESYSTEM_ERROR_KEYS.targetNotDirectory));
     }
 
     return true;
