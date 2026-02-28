@@ -10,7 +10,9 @@
     "nameRequired": "Projektname ist erforderlich",
     "overwritePath": "Überschreibe Projektpfad",
     "selectFolderDialogTitle": "Projektordner auswählen",
-    "selectFolderTooltip": "Öffne einen Dialog zum Auswählen des Projektordners"
+    "selectFolderTooltip": "Öffne einen Dialog zum Auswählen des Projektordners",
+    "useDefaultPath": "Standardpfad verwenden",
+    "overwritePathRequired": "Wenn „Projektpfad überschreiben“ aktiviert ist, muss ein Pfad angegeben werden."
   },
   "renderer": {
     "title": "Renderer",

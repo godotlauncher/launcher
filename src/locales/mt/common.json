@@ -19,6 +19,13 @@
   "success": "Suċċess",
   "warning": "Twissija",
   "info": "Informazzjoni",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Il-perkors irid ikun stringa mhux vojta.",
+      "pathMustBeAbsolute": "Il-perkors irid ikun assolut.",
+      "targetNotDirectory": "Il-perkors fil-mira jeżisti diġà, iżda mhuwiex direttorju."
+    }
+  },
   "app": {
     "loadingMessage": "Qed nippreparaw kollox...",
     "navigation": {

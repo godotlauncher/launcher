@@ -10,7 +10,9 @@
     "nameRequired": "Требуется название проекта",
     "overwritePath": "Перезаписать путь проекта",
     "selectFolderDialogTitle": "Выбрать папку проекта",
-    "selectFolderTooltip": "Открыть диалог для выбора папки проекта"
+    "selectFolderTooltip": "Открыть диалог для выбора папки проекта",
+    "useDefaultPath": "Использовать путь по умолчанию",
+    "overwritePathRequired": "Путь обязателен, когда включено переопределение пути проекта."
   },
   "renderer": {
     "title": "Рендерер",

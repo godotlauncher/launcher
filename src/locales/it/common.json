@@ -19,6 +19,13 @@
   "success": "Successo",
   "warning": "Avviso",
   "info": "Informazioni",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Il percorso deve essere una stringa non vuota.",
+      "pathMustBeAbsolute": "Il percorso deve essere assoluto.",
+      "targetNotDirectory": "Il percorso di destinazione esiste già ma non è una cartella."
+    }
+  },
   "app": {
     "loadingMessage": "Prepariamo tutto...",
     "navigation": {

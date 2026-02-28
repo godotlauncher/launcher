@@ -19,6 +19,13 @@
   "success": "Başarılı",
   "warning": "Uyarı",
   "info": "Bilgi",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Yol boş olmayan bir metin olmalıdır.",
+      "pathMustBeAbsolute": "Yol mutlak olmalıdır.",
+      "targetNotDirectory": "Hedef yol zaten mevcut, ancak bir klasör değil."
+    }
+  },
   "app": {
     "loadingMessage": "Her şey hazırlanıyor...",
     "navigation": {

@@ -19,6 +19,13 @@
   "success": "成功",
   "warning": "警告",
   "info": "資訊",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "路徑必須是非空字串。",
+      "pathMustBeAbsolute": "路徑必須是絕對路徑。",
+      "targetNotDirectory": "目標路徑已存在，但不是資料夾。"
+    }
+  },
   "app": {
     "loadingMessage": "正在準備中…",
     "navigation": {

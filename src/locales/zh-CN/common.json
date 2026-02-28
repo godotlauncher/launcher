@@ -19,6 +19,13 @@
   "success": "成功",
   "warning": "警告",
   "info": "信息",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "路径必须是非空字符串。",
+      "pathMustBeAbsolute": "路径必须为绝对路径。",
+      "targetNotDirectory": "目标路径已存在，但不是文件夹。"
+    }
+  },
   "app": {
     "loadingMessage": "准备中...",
     "navigation": {
