@@ -1,6 +1,5 @@
 import * as fs from 'node:fs';
 import { app, shell } from 'electron';
-import logger from 'electron-log/main.js';
 import {
     checkForUpdates,
     installUpdateAndRestart,
@@ -309,12 +308,6 @@ export function registerHandlers() {
     });
 
     ipcMainHandler('check-updates', async () => checkForUpdates());
-    ipcMainHandler(
-        'promotion-clicked',
-        async (_, payload: PromotionClickPayload) => {
-            logger.info('[promotion] click', payload?.id ?? 'unknown');
-        },
-    );
 
     ipcMainHandler('get-platform', async () => {
         if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
