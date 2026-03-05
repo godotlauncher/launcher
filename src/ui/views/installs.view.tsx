@@ -246,9 +246,9 @@ export const InstallsView: React.FC = () => {
                             </thead>
 
                             <tbody className="overflow-y-auto">
-                                {getFilteredRows().map((row, index) => (
+                                {getFilteredRows().map((row) => (
                                     <tr
-                                        key={`installedReleaseRow_${row.version}_${index}`}
+                                        key={`installedReleaseRow_${row.version}_${row.mono ? 'mono' : 'standard'}`}
                                         className="even:bg-base-100 hover:bg-base-content/10"
                                     >
                                         <td>
