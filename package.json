@@ -55,11 +55,14 @@
     },
     "dependencies": {
         "clsx": "^2.1.1",
+        "core-util-is": "^1.0.3",
         "decompress": "^4.2.1",
         "electron-log": "^5.4.3",
         "electron-updater": "^6.8.3",
+        "inherits": "^2.0.4",
         "i18next": "^25.8.14",
         "i18next-fs-backend": "^2.6.1",
+        "process-nextick-args": "^2.0.1",
         "javascript-time-ago": "^2.6.4",
         "lucide-react": "^0.577.0",
         "mustache": "^4.2.0",
@@ -67,6 +70,8 @@
         "react-dom": "^19.2.4",
         "react-i18next": "^16.5.4",
         "semver": "^7.7.4",
+        "string_decoder": "^1.1.1",
+        "util-deprecate": "^1.0.2",
         "which": "^6.0.1"
     },
     "devDependencies": {
