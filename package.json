@@ -40,7 +40,7 @@
         "format": "biome format --write",
         "preview": "vite preview",
         "build:sources": "pnpm run build && pnpm run transpile:electron",
-        "dist:mac": "pnpm run build:sources && electron-builder --config electron-builder-config.ts --mac --publish never",
+        "dist:mac": "pnpm run build:sources && electron-builder --config electron-builder-config.ts --mac",
         "dist:linux": "pnpm run build:sources && electron-builder --config electron-builder-config.ts --linux",
         "dist:win": "pnpm run build:sources && electron-builder --config electron-builder-config.ts --win ",
         "dist:win:publish": "pnpm run build:sources && electron-builder --config electron-builder-config.ts --win --publish always",
