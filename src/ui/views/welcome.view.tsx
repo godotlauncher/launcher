@@ -276,7 +276,7 @@ export const WelcomeView: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setStepIndex(index)}
-                                key={`welcomeStepButton_${step.title}_${index}`}
+                                key={`welcomeStepButton_${step.title}`}
                                 className={clsx('step cursor-pointer', {
                                     'step-primary': stepIndex >= index,
                                 })}

@@ -521,9 +521,9 @@ export const ProjectsView: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="overflow-y-auto">
-                                {getFilteredRows().map((row, index) => (
+                                {getFilteredRows().map((row) => (
                                     <tr
-                                        key={`projectRow_${row.path}_${index}`}
+                                        key={`projectRow_${row.path}`}
                                         className="relative hover:bg-base-content/5"
                                     >
                                         <td className="p-2 flex flex-col gap-1">
