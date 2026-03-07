@@ -274,7 +274,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     },
 ];
 
-const SAMPLE_INSTALLED_RELEASES = [
+const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
     {
         version: '4.4.1-stable',
         version_number: 4.4,
@@ -305,7 +305,7 @@ const SAMPLE_INSTALLED_RELEASES = [
     },
 ];
 
-const SAMPLE_PROJECTS = [
+const SAMPLE_PROJECTS: ProjectDetails[] = [
     {
         name: 'My-Awesome-Game',
         path: '/Users/docs/Godot/Projects/my-awesome-game',
@@ -358,7 +358,7 @@ const SAMPLE_AVAILABLE_RELEASES: ReleaseSummary[] =
 const SAMPLE_AVAILABLE_PRERELEASES: ReleaseSummary[] =
     SAMPLE_PRERELEASE_CACHE_FILE.releases;
 
-const SAMPLE_PREFS = {
+const SAMPLE_PREFS: UserPreferences = {
     prefs_version: 3,
     install_location: '/Users/docs/Godot/Editors',
     config_location: '/Users/docs/.gd-launcher',
@@ -474,10 +474,16 @@ async function hideProjectsDropOverlay(page: ElectronPage) {
 
 async function applyTheme(page: ElectronPage, theme: ThemeConfig) {
     await page.emulateMedia({ colorScheme: theme.colorScheme });
+    await expect(page.getByTestId('btnSettings')).toBeVisible({
+        timeout: 15000,
+    });
     await page.getByTestId('btnSettings').click();
     await page.getByTestId('tabAppearance').click();
     await page.getByTestId(theme.toggleTestId).check();
     await page.waitForTimeout(400);
+    await expect(page.getByTestId('btnProjects')).toBeVisible({
+        timeout: 15000,
+    });
     await page.getByTestId('btnProjects').click();
 }
 
@@ -608,6 +614,68 @@ async function stubAppData(
     );
 }
 
+async function prepareAppWithStubbedData(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+) {
+    await stubAppData(
+        electronApp,
+        SAMPLE_PREFS,
+        SAMPLE_PROJECTS,
+        SAMPLE_INSTALLED_RELEASES,
+        SAMPLE_AVAILABLE_RELEASES,
+        SAMPLE_AVAILABLE_PRERELEASES,
+    );
+    await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+    await page.reload();
+    await waitForPreloadScript(page);
+    await page.setViewportSize({ width: 1024, height: 600 });
+}
+
+async function ensureMainNavigationReady(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+) {
+    const btnProjects = page.getByTestId('btnProjects');
+    const btnInstalls = page.getByTestId('btnInstalls');
+    const btnSettings = page.getByTestId('btnSettings');
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        await prepareAppWithStubbedData(page, electronApp);
+        try {
+            await expect(btnProjects).toBeVisible({ timeout: 15000 });
+            await expect(btnInstalls).toBeVisible({ timeout: 15000 });
+            await expect(btnSettings).toBeVisible({ timeout: 15000 });
+            return;
+        } catch {
+            if (attempt === 3) {
+                const diagnostics = await page.evaluate(() => {
+                    const testIds = Array.from(
+                        document.querySelectorAll('[data-testid]'),
+                    )
+                        .map((el) => el.getAttribute('data-testid'))
+                        .filter((value): value is string => Boolean(value));
+
+                    return {
+                        title: document.title,
+                        testIds: testIds.slice(0, 25),
+                        bodyText: document.body?.innerText
+                            ?.replace(/\s+/g, ' ')
+                            .trim()
+                            .slice(0, 250),
+                    };
+                });
+
+                throw new Error(
+                    `Main navigation did not render after retrying app bootstrap. Diagnostics: ${JSON.stringify(
+                        diagnostics,
+                    )}`,
+                );
+            }
+        }
+    }
+}
+
 test('captures documentation screenshots for each main view', async ({}, testInfo) => {
     testInfo.setTimeout(240000);
     const fixtureHome = await createFixtureHome();
@@ -619,8 +687,14 @@ test('captures documentation screenshots for each main view', async ({}, testInf
     );
     const existingNodeOptions = process.env.NODE_OPTIONS?.trim();
     const requireOverrideOption = `--require "${overrideHomeScript}"`;
-    const launchEnv: NodeJS.ProcessEnv = {
-        ...process.env,
+    const baseEnv = Object.fromEntries(
+        Object.entries(process.env).filter(
+            (entry): entry is [string, string] =>
+                typeof entry[1] === 'string',
+        ),
+    );
+    const launchEnv: Record<string, string> = {
+        ...baseEnv,
         NODE_ENV: 'development',
         APPDATA: path.join(fixtureHome, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(fixtureHome, 'AppData', 'Local'),
@@ -640,18 +714,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
     try {
         const mainPage = await electronApp.firstWindow();
         await waitForPreloadScript(mainPage);
-        await stubAppData(
-            electronApp,
-            SAMPLE_PREFS,
-            SAMPLE_PROJECTS,
-            SAMPLE_INSTALLED_RELEASES,
-            SAMPLE_AVAILABLE_RELEASES,
-            SAMPLE_AVAILABLE_PRERELEASES,
-        );
-        await stubInstalledTools(electronApp, DEFAULT_TOOLS);
-        await mainPage.reload();
-        await waitForPreloadScript(mainPage);
-        await mainPage.setViewportSize({ width: 1024, height: 600 });
+        await ensureMainNavigationReady(mainPage, electronApp);
         await mainPage.getByTestId('btnProjects').click();
         await expect(
             mainPage.getByRole('button', {
