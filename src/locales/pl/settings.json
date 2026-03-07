@@ -165,7 +165,12 @@
     "checkNow": "Sprawdź aktualizacje",
     "updateAvailable": "Wersja {{version}} jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
     "updateReady": "Nowa wersja jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
-    "restartNow": "Uruchom ponownie teraz."
+    "restartNow": "Uruchom ponownie teraz.",
+    "downloadNow": "Pobierz aktualizację",
+    "skipVersion": "Pomiń tę wersję",
+    "unskipVersion": "Przywróć pominiętą aktualizację",
+    "readyWithVersion": "Wersja {{version}} jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
+    "readyNoVersion": "Aktualizacja jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>"
   },
   "windowsSymlinks": {
     "title": "Dowiązania symboliczne edytora",

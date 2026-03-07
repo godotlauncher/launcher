@@ -165,7 +165,12 @@
     "checkNow": "Проверить обновления",
     "updateAvailable": "Версия {{version}} доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
     "updateReady": "Новая версия доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
-    "restartNow": "Перезапустить сейчас."
+    "restartNow": "Перезапустить сейчас.",
+    "downloadNow": "Скачать обновление",
+    "skipVersion": "Пропустить эту версию",
+    "unskipVersion": "Вернуть пропущенное обновление",
+    "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
+    "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>"
   },
   "windowsSymlinks": {
     "title": "Символические ссылки редактора",

@@ -41,7 +41,11 @@
       "newVersion": "Verżjoni ġdida",
       "restartNow": "Ibda mill-ġdid issa.",
       "bannerWithVersion": "Verżjoni {{version}} hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-      "bannerNoVersion": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>"
+      "bannerNoVersion": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
+      "availableWithVersion": "Il-verżjoni {{version}} hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
+      "availableNoVersion": "Verżjoni ġdida hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton>",
+      "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
+      "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>"
     }
   },
   "selectRelease": {

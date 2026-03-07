@@ -1,4 +1,10 @@
-import { app, BrowserWindow, dialog, Menu } from 'electron';
+import {
+    app,
+    BrowserWindow,
+    dialog,
+    autoUpdater as electronAutoUpdater,
+    Menu,
+} from 'electron';
 import logger from 'electron-log/main.js';
 import { createDefaultFolder, initI18n, registerHandlers } from './app.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
@@ -203,9 +209,15 @@ app.on('ready', async () => {
         mainWindow,
         prefs.auto_check_updates,
         60 * 60 * 1000,
-        true,
-        true,
+        false,
+        false,
         prefs.receive_beta_updates,
+        async () => {
+            const latestPrefs = await getUserPreferences();
+            return {
+                skippedVersion: latestPrefs.skipped_app_update_version,
+            };
+        },
     );
 
     disposeFocusRevalidation = setupFocusRevalidation(mainWindow);
@@ -244,6 +256,17 @@ app.on('ready', async () => {
 function handleCloseEvents(mainWindow: BrowserWindow) {
     // Hide the window instead of closing it
     let willClose = false;
+    const prepareForQuit = (message: string) => {
+        if (willClose) {
+            return;
+        }
+
+        logger.info(message);
+        stopAutoUpdateChecks();
+        disposeFocusRevalidation?.();
+        disposeFocusRevalidation = undefined;
+        willClose = true;
+    };
 
     mainWindow.on('close', (e) => {
         // close if onboarding has not been completed
@@ -273,12 +296,13 @@ function handleCloseEvents(mainWindow: BrowserWindow) {
         app.dock?.hide();
     });
 
+    electronAutoUpdater.on('before-quit-for-update', () => {
+        // Updater-driven installs close windows before app.before-quit fires.
+        prepareForQuit('Quitting app to install update');
+    });
+
     app.on('before-quit', () => {
-        logger.info('Quitting app');
-        stopAutoUpdateChecks();
-        disposeFocusRevalidation?.();
-        disposeFocusRevalidation = undefined;
-        willClose = true;
+        prepareForQuit('Quitting app');
     });
 
     mainWindow.on('show', () => {

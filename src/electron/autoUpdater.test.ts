@@ -64,6 +64,8 @@ vi.mock('./utils.js', () => ({
 
 import {
     checkForUpdates,
+    downloadAppUpdate,
+    installUpdateAndRestart,
     setBetaChannel,
     setupAutoUpdate,
 } from './autoUpdater.js';
@@ -126,5 +128,90 @@ describe('autoUpdater', () => {
         expect(payload.available).toBe(true);
         expect(payload.type).toBe('available');
         expect(payload.version).toBe('1.9.0-rc.2');
+    });
+
+    it('suppresses a skipped version during background checks', async () => {
+        mocks.autoUpdater.currentVersion = { version: '1.9.0' };
+        mocks.checkForUpdates.mockResolvedValue({
+            updateInfo: { version: '1.9.1' },
+        });
+
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+        await checkForUpdates({ skippedVersion: '1.9.1' });
+
+        const payload = mocks.ipcWebContentsSend.mock.calls.at(-1)?.[2];
+        expect(payload.available).toBe(false);
+        expect(payload.type).toBe('none');
+        expect(payload.version).toBe('1.9.1');
+    });
+
+    it('allows manual check override for a skipped version', async () => {
+        mocks.autoUpdater.currentVersion = { version: '1.9.0' };
+        mocks.checkForUpdates.mockResolvedValue({
+            updateInfo: { version: '1.9.1' },
+        });
+
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+        await checkForUpdates({
+            skippedVersion: '1.9.1',
+            ignoreSkippedVersion: true,
+        });
+
+        const payload = mocks.ipcWebContentsSend.mock.calls.at(-1)?.[2];
+        expect(payload.available).toBe(true);
+        expect(payload.type).toBe('available');
+        expect(payload.version).toBe('1.9.1');
+    });
+
+    it('does not auto-download when update-available event is emitted', async () => {
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+
+        const availableHandler = mocks.on.mock.calls.find(
+            (call) => call[0] === 'update-available',
+        )?.[1];
+        expect(availableHandler).toBeTypeOf('function');
+
+        availableHandler?.({ version: '1.9.1' });
+
+        expect(mocks.downloadUpdate).not.toHaveBeenCalled();
+    });
+
+    it('registers updater event listeners before first startup check', async () => {
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, true);
+
+        const firstOnCallOrder = Math.min(...mocks.on.mock.invocationCallOrder);
+        const firstCheckCallOrder =
+            mocks.checkForUpdates.mock.invocationCallOrder[0];
+
+        expect(firstOnCallOrder).toBeLessThan(firstCheckCallOrder);
+    });
+
+    it('uses explicit restart flow by disabling install-on-quit', async () => {
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+
+        expect(mocks.autoUpdater.autoDownload).toBe(false);
+        expect(mocks.autoUpdater.autoInstallOnAppQuit).toBe(false);
+    });
+
+    it('downloads an update only when explicitly requested', async () => {
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+
+        await downloadAppUpdate();
+
+        expect(mocks.downloadUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not force an extra app quit during explicit install', () => {
+        installUpdateAndRestart();
+
+        expect(mocks.autoUpdater.autoRunAppAfterInstall).toBe(true);
+        expect(mocks.quitAndInstall).toHaveBeenCalledWith(true, true);
+        expect(mocks.quit).not.toHaveBeenCalled();
     });
 });

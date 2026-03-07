@@ -41,7 +41,11 @@
       "newVersion": "新しいバージョン",
       "restartNow": "今すぐ再起動。",
       "bannerWithVersion": "バージョン {{version}}が利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>",
-      "bannerNoVersion": "新しいバージョンが利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>"
+      "bannerNoVersion": "新しいバージョンが利用可能です。インストールするにはGodot Launcherを再起動してください。<Button>今すぐ再起動</Button>",
+      "availableWithVersion": "バージョン {{version}} が利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton> または <SkipButton>このバージョンをスキップ</SkipButton>",
+      "availableNoVersion": "新しいバージョンが利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton>",
+      "readyWithVersion": "バージョン {{version}} のアップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
+      "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>"
     }
   },
   "selectRelease": {

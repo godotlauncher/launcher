@@ -165,7 +165,12 @@
     "checkNow": "Iċċekkja għal aġġornamenti",
     "updateAvailable": "Verżjoni {{version}} hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
     "updateReady": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-    "restartNow": "Ibda mill-ġdid issa."
+    "restartNow": "Ibda mill-ġdid issa.",
+    "downloadNow": "Niżżel l-aġġornament",
+    "skipVersion": "Aqbeż din il-verżjoni",
+    "unskipVersion": "Erġa’ attiva l-aġġornament maqbuż",
+    "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
+    "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <Button>Ibda mill-ġdid issa</Button>"
   },
   "windowsSymlinks": {
     "title": "Symlinks tal-editur",

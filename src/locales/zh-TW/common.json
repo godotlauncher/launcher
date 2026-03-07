@@ -41,7 +41,11 @@
       "newVersion": "有新版本",
       "restartNow": "立即重新啟動。",
       "bannerWithVersion": "版本 {{version}} 可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
-      "bannerNoVersion": "有新版本可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>"
+      "bannerNoVersion": "有新版本可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
+      "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下載更新</DownloadButton> 或 <SkipButton>跳過此版本</SkipButton>",
+      "availableNoVersion": "有新版本可用。<DownloadButton>下載更新</DownloadButton>",
+      "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
+      "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>"
     }
   },
   "selectRelease": {

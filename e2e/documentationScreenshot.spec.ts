@@ -49,8 +49,30 @@ const THEMES: ThemeConfig[] = [
 type ScreenshotConfig = {
     fileBase: string;
     description: string;
-    navigate: (page: ElectronPage, electronApp: ElectronApplication) => Promise<void>;
-    cleanup?: (page: ElectronPage, electronApp: ElectronApplication) => Promise<void>;
+    navigate: (
+        page: ElectronPage,
+        electronApp: ElectronApplication,
+        theme: ThemeConfig,
+    ) => Promise<void>;
+    cleanup?: (
+        page: ElectronPage,
+        electronApp: ElectronApplication,
+        theme: ThemeConfig,
+    ) => Promise<void>;
+};
+
+type UpdateScreenshotState = {
+    preferences?: Partial<UserPreferences>;
+    updateMessage?: AppUpdateMessage;
+};
+
+type StubbedAppDataOptions = {
+    preferences?: UserPreferences;
+    projects?: ProjectDetails[];
+    installedReleases?: InstalledRelease[];
+    availableReleases?: ReleaseSummary[];
+    availablePrereleases?: ReleaseSummary[];
+    tools?: CachedTool[];
 };
 
 const SCREENSHOTS: ScreenshotConfig[] = [
@@ -158,6 +180,74 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             await page.waitForTimeout(200);
         },
     },
+    {
+        fileBase: 'screen_projects_update_available',
+        description: 'Projects view with update banner (available)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppUpdateBannerScreenshot(page, electronApp, theme, {
+                available: true,
+                downloaded: false,
+                type: 'available',
+                version: '1.9.1',
+                message: 'New version available: 1.9.1',
+            });
+        },
+    },
+    {
+        fileBase: 'screen_projects_update_downloading',
+        description: 'Projects view with update banner (downloading)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppUpdateBannerScreenshot(page, electronApp, theme, {
+                available: true,
+                downloaded: false,
+                type: 'downloading',
+                version: '1.9.1',
+                message: 'Downloading update: 55%',
+            });
+        },
+    },
+    {
+        fileBase: 'screen_projects_update_ready',
+        description: 'Projects view with update banner (ready)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppUpdateBannerScreenshot(page, electronApp, theme, {
+                available: true,
+                downloaded: true,
+                type: 'ready',
+                version: '1.9.1',
+                message: 'Update downloaded, restart to install.',
+            });
+        },
+    },
+    {
+        fileBase: 'screen_projects_update_error',
+        description: 'Projects view with update banner (error)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppUpdateBannerScreenshot(page, electronApp, theme, {
+                available: true,
+                downloaded: false,
+                type: 'error',
+                version: '1.9.1',
+                message: 'Failed to download update',
+            });
+        },
+    },
 
     // Installs
     {
@@ -256,10 +346,156 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_settings_updates',
         description: 'Settings (Updates tab)',
-        navigate: async (page: ElectronPage) => {
-            await page.getByTestId('btnSettings').click();
-            await page.getByTestId('tabUpdates').click();
-            await page.waitForTimeout(600);
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: false,
+                    downloaded: false,
+                    type: 'none',
+                    message: 'No updates available',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_checking',
+        description: 'Settings (Updates tab, checking)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: false,
+                    downloaded: false,
+                    type: 'checking',
+                    message: 'Checking for updates...',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_available',
+        description: 'Settings (Updates tab, update available)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: true,
+                    downloaded: false,
+                    type: 'available',
+                    version: '1.9.1',
+                    message: 'New version available: 1.9.1',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_downloading',
+        description: 'Settings (Updates tab, downloading)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: true,
+                    downloaded: false,
+                    type: 'downloading',
+                    version: '1.9.1',
+                    message: 'Downloading update: 55%',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_ready',
+        description: 'Settings (Updates tab, ready to install)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: true,
+                    downloaded: true,
+                    type: 'ready',
+                    version: '1.9.1',
+                    message: 'Update downloaded, restart to install.',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_error',
+        description: 'Settings (Updates tab, error)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: false,
+                    downloaded: false,
+                    type: 'error',
+                    message: 'Failed to download update',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_skipped',
+        description: 'Settings (Updates tab, skipped version)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                preferences: {
+                    skipped_app_update_version: '1.9.1',
+                },
+                updateMessage: {
+                    available: false,
+                    downloaded: false,
+                    type: 'none',
+                    version: '1.9.1',
+                    message: 'No updates available',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_manual_override',
+        description: 'Settings (Updates tab, skipped version manually overridden)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                preferences: {
+                    skipped_app_update_version: '1.9.1',
+                },
+                updateMessage: {
+                    available: true,
+                    downloaded: false,
+                    type: 'available',
+                    version: '1.9.1',
+                    message: 'New version available: 1.9.1',
+                },
+            });
         },
     },
 
@@ -375,6 +611,15 @@ const SAMPLE_PREFS: UserPreferences = {
     vs_code_path: '/Applications/Visual Studio Code.app',
     language: 'system',
 };
+
+function createPreferences(
+    overrides: Partial<UserPreferences> = {},
+): UserPreferences {
+    return {
+        ...SAMPLE_PREFS,
+        ...overrides,
+    };
+}
 
 const DEFAULT_TOOLS: CachedTool[] = [
     { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },
@@ -617,19 +862,72 @@ async function stubAppData(
 async function prepareAppWithStubbedData(
     page: ElectronPage,
     electronApp: ElectronApplication,
+    options: StubbedAppDataOptions = {},
 ) {
     await stubAppData(
         electronApp,
-        SAMPLE_PREFS,
-        SAMPLE_PROJECTS,
-        SAMPLE_INSTALLED_RELEASES,
-        SAMPLE_AVAILABLE_RELEASES,
-        SAMPLE_AVAILABLE_PRERELEASES,
+        options.preferences ?? SAMPLE_PREFS,
+        options.projects ?? SAMPLE_PROJECTS,
+        options.installedReleases ?? SAMPLE_INSTALLED_RELEASES,
+        options.availableReleases ?? SAMPLE_AVAILABLE_RELEASES,
+        options.availablePrereleases ?? SAMPLE_AVAILABLE_PRERELEASES,
     );
-    await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+    await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
     await page.reload();
     await waitForPreloadScript(page);
     await page.setViewportSize({ width: 1024, height: 600 });
+}
+
+async function navigateToUpdatesTab(page: ElectronPage) {
+    await page.getByTestId('btnSettings').click();
+    await page.getByTestId('tabUpdates').click();
+    await page.waitForTimeout(600);
+}
+
+async function emitAppUpdate(
+    electronApp: ElectronApplication,
+    updateMessage: AppUpdateMessage,
+) {
+    await electronApp.evaluate(
+        ({ BrowserWindow }, message: AppUpdateMessage) => {
+            for (const win of BrowserWindow.getAllWindows()) {
+                win.webContents.send('app-updates', message);
+            }
+        },
+        updateMessage,
+    );
+}
+
+async function prepareUpdatesScreenshot(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    theme: ThemeConfig,
+    state: UpdateScreenshotState = {},
+) {
+    await prepareAppWithStubbedData(page, electronApp, {
+        preferences: createPreferences(state.preferences),
+    });
+    await applyTheme(page, theme);
+    await navigateToUpdatesTab(page);
+
+    if (state.updateMessage) {
+        await emitAppUpdate(electronApp, state.updateMessage);
+        await page.waitForTimeout(300);
+    }
+}
+
+async function prepareAppUpdateBannerScreenshot(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    theme: ThemeConfig,
+    updateMessage: AppUpdateMessage,
+) {
+    await prepareAppWithStubbedData(page, electronApp);
+    await applyTheme(page, theme);
+    await page.getByTestId('btnProjects').click();
+    await page.waitForTimeout(600);
+    await emitAppUpdate(electronApp, updateMessage);
+    await page.waitForTimeout(300);
 }
 
 async function ensureMainNavigationReady(
@@ -756,7 +1054,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
             await applyTheme(mainPage, theme);
 
             for (const shot of SCREENSHOTS) {
-                await shot.navigate(mainPage, electronApp);
+                await shot.navigate(mainPage, electronApp, theme);
                 const themedFileName = `${shot.fileBase}_${theme.name}`;
                 const themedDescription = `${shot.description} in ${theme.description}`;
                 await captureScreenshot(
@@ -766,7 +1064,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
                     themedDescription,
                 );
                 if (shot.cleanup) {
-                    await shot.cleanup(mainPage, electronApp);
+                    await shot.cleanup(mainPage, electronApp, theme);
                 }
             }
         }
