@@ -6,10 +6,20 @@ import { usePreferences } from '../../hooks/usePreferences';
 export const CheckForUpdates: React.FC = () => {
     const { t } = useTranslation('settings');
 
-    const { updateAvailable, installAndRelaunch, checkForAppUpdates } =
-        useApp();
-    const { preferences, setAutoUpdates, setReceiveBetaUpdates } =
-        usePreferences();
+    const {
+        updateAvailable,
+        installAndRelaunch,
+        checkForAppUpdates,
+        downloadAppUpdate,
+        skipAppUpdate,
+        unskipAppUpdate,
+    } = useApp();
+    const {
+        preferences,
+        setAutoUpdates,
+        setReceiveBetaUpdates,
+        loadPreferences,
+    } = usePreferences();
 
     const setAutoCheckUpdates = async (e: ChangeEvent<HTMLInputElement>) => {
         await setAutoUpdates(e.currentTarget.checked);
@@ -17,6 +27,20 @@ export const CheckForUpdates: React.FC = () => {
 
     const toggleBetaUpdates = async (e: ChangeEvent<HTMLInputElement>) => {
         await setReceiveBetaUpdates(e.currentTarget.checked);
+    };
+
+    const handleSkipVersion = async () => {
+        if (!updateAvailable?.version) {
+            return;
+        }
+
+        await skipAppUpdate(updateAvailable.version);
+        await loadPreferences();
+    };
+
+    const handleUnskipVersion = async () => {
+        await unskipAppUpdate();
+        await loadPreferences();
     };
 
     return (
@@ -62,10 +86,8 @@ export const CheckForUpdates: React.FC = () => {
                 <div className="flex flex-col gap-4 ">
                     <div>{updateAvailable?.message}</div>
 
-                    <div>
-                        {(!updateAvailable ||
-                            (updateAvailable &&
-                                updateAvailable?.type === 'none')) && (
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-row flex-wrap gap-2">
                             <button
                                 type="button"
                                 onClick={() => checkForAppUpdates()}
@@ -73,7 +95,36 @@ export const CheckForUpdates: React.FC = () => {
                             >
                                 {t('updates.checkNow')}
                             </button>
-                        )}
+                            {updateAvailable?.type === 'available' && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadAppUpdate()}
+                                        className="btn btn-secondary"
+                                    >
+                                        {t('updates.downloadNow')}
+                                    </button>
+                                    {updateAvailable.version && (
+                                        <button
+                                            type="button"
+                                            onClick={handleSkipVersion}
+                                            className="btn btn-ghost"
+                                        >
+                                            {t('updates.skipVersion')}
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                            {preferences?.skipped_app_update_version && (
+                                <button
+                                    type="button"
+                                    onClick={handleUnskipVersion}
+                                    className="btn btn-ghost"
+                                >
+                                    {t('updates.unskipVersion')}
+                                </button>
+                            )}
+                        </div>
 
                         {updateAvailable &&
                             updateAvailable?.type === 'ready' && (
@@ -81,7 +132,7 @@ export const CheckForUpdates: React.FC = () => {
                                     {updateAvailable?.version ? (
                                         <Trans
                                             ns="settings"
-                                            i18nKey="updates.updateAvailable"
+                                            i18nKey="updates.readyWithVersion"
                                             values={{
                                                 version:
                                                     updateAvailable.version,
@@ -101,7 +152,7 @@ export const CheckForUpdates: React.FC = () => {
                                     ) : (
                                         <Trans
                                             ns="settings"
-                                            i18nKey="updates.updateReady"
+                                            i18nKey="updates.readyNoVersion"
                                             components={{
                                                 Button: (
                                                     <button

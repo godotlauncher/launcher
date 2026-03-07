@@ -165,7 +165,12 @@
     "checkNow": "Vérifier les mises à jour",
     "updateAvailable": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
     "updateReady": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
-    "restartNow": "Redémarrer maintenant."
+    "restartNow": "Redémarrer maintenant.",
+    "downloadNow": "Télécharger la mise à jour",
+    "skipVersion": "Ignorer cette version",
+    "unskipVersion": "Réactiver la mise à jour ignorée",
+    "readyWithVersion": "La version {{version}} est prête, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
+    "readyNoVersion": "La mise à jour est prête, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>"
   },
   "windowsSymlinks": {
     "title": "Liens symboliques de l'éditeur",
