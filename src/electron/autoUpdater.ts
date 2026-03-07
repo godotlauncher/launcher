@@ -11,6 +11,16 @@ let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
 
 type PrereleaseChannel = 'alpha' | 'beta' | 'rc';
+type CheckForUpdatesOptionsProvider = () => Promise<
+    CheckForUpdatesOptions | undefined
+>;
+
+let checkForUpdatesOptionsProvider: CheckForUpdatesOptionsProvider | undefined;
+
+export type CheckForUpdatesOptions = {
+    ignoreSkippedVersion?: boolean;
+    skippedVersion?: string;
+};
 
 function getComparableVersion(version: string): string | null {
     const validVersion = semver.valid(version);
@@ -88,11 +98,13 @@ export async function startAutoUpdateChecks(
 ) {
     if (!interval || !interval.hasRef()) {
         logger.info('Starting auto update check');
+        const options = await checkForUpdatesOptionsProvider?.();
         // run as soon as it starts
-        await checkForUpdates();
+        await checkForUpdates(options);
 
         interval = setInterval(async () => {
-            await checkForUpdates();
+            const checkOptions = await checkForUpdatesOptionsProvider?.();
+            await checkForUpdates(checkOptions);
         }, intervalMs);
 
         interval.ref();
@@ -103,7 +115,6 @@ export function installUpdateAndRestart() {
     logger.info('Installing update and restarting app');
     autoUpdater.autoRunAppAfterInstall = true;
     autoUpdater.quitAndInstall(true, true);
-    app.quit();
 }
 
 export function stopAutoUpdateChecks() {
@@ -114,7 +125,36 @@ export function stopAutoUpdateChecks() {
     }
 }
 
-export async function checkForUpdates() {
+export async function downloadAppUpdate() {
+    logger.info('Downloading update...');
+    ipcWebContentsSend('app-updates', webContents, {
+        available: true,
+        downloaded: false,
+        type: 'downloading',
+        message: 'Downloading update...',
+    });
+
+    try {
+        const download = await autoUpdater.downloadUpdate();
+        logger.log('Update downloaded');
+        download.forEach(logger.log);
+    } catch (e) {
+        logger.error('Error downloading update', e);
+        ipcWebContentsSend('app-updates', webContents, {
+            available: true,
+            downloaded: false,
+            type: 'error',
+            message: 'Failed to download update',
+        });
+    }
+}
+
+export async function checkForUpdates(
+    options?: CheckForUpdatesOptions,
+): Promise<AppUpdateMessage> {
+    const ignoreSkippedVersion = options?.ignoreSkippedVersion ?? false;
+    const skippedVersion = options?.skippedVersion;
+
     logger.info('Checking for updates...');
     ipcWebContentsSend('app-updates', webContents, {
         available: false,
@@ -136,6 +176,10 @@ export async function checkForUpdates() {
         result !== null &&
         newVersion !== undefined &&
         isNewerVersion(newVersion, currentVersion);
+    const isSkippedVersion =
+        hasNewVersion &&
+        newVersion === skippedVersion &&
+        ignoreSkippedVersion === false;
 
     if (hasNewVersion) {
         logger.info(`New version available: ${newVersion}`);
@@ -145,15 +189,24 @@ export async function checkForUpdates() {
         );
     }
 
-    ipcWebContentsSend('app-updates', webContents, {
-        available: hasNewVersion,
+    if (isSkippedVersion) {
+        logger.info(
+            `Update ${newVersion} is skipped by user preference, reporting as no update`,
+        );
+    }
+
+    const payload: AppUpdateMessage = {
+        available: hasNewVersion && !isSkippedVersion,
         downloaded: false,
-        type: hasNewVersion ? 'available' : 'none',
+        type: hasNewVersion && !isSkippedVersion ? 'available' : 'none',
         version: newVersion,
-        message: hasNewVersion
-            ? `New version available: ${newVersion}`
-            : 'No updates available',
-    });
+        message:
+            hasNewVersion && !isSkippedVersion
+                ? `New version available: ${newVersion}`
+                : 'No updates available',
+    };
+    ipcWebContentsSend('app-updates', webContents, payload);
+    return payload;
 }
 
 export async function setupAutoUpdate(
@@ -161,8 +214,9 @@ export async function setupAutoUpdate(
     checkForUpdates: boolean = true,
     intervalMs: number = 60 * 60 * 1000,
     autoDownload: boolean = false,
-    installOnQuit: boolean = true,
+    installOnQuit: boolean = false,
     receiveBetaUpdates: boolean = false,
+    getCheckForUpdatesOptions?: CheckForUpdatesOptionsProvider,
 ) {
     logger.info(
         `Starting auto updates, enabled: ${checkForUpdates}; autoDownload: ${autoDownload}; installOnQuit: ${installOnQuit}`,
@@ -173,25 +227,11 @@ export async function setupAutoUpdate(
     autoUpdater.logger = logger;
     autoUpdater.autoDownload = autoDownload;
     autoUpdater.autoInstallOnAppQuit = installOnQuit;
+    checkForUpdatesOptionsProvider = getCheckForUpdatesOptions;
     setBetaChannel(receiveBetaUpdates, false);
 
-    if (checkForUpdates) {
-        await startAutoUpdateChecks(intervalMs);
-    }
-
-    autoUpdater.on('update-available', async (info) => {
-        ipcWebContentsSend('app-updates', webContents, {
-            available: true,
-            downloaded: false,
-            type: 'available',
-            version: info.version,
-            message: `New version available: ${info.version}`,
-        });
-
-        logger.info('Downloading update...');
-        const download = await autoUpdater.downloadUpdate();
-        logger.log('Update downloaded');
-        download.forEach(logger.log);
+    autoUpdater.on('update-available', (info) => {
+        logger.info(`Update available: ${info.version}`);
     });
 
     autoUpdater.on('download-progress', (progress) => {
@@ -226,4 +266,8 @@ export async function setupAutoUpdate(
             message: 'Update downloaded, restart to install.',
         });
     });
+
+    if (checkForUpdates) {
+        await startAutoUpdateChecks(intervalMs);
+    }
 }

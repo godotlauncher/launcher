@@ -41,7 +41,11 @@
       "newVersion": "Uma nova versão está disponível",
       "restartNow": "Reinicie agora.",
       "bannerWithVersion": "A versão {{version}} está disponível, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
-      "bannerNoVersion": "Uma nova versão está disponível, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>"
+      "bannerNoVersion": "Uma nova versão está disponível, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
+      "availableWithVersion": "A versão {{version}} está disponível. <DownloadButton>Baixar atualização</DownloadButton> ou <SkipButton>Ignorar esta versão</SkipButton>",
+      "availableNoVersion": "Uma nova versão está disponível. <DownloadButton>Baixar atualização</DownloadButton>",
+      "readyWithVersion": "A versão {{version}} está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>",
+      "readyNoVersion": "A atualização está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>"
     }
   },
   "selectRelease": {

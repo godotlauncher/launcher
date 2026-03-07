@@ -165,7 +165,12 @@
     "checkNow": "立即檢查更新",
     "updateAvailable": "版本 {{version}} 可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
     "updateReady": "有新版本可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
-    "restartNow": "立即重新啟動。"
+    "restartNow": "立即重新啟動。",
+    "downloadNow": "下載更新",
+    "skipVersion": "跳過此版本",
+    "unskipVersion": "恢復已跳過的更新",
+    "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
+    "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>"
   },
   "windowsSymlinks": {
     "title": "編輯器符號連結",

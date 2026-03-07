@@ -165,7 +165,12 @@
     "checkNow": "Güncellemeleri kontrol et",
     "updateAvailable": "Sürüm {{version}} mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
     "updateReady": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
-    "restartNow": "Şimdi yeniden başlat."
+    "restartNow": "Şimdi yeniden başlat.",
+    "downloadNow": "Güncellemeyi indir",
+    "skipVersion": "Bu sürümü atla",
+    "unskipVersion": "Atlanan güncellemeyi geri al",
+    "readyWithVersion": "{{version}} sürümü hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
+    "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>"
   },
   "windowsSymlinks": {
     "title": "Editör sembolik bağlantıları",

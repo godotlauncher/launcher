@@ -100,10 +100,14 @@ electron.contextBridge.exposeInMainWorld("electron", {
 
     relaunchApp: () => ipcInvoke("relaunch-app"),
     installUpdateAndRestart: () => ipcInvoke("install-update-and-restart"),
+    downloadAppUpdate: () => ipcInvoke("download-app-update"),
+    skipAppUpdate: (version: string) => ipcInvoke("skip-app-update", version),
+    unskipAppUpdate: () => ipcInvoke("unskip-app-update"),
 
     getPlatform: () => ipcInvoke("get-platform"),
     getAppVersion: () => ipcInvoke("get-app-version"),
-    checkForUpdates: () => ipcInvoke("check-updates"),
+    checkForUpdates: (options?: CheckForUpdatesOptions) =>
+        ipcInvoke("check-updates", options),
 
     // ##### i18n #####
     i18n: {
