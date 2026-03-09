@@ -19,6 +19,13 @@
   "success": "成功",
   "warning": "警告",
   "info": "信息",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "路径必须是非空字符串。",
+      "pathMustBeAbsolute": "路径必须为绝对路径。",
+      "targetNotDirectory": "目标路径已存在，但不是文件夹。"
+    }
+  },
   "app": {
     "loadingMessage": "准备中...",
     "navigation": {
@@ -34,7 +41,11 @@
       "newVersion": "有新版本可用",
       "restartNow": "立即重启。",
       "bannerWithVersion": "版本 {{version}} 可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>",
-      "bannerNoVersion": "有新版本可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>"
+      "bannerNoVersion": "有新版本可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>",
+      "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下载更新</DownloadButton> 或 <SkipButton>跳过此版本</SkipButton>",
+      "availableNoVersion": "有新版本可用。<DownloadButton>下载更新</DownloadButton>",
+      "readyWithVersion": "版本 {{version}} 已就绪，重新启动 Godot 启动器以安装。<RestartButton>立即重启</RestartButton>",
+      "readyNoVersion": "更新已就绪，重新启动 Godot 启动器以安装。<RestartButton>立即重启</RestartButton>"
     }
   },
   "selectRelease": {

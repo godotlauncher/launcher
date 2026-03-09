@@ -10,7 +10,9 @@
     "nameRequired": "项目名称为必填项",
     "overwritePath": "覆盖项目路径",
     "selectFolderDialogTitle": "选择项目文件夹",
-    "selectFolderTooltip": "打开对话框以选择项目文件夹"
+    "selectFolderTooltip": "打开对话框以选择项目文件夹",
+    "useDefaultPath": "使用默认路径",
+    "overwritePathRequired": "启用覆盖项目路径时，必须填写路径。"
   },
   "renderer": {
     "title": "渲染器",

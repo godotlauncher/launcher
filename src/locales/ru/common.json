@@ -19,6 +19,13 @@
   "success": "Успешно",
   "warning": "Предупреждение",
   "info": "Информация",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Путь должен быть непустой строкой.",
+      "pathMustBeAbsolute": "Путь должен быть абсолютным.",
+      "targetNotDirectory": "Целевой путь уже существует, но не является папкой."
+    }
+  },
   "app": {
     "loadingMessage": "Подготовка...",
     "navigation": {
@@ -34,7 +41,11 @@
       "newVersion": "Новая версия",
       "restartNow": "Перезапустить сейчас.",
       "bannerWithVersion": "Версия {{version}} доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
-      "bannerNoVersion": "Новая версия доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>"
+      "bannerNoVersion": "Новая версия доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
+      "availableWithVersion": "Версия {{version}} доступна. <DownloadButton>Скачать обновление</DownloadButton> или <SkipButton>Пропустить эту версию</SkipButton>",
+      "availableNoVersion": "Доступна новая версия. <DownloadButton>Скачать обновление</DownloadButton>",
+      "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
+      "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>"
     }
   },
   "selectRelease": {

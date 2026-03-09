@@ -129,11 +129,11 @@ export const InstalledReleaseSelector: React.FC<
                                     </tr>
                                 )}
                                 {filteredReleases.length > 0 &&
-                                    filteredReleases.map((row, index) => {
+                                    filteredReleases.map((row) => {
                                         if (row.valid === false) {
                                             return (
                                                 <tr
-                                                    key={`releaseSelectInvalid_${index}_${row.version}`}
+                                                    key={`releaseSelectInvalid_${row.version}_${row.mono ? 'mono' : 'standard'}}`}
                                                     className="opacity-60 cursor-not-allowed"
                                                 >
                                                     <td>
@@ -169,7 +169,7 @@ export const InstalledReleaseSelector: React.FC<
                                         if (!row.editor_path) {
                                             return (
                                                 <tr
-                                                    key={`releaseSelectInvalid_${index}_${row.version}`}
+                                                    key={`releaseSelectInvalid_${row.version}_${row.mono ? 'mono' : 'standard'}`}
                                                     className="hover:bg-black/10 cursor-not-allowed"
                                                 >
                                                     <td>
@@ -197,16 +197,16 @@ export const InstalledReleaseSelector: React.FC<
                                         } else {
                                             return (
                                                 <tr
-                                                    data-testid={`rowReleaseSelect_${index}`}
+                                                    data-testid={`rowReleaseSelect_}`}
                                                     onClick={() =>
                                                         setSelectedRelease(row)
                                                     }
-                                                    key={`releaseSelect_${index}_${row.version}`}
+                                                    key={`releaseSelect_${row.version}_${row.mono ? 'mono' : 'standard'}`}
                                                     className="even:bg-base-300 hover:bg-base-content/10 cursor-pointer"
                                                 >
                                                     <td className="flex flex-col items-center justify-center">
                                                         <input
-                                                            data-testid={`radioReleaseSelect_${index}`}
+                                                            data-testid={`radioReleaseSelect_${row.version}_${row.mono ? 'mono' : 'standard'}`}
                                                             type="radio"
                                                             name="editor-select"
                                                             className="radio radio-sm radio-info"

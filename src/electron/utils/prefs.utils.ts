@@ -115,6 +115,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         post_launch_action: 'close_to_tray',
         auto_check_updates: true,
         receive_beta_updates: false,
+        skipped_app_update_version: undefined,
         auto_start: true,
         start_in_tray: true,
         confirm_project_remove: true,

@@ -19,9 +19,9 @@ export const Alert: React.FC<AlertProps> = ({ message, onOk, title, icon }) => {
                     {typeof message === 'string'
                         ? message
                               .split('\n')
-                              .map((line, index) => (
+                              .map((line) => (
                                   <p
-                                      key={`alert-message-${index}-${line.substring(0, 10)}`}
+                                      key={`alert-message-${line.substring(0, 10)}`}
                                   >
                                       {line}
                                   </p>

@@ -19,6 +19,13 @@
   "success": "Sukces",
   "warning": "Ostrzeżenie",
   "info": "Informacja",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Ścieżka musi być niepustym ciągiem znaków.",
+      "pathMustBeAbsolute": "Ścieżka musi być bezwzględna.",
+      "targetNotDirectory": "Ścieżka docelowa już istnieje, ale nie jest katalogiem."
+    }
+  },
   "app": {
     "loadingMessage": "Przygotowywanie...",
     "navigation": {
@@ -34,7 +41,11 @@
       "newVersion": "Nowa wersja",
       "restartNow": "Uruchom ponownie teraz.",
       "bannerWithVersion": "Wersja {{version}} jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
-      "bannerNoVersion": "Nowa wersja jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>"
+      "bannerNoVersion": "Nowa wersja jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
+      "availableWithVersion": "Wersja {{version}} jest dostępna. <DownloadButton>Pobierz aktualizację</DownloadButton> lub <SkipButton>Pomiń tę wersję</SkipButton>",
+      "availableNoVersion": "Nowa wersja jest dostępna. <DownloadButton>Pobierz aktualizację</DownloadButton>",
+      "readyWithVersion": "Wersja {{version}} jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
+      "readyNoVersion": "Aktualizacja jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>"
     }
   },
   "selectRelease": {

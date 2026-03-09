@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import './App.css';
 
@@ -8,15 +8,14 @@ import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
 import rocketBlack from './assets/icons/godot_launcher_black.svg';
 import rocketWhite from './assets/icons/godot_launcher_white.svg';
+import { AppUpdateBanner } from './components/appUpdateBanner.component';
 import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 import { COMMUNITY_DISCORD_URL } from './constants';
 import { useApp } from './hooks/useApp';
 import { useAppNavigation, type View } from './hooks/useAppNavigation';
 import { usePreferences } from './hooks/usePreferences';
-import { usePromotion } from './hooks/usePromotion';
 import { useRelease } from './hooks/useRelease';
 import { useTheme } from './hooks/useTheme';
-import { PromotionCTA } from './promotion';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
 import { ProjectsView } from './views/projects.view';
@@ -32,9 +31,13 @@ function App() {
 
     const { installedReleases, loading: releaseLoading } = useRelease();
     const { preferences, platform, updatePreferences } = usePreferences();
-    const { promotion, countdown, buildClickPayload } = usePromotion();
 
-    const { updateAvailable, installAndRelaunch } = useApp();
+    const {
+        updateAvailable,
+        installAndRelaunch,
+        downloadAppUpdate,
+        skipAppUpdate,
+    } = useApp();
 
     const { theme, systemTheme } = useTheme();
 
@@ -61,21 +64,6 @@ function App() {
     const changeView = (view: View) => {
         setCurrentView(view);
     };
-
-    const handlePromotionClick = React.useCallback(() => {
-        if (!promotion) {
-            return;
-        }
-
-        const payload = buildClickPayload();
-        if (payload) {
-            void window.electron.promotionClicked(payload);
-        }
-
-        if (promotion.externalLink) {
-            void openExternalLink(promotion.externalLink);
-        }
-    }, [promotion, buildClickPayload, openExternalLink]);
 
     const ShowView = () => {
         switch (currentView) {
@@ -176,51 +164,12 @@ function App() {
                     </li>
                 </ul>
                 <div className="flex flex-1"></div>
-                {updateAvailable && updateAvailable?.type === 'ready' && (
-                    <div className="gap-2 p-4 m-2 text-sm text-info rounded-xl bg-base-200">
-                        {updateAvailable?.version ? (
-                            <Trans
-                                ns="common"
-                                i18nKey="app.update.bannerWithVersion"
-                                values={{ version: updateAvailable.version }}
-                                components={{
-                                    Button: (
-                                        <button
-                                            type="button"
-                                            onClick={installAndRelaunch}
-                                            className="underline cursor-pointer hover:no-underline"
-                                        />
-                                    ),
-                                }}
-                            />
-                        ) : (
-                            <Trans
-                                ns="common"
-                                i18nKey="app.update.bannerNoVersion"
-                                components={{
-                                    Button: (
-                                        <button
-                                            type="button"
-                                            onClick={installAndRelaunch}
-                                            className="underline cursor-pointer hover:no-underline"
-                                        />
-                                    ),
-                                }}
-                            />
-                        )}
-                    </div>
-                )}
-                {promotion && (
-                    <div className="pb-2">
-                        <ul className="menu rounded-box w-56 gap-1">
-                            <PromotionCTA
-                                promotion={promotion}
-                                countdown={countdown}
-                                onClick={handlePromotionClick}
-                            />
-                        </ul>
-                    </div>
-                )}
+                <AppUpdateBanner
+                    updateAvailable={updateAvailable}
+                    installAndRelaunch={installAndRelaunch}
+                    downloadAppUpdate={downloadAppUpdate}
+                    skipAppUpdate={skipAppUpdate}
+                />
                 <div className="border-t-2 border-solid border-base-200">
                     {/* <div className="flex flex-row items-center mx-2 rounded p-2 bg-info/50 h-10 text-xs text-white">Update Available</div> */}
                     <ul className="menu menu-md rounded-box w-56 gap-1 ">

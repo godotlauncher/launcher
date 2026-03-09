@@ -10,8 +10,11 @@ import {
 type AppContext = {
     appVersion: string | undefined;
     updateAvailable: AppUpdateMessage | undefined;
-    installAndRelaunch: () => void;
-    checkForAppUpdates: () => void;
+    installAndRelaunch: () => Promise<void>;
+    checkForAppUpdates: () => Promise<void>;
+    downloadAppUpdate: () => Promise<void>;
+    skipAppUpdate: (version: string) => Promise<void>;
+    unskipAppUpdate: () => Promise<void>;
 };
 
 const appContext = createContext<AppContext>({} as AppContext);
@@ -27,8 +30,27 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     };
 
     const checkForAppUpdates = async () => {
-        await window.electron.checkForUpdates();
+        await window.electron.checkForUpdates({ ignoreSkippedVersion: true });
     };
+
+    const downloadAppUpdate = async () => {
+        await window.electron.downloadAppUpdate();
+    };
+
+    const skipAppUpdate = async (version: string) => {
+        await window.electron.skipAppUpdate(version);
+        setUpdateAvailable({
+            available: false,
+            downloaded: false,
+            type: 'none',
+            message: 'No updates available',
+        });
+    };
+
+    const unskipAppUpdate = async () => {
+        await window.electron.unskipAppUpdate();
+    };
+
     useEffect(() => {
         // get app version
         window.electron.getAppVersion().then(setAppVersion);
@@ -47,6 +69,9 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
                 updateAvailable,
                 installAndRelaunch,
                 checkForAppUpdates,
+                downloadAppUpdate,
+                skipAppUpdate,
+                unskipAppUpdate,
             }}
         >
             {children}

@@ -10,7 +10,9 @@
     "nameRequired": "O nome do projeto é obrigatório",
     "overwritePath": "Sobrescrever caminho do projeto",
     "selectFolderDialogTitle": "Selecionar pasta do projeto",
-    "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto"
+    "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto",
+    "useDefaultPath": "Usar caminho padrão",
+    "overwritePathRequired": "O caminho é obrigatório quando a opção de sobrescrever o caminho do projeto está ativada."
   },
   "renderer": {
     "title": "Renderizador",

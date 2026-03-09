@@ -39,6 +39,14 @@ function migrateUserPreferences(
         updated = true;
     }
 
+    if (
+        nextPrefs.skipped_app_update_version !== undefined &&
+        typeof nextPrefs.skipped_app_update_version !== 'string'
+    ) {
+        nextPrefs.skipped_app_update_version = undefined;
+        updated = true;
+    }
+
     return { updated, value: nextPrefs };
 }
 

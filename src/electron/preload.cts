@@ -52,11 +52,13 @@ electron.contextBridge.exposeInMainWorld("electron", {
         ipcInvoke("show-release-menu", release),
 
     openExternal: (url: string) => ipcInvoke("open-external", url),
-    promotionClicked: (payload: PromotionClickPayload) =>
-        ipcInvoke("promotion-clicked", payload),
 
     // ##### file utils #####
     getPathForFile: (file: File) => electron.webUtils.getPathForFile(file),
+    pathExists: (pathToCheck: string) => ipcInvoke("path-exists", pathToCheck),
+    fileExists: (pathToCheck: string) => ipcInvoke("file-exists", pathToCheck),
+    ensureDirectory: (pathToCheck: string) =>
+        ipcInvoke("ensure-directory", pathToCheck),
 
     // ##### projects #####
 
@@ -98,10 +100,14 @@ electron.contextBridge.exposeInMainWorld("electron", {
 
     relaunchApp: () => ipcInvoke("relaunch-app"),
     installUpdateAndRestart: () => ipcInvoke("install-update-and-restart"),
+    downloadAppUpdate: () => ipcInvoke("download-app-update"),
+    skipAppUpdate: (version: string) => ipcInvoke("skip-app-update", version),
+    unskipAppUpdate: () => ipcInvoke("unskip-app-update"),
 
     getPlatform: () => ipcInvoke("get-platform"),
     getAppVersion: () => ipcInvoke("get-app-version"),
-    checkForUpdates: () => ipcInvoke("check-updates"),
+    checkForUpdates: (options?: CheckForUpdatesOptions) =>
+        ipcInvoke("check-updates", options),
 
     // ##### i18n #####
     i18n: {

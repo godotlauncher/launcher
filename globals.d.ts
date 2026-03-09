@@ -48,6 +48,7 @@ type UserPreferences = {
     windows_symlink_win_notify: boolean;
     vs_code_path?: string;
     language?: string; // 'system' for auto-detect, or locale code like 'en', 'es', 'fr'
+    skipped_app_update_version?: string;
     installed_tools?: {
         last_scan: number; // timestamp
         tools: CachedTool[];
@@ -122,12 +123,6 @@ type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
 };
 
-type PromotionClickPayload = {
-    id: string;
-    externalLink?: string | null;
-    expiresAt: string;
-};
-
 /**
  * Defines the types of renderers available for Godot Engine config version 5 (godot 4+).
  *
@@ -155,6 +150,10 @@ type AppUpdateMessage = {
     message?: string;
 };
 
+type CheckForUpdatesOptions = {
+    ignoreSkippedVersion?: boolean;
+};
+
 type ProjectConfig = {
     configVersion: keyof RendererType;
     defaultRenderer: RendererType[keyof RendererType];
@@ -177,12 +176,15 @@ type EventChannelMapping = {
     // ##### app #####
     'get-version': Promise<string>;
     'app-updates': AppUpdateMessage;
-    'check-updates': Promise<void>;
+    'check-updates': Promise<AppUpdateMessage>;
 
     // ##### dialogs #####
     'open-file-dialog': Promise<Electron.OpenDialogReturnValue>;
     'open-directory-dialog': Promise<Electron.OpenDialogReturnValue>;
     'shell-open-folder': Promise<void>;
+    'path-exists': Promise<boolean>;
+    'file-exists': Promise<boolean>;
+    'ensure-directory': Promise<boolean>;
 
     'show-project-menu': Promise<void>;
     'show-release-menu': Promise<void>;
@@ -190,6 +192,9 @@ type EventChannelMapping = {
     'open-external': Promise<void>;
     'relaunch-app': Promise<void>;
     'install-update-and-restart': Promise<void>;
+    'download-app-update': Promise<void>;
+    'skip-app-update': Promise<string>;
+    'unskip-app-update': Promise<void>;
 
     // ##### releases #####
 
@@ -224,7 +229,6 @@ type EventChannelMapping = {
 
     'get-platform': Promise<string>;
     'get-app-version': Promise<string>;
-    'promotion-clicked': Promise<void>;
 
     // ##### i18n #####
     'i18n:get-current-language': Promise<string>;
@@ -267,6 +271,9 @@ interface Window {
 
         // ##### file utils #####
         getPathForFile: (file: File) => string;
+        pathExists: (pathToCheck: string) => Promise<boolean>;
+        fileExists: (pathToCheck: string) => Promise<boolean>;
+        ensureDirectory: (pathToCheck: string) => Promise<boolean>;
 
         // ##### releases #####
 
@@ -318,7 +325,6 @@ interface Window {
         getAppVersion: () => Promise<string>;
 
         // ##### OTHER #####
-        promotionClicked: (payload: PromotionClickPayload) => Promise<void>;
         subscribeProjects: (
             callback: (projects: ProjectDetails[]) => void,
         ) => UnsubscribeFunction;
@@ -334,7 +340,12 @@ interface Window {
 
         relaunchApp: () => Promise<void>;
         installUpdateAndRestart: () => Promise<void>;
-        checkForUpdates: () => Promise<void>;
+        downloadAppUpdate: () => Promise<void>;
+        skipAppUpdate: (version: string) => Promise<string>;
+        unskipAppUpdate: () => Promise<void>;
+        checkForUpdates: (
+            options?: CheckForUpdatesOptions,
+        ) => Promise<AppUpdateMessage>;
 
         // ##### i18n #####
         i18n: {

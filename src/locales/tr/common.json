@@ -19,6 +19,13 @@
   "success": "Başarılı",
   "warning": "Uyarı",
   "info": "Bilgi",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "Yol boş olmayan bir metin olmalıdır.",
+      "pathMustBeAbsolute": "Yol mutlak olmalıdır.",
+      "targetNotDirectory": "Hedef yol zaten mevcut, ancak bir klasör değil."
+    }
+  },
   "app": {
     "loadingMessage": "Her şey hazırlanıyor...",
     "navigation": {
@@ -34,7 +41,11 @@
       "newVersion": "Yeni bir sürüm",
       "restartNow": "Şimdi yeniden başlat.",
       "bannerWithVersion": "Sürüm {{version}} mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
-      "bannerNoVersion": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>"
+      "bannerNoVersion": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
+      "availableWithVersion": "Sürüm {{version}} mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton> veya <SkipButton>Bu sürümü atla</SkipButton>",
+      "availableNoVersion": "Yeni bir sürüm mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton>",
+      "readyWithVersion": "{{version}} sürümü hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
+      "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>"
     }
   },
   "selectRelease": {

@@ -10,7 +10,9 @@
     "nameRequired": "プロジェクト名が必要です",
     "overwritePath": "プロジェクトパスを上書き",
     "selectFolderDialogTitle": "プロジェクトフォルダを選択",
-    "selectFolderTooltip": "プロジェクトフォルダを選択するダイアログを開く"
+    "selectFolderTooltip": "プロジェクトフォルダを選択するダイアログを開く",
+    "useDefaultPath": "既定のパスを使用",
+    "overwritePathRequired": "プロジェクトパスの上書きを有効にする場合、パスの入力が必要です。"
   },
   "renderer": {
     "title": "レンダラー",

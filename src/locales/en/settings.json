@@ -50,7 +50,7 @@
       "waitingForDialog": "Waiting for dialog..."
     },
     "clearReleaseCache": {
-        "title": "Refresh Release Cache",
+      "title": "Refresh Release Cache",
       "description": "Delete cached Godot release metadata and fetch the latest builds from GitHub.",
       "cta": "Refresh cache",
       "clearing": "Refreshing...",
@@ -165,7 +165,12 @@
     "checkNow": "Check for updates",
     "updateAvailable": "Version {{version}} is available, restart Godot Launcher to install. <Button>Restart now</Button>",
     "updateReady": "A new version is available, restart Godot Launcher to install. <Button>Restart now</Button>",
-    "restartNow": "Restart now."
+    "restartNow": "Restart now.",
+    "downloadNow": "Download update",
+    "skipVersion": "Skip this version",
+    "unskipVersion": "Unskip skipped update",
+    "readyWithVersion": "Version {{version}} is ready, restart Godot Launcher to install it. <Button>Restart now</Button>",
+    "readyNoVersion": "The update is ready, restart Godot Launcher to install it. <Button>Restart now</Button>"
   },
   "windowsSymlinks": {
     "title": "Editor symlinks",

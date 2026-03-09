@@ -19,6 +19,13 @@
   "success": "Sucesso",
   "warning": "Aviso",
   "info": "Informação",
+  "filesystem": {
+    "errors": {
+      "pathRequired": "O caminho tem de ser uma string não vazia.",
+      "pathMustBeAbsolute": "O caminho tem de ser absoluto.",
+      "targetNotDirectory": "O caminho de destino já existe, mas não é uma pasta."
+    }
+  },
   "app": {
     "loadingMessage": "A preparar tudo...",
     "navigation": {
@@ -34,7 +41,11 @@
       "newVersion": "Está disponível uma nova versão",
       "restartNow": "Reinicia agora.",
       "bannerWithVersion": "A versão {{version}} está disponível, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>",
-      "bannerNoVersion": "Está disponível uma nova versão, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>"
+      "bannerNoVersion": "Está disponível uma nova versão, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>",
+      "availableWithVersion": "A versão {{version}} está disponível. <DownloadButton>Baixar atualização</DownloadButton> ou <SkipButton>Ignorar esta versão</SkipButton>",
+      "availableNoVersion": "Está disponível uma nova versão. <DownloadButton>Baixar atualização</DownloadButton>",
+      "readyWithVersion": "A versão {{version}} está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>",
+      "readyNoVersion": "A atualização está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>"
     }
   },
   "selectRelease": {

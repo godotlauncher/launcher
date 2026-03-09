@@ -1,12 +1,80 @@
 import clsx from 'clsx';
-import { CircleHelp, Folder, X } from 'lucide-react';
+import { CircleHelp, Folder, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
 import { sortReleases } from '../../releaseStoring.utils';
+
+const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;
+
+const isWindowsDriveRootPath = (pathToCheck: string) =>
+    /^[a-zA-Z]:[\\/]*$/.test(pathToCheck);
+
+const normalizeBasePathForJoin = (
+    rawBasePath: string,
+    separator: '\\' | '/',
+) => {
+    const trimmedPath = rawBasePath.trim();
+
+    if (trimmedPath.length === 0) {
+        return '';
+    }
+
+    if (/^[\\/]+$/.test(trimmedPath)) {
+        return separator;
+    }
+
+    if (separator === '\\' && isWindowsDriveRootPath(trimmedPath)) {
+        return `${trimmedPath.slice(0, 2)}\\`;
+    }
+
+    return trimmedPath.replace(/[\\/]+$/g, '');
+};
+
+const joinBasePathWithProjectSegment = (
+    rawBasePath: string,
+    segment: string,
+    separator: '\\' | '/',
+) => {
+    const normalizedBasePath = normalizeBasePathForJoin(rawBasePath, separator);
+
+    if (normalizedBasePath.length === 0) {
+        return segment;
+    }
+
+    if (normalizedBasePath === separator) {
+        return `${separator}${segment}`;
+    }
+
+    if (separator === '\\' && isWindowsDriveRootPath(normalizedBasePath)) {
+        return `${normalizedBasePath}${segment}`;
+    }
+
+    return `${normalizedBasePath}${separator}${segment}`;
+};
+
+const getProjectPathSuffixDisplay = (
+    rawBasePath: string,
+    segment: string,
+    separator: '\\' | '/',
+) => {
+    const trimmedBasePath = rawBasePath.trim();
+
+    if (
+        trimmedBasePath.length === 0 ||
+        /^[\\/]+$/.test(trimmedBasePath) ||
+        /[\\/]+$/.test(trimmedBasePath) ||
+        (separator === '\\' && isWindowsDriveRootPath(trimmedBasePath))
+    ) {
+        return segment;
+    }
+
+    return `${separator}${segment}`;
+};
 
 type SubViewProps = {
     onClose: () => void;
@@ -17,7 +85,11 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseIndex, setReleaseIndex] = useState<number>(0);
     const [projectName, setProjectName] = useState<string>('');
-    const [projectPath, setProjectPath] = useState<string>('');
+    const [overwriteBasePath, setOverwriteBasePath] = useState<string>('');
+    const [overwriteBasePathMissing, setOverwriteBasePathMissing] =
+        useState<boolean>(false);
+    const [checkingOverwriteBasePath, setCheckingOverwriteBasePath] =
+        useState<boolean>(false);
     const [editNow, setEditNow] = useState<boolean>(true);
 
     const [error, setError] = useState<string | undefined>();
@@ -34,11 +106,16 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     const [loadingTools, setLoadingTools] = useState<boolean>(true);
     const inputNameRef = useRef<HTMLInputElement>(null);
+    const overwritePathCheckRequestRef = useRef<number>(0);
+    const overwriteBasePathInitializedRef = useRef<boolean>(false);
 
     const { addAlert } = useAlerts();
     const { installedReleases, downloadingReleases } = useRelease();
     const { createProject, launchProject } = useProjects();
+    const { pathExists } = useFileSystem();
     const { preferences, platform } = usePreferences();
+    const pathSeparator = platform === 'win32' ? '\\' : '/';
+    const defaultOverwriteBasePath = preferences?.projects_location ?? '';
 
     // Derive allReleases from installedReleases and downloadingReleases
     const allReleases = useMemo(() => {
@@ -70,12 +147,116 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         return `${basePath}/${projectName}`;
     }, [projectName, preferences, platform]);
 
-    // Update projectPath when derivedProjectPath changes
+    const projectSegmentDisplay = useMemo(
+        () => projectName || '<project-name>',
+        [projectName],
+    );
+
+    const overwriteDisplayPath = useMemo(
+        () =>
+            joinBasePathWithProjectSegment(
+                overwriteBasePath,
+                projectSegmentDisplay,
+                pathSeparator,
+            ),
+        [overwriteBasePath, projectSegmentDisplay, pathSeparator],
+    );
+
+    const overwriteSubmitPath = useMemo(
+        () =>
+            joinBasePathWithProjectSegment(
+                overwriteBasePath,
+                projectName,
+                pathSeparator,
+            ),
+        [overwriteBasePath, pathSeparator, projectName],
+    );
+
+    const overwritePathSuffixDisplay = useMemo(
+        () =>
+            getProjectPathSuffixDisplay(
+                overwriteBasePath,
+                projectSegmentDisplay,
+                pathSeparator,
+            ),
+        [overwriteBasePath, projectSegmentDisplay, pathSeparator],
+    );
+
+    const showFolderCreateIcon =
+        overwriteProjectPath &&
+        !checkingOverwriteBasePath &&
+        overwriteBasePathMissing;
+    const isOverwritePathEmpty =
+        overwriteProjectPath && overwriteBasePath.trim().length === 0;
+    const isOverwritePathChangedFromDefault =
+        overwriteProjectPath &&
+        normalizeBasePathForJoin(overwriteBasePath, pathSeparator) !==
+            normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator);
+    const showUseDefaultPathAction =
+        overwriteProjectPath &&
+        normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator)
+            .length > 0 &&
+        (isOverwritePathEmpty || isOverwritePathChangedFromDefault);
+
+    // Initialize overwrite base path from preferences once.
+    useEffect(() => {
+        if (
+            !overwriteBasePathInitializedRef.current &&
+            preferences?.projects_location
+        ) {
+            setOverwriteBasePath(preferences.projects_location);
+            overwriteBasePathInitializedRef.current = true;
+        }
+    }, [preferences?.projects_location]);
+
+    // Check if overwrite base path exists to drive folder icon state.
     useEffect(() => {
         if (!overwriteProjectPath) {
-            setProjectPath(derivedProjectPath);
+            overwritePathCheckRequestRef.current += 1;
+            setCheckingOverwriteBasePath(false);
+            setOverwriteBasePathMissing(false);
+            return;
         }
-    }, [derivedProjectPath, overwriteProjectPath]);
+
+        const pathToCheck = overwriteBasePath.trim();
+        if (pathToCheck.length === 0) {
+            overwritePathCheckRequestRef.current += 1;
+            setCheckingOverwriteBasePath(false);
+            setOverwriteBasePathMissing(true);
+            return;
+        }
+
+        const requestId = overwritePathCheckRequestRef.current + 1;
+        overwritePathCheckRequestRef.current = requestId;
+        setCheckingOverwriteBasePath(true);
+
+        const timeoutId = window.setTimeout(() => {
+            pathExists(pathToCheck)
+                .then((exists) => {
+                    if (overwritePathCheckRequestRef.current !== requestId) {
+                        return;
+                    }
+
+                    setOverwriteBasePathMissing(!exists);
+                })
+                .catch(() => {
+                    if (overwritePathCheckRequestRef.current !== requestId) {
+                        return;
+                    }
+
+                    setOverwriteBasePathMissing(true);
+                })
+                .finally(() => {
+                    if (overwritePathCheckRequestRef.current === requestId) {
+                        setCheckingOverwriteBasePath(false);
+                    }
+                });
+        }, OVERWRITE_PATH_CHECK_DEBOUNCE_MS);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [overwriteBasePath, overwriteProjectPath, pathExists]);
 
     const onCreateProject = async () => {
         setError(undefined);
@@ -91,7 +272,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             renderer,
             withVSCode,
             withGit,
-            overwriteProjectPath ? projectPath : undefined,
+            overwriteProjectPath ? overwriteSubmitPath : undefined,
         );
 
         setCreating(false);
@@ -161,9 +342,11 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const handleSelectProjectFolder = async () => {
         setSelectingFolder(true);
         try {
+            const browsePath =
+                overwriteBasePath || preferences?.projects_location || '';
             const selectFolderResult =
                 await window.electron.openDirectoryDialog(
-                    projectPath,
+                    browsePath,
                     t('project.selectFolderDialogTitle'),
                     [],
                 );
@@ -173,9 +356,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                 !selectFolderResult.canceled &&
                 selectFolderResult.filePaths.length > 0
             ) {
-                const basePath = selectFolderResult.filePaths[0];
-                const separator = platform === 'win32' ? '\\' : '/';
-                setProjectPath(`${basePath}${separator}`);
+                setOverwriteBasePath(selectFolderResult.filePaths[0]);
             }
         } finally {
             setSelectingFolder(false);
@@ -323,16 +504,48 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                         }
                                     }}
                                 />
-                                <label className="input w-full">
+                                <label className="input w-full z-10">
                                     <input
+                                        data-testid="inputProjectPath"
                                         className="input input-bordered w-full active:outline-0 outline-0"
                                         type="text"
-                                        value={projectPath}
+                                        value={
+                                            overwriteProjectPath
+                                                ? overwriteBasePath
+                                                : derivedProjectPath
+                                        }
+                                        title={
+                                            overwriteProjectPath
+                                                ? overwriteDisplayPath
+                                                : derivedProjectPath
+                                        }
                                         onChange={(e) =>
-                                            setProjectPath(e.target.value)
+                                            setOverwriteBasePath(e.target.value)
                                         }
                                         disabled={!overwriteProjectPath}
                                     />
+                                    {overwriteProjectPath && (
+                                        <span
+                                            data-testid="overwriteProjectPathSuffix"
+                                            className="max-w-45 whitespace-nowrap text-base-content/50 select-none "
+                                        >
+                                            {overwritePathSuffixDisplay}
+                                        </span>
+                                    )}
+                                    {showUseDefaultPathAction && (
+                                        <button
+                                            type="button"
+                                            data-testid="btnUseDefaultProjectPath"
+                                            className="btn btn-ghost btn-xs h-6 min-h-6 px-2 text-xs"
+                                            onClick={() =>
+                                                setOverwriteBasePath(
+                                                    defaultOverwriteBasePath,
+                                                )
+                                            }
+                                        >
+                                            {t('project.useDefaultPath')}
+                                        </button>
+                                    )}
                                     {overwriteProjectPath && (
                                         <span
                                             className="tooltip tooltip-top"
@@ -344,16 +557,32 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                                 type="button"
                                                 data-testid="btnSelectProjectFolder"
                                                 className="flex items-center"
+                                                data-path-missing={
+                                                    overwriteBasePathMissing
+                                                }
                                                 disabled={!overwriteProjectPath}
                                                 onClick={
                                                     handleSelectProjectFolder
                                                 }
                                             >
-                                                <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary"></Folder>
+                                                {showFolderCreateIcon ? (
+                                                    <FolderPlus className="w-5 h-5 stroke-primary"></FolderPlus>
+                                                ) : (
+                                                    <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary"></Folder>
+                                                )}
                                             </button>
                                         </span>
                                     )}
                                 </label>
+                                {overwriteProjectPath &&
+                                    isOverwritePathEmpty && (
+                                        <p
+                                            data-testid="msgOverwritePathRequired"
+                                            className="text-error text-xs"
+                                        >
+                                            {t('project.overwritePathRequired')}
+                                        </p>
+                                    )}
                             </div>
                             <div className="flex flex-col gap-2">
                                 <select
@@ -600,7 +829,9 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             <button
                                 type="button"
                                 disabled={
-                                    creating || installedReleases.length < 1
+                                    creating ||
+                                    installedReleases.length < 1 ||
+                                    isOverwritePathEmpty
                                 }
                                 data-testid="btnCreateProject"
                                 onClick={() => onCreateProject()}

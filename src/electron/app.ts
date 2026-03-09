@@ -1,14 +1,20 @@
 import * as fs from 'node:fs';
 import { app, shell } from 'electron';
-import logger from 'electron-log/main.js';
+import semver from 'semver';
 import {
     checkForUpdates,
+    downloadAppUpdate,
     installUpdateAndRestart,
     setBetaChannel,
 } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { addProject } from './commands/addProject.js';
 import { createProject } from './commands/createProject.js';
+import {
+    ensureDirectory,
+    fileExists,
+    pathExists,
+} from './commands/fileSystem.js';
 import { getInstalledTools } from './commands/installedTools.js';
 import { installRelease } from './commands/installRelease.js';
 import { showProjectMenu, showReleaseMenu } from './commands/menuCommands.js';
@@ -77,6 +83,29 @@ export { createDefaultFolder }; // Export the function
 // Export i18n initialization for use in main.ts
 export { initI18n } from './i18n/index.js';
 
+function getComparableVersion(version: string): string | null {
+    const validVersion = semver.valid(version);
+    if (validVersion) {
+        return validVersion;
+    }
+
+    return semver.coerce(version)?.version ?? null;
+}
+
+function isNewerVersion(
+    candidateVersion: string,
+    currentVersion: string,
+): boolean {
+    const normalizedCandidateVersion = getComparableVersion(candidateVersion);
+    const normalizedCurrentVersion = getComparableVersion(currentVersion);
+
+    if (!normalizedCandidateVersion || !normalizedCurrentVersion) {
+        return false;
+    }
+
+    return semver.gt(normalizedCandidateVersion, normalizedCurrentVersion);
+}
+
 export function registerHandlers() {
     // ##### user-preferences #####
 
@@ -126,6 +155,28 @@ export function registerHandlers() {
         'install-update-and-restart',
         async () => await installUpdateAndRestart(),
     );
+    ipcMainHandler(
+        'download-app-update',
+        async () => await downloadAppUpdate(),
+    );
+    ipcMainHandler('skip-app-update', async (_, version: string) => {
+        const prefs = await getUserPreferences();
+        const updatedPrefs: UserPreferences = {
+            ...prefs,
+            skipped_app_update_version: version,
+        };
+        await setUserPreferences(updatedPrefs);
+        return version;
+    });
+    ipcMainHandler('unskip-app-update', async () => {
+        const prefs = await getUserPreferences();
+        if (typeof prefs.skipped_app_update_version === 'undefined') {
+            return;
+        }
+        const updatedPrefs: UserPreferences = { ...prefs };
+        delete updatedPrefs.skipped_app_update_version;
+        await setUserPreferences(updatedPrefs);
+    });
 
     // ##### releases #####
 
@@ -254,6 +305,21 @@ export function registerHandlers() {
         ) => openDirectoryDialog(defaultPath, title, filters),
     );
 
+    ipcMainHandler(
+        'path-exists',
+        async (_, pathToCheck: string) => await pathExists(pathToCheck),
+    );
+
+    ipcMainHandler(
+        'file-exists',
+        async (_, pathToCheck: string) => await fileExists(pathToCheck),
+    );
+
+    ipcMainHandler(
+        'ensure-directory',
+        async (_, pathToCheck: string) => await ensureDirectory(pathToCheck),
+    );
+
     ipcMainHandler('show-project-menu', (_, project: ProjectDetails) =>
         showProjectMenu(project),
     );
@@ -288,11 +354,29 @@ export function registerHandlers() {
         app.exit();
     });
 
-    ipcMainHandler('check-updates', async () => checkForUpdates());
     ipcMainHandler(
-        'promotion-clicked',
-        async (_, payload: PromotionClickPayload) => {
-            logger.info('[promotion] click', payload?.id ?? 'unknown');
+        'check-updates',
+        async (_, options?: { ignoreSkippedVersion?: boolean }) => {
+            const prefs = await getUserPreferences();
+            const skippedVersion = prefs.skipped_app_update_version;
+
+            const result = await checkForUpdates({
+                ignoreSkippedVersion: options?.ignoreSkippedVersion ?? false,
+                skippedVersion,
+            });
+
+            if (
+                skippedVersion &&
+                result.version &&
+                result.version !== skippedVersion &&
+                isNewerVersion(result.version, skippedVersion)
+            ) {
+                const updatedPrefs: UserPreferences = { ...prefs };
+                delete updatedPrefs.skipped_app_update_version;
+                await setUserPreferences(updatedPrefs);
+            }
+
+            return result;
         },
     );
 

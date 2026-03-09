@@ -26,9 +26,9 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                 </tr>
             </thead>
             <tbody className="">
-                {releases.map((row, index) => (
+                {releases.map((row) => (
                     <tr
-                        key={`installedReleaseRow_${row.version}_${index}`}
+                        key={`installedReleaseRow_${row.version}_${row.mono ? 'mono' : 'non-mono'}`}
                         className="hover:bg-base-content/30 even:bg-base-100"
                     >
                         <td>{row.version}</td>
