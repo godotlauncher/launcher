@@ -1,5 +1,6 @@
 import type { WebFrameMain } from 'electron';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { __resetCurrentAppConfigForTesting } from './config/index.js';
 import { validateEventFrame } from './utils.js';
 
 // Mock imported modules
@@ -72,6 +73,11 @@ vi.mock('electron', () => ({
 }));
 
 describe('Utils', () => {
+    afterEach(() => {
+        __resetCurrentAppConfigForTesting();
+        vi.unstubAllEnvs();
+    });
+
     describe('Validation', async () => {
         it('should error without a frame', () => {
             expect(() => validateEventFrame(null)).toThrowError(

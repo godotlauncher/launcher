@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { __resetCurrentAppConfigForTesting } from './config/index.js';
 import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver';
 
 vi.mock('electron-updater', () => ({
@@ -54,6 +55,11 @@ vi.mock('electron', () => ({
 }));
 
 describe('Path Resolver', () => {
+    afterEach(() => {
+        __resetCurrentAppConfigForTesting();
+        vi.unstubAllEnvs();
+    });
+
     it('should get UI path', () => {
         const uiPath = getUIPath();
 

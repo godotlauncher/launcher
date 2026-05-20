@@ -1,6 +1,7 @@
 import * as os from 'node:os';
 import path from 'node:path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { __resetCurrentAppConfigForTesting } from '../config/index';
 import { APP_INTERNAL_NAME } from '../constants';
 import { getDefaultDirs } from './platform.utils';
 
@@ -66,6 +67,10 @@ vi.mock('node:os', () => ({
 }));
 
 describe('platform.utils', () => {
+    afterEach(() => {
+        __resetCurrentAppConfigForTesting();
+    });
+
     describe('Windows paths', () => {
         beforeEach(() => {
             platformMock.mockReturnValue('win32');

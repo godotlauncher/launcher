@@ -11,6 +11,7 @@ import {
     suite,
     vi,
 } from 'vitest';
+import { __resetCurrentAppConfigForTesting } from '../config/index';
 import { APP_INTERNAL_NAME } from '../constants';
 import { getDefaultDirs } from './platform.utils';
 import {
@@ -101,6 +102,7 @@ const fsPromisesMock = fs.promises as unknown as MockedObject<
 
 suite('prefs.util', (_test) => {
     afterEach(() => {
+        __resetCurrentAppConfigForTesting();
         __resetPrefsCacheForTesting();
     });
     describe('should be able to get default data and config locations for Windows', () => {

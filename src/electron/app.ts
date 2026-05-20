@@ -42,6 +42,7 @@ import {
     getUserPreferences,
     setUserPreferences,
 } from './commands/userPreferences.js';
+import { getCurrentAppConfig } from './config/index.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 import {
     changeLanguage,
@@ -381,7 +382,7 @@ export function registerHandlers() {
     );
 
     ipcMainHandler('get-platform', async () => {
-        if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+        if (getCurrentAppConfig().docsScreenshots) {
             return 'win32';
         }
         return process.platform;

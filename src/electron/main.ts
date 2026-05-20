@@ -3,7 +3,13 @@ import { type Application, createApplication } from '@mariodebono/di';
 import { app, Menu } from 'electron';
 import logger from 'electron-log/main.js';
 import { AppModule } from './app.module.js';
-import { isDev } from './utils.js';
+import { configuration, setCurrentAppConfig } from './config/index.js';
+
+const appConfig = configuration({
+    args: process.argv,
+    env: process.env,
+});
+setCurrentAppConfig(appConfig);
 
 logger.initialize();
 
@@ -13,39 +19,28 @@ logger.info(
     `Electron: ${process.versions.electron}, Chrome: ${process.versions.chrome}, Node: ${process.versions.node}, V8: ${process.versions.v8}`,
 );
 logger.info(`Platform: ${process.platform}, Arch: ${process.arch}`);
-logger.info(`isDev: ${isDev()}`);
+logger.info(`isDev: ${appConfig.isDev}`);
 logger.info(`App path: ${app.getAppPath()}`);
-logger.info(`Debug flags: ${process.argv.includes('--debug')}`);
+logger.info(`Debug flags: ${appConfig.debugMode}`);
 if (process.platform === 'linux') {
-    logger.info(
-        `sandbox disabled: ${process.argv.includes('--no-sandbox') || process.argv.includes('--disable-sandbox') || process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1'}`,
-    );
+    logger.info(`sandbox disabled: ${appConfig.disableSandbox}`);
 }
 
-const devNoMenu =
-    process.argv.includes('--no-dev-menu') ||
-    process.env.GODOT_LAUNCHER_NO_DEV_MENU === '1';
-if (isDev() && devNoMenu) {
+if (appConfig.isDev && appConfig.disableDevMenu) {
     logger.info('Developer menu disabled via --no-dev-menu flag');
 }
 
-// --- sandbox flag passthrough (must be before app.whenReady / any windows) ---
-const userRequestedNoSandbox =
-    process.argv.includes('--no-sandbox') ||
-    process.argv.includes('--disable-sandbox') ||
-    process.env.GODOT_LAUNCHER_DISABLE_SANDBOX === '1';
-
 // Only matters on Linux; do it early so all child Chromium processes inherit it.
-if (process.platform === 'linux' && userRequestedNoSandbox) {
+if (process.platform === 'linux' && appConfig.disableSandbox) {
     logger.warn('Starting with --no-sandbox flag');
     app.commandLine.appendSwitch('no-sandbox');
 }
 
-if (isDev()) {
+if (appConfig.isDev) {
     logger.transports.file.level = 'debug';
     logger.transports.console.level = 'debug';
 } else {
-    if (process.argv.includes('--debug')) {
+    if (appConfig.debugMode) {
         logger.transports.file.level = 'debug';
         logger.transports.console.level = 'debug';
     } else {
@@ -60,7 +55,9 @@ Menu.setApplicationMenu(null);
 let diApp: Application | undefined;
 
 async function bootstrap(): Promise<void> {
-    diApp = await createApplication(AppModule, { logger: false });
+    diApp = await createApplication(AppModule.forRoot(appConfig), {
+        logger: false,
+    });
 
     app.on('will-quit', () => {
         void diApp?.destroyAsync().catch((error) => {

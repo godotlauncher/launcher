@@ -1,5 +1,7 @@
 import type { OnModuleInit } from '@mariodebono/di';
 import { Injectable } from '@mariodebono/di';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ConfigService } from '@mariodebono/di-config';
 import {
     app,
     BrowserWindow,
@@ -11,6 +13,7 @@ import { createDefaultFolder, initI18n, registerHandlers } from './app.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
 import { getUserPreferences } from './commands/userPreferences.js';
+import type { AppConfig } from './config/index.js';
 import { createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
@@ -18,12 +21,13 @@ import { setMainWindow } from './mainWindow.js';
 import { runMigrations } from './migrations/index.js';
 import { getAppIconPath, getPreloadPath, getUIPath } from './pathResolver.js';
 import { setAutoStart } from './utils/platform.utils.js';
-import { isDev } from './utils.js';
 
 @Injectable()
 export class ElectronApp implements OnModuleInit {
     private disposeFocusRevalidation: (() => void) | undefined;
     private mainWindow: BrowserWindow | null = null;
+
+    constructor(private readonly configService: ConfigService<AppConfig>) {}
 
     async onModuleInit(): Promise<void> {
         this.setupSingleInstanceLock();
@@ -32,7 +36,7 @@ export class ElectronApp implements OnModuleInit {
     }
 
     private setupSingleInstanceLock(): void {
-        if (isDev()) {
+        if (this.config.isDev) {
             return;
         }
 
@@ -132,7 +136,7 @@ export class ElectronApp implements OnModuleInit {
         app.dock?.setIcon(getAppIconPath());
         mainWindow.setIcon(getAppIconPath());
 
-        if (isDev()) {
+        if (this.config.isDev) {
             mainWindow.loadURL('http://localhost:5123');
         } else {
             mainWindow.loadFile(getUIPath());
@@ -142,7 +146,7 @@ export class ElectronApp implements OnModuleInit {
         this.handleCloseEvents(mainWindow);
 
         // No menu bar
-        if (isDev() && !this.isDevMenuDisabled()) {
+        if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         }
 
@@ -186,7 +190,7 @@ export class ElectronApp implements OnModuleInit {
                 }
             } else if (process.platform === 'win32') {
                 // check if launch argument has been passed --hidden
-                if (process.argv.includes('--hidden')) {
+                if (this.config.startHidden) {
                     logger.debug('Hiding window on launch with --hidden');
                     mainWindow.hide();
                     app.dock?.hide();
@@ -272,11 +276,8 @@ export class ElectronApp implements OnModuleInit {
         });
     }
 
-    private isDevMenuDisabled(): boolean {
-        return (
-            process.argv.includes('--no-dev-menu') ||
-            process.env.GODOT_LAUNCHER_NO_DEV_MENU === '1'
-        );
+    private get config(): AppConfig {
+        return this.configService.getAll();
     }
 
     private showMainWindow(): boolean {

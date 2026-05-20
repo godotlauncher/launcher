@@ -9,10 +9,16 @@ import {
     type WebContents,
     type WebFrameMain,
 } from 'electron';
+import { getCurrentAppConfigIfInitialized } from './config/index.js';
 import { getMainWindow } from './mainWindow.js';
 import { getAssetPath, getUIPath } from './pathResolver.js';
 
 export function isDev(): boolean {
+    const appConfig = getCurrentAppConfigIfInitialized();
+    if (appConfig) {
+        return appConfig.isDev;
+    }
+
     return process.env.NODE_ENV === 'development';
 }
 

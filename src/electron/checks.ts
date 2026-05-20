@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import logger from 'electron-log';
 
+import { getCurrentAppConfig } from './config/index.js';
 import { PROJECTS_FILENAME } from './constants.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import { parseGodotProjectFile } from './utils/godotProject.utils.js';
@@ -26,7 +27,7 @@ export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
 
     // check that release path exist
     for (const release of releases) {
-        if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+        if (getCurrentAppConfig().docsScreenshots) {
             release.valid = true;
             continue;
         }
@@ -84,7 +85,7 @@ export async function checkAndUpdateProjects(): Promise<ProjectDetails[]> {
 export async function checkProjectValid(
     project: ProjectDetails,
 ): Promise<ProjectDetails> {
-    if (process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1') {
+    if (getCurrentAppConfig().docsScreenshots) {
         return project;
     }
 
