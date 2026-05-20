@@ -8,7 +8,7 @@ import {
     setUserPreferences,
 } from '../commands/userPreferences.js';
 import { t } from '../i18n/index.js';
-import { getMainWindow } from '../main.js';
+import { getMainWindow } from '../mainWindow.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
     __resetJsonStoreFactoryForTesting,

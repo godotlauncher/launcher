@@ -90,7 +90,7 @@ const mainMocks = vi.hoisted(() => ({
     getMainWindow: vi.fn(),
 }));
 
-vi.mock('../main.js', () => mainMocks);
+vi.mock('../mainWindow.js', () => mainMocks);
 
 vi.mock('../i18n/index.js', () => ({
     t: (key: string) => key,

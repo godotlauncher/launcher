@@ -3,7 +3,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { dialog, Menu, nativeImage, shell } from 'electron';
 import { t } from '../i18n/index.js';
-import { getMainWindow } from '../main.js';
+import { getMainWindow } from '../mainWindow.js';
 import { getAssetPath } from '../pathResolver.js';
 import { isToolAvailable } from '../services/toolCache.js';
 import { getThemedMenuIcon, ipcWebContentsSend } from '../utils.js';

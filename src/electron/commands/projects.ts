@@ -10,7 +10,7 @@ import { checkProjectValid } from '../checks.js';
 import { PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
-import { getMainWindow } from '../main.js';
+import { getMainWindow } from '../mainWindow.js';
 import { getAssetPath } from '../pathResolver.js';
 import { getCachedTools } from '../services/toolCache.js';
 import { gitInit } from '../utils/git.utils.js';

@@ -9,7 +9,7 @@ import {
     type WebContents,
     type WebFrameMain,
 } from 'electron';
-import { getMainWindow } from './main.js';
+import { getMainWindow } from './mainWindow.js';
 import { getAssetPath, getUIPath } from './pathResolver.js';
 
 export function isDev(): boolean {
