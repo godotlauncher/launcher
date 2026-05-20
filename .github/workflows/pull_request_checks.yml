@@ -15,35 +15,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up pnpm
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          version: 10.30.3
-          run_install: false
-
       # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24' # Adjust the version as needed
-          cache: 'pnpm'
+          cache: 'npm'
 
       # Install dependencies
       - name: Install dependencies
-        run: pnpm install
+        run: npm ci
 
       # Run lint
       - name: Run lint
-        run: pnpm biome check --reporter summary
+        run: npx biome check --reporter summary
 
       # Run build:sources
       - name: Run build:sources
-        run: pnpm build:sources
+        run: npm run build:sources
         
       # Run Unit tests
       - name: Run Unit tests
-        run: pnpm test:unit
+        run: npm run test:unit
       
 
       

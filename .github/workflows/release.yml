@@ -23,29 +23,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run lint
-        run: pnpm biome check --reporter summary
+        run: npx biome check --reporter summary
 
       - name: Run build:sources
-        run: pnpm run build:sources
+        run: npm run build:sources
 
       - name: Run Unit tests
-        run: pnpm run test:unit
+        run: npm run test:unit
 
   tag-release:
     needs: checks
@@ -96,20 +90,14 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
-          run_install: false
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Extract release notes for version
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(PNPM_LOG_LEVEL=error pnpm --silent run changelog --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          NOTES=$(npm run --silent changelog -- --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
           {
             echo "notes<<EOF"
             echo "${NOTES}"
@@ -136,11 +124,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            distCommand: pnpm run dist:mac -- --publish onTag
+            distCommand: npm run dist:mac -- --publish onTag
           - os: ubuntu-latest
-            distCommand: pnpm run dist:linux -- --publish onTag
+            distCommand: npm run dist:linux -- --publish onTag
           - os: windows-latest
-            distCommand: pnpm run dist:win -- --publish onTag 
+            distCommand: npm run dist:win -- --publish onTag 
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -167,23 +155,17 @@ jobs:
       - name: Fetch tags
         run: git fetch --tags --force
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build sources
-        run: pnpm run build:sources
+        run: npm run build:sources
 
       - name: Build and publish ${{ matrix.os }} artifacts
         run: ${{ matrix.distCommand }}
