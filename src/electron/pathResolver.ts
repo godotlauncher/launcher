@@ -57,9 +57,7 @@ export function getAppIconPath() {
 
         return path.join(
             basePath,
-            darwinVersion >= 26
-                ? '/darwin/appIcon26.png'
-                : '/darwin/appIcon.png',
+            '/darwin/appIcon.png',
         );
     } else return path.join(basePath, '/default/appIcon.png');
 }
