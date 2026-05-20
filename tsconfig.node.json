@@ -6,6 +6,10 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
+
+    // Decorators
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
   "include": [
     "vite.config.ts",

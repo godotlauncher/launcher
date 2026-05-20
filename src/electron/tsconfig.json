@@ -1,5 +1,9 @@
 {
     "compilerOptions": {
+        // decorators
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        
         "strict": true,
         "target": "ESNext",
         "module": "NodeNext",

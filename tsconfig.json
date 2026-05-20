@@ -7,6 +7,10 @@
       "DOM",
       "DOM.Iterable"
     ],
+    // Decorators
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
     "module": "ESNext",
     "skipLibCheck": true,
     /* Bundler mode */
