@@ -1,0 +1,51 @@
+import type { BackendResult } from '../app/index.js';
+import type { InstalledRelease } from '../releases/index.js';
+
+export type LaunchPath = string;
+
+export type ProjectDetails = {
+    name: string;
+    version: string;
+    version_number: number;
+    renderer: string;
+    path: string;
+    editor_settings_path: string;
+    editor_settings_file: string;
+    last_opened: Date | null;
+    open_windowed?: boolean;
+    release: InstalledRelease;
+    launch_path: string;
+    config_version: 4 | 5;
+    withVSCode: boolean;
+    withGit: boolean;
+    valid: boolean;
+};
+
+export type CreateProjectResult = BackendResult & {
+    projectPath?: string;
+    projectDetails?: ProjectDetails;
+};
+
+export type AddProjectToListResult = BackendResult & {
+    projects?: ProjectDetails[];
+    newProject?: ProjectDetails;
+};
+
+export type ChangeProjectEditorResult = BackendResult & {
+    projects?: ProjectDetails[];
+};
+
+export type RendererType = {
+    5: 'FORWARD_PLUS' | 'MOBILE' | 'COMPATIBLE';
+};
+
+export type ProjectConfig = {
+    configVersion: keyof RendererType;
+    defaultRenderer: RendererType[keyof RendererType];
+    resources: { src: string; dst: string }[];
+    projectFilename: string;
+    editorConfigFilename: (editor_version: number) => string;
+    editorConfigFormat: number;
+};
+
+export type ProjectDefinition = Map<number, ProjectConfig>;

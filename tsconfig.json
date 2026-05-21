@@ -15,6 +15,15 @@
     "skipLibCheck": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "paths": {
+      "@shared": [
+        "./shared/src/index.d.ts"
+      ],
+      "@shared/*": [
+        "./shared/src/*/index.d.ts",
+        "./shared/src/*"
+      ]
+    },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -24,13 +33,12 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "types": [
-      "./globals.d.ts",
-    ]
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src/ui"
+    "src/ui",
+    "globals.d.ts",
+    "shared/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",

@@ -3,14 +3,26 @@
         // decorators
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        
+
         "strict": true,
         "target": "ESNext",
         "module": "NodeNext",
+        "paths": {
+            "@shared": [
+                "../../shared/src/index.d.ts"
+            ],
+            "@shared/*": [
+                "../../shared/src/*/index.d.ts",
+                "../../shared/src/*"
+            ]
+        },
         "outDir": "../../dist-electron",
-        "skipLibCheck": true,
-        "types": [
-            "../../globals.d.ts"
-        ]
+        "skipLibCheck": true
     },
+    "include": [
+        "**/*.ts",
+        "**/*.cts",
+        "../../globals.d.ts",
+        "../../shared/src/**/*.d.ts"
+    ]
 }
