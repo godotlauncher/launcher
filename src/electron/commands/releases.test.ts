@@ -222,28 +222,19 @@ describe('clearReleaseCaches', () => {
             100,
         );
 
-        // The module-level `storeAvailableReleases` may be the real function
-        // which writes to fs.promises.writeFile; assert that writeFile was
-        // called with the expected paths and content instead.
-        const writeFileMock = vi.mocked(
-            fs.promises.writeFile as unknown as (...args: unknown[]) => unknown,
+        expect(storeAvailableReleases).toHaveBeenCalledTimes(2);
+        expect(storeAvailableReleases).toHaveBeenNthCalledWith(
+            1,
+            defaultDirs.releaseCachePath,
+            new Date('2024-05-01T00:00:00.000Z'),
+            [stableNew, stableOld],
         );
-        expect(writeFileMock).toHaveBeenCalledTimes(2);
-        const releaseWrite = writeFileMock.mock.calls.find(
-            ([path]) => path === defaultDirs.releaseCachePath,
+        expect(storeAvailableReleases).toHaveBeenNthCalledWith(
+            2,
+            defaultDirs.prereleaseCachePath,
+            new Date('2024-06-15T00:00:00.000Z'),
+            [buildNew, buildOld],
         );
-        const prereleaseWrite = writeFileMock.mock.calls.find(
-            ([path]) => path === defaultDirs.prereleaseCachePath,
-        );
-
-        expect(releaseWrite).toBeDefined();
-        expect(prereleaseWrite).toBeDefined();
-
-        // parse the JSON written to the cache and verify release ordering
-        const releaseData = JSON.parse(releaseWrite?.[1] as string);
-        const prereleaseData = JSON.parse(prereleaseWrite?.[1] as string);
-        expect(releaseData.releases).toEqual([stableNew, stableOld]);
-        expect(prereleaseData.releases).toEqual([buildNew, buildOld]);
 
         expect(loggerInfo).toHaveBeenCalledWith(
             'Clearing cached release manifests',
