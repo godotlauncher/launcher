@@ -50,14 +50,6 @@ export function getAssetPath() {
 export function getAppIconPath() {
     const basePath = path.join(getAssetPath(), '/icons');
     if (process.platform === 'darwin') {
-        const darwinVersion = parseInt(
-            process.getSystemVersion().split('.')[0],
-            10,
-        );
-
-        return path.join(
-            basePath,
-            '/darwin/appIcon.png',
-        );
+        return path.join(basePath, '/darwin/appIcon.png');
     } else return path.join(basePath, '/default/appIcon.png');
 }

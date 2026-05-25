@@ -1,4 +1,3 @@
-import * as fs from 'node:fs';
 import logger from 'electron-log';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MIN_VERSION } from '../constants.js';
