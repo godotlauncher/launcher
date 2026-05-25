@@ -35,9 +35,13 @@ export default (<Configuration>{
     files: ['dist-electron', 'dist-react'],
     extraResources: [
         'dist-electron/preload.cjs',
-        'src/assets/**',
         {
-            from: 'src/locales',
+            from: 'main/assets',
+            to: 'assets',
+            filter: ['**/*'],
+        },
+        {
+            from: 'locales',
             to: 'locales',
             filter: ['**/*'],
         },

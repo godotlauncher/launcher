@@ -1,13 +1,9 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: allow any for testing */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const LOCALES_PATH = path.join(__dirname, '..', 'locales');
+const LOCALES_PATH = path.join(process.cwd(), 'locales');
 const AVAILABLE_LOCALES = fs
     .readdirSync(LOCALES_PATH, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

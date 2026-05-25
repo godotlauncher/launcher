@@ -70,14 +70,14 @@ describe('Path Resolver', () => {
         vi.stubEnv('NODE_ENV', 'development');
 
         const assetPath = getAssetPath();
-        expect(assetPath).toBe(path.join('/app/path', 'src/assets'));
+        expect(assetPath).toBe(path.join('/app/path', 'main/assets'));
     });
 
     it('should get asset path for prod', () => {
         vi.stubEnv('NODE_ENV', 'production');
 
         const assetPath = getAssetPath();
-        expect(assetPath).toBe(path.join('/app', 'src/assets'));
+        expect(assetPath).toBe(path.join('/app', 'assets'));
     });
 
     it('should get preload path for dev', () => {

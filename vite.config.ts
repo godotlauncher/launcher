@@ -10,9 +10,11 @@ const sharedRoot = fileURLToPath(new URL('./shared/src', import.meta.url));
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [tailwindcss(), react()],
+    root: 'renderer',
     base: './',
     build: {
-        outDir: 'dist-react'
+        outDir: '../dist-react',
+        emptyOutDir: true,
     },
     server: {
         port: 5123,
@@ -32,6 +34,5 @@ export default defineConfig({
                 replacement: `${sharedRoot}/$1`
             }
         ]
-    }
-
+    },
 });

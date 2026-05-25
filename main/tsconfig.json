@@ -9,20 +9,20 @@
         "module": "NodeNext",
         "paths": {
             "@shared": [
-                "../../shared/src/index.d.ts"
+                "../shared/src/index.d.ts"
             ],
             "@shared/*": [
-                "../../shared/src/*/index.d.ts",
-                "../../shared/src/*"
+                "../shared/src/*/index.d.ts",
+                "../shared/src/*"
             ]
         },
-        "outDir": "../../dist-electron",
+        "outDir": "../dist-electron",
         "skipLibCheck": true
     },
     "include": [
-        "**/*.ts",
-        "**/*.cts",
-        "../../globals.d.ts",
-        "../../shared/src/**/*.d.ts"
+        "src/**/*.ts",
+        "src/**/*.cts",
+        "../globals.d.ts",
+        "../shared/src/**/*.d.ts"
     ]
 }

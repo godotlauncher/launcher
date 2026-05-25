@@ -40,7 +40,9 @@ export function getUIPath() {
  * @returns {string} The full path to the assets directory.
  */
 export function getAssetPath() {
-    return path.join(app.getAppPath(), isDev() ? '.' : '..', '/src/assets');
+    return isDev()
+        ? path.join(app.getAppPath(), 'main/assets')
+        : path.join(app.getAppPath(), '..', 'assets');
 }
 
 /**

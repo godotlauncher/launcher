@@ -58,7 +58,7 @@ vi.mock('electron', () => ({
 describe(' Godot Utils ', () => {
     describe('Project template for version 5', () => {
         it('should render forward plus godot project file', async () => {
-            const templateDir = path.resolve('src/assets/templates/');
+            const templateDir = path.resolve('main/assets/templates/');
             const projectFile = await createProjectFile(
                 templateDir,
                 5,
@@ -75,7 +75,7 @@ describe(' Godot Utils ', () => {
         });
 
         it('should render mobile godot project file', async () => {
-            const templateDir = path.resolve('src/assets/templates/');
+            const templateDir = path.resolve('main/assets/templates/');
             const projectFile = await createProjectFile(
                 templateDir,
                 5,
@@ -92,7 +92,7 @@ describe(' Godot Utils ', () => {
         });
 
         it('should render gl compatibility godot project file', async () => {
-            const templateDir = path.resolve('src/assets/templates/');
+            const templateDir = path.resolve('main/assets/templates/');
             const projectFile = await createProjectFile(
                 templateDir,
                 5,

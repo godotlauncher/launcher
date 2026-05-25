@@ -75,7 +75,7 @@ For bug fixes, if you're unsure about the best solution, discuss it first on [Di
 - Follow the existing project structure and conventions.  
 - Keep commit history clean—use **squash** and **rebase** to tidy up before submitting.  
 - Use meaningful commit messages (see below).  
-- Add user-facing text to **all locale files** (`src/locales/<lang>`) so translations stay in sync.  
+- Add user-facing text to **all locale files** (`locales/<lang>`) so translations stay in sync.  
 
 ### Writing Good Commit Messages
 

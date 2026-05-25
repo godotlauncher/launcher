@@ -36,13 +36,13 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src/ui",
+    "renderer/src",
     "globals.d.ts",
     "shared/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "src/electron"
+    "main/src"
   ],
   "references": [
     {

@@ -116,7 +116,7 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
     }
 
     const localesPath = isDev()
-        ? path.join(process.cwd(), 'src', 'locales')
+        ? path.join(process.cwd(), 'locales')
         : path.join(process.resourcesPath, 'locales');
 
     const resolvedLocale = resolveLocale(locale);
@@ -225,7 +225,7 @@ export function getCurrentLanguage(): string {
  * @returns Array of available locale codes
  */
 export function getAvailableLanguages(): string[] {
-    // Update this list when adding new locale folders under src/locales
+    // Update this list when adding new locale folders under locales
     return [...AVAILABLE_LANGUAGES];
 }
 
