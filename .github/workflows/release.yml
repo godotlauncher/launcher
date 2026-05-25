@@ -128,7 +128,7 @@ jobs:
           - os: ubuntu-latest
             distCommand: npm run dist:linux -- --publish onTag
           - os: windows-latest
-            distCommand: npm run dist:win -- --publish onTag 
+            distCommand: npm run dist:win -- --publish onTag
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
