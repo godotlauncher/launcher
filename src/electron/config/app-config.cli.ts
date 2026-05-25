@@ -1,4 +1,3 @@
-import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 export type ParsedAppCliOptions = {
@@ -8,12 +7,30 @@ export type ParsedAppCliOptions = {
     startHidden?: boolean;
 };
 
+export type ParseCliArgsOptions = {
+    defaultApp?: boolean;
+};
+
+type ElectronProcess = NodeJS.Process & {
+    defaultApp?: boolean;
+};
+
+function getAppArgs(
+    args: string[],
+    options: ParseCliArgsOptions = {},
+): string[] {
+    const isDefaultElectronApp =
+        options.defaultApp ?? (process as ElectronProcess).defaultApp === true;
+    const appArgs = args.slice(isDefaultElectronApp ? 2 : 1);
+
+    return appArgs[0] === '--' ? appArgs.slice(1) : appArgs;
+}
+
 export function parseCliArgs(
     args: string[] = process.argv,
+    options: ParseCliArgsOptions = {},
 ): ParsedAppCliOptions {
-    const normalizedArgs = hideBin(args);
-    const cliArgs =
-        normalizedArgs[0] === '--' ? normalizedArgs.slice(1) : normalizedArgs;
+    const cliArgs = getAppArgs(args, options);
 
     const parsed = yargs(cliArgs)
         .exitProcess(false)

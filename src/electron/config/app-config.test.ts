@@ -4,7 +4,7 @@ import { APP_INTERNAL_NAME } from '../constants.js';
 import { configuration, resolveAppPaths } from './app-config.js';
 
 function argv(...args: string[]): string[] {
-    return ['node', 'main.js', ...args];
+    return ['/path/Godot Launcher', ...args];
 }
 
 describe('configuration', () => {
