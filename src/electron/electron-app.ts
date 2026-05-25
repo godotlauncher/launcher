@@ -176,7 +176,11 @@ export class ElectronApp implements OnModuleInit {
 
         mainWindow.on('ready-to-show', async () => {
             if (process.platform === 'darwin') {
-                if (app.getLoginItemSettings().wasOpenedAtLogin) {
+                if (this.config.startHidden) {
+                    logger.debug('Hiding window on launch with --hidden');
+                    mainWindow.hide();
+                    app.dock?.hide();
+                } else if (app.getLoginItemSettings().wasOpenedAtLogin) {
                     if (prefs.start_in_tray) {
                         logger.info(
                             'App was opened at login with prefs.start_in_tray, hiding window',

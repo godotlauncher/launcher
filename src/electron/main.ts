@@ -5,13 +5,14 @@ import logger from 'electron-log/main.js';
 import { AppModule } from './app.module.js';
 import { configuration, setCurrentAppConfig } from './config/index.js';
 
+logger.initialize();
+logger.debug('Raw process argv before CLI parsing:', process.argv);
+
 const appConfig = configuration({
     args: process.argv,
     env: process.env,
 });
 setCurrentAppConfig(appConfig);
-
-logger.initialize();
 
 logger.info('Starting Godot Launcher');
 logger.info(`Version: ${app.getVersion()}`);

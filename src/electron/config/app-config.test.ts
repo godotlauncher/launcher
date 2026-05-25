@@ -10,7 +10,12 @@ function argv(...args: string[]): string[] {
 describe('configuration', () => {
     it('resolves development runtime flags from env and cli', () => {
         const config = configuration({
-            args: argv('--debug', '--no-sandbox', '--no-dev-menu', '--hidden'),
+            args: argv(
+                '--launcher-debug',
+                '--no-sandbox',
+                '--no-dev-menu',
+                '--hidden',
+            ),
             env: {
                 NODE_ENV: 'development',
                 GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',

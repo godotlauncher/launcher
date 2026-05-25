@@ -7,30 +7,14 @@ export type ParsedAppCliOptions = {
     startHidden?: boolean;
 };
 
-export type ParseCliArgsOptions = {
-    defaultApp?: boolean;
-};
-
-type ElectronProcess = NodeJS.Process & {
-    defaultApp?: boolean;
-};
-
-function getAppArgs(
-    args: string[],
-    options: ParseCliArgsOptions = {},
-): string[] {
-    const isDefaultElectronApp =
-        options.defaultApp ?? (process as ElectronProcess).defaultApp === true;
-    const appArgs = args.slice(isDefaultElectronApp ? 2 : 1);
-
-    return appArgs[0] === '--' ? appArgs.slice(1) : appArgs;
+function getAppArgs(args: string[]): string[] {
+    return args.slice(1).filter((arg) => arg !== '--');
 }
 
 export function parseCliArgs(
     args: string[] = process.argv,
-    options: ParseCliArgsOptions = {},
 ): ParsedAppCliOptions {
-    const cliArgs = getAppArgs(args, options);
+    const cliArgs = getAppArgs(args);
 
     const parsed = yargs(cliArgs)
         .exitProcess(false)
@@ -41,9 +25,8 @@ export function parseCliArgs(
             'parse-numbers': false,
             'unknown-options-as-args': true,
         })
-        .option('debug', {
+        .option('launcher-debug', {
             type: 'boolean',
-            alias: 'd',
             default: undefined,
         })
         .option('sandbox', {
@@ -65,7 +48,7 @@ export function parseCliArgs(
         .parseSync();
 
     return {
-        debug: parsed.debug,
+        debug: parsed.launcherDebug,
         disableSandbox:
             parsed.sandbox === false || parsed.disableSandbox === true
                 ? true
