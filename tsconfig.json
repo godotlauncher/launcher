@@ -7,10 +7,23 @@
       "DOM",
       "DOM.Iterable"
     ],
+    // Decorators
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
     "module": "ESNext",
     "skipLibCheck": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "paths": {
+      "@shared": [
+        "./shared/src/index.d.ts"
+      ],
+      "@shared/*": [
+        "./shared/src/*/index.d.ts",
+        "./shared/src/*"
+      ]
+    },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -20,17 +33,15 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "types": [
-      "./globals.d.ts",
-    ]
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src/ui"
+    "renderer/src",
+    "shared/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "src/electron"
+    "main/src"
   ],
   "references": [
     {

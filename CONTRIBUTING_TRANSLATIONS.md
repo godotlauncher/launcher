@@ -6,17 +6,17 @@ Thank you for helping make Godot Launcher accessible to more people! This guide 
 
 ### 1. Create Language Folder
 
-Create a new folder in `src/locales/` with your language code:
+Create a new folder in `locales/` with your language code:
 
 ```bash
 # Examples:
-src/locales/es/       # Spanish
-src/locales/fr/       # French
-src/locales/de/       # German
-src/locales/pt-BR/    # Brazilian Portuguese
-src/locales/ja/       # Japanese
-src/locales/zh-CN/    # Simplified Chinese
-src/locales/zh-TW/    # Traditional Chinese
+locales/es/       # Spanish
+locales/fr/       # French
+locales/de/       # German
+locales/pt-BR/    # Brazilian Portuguese
+locales/ja/       # Japanese
+locales/zh-CN/    # Simplified Chinese
+locales/zh-TW/    # Traditional Chinese
 ```
 
 Use [ISO 639-1 language codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).
@@ -33,10 +33,10 @@ Copy all 11 namespace files from English to your language folder:
 
 ```bash
 # Windows PowerShell
-Copy-Item src/locales/en/*.json src/locales/YOUR_LANGUAGE/
+Copy-Item locales/en/*.json locales/YOUR_LANGUAGE/
 
 # macOS/Linux
-cp src/locales/en/*.json src/locales/YOUR_LANGUAGE/
+cp locales/en/*.json locales/YOUR_LANGUAGE/
 ```
 
 The 11 namespace files you need to translate:
@@ -174,7 +174,7 @@ Make sure your language's special characters display correctly:
 
 ### 1. Register Language in Backend i18n
 
-Edit `src/electron/i18n/index.ts` and add your language code to `AVAILABLE_LANGUAGES` and `FALLBACK_LANGUAGES`:
+Edit `main/src/i18n/index.ts` and add your language code to `AVAILABLE_LANGUAGES` and `FALLBACK_LANGUAGES`:
 
 ```typescript
 const AVAILABLE_LANGUAGES = ['en', 'it', 'pt', 'pt-BR', 'zh-CN', 'zh-TW', 'de', 'fr', 'YOUR_CODE'] as const;
@@ -193,7 +193,7 @@ const FALLBACK_LANGUAGES = {
 
 ### 2. Register Language in Frontend i18n
 
-Edit `src/ui/i18n/index.ts` and add your language code to the `fallbackLng` object:
+Edit `renderer/src/i18n/index.ts` and add your language code to the `fallbackLng` object:
 
 ```typescript
 const fallbackLng = {
@@ -210,7 +210,7 @@ const fallbackLng = {
 
 ### 3. Add Language to Selector
 
-Edit `src/ui/components/settings/LanguageSelector.tsx`:
+Edit `renderer/src/components/settings/LanguageSelector.tsx`:
 
 ```typescript
 const LANGUAGE_OPTIONS: LanguageOption[] = [
@@ -228,10 +228,10 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
 
 ```bash
 # Transpile backend
-pnpm run transpile:electron
+npm run transpile:electron
 
 # Run in development
-pnpm run dev
+npm run dev
 ```
 
 ### 5. Switch Language
@@ -302,7 +302,7 @@ Before submitting, verify:
 - [ ] **All keys kept in English**, only values translated
 - [ ] **JSON syntax valid** (no missing commas, brackets, quotes)
 - [ ] **Language added to LanguageSelector.tsx**
-- [ ] **Tested in development mode** (`pnpm run dev`)
+- [ ] **Tested in development mode** (`npm run dev`)
 - [ ] **All main areas checked**:
   - Main navigation and loading screen
   - All 4 tabs (Projects, Installs, Settings, Help)
