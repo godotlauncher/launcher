@@ -95,7 +95,7 @@ export function setBetaChannel(
 export async function startAutoUpdateChecks(
     intervalMs: number = 60 * 60 * 1000,
 ) {
-    if (!interval || !interval.hasRef()) {
+    if (!interval?.hasRef()) {
         logger.info('Starting auto update check');
         const options = await checkForUpdatesOptionsProvider?.();
         // run as soon as it starts

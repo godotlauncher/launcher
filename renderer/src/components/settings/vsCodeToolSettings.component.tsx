@@ -36,7 +36,7 @@ export const VSCodeToolSettings: React.FC<VSCodeToolSettingsProps> = ({
               appearance: 'badge-error',
           };
 
-    const showWarning = !tool || !tool.verified;
+    const showWarning = !tool?.verified;
 
     const clearCustomPath = async (event: MouseEvent) => {
         event.preventDefault();

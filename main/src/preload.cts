@@ -147,6 +147,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
 
 function ipcInvoke<Channel extends keyof EventChannelMapping>(
     key: Channel,
+    // biome-ignore lint/suspicious/noExplicitAny: required for variadic args
     ...args: any[]
 ): EventChannelMapping[Channel] {
     return electron.ipcRenderer.invoke(key, ...args);
@@ -156,12 +157,15 @@ function ipcOn<Key extends keyof EventChannelMapping>(
     key: Key,
     callback: (payload: EventChannelMapping[Key]) => void,
 ) {
-    const cb = (_: Electron.IpcRendererEvent, payload: any) =>
-        callback(payload);
+    const cb = (
+        _: Electron.IpcRendererEvent,
+        payload: EventChannelMapping[Key],
+    ) => callback(payload);
     electron.ipcRenderer.on(key, cb);
     return () => electron.ipcRenderer.off(key, cb);
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: exported for potential future use
 function ipcSend<Key extends keyof EventChannelMapping>(
     key: Key,
     payload: EventChannelMapping[Key],
