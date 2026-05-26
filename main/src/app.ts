@@ -85,10 +85,9 @@ async function createDefaultFolder() {
 
 // createDefaultFolder(); // Commented out direct call
 
-export { createDefaultFolder }; // Export the function
-
 // Export i18n initialization for use in main.ts
 export { initI18n } from './i18n/index.js';
+export { createDefaultFolder }; // Export the function
 
 function getComparableVersion(version: string): string | null {
     const validVersion = semver.valid(version);

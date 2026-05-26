@@ -11,8 +11,8 @@ import type {
     ProjectDetails,
 } from '../projects/index.js';
 import type {
-    InstallReleaseResult,
     InstalledRelease,
+    InstallReleaseResult,
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
