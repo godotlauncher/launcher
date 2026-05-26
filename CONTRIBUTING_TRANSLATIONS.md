@@ -228,10 +228,10 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
 
 ```bash
 # Transpile backend
-pnpm run transpile:electron
+npm run transpile:electron
 
 # Run in development
-pnpm run dev
+npm run dev
 ```
 
 ### 5. Switch Language
@@ -302,7 +302,7 @@ Before submitting, verify:
 - [ ] **All keys kept in English**, only values translated
 - [ ] **JSON syntax valid** (no missing commas, brackets, quotes)
 - [ ] **Language added to LanguageSelector.tsx**
-- [ ] **Tested in development mode** (`pnpm run dev`)
+- [ ] **Tested in development mode** (`npm run dev`)
 - [ ] **All main areas checked**:
   - Main navigation and loading screen
   - All 4 tabs (Projects, Installs, Settings, Help)
