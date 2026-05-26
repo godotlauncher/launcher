@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type { RendererType } from '@shared';
 import mustache from 'mustache';
 
 import { EDITOR_SETTINGS_TEMPLATE_FILENAME } from '../constants.js';

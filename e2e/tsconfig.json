@@ -6,8 +6,19 @@
         "noEmit": true,
         "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "types": ["node", "@playwright/test"],
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "paths": {
+            "@shared": ["../shared/src/index.d.ts"],
+            "@shared/*": [
+                "../shared/src/*/index.d.ts",
+                "../shared/src/*"
+            ]
+        }
     },
-    "include": ["./**/*.ts", "../globals.d.ts", "../playwright.config.ts"],
+    "include": [
+        "./**/*.ts",
+        "../playwright.config.ts",
+        "../shared/src/**/*.d.ts"
+    ],
     "exclude": ["../node_modules"]
 }

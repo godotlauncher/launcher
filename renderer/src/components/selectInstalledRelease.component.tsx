@@ -1,3 +1,4 @@
+import type { InstalledRelease } from '@shared';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

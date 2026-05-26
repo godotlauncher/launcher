@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import type { EventChannelMapping } from '@shared';
 import {
     type IpcMainInvokeEvent,
     ipcMain,

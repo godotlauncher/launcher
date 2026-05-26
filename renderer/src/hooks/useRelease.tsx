@@ -1,3 +1,8 @@
+import type {
+    InstalledRelease,
+    InstallReleaseResult,
+    ReleaseSummary,
+} from '@shared';
 import React from 'react';
 
 type ReleaseContext = {

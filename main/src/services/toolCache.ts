@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import type { CachedTool, InstalledTool } from '@shared';
 
 import { getInstalledTools } from '../commands/installedTools.js';
 import {

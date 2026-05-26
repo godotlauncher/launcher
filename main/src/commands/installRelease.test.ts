@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { AssetSummary, ReleaseSummary } from '@shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { installRelease } from './installRelease.js';
 

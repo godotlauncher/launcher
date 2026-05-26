@@ -1,3 +1,14 @@
+import type {
+    CheckForUpdatesOptions,
+    ElectronRendererApi,
+    EventChannelMapping,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+    RendererType,
+    UserPreferences,
+} from '@shared';
+
 const electron = require('electron');
 
 electron.contextBridge.exposeInMainWorld('electron', {
@@ -132,7 +143,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
         changeLanguage: (lang: string) =>
             ipcInvoke('i18n:change-language', lang),
     },
-} satisfies Window['electron']);
+} satisfies ElectronRendererApi);
 
 function ipcInvoke<Channel extends keyof EventChannelMapping>(
     key: Channel,

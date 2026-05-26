@@ -1,3 +1,4 @@
+import type { InstalledRelease, ProjectDetails } from '@shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setProjectEditor } from './setProjectEditor.js';
 

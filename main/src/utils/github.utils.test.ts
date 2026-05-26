@@ -1,3 +1,4 @@
+import type { AssetSummary } from '@shared';
 import { describe, expect, it, suite, vi } from 'vitest';
 import type { ReleaseAsset } from '../types/github.js';
 import { getReleases } from './github.utils.js';

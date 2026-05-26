@@ -1,5 +1,6 @@
 import * as os from 'node:os';
 import * as path from 'node:path';
+import type { UserPreferences } from '@shared';
 import { dialog } from 'electron';
 import logger from 'electron-log';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';

@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
+import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
 import logger from 'electron-log';
 import { PROJECTS_FILENAME } from '../constants.js';
 import type { ReleaseAsset } from '../types/github.js';

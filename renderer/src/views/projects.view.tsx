@@ -1,3 +1,4 @@
+import type { InstalledRelease, ProjectDetails } from '@shared';
 import logger from 'electron-log';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';

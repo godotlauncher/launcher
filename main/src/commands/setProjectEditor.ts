@@ -1,5 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type {
+    ChangeProjectEditorResult,
+    InstalledRelease,
+    ProjectDetails,
+} from '@shared';
 import logger from 'electron-log';
 import {
     EDITOR_CONFIG_DIRNAME,

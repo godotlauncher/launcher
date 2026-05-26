@@ -1,3 +1,4 @@
+import type { ReleaseSummary } from '@shared';
 import { HardDrive, HardDriveDownload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';

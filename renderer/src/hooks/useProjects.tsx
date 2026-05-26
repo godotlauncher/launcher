@@ -1,3 +1,11 @@
+import type {
+    AddProjectToListResult,
+    ChangeProjectEditorResult,
+    CreateProjectResult,
+    InstalledRelease,
+    ProjectDetails,
+    RendererType,
+} from '@shared';
 import {
     createContext,
     type FC,

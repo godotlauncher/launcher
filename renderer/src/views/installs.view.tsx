@@ -1,3 +1,4 @@
+import type { InstalledRelease } from '@shared';
 import logger from 'electron-log';
 
 import {

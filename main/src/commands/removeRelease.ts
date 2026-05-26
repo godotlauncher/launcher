@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import type { InstalledRelease, RemovedReleaseResult } from '@shared';
 import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';
 import {

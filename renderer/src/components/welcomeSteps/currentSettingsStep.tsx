@@ -1,3 +1,4 @@
+import type { UserPreferences } from '@shared';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
 

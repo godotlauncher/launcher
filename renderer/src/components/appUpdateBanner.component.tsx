@@ -1,3 +1,4 @@
+import type { AppUpdateMessage } from '@shared';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 

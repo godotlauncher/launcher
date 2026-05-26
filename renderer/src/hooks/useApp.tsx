@@ -1,3 +1,4 @@
+import type { AppUpdateMessage } from '@shared';
 import {
     createContext,
     type FC,

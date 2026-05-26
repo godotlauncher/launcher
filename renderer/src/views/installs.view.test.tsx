@@ -1,3 +1,4 @@
+import type { InstalledRelease } from '@shared';
 import type React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';

@@ -1,3 +1,4 @@
+import type { InstalledRelease } from '@shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createReleaseActions } from './installs.view';

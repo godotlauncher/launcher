@@ -1,3 +1,4 @@
+import type { InstalledTool, RendererType } from '@shared';
 import clsx from 'clsx';
 import { CircleHelp, Folder, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

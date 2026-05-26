@@ -1,3 +1,4 @@
+import type { InstalledRelease, ReleaseSummary } from '@shared';
 import clsx from 'clsx';
 import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
 import { useState } from 'react';

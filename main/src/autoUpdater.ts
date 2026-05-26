@@ -1,4 +1,5 @@
 import { setInterval } from 'node:timers';
+import type { AppUpdateMessage, CheckForUpdatesOptions } from '@shared';
 import { app, type BrowserWindow, type WebContents } from 'electron';
 import logger from 'electron-log';
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
@@ -11,16 +12,14 @@ let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
 
 type PrereleaseChannel = 'alpha' | 'beta' | 'rc';
+type AutoUpdateCheckOptions = CheckForUpdatesOptions & {
+    skippedVersion?: string;
+};
 type CheckForUpdatesOptionsProvider = () => Promise<
-    CheckForUpdatesOptions | undefined
+    AutoUpdateCheckOptions | undefined
 >;
 
 let checkForUpdatesOptionsProvider: CheckForUpdatesOptionsProvider | undefined;
-
-export type CheckForUpdatesOptions = {
-    ignoreSkippedVersion?: boolean;
-    skippedVersion?: string;
-};
 
 function getComparableVersion(version: string): string | null {
     const validVersion = semver.valid(version);
@@ -150,7 +149,7 @@ export async function downloadAppUpdate() {
 }
 
 export async function checkForUpdates(
-    options?: CheckForUpdatesOptions,
+    options?: AutoUpdateCheckOptions,
 ): Promise<AppUpdateMessage> {
     const ignoreSkippedVersion = options?.ignoreSkippedVersion ?? false;
     const skippedVersion = options?.skippedVersion;

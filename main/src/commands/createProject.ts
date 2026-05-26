@@ -1,5 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type {
+    CreateProjectResult,
+    InstalledRelease,
+    RendererType,
+} from '@shared';
 import logger from 'electron-log';
 
 import {
@@ -31,7 +36,7 @@ import { getUserPreferences } from './userPreferences.js';
 export async function createProject(
     projectName: string,
     release: InstalledRelease,
-    renderer: RendererType,
+    renderer: RendererType[5],
     withVSCode: boolean,
     withGit: boolean,
     overwriteProjectPath?: string,
@@ -124,7 +129,7 @@ export async function createProject(
                 config.configVersion,
                 release.version_number,
                 projectName,
-                renderer as unknown as RendererType[5],
+                renderer,
             );
         } catch (e) {
             return {
@@ -240,7 +245,7 @@ export async function createProject(
                 editor_settings_file: editorSettingsPath,
                 path: projectPath,
                 release,
-                renderer: renderer as unknown as RendererType[5],
+                renderer,
                 config_version: config.configVersion,
                 withVSCode,
                 withGit,

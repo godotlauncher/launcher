@@ -5,6 +5,7 @@ import {
 } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type { ProjectDetails } from '@shared';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import { PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';

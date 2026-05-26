@@ -1,4 +1,10 @@
 import * as fs from 'node:fs';
+import type {
+    InstalledRelease,
+    ProjectDetails,
+    RendererType,
+    UserPreferences,
+} from '@shared';
 import { app, shell } from 'electron';
 import semver from 'semver';
 import {
@@ -233,7 +239,7 @@ export function registerHandlers() {
             _,
             name: string,
             release: InstalledRelease,
-            renderer: RendererType,
+            renderer: RendererType[5],
             withVSCode: boolean,
             withGit: boolean,
             overwriteProjectPath?: string,

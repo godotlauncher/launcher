@@ -4,6 +4,13 @@ import {
     _electron,
     type ElectronApplication,
 } from '@playwright/test';
+import type {
+    AppUpdateMessage,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+    UserPreferences,
+} from '@shared';
 import releasesCache from './fixtures/releases.json' with { type: 'json' };
 import prereleasesCache from './fixtures/prereleases.json' with { type: 'json' };
 import fs from 'node:fs/promises';

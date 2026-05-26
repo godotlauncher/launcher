@@ -1,4 +1,5 @@
 import { exec } from 'node:child_process';
+import type { SetAutoStartResult } from '@shared';
 import { app } from 'electron';
 import logger from 'electron-log';
 import which from 'which';

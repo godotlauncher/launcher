@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import type { InstalledTool, UserPreferences } from '@shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as installedToolsModule from '../commands/installedTools.js';

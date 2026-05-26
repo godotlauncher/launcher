@@ -1,3 +1,4 @@
+import type { ReleaseSummary } from '@shared';
 import logger from 'electron-log';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MIN_VERSION } from '../constants.js';

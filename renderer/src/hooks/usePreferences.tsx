@@ -1,3 +1,4 @@
+import type { SetAutoStartResult, UserPreferences } from '@shared';
 import {
     createContext,
     type PropsWithChildren,

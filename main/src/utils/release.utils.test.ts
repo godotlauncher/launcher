@@ -1,3 +1,4 @@
+import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
 import {
     afterEach,
     beforeEach,

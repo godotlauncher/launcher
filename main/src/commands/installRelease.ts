@@ -1,6 +1,11 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import type {
+    InstalledRelease,
+    InstallReleaseResult,
+    ReleaseSummary,
+} from '@shared';
 import decompress from 'decompress';
 import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';

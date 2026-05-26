@@ -1,3 +1,4 @@
+import type { CachedTool } from '@shared';
 import logger from 'electron-log';
 import { Folder, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';

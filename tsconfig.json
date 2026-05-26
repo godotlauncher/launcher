@@ -37,7 +37,6 @@
   },
   "include": [
     "renderer/src",
-    "globals.d.ts",
     "shared/src/**/*.d.ts"
   ],
   "exclude": [

@@ -16,13 +16,13 @@
                 "../shared/src/*"
             ]
         },
+        "rootDir": "./src",
         "outDir": "../dist-electron",
         "skipLibCheck": true
     },
     "include": [
         "src/**/*.ts",
         "src/**/*.cts",
-        "../globals.d.ts",
         "../shared/src/**/*.d.ts"
     ]
 }

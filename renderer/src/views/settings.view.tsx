@@ -1,3 +1,4 @@
+import type { CachedTool } from '@shared';
 import clsx from 'clsx';
 import logger from 'electron-log';
 import { useCallback, useEffect, useMemo, useState } from 'react';
