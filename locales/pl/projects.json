@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "Wybierz plik projektu",
     "godotProject": "Projekt Godot",
+    "editorResolution": {
+      "title": "Wymagana wersja edytora",
+      "message": "Ten projekt wymaga edytora, który nie jest zainstalowany.",
+      "version": "Wersja",
+      "channel": "Kanał",
+      "flavor": "Wariant",
+      "baseVersion": "Baza",
+      "fallbackMessage": "Można użyć zgodnego zainstalowanego edytora jako opcji zastępczej.",
+      "editorActions": "Opcje",
+      "download": "Pobierz {{version}}",
+      "useFallback": "Użyj {{version}}",
+      "addMissing": "Dodaj z brakującym edytorem"
+    },
     "errors": {
       "projectExists": "Projekt '{{path}}' już istnieje",
       "invalidPath": "Nieprawidłowa ścieżka projektu",

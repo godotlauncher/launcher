@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "选择项目文件",
     "godotProject": "Godot 项目",
+    "editorResolution": {
+      "title": "需要编辑器版本",
+      "message": "此项目请求的编辑器尚未安装。",
+      "version": "版本",
+      "channel": "渠道",
+      "flavor": "类型",
+      "baseVersion": "基础版本",
+      "fallbackMessage": "可以使用已安装的兼容编辑器作为备选。",
+      "editorActions": "选项",
+      "download": "下载 {{version}}",
+      "useFallback": "使用 {{version}}",
+      "addMissing": "使用缺失编辑器添加"
+    },
     "errors": {
       "projectExists": "项目 '{{path}}' 已存在",
       "invalidPath": "无效的项目路径",

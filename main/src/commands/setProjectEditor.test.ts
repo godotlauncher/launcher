@@ -62,6 +62,15 @@ const vscodeUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/vscode.utils.js', () => vscodeUtilsMocks);
 
+const projectLauncherConfigMocks = vi.hoisted(() => ({
+    writeProjectLauncherConfig: vi.fn(),
+}));
+
+vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
+    writeProjectLauncherConfig:
+        projectLauncherConfigMocks.writeProjectLauncherConfig,
+}));
+
 vi.mock('electron-updater', () => ({
     default: {
         autoUpdater: {
@@ -128,6 +137,7 @@ const {
     addVSCodeNETLaunchConfig,
     addOrUpdateVSCodeRecommendedExtensions,
 } = vscodeUtilsMocks;
+const { writeProjectLauncherConfig } = projectLauncherConfigMocks;
 
 describe('setProjectEditor', () => {
     let mockProject: ProjectDetails;
@@ -236,6 +246,7 @@ describe('setProjectEditor', () => {
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
         createNewEditorSettings.mockResolvedValue('/fake/editor/settings');
         updateEditorSettings.mockResolvedValue(undefined);
+        writeProjectLauncherConfig.mockResolvedValue(undefined);
     });
 
     it('should successfully change project editor version', async () => {
@@ -245,6 +256,11 @@ describe('setProjectEditor', () => {
         expect(result.projects).toBeDefined();
         expect(result.projects?.[0].version).toBe('4.3-stable');
         expect(result.projects?.[0].release.version).toBe('4.3-stable');
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
+        );
     });
 
     it('should not return additionalInfo in the result', async () => {

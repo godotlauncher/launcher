@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "選擇專案檔",
     "godotProject": "Godot 專案",
+    "editorResolution": {
+      "title": "需要編輯器版本",
+      "message": "此專案要求的編輯器尚未安裝。",
+      "version": "版本",
+      "channel": "管道",
+      "flavor": "類型",
+      "baseVersion": "基礎版本",
+      "fallbackMessage": "可以使用已安裝的相容編輯器作為備用。",
+      "editorActions": "選項",
+      "download": "下載 {{version}}",
+      "useFallback": "使用 {{version}}",
+      "addMissing": "使用缺失的編輯器新增"
+    },
     "errors": {
       "projectExists": "專案 '{{path}}' 已存在",
       "invalidPath": "無效的專案路徑",

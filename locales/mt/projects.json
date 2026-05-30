@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "Agħżel Fajl tal-Proġett",
     "godotProject": "Proġett Godot",
+    "editorResolution": {
+      "title": "Verżjoni tal-editur meħtieġa",
+      "message": "Dan il-proġett jeħtieġ editur li mhuwiex installat.",
+      "version": "Verżjoni",
+      "channel": "Kanal",
+      "flavor": "Varjant",
+      "baseVersion": "Bażi",
+      "fallbackMessage": "Editur kompatibbli installat jistaʼ jintuża bħala alternattiva.",
+      "editorActions": "Għażliet",
+      "download": "Niżżel {{version}}",
+      "useFallback": "Uża {{version}}",
+      "addMissing": "Żid b’editur nieqes"
+    },
     "errors": {
       "projectExists": "Proġett '{{path}}' diġà jeżisti",
       "invalidPath": "Indirizz tal-proġett invalidu",

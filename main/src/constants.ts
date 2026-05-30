@@ -13,5 +13,6 @@ export const INSTALLED_RELEASES_FILENAME = 'installed-releases.json';
 export const PRERELEASES_FILENAME = 'prereleases.json';
 export const MIGRATIONS_FILENAME = 'migrations.json';
 export const EDITOR_CONFIG_DIRNAME = '.editor_config';
+export const PROJECT_LAUNCHER_CONFIG_FILENAME = '.godotlauncher';
 
 export const EDITOR_SETTINGS_TEMPLATE_FILENAME = 'editor_settings.template.mst';

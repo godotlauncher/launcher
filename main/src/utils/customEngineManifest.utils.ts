@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { InstalledRelease } from '@shared';
+import type { EditorFlavor, InstalledRelease } from '@shared';
 import { z } from 'zod';
 
 const manifestPlatformSchema = z.object({
@@ -20,7 +20,7 @@ const engineManifestSchema = z.object({
     name: z.string().min(1),
     base_version: z.string().regex(/^\d+\.\d+(?:\.\d+)?$/),
     prerelease: z.boolean().optional().default(false),
-    mono: z.boolean(),
+    flavor: z.string().trim().min(1),
     config_version: z.union([z.literal(4), z.literal(5)]),
     platforms: z.array(manifestPlatformSchema).min(1),
 });
@@ -49,6 +49,10 @@ function platformMatchesCurrent(platform: EngineManifestPlatform): boolean {
 
 function resolveManifestPath(manifestDir: string, targetPath: string): string {
     return path.resolve(manifestDir, targetPath);
+}
+
+function flavorToMono(flavor: EditorFlavor): boolean {
+    return flavor === 'dotnet';
 }
 
 function formatManifestError(error: z.ZodError): string {
@@ -114,13 +118,15 @@ export async function parseCustomEngineManifest(
     return {
         version: manifest.version,
         name: manifest.name,
+        base_version: manifest.base_version,
+        flavor: manifest.flavor,
         version_number: versionNumber,
         install_path: manifestDir,
         editor_path: editorPath,
         console_path: consolePath,
         platform: os.platform(),
         arch: os.arch(),
-        mono: manifest.mono,
+        mono: flavorToMono(manifest.flavor),
         prerelease: manifest.prerelease,
         config_version: manifest.config_version,
         published_at: null,

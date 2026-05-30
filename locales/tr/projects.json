@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "Proje Dosyasını Seç",
     "godotProject": "Godot Projesi",
+    "editorResolution": {
+      "title": "Editör sürümü gerekli",
+      "message": "Bu proje yüklü olmayan bir editör istiyor.",
+      "version": "Sürüm",
+      "channel": "Kanal",
+      "flavor": "Varyant",
+      "baseVersion": "Temel",
+      "fallbackMessage": "Uyumlu yüklü bir editör yedek seçenek olarak kullanılabilir.",
+      "editorActions": "Seçenekler",
+      "download": "{{version}} indir",
+      "useFallback": "{{version}} kullan",
+      "addMissing": "Eksik editörle ekle"
+    },
     "errors": {
       "projectExists": "'{{path}}' projesi zaten mevcut",
       "invalidPath": "Geçersiz proje yolu",

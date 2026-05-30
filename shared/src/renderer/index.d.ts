@@ -5,6 +5,7 @@ import type {
 } from '../app/index.js';
 import type { UserPreferences } from '../preferences/index.js';
 import type {
+    AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CreateProjectResult,
@@ -84,7 +85,10 @@ export type ElectronRendererApi = {
         overwriteProjectPath?: string,
     ) => Promise<CreateProjectResult>;
     removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
-    addProject: (path: string) => Promise<AddProjectToListResult>;
+    addProject: (
+        path: string,
+        options?: AddProjectOptions,
+    ) => Promise<AddProjectToListResult>;
     setProjectEditor: (
         project: ProjectDetails,
         release: InstalledRelease,

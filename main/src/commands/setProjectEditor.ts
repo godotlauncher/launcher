@@ -5,6 +5,7 @@ import type {
     InstalledRelease,
     ProjectDetails,
 } from '@shared';
+import { app } from 'electron';
 import logger from 'electron-log';
 import {
     EDITOR_CONFIG_DIRNAME,
@@ -24,6 +25,7 @@ import {
 } from '../utils/godotProject.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
+import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import {
     getProjectsSnapshot,
     storeProjectsList,
@@ -112,7 +114,7 @@ export async function setProjectEditor(
             newRelease.version_number,
         );
         const newEditorSettingsFile = path.resolve(
-            path.dirname(currentProject.launch_path),
+            projectEditorPath,
             'editor_data',
             editorSettingsFilename,
         );
@@ -195,6 +197,11 @@ export async function setProjectEditor(
         updatedProjects[projectIndex] = updatedProject;
 
         try {
+            await writeProjectLauncherConfig(
+                updatedProject.path,
+                updatedProject.release,
+                app.getVersion(),
+            );
             const storedProjects = await storeProjectsList(
                 projectListPath,
                 updatedProjects,

@@ -14,6 +14,7 @@ import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
 } from '../utils/godot.utils.js';
+import { getReleaseBaseVersion } from '../utils/projectLauncherConfig.utils.js';
 import {
     addStoredInstalledRelease,
     downloadReleaseAsset,
@@ -218,6 +219,11 @@ async function installReleaseInternal(
 
         const installedRelease: InstalledRelease = {
             version: release.version,
+            base_version: getReleaseBaseVersion({
+                version: release.version,
+                version_number: release.version_number,
+            }),
+            flavor: mono ? 'dotnet' : 'gdscript',
             version_number: release.version_number,
             install_path: releasePath,
             editor_path,

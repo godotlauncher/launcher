@@ -3,7 +3,23 @@ import type { ProjectDetails } from '@shared';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
-import { initializeProjectGit, setProjectVSCode } from './projects.js';
+import {
+    initializeProjectGit,
+    launchProject,
+    setProjectVSCode,
+} from './projects.js';
+
+const childProcessMocks = vi.hoisted(() => ({
+    spawn: vi.fn(() => ({
+        on: vi.fn(),
+        unref: vi.fn(),
+        stderr: null,
+    })),
+}));
+
+vi.mock('node:child_process', () => ({
+    spawn: childProcessMocks.spawn,
+}));
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -66,6 +82,12 @@ const installedToolsMocks = vi.hoisted(() => ({
 
 vi.mock('./installedTools.js', () => installedToolsMocks);
 
+const userPreferencesMocks = vi.hoisted(() => ({
+    getUserPreferences: vi.fn(),
+}));
+
+vi.mock('./userPreferences.js', () => userPreferencesMocks);
+
 const toolCacheMocks = vi.hoisted(() => ({
     getCachedTools: vi.fn(),
     isToolAvailable: vi.fn(),
@@ -86,6 +108,15 @@ const utilsMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../utils.js', () => utilsMocks);
+
+const projectLauncherConfigMocks = vi.hoisted(() => ({
+    writeProjectLauncherConfig: vi.fn(),
+}));
+
+vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
+    writeProjectLauncherConfig:
+        projectLauncherConfigMocks.writeProjectLauncherConfig,
+}));
 
 const mainMocks = vi.hoisted(() => ({
     getMainWindow: vi.fn(),
@@ -166,12 +197,87 @@ const {
 } = vscodeUtilsMocks;
 const { gitInit } = gitUtilsMocks;
 const { getInstalledTools } = installedToolsMocks;
+const { getUserPreferences } = userPreferencesMocks;
 const { getCachedTools } = toolCacheMocks;
 const { getAssetPath } = pathResolverMocks;
 const { ipcWebContentsSend } = utilsMocks;
+const { writeProjectLauncherConfig } = projectLauncherConfigMocks;
 const { getMainWindow } = mainMocks;
 
 let windowMock: { webContents: unknown };
+
+describe('launchProject', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        windowMock = {
+            webContents: {},
+            minimize: vi.fn(),
+            close: vi.fn(),
+        } as unknown as { webContents: unknown };
+        getMainWindow.mockReturnValue(windowMock);
+        getUserPreferences.mockResolvedValue({ post_launch_action: 'none' });
+        storeProjectsList.mockImplementation(
+            async (_path, projects, _options) => projects,
+        );
+        writeProjectLauncherConfig.mockResolvedValue(undefined);
+    });
+
+    it('writes project launcher config when launching a stored project', async () => {
+        const project: ProjectDetails = {
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.3-stable',
+            version_number: 4.3,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.3-stable',
+                version_number: 4.3,
+                install_path: '/godot',
+                editor_path: '/godot/godot',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/project/editor/Godot.app',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        await launchProject(project);
+
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
+        );
+        expect(storeProjectsList).toHaveBeenCalledWith(
+            path.resolve('/config', 'projects.json'),
+            expect.arrayContaining([
+                expect.objectContaining({
+                    path: '/projects/demo',
+                    last_opened: expect.any(Date),
+                }),
+            ]),
+            expect.objectContaining({ expectedVersion: 'v1' }),
+        );
+    });
+});
 
 describe('setProjectVSCode', () => {
     beforeEach(() => {

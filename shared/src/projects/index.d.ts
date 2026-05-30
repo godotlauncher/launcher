@@ -1,5 +1,9 @@
 import type { BackendResult } from '../app/index.js';
-import type { InstalledRelease } from '../releases/index.js';
+import type {
+    EditorChannel,
+    EditorFlavor,
+    InstalledRelease,
+} from '../releases/index.js';
 
 export type LaunchPath = string;
 
@@ -29,9 +33,39 @@ export type CreateProjectResult = BackendResult & {
     projectDetails?: ProjectDetails;
 };
 
+export type ProjectLauncherEditorRequest = {
+    channel: EditorChannel;
+    flavor: EditorFlavor;
+    base_version: string;
+    version: string;
+};
+
+export type AddProjectOptions =
+    | {
+          resolution?: undefined;
+      }
+    | {
+          resolution: 'add_missing';
+      }
+    | {
+          resolution: 'use_fallback';
+          release: InstalledRelease;
+      };
+
+export type AddProjectEditorResolution = {
+    requested: ProjectLauncherEditorRequest;
+    fallback?: InstalledRelease;
+    downloadable?: {
+        version: string;
+        flavor: EditorFlavor;
+        prerelease: boolean;
+    };
+};
+
 export type AddProjectToListResult = BackendResult & {
     projects?: ProjectDetails[];
     newProject?: ProjectDetails;
+    editorResolution?: AddProjectEditorResolution;
 };
 
 export type ChangeProjectEditorResult = BackendResult & {

@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "プロジェクトファイルを選択",
     "godotProject": "Godotプロジェクト",
+    "editorResolution": {
+      "title": "エディターのバージョンが必要です",
+      "message": "このプロジェクトは、インストールされていないエディターを要求しています。",
+      "version": "バージョン",
+      "channel": "チャンネル",
+      "flavor": "フレーバー",
+      "baseVersion": "ベース",
+      "fallbackMessage": "互換性のあるインストール済みエディターを代替として使用できます。",
+      "editorActions": "オプション",
+      "download": "{{version}} をダウンロード",
+      "useFallback": "{{version}} を使用",
+      "addMissing": "不足しているエディターで追加"
+    },
     "errors": {
       "projectExists": "プロジェクト '{{path}}' は既に存在します",
       "invalidPath": "無効なプロジェクトパス",

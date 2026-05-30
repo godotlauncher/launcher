@@ -5,6 +5,7 @@ import type {
     InstalledRelease,
     RendererType,
 } from '@shared';
+import { app } from 'electron';
 import logger from 'electron-log';
 
 import {
@@ -25,6 +26,7 @@ import {
 } from '../utils/godot.utils.js';
 import { createNewEditorSettings } from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
+import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
 import {
     addOrUpdateVSCodeRecommendedExtensions,
@@ -259,6 +261,11 @@ export async function createProject(
         if (!projectDetails) {
             throw new Error('Missing project details after creation');
         }
+        await writeProjectLauncherConfig(
+            projectPath,
+            projectDetails.release,
+            app.getVersion(),
+        );
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),
             projectDetails,

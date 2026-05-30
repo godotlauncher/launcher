@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Dialog } from './dialog.component';
 
 interface AlertProps {
@@ -9,15 +9,22 @@ interface AlertProps {
     shouldClose: () => void;
 }
 
-export interface ConfirmButton {
-    isCancel?: boolean;
-    typeClass: string;
-    text: string;
-    onClick?: () => boolean | Promise<boolean | undefined>;
-}
+export type ConfirmButtonClick = () => boolean | Promise<boolean | undefined>;
+
+export type ConfirmButton =
+    | {
+          key: string;
+          render: (close: () => void) => ReactNode;
+      }
+    | {
+          isCancel?: boolean;
+          typeClass: string;
+          text: string;
+          onClick?: ConfirmButtonClick;
+      };
 
 const onClickShouldClose = (
-    callback?: () => boolean | Promise<boolean | undefined>,
+    callback?: ConfirmButtonClick,
     shouldClose?: () => void,
 ) => {
     const result = callback?.();
@@ -48,24 +55,35 @@ export const Confirm: React.FC<AlertProps> = ({
             icon={icon}
             title={title}
             footer={buttons?.map((button, index) => (
-                <button
-                    type="button"
-                    key={`btnAlert_${button.text}`}
-                    data-testid={`btnAlert${index}`}
-                    onClick={() => {
-                        if (button.isCancel) {
-                            shouldClose();
-                            void button.onClick?.();
-                        } else {
-                            onClickShouldClose(button.onClick, () =>
-                                shouldClose(),
-                            );
-                        }
-                    }}
-                    className={`btn ${button.typeClass}`}
+                <Fragment
+                    key={
+                        'render' in button
+                            ? button.key
+                            : `${button.typeClass}_${button.text}`
+                    }
                 >
-                    {button.text}
-                </button>
+                    {'render' in button ? (
+                        button.render(shouldClose)
+                    ) : (
+                        <button
+                            type="button"
+                            data-testid={`btnAlert${index}`}
+                            onClick={() => {
+                                if (button.isCancel) {
+                                    shouldClose();
+                                    void button.onClick?.();
+                                } else {
+                                    onClickShouldClose(button.onClick, () =>
+                                        shouldClose(),
+                                    );
+                                }
+                            }}
+                            className={`btn ${button.typeClass}`}
+                        >
+                            {button.text}
+                        </button>
+                    )}
+                </Fragment>
             ))}
         >
             {content}

@@ -15,6 +15,7 @@ import {
     type TypedJsonStore,
 } from './jsonStoreFactory.js';
 import { getDefaultDirs } from './platform.utils.js';
+import { getReleaseBaseVersion } from './projectLauncherConfig.utils.js';
 import { getStoredProjectsList } from './projects.utils.js';
 
 export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
@@ -295,6 +296,7 @@ export function dedupeInstalledReleases(
         const normalizedRelease = {
             ...release,
             valid: typeof release.valid === 'boolean' ? release.valid : true,
+            base_version: getReleaseBaseVersion(release),
         };
         const identity = getInstalledReleaseIdentity(normalizedRelease);
         const existing = releasesByIdentity.get(identity);
@@ -319,6 +321,7 @@ function normalizeInstalledReleases(
         .map((release) => ({
             ...release,
             valid: typeof release.valid === 'boolean' ? release.valid : true,
+            base_version: getReleaseBaseVersion(release),
         }))
         .sort((a, b) => a.version_number - b.version_number);
 }

@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import type {
+    AddProjectOptions,
     InstalledRelease,
     ProjectDetails,
     RendererType,
@@ -281,7 +282,8 @@ export function registerHandlers() {
 
     ipcMainHandler(
         'add-project',
-        async (_, projectPath: string) => await addProject(projectPath),
+        async (_, projectPath: string, options?: AddProjectOptions) =>
+            await addProject(projectPath, options),
     );
 
     ipcMainHandler(

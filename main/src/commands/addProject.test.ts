@@ -81,6 +81,25 @@ const godotUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/godot.utils.js', () => godotUtilsMocks);
 
+const projectLauncherConfigMocks = vi.hoisted(() => ({
+    readProjectLauncherConfig: vi.fn(),
+    writeProjectLauncherConfig: vi.fn(),
+    getReleaseBaseVersion: vi.fn((release) => {
+        if (release.base_version) return release.base_version;
+        return release.version.match(/(\d+\.\d+)/)?.[1] ?? '0.0';
+    }),
+    getReleaseChannel: vi.fn((release) =>
+        release.source === 'custom' ? 'custom' : 'official',
+    ),
+    getReleaseFlavor: vi.fn((release) =>
+        release.mono ? 'dotnet' : 'gdscript',
+    ),
+}));
+
+vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
+    ...projectLauncherConfigMocks,
+}));
+
 vi.mock('electron-updater', () => ({
     default: {
         autoUpdater: {
@@ -159,6 +178,8 @@ const {
     getProjectDefinition,
     SetProjectEditorRelease: setProjectEditorRelease,
 } = godotUtilsMocks;
+const { readProjectLauncherConfig, writeProjectLauncherConfig } =
+    projectLauncherConfigMocks;
 
 describe('addProject', () => {
     beforeEach(() => {
@@ -231,6 +252,8 @@ describe('addProject', () => {
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
         createNewEditorSettings.mockResolvedValue('/fake/editor/settings');
         updateEditorSettings.mockResolvedValue(undefined);
+        readProjectLauncherConfig.mockResolvedValue(null);
+        writeProjectLauncherConfig.mockResolvedValue(undefined);
     });
 
     it('falls back to an installed mono editor when no flavor-specific match is found', async () => {
@@ -242,6 +265,243 @@ describe('addProject', () => {
         expect(setProjectEditorRelease).toHaveBeenCalledWith(
             expect.any(String),
             expect.objectContaining({ mono: true, version: '4.3-stable' }),
+        );
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
+        );
+    });
+
+    it('prefers an exact .godotlauncher editor match when importing', async () => {
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            editor: {
+                channel: 'official',
+                flavor: 'gdscript',
+                base_version: '4.3',
+                version: '4.3-beta1',
+            },
+        });
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.3-stable',
+                version_number: 4.3,
+                install_path: '/install/4.3',
+                editor_path: '/install/4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: true,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            {
+                version: '4.3-beta1',
+                version_number: 4.3,
+                install_path: '/install/4.3-beta1',
+                editor_path: '/install/4.3-beta1/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: true,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.release.version).toBe('4.3-beta1');
+        expect(result.newProject?.release.mono).toBe(false);
+    });
+
+    it('returns a resolution for an official .godotlauncher version with an installed fallback', async () => {
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            editor: {
+                channel: 'official',
+                flavor: 'gdscript',
+                base_version: '4.3',
+                version: '4.3-beta1',
+            },
+        });
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.3-stable',
+                base_version: '4.3',
+                version_number: 4.3,
+                install_path: '/install/4.3',
+                editor_path: '/install/4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(false);
+        expect(result.editorResolution).toMatchObject({
+            requested: {
+                channel: 'official',
+                flavor: 'gdscript',
+                base_version: '4.3',
+                version: '4.3-beta1',
+            },
+            fallback: expect.objectContaining({ version: '4.3-stable' }),
+            downloadable: {
+                version: '4.3-beta1',
+                flavor: 'gdscript',
+                prerelease: true,
+            },
+        });
+        expect(addProjectToList).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it('returns a resolution for a missing custom .godotlauncher version without fallback', async () => {
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            editor: {
+                channel: 'custom',
+                flavor: 'gdscript',
+                base_version: '4.6',
+                version: '4.6-missing',
+            },
+        });
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.3-stable',
+                base_version: '4.3',
+                version_number: 4.3,
+                install_path: '/install/4.3',
+                editor_path: '/install/4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: true,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            {
+                version: '4.6-custom.1',
+                base_version: '4.6',
+                name: 'Acme Godot',
+                version_number: 4.6,
+                install_path: '/engines/acme',
+                editor_path: '/engines/acme/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: true,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+                source: 'custom',
+                manifest_path:
+                    '/engines/acme/godotlauncher-editor-manifest.json',
+                managed_by_launcher: false,
+            },
+        ]);
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(false);
+        expect(result.editorResolution).toMatchObject({
+            requested: {
+                channel: 'custom',
+                flavor: 'gdscript',
+                base_version: '4.6',
+                version: '4.6-missing',
+            },
+        });
+        expect(result.editorResolution?.fallback).toBeUndefined();
+        expect(result.editorResolution?.downloadable).toBeUndefined();
+        expect(addProjectToList).not.toHaveBeenCalled();
+    });
+
+    it('adds an invalid project when requested .godotlauncher editor should be kept missing', async () => {
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            editor: {
+                channel: 'custom',
+                flavor: 'gdscript',
+                base_version: '4.6',
+                version: '4.6-missing',
+            },
+        });
+
+        const result = await addProject('/fake/project/project.godot', {
+            resolution: 'add_missing',
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.newProject).toMatchObject({
+            valid: false,
+            invalid_reason: 'missing_editor',
+            launch_path: '',
+            release: {
+                version: '4.6-missing',
+                source: 'custom',
+                valid: false,
+                editor_path: '',
+                install_path: '',
+            },
+        });
+        expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it('uses an explicit fallback and writes .godotlauncher with the selected editor', async () => {
+        const fallbackRelease = {
+            version: '4.3-stable',
+            base_version: '4.3',
+            version_number: 4.3,
+            install_path: '/install/4.3',
+            editor_path: '/install/4.3/Godot',
+            platform: process.platform,
+            arch: process.arch,
+            mono: false,
+            prerelease: false,
+            config_version: 5,
+            published_at: null,
+            valid: true,
+        };
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            editor: {
+                channel: 'official',
+                flavor: 'gdscript',
+                base_version: '4.3',
+                version: '4.3-beta1',
+            },
+        });
+
+        const result = await addProject('/fake/project/project.godot', {
+            resolution: 'use_fallback',
+            release: fallbackRelease,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.release.version).toBe('4.3-stable');
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
         );
     });
 

@@ -25,6 +25,19 @@
   "addProject": {
     "selectFile": "Выбрать файл проекта",
     "godotProject": "Проект Godot",
+    "editorResolution": {
+      "title": "Требуется версия редактора",
+      "message": "Этому проекту требуется редактор, который не установлен.",
+      "version": "Версия",
+      "channel": "Канал",
+      "flavor": "Вариант",
+      "baseVersion": "База",
+      "fallbackMessage": "Можно использовать совместимый установленный редактор как запасной вариант.",
+      "editorActions": "Параметры",
+      "download": "Скачать {{version}}",
+      "useFallback": "Использовать {{version}}",
+      "addMissing": "Добавить с отсутствующим редактором"
+    },
     "errors": {
       "projectExists": "Проект '{{path}}' уже существует",
       "invalidPath": "Неверный путь проекта",

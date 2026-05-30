@@ -23,9 +23,14 @@ export type AssetSummary = {
     mono: boolean;
 };
 
+export type EditorChannel = 'official' | 'custom';
+export type EditorFlavor = 'gdscript' | 'dotnet' | (string & {});
+
 export type InstalledRelease = {
     version: string;
     name?: string;
+    base_version?: string;
+    flavor?: EditorFlavor;
     version_number: number;
     install_path: string;
     editor_path: string;

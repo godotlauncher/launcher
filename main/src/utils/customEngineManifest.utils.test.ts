@@ -24,7 +24,7 @@ const manifest = {
     version: '4.6-custom.1',
     name: 'Acme Godot 4.6 Custom Engine',
     base_version: '4.6',
-    mono: false,
+    flavor: 'gdscript',
     config_version: 5,
     platforms: [
         {
@@ -52,6 +52,7 @@ describe('parseCustomEngineManifest', () => {
         expect(release).toMatchObject({
             version: '4.6-custom.1',
             name: 'Acme Godot 4.6 Custom Engine',
+            base_version: '4.6',
             version_number: 4.6,
             install_path: '/engines/acme',
             editor_path: '/engines/acme/Godot.app',
@@ -64,6 +65,32 @@ describe('parseCustomEngineManifest', () => {
             managed_by_launcher: false,
             valid: true,
         });
+    });
+
+    it('maps dotnet flavor to mono releases', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({ ...manifest, flavor: 'dotnet' }),
+        );
+
+        const release = await parseCustomEngineManifest(
+            '/engines/acme/godotlauncher-editor-manifest.json',
+        );
+
+        expect(release.mono).toBe(true);
+        expect(release.flavor).toBe('dotnet');
+    });
+
+    it('preserves custom flavors as non-mono releases', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({ ...manifest, flavor: 'steam' }),
+        );
+
+        const release = await parseCustomEngineManifest(
+            '/engines/acme/godotlauncher-editor-manifest.json',
+        );
+
+        expect(release.mono).toBe(false);
+        expect(release.flavor).toBe('steam');
     });
 
     it('uses the manifest prerelease flag when provided', async () => {
@@ -81,6 +108,28 @@ describe('parseCustomEngineManifest', () => {
     it('fails when required fields are missing', async () => {
         fsMocks.readFile.mockResolvedValue(
             JSON.stringify({ ...manifest, name: undefined }),
+        );
+
+        await expect(
+            parseCustomEngineManifest(
+                '/engines/acme/godotlauncher-editor-manifest.json',
+            ),
+        ).rejects.toThrow('Invalid custom editor manifest');
+    });
+
+    it('fails when flavor is missing or empty', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({ ...manifest, flavor: undefined }),
+        );
+
+        await expect(
+            parseCustomEngineManifest(
+                '/engines/acme/godotlauncher-editor-manifest.json',
+            ),
+        ).rejects.toThrow('Invalid custom editor manifest');
+
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({ ...manifest, flavor: '' }),
         );
 
         await expect(

@@ -1,4 +1,5 @@
 import type {
+    AddProjectOptions,
     CheckForUpdatesOptions,
     ElectronRendererApi,
     EventChannelMapping,
@@ -106,7 +107,8 @@ electron.contextBridge.exposeInMainWorld('electron', {
     getProjectsDetails: () => ipcInvoke('get-projects-details'),
     removeProject: (project: ProjectDetails) =>
         ipcInvoke('remove-project', project),
-    addProject: (projectPath: string) => ipcInvoke('add-project', projectPath),
+    addProject: (projectPath: string, options?: AddProjectOptions) =>
+        ipcInvoke('add-project', projectPath, options),
     setProjectEditor: (project: ProjectDetails, release: InstalledRelease) =>
         ipcInvoke('set-project-editor', project, release),
 
