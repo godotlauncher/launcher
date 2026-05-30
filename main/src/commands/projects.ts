@@ -131,7 +131,7 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
 
     if (process.platform === 'darwin') {
         // macOS
-        const options = ['-a', command, '--args', '--path', project.path, '-e'];
+        const options = [command, '--args', '--path', project.path, '-e'];
         if (project.open_windowed) {
             options.push('-w');
         }
