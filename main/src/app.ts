@@ -314,7 +314,8 @@ export function registerHandlers() {
             defaultPath: string,
             title: string,
             filters: Electron.FileFilter[],
-        ) => openFileDialog(defaultPath, title, filters),
+            properties?: Electron.OpenDialogOptions['properties'],
+        ) => openFileDialog(defaultPath, title, filters, properties),
     );
 
     ipcMainHandler(
@@ -324,7 +325,8 @@ export function registerHandlers() {
             defaultPath: string,
             title?: string,
             filters?: Electron.FileFilter[],
-        ) => openDirectoryDialog(defaultPath, title, filters),
+            properties?: Electron.OpenDialogOptions['properties'],
+        ) => openDirectoryDialog(defaultPath, title, filters, properties),
     );
 
     ipcMainHandler(

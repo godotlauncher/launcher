@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { dialog, shell } from 'electron';
+import { getMainWindow } from '../mainWindow.js';
 
 export async function openShellFolder(pathToOpen: string): Promise<void> {
     // make sure the path is resolved
@@ -26,12 +27,13 @@ export async function openFileDialog(
     filters: Electron.FileFilter[] = [
         { name: 'Any File', extensions: ['*.*'] },
     ],
+    properties: Electron.OpenDialogOptions['properties'] = ['openFile'],
 ): Promise<Electron.OpenDialogReturnValue> {
-    return await dialog.showOpenDialog({
+    return await dialog.showOpenDialog(getMainWindow(), {
         defaultPath: path.resolve(defaultPath),
         filters,
         title,
-        properties: ['openFile'],
+        properties,
     });
 }
 
@@ -39,17 +41,22 @@ export async function openDirectoryDialog(
     defaultPath: string,
     title: string = 'Select Folder',
     filters: Electron.FileFilter[] = [],
+    properties: Electron.OpenDialogOptions['properties'] = [
+        'openDirectory',
+        'createDirectory',
+        'promptToCreate',
+    ],
 ): Promise<Electron.OpenDialogReturnValue> {
     defaultPath = path.resolve(defaultPath + path.sep);
 
     if (!fs.existsSync(defaultPath)) {
-        fs.promises.mkdir(defaultPath, { recursive: true });
+        await fs.promises.mkdir(defaultPath, { recursive: true });
     }
 
-    return await dialog.showOpenDialog({
+    return await dialog.showOpenDialog(getMainWindow(), {
         defaultPath,
         filters,
         title,
-        properties: ['openDirectory', 'createDirectory', 'promptToCreate'],
+        properties,
     });
 }

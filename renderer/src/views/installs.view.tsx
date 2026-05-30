@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
@@ -58,6 +59,8 @@ export const InstallsView: React.FC = () => {
         useState<boolean>(false);
     const [isDraggingSupportedManifest, setIsDraggingSupportedManifest] =
         useState<boolean>(true);
+    const [selectingCustomEditorManifest, setSelectingCustomEditorManifest] =
+        useState<boolean>(false);
     const dragCounterRef = useRef<number>(0);
 
     const { addAlert, addConfirm } = useAlerts();
@@ -213,22 +216,27 @@ export const InstallsView: React.FC = () => {
     };
 
     const handleAddCustomEngine = async () => {
-        const result = await window.electron.openFileDialog(
-            '',
-            t('customEditor.selectManifestTitle'),
-            [
-                {
-                    name: t('customEditor.manifestFilterName'),
-                    extensions: ['json'],
-                },
-            ],
-        );
+        setSelectingCustomEditorManifest(true);
+        try {
+            const result = await window.electron.openFileDialog(
+                '',
+                t('customEditor.selectManifestTitle'),
+                [
+                    {
+                        name: t('customEditor.manifestFilterName'),
+                        extensions: ['json'],
+                    },
+                ],
+            );
 
-        if (result.canceled || result.filePaths.length === 0) {
-            return;
+            if (result.canceled || result.filePaths.length === 0) {
+                return;
+            }
+
+            await registerManifest(result.filePaths[0]);
+        } finally {
+            setSelectingCustomEditorManifest(false);
         }
-
-        await registerManifest(result.filePaths[0]);
     };
 
     const dragEventHasSupportedManifest = (
@@ -431,6 +439,12 @@ export const InstallsView: React.FC = () => {
 
     return (
         <>
+            {selectingCustomEditorManifest && (
+                <WaitingForDialogOverlay
+                    className="z-20"
+                    message={t('customEditor.waitingForDialog')}
+                />
+            )}
             <section
                 className="flex flex-col h-full w-full overflow-auto p-1"
                 aria-label={t('title')}

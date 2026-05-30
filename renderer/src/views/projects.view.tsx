@@ -17,6 +17,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import gitIconColor from '../assets/icons/git_icon_color.svg';
 import vscodeIcon from '../assets/icons/vscode.svg';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
+import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
@@ -361,21 +362,17 @@ export const ProjectsView: React.FC = () => {
     return (
         <>
             {addingProject && (
-                <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
-                    <p className="loading loading-infinity loading-lg"></p>
-                    {loadingProgress ? (
-                        <p className="text-white text-xl font-semibold">
-                            {t('messages.addingProjects', {
-                                current: loadingProgress.current,
-                                total: loadingProgress.total,
-                            })}
-                        </p>
-                    ) : (
-                        <p className="text-white text-xl font-semibold">
-                            {t('messages.waitingForDialog')}
-                        </p>
-                    )}
-                </div>
+                <WaitingForDialogOverlay
+                    className="z-20"
+                    message={
+                        loadingProgress
+                            ? t('messages.addingProjects', {
+                                  current: loadingProgress.current,
+                                  total: loadingProgress.total,
+                              })
+                            : t('messages.waitingForDialog')
+                    }
+                />
             )}
 
             {changeEditorFor && (

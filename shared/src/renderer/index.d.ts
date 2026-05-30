@@ -36,11 +36,13 @@ export type ElectronRendererApi = {
         defaultPath: string,
         title: string,
         filters?: Electron.FileFilter[],
+        properties?: Electron.OpenDialogOptions['properties'],
     ) => Promise<Electron.OpenDialogReturnValue>;
     openDirectoryDialog: (
         defaultPath: string,
         title: string,
         filters?: Electron.FileFilter[],
+        properties?: Electron.OpenDialogOptions['properties'],
     ) => Promise<Electron.OpenDialogReturnValue>;
     openShellFolder: (pathToOpen: string) => Promise<void>;
 

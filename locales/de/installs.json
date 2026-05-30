@@ -35,6 +35,7 @@
   "customEditor": {
     "selectManifestTitle": "Add Custom Editor Manifest",
     "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
     "replace": {
       "title": "Replace custom editor?",
       "message": "A custom editor with this version is already registered.",

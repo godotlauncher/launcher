@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { CircleHelp, Folder, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
@@ -440,12 +441,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     return (
         <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
             {selectingFolder && (
-                <div className="absolute inset-0 z-30 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
-                    <p className="loading loading-infinity loading-lg"></p>
-                    <p className="text-white text-xl font-semibold">
-                        {t('projects:messages.waitingForDialog')}
-                    </p>
-                </div>
+                <WaitingForDialogOverlay
+                    className="z-30"
+                    message={t('projects:messages.waitingForDialog')}
+                />
             )}
             <div className="flex flex-col w-[900px] h-full  overflow-hidden">
                 <div className="flex flex-col gap-2 w-full">

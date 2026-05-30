@@ -66,6 +66,7 @@ vi.mock('react-i18next', () => {
         'installs:badges.dotNet': '.NET',
         'installs:badges.prerelease': 'prerelease',
         'installs:messages.noReleasesCta': 'No releases installed yet.',
+        'installs:customEditor.waitingForDialog': 'Waiting for dialog...',
         'common:buttons.retry': 'Retry',
         'common:buttons.reinstall': 'Reinstall',
         'common:buttons.remove': 'Remove',
