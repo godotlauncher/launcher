@@ -29,11 +29,8 @@
     "error": "Żball",
     "errorMessage": "Kien hemm żball waqt li qed tneħħi r-release."
   },
-  "selectFolder": "Agħżel Folder",
-  "selectFile": "Agħżel Fajl",
   "error": {
-    "title": "Żball",
-    "generic": "Kien hemm żball: {{message}}"
+    "title": "Żball"
   },
   "preferencesError": {
     "title": "Żball fil-qari tal-preferenzi",

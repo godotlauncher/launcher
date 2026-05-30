@@ -59,6 +59,9 @@ export type ElectronRendererApi = {
         mono: boolean,
     ) => Promise<InstallReleaseResult>;
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
+    reinstallRelease: (
+        release: InstalledRelease,
+    ) => Promise<InstallReleaseResult>;
 
     openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;

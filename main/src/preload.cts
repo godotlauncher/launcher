@@ -33,6 +33,8 @@ electron.contextBridge.exposeInMainWorld('electron', {
         ipcInvoke('install-release', release, mono),
     removeRelease: (release: InstalledRelease) =>
         ipcInvoke('remove-release', release),
+    reinstallRelease: (release: InstalledRelease) =>
+        ipcInvoke('reinstall-release', release),
 
     openEditorProjectManager: (release: InstalledRelease) =>
         ipcInvoke('open-editor-project-manager', release),

@@ -12,8 +12,6 @@
     "ready": "Lest"
   },
   "navigation": {
-    "next": "Li jmiss",
-    "previous": "Ta' Qabel",
     "start": "Ibda",
     "nextMacOS": "Li jmiss: MacOS",
     "nextWindows": "Li jmiss: Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "Li jmiss: Settings Kurrenti",
     "nextSetLocations": "Li jmiss: Issettja Indirizzi",
     "nextCustomizeBehavior": "Li jmiss: Ippersonalizza l-Imġiba",
-    "nextWindowsSymlink": "Li jmiss: Windows Symlink",
     "nextReady": "Li jmiss: Lest",
     "backWelcome": "Lura: Merħba",
     "backMacOS": "Lura: MacOS",
     "backWindows": "Lura: Windows",
-    "backLinux": "Lura: Linux",
     "backCurrentSettings": "Lura: Settings Kurrenti",
     "backSetLocations": "Lura: Issettja Indirizzi",
     "backCustomizeBehavior": "Lura: Ippersonalizza l-Imġiba"

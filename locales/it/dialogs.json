@@ -29,11 +29,8 @@
     "error": "Errore",
     "errorMessage": "Si è verificato un errore durante la rimozione della versione."
   },
-  "selectFolder": "Seleziona cartella",
-  "selectFile": "Seleziona file",
   "error": {
-    "title": "Errore",
-    "generic": "Si è verificato un errore: {{message}}"
+    "title": "Errore"
   },
   "preferencesError": {
     "title": "Errore nella lettura delle preferenze",

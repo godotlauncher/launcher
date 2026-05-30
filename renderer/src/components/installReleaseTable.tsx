@@ -6,17 +6,26 @@ import { useRelease } from '../hooks/useRelease';
 type InstallReleaseTableProps = {
     releases: ReleaseSummary[];
     onInstall: (release: ReleaseSummary, mono: boolean) => void;
+    onReinstall: (release: ReleaseSummary, mono: boolean) => void;
 };
 
 export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
     releases,
     onInstall,
+    onReinstall,
 }) => {
-    const { t } = useTranslation('installEditor');
-    const { isInstalledRelease, isDownloadingRelease } = useRelease();
+    const { t } = useTranslation(['installEditor', 'common']);
+    const { getInstalledRelease, isDownloadingRelease } = useRelease();
 
     const installReleaseRequest = (release: ReleaseSummary, mono: boolean) => {
         onInstall(release, mono);
+    };
+
+    const reinstallReleaseRequest = (
+        release: ReleaseSummary,
+        mono: boolean,
+    ) => {
+        onReinstall(release, mono);
     };
 
     return (
@@ -42,7 +51,9 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                         <td>{row.version}</td>
                         <td>{row.published_at?.split('T')[0]}</td>
                         <td className="flex flex-row gap-2">
-                            {isInstalledRelease(row.version, false) ? (
+                            {getInstalledRelease(row.version, false)?.valid !==
+                                false &&
+                            getInstalledRelease(row.version, false) ? (
                                 <p
                                     className="tooltip tooltip-left flex items-center text-info gap-1"
                                     data-tip={t(
@@ -58,6 +69,34 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                     {t('table.gdscript')}{' '}
                                     {t('table.installing')}
                                 </div>
+                            ) : getInstalledRelease(row.version, false)
+                                  ?.valid === false ? (
+                                <p
+                                    className="tooltip tooltip-left flex items-center"
+                                    data-tip={t(
+                                        'table.tooltips.reinstallGDScript',
+                                        { version: row.version },
+                                    )}
+                                >
+                                    <button
+                                        type="button"
+                                        data-testid={`btnReinstall${row.version}`}
+                                        className="flex items-end gap-1 text-sm text-warning"
+                                        onClick={() =>
+                                            reinstallReleaseRequest(row, false)
+                                        }
+                                        aria-label={t(
+                                            'table.tooltips.reinstallGDScript',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <HardDriveDownload />
+                                        {t('buttons.reinstall', {
+                                            ns: 'common',
+                                        })}{' '}
+                                        {t('table.gdscript')}
+                                    </button>
+                                </p>
                             ) : (
                                 <p
                                     className="tooltip tooltip-left flex items-center"
@@ -85,7 +124,9 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                             )}
                         </td>
                         <td>
-                            {isInstalledRelease(row.version, true) ? (
+                            {getInstalledRelease(row.version, true)?.valid !==
+                                false &&
+                            getInstalledRelease(row.version, true) ? (
                                 <p
                                     className="tooltip tooltip-left flex items-center gap-1 text-xs text-info"
                                     data-tip={t(
@@ -101,6 +142,34 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                     <div className="loading loading-ring loading-sm text-current"></div>
                                     {t('table.dotnet')} {t('table.installing')}
                                 </div>
+                            ) : getInstalledRelease(row.version, true)
+                                  ?.valid === false ? (
+                                <p
+                                    className="tooltip tooltip-left flex items-center"
+                                    data-tip={t(
+                                        'table.tooltips.reinstallDotNet',
+                                        { version: row.version },
+                                    )}
+                                >
+                                    <button
+                                        type="button"
+                                        data-testid={`btnReinstall${row.version}-mono`}
+                                        className="flex flex-row text-xs gap-1 items-end text-warning"
+                                        onClick={() =>
+                                            reinstallReleaseRequest(row, true)
+                                        }
+                                        aria-label={t(
+                                            'table.tooltips.reinstallDotNet',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <HardDriveDownload />
+                                        {t('buttons.reinstall', {
+                                            ns: 'common',
+                                        })}{' '}
+                                        {t('table.dotnet')}
+                                    </button>
+                                </p>
                             ) : (
                                 <p
                                     className="tooltip tooltip-left flex items-center"

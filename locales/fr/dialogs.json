@@ -29,11 +29,8 @@
     "error": "Erreur",
     "errorMessage": "Une erreur s'est produite lors de la suppression de la version."
   },
-  "selectFolder": "Sélectionner un dossier",
-  "selectFile": "Sélectionner un fichier",
   "error": {
-    "title": "Erreur",
-    "generic": "Une erreur s'est produite : {{message}}"
+    "title": "Erreur"
   },
   "preferencesError": {
     "title": "Erreur de lecture des préférences",

@@ -2,19 +2,14 @@
   "buttons": {
     "ok": "Ок",
     "cancel": "Отмена",
-    "close": "Закрыть",
-    "save": "Сохранить",
-    "delete": "Удалить",
     "continue": "Продолжить",
-    "skip": "Пропустить",
     "select": "Выбрать",
     "retry": "Повторить",
     "remove": "Удалить",
     "copyPath": "Копировать путь",
-    "openPath": "Открыть путь"
+    "openPath": "Открыть путь",
+    "reinstall": "Reinstall"
   },
-  "loading": "Загрузка...",
-  "saving": "Сохранение...",
   "error": "Ошибка",
   "success": "Успешно",
   "warning": "Предупреждение",
@@ -36,12 +31,6 @@
       "joinCommunity": "Присоединиться к сообществу"
     },
     "update": {
-      "available": "доступна, перезапустите Godot Launcher для установки.",
-      "version": "Версия {{version}}",
-      "newVersion": "Новая версия",
-      "restartNow": "Перезапустить сейчас.",
-      "bannerWithVersion": "Версия {{version}} доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
-      "bannerNoVersion": "Новая версия доступна, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
       "availableWithVersion": "Версия {{version}} доступна. <DownloadButton>Скачать обновление</DownloadButton> или <SkipButton>Пропустить эту версию</SkipButton>",
       "availableNoVersion": "Доступна новая версия. <DownloadButton>Скачать обновление</DownloadButton>",
       "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",

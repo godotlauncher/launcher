@@ -29,11 +29,8 @@
     "error": "Error",
     "errorMessage": "An error occurred while removing the release."
   },
-  "selectFolder": "Select Folder",
-  "selectFile": "Select File",
   "error": {
-    "title": "Error",
-    "generic": "An error occurred: {{message}}"
+    "title": "Error"
   },
   "preferencesError": {
     "title": "Error reading preferences",

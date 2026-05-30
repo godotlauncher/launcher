@@ -12,8 +12,6 @@
     "ready": "Fertig"
   },
   "navigation": {
-    "next": "Weiter",
-    "previous": "Zurück",
     "start": "Starten",
     "nextMacOS": "Weiter: macOS",
     "nextWindows": "Weiter: Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "Weiter: Aktuelle Einstellungen",
     "nextSetLocations": "Weiter: Speicherorte festlegen",
     "nextCustomizeBehavior": "Weiter: Verhalten anpassen",
-    "nextWindowsSymlink": "Weiter: Windows Symlink",
     "nextReady": "Weiter: Fertig",
     "backWelcome": "Zurück: Willkommen",
     "backMacOS": "Zurück: macOS",
     "backWindows": "Zurück: Windows",
-    "backLinux": "Zurück: Linux",
     "backCurrentSettings": "Zurück: Aktuelle Einstellungen",
     "backSetLocations": "Zurück: Speicherorte festlegen",
     "backCustomizeBehavior": "Zurück: Verhalten anpassen"

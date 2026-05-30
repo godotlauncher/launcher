@@ -51,6 +51,7 @@ export type EventChannelMapping = {
     'get-installed-releases': Promise<InstalledRelease[]>;
     'install-release': Promise<InstallReleaseResult>;
     'remove-release': Promise<RemovedReleaseResult>;
+    'reinstall-release': Promise<InstallReleaseResult>;
 
     'open-editor-project-manager': Promise<void>;
     'check-all-releases-valid': Promise<InstalledRelease[]>;

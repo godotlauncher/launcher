@@ -12,8 +12,6 @@
     "ready": "Prêt"
   },
   "navigation": {
-    "next": "Suivant",
-    "previous": "Précédent",
     "start": "Démarrer",
     "nextMacOS": "Suivant : MacOS",
     "nextWindows": "Suivant : Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "Suivant : Paramètres actuels",
     "nextSetLocations": "Suivant : Définir les emplacements",
     "nextCustomizeBehavior": "Suivant : Personnaliser le comportement",
-    "nextWindowsSymlink": "Suivant : Lien symbolique Windows",
     "nextReady": "Suivant : Prêt",
     "backWelcome": "Retour : Bienvenue",
     "backMacOS": "Retour : MacOS",
     "backWindows": "Retour : Windows",
-    "backLinux": "Retour : Linux",
     "backCurrentSettings": "Retour : Paramètres actuels",
     "backSetLocations": "Retour : Définir les emplacements",
     "backCustomizeBehavior": "Retour : Personnaliser le comportement"
@@ -78,7 +74,7 @@
     "intro": "Godot Launcher crée une copie de l'éditeur pour chaque projet.",
     "whyTitle": "Pourquoi ?",
     "reason": "La création de liens symboliques sur macOS n'est pas limitée par les permissions, mais l'ouverture de l'éditeur via un lien symbolique s'est avérée peu fiable. Pour garantir une expérience fluide, nous fournissons une copie dédiée du moteur pour chaque projet. Bien que Godot ne pèse qu'environ 200 Mo (et ce n'est généralement pas un problème), sachez que plusieurs projets peuvent entraîner une utilisation accrue du disque.",
-  "dotnetNote": "NOTE : Si vous travaillez avec des éditeurs .NET, vous devrez installer le SDK .NET depuis le <ButtonLink>site web Microsoft .NET</ButtonLink> <Icon />"
+    "dotnetNote": "NOTE : Si vous travaillez avec des éditeurs .NET, vous devrez installer le SDK .NET depuis le <ButtonLink>site web Microsoft .NET</ButtonLink> <Icon />"
   },
   "windowsStep": {
     "title": "Note Windows",
@@ -86,13 +82,13 @@
     "change1": "La création de liens symboliques sous Windows nécessite des privilèges d'administrateur et l'exécution de commandes élevées. Le lanceur élève maintenant les permissions uniquement lors de la création de liens symboliques.",
     "change2": "Vous verrez une invite UAC uniquement si vous n'êtes pas <code>Administrateur</code> sur votre PC et si le <code>Mode développeur</code> n'est pas activé.",
     "change3": "Prêt à essayer les liens symboliques ? Activez <strong>Liens symboliques de l'éditeur</strong> dans les Paramètres lorsque vous êtes prêt pour l'invite d'élévation occasionnelle.",
-  "dotnetNote": "NOTE : Si vous utilisez des éditeurs basés sur .NET, vous devez installer le SDK .NET depuis le <ButtonLink>site web Microsoft .NET</ButtonLink> <Icon />"
+    "dotnetNote": "NOTE : Si vous utilisez des éditeurs basés sur .NET, vous devez installer le SDK .NET depuis le <ButtonLink>site web Microsoft .NET</ButtonLink> <Icon />"
   },
   "linuxStep": {
     "title": "Note Linux",
     "intro": "Godot Launcher utilise des liens symboliques pour chaque projet",
     "whyTitle": "Pourquoi ?",
     "reason": "Contrairement aux versions Windows et MacOS, Linux utilise des liens symboliques vers l'éditeur pour lancer des projets. Cela économise de l'espace disque et permet des paramètres par projet.",
-  "dotnetNote": "NOTE : Si vous travaillez avec des éditeurs .NET, vous devrez installer le SDK .NET depuis le <ButtonLink>site web Microsoft .NET</ButtonLink> <Icon />"
+    "dotnetNote": "NOTE : Si vous travaillez avec des éditeurs .NET, vous devrez installer le SDK .NET depuis le <ButtonLink>site web Microsoft .NET</ButtonLink> <Icon />"
   }
 }

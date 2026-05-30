@@ -19,8 +19,6 @@
     "forwardPlus": "Forward Plus",
     "mobile": "Mobil",
     "compatible": "Uyumlu",
-    "gles3": "GLES3",
-    "gles2": "GLES2",
     "forwardPlusFeatures": {
       "desktop": "Yalnızca masaüstü platformları destekler.",
       "advanced3d": "Gelişmiş 3D grafikler mevcut.",
@@ -59,7 +57,6 @@
     "create": "Proje Oluştur"
   },
   "errors": {
-    "projectExists": "'{{name}}' projesi zaten mevcut",
     "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",
     "failedProjectDefinition": "{{version}} sürümü için proje tanımı alınamadı",
     "folderNotEmpty": "'{{name}}' proje klasörü zaten mevcut ve boş değil, mevcut bir projeyi eklemek mi istediniz?",

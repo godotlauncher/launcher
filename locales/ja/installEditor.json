@@ -5,8 +5,7 @@
   },
   "tabs": {
     "released": "リリース済み",
-    "prerelease": "プレリリース",
-    "installed": "インストール済み"
+    "prerelease": "プレリリース"
   },
   "filters": {
     "showInstalledOnly": "インストール済みのみ表示"
@@ -16,8 +15,6 @@
   },
   "errors": {
     "fetchError": "リリースの取得中にエラーが発生しました。",
-    "tryAgainLater": "後ほど",
-    "tryAgain": "再試行してください",
     "retryInline": "もう一度お試しください。<Button>再試行</Button>",
     "noPlatformAsset": "プラットフォーム用のアセットが見つかりません",
     "invalidEditorVersion": "無効なエディタバージョン",
@@ -25,7 +22,8 @@
     "unsupportedFileExtension": "サポートされていないファイル拡張子"
   },
   "messages": {
-    "installError": "リリースのインストール中に問題が発生しました"
+    "installError": "リリースのインストール中に問題が発生しました",
+    "reinstallError": "Something went wrong when reinstalling release"
   },
   "table": {
     "headers": {
@@ -42,9 +40,10 @@
       "installed": "インストール済み - {{version}}",
       "installedGDScript": "インストール済み - {{version}}（GDScript）",
       "installedDotNet": "インストール済み - {{version}} .NET",
-      "download": "{{version}}をダウンロード",
       "downloadGDScript": "{{version}}（GDScript）をダウンロード",
-      "downloadDotNet": "{{version}} .NETをダウンロード"
+      "downloadDotNet": "{{version}} .NETをダウンロード",
+      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
+      "reinstallDotNet": "Reinstall {{version}} .NET"
     },
     "status": {
       "unavailable": "利用不可"

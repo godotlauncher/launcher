@@ -29,11 +29,8 @@
     "error": "Hata",
     "errorMessage": "Sürüm kaldırılırken bir hata oluştu."
   },
-  "selectFolder": "Klasör Seç",
-  "selectFile": "Dosya Seç",
   "error": {
-    "title": "Hata",
-    "generic": "Bir hata oluştu: {{message}}"
+    "title": "Hata"
   },
   "preferencesError": {
     "title": "Tercihler okunurken hata oluştu",

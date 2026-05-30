@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease, InstallReleaseResult } from '@shared';
 import logger from 'electron-log';
 
 import {
@@ -16,6 +16,9 @@ import { InstallEditorSubView } from './subViews/installEditor.subview';
 
 type ReleaseActionDependencies = {
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;
+    reinstallRelease: (
+        release: InstalledRelease,
+    ) => Promise<InstallReleaseResult>;
     removeRelease: (release: InstalledRelease) => Promise<void>;
 };
 
@@ -23,10 +26,19 @@ export const createReleaseActions = (
     dependencies: ReleaseActionDependencies,
 ) => ({
     retry: async () => dependencies.checkAllReleasesValid(),
+    reinstall: async (release: InstalledRelease) => {
+        return await dependencies.reinstallRelease(release);
+    },
     remove: async (release: InstalledRelease) => {
         await dependencies.removeRelease(release);
     },
 });
+
+type ReleaseAction = 'retry' | 'reinstall' | 'remove';
+
+function getReleaseActionKey(release: InstalledRelease): string {
+    return `${release.version}_${release.mono ? 'mono' : 'standard'}`;
+}
 
 export const InstallsView: React.FC = () => {
     const { t } = useTranslation(['installs', 'common']);
@@ -39,9 +51,27 @@ export const InstallsView: React.FC = () => {
         downloadingReleases,
         showReleaseMenu,
         checkAllReleasesValid,
+        reinstallRelease,
         removeRelease,
-        loading: releasesLoading,
     } = useRelease();
+    const [busyAction, setBusyAction] = useState<{
+        releaseKey: string;
+        action: ReleaseAction;
+    } | null>(null);
+
+    const isReleaseActionBusy = (
+        release: InstalledRelease,
+        action?: ReleaseAction,
+    ) => {
+        if (
+            !busyAction ||
+            busyAction.releaseKey !== getReleaseActionKey(release)
+        ) {
+            return false;
+        }
+
+        return action ? busyAction.action === action : true;
+    };
 
     const onOpenReleaseMoreOptions = (
         e: React.MouseEvent,
@@ -52,8 +82,7 @@ export const InstallsView: React.FC = () => {
     };
 
     const getFilteredRows = () => {
-        // merge downloading and installed releases for proper display
-        const all = installedReleases.concat(
+        const downloadingReleaseRows: InstalledRelease[] =
             downloadingReleases.map((r) => ({
                 version: r.version,
                 version_number: -1,
@@ -66,8 +95,27 @@ export const InstallsView: React.FC = () => {
                 config_version: 5,
                 published_at: r.published_at,
                 valid: true,
-            })),
-        );
+            }));
+        const all = installedReleases
+            .map((release) => {
+                const downloadingRelease = downloadingReleaseRows.find(
+                    (r) =>
+                        r.version === release.version &&
+                        r.mono === release.mono,
+                );
+
+                return downloadingRelease ?? release;
+            })
+            .concat(
+                downloadingReleaseRows.filter(
+                    (release) =>
+                        !installedReleases.some(
+                            (installedRelease) =>
+                                installedRelease.version === release.version &&
+                                installedRelease.mono === release.mono,
+                        ),
+                ),
+            );
 
         if (textSearch === '') return all.sort(sortReleases);
         const selection = all.filter((row) =>
@@ -77,11 +125,20 @@ export const InstallsView: React.FC = () => {
     };
 
     const releaseActions = useMemo(
-        () => createReleaseActions({ checkAllReleasesValid, removeRelease }),
-        [checkAllReleasesValid, removeRelease],
+        () =>
+            createReleaseActions({
+                checkAllReleasesValid,
+                reinstallRelease,
+                removeRelease,
+            }),
+        [checkAllReleasesValid, reinstallRelease, removeRelease],
     );
 
     const handleRetry = async (release: InstalledRelease) => {
+        setBusyAction({
+            releaseKey: getReleaseActionKey(release),
+            action: 'retry',
+        });
         addAlert(t('common:info'), t('messages.revalidating'));
         try {
             const releases = await releaseActions.retry();
@@ -167,14 +224,53 @@ export const InstallsView: React.FC = () => {
                 <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
             logger.error(error);
+        } finally {
+            setBusyAction(null);
+        }
+    };
+
+    const handleReinstall = async (release: InstalledRelease) => {
+        setBusyAction({
+            releaseKey: getReleaseActionKey(release),
+            action: 'reinstall',
+        });
+        try {
+            const result = await releaseActions.reinstall(release);
+
+            if (result.success) {
+                return;
+            }
+
+            addAlert(
+                t('common:error'),
+                result.error || t('messages.reinstallFailed'),
+                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+            );
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                t('messages.reinstallFailed'),
+                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+            );
+            logger.error(error);
+        } finally {
+            setBusyAction(null);
         }
     };
 
     const handleRemove = async (release: InstalledRelease) => {
-        if (releasesLoading) {
+        if (isReleaseActionBusy(release)) {
             return;
         }
-        await releaseActions.remove(release);
+        setBusyAction({
+            releaseKey: getReleaseActionKey(release),
+            action: 'remove',
+        });
+        try {
+            await releaseActions.remove(release);
+        } finally {
+            setBusyAction(null);
+        }
     };
 
     return (
@@ -277,23 +373,26 @@ export const InstallsView: React.FC = () => {
                                                         <>
                                                             <span>
                                                                 {t(
-                                                                    'messages.unavailableHint',
+                                                                    'messages.unavailableHintWithReinstall',
                                                                 )}
                                                             </span>
                                                             <div className="flex flex-row flex-wrap gap-2">
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-ghost btn-xs flex items-center gap-2"
+                                                                    className="btn btn-xs flex items-center gap-2"
                                                                     onClick={() =>
                                                                         handleRetry(
                                                                             row,
                                                                         )
                                                                     }
-                                                                    disabled={
-                                                                        releasesLoading
-                                                                    }
+                                                                    disabled={isReleaseActionBusy(
+                                                                        row,
+                                                                    )}
                                                                 >
-                                                                    {releasesLoading && (
+                                                                    {isReleaseActionBusy(
+                                                                        row,
+                                                                        'retry',
+                                                                    ) && (
                                                                         <span className="loading loading-spinner loading-xs"></span>
                                                                     )}
                                                                     {t(
@@ -305,18 +404,60 @@ export const InstallsView: React.FC = () => {
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-ghost btn-xs"
+                                                                    data-testid={`btnReinstallRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
+                                                                    className="btn btn-primary btn-xs flex items-center gap-2"
+                                                                    onClick={() =>
+                                                                        handleReinstall(
+                                                                            row,
+                                                                        )
+                                                                    }
+                                                                    disabled={isReleaseActionBusy(
+                                                                        row,
+                                                                    )}
+                                                                    aria-label={t(
+                                                                        'buttons.reinstall',
+                                                                        {
+                                                                            ns: 'common',
+                                                                        },
+                                                                    )}
+                                                                >
+                                                                    {isReleaseActionBusy(
+                                                                        row,
+                                                                        'reinstall',
+                                                                    ) && (
+                                                                        <span className="loading loading-spinner loading-xs"></span>
+                                                                    )}
+                                                                    {t(
+                                                                        'buttons.reinstall',
+                                                                        {
+                                                                            ns: 'common',
+                                                                        },
+                                                                    )}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    data-testid={`btnRemoveRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
+                                                                    className="btn btn-error btn-xs"
                                                                     onClick={() =>
                                                                         handleRemove(
                                                                             row,
                                                                         )
                                                                     }
-                                                                    disabled={
-                                                                        releasesLoading
-                                                                    }
+                                                                    disabled={isReleaseActionBusy(
+                                                                        row,
+                                                                    )}
                                                                 >
+                                                                    {isReleaseActionBusy(
+                                                                        row,
+                                                                        'remove',
+                                                                    ) && (
+                                                                        <span className="loading loading-spinner loading-xs"></span>
+                                                                    )}
                                                                     {t(
-                                                                        'buttons.uninstall',
+                                                                        'buttons.remove',
+                                                                        {
+                                                                            ns: 'common',
+                                                                        },
                                                                     )}
                                                                 </button>
                                                             </div>

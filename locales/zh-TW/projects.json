@@ -2,12 +2,7 @@
   "title": "專案",
   "buttons": {
     "add": "新增",
-    "newProject": "新專案",
-    "addProject": "新增專案",
-    "createProject": "建立專案",
-    "refresh": "重新整理",
-    "launch": "啟動",
-    "changeEditor": "更改編輯器"
+    "newProject": "新專案"
   },
   "search": {
     "placeholder": "搜尋"
@@ -16,15 +11,11 @@
     "name": "名稱",
     "modified": "修改時間",
     "editor": "編輯器",
-    "version": "版本",
-    "lastOpened": "上次開啟",
-    "actions": "動作",
     "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
     "dotNetProject": "這是一個 .NET 專案",
     "prerelease": "使用預先釋出的 Godot 編輯器版本",
     "windowedMode": "此專案以視窗模式開啟",
     "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
-    "invalidRelease": "編輯器不可用",
     "gitProject": "此專案使用 Git 進行版本控制"
   },
   "addProject": {
@@ -43,16 +34,7 @@
     }
   },
   "messages": {
-    "noProjects": "未找到專案",
-    "noReleases": "未安裝任何發行版本。",
-    "goToInstalls": "前往安裝。",
     "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
-    "projectAdded": "已成功新增專案",
-    "projectRemoved": "專案已移除",
-    "editorChanged": "編輯器更改成功",
-    "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
-    "monoProject": "這是一個 .NET 專案",
-    "prereleaseVersion": "使用預先釋出的 Godot 編輯器版本",
     "waitingForDialog": "等待對話方塊以新增專案...",
     "needReleaseInstalled": "您需要至少安裝一個發行版本才能新增專案",
     "addProjectError": "新增專案時發生錯誤",
@@ -69,29 +51,6 @@
       "invalidEditorVersion": "無效的編輯器版本",
       "differentMajorVersion": "無法使用不同主版本的編輯器\n為保護您的專案，請參考官方遷移指南：https://godotengine.org"
     }
-  },
-  "createProject": {
-    "title": "新專案",
-    "projectName": "專案名稱",
-    "projectPath": "專案路徑",
-    "selectVersion": "選擇 Godot 版本",
-    "renderer": "渲染器",
-    "editNow": "立即編輯",
-    "setupVSCode": "將 Visual Studio Code 設為文字編輯器",
-    "vscodeNotInstalled": "此電腦未安裝 Visual Studio Code",
-    "noVersionsInstalled": "尚未安裝任何 Godot 版本",
-    "errors": {
-      "nameRequired": "必須填寫專案名稱",
-      "pathRequired": "必須填寫專案路徑",
-      "invalidPath": "無效的專案路徑"
-    }
-  },
-  "searchPlaceholder": "搜尋專案…",
-  "editorSettings": {
-    "title": "編輯器設定",
-    "alreadyExists": "用於 {{version}} [.NET] 的編輯器設定已經存在，為保護你的設定未進行任何變更。",
-    "switchingToDotNet": "如果你正從 GDScript 切換到 .NET 版本，可以在 <strong>Editor Settings -> Dotnent</strong>（進階開關：true）中手動設定外部編輯器。",
-    "readMore": "了解更多"
   },
   "toggleVSCode": {
     "errors": {

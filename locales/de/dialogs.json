@@ -29,11 +29,8 @@
     "error": "Fehler",
     "errorMessage": "Beim Entfernen des Releases ist ein Fehler aufgetreten."
   },
-  "selectFolder": "Ordner auswählen",
-  "selectFile": "Datei auswählen",
   "error": {
-    "title": "Fehler",
-    "generic": "Es ist ein Fehler aufgetreten: {{message}}"
+    "title": "Fehler"
   },
   "preferencesError": {
     "title": "Fehler beim Lesen der Einstellungen",

@@ -29,11 +29,8 @@
     "error": "Ошибка",
     "errorMessage": "Произошла ошибка при удалении версии."
   },
-  "selectFolder": "Выбрать папку",
-  "selectFile": "Выбрать файл",
   "error": {
-    "title": "Ошибка",
-    "generic": "Произошла ошибка: {{message}}"
+    "title": "Ошибка"
   },
   "preferencesError": {
     "title": "Ошибка чтения настроек",

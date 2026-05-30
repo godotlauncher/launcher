@@ -2,19 +2,14 @@
   "buttons": {
     "ok": "Ok",
     "cancel": "Ikkanċella",
-    "close": "Agħlaq",
-    "save": "Ikteb",
-    "delete": "Ħassar",
     "continue": "Kompli",
-    "skip": "Aqbeż",
     "select": "Agħżel",
     "retry": "Erġa' pprova",
     "remove": "Neħħi",
     "copyPath": "Ikopja l-perkors",
-    "openPath": "Iftaħ il-perkors"
+    "openPath": "Iftaħ il-perkors",
+    "reinstall": "Reinstall"
   },
-  "loading": "Qed jillowdja...",
-  "saving": "Qed jikteb...",
   "error": "Żball",
   "success": "Suċċess",
   "warning": "Twissija",
@@ -36,12 +31,6 @@
       "joinCommunity": "Ingħaqad mal-Komunità"
     },
     "update": {
-      "available": "huwa disponibbli, erġa' ibda Godot Launcher biex tinstallah.",
-      "version": "Verżjoni {{version}}",
-      "newVersion": "Verżjoni ġdida",
-      "restartNow": "Ibda mill-ġdid issa.",
-      "bannerWithVersion": "Verżjoni {{version}} hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-      "bannerNoVersion": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
       "availableWithVersion": "Il-verżjoni {{version}} hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
       "availableNoVersion": "Verżjoni ġdida hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton>",
       "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",

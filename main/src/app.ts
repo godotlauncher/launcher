@@ -30,6 +30,7 @@ import {
     launchProject,
     removeProject,
 } from './commands/projects.js';
+import { reinstallRelease } from './commands/reinstallRelease.js';
 import {
     clearReleaseCaches,
     getAvailablePrereleases,
@@ -209,6 +210,11 @@ export function registerHandlers() {
     ipcMainHandler(
         'remove-release',
         async (_, installedRelease) => await removeRelease(installedRelease),
+    );
+
+    ipcMainHandler(
+        'reinstall-release',
+        async (_, installedRelease) => await reinstallRelease(installedRelease),
     );
 
     ipcMainHandler(

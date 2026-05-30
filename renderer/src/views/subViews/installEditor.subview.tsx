@@ -30,8 +30,9 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         loading,
         hasError,
         refreshAvailableReleases,
-        isInstalledRelease,
+        getInstalledRelease,
         removeRelease,
+        reinstallRelease,
         checkAllReleasesValid,
     } = useRelease();
 
@@ -50,9 +51,24 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         }
     };
 
+    const reinstallReleaseRequest = async (
+        release: ReleaseSummary,
+        mono: boolean,
+    ) => {
+        const installedRelease = getInstalledRelease(release.version, mono);
+        if (!installedRelease) {
+            return;
+        }
+
+        const result = await reinstallRelease(installedRelease);
+        if (!result.success) {
+            addAlert('Error', result.error || t('messages.reinstallError'));
+        }
+    };
+
     const getFilteredInstalledRows = (): InstalledRelease[] => {
-        const installed = installedReleases.concat(
-            downloadingReleases.map((r) => ({
+        const downloadingRows: InstalledRelease[] = downloadingReleases.map(
+            (r) => ({
                 version: r.version,
                 version_number: -1,
                 install_path: '',
@@ -64,8 +80,28 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                 config_version: 5,
                 published_at: r.published_at,
                 valid: true,
-            })),
+            }),
         );
+        const installed = installedReleases
+            .map((release) => {
+                const downloadingRelease = downloadingRows.find(
+                    (r) =>
+                        r.version === release.version &&
+                        r.mono === release.mono,
+                );
+
+                return downloadingRelease ?? release;
+            })
+            .concat(
+                downloadingRows.filter(
+                    (release) =>
+                        !installedReleases.some(
+                            (installedRelease) =>
+                                installedRelease.version === release.version &&
+                                installedRelease.mono === release.mono,
+                        ),
+                ),
+            );
         if (textSearch === '') return installed;
         return installed.filter((row) =>
             row.version.toLowerCase().includes(textSearch.toLowerCase()),
@@ -79,8 +115,8 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
             if (filterInstalled) {
                 releases = releases.filter(
                     (row) =>
-                        isInstalledRelease(row.version, false) ||
-                        isInstalledRelease(row.version, true),
+                        getInstalledRelease(row.version, false) ||
+                        getInstalledRelease(row.version, true),
                 );
             }
 
@@ -94,8 +130,8 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
             if (filterInstalled) {
                 prereleases = prereleases.filter(
                     (row) =>
-                        isInstalledRelease(row.version, false) ||
-                        isInstalledRelease(row.version, true),
+                        getInstalledRelease(row.version, false) ||
+                        getInstalledRelease(row.version, true),
                 );
             }
 
@@ -115,6 +151,13 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
     const onRemove = async (release: InstalledRelease) => {
         await removeRelease(release);
+    };
+
+    const onReinstall = async (release: InstalledRelease) => {
+        const result = await reinstallRelease(release);
+        if (!result.success) {
+            addAlert('Error', result.error || t('messages.reinstallError'));
+        }
     };
 
     return (
@@ -300,11 +343,13 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                                     <InstallReleaseTable
                                         releases={getFilteredRows()}
                                         onInstall={installReleaseRequest}
+                                        onReinstall={reinstallReleaseRequest}
                                     />
                                 ) : (
                                     <InstalledReleaseTable
                                         releases={getFilteredInstalledRows()}
                                         onRetry={onRetryValidation}
+                                        onReinstall={onReinstall}
                                         onRemove={onRemove}
                                         loading={loading}
                                     />

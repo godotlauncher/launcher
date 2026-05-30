@@ -18,7 +18,7 @@ async function performRevalidation(targetWindow: BrowserWindow): Promise<void> {
     try {
         const [releases, projects] = await Promise.all([
             checkAndUpdateReleases(),
-            checkAndUpdateProjects(),
+            checkAndUpdateProjects({ repairMissingLaunchPath: false }),
         ]);
 
         const webContents = targetWindow.webContents;

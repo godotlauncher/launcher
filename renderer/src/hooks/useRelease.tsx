@@ -23,6 +23,13 @@ type ReleaseContext = {
         release: ReleaseSummary,
         mono: boolean,
     ) => Promise<InstallReleaseResult>;
+    reinstallRelease: (
+        release: InstalledRelease,
+    ) => Promise<InstallReleaseResult>;
+    getInstalledRelease: (
+        version: string,
+        mono: boolean,
+    ) => InstalledRelease | undefined;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     removeRelease: (release: InstalledRelease) => Promise<void>;
     isDownloadingRelease: (version: string, mono: boolean) => boolean;
@@ -44,6 +51,13 @@ export const useRelease = () => {
 
 type ReleaseProviderProps = React.PropsWithChildren;
 
+type DownloadingRelease = {
+    version: string;
+    mono: boolean;
+    prerelease: boolean;
+    published_at: string;
+};
+
 export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     children,
 }) => {
@@ -58,12 +72,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         InstalledRelease[]
     >([]);
     const [downloadingReleases, setDownloadingReleases] = React.useState<
-        {
-            version: string;
-            mono: boolean;
-            prerelease: boolean;
-            published_at: string;
-        }[]
+        DownloadingRelease[]
     >([]);
     const [loading, setLoading] = React.useState<boolean>(true);
 
@@ -115,10 +124,51 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         );
     };
 
+    const addDownloadingRelease = (release: DownloadingRelease) => {
+        setDownloadingReleases((prevValue) => {
+            if (
+                prevValue.some(
+                    (r) =>
+                        r.version === release.version &&
+                        r.mono === release.mono,
+                )
+            ) {
+                return prevValue;
+            }
+
+            return [...prevValue, release];
+        });
+    };
+
+    const removeDownloadingRelease = (version: string, mono: boolean) => {
+        setDownloadingReleases((prevReleases) => {
+            const index = prevReleases.findIndex(
+                (r) => r.version === version && r.mono === mono,
+            );
+
+            if (index > -1) {
+                const newDownloadingReleases = [...prevReleases];
+                newDownloadingReleases.splice(index, 1);
+                return newDownloadingReleases;
+            }
+
+            return prevReleases;
+        });
+    };
+
     const isInstalledRelease = (version: string, mono: boolean): boolean => {
         return installedReleases.some(
             (r) =>
                 r.version === version && r.mono === mono && r.valid !== false,
+        );
+    };
+
+    const getInstalledRelease = (
+        version: string,
+        mono: boolean,
+    ): InstalledRelease | undefined => {
+        return installedReleases.find(
+            (r) => r.version === version && r.mono === mono,
         );
     };
 
@@ -134,15 +184,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         release: ReleaseSummary,
         mono: boolean,
     ): Promise<InstallReleaseResult> => {
-        setDownloadingReleases((prevValue) => [
-            ...prevValue,
-            {
-                version: release.version,
-                mono,
-                prerelease: release.prerelease,
-                published_at: release.published_at ?? '',
-            },
-        ]);
+        addDownloadingRelease({
+            version: release.version,
+            mono,
+            prerelease: release.prerelease,
+            published_at: release.published_at ?? '',
+        });
 
         const result = await window.electron.installRelease(release, mono);
 
@@ -159,20 +206,40 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             ]).finally(() => setLoading(false));
         }
 
-        setDownloadingReleases((prevReleases) => {
-            const index = prevReleases.findIndex(
-                (r) => r.version === release.version && r.mono === mono,
-            );
+        removeDownloadingRelease(release.version, mono);
+        return result;
+    };
 
-            if (index > -1) {
-                const newDownloadingReleases = [...prevReleases];
-                newDownloadingReleases.splice(index, 1);
-                return newDownloadingReleases;
+    const reinstallRelease = async (
+        release: InstalledRelease,
+    ): Promise<InstallReleaseResult> => {
+        addDownloadingRelease({
+            version: release.version,
+            mono: release.mono,
+            prerelease: release.prerelease,
+            published_at: release.published_at ?? '',
+        });
+
+        try {
+            const result = await window.electron.reinstallRelease(release);
+
+            if (result.success) {
+                setLoading(true);
+
+                Promise.all([
+                    window.electron
+                        .getAvailableReleases()
+                        .then(setAvailableReleases),
+                    window.electron
+                        .getInstalledReleases()
+                        .then(setInstalledReleases),
+                ]).finally(() => setLoading(false));
             }
 
-            return prevReleases;
-        });
-        return result;
+            return result;
+        } finally {
+            removeDownloadingRelease(release.version, release.mono);
+        }
     };
 
     const checkAllReleasesValid = async (): Promise<InstalledRelease[]> => {
@@ -198,6 +265,8 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 refreshAvailableReleases,
                 clearReleaseCache,
                 installRelease,
+                reinstallRelease,
+                getInstalledRelease,
                 isInstalledRelease,
                 removeRelease,
                 isDownloadingRelease,

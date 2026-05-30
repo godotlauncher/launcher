@@ -29,11 +29,8 @@
     "error": "Erro",
     "errorMessage": "Ocorreu um erro ao remover a versão."
   },
-  "selectFolder": "Selecionar pasta",
-  "selectFile": "Selecionar arquivo",
   "error": {
-    "title": "Erro",
-    "generic": "Ocorreu um erro: {{message}}"
+    "title": "Erro"
   },
   "preferencesError": {
     "title": "Erro ao ler as preferências",

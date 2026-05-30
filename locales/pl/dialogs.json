@@ -29,11 +29,8 @@
     "error": "Błąd",
     "errorMessage": "Wystąpił błąd podczas usuwania wydania."
   },
-  "selectFolder": "Wybierz folder",
-  "selectFile": "Wybierz plik",
   "error": {
-    "title": "Błąd",
-    "generic": "Wystąpił błąd: {{message}}"
+    "title": "Błąd"
   },
   "preferencesError": {
     "title": "Błąd odczytu preferencji",

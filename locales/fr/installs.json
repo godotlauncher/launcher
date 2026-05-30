@@ -1,71 +1,30 @@
 {
   "title": "Installations de l'éditeur",
-  "tabs": {
-    "installed": "Installées",
-    "available": "Disponibles"
-  },
+  "tabs": {},
   "buttons": {
-    "install": "Installer l'éditeur",
-    "installVersion": "Installer la version",
-    "refresh": "Actualiser",
-    "uninstall": "Désinstaller",
-    "openFolder": "Ouvrir le dossier"
+    "install": "Installer l'éditeur"
   },
   "search": {
     "placeholder": "Rechercher"
   },
   "table": {
-    "name": "Nom",
-    "version": "Version",
-    "type": "Type",
-    "size": "Taille",
-    "published": "Publié",
-    "actions": "Actions",
-    "status": "Statut"
+    "name": "Nom"
   },
   "badges": {
     "dotNet": ".NET",
     "prerelease": "préversion"
   },
-  "types": {
-    "stable": "Stable",
-    "beta": "Bêta",
-    "dev": "Développement",
-    "mono": ".NET"
-  },
   "status": {
-    "installing": "Installation...",
-    "installed": "Installée",
-    "downloading": "Téléchargement...",
-    "unavailable": "Indisponible"
+    "installing": "Installation..."
   },
   "messages": {
-    "noReleases": "Aucune version installée pour le moment.",
-    "install": "Installer.",
     "noReleasesCta": "Aucune version installée. <Link>Installer</Link>",
-    "noInstalled": "Aucune version de Godot installée",
-    "noAvailable": "Aucune version disponible",
-    "installing": "Installation...",
-    "downloadProgress": "Téléchargement : {{percent}}%",
-    "installSuccess": "Éditeur installé avec succès",
-    "uninstallSuccess": "Éditeur désinstallé",
-    "unavailableHint": "Le chemin de l’éditeur n’est pas accessible. Montez le périphérique de stockage puis réessayez, ou désinstallez la version.",
     "revalidating": "Validation des versions installées...",
-    "revalidated": "Validation terminée.",
     "revalidatedRelease": "{{version}} est de nouveau accessible.",
     "revalidationFailed": "Échec de la validation. Vérifiez votre périphérique de stockage puis réessayez.",
     "revalidationStillMissing": "La validation est terminée mais {{version}} reste indisponible. Vérifiez que {{path}} est accessible avant de réessayer.",
-    "revalidationStillMissingNoPath": "La validation est terminée mais {{version}} reste indisponible. Vérifiez que le périphérique de stockage est monté avant de réessayer."
-  },
-  "install": {
-    "title": "Installer l'éditeur Godot",
-    "selectVersion": "Sélectionner une version à installer",
-    "includeMonoVersion": "Inclure la version .NET",
-    "downloading": "Téléchargement...",
-    "extracting": "Extraction...",
-    "buttons": {
-      "install": "Installer",
-      "cancel": "Annuler"
-    }
+    "revalidationStillMissingNoPath": "La validation est terminée mais {{version}} reste indisponible. Vérifiez que le périphérique de stockage est monté avant de réessayer.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again."
   }
 }

@@ -29,11 +29,8 @@
     "error": "错误",
     "errorMessage": "移除发行版本时发生错误。"
   },
-  "selectFolder": "选择文件夹",
-  "selectFile": "选择文件",
   "error": {
-    "title": "错误",
-    "generic": "发生错误：{{message}}"
+    "title": "错误"
   },
   "preferencesError": {
     "title": "读取首选项时出错",

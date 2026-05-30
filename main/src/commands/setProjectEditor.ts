@@ -62,7 +62,9 @@ export async function setProjectEditor(
 
         if (
             currentProject.release.version === newRelease.version &&
-            currentProject.release.mono === newRelease.mono
+            currentProject.release.mono === newRelease.mono &&
+            currentProject.release.editor_path === newRelease.editor_path &&
+            currentProject.release.valid !== false
         ) {
             logger.warn(
                 `Project already using the selected release, ${newRelease.version} - ${newRelease.mono ? 'mono' : ''}`,

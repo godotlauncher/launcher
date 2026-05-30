@@ -12,8 +12,6 @@
     "ready": "Hazır"
   },
   "navigation": {
-    "next": "İleri",
-    "previous": "Geri",
     "start": "Başlat",
     "nextMacOS": "İleri: MacOS",
     "nextWindows": "İleri: Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "İleri: Mevcut Ayarlar",
     "nextSetLocations": "İleri: Konumları Ayarla",
     "nextCustomizeBehavior": "İleri: Davranışı Özelleştir",
-    "nextWindowsSymlink": "İleri: Windows Sembolik Bağlantı",
     "nextReady": "İleri: Hazır",
     "backWelcome": "Geri: Hoş Geldiniz",
     "backMacOS": "Geri: MacOS",
     "backWindows": "Geri: Windows",
-    "backLinux": "Geri: Linux",
     "backCurrentSettings": "Geri: Mevcut Ayarlar",
     "backSetLocations": "Geri: Konumları Ayarla",
     "backCustomizeBehavior": "Geri: Davranışı Özelleştir"

@@ -59,70 +59,14 @@
       "successMessage": "Die Release-Listen wurden mit den neuesten Builds aktualisiert.",
       "errorTitle": "Cache Konnte Nicht Aktualisiert Werden",
       "errorMessage": "Beim Aktualisieren des Release-Caches ist ein Fehler aufgetreten. Versuchen Sie es später erneut."
-    },
-    "checkForUpdates": {
-      "title": "Nach Updates suchen",
-      "description": "Beim Start des Godot Launchers automatisch nach Updates suchen",
-      "enabled": "Beim Start nach Updates suchen"
     }
   },
   "general": {
     "language": {
       "label": "Sprache",
-      "title": "Sprache",
       "description": "Sprache für den Godot Launcher auswählen (ändert nicht die Godot-Sprache)",
-      "system": "System (Automatisch erkennen)",
-      "options": {
-        "system": "System (Automatisch erkennen)"
-      }
-    },
-    "theme": {
-      "label": "Design",
-      "light": "Hell",
-      "dark": "Dunkel",
-      "system": "System"
-    },
-    "projectsLocation": {
-      "label": "Standard-Projektverzeichnis",
-      "description": "Wo neue Projekte erstellt werden"
-    },
-    "installLocation": {
-      "label": "Godot-Installationsverzeichnis",
-      "description": "Wo Godot-Versionen installiert werden"
-    },
-    "postLaunchAction": {
-      "label": "Nach dem Start eines Projekts",
-      "none": "Nichts tun",
-      "minimize": "Launcher minimieren",
-      "closeToTray": "In Systemtray schließen"
-    },
-    "autoCheckUpdates": {
-      "label": "Automatisch nach Updates suchen",
-      "description": "Beim Start nach Godot Launcher-Updates suchen"
-    },
-    "autoStart": {
-      "label": "Mit System starten",
-      "description": "Godot Launcher beim Systemstart starten"
-    },
-    "startInTray": {
-      "label": "Minimiert im Tray starten",
-      "description": "Launcher im Systemtray starten"
+      "system": "System (Automatisch erkennen)"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "Vor dem Entfernen von Projekten bestätigen",
-      "description": "Bestätigungsdialog beim Entfernen von Projekten anzeigen"
-    },
-    "enableSymlinks": {
-      "label": "Symbolische Links aktivieren (Windows)",
-      "description": "Symbolische Links für Editor-Einstellungen verwenden"
-    }
-  },
-  "buttons": {
-    "save": "Einstellungen speichern",
-    "reset": "Auf Standard zurücksetzen",
-    "openConfigFolder": "Konfigurationsordner öffnen"
   },
   "tools": {
     "overview": "Der Launcher überprüft schnell die zwischengespeicherten Tool-Pfade, wenn dieser Reiter den Fokus erhält. Führe eine vollständige Neuscan aus, wenn du Installationen auf diesem System geändert hast.",
@@ -163,9 +107,6 @@
     "betaChannel": "Beta-Updates erhalten",
     "betaChannelDescription": "Lade Vorabversionen von GitHub herunter; diese können weniger stabil sein als offizielle Releases.",
     "checkNow": "Nach Updates suchen",
-    "updateAvailable": "Version {{version}} ist verfügbar, starte Godot Launcher neu, um zu installieren. <Button>Jetzt neu starten</Button>",
-    "updateReady": "Eine neue Version ist verfügbar, starte Godot Launcher neu, um zu installieren. <Button>Jetzt neu starten</Button>",
-    "restartNow": "Jetzt neu starten.",
     "downloadNow": "Update herunterladen",
     "skipVersion": "Diese Version überspringen",
     "unskipVersion": "Übersprungene Version wieder aktivieren",
@@ -191,9 +132,5 @@
       "line1": "Wechseln Sie zurück zu lokalen Kopien, um Erhöhungsaufforderungen zu vermeiden. Godot Launcher kopiert die Editor-Dateien stattdessen in jedes Projekt.",
       "line2": "Bestehende Symlinks bleiben bestehen, bis ihre Editor-Version geändert oder neu installiert wird."
     }
-  },
-  "messages": {
-    "saved": "Einstellungen erfolgreich gespeichert",
-    "resetConfirm": "Sind Sie sicher, dass Sie alle Einstellungen auf Standard zurücksetzen möchten?"
   }
 }

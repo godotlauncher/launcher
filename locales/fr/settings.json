@@ -59,70 +59,14 @@
       "successMessage": "Les listes de versions ont été mises à jour avec les dernières builds.",
       "errorTitle": "Impossible D’Actualiser Le Cache",
       "errorMessage": "Une erreur est survenue lors de l’actualisation du cache des versions. Réessayez plus tard."
-    },
-    "checkForUpdates": {
-      "title": "Vérifier les mises à jour",
-      "description": "Vérifier automatiquement les mises à jour au démarrage de Godot Launcher",
-      "enabled": "Vérifier les mises à jour au démarrage"
     }
   },
   "general": {
     "language": {
       "label": "Langue",
-      "title": "Langue",
       "description": "Sélectionner la langue pour Godot Launcher (ne change pas la langue de Godot)",
-      "system": "Système (détection automatique)",
-      "options": {
-        "system": "Système (détection automatique)"
-      }
-    },
-    "theme": {
-      "label": "Thème",
-      "light": "Clair",
-      "dark": "Sombre",
-      "system": "Système"
-    },
-    "projectsLocation": {
-      "label": "Emplacement par défaut des projets",
-      "description": "Où les nouveaux projets seront créés"
-    },
-    "installLocation": {
-      "label": "Emplacement d'installation de Godot",
-      "description": "Où les versions de Godot seront installées"
-    },
-    "postLaunchAction": {
-      "label": "Après le lancement d'un projet",
-      "none": "Ne rien faire",
-      "minimize": "Réduire le lanceur",
-      "closeToTray": "Fermer dans la barre d'état système"
-    },
-    "autoCheckUpdates": {
-      "label": "Vérifier automatiquement les mises à jour",
-      "description": "Vérifier les mises à jour de Godot Launcher au démarrage"
-    },
-    "autoStart": {
-      "label": "Démarrer avec le système",
-      "description": "Lancer Godot Launcher au démarrage de votre ordinateur"
-    },
-    "startInTray": {
-      "label": "Démarrer réduit dans la barre",
-      "description": "Démarrer le lanceur dans la barre d'état système"
+      "system": "Système (détection automatique)"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "Confirmer avant de retirer des projets",
-      "description": "Afficher le dialogue de confirmation lors de la suppression de projets"
-    },
-    "enableSymlinks": {
-      "label": "Activer les liens symboliques (Windows)",
-      "description": "Utiliser des liens symboliques pour les paramètres de l'éditeur"
-    }
-  },
-  "buttons": {
-    "save": "Enregistrer les paramètres",
-    "reset": "Réinitialiser par défaut",
-    "openConfigFolder": "Ouvrir le dossier de configuration"
   },
   "tools": {
     "overview": "Le lanceur valide rapidement les chemins d'outils mis en cache lorsque cet onglet reçoit le focus. Lancez une nouvelle analyse complète si vous avez modifié des installations sur ce système.",
@@ -163,9 +107,6 @@
     "betaChannel": "Recevoir les mises à jour beta",
     "betaChannelDescription": "Téléchargez les versions préliminaires depuis GitHub ; elles peuvent être moins stables que les versions officielles.",
     "checkNow": "Vérifier les mises à jour",
-    "updateAvailable": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
-    "updateReady": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
-    "restartNow": "Redémarrer maintenant.",
     "downloadNow": "Télécharger la mise à jour",
     "skipVersion": "Ignorer cette version",
     "unskipVersion": "Réactiver la mise à jour ignorée",
@@ -191,9 +132,5 @@
       "line1": "Revenez aux copies locales pour éviter les invites d'élévation. Godot Launcher copiera les fichiers de l'éditeur dans chaque projet.",
       "line2": "Les liens symboliques existants restent en place jusqu'à ce que leur version d'éditeur soit changée ou réinstallée."
     }
-  },
-  "messages": {
-    "saved": "Paramètres enregistrés avec succès",
-    "resetConfirm": "Êtes-vous sûr de vouloir réinitialiser tous les paramètres par défaut ?"
   }
 }

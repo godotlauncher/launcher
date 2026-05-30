@@ -2,12 +2,7 @@
   "title": "Проекты",
   "buttons": {
     "add": "Добавить",
-    "newProject": "Новый проект",
-    "addProject": "Добавить проект",
-    "createProject": "Создать проект",
-    "refresh": "Обновить",
-    "launch": "Запустить",
-    "changeEditor": "Сменить редактор"
+    "newProject": "Новый проект"
   },
   "search": {
     "placeholder": "Поиск"
@@ -16,15 +11,11 @@
     "name": "Название",
     "modified": "Изменён",
     "editor": "Редактор",
-    "version": "Версия",
-    "lastOpened": "Последнее открытие",
-    "actions": "Действия",
     "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
     "dotNetProject": "Это .Net проект",
     "prerelease": "Используется пререлизная версия редактора Godot",
     "windowedMode": "Этот проект открыт в оконном режиме",
     "vsCodeProject": "Для этого проекта Visual Studio Code включен как внешний редактор",
-    "invalidRelease": "Редактор недоступен",
     "gitProject": "Проект использует Git для контроля версий"
   },
   "addProject": {
@@ -43,16 +34,7 @@
     }
   },
   "messages": {
-    "noProjects": "Проекты не найдены",
-    "noReleases": "Версии не установлены.",
-    "goToInstalls": "Перейти к установкам.",
     "noReleasesCta": "Версии ещё не установлены. <Link>Перейти к установкам</Link>",
-    "projectAdded": "Проект успешно добавлен",
-    "projectRemoved": "Проект удалён",
-    "editorChanged": "Редактор успешно изменён",
-    "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
-    "monoProject": "Это .NET проект",
-    "prereleaseVersion": "Используется пререлизная версия редактора Godot",
     "waitingForDialog": "Ожидание диалога для добавления проекта...",
     "needReleaseInstalled": "Для добавления проекта необходимо иметь хотя бы одну установленную версию",
     "addProjectError": "Что-то пошло не так при добавлении проекта",
@@ -69,29 +51,6 @@
       "invalidEditorVersion": "Неверная версия редактора",
       "differentMajorVersion": "Нельзя использовать другую основную версию редактора\nДля защиты вашего проекта см. официальное руководство по миграции на https://godotengine.org"
     }
-  },
-  "createProject": {
-    "title": "Новый проект",
-    "projectName": "Название проекта",
-    "projectPath": "Путь проекта",
-    "selectVersion": "Выбрать версию Godot",
-    "renderer": "Рендерер",
-    "editNow": "Редактировать сейчас",
-    "setupVSCode": "Установить Visual Studio Code как текстовый редактор",
-    "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере",
-    "noVersionsInstalled": "Версии Godot не установлены",
-    "errors": {
-      "nameRequired": "Требуется название проекта",
-      "pathRequired": "Требуется путь проекта",
-      "invalidPath": "Неверный путь проекта"
-    }
-  },
-  "searchPlaceholder": "Поиск проектов...",
-  "editorSettings": {
-    "title": "Настройки редактора",
-    "alreadyExists": "Настройки редактора для {{version}} [.NET] уже существуют, и никаких изменений не внесено, чтобы защитить вашу конфигурацию.",
-    "switchingToDotNet": "Если вы переходите на версию .NET с GDScript, вы можете вручную настроить внешний редактор в <strong>Editor Settings -> Dotnent</strong> (расширенный переключатель: true).",
-    "readMore": "Подробнее"
   },
   "toggleVSCode": {
     "errors": {

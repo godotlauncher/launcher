@@ -5,8 +5,7 @@
   },
   "tabs": {
     "released": "Выпущенные",
-    "prerelease": "Пререлиз",
-    "installed": "Установленные"
+    "prerelease": "Пререлиз"
   },
   "filters": {
     "showInstalledOnly": "Показать только установленные"
@@ -16,8 +15,6 @@
   },
   "errors": {
     "fetchError": "Произошла ошибка при получении версий.",
-    "tryAgainLater": "Пожалуйста",
-    "tryAgain": "попробуйте позже",
     "retryInline": "Пожалуйста, попробуйте снова. <Button>Попробовать снова</Button>",
     "noPlatformAsset": "Не найден ресурс для платформы",
     "invalidEditorVersion": "Неверная версия редактора",
@@ -25,7 +22,8 @@
     "unsupportedFileExtension": "Неподдерживаемое расширение файла"
   },
   "messages": {
-    "installError": "Что-то пошло не так при установке версии"
+    "installError": "Что-то пошло не так при установке версии",
+    "reinstallError": "Something went wrong when reinstalling release"
   },
   "table": {
     "headers": {
@@ -42,9 +40,10 @@
       "installed": "Установлено - {{version}}",
       "installedGDScript": "Установлено - {{version}} (GDScript)",
       "installedDotNet": "Установлено - {{version}} .NET",
-      "download": "Загрузить {{version}}",
       "downloadGDScript": "Загрузить {{version}} (GDScript)",
-      "downloadDotNet": "Загрузить {{version}} .NET"
+      "downloadDotNet": "Загрузить {{version}} .NET",
+      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
+      "reinstallDotNet": "Reinstall {{version}} .NET"
     },
     "status": {
       "unavailable": "Недоступно"

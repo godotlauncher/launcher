@@ -5,8 +5,7 @@
   },
   "tabs": {
     "released": "Rilaxxat",
-    "prerelease": "Pre-rilaxx",
-    "installed": "Installat"
+    "prerelease": "Pre-rilaxx"
   },
   "filters": {
     "showInstalledOnly": "Uri biss installati"
@@ -16,8 +15,6 @@
   },
   "errors": {
     "fetchError": "Kien hemm żball waqt li qed jinġibu r-releases.",
-    "tryAgainLater": "Jekk jogħġbok",
-    "tryAgain": "erġa' pprova aktar tard",
     "retryInline": "Jekk jogħġbok erġa' pprova. <Button>Erġa' pprova</Button>",
     "noPlatformAsset": "Ebda Asset ma nstab għall-pjattaforma",
     "invalidEditorVersion": "Verżjoni tal-editur invalida",
@@ -25,7 +22,8 @@
     "unsupportedFileExtension": "Estensjoni tal-fajl mhux supportata"
   },
   "messages": {
-    "installError": "Xi ħaġa marret ħażin meta nstalla r-release"
+    "installError": "Xi ħaġa marret ħażin meta nstalla r-release",
+    "reinstallError": "Something went wrong when reinstalling release"
   },
   "table": {
     "headers": {
@@ -42,9 +40,10 @@
       "installed": "Installat - {{version}}",
       "installedGDScript": "Installat - {{version}} (GDScript)",
       "installedDotNet": "Installat - {{version}} .NET",
-      "download": "Niżżel {{version}}",
       "downloadGDScript": "Niżżel {{version}} (GDScript)",
-      "downloadDotNet": "Niżżel {{version}} .NET"
+      "downloadDotNet": "Niżżel {{version}} .NET",
+      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
+      "reinstallDotNet": "Reinstall {{version}} .NET"
     },
     "status": {
       "unavailable": "Mhux disponibbli"

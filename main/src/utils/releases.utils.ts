@@ -256,6 +256,62 @@ export async function storeAvailableReleases(
 let installedReleasesStore: TypedJsonStore<InstalledRelease[]> | null = null;
 let installedReleasesPath: string | null = null;
 
+type InstalledReleaseIdentity = Pick<InstalledRelease, 'version' | 'mono'>;
+
+export function getInstalledReleaseIdentity(
+    release: InstalledReleaseIdentity,
+): string {
+    return `${release.version}:${release.mono ? 'mono' : 'standard'}`;
+}
+
+export function hasSameInstalledReleaseIdentity(
+    a: InstalledReleaseIdentity,
+    b: InstalledReleaseIdentity,
+): boolean {
+    return getInstalledReleaseIdentity(a) === getInstalledReleaseIdentity(b);
+}
+
+function preferInstalledRelease(
+    current: InstalledRelease,
+    candidate: InstalledRelease,
+): InstalledRelease {
+    if (current.valid === false && candidate.valid !== false) {
+        return candidate;
+    }
+
+    if (current.valid !== false && candidate.valid === false) {
+        return current;
+    }
+
+    return candidate;
+}
+
+export function dedupeInstalledReleases(
+    releases: InstalledRelease[],
+): InstalledRelease[] {
+    const releasesByIdentity = new Map<string, InstalledRelease>();
+
+    for (const release of releases) {
+        const normalizedRelease = {
+            ...release,
+            valid: typeof release.valid === 'boolean' ? release.valid : true,
+        };
+        const identity = getInstalledReleaseIdentity(normalizedRelease);
+        const existing = releasesByIdentity.get(identity);
+
+        releasesByIdentity.set(
+            identity,
+            existing
+                ? preferInstalledRelease(existing, normalizedRelease)
+                : normalizedRelease,
+        );
+    }
+
+    return [...releasesByIdentity.values()].sort(
+        (a, b) => a.version_number - b.version_number,
+    );
+}
+
 function normalizeInstalledReleases(
     releases: InstalledRelease[],
 ): InstalledRelease[] {
@@ -308,9 +364,28 @@ export async function addStoredInstalledRelease(
     release: InstalledRelease,
 ): Promise<InstalledRelease[]> {
     return ensureInstalledReleasesStore().update((releases) => {
-        releases.push(release);
-        return releases;
+        const nextReleases = releases.filter(
+            (storedRelease) =>
+                !hasSameInstalledReleaseIdentity(storedRelease, release),
+        );
+        nextReleases.push(release);
+        return nextReleases;
     });
+}
+
+function matchesReleaseLocation(
+    storedRelease: InstalledRelease,
+    releaseToRemove: InstalledRelease,
+): boolean {
+    if (releaseToRemove.editor_path) {
+        return storedRelease.editor_path === releaseToRemove.editor_path;
+    }
+
+    if (releaseToRemove.install_path) {
+        return storedRelease.install_path === releaseToRemove.install_path;
+    }
+
+    return true;
 }
 
 export async function removeStoredInstalledRelease(
@@ -318,7 +393,11 @@ export async function removeStoredInstalledRelease(
 ): Promise<InstalledRelease[]> {
     return ensureInstalledReleasesStore().update((releases) =>
         releases.filter(
-            (r) => !(r.version === release.version && r.mono === release.mono),
+            (r) =>
+                !(
+                    hasSameInstalledReleaseIdentity(r, release) &&
+                    matchesReleaseLocation(r, release)
+                ),
         ),
     );
 }

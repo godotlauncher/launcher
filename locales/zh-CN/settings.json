@@ -59,70 +59,14 @@
       "successMessage": "发行列表已更新为最新构建。",
       "errorTitle": "无法刷新缓存",
       "errorMessage": "刷新发行缓存时出现问题，请稍后重试。"
-    },
-    "checkForUpdates": {
-      "title": "检查更新",
-      "description": "当 Godot 启动器 启动时自动检查更新",
-      "enabled": "在启动时检查更新"
     }
   },
   "general": {
     "language": {
       "label": "语言",
-      "title": "语言",
       "description": "选择 Godot 启动器 的语言（不会更改 Godot 的语言）",
-      "system": "系统（自动检测）",
-      "options": {
-        "system": "系统（自动检测）"
-      }
-    },
-    "theme": {
-      "label": "主题",
-      "light": "浅色",
-      "dark": "深色",
-      "system": "系统"
-    },
-    "projectsLocation": {
-      "label": "默认项目位置",
-      "description": "新项目将创建在此处"
-    },
-    "installLocation": {
-      "label": "Godot 安装位置",
-      "description": "Godot 版本将安装在此处"
-    },
-    "postLaunchAction": {
-      "label": "启动项目后",
-      "none": "不做任何事",
-      "minimize": "最小化启动器",
-      "closeToTray": "关闭到系统托盘"
-    },
-    "autoCheckUpdates": {
-      "label": "自动检查更新",
-      "description": "在启动时检查 Godot 启动器 的更新"
-    },
-    "autoStart": {
-      "label": "随系统启动",
-      "description": "计算机启动时启动 Godot 启动器"
-    },
-    "startInTray": {
-      "label": "启动时最小化到托盘",
-      "description": "将启动器置于系统托盘启动"
+      "system": "系统（自动检测）"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "移除项目前确认",
-      "description": "移除项目时显示确认对话框"
-    },
-    "enableSymlinks": {
-      "label": "启用符号链接（Windows）",
-      "description": "对编辑器设置使用符号链接"
-    }
-  },
-  "buttons": {
-    "save": "保存设置",
-    "reset": "重置为默认",
-    "openConfigFolder": "打开配置文件夹"
   },
   "tools": {
     "overview": "当此选项卡获得焦点时，启动器会快速验证缓存的工具路径。如果你在此系统上更改了安装，请运行完整重新扫描。",
@@ -163,9 +107,6 @@
     "betaChannel": "接收 Beta 更新",
     "betaChannelDescription": "从 GitHub 下载预发布版本；这些版本可能不如正式发布稳定。",
     "checkNow": "立即检查更新",
-    "updateAvailable": "版本 {{version}} 可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
-    "updateReady": "有新版本可用，重启 Godot 启动器 以安装。 <Button>立即重启</Button>",
-    "restartNow": "立即重启。",
     "downloadNow": "下载更新",
     "skipVersion": "跳过此版本",
     "unskipVersion": "恢复已跳过的更新",
@@ -191,9 +132,5 @@
       "line1": "切回本地副本以避免提升提示。Godot 启动器 将把编辑器文件复制到每个项目中。",
       "line2": "现有符号链接将保留，直到其编辑器版本发生更改或重新安装。"
     }
-  },
-  "messages": {
-    "saved": "设置已成功保存",
-    "resetConfirm": "您确定要将所有设置重置为默认值吗？"
   }
 }

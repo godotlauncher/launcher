@@ -59,70 +59,14 @@
       "successMessage": "Listy wydań zostały uzupełnione o najnowsze buildy.",
       "errorTitle": "Nie Można Odświeżyć Pamięci Podręcznej",
       "errorMessage": "Wystąpił problem podczas odświeżania pamięci podręcznej wydań. Spróbuj ponownie później."
-    },
-    "checkForUpdates": {
-      "title": "Sprawdzanie aktualizacji",
-      "description": "Automatycznie sprawdzaj aktualizacje przy uruchamianiu Godot Launcher",
-      "enabled": "Sprawdzaj aktualizacje przy uruchamianiu"
     }
   },
   "general": {
     "language": {
       "label": "Język",
-      "title": "Język",
       "description": "Wybierz język dla Godot Launcher (nie zmienia języka Godot)",
-      "system": "System (automatyczne wykrywanie)",
-      "options": {
-        "system": "System (automatyczne wykrywanie)"
-      }
-    },
-    "theme": {
-      "label": "Motyw",
-      "light": "Jasny",
-      "dark": "Ciemny",
-      "system": "System"
-    },
-    "projectsLocation": {
-      "label": "Domyślna lokalizacja projektów",
-      "description": "Gdzie będą tworzone nowe projekty"
-    },
-    "installLocation": {
-      "label": "Lokalizacja instalacji Godot",
-      "description": "Gdzie będą instalowane wersje Godot"
-    },
-    "postLaunchAction": {
-      "label": "Po uruchomieniu projektu",
-      "none": "Nic nie rób",
-      "minimize": "Minimalizuj launcher",
-      "closeToTray": "Zamknij do zasobnika systemowego"
-    },
-    "autoCheckUpdates": {
-      "label": "Automatycznie sprawdzaj aktualizacje",
-      "description": "Sprawdzaj aktualizacje Godot Launcher przy uruchamianiu"
-    },
-    "autoStart": {
-      "label": "Uruchom z systemem",
-      "description": "Uruchom Godot Launcher przy starcie komputera"
-    },
-    "startInTray": {
-      "label": "Uruchom zminimalizowany do zasobnika",
-      "description": "Uruchom launcher w zasobniku systemowym"
+      "system": "System (automatyczne wykrywanie)"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "Potwierdź przed usunięciem projektów",
-      "description": "Pokaż okno potwierdzenia przy usuwaniu projektów"
-    },
-    "enableSymlinks": {
-      "label": "Włącz dowiązania symboliczne (Windows)",
-      "description": "Użyj dowiązań symbolicznych dla ustawień edytora"
-    }
-  },
-  "buttons": {
-    "save": "Zapisz ustawienia",
-    "reset": "Przywróć domyślne",
-    "openConfigFolder": "Otwórz folder konfiguracji"
   },
   "tools": {
     "overview": "Launcher szybko sprawdza pamiętane ścieżki narzędzi, gdy ta karta otrzymuje fokus. Wykonaj pełne ponowne skanowanie, jeśli zmieniłeś instalacje na tym systemie.",
@@ -163,9 +107,6 @@
     "betaChannel": "Otrzymuj aktualizacje beta",
     "betaChannelDescription": "Pobierz wersje przedpremierowe z GitHub; mogą być mniej stabilne niż oficjalne wydania.",
     "checkNow": "Sprawdź aktualizacje",
-    "updateAvailable": "Wersja {{version}} jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
-    "updateReady": "Nowa wersja jest dostępna, uruchom ponownie Godot Launcher, aby ją zainstalować. <Button>Uruchom ponownie teraz</Button>",
-    "restartNow": "Uruchom ponownie teraz.",
     "downloadNow": "Pobierz aktualizację",
     "skipVersion": "Pomiń tę wersję",
     "unskipVersion": "Przywróć pominiętą aktualizację",
@@ -191,9 +132,5 @@
       "line1": "Wróć do kopii lokalnych, aby uniknąć próśb o podniesienie uprawnień. Godot Launcher skopiuje pliki edytora do każdego projektu.",
       "line2": "Istniejące dowiązania symboliczne pozostają na miejscu, dopóki ich wersja edytora nie zostanie zmieniona lub ponownie zainstalowana."
     }
-  },
-  "messages": {
-    "saved": "Ustawienia zostały pomyślnie zapisane",
-    "resetConfirm": "Czy na pewno chcesz przywrócić wszystkie ustawienia do wartości domyślnych?"
   }
 }

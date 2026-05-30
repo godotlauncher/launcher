@@ -12,8 +12,6 @@
     "ready": "Готово"
   },
   "navigation": {
-    "next": "Далее",
-    "previous": "Назад",
     "start": "Начать",
     "nextMacOS": "Далее: MacOS",
     "nextWindows": "Далее: Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "Далее: Текущие настройки",
     "nextSetLocations": "Далее: Установить расположения",
     "nextCustomizeBehavior": "Далее: Настроить поведение",
-    "nextWindowsSymlink": "Далее: Символические ссылки Windows",
     "nextReady": "Далее: Готово",
     "backWelcome": "Назад: Добро пожаловать",
     "backMacOS": "Назад: MacOS",
     "backWindows": "Назад: Windows",
-    "backLinux": "Назад: Linux",
     "backCurrentSettings": "Назад: Текущие настройки",
     "backSetLocations": "Назад: Установить расположения",
     "backCustomizeBehavior": "Назад: Настроить поведение"

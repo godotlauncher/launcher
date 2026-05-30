@@ -19,8 +19,6 @@
     "forwardPlus": "Forward Plus",
     "mobile": "Мобильный",
     "compatible": "Совместимый",
-    "gles3": "GLES3",
-    "gles2": "GLES2",
     "forwardPlusFeatures": {
       "desktop": "Поддерживает только настольные платформы.",
       "advanced3d": "Доступна продвинутая 3D графика.",
@@ -59,7 +57,6 @@
     "create": "Создать проект"
   },
   "errors": {
-    "projectExists": "Проект '{{name}}' уже существует",
     "invalidEditorVersion": "Неверная версия редактора: {{version}}",
     "failedProjectDefinition": "Не удалось получить определение проекта для версии: {{version}}",
     "folderNotEmpty": "Папка проекта '{{name}}' уже существует и не пуста, вы хотели добавить существующий проект?",

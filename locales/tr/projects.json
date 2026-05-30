@@ -2,12 +2,7 @@
   "title": "Projeler",
   "buttons": {
     "add": "Ekle",
-    "newProject": "Yeni Proje",
-    "addProject": "Proje Ekle",
-    "createProject": "Proje Oluştur",
-    "refresh": "Yenile",
-    "launch": "Başlat",
-    "changeEditor": "Editörü Değiştir"
+    "newProject": "Yeni Proje"
   },
   "search": {
     "placeholder": "Ara"
@@ -16,15 +11,11 @@
     "name": "İsim",
     "modified": "Değiştirilme",
     "editor": "Editör",
-    "version": "Sürüm",
-    "lastOpened": "Son Açılma",
-    "actions": "İşlemler",
     "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
     "dotNetProject": "Bu bir .Net Projesidir",
     "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
     "windowedMode": "Bu proje pencere modunda açık",
     "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
-    "invalidRelease": "Editör kullanılamıyor",
     "gitProject": "Proje sürüm kontrolü için Git kullanıyor"
   },
   "addProject": {
@@ -43,16 +34,7 @@
     }
   },
   "messages": {
-    "noProjects": "Proje bulunamadı",
-    "noReleases": "Kurulu sürüm yok.",
-    "goToInstalls": "Kurulumlara git.",
     "noReleasesCta": "Henüz kurulu sürüm yok. <Link>Kurulumlara git</Link>",
-    "projectAdded": "Proje başarıyla eklendi",
-    "projectRemoved": "Proje kaldırıldı",
-    "editorChanged": "Editör başarıyla değiştirildi",
-    "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
-    "monoProject": "Bu bir .NET Projesidir",
-    "prereleaseVersion": "Ön sürüm Godot editör sürümü kullanılıyor",
     "waitingForDialog": "Proje eklemek için iletişim kutusu bekleniyor...",
     "needReleaseInstalled": "Proje eklemek için en az bir sürüm yüklü olmalıdır",
     "addProjectError": "Proje eklenirken bir şeyler ters gitti",
@@ -69,29 +51,6 @@
       "invalidEditorVersion": "Geçersiz editör sürümü",
       "differentMajorVersion": "Editörün farklı bir ana sürümü kullanılamaz\nProjenizi korumak için https://godotengine.org adresindeki resmi geçiş kılavuzuna bakın"
     }
-  },
-  "createProject": {
-    "title": "Yeni Proje",
-    "projectName": "Proje Adı",
-    "projectPath": "Proje Yolu",
-    "selectVersion": "Godot Sürümünü Seçin",
-    "renderer": "İşleyici",
-    "editNow": "Şimdi düzenle",
-    "setupVSCode": "Visual Studio Code'u Metin Editörü olarak Ayarla",
-    "vscodeNotInstalled": "Visual Studio Code bu bilgisayarda yüklü değil",
-    "noVersionsInstalled": "Godot sürümü yüklü değil",
-    "errors": {
-      "nameRequired": "Proje adı gerekli",
-      "pathRequired": "Proje yolu gerekli",
-      "invalidPath": "Geçersiz proje yolu"
-    }
-  },
-  "searchPlaceholder": "Projelerde ara...",
-  "editorSettings": {
-    "title": "Editör Ayarları",
-    "alreadyExists": "{{version}} [.NET] için editör ayarları zaten mevcut ve kurulumunuzu korumak için herhangi bir değişiklik yapılmadı.",
-    "switchingToDotNet": "GDScript'ten .NET sürümüne geçiyorsanız, <strong>Editor Settings -> Dotnent</strong> (gelişmiş anahtar: true) üzerinden Dış Editörü manuel olarak yapılandırabilirsiniz.",
-    "readMore": "Daha fazla bilgi"
   },
   "toggleVSCode": {
     "errors": {

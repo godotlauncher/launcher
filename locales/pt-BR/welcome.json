@@ -12,8 +12,6 @@
     "ready": "Pronto"
   },
   "navigation": {
-    "next": "Avançar",
-    "previous": "Voltar",
     "start": "Começar",
     "nextMacOS": "Avançar: MacOS",
     "nextWindows": "Avançar: Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "Avançar: Configurações atuais",
     "nextSetLocations": "Avançar: Definir locais",
     "nextCustomizeBehavior": "Avançar: Personalizar comportamento",
-    "nextWindowsSymlink": "Avançar: Link simbólico no Windows",
     "nextReady": "Avançar: Pronto",
     "backWelcome": "Voltar: Boas-vindas",
     "backMacOS": "Voltar: MacOS",
     "backWindows": "Voltar: Windows",
-    "backLinux": "Voltar: Linux",
     "backCurrentSettings": "Voltar: Configurações atuais",
     "backSetLocations": "Voltar: Definir locais",
     "backCustomizeBehavior": "Voltar: Personalizar comportamento"

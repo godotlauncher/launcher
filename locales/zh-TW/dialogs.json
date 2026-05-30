@@ -29,11 +29,8 @@
     "error": "錯誤",
     "errorMessage": "移除發行版本時發生錯誤。"
   },
-  "selectFolder": "選擇資料夾",
-  "selectFile": "選擇檔案",
   "error": {
-    "title": "錯誤",
-    "generic": "發生錯誤：{{message}}"
+    "title": "錯誤"
   },
   "preferencesError": {
     "title": "讀取偏好設定時發生錯誤",

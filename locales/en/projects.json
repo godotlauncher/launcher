@@ -2,12 +2,7 @@
   "title": "Projects",
   "buttons": {
     "add": "Add",
-    "newProject": "New Project",
-    "addProject": "Add Project",
-    "createProject": "Create Project",
-    "refresh": "Refresh",
-    "launch": "Launch",
-    "changeEditor": "Change Editor"
+    "newProject": "New Project"
   },
   "search": {
     "placeholder": "Search"
@@ -16,15 +11,11 @@
     "name": "Name",
     "modified": "Modified",
     "editor": "Editor",
-    "version": "Version",
-    "lastOpened": "Last Opened",
-    "actions": "Actions",
     "invalidProject": "This project is invalid, check project and editor locations!",
     "dotNetProject": "This is a .Net Project",
     "vsCodeProject": "Visual Studio Code integration is enabled for this project",
     "prerelease": "Using a pre-release Godot editor version",
     "windowedMode": "This project is open in windowed mode",
-    "invalidRelease": "Editor unavailable",
     "gitProject": "Project uses Git version control"
   },
   "addProject": {
@@ -43,16 +34,7 @@
     }
   },
   "messages": {
-    "noProjects": "No projects found",
-    "noReleases": "No releases installed.",
-    "goToInstalls": "Go to installs.",
     "noReleasesCta": "No releases installed yet. <Link>Go to installs</Link>",
-    "projectAdded": "Project added successfully",
-    "projectRemoved": "Project removed",
-    "editorChanged": "Editor changed successfully",
-    "invalidProject": "This project is invalid, check project and editor locations!",
-    "monoProject": "This is a .NET Project",
-    "prereleaseVersion": "Using a pre-release Godot editor version",
     "waitingForDialog": "Waiting for dialog to add project...",
     "needReleaseInstalled": "You need at least a release installed to add a project",
     "addProjectError": "Something went wrong when adding project",
@@ -83,28 +65,5 @@
       "projectNotFound": "Project not found",
       "initFailed": "Failed to initialize Git repository."
     }
-  },
-  "createProject": {
-    "title": "New Project",
-    "projectName": "Project Name",
-    "projectPath": "Project Path",
-    "selectVersion": "Select Godot Version",
-    "renderer": "Renderer",
-    "editNow": "Edit now",
-    "setupVSCode": "Setup Visual Studio Code as Text Editor",
-    "vscodeNotInstalled": "Visual Studio Code is not installed on this computer",
-    "noVersionsInstalled": "No Godot versions installed",
-    "errors": {
-      "nameRequired": "Project name is required",
-      "pathRequired": "Project path is required",
-      "invalidPath": "Invalid project path"
-    }
-  },
-  "searchPlaceholder": "Search projects...",
-  "editorSettings": {
-    "title": "Editor Settings",
-    "alreadyExists": "Editor settings for {{version}} [.NET] already exists and no changes where made to protect your setup.",
-    "switchingToDotNet": "If you are switching to a .NET version from GDScript, you can manually configure External Editor from <strong>Editor Settings -> Dotnent</strong> (advanced switch: true).",
-    "readMore": "Read More"
   }
 }
