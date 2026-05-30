@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/godotlauncher/launcher/refs/heads/release/1.10/schemas/engine-manifest.json",
+  "title": "Godot Launcher Custom Editor Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "name",
+    "base_version",
+    "mono",
+    "config_version",
+    "platforms"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+(?:\\.\\d+)?$"
+    },
+    "prerelease": {
+      "type": "boolean",
+      "default": false
+    },
+    "mono": {
+      "type": "boolean"
+    },
+    "config_version": {
+      "enum": [4, 5]
+    },
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform", "arch", "paths"],
+        "properties": {
+          "platform": {
+            "enum": ["windows", "linux", "macos"]
+          },
+          "arch": {
+            "enum": ["x64", "arm64", "ia32", "arm", "universal"]
+          },
+          "paths": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["editor"],
+            "properties": {
+              "editor": {
+                "type": "string",
+                "minLength": 1
+              },
+              "console": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

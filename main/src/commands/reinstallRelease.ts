@@ -67,6 +67,28 @@ export async function reinstallRelease(
     try {
         logger.info(`Reinstalling release '${release.version}'`);
 
+        if (release.source === 'custom') {
+            const checkedReleases = await checkAndUpdateReleases();
+            const refreshedRelease = checkedReleases.find((candidate) =>
+                hasSameInstalledReleaseIdentity(candidate, release),
+            );
+
+            if (refreshedRelease?.valid) {
+                await repairProjectsUsingRelease(release, refreshedRelease);
+                return {
+                    success: true,
+                    version: refreshedRelease.version,
+                    release: refreshedRelease,
+                };
+            }
+
+            return {
+                success: false,
+                version: release.version,
+                error: `Custom engine "${release.version}" is unavailable. Confirm the manifest and editor paths are accessible, then retry.`,
+            };
+        }
+
         const checkedReleases = await checkAndUpdateReleases();
         const validReplacement = checkedReleases.find(
             (candidate) =>

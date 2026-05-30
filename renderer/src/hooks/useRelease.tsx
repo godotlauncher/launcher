@@ -26,6 +26,16 @@ type ReleaseContext = {
     reinstallRelease: (
         release: InstalledRelease,
     ) => Promise<InstallReleaseResult>;
+    registerCustomEngine: (
+        manifestPath: string,
+        options?: { replaceExisting?: boolean },
+    ) => Promise<{
+        success: boolean;
+        error?: string;
+        release?: InstalledRelease;
+        releases?: InstalledRelease[];
+        duplicate?: InstalledRelease;
+    }>;
     getInstalledRelease: (
         version: string,
         mono: boolean,
@@ -242,6 +252,25 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         }
     };
 
+    const registerCustomEngine = async (
+        manifestPath: string,
+        options?: { replaceExisting?: boolean },
+    ) => {
+        const result = await window.electron.registerCustomEngine(
+            manifestPath,
+            options,
+        );
+
+        if (result.success) {
+            setInstalledReleases(
+                result.releases ??
+                    (await window.electron.getInstalledReleases()),
+            );
+        }
+
+        return result;
+    };
+
     const checkAllReleasesValid = async (): Promise<InstalledRelease[]> => {
         setLoading(true);
         try {
@@ -266,6 +295,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 clearReleaseCache,
                 installRelease,
                 reinstallRelease,
+                registerCustomEngine,
                 getInstalledRelease,
                 isInstalledRelease,
                 removeRelease,

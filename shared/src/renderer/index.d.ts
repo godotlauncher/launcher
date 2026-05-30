@@ -14,6 +14,7 @@ import type {
 import type {
     InstalledRelease,
     InstallReleaseResult,
+    RegisterCustomEngineResult,
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
@@ -62,6 +63,10 @@ export type ElectronRendererApi = {
     reinstallRelease: (
         release: InstalledRelease,
     ) => Promise<InstallReleaseResult>;
+    registerCustomEngine: (
+        manifestPath: string,
+        options?: { replaceExisting?: boolean },
+    ) => Promise<RegisterCustomEngineResult>;
 
     openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;

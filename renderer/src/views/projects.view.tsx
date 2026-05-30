@@ -9,6 +9,7 @@ import {
     CircleX,
     Copy,
     EllipsisVertical,
+    Files,
     TriangleAlert,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -368,10 +369,17 @@ export const ProjectsView: React.FC = () => {
             >
                 {isDraggingOver && (
                     <div className="absolute inset-0 z-30 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center pointer-events-none">
-                        <div className="bg-base-100 p-8 rounded-lg shadow-xl">
+                        <div className="bg-base-100 p-8 rounded-lg shadow-xl max-w-lg text-center flex flex-col gap-3">
+                            <Files className="w-10 h-10 mx-auto text-primary" />
                             <p className="text-2xl font-bold text-primary">
-                                {t('messages.dropProjectHere') ||
-                                    'Drop project.godot file here'}
+                                Drop Godot project files here
+                            </p>
+                            <p className="text-sm text-base-content/70">
+                                Drop one or more{' '}
+                                <code className="font-mono bg-base-300 px-2 rounded text-warning">
+                                    project.godot
+                                </code>{' '}
+                                files to add them to the launcher.
                             </p>
                         </div>
                     </div>

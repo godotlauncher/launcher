@@ -602,8 +602,8 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                             value={i}
                                         >
                                             {release.editor_path?.length > 0
-                                                ? `${release.version} ${`${release.mono ? `[${t('project.dotNetBadge')}]` : ''}`}`
-                                                : `${release.version} ${t('project.downloading')}`}
+                                                ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
+                                                : `${release.name ?? release.version} ${t('project.downloading')}`}
                                         </option>
                                     ))}
                                 </select>

@@ -205,7 +205,7 @@ describe('addProject', () => {
                 version_number: 4.3,
                 install_path: '/install/4.3',
                 editor_path: '/install/4.3/Godot',
-                platform: 'linux',
+                platform: process.platform,
                 arch: 'x86_64',
                 mono: true,
                 prerelease: false,
@@ -243,6 +243,35 @@ describe('addProject', () => {
             expect.any(String),
             expect.objectContaining({ mono: true, version: '4.3-stable' }),
         );
+    });
+
+    it('considers compatible custom engines when importing a project', async () => {
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.6-custom.1',
+                name: 'Acme Godot 4.6 Custom Engine',
+                version_number: 4.6,
+                install_path: '/engines/acme',
+                editor_path: '/engines/acme/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: true,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+                source: 'custom',
+                manifest_path:
+                    '/engines/acme/godotlauncher-editor-manifest.json',
+                managed_by_launcher: false,
+            },
+        ]);
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.release.version).toBe('4.6-custom.1');
+        expect(result.newProject?.release.source).toBe('custom');
     });
 
     it('should not return additionalInfo in the result', async () => {

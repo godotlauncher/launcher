@@ -35,6 +35,10 @@ electron.contextBridge.exposeInMainWorld('electron', {
         ipcInvoke('remove-release', release),
     reinstallRelease: (release: InstalledRelease) =>
         ipcInvoke('reinstall-release', release),
+    registerCustomEngine: (
+        manifestPath: string,
+        options?: { replaceExisting?: boolean },
+    ) => ipcInvoke('register-custom-engine', manifestPath, options),
 
     openEditorProjectManager: (release: InstalledRelease) =>
         ipcInvoke('open-editor-project-manager', release),

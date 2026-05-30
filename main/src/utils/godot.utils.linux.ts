@@ -53,7 +53,15 @@ export async function setProjectEditorReleaseLinux(
 
     if (!fs.existsSync(dstBinPath)) {
         if (fs.existsSync(srcBinPath)) {
-            await fs.promises.link(srcBinPath, dstBinPath);
+            try {
+                await fs.promises.link(srcBinPath, dstBinPath);
+            } catch {
+                try {
+                    await fs.promises.symlink(srcBinPath, dstBinPath, 'file');
+                } catch {
+                    await fs.promises.copyFile(srcBinPath, dstBinPath);
+                }
+            }
         }
     }
 

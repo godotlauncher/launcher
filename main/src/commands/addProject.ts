@@ -139,13 +139,25 @@ export async function addProject(
 
     const releases =
         installedReleases
-            .filter(
-                (r) =>
+            .filter((r) => {
+                const matchingBaseVersion =
                     parseInt(r.version_number.toString(), 10) ===
-                        parseInt(releaseBaseVersion.toString(), 10) &&
+                    parseInt(releaseBaseVersion.toString(), 10);
+                const compatibleSource =
+                    r.source === 'custom' ||
+                    r.version.toLowerCase().includes('stable');
+                const compatiblePlatform =
+                    r.source !== 'custom' ||
+                    (r.platform === process.platform &&
+                        r.arch === process.arch);
+
+                return (
+                    matchingBaseVersion &&
                     r.valid &&
-                    r.version.toLowerCase().includes('stable'),
-            )
+                    compatibleSource &&
+                    compatiblePlatform
+                );
+            })
             .sort(sortReleases) || [];
 
     if (releases.length === 0) {
@@ -307,6 +319,7 @@ export async function addProject(
         withVSCode,
         valid: true,
         release: {
+            ...release,
             config_version: configVersion as 5,
             editor_path: release?.editor_path ?? '',
             install_path: release?.install_path ?? '',

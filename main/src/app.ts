@@ -30,6 +30,7 @@ import {
     launchProject,
     removeProject,
 } from './commands/projects.js';
+import { registerCustomEngine } from './commands/registerCustomEngine.js';
 import { reinstallRelease } from './commands/reinstallRelease.js';
 import {
     clearReleaseCaches,
@@ -215,6 +216,15 @@ export function registerHandlers() {
     ipcMainHandler(
         'reinstall-release',
         async (_, installedRelease) => await reinstallRelease(installedRelease),
+    );
+
+    ipcMainHandler(
+        'register-custom-engine',
+        async (
+            _,
+            manifestPath: string,
+            options?: { replaceExisting?: boolean },
+        ) => await registerCustomEngine(manifestPath, options),
     );
 
     ipcMainHandler(

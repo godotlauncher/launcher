@@ -2,12 +2,13 @@ import type { InstalledRelease, InstallReleaseResult } from '@shared';
 import logger from 'electron-log';
 
 import {
+    BadgePlus,
     CircleX,
     EllipsisVertical,
     TriangleAlert,
     TriangleAlertIcon,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAlerts } from '../hooks/useAlerts';
 import { useRelease } from '../hooks/useRelease';
@@ -40,18 +41,32 @@ function getReleaseActionKey(release: InstalledRelease): string {
     return `${release.version}_${release.mono ? 'mono' : 'standard'}`;
 }
 
+const SUPPORTED_CUSTOM_ENGINE_MANIFEST_NAMES = [
+    'godotlauncher-editor-manifest.json',
+];
+
+function isSupportedCustomEngineManifestName(fileName: string): boolean {
+    return SUPPORTED_CUSTOM_ENGINE_MANIFEST_NAMES.includes(fileName);
+}
+
 export const InstallsView: React.FC = () => {
     const { t } = useTranslation(['installs', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [installOpen, setInstallOpen] = useState<boolean>(false);
+    const [isDraggingManifest, setIsDraggingManifest] =
+        useState<boolean>(false);
+    const [isDraggingSupportedManifest, setIsDraggingSupportedManifest] =
+        useState<boolean>(true);
+    const dragCounterRef = useRef<number>(0);
 
-    const { addAlert } = useAlerts();
+    const { addAlert, addConfirm } = useAlerts();
     const {
         installedReleases,
         downloadingReleases,
         showReleaseMenu,
         checkAllReleasesValid,
         reinstallRelease,
+        registerCustomEngine,
         removeRelease,
     } = useRelease();
     const [busyAction, setBusyAction] = useState<{
@@ -133,6 +148,129 @@ export const InstallsView: React.FC = () => {
             }),
         [checkAllReleasesValid, reinstallRelease, removeRelease],
     );
+
+    const registerManifest = async (
+        manifestPath: string,
+        replaceExisting = false,
+    ) => {
+        try {
+            const result = await registerCustomEngine(manifestPath, {
+                replaceExisting,
+            });
+
+            if (result.success) {
+                addAlert(
+                    t('common:success'),
+                    `Registered custom engine ${result.release?.name ?? result.release?.version ?? ''}.`,
+                );
+                return;
+            }
+
+            if (result.duplicate && !replaceExisting) {
+                addConfirm(
+                    'Replace custom engine?',
+                    `A release with version "${result.duplicate.version}" is already registered. Replace it with this manifest?`,
+                    () => {
+                        void registerManifest(manifestPath, true);
+                        return true;
+                    },
+                    undefined,
+                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
+                );
+                return;
+            }
+
+            addAlert(
+                t('common:error'),
+                result.error ?? 'Failed to register custom engine.',
+                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+            );
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                (error as Error).message,
+                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+            );
+        }
+    };
+
+    const handleAddCustomEngine = async () => {
+        const result = await window.electron.openFileDialog(
+            '',
+            'Add Custom Editor Manifest',
+            [
+                {
+                    name: 'Godot Launcher Editor Manifest',
+                    extensions: ['json'],
+                },
+            ],
+        );
+
+        if (result.canceled || result.filePaths.length === 0) {
+            return;
+        }
+
+        await registerManifest(result.filePaths[0]);
+    };
+
+    const dragEventHasSupportedManifest = (
+        event: React.DragEvent<HTMLElement>,
+    ) => {
+        const files = Array.from(event.dataTransfer.items)
+            .filter((item) => item.kind === 'file')
+            .map((item) => item.getAsFile())
+            .filter((file): file is File => Boolean(file));
+
+        if (files.length === 0) {
+            return true;
+        }
+
+        return files.some((file) =>
+            isSupportedCustomEngineManifestName(file.name),
+        );
+    };
+
+    const handleDragEnter = (event: React.DragEvent<HTMLElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dragCounterRef.current++;
+        setIsDraggingSupportedManifest(dragEventHasSupportedManifest(event));
+        setIsDraggingManifest(true);
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsDraggingSupportedManifest(dragEventHasSupportedManifest(event));
+    };
+
+    const handleDragLeave = (event: React.DragEvent<HTMLElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dragCounterRef.current--;
+        if (dragCounterRef.current <= 0) {
+            dragCounterRef.current = 0;
+            setIsDraggingManifest(false);
+            setIsDraggingSupportedManifest(true);
+        }
+    };
+
+    const handleDrop = async (event: React.DragEvent<HTMLElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDraggingManifest(false);
+        setIsDraggingSupportedManifest(true);
+        const manifestFile = Array.from(event.dataTransfer.files).find((file) =>
+            isSupportedCustomEngineManifestName(file.name),
+        );
+
+        if (!manifestFile) {
+            return;
+        }
+
+        await registerManifest(window.electron.getPathForFile(manifestFile));
+    };
 
     const handleRetry = async (release: InstalledRelease) => {
         setBusyAction({
@@ -275,13 +413,65 @@ export const InstallsView: React.FC = () => {
 
     return (
         <>
-            <div className="flex flex-col h-full w-full overflow-auto p-1">
+            <section
+                className="flex flex-col h-full w-full overflow-auto p-1"
+                aria-label="Editor installs"
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                {isDraggingManifest && (
+                    <div
+                        className={`absolute inset-0 z-30 border-4 border-dashed flex items-center justify-center pointer-events-none ${
+                            isDraggingSupportedManifest
+                                ? 'bg-primary/20 border-primary'
+                                : 'bg-error/20 border-error'
+                        }`}
+                    >
+                        <div className="bg-base-100 p-8 rounded-lg shadow-xl max-w-lg text-center flex flex-col gap-3">
+                            <BadgePlus
+                                className={`w-10 h-10 mx-auto ${
+                                    isDraggingSupportedManifest
+                                        ? 'text-primary'
+                                        : 'text-error'
+                                }`}
+                            />
+                            <p
+                                className={`text-2xl font-bold ${
+                                    isDraggingSupportedManifest
+                                        ? 'text-primary'
+                                        : 'text-error'
+                                }`}
+                            >
+                                {isDraggingSupportedManifest
+                                    ? 'Drop manifest to add custom engine'
+                                    : 'Unsupported manifest file'}
+                            </p>
+                            <p className="text-sm text-base-content/70">
+                                Drop a{' '}
+                                <code className="font-mono bg-base-300 px-2 rounded text-warning">
+                                    godotlauncher-editor-manifest.json
+                                </code>{' '}
+                                file.
+                            </p>
+                        </div>
+                    </div>
+                )}
                 <div className="flex flex-col gap-2 w-full">
                     <div className="flex flex-row justify-between">
                         <h1 data-testid="installsTitle" className="text-2xl">
                             {t('title')}
                         </h1>
                         <div className="flex gap-2">
+                            <button
+                                type="button"
+                                data-testid="btnAddCustomEngine"
+                                className="btn btn-neutral"
+                                onClick={handleAddCustomEngine}
+                            >
+                                Add Custom Editor
+                            </button>
                             <button
                                 type="button"
                                 data-testid="btnInstallEditor"
@@ -354,7 +544,16 @@ export const InstallsView: React.FC = () => {
                                                     {row.valid === false && (
                                                         <TriangleAlert className="w-4 h-4 text-warning" />
                                                     )}
-                                                    {row.version}
+                                                    <span>
+                                                        {row.name ??
+                                                            row.version}
+                                                    </span>
+                                                    {row.source ===
+                                                        'custom' && (
+                                                        <span className="badge badge-info">
+                                                            Custom
+                                                        </span>
+                                                    )}
                                                     {row.mono && (
                                                         <span className="badge">
                                                             {t('badges.dotNet')}
@@ -368,13 +567,21 @@ export const InstallsView: React.FC = () => {
                                                         </span>
                                                     )}
                                                 </div>
+                                                {row.name && (
+                                                    <div className="text-xs text-base-content/50">
+                                                        {row.version}
+                                                    </div>
+                                                )}
                                                 <div className="text-xs text-base-content/50 flex flex-col gap-1">
                                                     {row.valid === false ? (
                                                         <>
                                                             <span>
-                                                                {t(
-                                                                    'messages.unavailableHintWithReinstall',
-                                                                )}
+                                                                {row.source ===
+                                                                'custom'
+                                                                    ? 'The custom engine path is not accessible. Mount the storage device and retry, or remove this entry.'
+                                                                    : t(
+                                                                          'messages.unavailableHintWithReinstall',
+                                                                      )}
                                                             </span>
                                                             <div className="flex flex-row flex-wrap gap-2">
                                                                 <button
@@ -402,38 +609,41 @@ export const InstallsView: React.FC = () => {
                                                                         },
                                                                     )}
                                                                 </button>
-                                                                <button
-                                                                    type="button"
-                                                                    data-testid={`btnReinstallRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                                    className="btn btn-primary btn-xs flex items-center gap-2"
-                                                                    onClick={() =>
-                                                                        handleReinstall(
+                                                                {row.source !==
+                                                                    'custom' && (
+                                                                    <button
+                                                                        type="button"
+                                                                        data-testid={`btnReinstallRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
+                                                                        className="btn btn-primary btn-xs flex items-center gap-2"
+                                                                        onClick={() =>
+                                                                            handleReinstall(
+                                                                                row,
+                                                                            )
+                                                                        }
+                                                                        disabled={isReleaseActionBusy(
                                                                             row,
-                                                                        )
-                                                                    }
-                                                                    disabled={isReleaseActionBusy(
-                                                                        row,
-                                                                    )}
-                                                                    aria-label={t(
-                                                                        'buttons.reinstall',
-                                                                        {
-                                                                            ns: 'common',
-                                                                        },
-                                                                    )}
-                                                                >
-                                                                    {isReleaseActionBusy(
-                                                                        row,
-                                                                        'reinstall',
-                                                                    ) && (
-                                                                        <span className="loading loading-spinner loading-xs"></span>
-                                                                    )}
-                                                                    {t(
-                                                                        'buttons.reinstall',
-                                                                        {
-                                                                            ns: 'common',
-                                                                        },
-                                                                    )}
-                                                                </button>
+                                                                        )}
+                                                                        aria-label={t(
+                                                                            'buttons.reinstall',
+                                                                            {
+                                                                                ns: 'common',
+                                                                            },
+                                                                        )}
+                                                                    >
+                                                                        {isReleaseActionBusy(
+                                                                            row,
+                                                                            'reinstall',
+                                                                        ) && (
+                                                                            <span className="loading loading-spinner loading-xs"></span>
+                                                                        )}
+                                                                        {t(
+                                                                            'buttons.reinstall',
+                                                                            {
+                                                                                ns: 'common',
+                                                                            },
+                                                                        )}
+                                                                    </button>
+                                                                )}
                                                                 <button
                                                                     type="button"
                                                                     data-testid={`btnRemoveRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
@@ -498,7 +708,7 @@ export const InstallsView: React.FC = () => {
                         </table>
                     </div>
                 )}
-            </div>
+            </section>
             {installOpen && (
                 <InstallEditorSubView onClose={() => setInstallOpen(false)} />
             )}
