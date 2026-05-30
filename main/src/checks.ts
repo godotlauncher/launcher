@@ -137,22 +137,26 @@ export async function checkProjectValid(
     logger.info(`Checking project '${project.name}'`);
 
     // check project path
-    if (
-        !(await pathExistsForValidation(
-            path.resolve(project.path, 'project.godot'),
-        ))
-    ) {
+    const projectFileExists = await pathExistsForValidation(
+        path.resolve(project.path, 'project.godot'),
+    );
+    project.valid = projectFileExists;
+    delete project.invalid_reason;
+
+    if (!projectFileExists) {
         logger.warn(`Project '${project.name}' has an invalid path`);
-        project.valid = false;
-    } else {
-        project.valid = true;
+        project.invalid_reason = 'missing_project_file';
     }
 
     // check release
-    if (!(await pathExistsForValidation(project.release.editor_path))) {
+    const releaseEditorExists = await pathExistsForValidation(
+        project.release.editor_path,
+    );
+    if (!releaseEditorExists) {
         logger.warn(`Project '${project.name}' has an invalid release path`);
         project.valid = false;
         project.release.valid = false;
+        project.invalid_reason = project.invalid_reason ?? 'missing_editor';
     } else {
         if (
             options.repairMissingLaunchPath !== false &&

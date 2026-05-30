@@ -3,6 +3,8 @@ import type { InstalledRelease } from '../releases/index.js';
 
 export type LaunchPath = string;
 
+export type ProjectInvalidReason = 'missing_project_file' | 'missing_editor';
+
 export type ProjectDetails = {
     name: string;
     version: string;
@@ -19,6 +21,7 @@ export type ProjectDetails = {
     withVSCode: boolean;
     withGit: boolean;
     valid: boolean;
+    invalid_reason?: ProjectInvalidReason;
 };
 
 export type CreateProjectResult = BackendResult & {

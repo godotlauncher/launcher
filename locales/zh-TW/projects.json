@@ -16,7 +16,11 @@
     "prerelease": "使用預先釋出的 Godot 編輯器版本",
     "windowedMode": "此專案以視窗模式開啟",
     "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
-    "gitProject": "此專案使用 Git 進行版本控制"
+    "gitProject": "此專案使用 Git 進行版本控制",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "選擇專案檔",
@@ -47,7 +51,11 @@
     "failedAddProject": "Failed to add project: {{error}}",
     "dropProjectFilesHere": "Drop Godot project files here",
     "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {

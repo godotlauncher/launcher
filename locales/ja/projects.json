@@ -16,7 +16,11 @@
     "prerelease": "プレリリース版のGodotエディタを使用しています",
     "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
     "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています",
-    "gitProject": "このプロジェクトはバージョン管理に Git を使用しています"
+    "gitProject": "このプロジェクトはバージョン管理に Git を使用しています",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "プロジェクトファイルを選択",
@@ -47,7 +51,11 @@
     "failedAddProject": "Failed to add project: {{error}}",
     "dropProjectFilesHere": "Drop Godot project files here",
     "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {

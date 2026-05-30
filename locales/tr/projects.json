@@ -16,7 +16,11 @@
     "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
     "windowedMode": "Bu proje pencere modunda açık",
     "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
-    "gitProject": "Proje sürüm kontrolü için Git kullanıyor"
+    "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "Proje Dosyasını Seç",
@@ -47,7 +51,11 @@
     "failedAddProject": "Failed to add project: {{error}}",
     "dropProjectFilesHere": "Drop Godot project files here",
     "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {

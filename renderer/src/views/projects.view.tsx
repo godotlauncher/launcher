@@ -27,6 +27,28 @@ import { CreateProjectSubView } from './subViews/createProject.subview';
 TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
 
+function getInvalidProjectTableKey(project: ProjectDetails): string {
+    switch (project.invalid_reason) {
+        case 'missing_project_file':
+            return 'table.invalidReasons.missingProjectFile';
+        case 'missing_editor':
+            return 'table.invalidReasons.missingEditor';
+        default:
+            return 'table.invalidProject';
+    }
+}
+
+function getInvalidProjectMessageKey(project: ProjectDetails): string {
+    switch (project.invalid_reason) {
+        case 'missing_project_file':
+            return 'messages.invalidReasons.missingProjectFile';
+        case 'missing_editor':
+            return 'messages.invalidReasons.missingEditor';
+        default:
+            return 'messages.projectNotValid';
+    }
+}
+
 export const ProjectsView: React.FC = () => {
     const { t } = useTranslation(['projects', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
@@ -154,9 +176,12 @@ export const ProjectsView: React.FC = () => {
     const onLaunchProject = async (project: ProjectDetails) => {
         if (isInstalledRelease(project.release.version, project.release.mono)) {
             const result = await launchProject(project);
-            if (!result) {
+            if (!result?.valid) {
                 await checkAllReleasesValid();
-                addAlert(t('common:error'), t('messages.projectNotValid'));
+                addAlert(
+                    t('common:error'),
+                    t(getInvalidProjectMessageKey(result ?? project)),
+                );
             }
         } else {
             await checkAllReleasesValid();
@@ -552,7 +577,9 @@ export const ProjectsView: React.FC = () => {
                                                     <span
                                                         className="tooltip tooltip-right"
                                                         data-tip={t(
-                                                            'table.invalidProject',
+                                                            getInvalidProjectTableKey(
+                                                                row,
+                                                            ),
                                                         )}
                                                     >
                                                         <TriangleAlert className="stroke-warning" />

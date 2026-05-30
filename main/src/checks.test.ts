@@ -235,10 +235,114 @@ describe('checkProjectValid', () => {
 
         expect(validatedProject.valid).toBe(false);
         expect(validatedProject.release.valid).toBe(false);
+        expect(validatedProject.invalid_reason).toBe('missing_editor');
         expect(validatedProject.release.version).toBe('4.2.0');
         expect(SetProjectEditorRelease).not.toHaveBeenCalled();
 
         fs.rmSync(projectDir, { recursive: true, force: true });
+    });
+
+    it('flags missing project file separately from a valid editor', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-missing-file-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-valid-'),
+        );
+
+        const project: ProjectDetails = {
+            name: 'Missing File Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.valid).toBe(false);
+        expect(validatedProject.release.valid).toBe(true);
+        expect(validatedProject.invalid_reason).toBe('missing_project_file');
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
+
+    it('clears stale invalid reason when project and editor are valid', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-valid-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-valid-'),
+        );
+
+        fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
+
+        const project: ProjectDetails = {
+            name: 'Recovered Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: false,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: false,
+            invalid_reason: 'missing_editor',
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.valid).toBe(true);
+        expect(validatedProject.release.valid).toBe(true);
+        expect(validatedProject.invalid_reason).toBeUndefined();
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
     });
 
     it('updates withGit flag based on .git directory presence', async () => {

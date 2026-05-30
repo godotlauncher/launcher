@@ -27,7 +27,9 @@ interface ProjectsContext {
     showProjectMenu: (project: ProjectDetails) => Promise<void>;
     openProjectEditorFolder: (project: ProjectDetails) => Promise<void>;
     removeProject: (project: ProjectDetails) => Promise<void>;
-    launchProject: (project: ProjectDetails) => Promise<boolean>;
+    launchProject: (
+        project: ProjectDetails,
+    ) => Promise<ProjectDetails | undefined>;
     refreshProjects: () => Promise<void>;
     checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
     createProject: (
@@ -132,7 +134,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             await window.electron.launchProject(project);
         }
 
-        return p?.valid ?? false;
+        return p;
     };
 
     const refreshProjects = async () => {

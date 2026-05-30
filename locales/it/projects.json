@@ -16,7 +16,11 @@
     "vsCodeProject": "Visual Studio Code è abilitato come editor esterno per questo progetto",
     "prerelease": "Utilizza una versione pre-release dell'editor Godot",
     "windowedMode": "Questo progetto si apre in modalità finestra",
-    "gitProject": "Il progetto usa Git per il controllo di versione"
+    "gitProject": "Il progetto usa Git per il controllo di versione",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "Seleziona file del progetto",
@@ -47,7 +51,11 @@
     "failedAddProject": "Failed to add project: {{error}}",
     "dropProjectFilesHere": "Drop Godot project files here",
     "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {
