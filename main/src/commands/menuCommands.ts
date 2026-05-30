@@ -289,7 +289,7 @@ export async function showReleaseMenu(
             icon: getThemedMenuIcon('bin'),
             label:
                 release.source === 'custom'
-                    ? 'Remove Custom Engine'
+                    ? t('dialogs:removeCustomEditor.menuLabel')
                     : t('menus:release.deleteRelease'),
             click: async () => {
                 const result = await dialog.showMessageBox(getMainWindow(), {
@@ -300,17 +300,19 @@ export async function showReleaseMenu(
                     ],
                     title:
                         release.source === 'custom'
-                            ? 'Remove Custom Engine'
+                            ? t('dialogs:removeCustomEditor.title')
                             : t('dialogs:removeRelease.title'),
                     message:
                         release.source === 'custom'
-                            ? `Remove custom engine "${release.name ?? release.version}" from the launcher?`
+                            ? t('dialogs:removeCustomEditor.message', {
+                                  name: release.name ?? release.version,
+                              })
                             : t('dialogs:removeRelease.message', {
                                   version: release.version,
                               }),
                     detail:
                         release.source === 'custom'
-                            ? 'This will unregister the custom engine. It will not delete the engine files on your device.'
+                            ? t('dialogs:removeCustomEditor.detail')
                             : t('dialogs:removeRelease.detail'),
                 });
 

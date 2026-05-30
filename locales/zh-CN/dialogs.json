@@ -35,5 +35,11 @@
   "preferencesError": {
     "title": "读取首选项时出错",
     "message": "无法解析用户首选项。将使用默认首选项。"
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

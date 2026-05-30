@@ -35,5 +35,11 @@
   "preferencesError": {
     "title": "Erreur de lecture des préférences",
     "message": "Impossible d'analyser les préférences utilisateur. Utilisation des préférences par défaut."
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

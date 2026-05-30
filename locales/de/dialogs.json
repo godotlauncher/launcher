@@ -35,5 +35,11 @@
   "preferencesError": {
     "title": "Fehler beim Lesen der Einstellungen",
     "message": "Benutzereinstellungen konnten nicht gelesen werden. Standardeinstellungen werden verwendet."
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

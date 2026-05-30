@@ -43,7 +43,11 @@
     "invalidReleaseEditor": "所選的編輯器不可用。請掛載磁碟機或重新安裝此版本。",
     "dropGodotFileOnly": "請拖放 project.godot 檔案以新增專案",
     "dropProjectHere": "將 project.godot 檔案拖放到此處以新增專案",
-    "addingProjects": "正在新增專案：{{current}}/{{total}}"
+    "addingProjects": "正在新增專案：{{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
   },
   "changeEditor": {
     "errors": {

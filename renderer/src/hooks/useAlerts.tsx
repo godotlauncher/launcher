@@ -96,6 +96,7 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
                     onClick: onOk,
                 },
                 {
+                    isCancel: true,
                     typeClass: 'btn-neutral',
                     text: t('buttons.cancel'),
                     onClick: onCancel,
@@ -105,9 +106,8 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
         });
     };
 
-    const closeConfirm = (callback?: () => void): void => {
+    const closeConfirm = (): void => {
         setConfirm(null);
-        callback?.();
     };
 
     const showConfirm = () => {

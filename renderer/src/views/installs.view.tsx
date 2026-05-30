@@ -3,6 +3,7 @@ import logger from 'electron-log';
 
 import {
     BadgePlus,
+    CheckCircle2,
     CircleX,
     EllipsisVertical,
     TriangleAlert,
@@ -161,15 +162,32 @@ export const InstallsView: React.FC = () => {
             if (result.success) {
                 addAlert(
                     t('common:success'),
-                    `Registered custom engine ${result.release?.name ?? result.release?.version ?? ''}.`,
+                    t('messages.registeredCustomEditor', {
+                        name:
+                            result.release?.name ??
+                            result.release?.version ??
+                            '',
+                    }),
+                    <CheckCircle2 className="w-5 h-5 text-success" />,
                 );
                 return;
             }
 
             if (result.duplicate && !replaceExisting) {
                 addConfirm(
-                    'Replace custom engine?',
-                    `A release with version "${result.duplicate.version}" is already registered. Replace it with this manifest?`,
+                    t('customEditor.replace.title'),
+                    <div className="flex flex-col gap-3">
+                        <p>{t('customEditor.replace.message')}</p>
+                        <div className="bg-base-200 rounded-md p-3 flex flex-col gap-1">
+                            <span className="text-xs uppercase tracking-wide text-base-content/50">
+                                {t('customEditor.replace.versionLabel')}
+                            </span>
+                            <code className="font-mono text-warning">
+                                {result.duplicate.version}
+                            </code>
+                        </div>
+                        <p>{t('customEditor.replace.detail')}</p>
+                    </div>,
                     () => {
                         void registerManifest(manifestPath, true);
                         return true;
@@ -182,7 +200,7 @@ export const InstallsView: React.FC = () => {
 
             addAlert(
                 t('common:error'),
-                result.error ?? 'Failed to register custom engine.',
+                result.error ?? t('messages.registerCustomEditorFailed'),
                 <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
         } catch (error) {
@@ -197,10 +215,10 @@ export const InstallsView: React.FC = () => {
     const handleAddCustomEngine = async () => {
         const result = await window.electron.openFileDialog(
             '',
-            'Add Custom Editor Manifest',
+            t('customEditor.selectManifestTitle'),
             [
                 {
-                    name: 'Godot Launcher Editor Manifest',
+                    name: t('customEditor.manifestFilterName'),
                     extensions: ['json'],
                 },
             ],
@@ -415,7 +433,7 @@ export const InstallsView: React.FC = () => {
         <>
             <section
                 className="flex flex-col h-full w-full overflow-auto p-1"
-                aria-label="Editor installs"
+                aria-label={t('title')}
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -445,15 +463,15 @@ export const InstallsView: React.FC = () => {
                                 }`}
                             >
                                 {isDraggingSupportedManifest
-                                    ? 'Drop manifest to add custom engine'
-                                    : 'Unsupported manifest file'}
+                                    ? t('customEditor.drop.title')
+                                    : t('customEditor.drop.unsupportedTitle')}
                             </p>
                             <p className="text-sm text-base-content/70">
-                                Drop a{' '}
+                                {t('customEditor.drop.helperPrefix')}{' '}
                                 <code className="font-mono bg-base-300 px-2 rounded text-warning">
                                     godotlauncher-editor-manifest.json
                                 </code>{' '}
-                                file.
+                                {t('customEditor.drop.helperSuffix')}
                             </p>
                         </div>
                     </div>
@@ -470,7 +488,7 @@ export const InstallsView: React.FC = () => {
                                 className="btn btn-neutral"
                                 onClick={handleAddCustomEngine}
                             >
-                                Add Custom Editor
+                                {t('buttons.addCustomEditor')}
                             </button>
                             <button
                                 type="button"
@@ -551,7 +569,7 @@ export const InstallsView: React.FC = () => {
                                                     {row.source ===
                                                         'custom' && (
                                                         <span className="badge badge-info">
-                                                            Custom
+                                                            {t('badges.custom')}
                                                         </span>
                                                     )}
                                                     {row.mono && (
@@ -578,7 +596,9 @@ export const InstallsView: React.FC = () => {
                                                             <span>
                                                                 {row.source ===
                                                                 'custom'
-                                                                    ? 'The custom engine path is not accessible. Mount the storage device and retry, or remove this entry.'
+                                                                    ? t(
+                                                                          'messages.unavailableCustomEditorHint',
+                                                                      )
                                                                     : t(
                                                                           'messages.unavailableHintWithReinstall',
                                                                       )}

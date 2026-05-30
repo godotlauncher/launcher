@@ -43,7 +43,11 @@
     "invalidReleaseEditor": "Wybrany edytor jest niedostępny. Podłącz dysk lub zainstaluj wydanie ponownie.",
     "dropGodotFileOnly": "Upuść plik project.godot, aby dodać projekt",
     "dropProjectHere": "Upuść plik project.godot tutaj, aby dodać projekt",
-    "addingProjects": "Dodawanie projektów: {{current}}/{{total}}"
+    "addingProjects": "Dodawanie projektów: {{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
   },
   "changeEditor": {
     "errors": {

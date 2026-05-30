@@ -35,5 +35,11 @@
   "preferencesError": {
     "title": "設定の読み取りエラー",
     "message": "ユーザー設定を解析できませんでした。デフォルト設定を使用します。"
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

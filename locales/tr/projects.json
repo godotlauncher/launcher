@@ -43,7 +43,11 @@
     "invalidReleaseEditor": "Seçilen editör kullanılamıyor. Sürücüyü bağlayın veya sürümü yeniden yükleyin.",
     "dropGodotFileOnly": "Proje eklemek için lütfen bir project.godot dosyasını sürükleyin",
     "dropProjectHere": "Proje eklemek için project.godot dosyasını buraya bırakın",
-    "addingProjects": "Projeler ekleniyor: {{current}}/{{total}}"
+    "addingProjects": "Projeler ekleniyor: {{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
   },
   "changeEditor": {
     "errors": {

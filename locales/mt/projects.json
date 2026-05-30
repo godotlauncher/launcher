@@ -43,7 +43,11 @@
     "invalidReleaseEditor": "L-editur maghzul mhux disponibbli. Qabbad id-drajv jew erga' installa r-release.",
     "dropGodotFileOnly": "Jekk jogħġbok waqqa' fajl project.godot biex iżżid proġett",
     "dropProjectHere": "Waqqa' l-fajl project.godot hawn biex iżżid proġett",
-    "addingProjects": "Qed iżżid proġetti: {{current}}/{{total}}"
+    "addingProjects": "Qed iżżid proġetti: {{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
   },
   "changeEditor": {
     "errors": {

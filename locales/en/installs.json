@@ -2,7 +2,8 @@
   "title": "Editor Installs",
   "tabs": {},
   "buttons": {
-    "install": "Install Editor"
+    "install": "Install Editor",
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Search"
@@ -12,7 +13,8 @@
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "prerelease"
+    "prerelease": "prerelease",
+    "custom": "Custom"
   },
   "status": {
     "installing": "Installing..."
@@ -25,6 +27,25 @@
     "revalidationStillMissing": "Validation finished but {{version}} is still unavailable. Confirm {{path}} is accessible before retrying.",
     "revalidationStillMissingNoPath": "Validation finished but {{version}} is still unavailable. Confirm the storage device is mounted before retrying.",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again."
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+  },
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
+    }
   }
 }

@@ -35,5 +35,11 @@
   "preferencesError": {
     "title": "讀取偏好設定時發生錯誤",
     "message": "無法解析使用者偏好設定。將使用預設偏好設定。"
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

@@ -43,7 +43,11 @@
     "invalidReleaseEditor": "選択されたエディタは利用できません。ドライブをマウントするか、バージョンを再インストールしてください。",
     "dropGodotFileOnly": "プロジェクトを追加するには project.godot ファイルをドロップしてください",
     "dropProjectHere": "ここに project.godot ファイルをドロップしてプロジェクトを追加",
-    "addingProjects": "プロジェクトを追加中: {{current}}/{{total}}"
+    "addingProjects": "プロジェクトを追加中: {{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher."
   },
   "changeEditor": {
     "errors": {

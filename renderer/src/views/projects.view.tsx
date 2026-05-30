@@ -269,8 +269,7 @@ export const ProjectsView: React.FC = () => {
         if (godotFiles.length === 0) {
             addAlert(
                 t('common:error'),
-                t('messages.dropGodotFileOnly') ||
-                    'Please drop a project.godot file',
+                t('messages.dropGodotFileOnly'),
                 <TriangleAlert className="stroke-error" />,
             );
             return;
@@ -317,7 +316,12 @@ export const ProjectsView: React.FC = () => {
                     );
                     addAlert(
                         t('common:error'),
-                        `Failed to add project: ${error instanceof Error ? error.message : String(error)}`,
+                        t('messages.failedAddProject', {
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        }),
                         <TriangleAlert className="stroke-error" />,
                     );
                 }
@@ -372,14 +376,14 @@ export const ProjectsView: React.FC = () => {
                         <div className="bg-base-100 p-8 rounded-lg shadow-xl max-w-lg text-center flex flex-col gap-3">
                             <Files className="w-10 h-10 mx-auto text-primary" />
                             <p className="text-2xl font-bold text-primary">
-                                Drop Godot project files here
+                                {t('messages.dropProjectFilesHere')}
                             </p>
                             <p className="text-sm text-base-content/70">
-                                Drop one or more{' '}
+                                {t('messages.dropProjectFilesHelpPrefix')}{' '}
                                 <code className="font-mono bg-base-300 px-2 rounded text-warning">
                                     project.godot
                                 </code>{' '}
-                                files to add them to the launcher.
+                                {t('messages.dropProjectFilesHelpSuffix')}
                             </p>
                         </div>
                     </div>
