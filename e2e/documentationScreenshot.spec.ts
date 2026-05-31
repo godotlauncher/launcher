@@ -20,9 +20,7 @@ import sharp from 'sharp';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
 
-type ElectronPage = Awaited<
-    ReturnType<ElectronApplication['firstWindow']>
->;
+type ElectronPage = Awaited<ReturnType<ElectronApplication['firstWindow']>>;
 
 type CachedTool = {
     name: string;
@@ -93,32 +91,205 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_missing_editor',
+        description: 'Projects view with unavailable editor',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                projects: SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
+                installedReleases:
+                    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await expect(
+                page.getByRole('button', {
+                    name: 'Archive-Prototype',
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_editor_resolution',
+        description: 'Add Project editor resolution dialog',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                availableReleases:
+                    SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
+            });
+            await stubAddProjectEditorResolution(electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectAdd').click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: 'Editor version required',
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const cancelButton = page.getByTestId('btnAlert2');
+            if (await cancelButton.isVisible().catch(() => false)) {
+                await cancelButton.click();
+            }
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_editor_resolution_options',
+        description: 'Add Project editor resolution dialog options',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                availableReleases:
+                    SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
+            });
+            await stubAddProjectEditorResolution(electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectAdd').click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: 'Editor version required',
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Options' }).click();
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const cancelButton = page.getByTestId('btnAlert2');
+            if (await cancelButton.isVisible().catch(() => false)) {
+                await cancelButton.click();
+            }
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project',
         description: 'New Project view',
-        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
-            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My-Next-Awesome-Game');
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
         },
     },
     {
+        fileBase: 'screen_projects_new_project_custom_editor',
+        description: 'New Project view with a custom editor selected',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                installedReleases: SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+            });
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page
+                .getByTestId('inputProjectName')
+                .fill('Custom-Editor-Game');
+            const selectedCustomRelease = await page
+                .locator('select')
+                .first()
+                .evaluate((select) => {
+                    const releaseSelect = select as HTMLSelectElement;
+                    const customOption = Array.from(releaseSelect.options).find(
+                        (option) =>
+                            option.textContent?.includes('Studio Custom 4.7'),
+                    );
+
+                    if (!customOption) {
+                        return false;
+                    }
+
+                    releaseSelect.value = customOption.value;
+                    releaseSelect.dispatchEvent(
+                        new Event('change', { bubbles: true }),
+                    );
+                    return true;
+                });
+            expect(selectedCustomRelease).toBe(true);
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project_no_git',
         description: 'New Project view when Git is not installed',
-        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await stubInstalledTools(electronApp, TOOLS_NO_GIT);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
-            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My-Next-Awesome-Game');
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
@@ -127,14 +298,22 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_new_project_no_vscode',
         description: 'New Project view when VS Code is not installed',
-        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await stubInstalledTools(electronApp, TOOLS_NO_VSCODE);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
-            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My-Next-Awesome-Game');
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
@@ -143,14 +322,22 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_new_project_no_tools',
         description: 'New Project view when Git and VS Code are not installed',
-        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await stubInstalledTools(electronApp, TOOLS_NONE);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
-            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My-Next-Awesome-Game');
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
@@ -159,15 +346,23 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_new_project_overwrite_path',
         description: 'New Project view with overwrite path enabled',
-        navigate: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
-            await page.getByTestId('inputProjectName').fill('My-Next-Awesome-Game');
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My-Next-Awesome-Game');
             await page.getByTestId('checkboxOverwriteProjectPath').check();
             await page.waitForTimeout(600);
         },
-        cleanup: async (page: ElectronPage, electronApp: ElectronApplication) => {
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
@@ -263,6 +458,97 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnInstalls').click();
             await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_installs_custom_editors',
+        description: 'Installs view with custom and unavailable editors',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                installedReleases:
+                    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnInstalls').click();
+            await expect(page.getByText('Studio Custom 4.7')).toBeVisible({
+                timeout: 10000,
+            });
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_installs_custom_manifest_drop',
+        description: 'Installs view custom editor manifest drop prompt',
+        navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
+            await page.waitForTimeout(600);
+            await showInstallsManifestDropOverlay(page, true);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await hideInstallsManifestDropOverlay(page, true);
+            await page.waitForTimeout(200);
+        },
+    },
+    {
+        fileBase: 'screen_installs_custom_manifest_drop_unsupported',
+        description: 'Installs view unsupported custom editor manifest prompt',
+        navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
+            await page.waitForTimeout(600);
+            await showInstallsManifestDropOverlay(page, false);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await hideInstallsManifestDropOverlay(page, false);
+            await page.waitForTimeout(200);
+        },
+    },
+    {
+        fileBase: 'screen_installs_custom_editor_replace',
+        description: 'Replace custom editor confirmation dialog',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                installedReleases: SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+            });
+            await stubCustomEditorDuplicateRegistration(electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnInstalls').click();
+            await page.getByTestId('btnAddCustomEngine').click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: 'Replace custom editor?',
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const cancelButton = page.getByTestId('btnAlert1');
+            if (await cancelButton.isVisible().catch(() => false)) {
+                await cancelButton.click();
+            }
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
         },
     },
     {
@@ -485,7 +771,8 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     },
     {
         fileBase: 'screen_settings_updates_manual_override',
-        description: 'Settings (Updates tab, skipped version manually overridden)',
+        description:
+            'Settings (Updates tab, skipped version manually overridden)',
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
@@ -522,8 +809,7 @@ const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
         version: '4.4.1-stable',
         version_number: 4.4,
         install_path: '/Applications/Godot_4.4.1',
-        editor_path:
-            '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
+        editor_path: '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
         platform: 'darwin',
         arch: 'universal',
         mono: false,
@@ -548,6 +834,91 @@ const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
     },
 ];
 
+const SAMPLE_CUSTOM_RELEASE: InstalledRelease = {
+    version: '4.7.0-custom.1',
+    name: 'Studio Custom 4.7',
+    base_version: '4.7',
+    flavor: 'gdscript',
+    version_number: 4.7,
+    install_path: '/Users/docs/Godot/Editors/StudioCustom47',
+    editor_path:
+        '/Users/docs/Godot/Editors/StudioCustom47/Godot.app/Contents/MacOS/Godot',
+    platform: 'darwin',
+    arch: 'universal',
+    mono: false,
+    prerelease: false,
+    config_version: 5,
+    published_at: null,
+    valid: true,
+    source: 'custom',
+    manifest_path:
+        '/Users/docs/Godot/Editors/StudioCustom47/godotlauncher-editor-manifest.json',
+    managed_by_launcher: false,
+};
+
+const SAMPLE_UNAVAILABLE_RELEASE: InstalledRelease = {
+    version: '4.5.1-stable',
+    version_number: 4.5,
+    install_path: '/Volumes/Archive/Godot_4.5.1',
+    editor_path: '/Volumes/Archive/Godot_4.5.1/Godot.app/Contents/MacOS/Godot',
+    platform: 'darwin',
+    arch: 'universal',
+    mono: false,
+    prerelease: false,
+    config_version: 5,
+    published_at: '2025-08-18T17:04:20Z',
+    valid: false,
+};
+
+const SAMPLE_UNAVAILABLE_CUSTOM_RELEASE: InstalledRelease = {
+    version: '4.3.0-stable',
+    name: 'Experimental Fork',
+    base_version: '4.3',
+    flavor: 'gdscript',
+    version_number: 4.3,
+    install_path: '/Volumes/Archive/Godot/ExperimentalFork',
+    editor_path:
+        '/Volumes/Archive/Godot/ExperimentalFork/Godot.app/Contents/MacOS/Godot',
+    platform: 'darwin',
+    arch: 'universal',
+    mono: false,
+    prerelease: false,
+    config_version: 5,
+    published_at: null,
+    valid: false,
+    source: 'custom',
+    manifest_path:
+        '/Volumes/Archive/Godot/ExperimentalFork/godotlauncher-editor-manifest.json',
+    managed_by_launcher: false,
+};
+
+const SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM: InstalledRelease[] = [
+    ...SAMPLE_INSTALLED_RELEASES,
+    SAMPLE_CUSTOM_RELEASE,
+];
+
+const SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE: InstalledRelease[] =
+    [
+        ...SAMPLE_INSTALLED_RELEASES,
+        SAMPLE_CUSTOM_RELEASE,
+        SAMPLE_UNAVAILABLE_RELEASE,
+        SAMPLE_UNAVAILABLE_CUSTOM_RELEASE,
+    ];
+
+const SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE: InstalledRelease = {
+    version: '4.6.2-stable',
+    version_number: 4.6,
+    install_path: '/Applications/Godot_4.6.2',
+    editor_path: '/Applications/Godot_4.6.2/Godot.app/Contents/MacOS/Godot',
+    platform: 'darwin',
+    arch: 'universal',
+    mono: false,
+    prerelease: false,
+    config_version: 5,
+    published_at: '2026-03-18T12:00:00Z',
+    valid: true,
+};
+
 const SAMPLE_PROJECTS: ProjectDetails[] = [
     {
         name: 'My-Awesome-Game',
@@ -562,8 +933,7 @@ const SAMPLE_PROJECTS: ProjectDetails[] = [
         last_opened: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
         open_windowed: false,
         release: SAMPLE_INSTALLED_RELEASES[0],
-        launch_path:
-            '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
+        launch_path: '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
         config_version: 5,
         withVSCode: true,
         withGit: true,
@@ -575,8 +945,7 @@ const SAMPLE_PROJECTS: ProjectDetails[] = [
         version: '4.6.1-stable',
         version_number: 4.6,
         renderer: 'FORWARD_PLUS',
-        editor_settings_path:
-            '/Users/docs/Godot/Projects/my-other-game/.godot',
+        editor_settings_path: '/Users/docs/Godot/Projects/my-other-game/.godot',
         editor_settings_file:
             '/Users/docs/Godot/Projects/my-other-game/.godot/editor_settings-4.6.tres',
         last_opened: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
@@ -591,6 +960,32 @@ const SAMPLE_PROJECTS: ProjectDetails[] = [
     },
 ];
 
+const SAMPLE_PROJECT_WITH_MISSING_EDITOR: ProjectDetails = {
+    name: 'Archive-Prototype',
+    path: '/Volumes/Archive/Godot/Projects/archive-prototype',
+    version: SAMPLE_UNAVAILABLE_RELEASE.version,
+    version_number: SAMPLE_UNAVAILABLE_RELEASE.version_number,
+    renderer: 'FORWARD_PLUS',
+    editor_settings_path:
+        '/Volumes/Archive/Godot/Projects/archive-prototype/.godot',
+    editor_settings_file:
+        '/Volumes/Archive/Godot/Projects/archive-prototype/.godot/editor_settings-4.5.tres',
+    last_opened: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    open_windowed: false,
+    release: SAMPLE_UNAVAILABLE_RELEASE,
+    launch_path: SAMPLE_UNAVAILABLE_RELEASE.editor_path,
+    config_version: 5,
+    withVSCode: false,
+    withGit: true,
+    valid: false,
+    invalid_reason: 'missing_editor',
+};
+
+const SAMPLE_PROJECTS_WITH_MISSING_EDITOR: ProjectDetails[] = [
+    SAMPLE_PROJECT_WITH_MISSING_EDITOR,
+    ...SAMPLE_PROJECTS,
+];
+
 const SAMPLE_RELEASES_CACHE_FILE = releasesCache;
 
 const SAMPLE_PRERELEASE_CACHE_FILE = prereleasesCache;
@@ -600,6 +995,21 @@ const SAMPLE_AVAILABLE_RELEASES: ReleaseSummary[] =
 
 const SAMPLE_AVAILABLE_PRERELEASES: ReleaseSummary[] =
     SAMPLE_PRERELEASE_CACHE_FILE.releases;
+
+const SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE: ReleaseSummary = {
+    version: '4.6.3-stable',
+    version_number: 4.6,
+    name: '4.6.3-stable',
+    published_at: '2026-05-12T12:00:00Z',
+    draft: false,
+    prerelease: false,
+    assets: [],
+};
+
+const SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION: ReleaseSummary[] = [
+    SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE,
+    ...SAMPLE_AVAILABLE_RELEASES,
+];
 
 const SAMPLE_PREFS: UserPreferences = {
     prefs_version: 3,
@@ -692,8 +1102,12 @@ async function showProjectsDropOverlay(page: ElectronPage) {
     await page.evaluate(() => {
         const title = document.querySelector('[data-testid="projectsTitle"]');
         const container =
-            title?.closest('div.flex.flex-col.h-full.w-full.overflow-auto.p-1') ??
-            document.querySelector('div.flex.flex-col.h-full.w-full.overflow-auto.p-1');
+            title?.closest(
+                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
+            ) ??
+            document.querySelector(
+                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
+            );
         if (!container) return;
 
         const dataTransfer = new DataTransfer();
@@ -710,8 +1124,12 @@ async function hideProjectsDropOverlay(page: ElectronPage) {
     await page.evaluate(() => {
         const title = document.querySelector('[data-testid="projectsTitle"]');
         const container =
-            title?.closest('div.flex.flex-col.h-full.w-full.overflow-auto.p-1') ??
-            document.querySelector('div.flex.flex-col.h-full.w-full.overflow-auto.p-1');
+            title?.closest(
+                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
+            ) ??
+            document.querySelector(
+                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
+            );
         if (!container) return;
 
         const dataTransfer = new DataTransfer();
@@ -722,6 +1140,60 @@ async function hideProjectsDropOverlay(page: ElectronPage) {
         });
         container.dispatchEvent(dragLeave);
     });
+}
+
+function getManifestFileName(supported: boolean) {
+    return supported
+        ? 'godotlauncher-editor-manifest.json'
+        : 'godot-editor-manifest.json';
+}
+
+async function showInstallsManifestDropOverlay(
+    page: ElectronPage,
+    supported: boolean,
+) {
+    await page.evaluate((fileName) => {
+        const title = document.querySelector('[data-testid="installsTitle"]');
+        const container =
+            title?.closest('section') ??
+            document.querySelector('section[aria-label]');
+        if (!container) return;
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(
+            new File(['{}'], fileName, { type: 'application/json' }),
+        );
+        const dragEnter = new DragEvent('dragenter', {
+            dataTransfer,
+            bubbles: true,
+            cancelable: true,
+        });
+        container.dispatchEvent(dragEnter);
+    }, getManifestFileName(supported));
+}
+
+async function hideInstallsManifestDropOverlay(
+    page: ElectronPage,
+    supported: boolean,
+) {
+    await page.evaluate((fileName) => {
+        const title = document.querySelector('[data-testid="installsTitle"]');
+        const container =
+            title?.closest('section') ??
+            document.querySelector('section[aria-label]');
+        if (!container) return;
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(
+            new File(['{}'], fileName, { type: 'application/json' }),
+        );
+        const dragLeave = new DragEvent('dragleave', {
+            dataTransfer,
+            bubbles: true,
+            cancelable: true,
+        });
+        container.dispatchEvent(dragLeave);
+    }, getManifestFileName(supported));
 }
 
 async function applyTheme(page: ElectronPage, theme: ThemeConfig) {
@@ -767,7 +1239,7 @@ async function stubAppData(
             const normalizedInstalledReleases = injectedInstalledReleases.map(
                 (release) => ({
                     ...release,
-                    valid: true,
+                    valid: release.valid ?? true,
                 }),
             );
             const normalizedProjects = injectedProjects.map((project) => ({
@@ -777,13 +1249,16 @@ async function stubAppData(
                     : null,
                 release: {
                     ...project.release,
-                    valid: true,
+                    valid: project.release.valid ?? true,
                 },
-                valid: true,
+                valid: project.valid ?? true,
             }));
 
             ipcMain.removeHandler('get-user-preferences');
-            ipcMain.handle('get-user-preferences', async () => injectedPreferences);
+            ipcMain.handle(
+                'get-user-preferences',
+                async () => injectedPreferences,
+            );
 
             ipcMain.removeHandler('set-user-preferences');
             ipcMain.handle(
@@ -792,11 +1267,15 @@ async function stubAppData(
             );
 
             ipcMain.removeHandler('get-projects-details');
-            ipcMain.handle('get-projects-details', async () => normalizedProjects);
+            ipcMain.handle(
+                'get-projects-details',
+                async () => normalizedProjects,
+            );
 
             ipcMain.removeHandler('check-all-projects-valid');
-            ipcMain.handle('check-all-projects-valid', async () =>
-                normalizedProjects,
+            ipcMain.handle(
+                'check-all-projects-valid',
+                async () => normalizedProjects,
             );
 
             ipcMain.removeHandler('check-project-valid');
@@ -804,33 +1283,41 @@ async function stubAppData(
                 ...project,
                 release: {
                     ...project.release,
-                    valid: true,
+                    valid: project.release.valid ?? true,
                 },
-                valid: true,
+                valid: project.valid ?? true,
             }));
 
             ipcMain.removeHandler('get-installed-releases');
-            ipcMain.handle('get-installed-releases', async () =>
-                normalizedInstalledReleases,
+            ipcMain.handle(
+                'get-installed-releases',
+                async () => normalizedInstalledReleases,
             );
 
             ipcMain.removeHandler('check-all-releases-valid');
-            ipcMain.handle('check-all-releases-valid', async () =>
-                normalizedInstalledReleases,
+            ipcMain.handle(
+                'check-all-releases-valid',
+                async () => normalizedInstalledReleases,
             );
 
             ipcMain.removeHandler('get-available-releases');
-            ipcMain.handle('get-available-releases', async () =>
-                injectedAvailableReleases,
+            ipcMain.handle(
+                'get-available-releases',
+                async () => injectedAvailableReleases,
             );
 
             ipcMain.removeHandler('get-available-prereleases');
-            ipcMain.handle('get-available-prereleases', async () =>
-                injectedAvailablePrereleases,
+            ipcMain.handle(
+                'get-available-prereleases',
+                async () => injectedAvailablePrereleases,
             );
 
             for (const win of BrowserWindow.getAllWindows()) {
                 const webContents = win.webContents as any;
+                webContents.__docsProjects = normalizedProjects;
+                webContents.__docsInstalledReleases =
+                    normalizedInstalledReleases;
+
                 if (webContents.__docsPatchedSend) {
                     continue;
                 }
@@ -843,12 +1330,16 @@ async function stubAppData(
                     ...args: unknown[]
                 ) => {
                     if (channel === 'projects-updated') {
-                        return originalSend(channel, normalizedProjects, ...args);
+                        return originalSend(
+                            channel,
+                            webContents.__docsProjects ?? payload,
+                            ...args,
+                        );
                     }
                     if (channel === 'releases-updated') {
                         return originalSend(
                             channel,
-                            normalizedInstalledReleases,
+                            webContents.__docsInstalledReleases ?? payload,
                             ...args,
                         );
                     }
@@ -994,8 +1485,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
     const requireOverrideOption = `--require "${overrideHomeScript}"`;
     const baseEnv = Object.fromEntries(
         Object.entries(process.env).filter(
-            (entry): entry is [string, string] =>
-                typeof entry[1] === 'string',
+            (entry): entry is [string, string] => typeof entry[1] === 'string',
         ),
     );
     const launchEnv: Record<string, string> = {
@@ -1043,9 +1533,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         ).toBeVisible({
             timeout: 10000,
         });
-        await expect(
-            mainPage.getByText('4.6.1-stable'),
-        ).toBeVisible({
+        await expect(mainPage.getByText('4.6.1-stable')).toBeVisible({
             timeout: 10000,
         });
         await expect(
@@ -1106,30 +1594,155 @@ async function captureScreenshot(
     });
 }
 
+async function stubAddProjectEditorResolution(
+    electronApp: ElectronApplication,
+) {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            {
+                fallbackRelease,
+                projectPath,
+            }: {
+                fallbackRelease: InstalledRelease;
+                projectPath: string;
+            },
+        ) => {
+            ipcMain.removeHandler('open-file-dialog');
+            ipcMain.handle('open-file-dialog', async () => ({
+                canceled: false,
+                filePaths: [projectPath],
+                bookmarks: [],
+            }));
+
+            ipcMain.removeHandler('add-project');
+            ipcMain.handle('add-project', async (_, path: string, options) => {
+                if (options?.resolution === 'add_missing') {
+                    const projectDirectory = path.replace(
+                        /\/project\.godot$/i,
+                        '',
+                    );
+                    const newProject: ProjectDetails = {
+                        name: 'Imported-Missing-Editor-Game',
+                        path: projectDirectory,
+                        version: '4.6.3-stable',
+                        version_number: 4.6,
+                        renderer: 'FORWARD_PLUS',
+                        editor_settings_path: `${projectDirectory}/.godot`,
+                        editor_settings_file: `${projectDirectory}/.godot/editor_settings-4.6.tres`,
+                        last_opened: null,
+                        open_windowed: false,
+                        release: {
+                            ...fallbackRelease,
+                            version: '4.6.3-stable',
+                            version_number: 4.6,
+                            valid: false,
+                        },
+                        launch_path:
+                            '/Users/docs/Godot/Editors/Godot_4.6.3/Godot.app/Contents/MacOS/Godot',
+                        config_version: 5,
+                        withVSCode: false,
+                        withGit: true,
+                        valid: false,
+                        invalid_reason: 'missing_editor',
+                    };
+
+                    return {
+                        success: true,
+                        projects: [newProject],
+                        newProject,
+                    };
+                }
+
+                return {
+                    success: false,
+                    editorResolution: {
+                        requested: {
+                            channel: 'official',
+                            flavor: 'gdscript',
+                            base_version: '4.6',
+                            version: '4.6.3-stable',
+                        },
+                        fallback: fallbackRelease,
+                        downloadable: {
+                            version: '4.6.3-stable',
+                            flavor: 'gdscript',
+                            prerelease: false,
+                        },
+                    },
+                };
+            });
+        },
+        {
+            fallbackRelease: SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE,
+            projectPath:
+                '/Users/docs/Godot/Projects/imported-missing-editor/project.godot',
+        },
+    );
+}
+
+async function stubCustomEditorDuplicateRegistration(
+    electronApp: ElectronApplication,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, duplicateRelease: InstalledRelease) => {
+            ipcMain.removeHandler('open-file-dialog');
+            ipcMain.handle('open-file-dialog', async () => ({
+                canceled: false,
+                filePaths: [
+                    '/Users/docs/Godot/Editors/StudioCustom47/godotlauncher-editor-manifest.json',
+                ],
+                bookmarks: [],
+            }));
+
+            ipcMain.removeHandler('register-custom-engine');
+            ipcMain.handle(
+                'register-custom-engine',
+                async (
+                    _,
+                    _manifestPath: string,
+                    options?: { replaceExisting?: boolean },
+                ) => {
+                    if (options?.replaceExisting) {
+                        return {
+                            success: true,
+                            release: duplicateRelease,
+                            releases: [duplicateRelease],
+                        };
+                    }
+
+                    return {
+                        success: false,
+                        duplicate: duplicateRelease,
+                    };
+                },
+            );
+        },
+        SAMPLE_CUSTOM_RELEASE,
+    );
+}
+
 async function stubInstalledTools(
     electronApp: ElectronApplication,
     tools: CachedTool[],
 ) {
-    await electronApp.evaluate(
-        ({ ipcMain }, injectedTools: CachedTool[]) => {
-            ipcMain.removeHandler('get-installed-tools');
-            ipcMain.handle('get-installed-tools', async () =>
-                injectedTools.map((tool) => ({
-                    name: tool.name,
-                    path: tool.path,
-                    version: tool.version ?? null,
-                })),
-            );
+    await electronApp.evaluate(({ ipcMain }, injectedTools: CachedTool[]) => {
+        ipcMain.removeHandler('get-installed-tools');
+        ipcMain.handle('get-installed-tools', async () =>
+            injectedTools.map((tool) => ({
+                name: tool.name,
+                path: tool.path,
+                version: tool.version ?? null,
+            })),
+        );
 
-            ipcMain.removeHandler('get-cached-tools');
-            ipcMain.handle('get-cached-tools', async () =>
-                injectedTools.map((tool) => ({
-                    ...tool,
-                    version: tool.version ?? null,
-                    verified: true,
-                })),
-            );
-        },
-        tools,
-    );
+        ipcMain.removeHandler('get-cached-tools');
+        ipcMain.handle('get-cached-tools', async () =>
+            injectedTools.map((tool) => ({
+                ...tool,
+                version: tool.version ?? null,
+                verified: true,
+            })),
+        );
+    }, tools);
 }
