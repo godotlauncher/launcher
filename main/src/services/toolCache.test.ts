@@ -126,6 +126,15 @@ describe('toolCache service', () => {
             ]);
         });
 
+        it('returns an empty list when cache is missing and refresh is disabled', async () => {
+            getUserPreferences.mockResolvedValue(basePrefs);
+
+            const tools = await getCachedTools({ refreshIfStale: false });
+
+            expect(tools).toEqual([]);
+            expect(getInstalledTools).not.toHaveBeenCalled();
+        });
+
         it('refreshes cache when stale', async () => {
             const stalePrefs: UserPreferences = {
                 ...basePrefs,

@@ -69,6 +69,9 @@ export async function getCachedTools(options?: {
     const cache = await readToolCache();
 
     if (!cache) {
+        if (!refreshIfStale) {
+            return [];
+        }
         return await refreshToolCache();
     }
 

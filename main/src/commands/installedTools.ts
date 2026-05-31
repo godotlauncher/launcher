@@ -10,7 +10,7 @@ export async function getInstalledTools(): Promise<InstalledTool[]> {
     const gitPath = await findExecutable('git');
 
     if (gitPath) {
-        const gitVersion = gitPath ? await getCommandVersion('git') : '';
+        const gitVersion = await getCommandVersion(gitPath);
         installedTools.push({
             name: 'Git',
             version: gitVersion,

@@ -1,4 +1,4 @@
-import type { InstalledTool, RendererType } from '@shared';
+import type { CachedTool, RendererType } from '@shared';
 import clsx from 'clsx';
 import { CircleHelp, Folder, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -98,7 +98,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const [creating, setCreating] = useState<boolean>(false);
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
 
-    const [tools, setTools] = useState<InstalledTool[]>([]);
+    const [tools, setTools] = useState<CachedTool[]>([]);
 
     const [overwriteProjectPath, setOverwriteProjectPath] =
         useState<boolean>(false);
@@ -308,7 +308,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const hasTool = useCallback(
         (name: string): boolean => {
             const tool = tools.find((tool) => tool.name === name);
-            return (tool?.path?.length || 0) > 0;
+            return tool?.verified === true && (tool.path?.length || 0) > 0;
         },
         [tools],
     );
@@ -318,8 +318,11 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             inputNameRef.current.focus();
         }
         window.electron
-            .getInstalledTools()
+            .getCachedTools({ refreshIfStale: false })
             .then(setTools)
+            .catch(() => {
+                setTools([]);
+            })
             .finally(() => {
                 setLoadingTools(false);
             });
