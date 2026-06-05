@@ -12,8 +12,6 @@
     "ready": "完成"
   },
   "navigation": {
-    "next": "下一步",
-    "previous": "上一步",
     "start": "開始",
     "nextMacOS": "下一步：macOS",
     "nextWindows": "下一步：Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "下一步：目前設定",
     "nextSetLocations": "下一步：設定位置",
     "nextCustomizeBehavior": "下一步：自訂行為",
-    "nextWindowsSymlink": "下一步：Windows 符號連結",
     "nextReady": "下一步：完成",
     "backWelcome": "返回：歡迎",
     "backMacOS": "返回：macOS",
     "backWindows": "返回：Windows",
-    "backLinux": "返回：Linux",
     "backCurrentSettings": "返回：目前設定",
     "backSetLocations": "返回：設定位置",
     "backCustomizeBehavior": "返回：自訂行為"

@@ -1,8 +1,9 @@
-import type { InstalledTool, RendererType } from '@shared';
+import type { CachedTool, RendererType } from '@shared';
 import clsx from 'clsx';
 import { CircleHelp, Folder, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
@@ -97,7 +98,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const [creating, setCreating] = useState<boolean>(false);
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
 
-    const [tools, setTools] = useState<InstalledTool[]>([]);
+    const [tools, setTools] = useState<CachedTool[]>([]);
 
     const [overwriteProjectPath, setOverwriteProjectPath] =
         useState<boolean>(false);
@@ -307,7 +308,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const hasTool = useCallback(
         (name: string): boolean => {
             const tool = tools.find((tool) => tool.name === name);
-            return (tool?.path?.length || 0) > 0;
+            return tool?.verified === true && (tool.path?.length || 0) > 0;
         },
         [tools],
     );
@@ -317,8 +318,11 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             inputNameRef.current.focus();
         }
         window.electron
-            .getInstalledTools()
+            .getCachedTools({ refreshIfStale: false })
             .then(setTools)
+            .catch(() => {
+                setTools([]);
+            })
             .finally(() => {
                 setLoadingTools(false);
             });
@@ -440,12 +444,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     return (
         <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
             {selectingFolder && (
-                <div className="absolute inset-0 z-30 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
-                    <p className="loading loading-infinity loading-lg"></p>
-                    <p className="text-white text-xl font-semibold">
-                        {t('projects:messages.waitingForDialog')}
-                    </p>
-                </div>
+                <WaitingForDialogOverlay
+                    className="z-30"
+                    message={t('projects:messages.waitingForDialog')}
+                />
             )}
             <div className="flex flex-col w-[900px] h-full  overflow-hidden">
                 <div className="flex flex-col gap-2 w-full">
@@ -602,8 +604,8 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                                             value={i}
                                         >
                                             {release.editor_path?.length > 0
-                                                ? `${release.version} ${`${release.mono ? `[${t('project.dotNetBadge')}]` : ''}`}`
-                                                : `${release.version} ${t('project.downloading')}`}
+                                                ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
+                                                : `${release.name ?? release.version} ${t('project.downloading')}`}
                                         </option>
                                     ))}
                                 </select>

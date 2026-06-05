@@ -1,71 +1,52 @@
 {
   "title": "Установленные редакторы",
-  "tabs": {
-    "installed": "Установленные",
-    "available": "Доступные"
-  },
+  "tabs": {},
   "buttons": {
     "install": "Установить редактор",
-    "installVersion": "Установить версию",
-    "refresh": "Обновить",
-    "uninstall": "Удалить",
-    "openFolder": "Открыть папку"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Поиск"
   },
   "table": {
-    "name": "Название",
-    "version": "Версия",
-    "type": "Тип",
-    "size": "Размер",
-    "published": "Опубликовано",
-    "actions": "Действия",
-    "status": "Статус"
+    "name": "Название"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "пререлиз"
-  },
-  "types": {
-    "stable": "Стабильная",
-    "beta": "Бета",
-    "dev": "Разработка",
-    "mono": ".NET"
+    "prerelease": "пререлиз",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "Установка...",
-    "installed": "Установлено",
-    "downloading": "Загрузка...",
-    "unavailable": "Недоступно"
+    "installing": "Установка..."
   },
   "messages": {
-    "noReleases": "Версии ещё не установлены.",
-    "install": "Установить.",
     "noReleasesCta": "Версии ещё не установлены. <Link>Установить</Link>",
-    "noInstalled": "Версии Godot не установлены",
-    "noAvailable": "Нет доступных версий",
-    "installing": "Установка...",
-    "downloadProgress": "Загрузка: {{percent}}%",
-    "installSuccess": "Редактор успешно установлен",
-    "uninstallSuccess": "Редактор удалён",
-    "unavailableHint": "Путь к редактору недоступен. Подключите устройство хранения и повторите попытку или удалите релиз.",
     "revalidating": "Проверка установленных версий...",
-    "revalidated": "Проверка завершена.",
     "revalidatedRelease": "{{version}} снова доступно.",
     "revalidationFailed": "Не удалось выполнить проверку. Проверьте устройство хранения и повторите попытку.",
     "revalidationStillMissing": "Проверка завершена, но {{version}} по-прежнему недоступно. Убедитесь, что {{path}} доступен, прежде чем повторять попытку.",
-    "revalidationStillMissingNoPath": "Проверка завершена, но {{version}} по-прежнему недоступно. Убедитесь, что устройство хранения подключено, прежде чем повторять попытку."
+    "revalidationStillMissingNoPath": "Проверка завершена, но {{version}} по-прежнему недоступно. Убедитесь, что устройство хранения подключено, прежде чем повторять попытку.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "Установить редактор Godot",
-    "selectVersion": "Выберите версию для установки",
-    "includeMonoVersion": "Включить .NET версию",
-    "downloading": "Загрузка...",
-    "extracting": "Распаковка...",
-    "buttons": {
-      "install": "Установить",
-      "cancel": "Отмена"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }

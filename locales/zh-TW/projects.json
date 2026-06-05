@@ -2,12 +2,7 @@
   "title": "專案",
   "buttons": {
     "add": "新增",
-    "newProject": "新專案",
-    "addProject": "新增專案",
-    "createProject": "建立專案",
-    "refresh": "重新整理",
-    "launch": "啟動",
-    "changeEditor": "更改編輯器"
+    "newProject": "新專案"
   },
   "search": {
     "placeholder": "搜尋"
@@ -16,20 +11,33 @@
     "name": "名稱",
     "modified": "修改時間",
     "editor": "編輯器",
-    "version": "版本",
-    "lastOpened": "上次開啟",
-    "actions": "動作",
     "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
     "dotNetProject": "這是一個 .NET 專案",
     "prerelease": "使用預先釋出的 Godot 編輯器版本",
     "windowedMode": "此專案以視窗模式開啟",
     "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
-    "invalidRelease": "編輯器不可用",
-    "gitProject": "此專案使用 Git 進行版本控制"
+    "gitProject": "此專案使用 Git 進行版本控制",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "選擇專案檔",
     "godotProject": "Godot 專案",
+    "editorResolution": {
+      "title": "需要編輯器版本",
+      "message": "此專案要求的編輯器尚未安裝。",
+      "version": "版本",
+      "channel": "管道",
+      "flavor": "類型",
+      "baseVersion": "基礎版本",
+      "fallbackMessage": "可以使用已安裝的相容編輯器作為備用。",
+      "editorActions": "選項",
+      "download": "下載 {{version}}",
+      "useFallback": "使用 {{version}}",
+      "addMissing": "使用缺失的編輯器新增"
+    },
     "errors": {
       "projectExists": "專案 '{{path}}' 已存在",
       "invalidPath": "無效的專案路徑",
@@ -43,16 +51,7 @@
     }
   },
   "messages": {
-    "noProjects": "未找到專案",
-    "noReleases": "未安裝任何發行版本。",
-    "goToInstalls": "前往安裝。",
     "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
-    "projectAdded": "已成功新增專案",
-    "projectRemoved": "專案已移除",
-    "editorChanged": "編輯器更改成功",
-    "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
-    "monoProject": "這是一個 .NET 專案",
-    "prereleaseVersion": "使用預先釋出的 Godot 編輯器版本",
     "waitingForDialog": "等待對話方塊以新增專案...",
     "needReleaseInstalled": "您需要至少安裝一個發行版本才能新增專案",
     "addProjectError": "新增專案時發生錯誤",
@@ -61,7 +60,15 @@
     "invalidReleaseEditor": "所選的編輯器不可用。請掛載磁碟機或重新安裝此版本。",
     "dropGodotFileOnly": "請拖放 project.godot 檔案以新增專案",
     "dropProjectHere": "將 project.godot 檔案拖放到此處以新增專案",
-    "addingProjects": "正在新增專案：{{current}}/{{total}}"
+    "addingProjects": "正在新增專案：{{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {
@@ -69,29 +76,6 @@
       "invalidEditorVersion": "無效的編輯器版本",
       "differentMajorVersion": "無法使用不同主版本的編輯器\n為保護您的專案，請參考官方遷移指南：https://godotengine.org"
     }
-  },
-  "createProject": {
-    "title": "新專案",
-    "projectName": "專案名稱",
-    "projectPath": "專案路徑",
-    "selectVersion": "選擇 Godot 版本",
-    "renderer": "渲染器",
-    "editNow": "立即編輯",
-    "setupVSCode": "將 Visual Studio Code 設為文字編輯器",
-    "vscodeNotInstalled": "此電腦未安裝 Visual Studio Code",
-    "noVersionsInstalled": "尚未安裝任何 Godot 版本",
-    "errors": {
-      "nameRequired": "必須填寫專案名稱",
-      "pathRequired": "必須填寫專案路徑",
-      "invalidPath": "無效的專案路徑"
-    }
-  },
-  "searchPlaceholder": "搜尋專案…",
-  "editorSettings": {
-    "title": "編輯器設定",
-    "alreadyExists": "用於 {{version}} [.NET] 的編輯器設定已經存在，為保護你的設定未進行任何變更。",
-    "switchingToDotNet": "如果你正從 GDScript 切換到 .NET 版本，可以在 <strong>Editor Settings -> Dotnent</strong>（進階開關：true）中手動設定外部編輯器。",
-    "readMore": "了解更多"
   },
   "toggleVSCode": {
     "errors": {

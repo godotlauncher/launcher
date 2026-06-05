@@ -31,7 +31,10 @@ async function copyReleaseArtifacts(
     }
 
     await fs.promises.cp(srcExePath, dstExePath);
-    await fs.promises.cp(srcConsolePath, dstConsolePath);
+
+    if (fs.existsSync(srcConsolePath)) {
+        await fs.promises.cp(srcConsolePath, dstConsolePath);
+    }
 
     if (release.mono && fs.existsSync(srcSharpDir)) {
         await fs.promises.mkdir(dstSharpDir, { recursive: true });
@@ -47,10 +50,15 @@ export async function removeProjectReleaseEditorWindows(
         // remove all files based on mono or not
         const baseFileName = path.basename(release.editor_path);
         const exePath = path.resolve(projectEditorPath, baseFileName);
-        const consolePath = path.resolve(
-            projectEditorPath,
-            baseFileName.replace('.exe', '_console.exe'),
-        );
+        const consolePath = release.console_path
+            ? path.resolve(
+                  projectEditorPath,
+                  path.basename(release.console_path),
+              )
+            : path.resolve(
+                  projectEditorPath,
+                  baseFileName.replace('.exe', '_console.exe'),
+              );
 
         logger.debug('Removing project editor exe and console exe');
         logger.debug('Exe path:', exePath);
@@ -66,9 +74,12 @@ export async function removeProjectReleaseEditorWindows(
         logger.debug('Exe path exists:', fs.existsSync(exePath));
         logger.debug('Console path exists:', fs.existsSync(consolePath));
 
-        if (fs.existsSync(exePath) && fs.existsSync(consolePath)) {
+        if (fs.existsSync(exePath)) {
             logger.debug('Removing editor exe and console exe');
             await fs.promises.unlink(exePath);
+        }
+
+        if (fs.existsSync(consolePath)) {
             await fs.promises.unlink(consolePath);
         }
 
@@ -113,28 +124,37 @@ export async function setProjectEditorReleaseWindows(
     // set destination paths
     const baseFileName = path.basename(release.editor_path);
     const dstExePath = path.resolve(projectEditorPath, baseFileName);
-    const dstConsolePath = path.resolve(
-        projectEditorPath,
-        baseFileName.replace('.exe', '_console.exe'),
-    );
+    const consoleFileName = release.console_path
+        ? path.basename(release.console_path)
+        : baseFileName.replace('.exe', '_console.exe');
+    const dstConsolePath = path.resolve(projectEditorPath, consoleFileName);
     const dstSharpDir = path.resolve(projectEditorPath, 'GodotSharp');
 
     // set source paths
-    const srcExePath = path.resolve(release.install_path, baseFileName);
-    const srcConsolePath = path.resolve(
-        release.install_path,
-        baseFileName.replace('.exe', '_console.exe'),
-    );
+    const srcExePath = path.resolve(release.editor_path);
+    const srcConsolePath = release.console_path
+        ? path.resolve(release.console_path)
+        : path.resolve(
+              release.install_path,
+              baseFileName.replace('.exe', '_console.exe'),
+          );
     const srcSharpDir = path.resolve(release.install_path, 'GodotSharp');
 
     // check if source paths exist
-    if (fs.existsSync(srcExePath) && fs.existsSync(srcConsolePath)) {
+    if (fs.existsSync(srcExePath)) {
         logger.debug('Source paths exist');
 
         const links: SymlinkOptions[] = [
             { target: srcExePath, path: dstExePath, type: 'file' },
-            { target: srcConsolePath, path: dstConsolePath, type: 'file' },
         ];
+
+        if (fs.existsSync(srcConsolePath)) {
+            links.push({
+                target: srcConsolePath,
+                path: dstConsolePath,
+                type: 'file',
+            });
+        }
 
         if (release.mono && fs.existsSync(srcSharpDir)) {
             links.push({

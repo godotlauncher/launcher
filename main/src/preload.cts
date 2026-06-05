@@ -1,4 +1,5 @@
 import type {
+    AddProjectOptions,
     CheckForUpdatesOptions,
     ElectronRendererApi,
     EventChannelMapping,
@@ -33,6 +34,12 @@ electron.contextBridge.exposeInMainWorld('electron', {
         ipcInvoke('install-release', release, mono),
     removeRelease: (release: InstalledRelease) =>
         ipcInvoke('remove-release', release),
+    reinstallRelease: (release: InstalledRelease) =>
+        ipcInvoke('reinstall-release', release),
+    registerCustomEngine: (
+        manifestPath: string,
+        options?: { replaceExisting?: boolean },
+    ) => ipcInvoke('register-custom-engine', manifestPath, options),
 
     openEditorProjectManager: (release: InstalledRelease) =>
         ipcInvoke('open-editor-project-manager', release),
@@ -100,7 +107,8 @@ electron.contextBridge.exposeInMainWorld('electron', {
     getProjectsDetails: () => ipcInvoke('get-projects-details'),
     removeProject: (project: ProjectDetails) =>
         ipcInvoke('remove-project', project),
-    addProject: (projectPath: string) => ipcInvoke('add-project', projectPath),
+    addProject: (projectPath: string, options?: AddProjectOptions) =>
+        ipcInvoke('add-project', projectPath, options),
     setProjectEditor: (project: ProjectDetails, release: InstalledRelease) =>
         ipcInvoke('set-project-editor', project, release),
 

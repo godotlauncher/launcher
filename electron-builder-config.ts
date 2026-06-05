@@ -47,7 +47,7 @@ export default (<Configuration>{
         },
     ],
     mac: {
-        icon: 'build-resources/mac/icon26.icns',
+        icon: 'build-resources/mac/icon.icns',
         category: 'public.app-category.developer-tools',
 
         target: {

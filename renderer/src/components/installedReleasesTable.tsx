@@ -5,17 +5,42 @@ import { useTranslation } from 'react-i18next';
 type InstalledReleaseTableProps = {
     releases: InstalledRelease[];
     onRetry: (release: InstalledRelease) => void;
+    onReinstall: (release: InstalledRelease) => void;
     onRemove: (release: InstalledRelease) => void;
     loading: boolean;
+    busyAction?: {
+        releaseKey: string;
+        action: 'retry' | 'reinstall' | 'remove';
+    } | null;
 };
+
+function getReleaseActionKey(release: InstalledRelease): string {
+    return `${release.version}_${release.mono ? 'mono' : 'standard'}`;
+}
 
 export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
     releases,
     onRetry,
+    onReinstall,
     onRemove,
     loading,
+    busyAction,
 }) => {
     const { t } = useTranslation(['installEditor', 'common']);
+
+    const isReleaseActionBusy = (
+        release: InstalledRelease,
+        action?: 'retry' | 'reinstall' | 'remove',
+    ) => {
+        if (
+            !busyAction ||
+            busyAction.releaseKey !== getReleaseActionKey(release)
+        ) {
+            return false;
+        }
+
+        return action ? busyAction.action === action : true;
+    };
 
     return (
         <table className="table  table-pin-rows table-md h-full">
@@ -46,11 +71,22 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                                     <div className="flex flex-row flex-wrap gap-2">
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-xs flex items-center gap-2"
-                                            disabled={loading}
+                                            data-testid={`btnRetryRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
+                                            className="btn btn-xs flex items-center gap-2"
+                                            disabled={
+                                                loading ||
+                                                isReleaseActionBusy(row)
+                                            }
                                             onClick={() => onRetry(row)}
+                                            aria-label={t('buttons.retry', {
+                                                ns: 'common',
+                                            })}
                                         >
-                                            {loading && (
+                                            {(loading ||
+                                                isReleaseActionBusy(
+                                                    row,
+                                                    'retry',
+                                                )) && (
                                                 <span className="loading loading-spinner loading-xs"></span>
                                             )}
                                             {t('buttons.retry', {
@@ -59,10 +95,46 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                                         </button>
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-xs"
-                                            disabled={loading}
-                                            onClick={() => onRemove(row)}
+                                            data-testid={`btnReinstallRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
+                                            className="btn btn-primary btn-xs flex items-center gap-2"
+                                            disabled={
+                                                loading ||
+                                                isReleaseActionBusy(row)
+                                            }
+                                            onClick={() => onReinstall(row)}
+                                            aria-label={t('buttons.reinstall', {
+                                                ns: 'common',
+                                            })}
                                         >
+                                            {isReleaseActionBusy(
+                                                row,
+                                                'reinstall',
+                                            ) && (
+                                                <span className="loading loading-spinner loading-xs"></span>
+                                            )}
+                                            {t('buttons.reinstall', {
+                                                ns: 'common',
+                                            })}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-testid={`btnRemoveRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
+                                            className="btn btn-error btn-xs"
+                                            disabled={
+                                                loading ||
+                                                isReleaseActionBusy(row)
+                                            }
+                                            onClick={() => onRemove(row)}
+                                            aria-label={t('buttons.remove', {
+                                                ns: 'common',
+                                            })}
+                                        >
+                                            {isReleaseActionBusy(
+                                                row,
+                                                'remove',
+                                            ) && (
+                                                <span className="loading loading-spinner loading-xs"></span>
+                                            )}
                                             {t('buttons.remove', {
                                                 ns: 'common',
                                             })}

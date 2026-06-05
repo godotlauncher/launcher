@@ -29,14 +29,17 @@
     "error": "Error",
     "errorMessage": "An error occurred while removing the release."
   },
-  "selectFolder": "Select Folder",
-  "selectFile": "Select File",
   "error": {
-    "title": "Error",
-    "generic": "An error occurred: {{message}}"
+    "title": "Error"
   },
   "preferencesError": {
     "title": "Error reading preferences",
     "message": "Could not parse user preferences. Using default preferences."
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

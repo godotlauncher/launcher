@@ -22,36 +22,5 @@
     "description": "Report bugs or suggestions by submitting and issue on the official GitHub repository",
     "reportBug": "I think I found a bug",
     "suggestion": "I have a suggestion!"
-  },
-  "sections": {
-    "gettingStarted": {
-      "title": "Getting Started",
-      "content": "Welcome to Godot Launcher! This application helps you manage multiple Godot versions and projects.",
-      "welcome": "Welcome to Godot Launcher!",
-      "step1": "Install a Godot version from the Installs tab",
-      "step2": "Create or add a project",
-      "step3": "Launch and start developing!"
-    },
-    "documentation": {
-      "title": "Documentation",
-      "visitDocs": "Visit Documentation"
-    },
-    "community": {
-      "title": "Community",
-      "discord": "Join our Discord",
-      "github": "View on GitHub"
-    },
-    "about": {
-      "title": "About",
-      "version": "Version {{version}}",
-      "license": "Licensed under MIT",
-      "thirdParty": "Third-party Notices"
-    }
-  },
-  "links": {
-    "documentation": "Documentation",
-    "github": "GitHub Repository",
-    "discord": "Discord Community",
-    "website": "Website"
   }
 }

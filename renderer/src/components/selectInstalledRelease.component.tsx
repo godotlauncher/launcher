@@ -143,12 +143,19 @@ export const InstalledReleaseSelector: React.FC<
                                                     <td>
                                                         <div className="flex flex-col gap-1">
                                                             <div className="flex flex-row gap-2 items-center">
-                                                                {row.version}
+                                                                {row.name ??
+                                                                    row.version}
                                                                 <span className="badge badge-warning">
                                                                     {t(
                                                                         'selectRelease.unavailable',
                                                                     )}
                                                                 </span>
+                                                                {row.source ===
+                                                                    'custom' && (
+                                                                    <span className="badge badge-info">
+                                                                        Custom
+                                                                    </span>
+                                                                )}
                                                                 {row.mono && (
                                                                     <span className="badge badge-neutral">
                                                                         {t(
@@ -177,7 +184,14 @@ export const InstalledReleaseSelector: React.FC<
                                                         <span className="loading loading-ring text-info p-0"></span>
                                                     </td>
                                                     <td>
-                                                        {row.version}
+                                                        {row.name ??
+                                                            row.version}
+                                                        {row.source ===
+                                                            'custom' && (
+                                                            <span className="badge badge-info">
+                                                                Custom
+                                                            </span>
+                                                        )}
                                                         {row.mono && (
                                                             <span className="badge badge-neutral">
                                                                 {t(
@@ -227,7 +241,14 @@ export const InstalledReleaseSelector: React.FC<
                                                     <td>
                                                         <div className="flex flex-col gap-1 justify-start">
                                                             <div className="flex flex-row gap-2 ">
-                                                                {row.version}
+                                                                {row.name ??
+                                                                    row.version}
+                                                                {row.source ===
+                                                                    'custom' && (
+                                                                    <span className="badge badge-info">
+                                                                        Custom
+                                                                    </span>
+                                                                )}
                                                                 {row.mono && (
                                                                     <span className="badge badge-neutral">
                                                                         {t(

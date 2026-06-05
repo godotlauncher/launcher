@@ -287,7 +287,10 @@ export async function showReleaseMenu(
         },
         {
             icon: getThemedMenuIcon('bin'),
-            label: t('menus:release.deleteRelease'),
+            label:
+                release.source === 'custom'
+                    ? t('dialogs:removeCustomEditor.menuLabel')
+                    : t('menus:release.deleteRelease'),
             click: async () => {
                 const result = await dialog.showMessageBox(getMainWindow(), {
                     type: 'warning',
@@ -295,11 +298,22 @@ export async function showReleaseMenu(
                         t('dialogs:removeRelease.ok'),
                         t('dialogs:removeRelease.cancel'),
                     ],
-                    title: t('dialogs:removeRelease.title'),
-                    message: t('dialogs:removeRelease.message', {
-                        version: release.version,
-                    }),
-                    detail: t('dialogs:removeRelease.detail'),
+                    title:
+                        release.source === 'custom'
+                            ? t('dialogs:removeCustomEditor.title')
+                            : t('dialogs:removeRelease.title'),
+                    message:
+                        release.source === 'custom'
+                            ? t('dialogs:removeCustomEditor.message', {
+                                  name: release.name ?? release.version,
+                              })
+                            : t('dialogs:removeRelease.message', {
+                                  version: release.version,
+                              }),
+                    detail:
+                        release.source === 'custom'
+                            ? t('dialogs:removeCustomEditor.detail')
+                            : t('dialogs:removeRelease.detail'),
                 });
 
                 if (result.response === 0) {

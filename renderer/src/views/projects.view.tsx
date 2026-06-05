@@ -1,4 +1,10 @@
-import type { InstalledRelease, ProjectDetails } from '@shared';
+import type {
+    AddProjectOptions,
+    AddProjectToListResult,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+} from '@shared';
 import logger from 'electron-log';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -9,6 +15,7 @@ import {
     CircleX,
     Copy,
     EllipsisVertical,
+    Files,
     TriangleAlert,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +23,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import gitIconColor from '../assets/icons/git_icon_color.svg';
 import vscodeIcon from '../assets/icons/vscode.svg';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
+import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
@@ -25,6 +33,28 @@ import { CreateProjectSubView } from './subViews/createProject.subview';
 
 TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo('en-US');
+
+function getInvalidProjectTableKey(project: ProjectDetails): string {
+    switch (project.invalid_reason) {
+        case 'missing_project_file':
+            return 'table.invalidReasons.missingProjectFile';
+        case 'missing_editor':
+            return 'table.invalidReasons.missingEditor';
+        default:
+            return 'table.invalidProject';
+    }
+}
+
+function getInvalidProjectMessageKey(project: ProjectDetails): string {
+    switch (project.invalid_reason) {
+        case 'missing_project_file':
+            return 'messages.invalidReasons.missingProjectFile';
+        case 'missing_editor':
+            return 'messages.invalidReasons.missingEditor';
+        default:
+            return 'messages.projectNotValid';
+    }
+}
 
 export const ProjectsView: React.FC = () => {
     const { t } = useTranslation(['projects', 'common']);
@@ -64,11 +94,15 @@ export const ProjectsView: React.FC = () => {
         localStorage.setItem('projectsSortData', JSON.stringify(sortData));
     }, [sortData]);
 
-    const { addAlert } = useAlerts();
+    const { addAlert, addCustomConfirm } = useAlerts();
 
     const { preferences } = usePreferences();
     const {
         installedReleases,
+        availableReleases,
+        availablePrereleases,
+        downloadingReleases,
+        installRelease,
         isInstalledRelease,
         loading: releaseLoading,
         checkAllReleasesValid,
@@ -91,6 +125,250 @@ export const ProjectsView: React.FC = () => {
         showProjectMenu(project);
     };
 
+    const findDownloadableRelease = (
+        result: AddProjectToListResult,
+    ): ReleaseSummary | undefined => {
+        const downloadable = result.editorResolution?.downloadable;
+        if (!downloadable) {
+            return undefined;
+        }
+
+        return [...availableReleases, ...availablePrereleases].find(
+            (release) => release.version === downloadable.version,
+        );
+    };
+
+    const getRequestedMono = (result: AddProjectToListResult): boolean =>
+        result.editorResolution?.requested.flavor === 'dotnet';
+
+    const showAddProjectError = (error?: string) => {
+        logger.error(error);
+        addAlert(
+            t('common:error'),
+            error || t('messages.addProjectError'),
+            <TriangleAlert className="stroke-error" />,
+        );
+    };
+
+    const isProjectEditorDownloading = (project: ProjectDetails): boolean =>
+        downloadingReleases.some(
+            (release) =>
+                release.version === project.release.version &&
+                release.mono === project.release.mono,
+        );
+
+    const handleAddProjectResult = async (
+        projectPath: string,
+        result: AddProjectToListResult,
+    ): Promise<void> => {
+        if (result.editorResolution) {
+            await showEditorResolutionDialog(projectPath, result);
+            return;
+        }
+
+        if (!result.success) {
+            showAddProjectError(result.error);
+        }
+    };
+
+    const retryAddProject = async (
+        projectPath: string,
+        options?: AddProjectOptions,
+    ) => {
+        const result = await addProject(projectPath, options);
+        await handleAddProjectResult(projectPath, result);
+    };
+
+    const downloadEditorAndAddProject = async (
+        projectPath: string,
+        result: AddProjectToListResult,
+        release: ReleaseSummary,
+    ) => {
+        const mono = getRequestedMono(result);
+        const addMissingResult = await addProject(projectPath, {
+            resolution: 'add_missing',
+        });
+
+        if (!addMissingResult.success || !addMissingResult.newProject) {
+            showAddProjectError(addMissingResult.error);
+            return;
+        }
+
+        const installResult = await installRelease(release, mono);
+
+        if (!installResult.success || !installResult.release) {
+            addAlert(
+                t('common:error'),
+                installResult.error || t('messages.addProjectError'),
+                <TriangleAlert className="stroke-error" />,
+            );
+            return;
+        }
+
+        const changeResult = await setProjectEditor(
+            addMissingResult.newProject,
+            installResult.release,
+        );
+
+        if (!changeResult.success) {
+            showAddProjectError(changeResult.error);
+        }
+    };
+
+    const showEditorResolutionDialog = (
+        projectPath: string,
+        result: AddProjectToListResult,
+    ): Promise<void> => {
+        const resolution = result.editorResolution;
+        if (!resolution) {
+            return Promise.resolve();
+        }
+
+        const downloadableRelease = findDownloadableRelease(result);
+        const canDownload = Boolean(
+            downloadableRelease &&
+                (resolution.requested.flavor === 'gdscript' ||
+                    resolution.requested.flavor === 'dotnet'),
+        );
+        const fallback = resolution.fallback;
+        const editorActions = [
+            ...(canDownload && downloadableRelease
+                ? [
+                      {
+                          label: t('addProject.editorResolution.download', {
+                              version: downloadableRelease.version,
+                          }),
+                          run: () => {
+                              void downloadEditorAndAddProject(
+                                  projectPath,
+                                  result,
+                                  downloadableRelease,
+                              );
+                          },
+                      },
+                  ]
+                : []),
+            ...(fallback
+                ? [
+                      {
+                          label: t('addProject.editorResolution.useFallback', {
+                              version: fallback.version,
+                          }),
+                          run: () => {
+                              void retryAddProject(projectPath, {
+                                  resolution: 'use_fallback',
+                                  release: fallback,
+                              });
+                          },
+                      },
+                  ]
+                : []),
+        ];
+
+        return new Promise((resolve) => {
+            addCustomConfirm(
+                t('addProject.editorResolution.title'),
+                <div className="flex flex-col gap-3">
+                    <p>{t('addProject.editorResolution.message')}</p>
+                    <div className="bg-base-200 rounded-md p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                        <span className="text-base-content/60">
+                            {t('addProject.editorResolution.version')}
+                        </span>
+                        <code>{resolution.requested.version}</code>
+                        <span className="text-base-content/60">
+                            {t('addProject.editorResolution.channel')}
+                        </span>
+                        <code>{resolution.requested.channel}</code>
+                        <span className="text-base-content/60">
+                            {t('addProject.editorResolution.flavor')}
+                        </span>
+                        <code>{resolution.requested.flavor}</code>
+                        <span className="text-base-content/60">
+                            {t('addProject.editorResolution.baseVersion')}
+                        </span>
+                        <code>{resolution.requested.base_version}</code>
+                    </div>
+                    {resolution.fallback && (
+                        <div className="text-sm text-base-content/70">
+                            <p>
+                                {t(
+                                    'addProject.editorResolution.fallbackMessage',
+                                )}
+                            </p>
+                            <code className="block mt-1">
+                                {resolution.fallback.name ??
+                                    resolution.fallback.version}
+                            </code>
+                        </div>
+                    )}
+                </div>,
+                [
+                    ...(editorActions.length > 0
+                        ? [
+                              {
+                                  key: 'editor-actions',
+                                  render: (close: () => void) => (
+                                      <div className="dropdown dropdown-top dropdown-start">
+                                          <button
+                                              type="button"
+                                              tabIndex={0}
+                                              className="btn btn-primary gap-1"
+                                          >
+                                              {t(
+                                                  'addProject.editorResolution.editorActions',
+                                              )}
+                                              <ChevronDown
+                                                  size={14}
+                                                  aria-hidden="true"
+                                              />
+                                          </button>
+                                          <ul className="dropdown-content menu bg-base-300 rounded-box z-1 min-w-60 p-1 shadow-sm border border-base-100">
+                                              {editorActions.map((action) => (
+                                                  <li key={action.label}>
+                                                      <button
+                                                          type="button"
+                                                          onClick={() => {
+                                                              close();
+                                                              resolve();
+                                                              action.run();
+                                                          }}
+                                                      >
+                                                          {action.label}
+                                                      </button>
+                                                  </li>
+                                              ))}
+                                          </ul>
+                                      </div>
+                                  ),
+                              },
+                          ]
+                        : []),
+                    {
+                        typeClass: 'btn-warning',
+                        text: t('addProject.editorResolution.addMissing'),
+                        onClick: async () => {
+                            await retryAddProject(projectPath, {
+                                resolution: 'add_missing',
+                            });
+                            resolve();
+                            return true;
+                        },
+                    },
+                    {
+                        isCancel: true,
+                        typeClass: 'btn-neutral',
+                        text: t('common:buttons.cancel'),
+                        onClick: () => {
+                            resolve();
+                            return true;
+                        },
+                    },
+                ],
+                <TriangleAlert className="stroke-warning" />,
+            );
+        });
+    };
+
     const onAddProject = async () => {
         if (addingProject) return;
         setAddingProject(true);
@@ -104,26 +382,9 @@ export const ProjectsView: React.FC = () => {
         if (!result.canceled) {
             const projectPath = result.filePaths[0];
 
-            if (installedReleases.length === 0) {
-                addAlert(
-                    t('common:error'),
-                    t('messages.needReleaseInstalled'),
-                    <TriangleAlert className="stroke-error" />,
-                );
-                return;
-            }
-
             const addResult = await addProject(projectPath);
             logger.info(addResult);
-            if (!addResult.success) {
-                logger.error(addResult.error);
-                addAlert(
-                    t('common:error'),
-                    addResult.error || t('messages.addProjectError'),
-                    <TriangleAlert className="stroke-error" />,
-                );
-                return;
-            }
+            await handleAddProjectResult(projectPath, addResult);
         }
     };
 
@@ -153,9 +414,12 @@ export const ProjectsView: React.FC = () => {
     const onLaunchProject = async (project: ProjectDetails) => {
         if (isInstalledRelease(project.release.version, project.release.mono)) {
             const result = await launchProject(project);
-            if (!result) {
+            if (!result?.valid) {
                 await checkAllReleasesValid();
-                addAlert(t('common:error'), t('messages.projectNotValid'));
+                addAlert(
+                    t('common:error'),
+                    t(getInvalidProjectMessageKey(result ?? project)),
+                );
             }
         } else {
             await checkAllReleasesValid();
@@ -204,6 +468,36 @@ export const ProjectsView: React.FC = () => {
         }
     };
 
+    const renderProjectEditorLabel = (row: ProjectDetails) => {
+        if (isProjectEditorDownloading(row)) {
+            return (
+                <div className="flex flex-row items-center gap-2">
+                    <span className="loading loading-spinner loading-xs"></span>
+                    <p>
+                        {row.version} {row.release.mono && '(.NET)'}
+                    </p>
+                </div>
+            );
+        }
+
+        if (!isInstalledRelease(row.release.version, row.release.mono)) {
+            return (
+                <div className="flex flex-row items-center gap-2">
+                    <TriangleAlert size={16} className="stroke-warning" />
+                    <p className="line-through">
+                        {row.version} {row.release.mono && '(.NET)'}
+                    </p>
+                </div>
+            );
+        }
+
+        return (
+            <>
+                {row.version} {row.release.mono && '(.NET)'}
+            </>
+        );
+    };
+
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
@@ -233,15 +527,6 @@ export const ProjectsView: React.FC = () => {
         dragCounterRef.current = 0;
         setIsDraggingOver(false);
 
-        if (installedReleases.length === 0) {
-            addAlert(
-                t('common:error'),
-                t('messages.needReleaseInstalled'),
-                <TriangleAlert className="stroke-error" />,
-            );
-            return;
-        }
-
         // In Electron, we need to use getAsFile() which returns a File object
         // Then use webUtils.getPathForFile() to get the full path
         const items = Array.from(e.dataTransfer.items);
@@ -268,8 +553,7 @@ export const ProjectsView: React.FC = () => {
         if (godotFiles.length === 0) {
             addAlert(
                 t('common:error'),
-                t('messages.dropGodotFileOnly') ||
-                    'Please drop a project.godot file',
+                t('messages.dropGodotFileOnly'),
                 <TriangleAlert className="stroke-error" />,
             );
             return;
@@ -292,18 +576,9 @@ export const ProjectsView: React.FC = () => {
                 );
                 try {
                     const addResult = await addProject(projectPath);
+                    await handleAddProjectResult(projectPath, addResult);
 
-                    if (!addResult.success) {
-                        logger.error(
-                            `[${i + 1}/${godotFiles.length}] Failed:`,
-                            addResult.error,
-                        );
-                        addAlert(
-                            t('common:error'),
-                            addResult.error || t('messages.addProjectError'),
-                            <TriangleAlert className="stroke-error" />,
-                        );
-                    } else {
+                    if (addResult.success) {
                         logger.info(
                             `[${i + 1}/${godotFiles.length}] Successfully added project:`,
                             addResult.newProject?.name,
@@ -316,7 +591,12 @@ export const ProjectsView: React.FC = () => {
                     );
                     addAlert(
                         t('common:error'),
-                        `Failed to add project: ${error instanceof Error ? error.message : String(error)}`,
+                        t('messages.failedAddProject', {
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        }),
                         <TriangleAlert className="stroke-error" />,
                     );
                 }
@@ -331,21 +611,17 @@ export const ProjectsView: React.FC = () => {
     return (
         <>
             {addingProject && (
-                <div className="absolute inset-0 z-20 w-full h-full bg-black/80 flex flex-col items-center justify-center gap-4">
-                    <p className="loading loading-infinity loading-lg"></p>
-                    {loadingProgress ? (
-                        <p className="text-white text-xl font-semibold">
-                            {t('messages.addingProjects', {
-                                current: loadingProgress.current,
-                                total: loadingProgress.total,
-                            })}
-                        </p>
-                    ) : (
-                        <p className="text-white text-xl font-semibold">
-                            {t('messages.waitingForDialog')}
-                        </p>
-                    )}
-                </div>
+                <WaitingForDialogOverlay
+                    className="z-20"
+                    message={
+                        loadingProgress
+                            ? t('messages.addingProjects', {
+                                  current: loadingProgress.current,
+                                  total: loadingProgress.total,
+                              })
+                            : t('messages.waitingForDialog')
+                    }
+                />
             )}
 
             {changeEditorFor && (
@@ -368,10 +644,17 @@ export const ProjectsView: React.FC = () => {
             >
                 {isDraggingOver && (
                     <div className="absolute inset-0 z-30 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center pointer-events-none">
-                        <div className="bg-base-100 p-8 rounded-lg shadow-xl">
+                        <div className="bg-base-100 p-8 rounded-lg shadow-xl max-w-lg text-center flex flex-col gap-3">
+                            <Files className="w-10 h-10 mx-auto text-primary" />
                             <p className="text-2xl font-bold text-primary">
-                                {t('messages.dropProjectHere') ||
-                                    'Drop project.godot file here'}
+                                {t('messages.dropProjectFilesHere')}
+                            </p>
+                            <p className="text-sm text-base-content/70">
+                                {t('messages.dropProjectFilesHelpPrefix')}{' '}
+                                <code className="font-mono bg-base-300 px-2 rounded text-warning">
+                                    project.godot
+                                </code>{' '}
+                                {t('messages.dropProjectFilesHelpSuffix')}
                             </p>
                         </div>
                     </div>
@@ -392,7 +675,6 @@ export const ProjectsView: React.FC = () => {
                         <div className="flex gap-2">
                             <button
                                 type="button"
-                                disabled={installedReleases.length < 1}
                                 data-testid="btnProjectAdd"
                                 onClick={() => onAddProject()}
                                 className="btn btn-neutral"
@@ -522,187 +804,184 @@ export const ProjectsView: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="overflow-y-auto">
-                                {getFilteredRows().map((row) => (
-                                    <tr
-                                        key={`projectRow_${row.path}`}
-                                        className="relative hover:bg-base-content/5"
-                                    >
-                                        <td className="p-2 flex flex-col gap-1">
-                                            {busyProjects.includes(
-                                                row.path,
-                                            ) && (
-                                                <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg ">
-                                                    <div className="loading loading-bars"></div>
-                                                </div>
-                                            )}
-                                            <div className="font-bold flex text-lg gap-2 items-center justify-start">
-                                                {!row.valid && (
-                                                    <span
-                                                        className="tooltip tooltip-right"
-                                                        data-tip={t(
-                                                            'table.invalidProject',
-                                                        )}
-                                                    >
-                                                        <TriangleAlert className="stroke-warning" />
-                                                    </span>
-                                                )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        onLaunchProject(row)
-                                                    }
-                                                    className="flex items-center hover:underline gap-2"
-                                                >
-                                                    {' '}
-                                                    {row.name}
-                                                </button>
-                                                {row.withVSCode && (
-                                                    <p
-                                                        className="tooltip tooltip-right tooltip-primary flex items-center"
-                                                        data-tip={t(
-                                                            'table.vsCodeProject',
-                                                        )}
-                                                    >
-                                                        <span className="text-xs text-base-content/50 ">
-                                                            <img
-                                                                src={vscodeIcon}
-                                                                className="w-4 h-4"
-                                                                alt="VSCode"
-                                                            />
-                                                        </span>
-                                                    </p>
-                                                )}
-                                                {row.withGit && (
-                                                    <p
-                                                        className="tooltip tooltip-right tooltip-primary flex items-center"
-                                                        data-tip={t(
-                                                            'table.gitProject',
-                                                        )}
-                                                    >
-                                                        <span className="text-xs text-base-content/50 ">
-                                                            <img
-                                                                src={
-                                                                    gitIconColor
-                                                                }
-                                                                className="w-4 h-4 "
-                                                                alt="Git"
-                                                            />
-                                                        </span>
-                                                    </p>
-                                                )}
-                                                {row.release.mono && (
-                                                    <p
-                                                        className="tooltip tooltip-right tooltip-primary flex items-center"
-                                                        data-tip={t(
-                                                            'table.dotNetProject',
-                                                        )}
-                                                    >
-                                                        <span className="badge badge-outline text-xs text-base-content/50 ">
-                                                            c#
-                                                        </span>
-                                                    </p>
-                                                )}
-                                                {row.release.prerelease && (
-                                                    <p
-                                                        className="tooltip tooltip-right right-0 tooltip-secondary flex items-center"
-                                                        data-tip={t(
-                                                            'table.prerelease',
-                                                        )}
-                                                    >
-                                                        <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
-                                                            pr
-                                                        </span>
-                                                    </p>
-                                                )}
-                                                {row.open_windowed && (
-                                                    <p
-                                                        className="tooltip tooltip-right tooltip-primary flex items-center"
-                                                        data-tip={t(
-                                                            'table.windowedMode',
-                                                        )}
-                                                    >
-                                                        <span className="badge badge-outline text-xs text-base-content/50">
-                                                            w
-                                                        </span>
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.navigator.clipboard.writeText(
-                                                        row.path,
-                                                    );
-                                                }}
-                                                className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
-                                            >
-                                                <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis text-left">
-                                                    {row.path}
-                                                </p>
-                                                <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary" />
-                                            </button>
-                                        </td>
+                                {getFilteredRows().map((row) => {
+                                    const editorDownloading =
+                                        isProjectEditorDownloading(row);
 
-                                        <td className="">
-                                            <p>
-                                                {row.last_opened
-                                                    ? timeAgo.format(
-                                                          row.last_opened,
-                                                      )
-                                                    : '-'}
-                                            </p>
-                                        </td>
-                                        <td className="">
-                                            <div>
+                                    return (
+                                        <tr
+                                            key={`projectRow_${row.path}`}
+                                            className="relative hover:bg-base-content/5"
+                                        >
+                                            <td className="p-2 flex flex-col gap-1">
+                                                {busyProjects.includes(
+                                                    row.path,
+                                                ) && (
+                                                    <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg ">
+                                                        <div className="loading loading-bars"></div>
+                                                    </div>
+                                                )}
+                                                <div className="font-bold flex text-lg gap-2 items-center justify-start">
+                                                    {!row.valid && (
+                                                        <span
+                                                            className="tooltip tooltip-right"
+                                                            data-tip={t(
+                                                                getInvalidProjectTableKey(
+                                                                    row,
+                                                                ),
+                                                            )}
+                                                        >
+                                                            <TriangleAlert className="stroke-warning" />
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            onLaunchProject(row)
+                                                        }
+                                                        className="flex items-center hover:underline gap-2"
+                                                    >
+                                                        {' '}
+                                                        {row.name}
+                                                    </button>
+                                                    {row.withVSCode && (
+                                                        <p
+                                                            className="tooltip tooltip-right tooltip-primary flex items-center"
+                                                            data-tip={t(
+                                                                'table.vsCodeProject',
+                                                            )}
+                                                        >
+                                                            <span className="text-xs text-base-content/50 ">
+                                                                <img
+                                                                    src={
+                                                                        vscodeIcon
+                                                                    }
+                                                                    className="w-4 h-4"
+                                                                    alt="VSCode"
+                                                                />
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    {row.withGit && (
+                                                        <p
+                                                            className="tooltip tooltip-right tooltip-primary flex items-center"
+                                                            data-tip={t(
+                                                                'table.gitProject',
+                                                            )}
+                                                        >
+                                                            <span className="text-xs text-base-content/50 ">
+                                                                <img
+                                                                    src={
+                                                                        gitIconColor
+                                                                    }
+                                                                    className="w-4 h-4 "
+                                                                    alt="Git"
+                                                                />
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    {row.release.mono && (
+                                                        <p
+                                                            className="tooltip tooltip-right tooltip-primary flex items-center"
+                                                            data-tip={t(
+                                                                'table.dotNetProject',
+                                                            )}
+                                                        >
+                                                            <span className="badge badge-outline text-xs text-base-content/50 ">
+                                                                c#
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    {row.release.prerelease && (
+                                                        <p
+                                                            className="tooltip tooltip-right right-0 tooltip-secondary flex items-center"
+                                                            data-tip={t(
+                                                                'table.prerelease',
+                                                            )}
+                                                        >
+                                                            <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
+                                                                pr
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    {row.open_windowed && (
+                                                        <p
+                                                            className="tooltip tooltip-right tooltip-primary flex items-center"
+                                                            data-tip={t(
+                                                                'table.windowedMode',
+                                                            )}
+                                                        >
+                                                            <span className="badge badge-outline text-xs text-base-content/50">
+                                                                w
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
                                                 <button
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setChangeEditorFor(row);
+                                                        window.navigator.clipboard.writeText(
+                                                            row.path,
+                                                        );
                                                     }}
-                                                    className="btn btn-ghost bg-base-content/5 pr-2 w-full justify-between"
+                                                    className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
                                                 >
-                                                    {!isInstalledRelease(
-                                                        row.release.version,
-                                                        row.release.mono,
-                                                    ) ? (
-                                                        <div className="flex flex-row items-center gap-2">
-                                                            <TriangleAlert
-                                                                size={16}
-                                                                className="stroke-warning"
-                                                            />
-                                                            <p className="line-through">
-                                                                {row.version}{' '}
-                                                                {row.release
-                                                                    .mono &&
-                                                                    '(.NET)'}
-                                                            </p>
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            {row.version}{' '}
-                                                            {row.release.mono &&
-                                                                '(.NET)'}
-                                                        </>
-                                                    )}
-                                                    <ChevronsUpDown />
+                                                    <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis text-left">
+                                                        {row.path}
+                                                    </p>
+                                                    <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary" />
                                                 </button>
-                                            </div>
-                                        </td>
-                                        <td className="p-0 pr-2">
-                                            <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                    onProjectMoreOptions(e, row)
-                                                }
-                                                className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"
-                                            >
-                                                <EllipsisVertical />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+
+                                            <td className="">
+                                                <p>
+                                                    {row.last_opened
+                                                        ? timeAgo.format(
+                                                              row.last_opened,
+                                                          )
+                                                        : '-'}
+                                                </p>
+                                            </td>
+                                            <td className="">
+                                                <div>
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            editorDownloading
+                                                        }
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setChangeEditorFor(
+                                                                row,
+                                                            );
+                                                        }}
+                                                        className="btn btn-ghost bg-base-content/5 pr-2 w-full justify-between"
+                                                    >
+                                                        {renderProjectEditorLabel(
+                                                            row,
+                                                        )}
+                                                        <ChevronsUpDown />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="p-0 pr-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) =>
+                                                        onProjectMoreOptions(
+                                                            e,
+                                                            row,
+                                                        )
+                                                    }
+                                                    className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"
+                                                >
+                                                    <EllipsisVertical />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

@@ -29,14 +29,17 @@
     "error": "Hata",
     "errorMessage": "Sürüm kaldırılırken bir hata oluştu."
   },
-  "selectFolder": "Klasör Seç",
-  "selectFile": "Dosya Seç",
   "error": {
-    "title": "Hata",
-    "generic": "Bir hata oluştu: {{message}}"
+    "title": "Hata"
   },
   "preferencesError": {
     "title": "Tercihler okunurken hata oluştu",
     "message": "Kullanıcı tercihleri ayrıştırılamadı. Varsayılan tercihler kullanılıyor."
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

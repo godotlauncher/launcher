@@ -3,16 +3,31 @@ import * as path from 'node:path';
 import type { InstalledRelease, LaunchPath, ProjectDetails } from '@shared';
 import logger from 'electron-log';
 
+async function removeExistingEditorTarget(targetPath: string): Promise<void> {
+    try {
+        const stats = await fs.promises.lstat(targetPath);
+        if (stats.isSymbolicLink()) {
+            await fs.promises.unlink(targetPath);
+            return;
+        }
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            return;
+        }
+        throw error;
+    }
+
+    await fs.promises.rm(targetPath, {
+        recursive: true,
+        force: true,
+    });
+}
+
 export async function removeProjectEditorDarwin(
     project: ProjectDetails,
 ): Promise<void> {
     // remove editor files
-    if (fs.existsSync(project.launch_path)) {
-        await fs.promises.rm(project.launch_path, {
-            recursive: true,
-            force: true,
-        });
-    }
+    await removeExistingEditorTarget(project.launch_path);
 }
 
 export async function setProjectEditorReleaseDarwin(
@@ -24,13 +39,11 @@ export async function setProjectEditorReleaseDarwin(
     if (previousRelease) {
         const appPath = path.resolve(
             projectEditorPath,
-            previousRelease.mono ? 'Godot_mono.app' : 'Godot.app',
+            path.basename(previousRelease.editor_path),
         );
         logger.debug(`Previous editor at ${appPath}`);
-        if (fs.existsSync(appPath)) {
-            logger.debug(`Removing previous editor at ${appPath}`);
-            await fs.promises.rm(appPath, { recursive: true });
-        }
+        logger.debug(`Removing previous editor at ${appPath}`);
+        await removeExistingEditorTarget(appPath);
     }
 
     // create new editor
@@ -42,7 +55,11 @@ export async function setProjectEditorReleaseDarwin(
 
     logger.debug(`Copying editor from ${srcEditorPath} to ${dstEditorPath}`);
     if (fs.existsSync(srcEditorPath)) {
-        await fs.promises.cp(srcEditorPath, dstEditorPath, { recursive: true });
+        await removeExistingEditorTarget(dstEditorPath);
+        await fs.promises.cp(srcEditorPath, dstEditorPath, {
+            recursive: true,
+            mode: fs.constants.COPYFILE_FICLONE,
+        });
         logger.debug(`Copied editor from ${srcEditorPath} to ${dstEditorPath}`);
     }
 

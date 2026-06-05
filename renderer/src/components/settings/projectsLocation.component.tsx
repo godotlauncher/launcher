@@ -2,6 +2,7 @@ import { Folder } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
+import { WaitingForDialogOverlay } from '../waitingForDialogOverlay.component';
 
 export const ProjectsLocation: React.FC = () => {
     const { t } = useTranslation('settings');
@@ -28,10 +29,9 @@ export const ProjectsLocation: React.FC = () => {
     return (
         <>
             {dialogOpen && (
-                <div className="absolute inset-0 z-10 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p>
-                    <p>{t('behavior.projectsLocation.waitingForDialog')}</p>
-                </div>
+                <WaitingForDialogOverlay
+                    message={t('behavior.projectsLocation.waitingForDialog')}
+                />
             )}
             <div className="flex flex-col gap-4 ">
                 <div className="flex flex-col">

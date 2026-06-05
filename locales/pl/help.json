@@ -22,36 +22,5 @@
     "description": "Zgłaszaj błędy lub sugestie, przesyłając zgłoszenie w oficjalnym repozytorium GitHub",
     "reportBug": "Myślę, że znalazłem błąd",
     "suggestion": "Mam sugestię!"
-  },
-  "sections": {
-    "gettingStarted": {
-      "title": "Pierwsze kroki",
-      "content": "Witamy w Godot Launcher! Ta aplikacja pomaga zarządzać wieloma wersjami Godot i projektami.",
-      "welcome": "Witamy w Godot Launcher!",
-      "step1": "Zainstaluj wersję Godot z zakładki Instalacje",
-      "step2": "Utwórz lub dodaj projekt",
-      "step3": "Uruchom i zacznij rozwijać!"
-    },
-    "documentation": {
-      "title": "Dokumentacja",
-      "visitDocs": "Odwiedź dokumentację"
-    },
-    "community": {
-      "title": "Społeczność",
-      "discord": "Dołącz do naszego Discorda",
-      "github": "Zobacz na GitHub"
-    },
-    "about": {
-      "title": "O programie",
-      "version": "Wersja {{version}}",
-      "license": "Licencja MIT",
-      "thirdParty": "Informacje o oprogramowaniu firm trzecich"
-    }
-  },
-  "links": {
-    "documentation": "Dokumentacja",
-    "github": "Repozytorium GitHub",
-    "discord": "Społeczność Discord",
-    "website": "Strona internetowa"
   }
 }

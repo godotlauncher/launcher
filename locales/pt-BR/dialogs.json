@@ -29,14 +29,17 @@
     "error": "Erro",
     "errorMessage": "Ocorreu um erro ao remover a versão."
   },
-  "selectFolder": "Selecionar pasta",
-  "selectFile": "Selecionar arquivo",
   "error": {
-    "title": "Erro",
-    "generic": "Ocorreu um erro: {{message}}"
+    "title": "Erro"
   },
   "preferencesError": {
     "title": "Erro ao ler as preferências",
     "message": "Não foi possível analisar as preferências do usuário. Usando as preferências padrão."
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

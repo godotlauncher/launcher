@@ -19,8 +19,6 @@
     "forwardPlus": "Forward Plus",
     "mobile": "モバイル",
     "compatible": "互換",
-    "gles3": "GLES3",
-    "gles2": "GLES2",
     "forwardPlusFeatures": {
       "desktop": "デスクトッププラットフォームのみをサポート。",
       "advanced3d": "高度な3Dグラフィックスが利用可能。",
@@ -59,7 +57,6 @@
     "create": "プロジェクトを作成"
   },
   "errors": {
-    "projectExists": "プロジェクト '{{name}}' は既に存在します",
     "invalidEditorVersion": "無効なエディタバージョン：{{version}}",
     "failedProjectDefinition": "バージョンのプロジェクト定義の取得に失敗しました：{{version}}",
     "folderNotEmpty": "プロジェクトフォルダ '{{name}}' は既に存在し、空ではありません。既存のプロジェクトを追加するつもりでしたか？",

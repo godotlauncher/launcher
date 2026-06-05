@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import type { SetAutoStartResult } from '@shared';
 import { app } from 'electron';
 import logger from 'electron-log';
@@ -12,6 +12,9 @@ import {
     resolveAppPaths,
 } from '../config/index.js';
 import { isDev } from '../utils.js';
+
+const COMMAND_VERSION_TIMEOUT_MS = 3000;
+const FIND_EXECUTABLE_TIMEOUT_MS = 3000;
 
 /**
  * Returns default data/config directories for an app, based on the given platform.
@@ -38,8 +41,27 @@ export function getDefaultDirs(): {
 export async function findExecutable(command: string): Promise<string | null> {
     logger.debug(`Searching for ${command} executable...`);
 
-    const commandPath = await which(command, { nothrow: true });
-    return commandPath;
+    let timeout: NodeJS.Timeout | undefined;
+
+    const timeoutPromise = new Promise<null>((resolve) => {
+        timeout = setTimeout(() => {
+            logger.debug(
+                `Timed out searching for ${command} executable after ${FIND_EXECUTABLE_TIMEOUT_MS}ms`,
+            );
+            resolve(null);
+        }, FIND_EXECUTABLE_TIMEOUT_MS);
+    });
+
+    try {
+        return await Promise.race([
+            which(command, { nothrow: true }),
+            timeoutPromise,
+        ]);
+    } finally {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+    }
 }
 
 export async function getCommandVersion(commandPath: string): Promise<string> {
@@ -48,13 +70,22 @@ export async function getCommandVersion(commandPath: string): Promise<string> {
     }
 
     return new Promise((resolve) => {
-        exec(`${commandPath} --version`, (error, stdout) => {
-            if (error) {
-                resolve('');
-            } else {
-                resolve(stdout.split('\n')[0].trim());
-            }
-        });
+        execFile(
+            commandPath,
+            ['--version'],
+            { timeout: COMMAND_VERSION_TIMEOUT_MS, windowsHide: true },
+            (error, stdout) => {
+                if (error) {
+                    logger.debug(
+                        `Failed to read command version for ${commandPath}`,
+                        error,
+                    );
+                    resolve('');
+                } else {
+                    resolve(stdout.split('\n')[0].trim());
+                }
+            },
+        );
     });
 }
 

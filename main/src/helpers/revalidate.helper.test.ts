@@ -85,6 +85,9 @@ describe('setupFocusRevalidation', () => {
 
         expect(moduleMocks.checkAndUpdateReleases).toHaveBeenCalledTimes(1);
         expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledTimes(1);
+        expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledWith({
+            repairMissingLaunchPath: false,
+        });
 
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
             'releases-updated',

@@ -212,4 +212,51 @@ describe('installRelease', () => {
         expect(result.release?.arch).toBe('arm64');
         expect(result.release?.editor_path).toBe(expectedEditorPath);
     });
+
+    it('shares concurrent install requests for the same editor identity', async () => {
+        const arm64Asset: AssetSummary = {
+            name: 'Godot_v4.5.2-stable_windows_arm64.exe.zip',
+            download_url:
+                'https://example.com/Godot_v4.5.2-stable_windows_arm64.exe.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const release: ReleaseSummary = {
+            name: 'Godot_v4.5.2-stable',
+            version: 'Godot_v4.5.2-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-01T00:00:00Z',
+            assets: [arm64Asset],
+        };
+
+        let resolveDownload: (() => void) | undefined;
+        releasesUtilsMocks.downloadReleaseAsset.mockReturnValueOnce(
+            new Promise<void>((resolve) => {
+                resolveDownload = resolve;
+            }),
+        );
+
+        const firstInstall = installRelease(release, false);
+        const secondInstall = installRelease(release, false);
+
+        await vi.waitFor(() =>
+            expect(
+                releasesUtilsMocks.downloadReleaseAsset,
+            ).toHaveBeenCalledTimes(1),
+        );
+
+        resolveDownload?.();
+        const [firstResult, secondResult] = await Promise.all([
+            firstInstall,
+            secondInstall,
+        ]);
+
+        expect(
+            releasesUtilsMocks.addStoredInstalledRelease,
+        ).toHaveBeenCalledTimes(1);
+        expect(firstResult.success).toBe(true);
+        expect(secondResult).toEqual(firstResult);
+    });
 });

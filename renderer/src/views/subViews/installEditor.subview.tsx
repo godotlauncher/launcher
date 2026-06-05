@@ -1,8 +1,8 @@
 import type { InstalledRelease, ReleaseSummary } from '@shared';
 import clsx from 'clsx';
 import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
-import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -30,12 +30,28 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         loading,
         hasError,
         refreshAvailableReleases,
-        isInstalledRelease,
+        getInstalledRelease,
         removeRelease,
+        reinstallRelease,
         checkAllReleasesValid,
     } = useRelease();
 
     const { addAlert } = useAlerts();
+    const lastShownRefreshError = useRef<string | undefined>(undefined);
+
+    useEffect(() => {
+        if (!hasError) {
+            lastShownRefreshError.current = undefined;
+            return;
+        }
+
+        if (lastShownRefreshError.current === hasError) {
+            return;
+        }
+
+        lastShownRefreshError.current = hasError;
+        addAlert(t('errors.fetchError'), hasError);
+    }, [addAlert, hasError, t]);
 
     const installReleaseRequest = async (
         release: ReleaseSummary,
@@ -50,9 +66,24 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         }
     };
 
+    const reinstallReleaseRequest = async (
+        release: ReleaseSummary,
+        mono: boolean,
+    ) => {
+        const installedRelease = getInstalledRelease(release.version, mono);
+        if (!installedRelease) {
+            return;
+        }
+
+        const result = await reinstallRelease(installedRelease);
+        if (!result.success) {
+            addAlert('Error', result.error || t('messages.reinstallError'));
+        }
+    };
+
     const getFilteredInstalledRows = (): InstalledRelease[] => {
-        const installed = installedReleases.concat(
-            downloadingReleases.map((r) => ({
+        const downloadingRows: InstalledRelease[] = downloadingReleases.map(
+            (r) => ({
                 version: r.version,
                 version_number: -1,
                 install_path: '',
@@ -64,8 +95,28 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                 config_version: 5,
                 published_at: r.published_at,
                 valid: true,
-            })),
+            }),
         );
+        const installed = installedReleases
+            .map((release) => {
+                const downloadingRelease = downloadingRows.find(
+                    (r) =>
+                        r.version === release.version &&
+                        r.mono === release.mono,
+                );
+
+                return downloadingRelease ?? release;
+            })
+            .concat(
+                downloadingRows.filter(
+                    (release) =>
+                        !installedReleases.some(
+                            (installedRelease) =>
+                                installedRelease.version === release.version &&
+                                installedRelease.mono === release.mono,
+                        ),
+                ),
+            );
         if (textSearch === '') return installed;
         return installed.filter((row) =>
             row.version.toLowerCase().includes(textSearch.toLowerCase()),
@@ -79,8 +130,8 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
             if (filterInstalled) {
                 releases = releases.filter(
                     (row) =>
-                        isInstalledRelease(row.version, false) ||
-                        isInstalledRelease(row.version, true),
+                        getInstalledRelease(row.version, false) ||
+                        getInstalledRelease(row.version, true),
                 );
             }
 
@@ -94,8 +145,8 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
             if (filterInstalled) {
                 prereleases = prereleases.filter(
                     (row) =>
-                        isInstalledRelease(row.version, false) ||
-                        isInstalledRelease(row.version, true),
+                        getInstalledRelease(row.version, false) ||
+                        getInstalledRelease(row.version, true),
                 );
             }
 
@@ -115,6 +166,13 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
     const onRemove = async (release: InstalledRelease) => {
         await removeRelease(release);
+    };
+
+    const onReinstall = async (release: InstalledRelease) => {
+        const result = await reinstallRelease(release);
+        if (!result.success) {
+            addAlert('Error', result.error || t('messages.reinstallError'));
+        }
     };
 
     return (
@@ -271,40 +329,19 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                         {loading && (
                             <span className="loading loading-dots loading-sm"></span>
                         )}
-                        {hasError && (
-                            <div>
-                                <div>{t('errors.fetchError')}</div>
-                                <div>{hasError}</div>
-                                <div>
-                                    <Trans
-                                        ns="installEditor"
-                                        i18nKey="errors.retryInline"
-                                        components={{
-                                            Button: (
-                                                <button
-                                                    type="button"
-                                                    className="underline cursor-pointer hover:no-underline"
-                                                    onClick={async () =>
-                                                        await refreshAvailableReleases()
-                                                    }
-                                                />
-                                            ),
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        )}
-                        {!hasError && !loading && (
+                        {!loading && (
                             <div className="overflow-x-hidden overflow-y-auto">
                                 {tab !== 'INSTALLED' ? (
                                     <InstallReleaseTable
                                         releases={getFilteredRows()}
                                         onInstall={installReleaseRequest}
+                                        onReinstall={reinstallReleaseRequest}
                                     />
                                 ) : (
                                     <InstalledReleaseTable
                                         releases={getFilteredInstalledRows()}
                                         onRetry={onRetryValidation}
+                                        onReinstall={onReinstall}
                                         onRemove={onRemove}
                                         loading={loading}
                                     />

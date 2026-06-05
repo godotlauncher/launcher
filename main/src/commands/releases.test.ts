@@ -1,11 +1,12 @@
+import * as fs from 'node:fs';
 import type { ReleaseSummary } from '@shared';
 import logger from 'electron-log';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MIN_VERSION } from '../constants.js';
 import * as githubUtils from '../utils/github.utils.js';
 import * as platformUtils from '../utils/platform.utils.js';
 import * as releasesUtils from '../utils/releases.utils.js';
-import { clearReleaseCaches } from './releases.js';
+import { clearReleaseCaches, getAvailableReleases } from './releases.js';
 
 const unlinkMock = vi.hoisted(() => vi.fn());
 const electronMock = vi.hoisted(() => ({
@@ -125,6 +126,59 @@ const defaultDirs: {
     installedReleasesCachePath: '/config/installed-releases.json',
     migrationStatePath: '/config/migrations.json',
 };
+
+describe('getAvailableReleases', () => {
+    beforeEach(() => {
+        getDefaultDirs.mockReset();
+        getReleases.mockReset();
+        storeAvailableReleases.mockReset();
+        loggerError.mockReset();
+        vi.mocked(fs.existsSync).mockReset();
+        vi.mocked(fs.promises.readFile).mockReset();
+        vi.mocked(fs.promises.writeFile).mockReset();
+        releasesUtils.__resetReleaseCachesForTesting();
+        getDefaultDirs.mockReturnValue({ ...defaultDirs });
+    });
+
+    afterEach(() => {
+        releasesUtils.__resetReleaseCachesForTesting();
+    });
+
+    it('returns stale cached releases with a refresh error when GitHub refresh fails', async () => {
+        const cachedRelease: ReleaseSummary = {
+            version: '4.4-stable',
+            version_number: 4.4,
+            name: '4.4-stable',
+            published_at: '2024-05-01T00:00:00.000Z',
+            draft: false,
+            prerelease: false,
+            assets: [],
+        };
+        const refreshError = new Error('rate limited');
+
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValueOnce(
+            JSON.stringify({
+                lastUpdated: 1,
+                lastPublishDate: '2024-05-01T00:00:00.000Z',
+                releases: [cachedRelease],
+            }),
+        );
+        getReleases.mockRejectedValueOnce(refreshError);
+
+        const result = await getAvailableReleases();
+
+        expect(result).toEqual({
+            releases: [cachedRelease],
+            refreshError: 'rate limited',
+        });
+        expect(storeAvailableReleases).not.toHaveBeenCalled();
+        expect(loggerError).toHaveBeenCalledWith(
+            'Failed to refresh available releases, using cached releases',
+            refreshError,
+        );
+    });
+});
 
 describe('clearReleaseCaches', () => {
     beforeEach(() => {

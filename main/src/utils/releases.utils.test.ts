@@ -1,11 +1,15 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import path from 'node:path';
+import type { InstalledRelease } from '@shared';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     __resetInstalledReleasesStoreForTesting,
+    addStoredInstalledRelease,
+    dedupeInstalledReleases,
     getStoredInstalledReleases,
+    removeStoredInstalledRelease,
 } from './releases.utils';
 
 const platformUtilsMock = vi.hoisted(() => ({
@@ -126,5 +130,146 @@ describe('getStoredInstalledReleases', () => {
         expect(releases).toHaveLength(2);
         expect(releases.find((r) => r.version === '4.2.0')?.valid).toBe(true);
         expect(releases.find((r) => r.version === '4.1.0')?.valid).toBe(false);
+    });
+
+    it('dedupes installed releases by version and mono while preferring valid entries', () => {
+        const data = [
+            {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/missing/install/path',
+                editor_path: '/missing/editor/path',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: '2024-01-01T00:00:00Z',
+                valid: false,
+            },
+            {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/valid/install/path',
+                editor_path: '/valid/editor/path',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: '2024-01-01T00:00:00Z',
+                valid: true,
+            },
+            {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/mono/install/path',
+                editor_path: '/mono/editor/path',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: true,
+                prerelease: false,
+                config_version: 5,
+                published_at: '2024-01-01T00:00:00Z',
+                valid: true,
+            },
+        ];
+
+        const releases = dedupeInstalledReleases(data as InstalledRelease[]);
+
+        expect(releases).toHaveLength(2);
+        expect(
+            releases.find((r) => r.version === '4.2.0' && !r.mono)?.editor_path,
+        ).toBe('/valid/editor/path');
+        expect(
+            releases.find((r) => r.version === '4.2.0' && r.mono),
+        ).toBeDefined();
+    });
+
+    it('upserts installed releases by version and mono', async () => {
+        const tempDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-releases-utils-'),
+        );
+        tempDirs.push(tempDir);
+        const releasesPath = path.join(tempDir, 'installed.json');
+        platformUtilsMock.getDefaultDirs.mockReturnValue({
+            installedReleasesCachePath: releasesPath,
+        });
+
+        const firstRelease: InstalledRelease = {
+            version: '4.2.0',
+            version_number: 40200,
+            install_path: '/old/install/path',
+            editor_path: '/old/editor/path',
+            platform: 'darwin',
+            arch: 'arm64',
+            mono: false,
+            prerelease: false,
+            config_version: 5,
+            published_at: '2024-01-01T00:00:00Z',
+            valid: false,
+        };
+        const replacementRelease: InstalledRelease = {
+            ...firstRelease,
+            install_path: '/new/install/path',
+            editor_path: '/new/editor/path',
+            valid: true,
+        };
+
+        await addStoredInstalledRelease(firstRelease);
+        const releases = await addStoredInstalledRelease(replacementRelease);
+
+        expect(releases).toHaveLength(1);
+        expect(releases[0].editor_path).toBe('/new/editor/path');
+        expect(releases[0].valid).toBe(true);
+    });
+
+    it('removes only the selected duplicate path when uninstalling', async () => {
+        const tempDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-releases-utils-'),
+        );
+        tempDirs.push(tempDir);
+        const releasesPath = path.join(tempDir, 'installed.json');
+        platformUtilsMock.getDefaultDirs.mockReturnValue({
+            installedReleasesCachePath: releasesPath,
+        });
+
+        const data = [
+            {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/old/install/path',
+                editor_path: '/old/editor/path',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: '2024-01-01T00:00:00Z',
+                valid: false,
+            },
+            {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/new/install/path',
+                editor_path: '/new/editor/path',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: '2024-01-01T00:00:00Z',
+                valid: true,
+            },
+        ];
+
+        fs.writeFileSync(releasesPath, JSON.stringify(data), 'utf-8');
+
+        const releases = await removeStoredInstalledRelease(
+            data[0] as InstalledRelease,
+        );
+
+        expect(releases).toHaveLength(1);
+        expect(releases[0].editor_path).toBe('/new/editor/path');
     });
 });

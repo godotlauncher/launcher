@@ -130,7 +130,6 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
             fallbackLng: FALLBACK_LANGUAGES,
             supportedLngs: [...AVAILABLE_LANGUAGES],
             ns: [
-                'translation',
                 'dialogs',
                 'menus',
                 'common',
@@ -142,7 +141,7 @@ export async function initI18n(locale?: string): Promise<typeof i18next> {
                 'installEditor',
                 'welcome',
             ],
-            defaultNS: 'translation',
+            defaultNS: 'common',
             backend: {
                 loadPath: path.join(localesPath, '{{lng}}/{{ns}}.json'),
             },

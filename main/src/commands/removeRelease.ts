@@ -16,8 +16,12 @@ export async function removeRelease(
 
         await removeProjectEditorUsingRelease(release);
 
-        // delete release folder
-        if (fs.existsSync(release.install_path)) {
+        const shouldDeleteReleaseFiles =
+            release.source !== 'custom' &&
+            release.managed_by_launcher !== false;
+
+        // delete release folder only for launcher-managed installs
+        if (shouldDeleteReleaseFiles && fs.existsSync(release.install_path)) {
             await fs.promises.rm(release.install_path, {
                 recursive: true,
                 force: true,

@@ -1,71 +1,52 @@
 {
   "title": "Instalaciones del editor",
-  "tabs": {
-    "installed": "Instaladas",
-    "available": "Disponibles"
-  },
+  "tabs": {},
   "buttons": {
     "install": "Instalar editor",
-    "installVersion": "Instalar versión",
-    "refresh": "Actualizar",
-    "uninstall": "Desinstalar",
-    "openFolder": "Abrir carpeta"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Buscar"
   },
   "table": {
-    "name": "Nombre",
-    "version": "Versión",
-    "type": "Tipo",
-    "size": "Tamaño",
-    "published": "Publicado",
-    "actions": "Acciones",
-    "status": "Estado"
+    "name": "Nombre"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "prelanzamiento"
-  },
-  "types": {
-    "stable": "Estable",
-    "beta": "Beta",
-    "dev": "Desarrollo",
-    "mono": ".NET"
+    "prerelease": "prelanzamiento",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "Instalando...",
-    "installed": "Instalada",
-    "downloading": "Descargando...",
-    "unavailable": "No disponible"
+    "installing": "Instalando..."
   },
   "messages": {
-    "noReleases": "No hay versiones instaladas aún.",
-    "install": "Instalar.",
     "noReleasesCta": "No hay versiones instaladas aún. <Link>Instalar</Link>",
-    "noInstalled": "No hay versiones de Godot instaladas",
-    "noAvailable": "No hay versiones disponibles",
-    "installing": "Instalando...",
-    "downloadProgress": "Descargando: {{percent}}%",
-    "installSuccess": "Editor instalado exitosamente",
-    "uninstallSuccess": "Editor desinstalado",
-    "unavailableHint": "La ruta del editor no está accesible. Monta el dispositivo de almacenamiento y vuelve a intentarlo, o desinstala la versión.",
     "revalidating": "Validando las versiones instaladas...",
-    "revalidated": "Validación completada.",
     "revalidatedRelease": "{{version}} vuelve a estar disponible.",
     "revalidationFailed": "La validación falló. Revisa el dispositivo de almacenamiento y vuelve a intentarlo.",
     "revalidationStillMissing": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que {{path}} sea accesible antes de volver a intentarlo.",
-    "revalidationStillMissingNoPath": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que el dispositivo de almacenamiento esté montado antes de volver a intentarlo."
+    "revalidationStillMissingNoPath": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que el dispositivo de almacenamiento esté montado antes de volver a intentarlo.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "Instalar editor Godot",
-    "selectVersion": "Selecciona una versión para instalar",
-    "includeMonoVersion": "Incluir versión .NET",
-    "downloading": "Descargando...",
-    "extracting": "Extrayendo...",
-    "buttons": {
-      "install": "Instalar",
-      "cancel": "Cancelar"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }

@@ -178,33 +178,27 @@ export class ElectronApp implements OnModuleInit {
             if (process.platform === 'darwin') {
                 if (this.config.startHidden) {
                     logger.debug('Hiding window on launch with --hidden');
-                    mainWindow.hide();
-                    app.dock?.hide();
+                    this.hideMainWindow(mainWindow);
                 } else if (app.getLoginItemSettings().wasOpenedAtLogin) {
                     if (prefs.start_in_tray) {
                         logger.info(
                             'App was opened at login with prefs.start_in_tray, hiding window',
                         );
-                        mainWindow.hide();
-                        app.dock?.hide();
+                        this.hideMainWindow(mainWindow);
                     }
                 } else {
-                    mainWindow.show();
-                    app.dock?.show();
+                    this.showMainWindowInstance(mainWindow);
                 }
             } else if (process.platform === 'win32') {
                 // check if launch argument has been passed --hidden
                 if (this.config.startHidden) {
                     logger.debug('Hiding window on launch with --hidden');
-                    mainWindow.hide();
-                    app.dock?.hide();
+                    this.hideMainWindow(mainWindow);
                 } else {
-                    mainWindow.show();
-                    app.dock?.show();
+                    this.showMainWindowInstance(mainWindow);
                 }
             } else {
-                mainWindow.show();
-                app.dock?.show();
+                this.showMainWindowInstance(mainWindow);
             }
         });
     }
@@ -248,8 +242,7 @@ export class ElectronApp implements OnModuleInit {
             logger.debug('Hiding window');
             // normal close will hide the window to tray
             e.preventDefault();
-            mainWindow.hide();
-            app.dock?.hide();
+            this.hideMainWindow(mainWindow);
         });
 
         electronAutoUpdater.on('before-quit-for-update', () => {
@@ -263,6 +256,7 @@ export class ElectronApp implements OnModuleInit {
 
         mainWindow.on('show', () => {
             logger.debug('Showing window');
+            this.showDockIcon();
 
             app.dock?.setIcon(getAppIconPath());
             mainWindow.setIcon(getAppIconPath());
@@ -284,6 +278,30 @@ export class ElectronApp implements OnModuleInit {
         return this.configService.getAll();
     }
 
+    private hideMainWindow(mainWindow: BrowserWindow): void {
+        mainWindow.hide();
+        this.hideDockIcon();
+    }
+
+    private showMainWindowInstance(mainWindow: BrowserWindow): void {
+        mainWindow.show();
+        this.showDockIcon();
+    }
+
+    private hideDockIcon(): void {
+        if (process.platform === 'darwin') {
+            app.dock?.hide();
+            app.setActivationPolicy('accessory');
+        }
+    }
+
+    private showDockIcon(): void {
+        if (process.platform === 'darwin') {
+            app.setActivationPolicy('regular');
+            app.dock?.show();
+        }
+    }
+
     private showMainWindow(): boolean {
         if (!this.mainWindow) {
             return false;
@@ -292,8 +310,7 @@ export class ElectronApp implements OnModuleInit {
         if (this.mainWindow.isMinimized()) {
             this.mainWindow.restore();
         }
-        this.mainWindow.show();
-        app.dock?.show();
+        this.showMainWindowInstance(this.mainWindow);
         if (process.platform === 'darwin') {
             app.show();
         }

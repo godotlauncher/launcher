@@ -59,70 +59,14 @@
       "successMessage": "As listas de releases foram atualizadas com as builds mais recentes.",
       "errorTitle": "Não Foi Possível Atualizar A Cache",
       "errorMessage": "Ocorreu um problema ao atualizar a cache de releases. Tente novamente mais tarde."
-    },
-    "checkForUpdates": {
-      "title": "Procurar atualizações",
-      "description": "Verificar atualizações automaticamente quando o Godot Launcher inicia",
-      "enabled": "Procurar atualizações na inicialização"
     }
   },
   "general": {
     "language": {
       "label": "Idioma",
-      "title": "Idioma",
       "description": "Selecione o idioma do Godot Launcher (não altera o idioma do Godot)",
-      "system": "Sistema (detecção automática)",
-      "options": {
-        "system": "Sistema (detecção automática)"
-      }
-    },
-    "theme": {
-      "label": "Tema",
-      "light": "Claro",
-      "dark": "Escuro",
-      "system": "Sistema"
-    },
-    "projectsLocation": {
-      "label": "Local padrão dos projetos",
-      "description": "Onde novos projetos serão criados"
-    },
-    "installLocation": {
-      "label": "Local de instalação do Godot",
-      "description": "Onde as versões do Godot serão instaladas"
-    },
-    "postLaunchAction": {
-      "label": "Após iniciar um projeto",
-      "none": "Não fazer nada",
-      "minimize": "Minimizar o launcher",
-      "closeToTray": "Fechar para a bandeja do sistema"
-    },
-    "autoCheckUpdates": {
-      "label": "Procurar atualizações automaticamente",
-      "description": "Procurar atualizações do Godot Launcher na inicialização"
-    },
-    "autoStart": {
-      "label": "Iniciar com o sistema",
-      "description": "Abrir o Godot Launcher quando o computador ligar"
-    },
-    "startInTray": {
-      "label": "Iniciar minimizado na bandeja",
-      "description": "Iniciar o launcher na bandeja do sistema"
+      "system": "Sistema (detecção automática)"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "Confirmar antes de remover projetos",
-      "description": "Mostrar diálogo de confirmação ao remover projetos"
-    },
-    "enableSymlinks": {
-      "label": "Ativar links simbólicos (Windows)",
-      "description": "Usar links simbólicos para as configurações do editor"
-    }
-  },
-  "buttons": {
-    "save": "Salvar configurações",
-    "reset": "Restaurar valores padrão",
-    "openConfigFolder": "Abrir pasta de configuração"
   },
   "tools": {
     "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma varredura completa se você alterou instalações neste sistema.",
@@ -163,9 +107,6 @@
     "betaChannel": "Receber atualizações beta",
     "betaChannelDescription": "Baixe builds pré-lançamento do GitHub; eles podem ser menos estáveis que os lançamentos oficiais.",
     "checkNow": "Procurar atualizações",
-    "updateAvailable": "A versão {{version}} está disponível; reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
-    "updateReady": "Uma nova versão está disponível; reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
-    "restartNow": "Reiniciar agora.",
     "downloadNow": "Baixar atualização",
     "skipVersion": "Ignorar esta versão",
     "unskipVersion": "Reativar atualização ignorada",
@@ -191,9 +132,5 @@
       "line1": "Volte a usar cópias locais para evitar solicitações de elevação. O Godot Launcher copiará os arquivos do editor para cada projeto.",
       "line2": "Os links simbólicos existentes permanecem até que a versão do editor seja alterada ou reinstalada."
     }
-  },
-  "messages": {
-    "saved": "Configurações salvas com sucesso",
-    "resetConfirm": "Tem certeza de que deseja redefinir todas as configurações para os valores padrão?"
   }
 }

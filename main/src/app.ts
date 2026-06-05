@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import type {
+    AddProjectOptions,
     InstalledRelease,
     ProjectDetails,
     RendererType,
@@ -30,6 +31,8 @@ import {
     launchProject,
     removeProject,
 } from './commands/projects.js';
+import { registerCustomEngine } from './commands/registerCustomEngine.js';
+import { reinstallRelease } from './commands/reinstallRelease.js';
 import {
     clearReleaseCaches,
     getAvailablePrereleases,
@@ -212,6 +215,20 @@ export function registerHandlers() {
     );
 
     ipcMainHandler(
+        'reinstall-release',
+        async (_, installedRelease) => await reinstallRelease(installedRelease),
+    );
+
+    ipcMainHandler(
+        'register-custom-engine',
+        async (
+            _,
+            manifestPath: string,
+            options?: { replaceExisting?: boolean },
+        ) => await registerCustomEngine(manifestPath, options),
+    );
+
+    ipcMainHandler(
         'open-editor-project-manager',
         async (_, release) => await openProjectManager(release),
     );
@@ -265,7 +282,8 @@ export function registerHandlers() {
 
     ipcMainHandler(
         'add-project',
-        async (_, projectPath: string) => await addProject(projectPath),
+        async (_, projectPath: string, options?: AddProjectOptions) =>
+            await addProject(projectPath, options),
     );
 
     ipcMainHandler(
@@ -298,7 +316,8 @@ export function registerHandlers() {
             defaultPath: string,
             title: string,
             filters: Electron.FileFilter[],
-        ) => openFileDialog(defaultPath, title, filters),
+            properties?: Electron.OpenDialogOptions['properties'],
+        ) => openFileDialog(defaultPath, title, filters, properties),
     );
 
     ipcMainHandler(
@@ -308,7 +327,8 @@ export function registerHandlers() {
             defaultPath: string,
             title?: string,
             filters?: Electron.FileFilter[],
-        ) => openDirectoryDialog(defaultPath, title, filters),
+            properties?: Electron.OpenDialogOptions['properties'],
+        ) => openDirectoryDialog(defaultPath, title, filters, properties),
     );
 
     ipcMainHandler(

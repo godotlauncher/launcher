@@ -12,8 +12,6 @@
     "ready": "完成"
   },
   "navigation": {
-    "next": "下一步",
-    "previous": "上一步",
     "start": "开始",
     "nextMacOS": "下一步：macOS",
     "nextWindows": "下一步：Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "下一步：当前设置",
     "nextSetLocations": "下一步：设置位置",
     "nextCustomizeBehavior": "下一步：自定义行为",
-    "nextWindowsSymlink": "下一步：Windows 符号链接",
     "nextReady": "下一步：完成",
     "backWelcome": "返回：欢迎",
     "backMacOS": "返回：macOS",
     "backWindows": "返回：Windows",
-    "backLinux": "返回：Linux",
     "backCurrentSettings": "返回：当前设置",
     "backSetLocations": "返回：设置位置",
     "backCustomizeBehavior": "返回：自定义行为"
@@ -78,7 +74,7 @@
     "intro": "Godot 启动器 会为每个项目创建编辑器的副本。",
     "whyTitle": "为什么？",
     "reason": "在 macOS 上创建符号链接并不受权限限制，但通过符号链接打开编辑器已被证明不可靠。为确保顺畅体验，我们为每个项目提供专用的引擎副本。虽然 Godot 大约只有 200MB（通常不是问题），但请注意多个项目可能会导致磁盘使用量增加。",
-  "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
+    "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
   },
   "windowsStep": {
     "title": "Windows 说明",
@@ -86,13 +82,13 @@
     "change1": "在 Windows 上创建符号链接需要管理员权限和提升的命令执行权限。启动器现在仅在创建符号链接时提升权限。",
     "change2": "仅当您不是计算机上的 <code>管理员</code> 且未启用 <code>开发者模式</code> 时，才会看到 UAC 提示。",
     "change3": "准备尝试符号链接吗？在准备好接受偶发的提升提示时，在设置中启用 <strong>编辑器符号链接</strong>。",
-  "dotnetNote": "注意：如果您使用的是基于 .NET 的编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
+    "dotnetNote": "注意：如果您使用的是基于 .NET 的编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
   },
   "linuxStep": {
     "title": "Linux 说明",
     "intro": "Godot 启动器 为每个项目使用符号链接",
     "whyTitle": "为什么？",
     "reason": "与 Windows 和 macOS 版本不同，Linux 使用指向编辑器的符号链接来启动项目。这可节省磁盘空间并允许每个项目使用独立的设置。",
-  "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
+    "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
   }
 }

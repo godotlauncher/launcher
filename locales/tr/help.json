@@ -22,36 +22,5 @@
     "description": "Resmi GitHub deposunda bir sorun göndererek hataları veya önerileri bildirin",
     "reportBug": "Sanırım bir hata buldum",
     "suggestion": "Bir önerim var!"
-  },
-  "sections": {
-    "gettingStarted": {
-      "title": "Başlarken",
-      "content": "Godot Launcher'a hoş geldiniz! Bu uygulama, birden fazla Godot sürümünü ve projeyi yönetmenize yardımcı olur.",
-      "welcome": "Godot Launcher'a hoş geldiniz!",
-      "step1": "Kurulumlar sekmesinden bir Godot sürümü yükleyin",
-      "step2": "Bir proje oluşturun veya ekleyin",
-      "step3": "Başlatın ve geliştirmeye başlayın!"
-    },
-    "documentation": {
-      "title": "Dokümantasyon",
-      "visitDocs": "Dokümantasyonu Ziyaret Et"
-    },
-    "community": {
-      "title": "Topluluk",
-      "discord": "Discord'umuza Katılın",
-      "github": "GitHub'da Görüntüle"
-    },
-    "about": {
-      "title": "Hakkında",
-      "version": "Sürüm {{version}}",
-      "license": "MIT lisansı altında",
-      "thirdParty": "Üçüncü Taraf Bildirimler"
-    }
-  },
-  "links": {
-    "documentation": "Dokümantasyon",
-    "github": "GitHub Deposu",
-    "discord": "Discord Topluluğu",
-    "website": "Web Sitesi"
   }
 }

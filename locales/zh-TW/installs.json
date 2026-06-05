@@ -1,71 +1,52 @@
 {
   "title": "編輯器安裝",
-  "tabs": {
-    "installed": "已安裝",
-    "available": "可用版本"
-  },
+  "tabs": {},
   "buttons": {
     "install": "安裝編輯器",
-    "installVersion": "安裝版本",
-    "refresh": "重新整理",
-    "uninstall": "解除安裝",
-    "openFolder": "開啟資料夾"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "搜尋"
   },
   "table": {
-    "name": "名稱",
-    "version": "版本",
-    "type": "類型",
-    "size": "大小",
-    "published": "發佈日期",
-    "actions": "動作",
-    "status": "狀態"
+    "name": "名稱"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "預先釋出"
-  },
-  "types": {
-    "stable": "穩定版",
-    "beta": "Beta",
-    "dev": "開發版",
-    "mono": ".NET"
+    "prerelease": "預先釋出",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "安裝中…",
-    "installed": "已安裝",
-    "downloading": "下載中…",
-    "unavailable": "無法使用"
+    "installing": "安裝中…"
   },
   "messages": {
-    "noReleases": "尚未安裝任何發行版本。",
-    "install": "安裝。",
     "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
-    "noInstalled": "未安裝任何 Godot 版本",
-    "noAvailable": "沒有可用版本",
-    "installing": "安裝中…",
-    "downloadProgress": "下載中：{{percent}}%",
-    "installSuccess": "編輯器安裝成功",
-    "uninstallSuccess": "編輯器已解除安裝",
-    "unavailableHint": "編輯器路徑無法存取。請掛載儲存裝置後再試一次，或移除該版本。",
     "revalidating": "正在驗證已安裝的版本...",
-    "revalidated": "驗證完成。",
     "revalidatedRelease": "{{version}} 已再次可用。",
     "revalidationFailed": "驗證失敗。請檢查儲存裝置並再試一次。",
     "revalidationStillMissing": "驗證已完成，但 {{version}} 仍無法使用。請確認 {{path}} 可存取後再試一次。",
-    "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。"
+    "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "安裝 Godot 編輯器",
-    "selectVersion": "選擇要安裝的版本",
-    "includeMonoVersion": "包含 .NET 版本",
-    "downloading": "下載中…",
-    "extracting": "解壓縮中…",
-    "buttons": {
-      "install": "安裝",
-      "cancel": "取消"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }

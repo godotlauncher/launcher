@@ -59,70 +59,14 @@
       "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
       "errorTitle": "Ma Stajniex Naġġornaw Il-Cache",
       "errorMessage": "Seħħ żball waqt l-aġġornament tal-cache tar-release. Erġa’ pprova aktar tard."
-    },
-    "checkForUpdates": {
-      "title": "Iċċekkja għal Aġġornamenti",
-      "description": "Awtomatikament iċċekkja għal aġġornamenti meta Godot Launcher jibda",
-      "enabled": "Iċċekkja għal aġġornamenti fil-bidu"
     }
   },
   "general": {
     "language": {
       "label": "Lingwa",
-      "title": "Lingwa",
       "description": "Agħżel lingwa għal Godot Launcher (ma tibdilx il-lingwa ta' Godot)",
-      "system": "Sistema (Awtomatiku)",
-      "options": {
-        "system": "Sistema (Awtomatiku)"
-      }
-    },
-    "theme": {
-      "label": "Tema",
-      "light": "Ċar",
-      "dark": "Mudlam",
-      "system": "Sistema"
-    },
-    "projectsLocation": {
-      "label": "Indirizz Default tal-Proġetti",
-      "description": "Fejn se jinħolqu proġetti ġodda"
-    },
-    "installLocation": {
-      "label": "Indirizz tal-Installazzjoni ta' Godot",
-      "description": "Fejn se jiġu installati verżjonijiet ta' Godot"
-    },
-    "postLaunchAction": {
-      "label": "Wara li Tibda Proġett",
-      "none": "Xejn",
-      "minimize": "Imminimizza l-launcher",
-      "closeToTray": "Agħlaq għas-system tray"
-    },
-    "autoCheckUpdates": {
-      "label": "Awtomatikament iċċekkja għal aġġornamenti",
-      "description": "Iċċekkja għal aġġornamenti ta' Godot Launcher fil-bidu"
-    },
-    "autoStart": {
-      "label": "Ibda mas-sistema",
-      "description": "Ibda Godot Launcher meta l-kompjuter tiegħek jibda"
-    },
-    "startInTray": {
-      "label": "Ibda minimizzat għat-tray",
-      "description": "Ibda l-launcher fis-system tray"
+      "system": "Sistema (Awtomatiku)"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "Ikkonferma qabel tneħħi proġetti",
-      "description": "Uri djalogu ta' konferma meta tneħħi proġetti"
-    },
-    "enableSymlinks": {
-      "label": "Ippermetti symbolic links (Windows)",
-      "description": "Uża symbolic links għas-settings tal-editur"
-    }
-  },
-  "buttons": {
-    "save": "Ikteb Settings",
-    "reset": "Reġġa' lura għad-Defaults",
-    "openConfigFolder": "Iftaħ Folder tal-Konfigurazzjoni"
   },
   "tools": {
     "overview": "Il-launcher jivvalida malajr il-paths tal-għodda fil-cache meta din it-tab tkun fil-fokus. Esegwix skannatura sħiħa jekk biddilt l-installazzjonijiet fuq dan is-sistema.",
@@ -163,9 +107,6 @@
     "betaChannel": "Irċievi aġġornamenti beta",
     "betaChannelDescription": "Niżżel build ta’ qabel rilaxx minn GitHub; dawn jistgħu jkunu inqas stabbli mill-verżjonijiet uffiċjali.",
     "checkNow": "Iċċekkja għal aġġornamenti",
-    "updateAvailable": "Verżjoni {{version}} hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-    "updateReady": "Verżjoni ġdida hija disponibbli, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-    "restartNow": "Ibda mill-ġdid issa.",
     "downloadNow": "Niżżel l-aġġornament",
     "skipVersion": "Aqbeż din il-verżjoni",
     "unskipVersion": "Erġa’ attiva l-aġġornament maqbuż",
@@ -191,9 +132,5 @@
       "line1": "Ibdel lura għal kopji lokali biex tevita prompts ta' elevazzjoni. Godot Launcher se jikkopja l-fajls tal-editur f'kull proġett minflok.",
       "line2": "Symlinks eżistenti jibqgħu fis-sitt sakemm il-verżjoni tal-editur tagħhom tinbidel jew tiġi installata mill-ġdid."
     }
-  },
-  "messages": {
-    "saved": "Settings salvati b'suċċess",
-    "resetConfirm": "Int żgur li trid tirreġġa' lura s-settings kollha għad-defaults?"
   }
 }

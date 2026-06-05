@@ -5,8 +5,7 @@
   },
   "tabs": {
     "released": "正式版",
-    "prerelease": "预发布",
-    "installed": "已安装"
+    "prerelease": "预发布"
   },
   "filters": {
     "showInstalledOnly": "仅显示已安装"
@@ -16,8 +15,6 @@
   },
   "errors": {
     "fetchError": "获取发行版本时发生错误。",
-    "tryAgainLater": "请",
-    "tryAgain": "稍后再试",
     "retryInline": "请重试。 <Button>重试</Button>",
     "noPlatformAsset": "未找到适用于该平台的资源",
     "invalidEditorVersion": "无效的编辑器版本",
@@ -25,7 +22,8 @@
     "unsupportedFileExtension": "不支持的文件扩展名"
   },
   "messages": {
-    "installError": "安装发行版本时出错"
+    "installError": "安装发行版本时出错",
+    "reinstallError": "Something went wrong when reinstalling release"
   },
   "table": {
     "headers": {
@@ -42,9 +40,10 @@
       "installed": "已安装 - {{version}}",
       "installedGDScript": "已安装 - {{version}} (GDScript)",
       "installedDotNet": "已安装 - {{version}} .NET",
-      "download": "下载 {{version}}",
       "downloadGDScript": "下载 {{version}} (GDScript)",
-      "downloadDotNet": "下载 {{version}} .NET"
+      "downloadDotNet": "下载 {{version}} .NET",
+      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
+      "reinstallDotNet": "Reinstall {{version}} .NET"
     },
     "status": {
       "unavailable": "不可用"

@@ -14,14 +14,42 @@ import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
 } from '../utils/godot.utils.js';
+import { getReleaseBaseVersion } from '../utils/projectLauncherConfig.utils.js';
 import {
     addStoredInstalledRelease,
     downloadReleaseAsset,
+    getInstalledReleaseIdentity,
     getPlatformAsset,
 } from '../utils/releases.utils.js';
 import { getUserPreferences } from './userPreferences.js';
 
+const installOperations = new Map<string, Promise<InstallReleaseResult>>();
+
 export async function installRelease(
+    release: ReleaseSummary,
+    mono: boolean,
+): Promise<InstallReleaseResult> {
+    const identity = getInstalledReleaseIdentity({
+        version: release.version,
+        mono,
+    });
+    const existingOperation = installOperations.get(identity);
+    if (existingOperation) {
+        return existingOperation;
+    }
+
+    let operation: Promise<InstallReleaseResult>;
+    operation = installReleaseInternal(release, mono).finally(() => {
+        if (installOperations.get(identity) === operation) {
+            installOperations.delete(identity);
+        }
+    });
+    installOperations.set(identity, operation);
+
+    return operation;
+}
+
+async function installReleaseInternal(
     release: ReleaseSummary,
     mono: boolean,
 ): Promise<InstallReleaseResult> {
@@ -191,6 +219,11 @@ export async function installRelease(
 
         const installedRelease: InstalledRelease = {
             version: release.version,
+            base_version: getReleaseBaseVersion({
+                version: release.version,
+                version_number: release.version_number,
+            }),
+            flavor: mono ? 'dotnet' : 'gdscript',
             version_number: release.version_number,
             install_path: releasePath,
             editor_path,

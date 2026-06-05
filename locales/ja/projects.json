@@ -2,12 +2,7 @@
   "title": "プロジェクト",
   "buttons": {
     "add": "追加",
-    "newProject": "新規プロジェクト",
-    "addProject": "プロジェクトを追加",
-    "createProject": "プロジェクトを作成",
-    "refresh": "更新",
-    "launch": "起動",
-    "changeEditor": "エディタを変更"
+    "newProject": "新規プロジェクト"
   },
   "search": {
     "placeholder": "検索"
@@ -16,20 +11,33 @@
     "name": "名前",
     "modified": "変更日時",
     "editor": "エディタ",
-    "version": "バージョン",
-    "lastOpened": "最終オープン",
-    "actions": "アクション",
     "invalidProject": "このプロジェクトは無効です。プロジェクトとエディタの場所を確認してください！",
     "dotNetProject": "これは.Netプロジェクトです",
     "prerelease": "プレリリース版のGodotエディタを使用しています",
     "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
-    "invalidRelease": "エディタ利用不可",
     "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています",
-    "gitProject": "このプロジェクトはバージョン管理に Git を使用しています"
+    "gitProject": "このプロジェクトはバージョン管理に Git を使用しています",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "プロジェクトファイルを選択",
     "godotProject": "Godotプロジェクト",
+    "editorResolution": {
+      "title": "エディターのバージョンが必要です",
+      "message": "このプロジェクトは、インストールされていないエディターを要求しています。",
+      "version": "バージョン",
+      "channel": "チャンネル",
+      "flavor": "フレーバー",
+      "baseVersion": "ベース",
+      "fallbackMessage": "互換性のあるインストール済みエディターを代替として使用できます。",
+      "editorActions": "オプション",
+      "download": "{{version}} をダウンロード",
+      "useFallback": "{{version}} を使用",
+      "addMissing": "不足しているエディターで追加"
+    },
     "errors": {
       "projectExists": "プロジェクト '{{path}}' は既に存在します",
       "invalidPath": "無効なプロジェクトパス",
@@ -43,16 +51,7 @@
     }
   },
   "messages": {
-    "noProjects": "プロジェクトが見つかりません",
-    "noReleases": "リリースがインストールされていません。",
-    "goToInstalls": "インストールへ移動。",
     "noReleasesCta": "リリースがまだインストールされていません。<Link>インストールへ移動</Link>",
-    "projectAdded": "プロジェクトが正常に追加されました",
-    "projectRemoved": "プロジェクトが削除されました",
-    "editorChanged": "エディタが正常に変更されました",
-    "invalidProject": "このプロジェクトは無効です。プロジェクトとエディタの場所を確認してください！",
-    "monoProject": "これは.NETプロジェクトです",
-    "prereleaseVersion": "プレリリース版のGodotエディタを使用しています",
     "waitingForDialog": "プロジェクト追加のダイアログを待機中...",
     "needReleaseInstalled": "プロジェクトを追加するには、少なくとも1つのリリースをインストールする必要があります",
     "addProjectError": "プロジェクトの追加中に問題が発生しました",
@@ -61,7 +60,15 @@
     "invalidReleaseEditor": "選択されたエディタは利用できません。ドライブをマウントするか、バージョンを再インストールしてください。",
     "dropGodotFileOnly": "プロジェクトを追加するには project.godot ファイルをドロップしてください",
     "dropProjectHere": "ここに project.godot ファイルをドロップしてプロジェクトを追加",
-    "addingProjects": "プロジェクトを追加中: {{current}}/{{total}}"
+    "addingProjects": "プロジェクトを追加中: {{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {
@@ -70,23 +77,6 @@
       "differentMajorVersion": "エディタの異なるメジャーバージョンは使用できません\nプロジェクトを保護するため、https://godotengine.org の公式移行ガイドを参照してください"
     }
   },
-  "createProject": {
-    "title": "新規プロジェクト",
-    "projectName": "プロジェクト名",
-    "projectPath": "プロジェクトパス",
-    "selectVersion": "Godotバージョンを選択",
-    "renderer": "レンダラー",
-    "editNow": "今すぐ編集",
-    "setupVSCode": "Visual Studio Codeをテキストエディタとして設定",
-    "vscodeNotInstalled": "Visual Studio Codeがこのコンピュータにインストールされていません",
-    "noVersionsInstalled": "Godotバージョンがインストールされていません",
-    "errors": {
-      "nameRequired": "プロジェクト名が必要です",
-      "pathRequired": "プロジェクトパスが必要です",
-      "invalidPath": "無効なプロジェクトパス"
-    }
-  },
-  "searchPlaceholder": "プロジェクトを検索...",
   "toggleVSCode": {
     "errors": {
       "projectNotFound": "プロジェクトが見つかりません",
@@ -94,12 +84,6 @@
       "missingLaunchPath": "このプロジェクトの Godot 起動パスが見つかりません。",
       "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。"
     }
-  },
-  "editorSettings": {
-    "title": "エディタ設定",
-    "alreadyExists": "{{version}} [.NET]のエディタ設定は既に存在しており、設定を保護するために変更は行われませんでした。",
-    "switchingToDotNet": "GDScriptから.NETバージョンに切り替える場合は、<strong>エディタ設定 -> Dotnent</strong>から外部エディタを手動で設定できます（高度なスイッチ：true）。",
-    "readMore": "詳細を読む"
   },
   "initGit": {
     "errors": {

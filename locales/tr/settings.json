@@ -59,70 +59,14 @@
       "successMessage": "Sürüm listeleri en yeni yapılarla güncellendi.",
       "errorTitle": "Önbellek Yenilenemedi",
       "errorMessage": "Sürüm önbelleği yenilenirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin."
-    },
-    "checkForUpdates": {
-      "title": "Güncellemeleri Kontrol Et",
-      "description": "Godot Launcher başladığında güncellemeleri otomatik olarak kontrol et",
-      "enabled": "Başlangıçta güncellemeleri kontrol et"
     }
   },
   "general": {
     "language": {
       "label": "Dil",
-      "title": "Dil",
       "description": "Godot Launcher için dil seçin (Godot dilini değiştirmez)",
-      "system": "Sistem (Otomatik algıla)",
-      "options": {
-        "system": "Sistem (Otomatik algıla)"
-      }
-    },
-    "theme": {
-      "label": "Tema",
-      "light": "Açık",
-      "dark": "Koyu",
-      "system": "Sistem"
-    },
-    "projectsLocation": {
-      "label": "Varsayılan Projeler Konumu",
-      "description": "Yeni projelerin oluşturulacağı yer"
-    },
-    "installLocation": {
-      "label": "Godot Kurulum Konumu",
-      "description": "Godot sürümlerinin yükleneceği yer"
-    },
-    "postLaunchAction": {
-      "label": "Bir Proje Başlattıktan Sonra",
-      "none": "Hiçbir şey yapma",
-      "minimize": "Launcher'ı simge durumuna küçült",
-      "closeToTray": "Sistem tepsisine küçült"
-    },
-    "autoCheckUpdates": {
-      "label": "Güncellemeleri otomatik kontrol et",
-      "description": "Başlangıçta Godot Launcher güncellemelerini kontrol et"
-    },
-    "autoStart": {
-      "label": "Sistemle birlikte başlat",
-      "description": "Bilgisayarınız başladığında Godot Launcher'ı başlat"
-    },
-    "startInTray": {
-      "label": "Sistem tepsisinde küçültülmüş olarak başlat",
-      "description": "Launcher'ı sistem tepsisinde başlat"
+      "system": "Sistem (Otomatik algıla)"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "Projeleri kaldırmadan önce onayla",
-      "description": "Projeleri kaldırırken onay iletişim kutusu göster"
-    },
-    "enableSymlinks": {
-      "label": "Sembolik bağlantıları etkinleştir (Windows)",
-      "description": "Editör ayarları için sembolik bağlantılar kullan"
-    }
-  },
-  "buttons": {
-    "save": "Ayarları Kaydet",
-    "reset": "Varsayılanlara Sıfırla",
-    "openConfigFolder": "Yapılandırma Klasörünü Aç"
   },
   "tools": {
     "overview": "Bu sekme odaklandığında başlatıcı önbelleğe alınmış araç yollarını hızlıca doğrular. Bu sistemde kurulumları değiştirdiyseniz tam bir yeniden tarama çalıştırın.",
@@ -163,9 +107,6 @@
     "betaChannel": "Beta güncellemeleri al",
     "betaChannelDescription": "GitHub’dan ön sürüm paketlerini indirir; bunlar resmi sürümlere göre daha az kararlı olabilir.",
     "checkNow": "Güncellemeleri kontrol et",
-    "updateAvailable": "Sürüm {{version}} mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
-    "updateReady": "Yeni bir sürüm mevcut, yüklemek için Godot Launcher'ı yeniden başlatın. <Button>Şimdi yeniden başlat</Button>",
-    "restartNow": "Şimdi yeniden başlat.",
     "downloadNow": "Güncellemeyi indir",
     "skipVersion": "Bu sürümü atla",
     "unskipVersion": "Atlanan güncellemeyi geri al",
@@ -191,9 +132,5 @@
       "line1": "Yetki yükseltme istemlerinden kaçınmak için yerel kopyalara geri dönün. Godot Launcher, editör dosyalarını her projeye kopyalayacaktır.",
       "line2": "Mevcut sembolik bağlantılar, editör sürümleri değiştirilene veya yeniden yüklenene kadar yerinde kalır."
     }
-  },
-  "messages": {
-    "saved": "Ayarlar başarıyla kaydedildi",
-    "resetConfirm": "Tüm ayarları varsayılanlara sıfırlamak istediğinizden emin misiniz?"
   }
 }

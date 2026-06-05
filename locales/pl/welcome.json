@@ -12,8 +12,6 @@
     "ready": "Gotowe"
   },
   "navigation": {
-    "next": "Dalej",
-    "previous": "Wstecz",
     "start": "Rozpocznij",
     "nextMacOS": "Dalej: MacOS",
     "nextWindows": "Dalej: Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "Dalej: Bieżące ustawienia",
     "nextSetLocations": "Dalej: Ustaw lokalizacje",
     "nextCustomizeBehavior": "Dalej: Dostosuj zachowanie",
-    "nextWindowsSymlink": "Dalej: Dowiązania symboliczne Windows",
     "nextReady": "Dalej: Gotowe",
     "backWelcome": "Wstecz: Witamy",
     "backMacOS": "Wstecz: MacOS",
     "backWindows": "Wstecz: Windows",
-    "backLinux": "Wstecz: Linux",
     "backCurrentSettings": "Wstecz: Bieżące ustawienia",
     "backSetLocations": "Wstecz: Ustaw lokalizacje",
     "backCustomizeBehavior": "Wstecz: Dostosuj zachowanie"
@@ -78,7 +74,7 @@
     "intro": "Godot Launcher tworzy kopię edytora dla każdego projektu.",
     "whyTitle": "Dlaczego?",
     "reason": "Tworzenie dowiązań symbolicznych na macOS nie jest ograniczone przez uprawnienia, ale otwieranie edytora przez dowiązanie symboliczne okazało się być zawodne. Aby zapewnić płynne działanie, dostarczamy dedykowaną kopię silnika dla każdego projektu. Chociaż Godot ma tylko około 200 MB (i zazwyczaj nie stanowi to problemu), pamiętaj, że wiele projektów może prowadzić do zwiększonego użycia dysku.",
-  "dotnetNote": "UWAGA: Jeśli pracujesz z edytorami .NET, musisz zainstalować SDK .NET ze <ButtonLink>strony Microsoft .NET</ButtonLink> <Icon />"
+    "dotnetNote": "UWAGA: Jeśli pracujesz z edytorami .NET, musisz zainstalować SDK .NET ze <ButtonLink>strony Microsoft .NET</ButtonLink> <Icon />"
   },
   "windowsStep": {
     "title": "Uwaga dla Windows",
@@ -86,13 +82,13 @@
     "change1": "Tworzenie dowiązań symbolicznych w Windows wymaga uprawnień administratora i wykonywania poleceń z podwyższonymi uprawnieniami. Launcher teraz podnosi uprawnienia tylko podczas tworzenia dowiązań symbolicznych.",
     "change2": "Zobaczysz monit UAC tylko wtedy, gdy nie jesteś <code>Administratorem</code> na swoim PC i jeśli <code>Tryb programisty</code> nie jest włączony.",
     "change3": "Gotowy spróbować dowiązań symbolicznych? Włącz <strong>Dowiązania symboliczne edytora</strong> w Ustawieniach, gdy będziesz przygotowany na okazjonalny monit o podniesienie uprawnień.",
-  "dotnetNote": "UWAGA: Jeśli używasz edytorów opartych na .NET, musisz zainstalować SDK .NET ze <ButtonLink>strony Microsoft .NET</ButtonLink> <Icon />"
+    "dotnetNote": "UWAGA: Jeśli używasz edytorów opartych na .NET, musisz zainstalować SDK .NET ze <ButtonLink>strony Microsoft .NET</ButtonLink> <Icon />"
   },
   "linuxStep": {
     "title": "Uwaga dla Linux",
     "intro": "Godot Launcher używa dowiązań symbolicznych dla każdego projektu",
     "whyTitle": "Dlaczego?",
     "reason": "W przeciwieństwie do wersji Windows i MacOS, Linux używa dowiązań symbolicznych do edytora do uruchamiania projektów. To oszczędza miejsce na dysku i pozwala na ustawienia dla poszczególnych projektów.",
-  "dotnetNote": "UWAGA: Jeśli pracujesz z edytorami .NET, musisz zainstalować SDK .NET ze <ButtonLink>strony Microsoft .NET</ButtonLink> <Icon />"
+    "dotnetNote": "UWAGA: Jeśli pracujesz z edytorami .NET, musisz zainstalować SDK .NET ze <ButtonLink>strony Microsoft .NET</ButtonLink> <Icon />"
   }
 }

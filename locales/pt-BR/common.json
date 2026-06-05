@@ -2,19 +2,14 @@
   "buttons": {
     "ok": "OK",
     "cancel": "Cancelar",
-    "close": "Fechar",
-    "save": "Salvar",
-    "delete": "Excluir",
     "continue": "Continuar",
-    "skip": "Pular",
     "select": "Selecionar",
     "retry": "Tentar novamente",
     "remove": "Remover",
     "copyPath": "Copiar caminho",
-    "openPath": "Abrir caminho"
+    "openPath": "Abrir caminho",
+    "reinstall": "Reinstall"
   },
-  "loading": "Carregando...",
-  "saving": "Salvando...",
   "error": "Erro",
   "success": "Sucesso",
   "warning": "Aviso",
@@ -36,12 +31,6 @@
       "joinCommunity": "Participe da comunidade"
     },
     "update": {
-      "available": "está disponível, reinicie o Godot Launcher para instalar.",
-      "version": "Versão {{version}}",
-      "newVersion": "Uma nova versão está disponível",
-      "restartNow": "Reinicie agora.",
-      "bannerWithVersion": "A versão {{version}} está disponível, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
-      "bannerNoVersion": "Uma nova versão está disponível, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
       "availableWithVersion": "A versão {{version}} está disponível. <DownloadButton>Baixar atualização</DownloadButton> ou <SkipButton>Ignorar esta versão</SkipButton>",
       "availableNoVersion": "Uma nova versão está disponível. <DownloadButton>Baixar atualização</DownloadButton>",
       "readyWithVersion": "A versão {{version}} está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>",

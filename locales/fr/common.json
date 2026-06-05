@@ -2,19 +2,14 @@
   "buttons": {
     "ok": "Ok",
     "cancel": "Annuler",
-    "close": "Fermer",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
     "continue": "Continuer",
-    "skip": "Ignorer",
     "select": "Sélectionner",
     "retry": "Réessayer",
     "remove": "Supprimer",
     "copyPath": "Copier le chemin",
-    "openPath": "Ouvrir le chemin"
+    "openPath": "Ouvrir le chemin",
+    "reinstall": "Reinstall"
   },
-  "loading": "Chargement...",
-  "saving": "Enregistrement...",
   "error": "Erreur",
   "success": "Succès",
   "warning": "Avertissement",
@@ -36,12 +31,6 @@
       "joinCommunity": "Rejoindre la communauté"
     },
     "update": {
-      "available": "est disponible, redémarrez Godot Launcher pour l'installer.",
-      "version": "Version {{version}}",
-      "newVersion": "Une nouvelle version",
-      "restartNow": "Redémarrer maintenant.",
-      "bannerWithVersion": "La version {{version}} est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
-      "bannerNoVersion": "Une nouvelle version est disponible, redémarrez Godot Launcher pour l'installer. <Button>Redémarrer maintenant</Button>",
       "availableWithVersion": "La version {{version}} est disponible. <DownloadButton>Télécharger la mise à jour</DownloadButton> ou <SkipButton>Ignorer cette version</SkipButton>",
       "availableNoVersion": "Une nouvelle version est disponible. <DownloadButton>Télécharger la mise à jour</DownloadButton>",
       "readyWithVersion": "La version {{version}} est prête, redémarrez Godot Launcher pour l'installer. <RestartButton>Redémarrer maintenant</RestartButton>",

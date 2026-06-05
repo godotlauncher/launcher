@@ -1,71 +1,52 @@
 {
   "title": "Instalacje edytora",
-  "tabs": {
-    "installed": "Zainstalowane",
-    "available": "Dostępne"
-  },
+  "tabs": {},
   "buttons": {
     "install": "Zainstaluj edytor",
-    "installVersion": "Zainstaluj wersję",
-    "refresh": "Odśwież",
-    "uninstall": "Odinstaluj",
-    "openFolder": "Otwórz folder"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Szukaj"
   },
   "table": {
-    "name": "Nazwa",
-    "version": "Wersja",
-    "type": "Typ",
-    "size": "Rozmiar",
-    "published": "Opublikowano",
-    "actions": "Akcje",
-    "status": "Status"
+    "name": "Nazwa"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "wersja testowa"
-  },
-  "types": {
-    "stable": "Stabilna",
-    "beta": "Beta",
-    "dev": "Rozwojowa",
-    "mono": ".NET"
+    "prerelease": "wersja testowa",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "Instalowanie...",
-    "installed": "Zainstalowana",
-    "downloading": "Pobieranie...",
-    "unavailable": "Niedostępne"
+    "installing": "Instalowanie..."
   },
   "messages": {
-    "noReleases": "Brak jeszcze zainstalowanych wydań.",
-    "install": "Zainstaluj.",
     "noReleasesCta": "Brak jeszcze zainstalowanych wydań. <Link>Zainstaluj</Link>",
-    "noInstalled": "Brak zainstalowanych wersji Godot",
-    "noAvailable": "Brak dostępnych wersji",
-    "installing": "Instalowanie...",
-    "downloadProgress": "Pobieranie: {{percent}}%",
-    "installSuccess": "Edytor został pomyślnie zainstalowany",
-    "uninstallSuccess": "Edytor odinstalowany",
-    "unavailableHint": "Ścieżka edytora jest niedostępna. Zamontuj urządzenie pamięci i spróbuj ponownie albo odinstaluj wydanie.",
     "revalidating": "Weryfikowanie zainstalowanych wydań...",
-    "revalidated": "Weryfikacja zakończona.",
     "revalidatedRelease": "{{version}} jest ponownie dostępne.",
     "revalidationFailed": "Weryfikacja nie powiodła się. Sprawdź urządzenie pamięci i spróbuj ponownie.",
     "revalidationStillMissing": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że {{path}} jest dostępne przed ponowną próbą.",
-    "revalidationStillMissingNoPath": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że urządzenie pamięci jest zamontowane przed ponowną próbą."
+    "revalidationStillMissingNoPath": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że urządzenie pamięci jest zamontowane przed ponowną próbą.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "Zainstaluj edytor Godot",
-    "selectVersion": "Wybierz wersję do zainstalowania",
-    "includeMonoVersion": "Uwzględnij wersję .NET",
-    "downloading": "Pobieranie...",
-    "extracting": "Wypakowywanie...",
-    "buttons": {
-      "install": "Zainstaluj",
-      "cancel": "Anuluj"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }

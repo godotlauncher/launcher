@@ -19,7 +19,15 @@ const projectsUtilsMocks = vi.hoisted(() => ({
     storeProjectsList: vi.fn(),
 }));
 
-vi.mock('./utils/releases.utils.js', () => releaseUtilsMocks);
+vi.mock('./utils/releases.utils.js', async () => {
+    const actual = await vi.importActual<
+        typeof import('./utils/releases.utils.js')
+    >('./utils/releases.utils.js');
+    return {
+        ...actual,
+        ...releaseUtilsMocks,
+    };
+});
 
 vi.mock('./utils/platform.utils.js', () => ({
     getDefaultDirs: vi.fn(() => ({
@@ -122,6 +130,61 @@ describe('checkAndUpdateReleases', () => {
 
         fs.rmSync(tempDir, { recursive: true, force: true });
     });
+
+    it('dedupes releases by version and mono after validation', async () => {
+        const tempDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-dedupe-'),
+        );
+        const validEditorPath = path.join(tempDir, 'Godot');
+        fs.mkdirSync(validEditorPath, { recursive: true });
+
+        const invalidRelease: InstalledRelease = {
+            version: '4.2.0',
+            version_number: 40200,
+            install_path: path.join(os.tmpdir(), 'launcher-old-install'),
+            editor_path: path.join(os.tmpdir(), 'launcher-old-editor'),
+            platform: 'darwin',
+            arch: 'arm64',
+            mono: false,
+            prerelease: false,
+            config_version: 5,
+            published_at: '2024-01-01T00:00:00Z',
+            valid: true,
+        };
+        const validRelease: InstalledRelease = {
+            ...invalidRelease,
+            install_path: tempDir,
+            editor_path: validEditorPath,
+        };
+        const dotNetRelease: InstalledRelease = {
+            ...validRelease,
+            mono: true,
+            install_path: path.join(tempDir, 'mono'),
+            editor_path: path.join(tempDir, 'Godot_mono'),
+        };
+        fs.mkdirSync(dotNetRelease.editor_path, { recursive: true });
+
+        vi.mocked(getStoredInstalledReleases).mockResolvedValueOnce([
+            invalidRelease,
+            validRelease,
+            dotNetRelease,
+        ]);
+        vi.mocked(saveStoredInstalledReleases).mockImplementation(
+            async (releases: InstalledRelease[]) => releases,
+        );
+
+        const result = await checkAndUpdateReleases();
+
+        expect(result).toHaveLength(2);
+        expect(
+            result.find((r) => r.version === '4.2.0' && !r.mono)?.editor_path,
+        ).toBe(validEditorPath);
+        expect(
+            result.find((r) => r.version === '4.2.0' && r.mono),
+        ).toBeDefined();
+
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
 });
 
 describe('checkProjectValid', () => {
@@ -172,10 +235,114 @@ describe('checkProjectValid', () => {
 
         expect(validatedProject.valid).toBe(false);
         expect(validatedProject.release.valid).toBe(false);
+        expect(validatedProject.invalid_reason).toBe('missing_editor');
         expect(validatedProject.release.version).toBe('4.2.0');
         expect(SetProjectEditorRelease).not.toHaveBeenCalled();
 
         fs.rmSync(projectDir, { recursive: true, force: true });
+    });
+
+    it('flags missing project file separately from a valid editor', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-missing-file-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-valid-'),
+        );
+
+        const project: ProjectDetails = {
+            name: 'Missing File Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.valid).toBe(false);
+        expect(validatedProject.release.valid).toBe(true);
+        expect(validatedProject.invalid_reason).toBe('missing_project_file');
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
+
+    it('clears stale invalid reason when project and editor are valid', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-valid-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-valid-'),
+        );
+
+        fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
+
+        const project: ProjectDetails = {
+            name: 'Recovered Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: false,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: false,
+            invalid_reason: 'missing_editor',
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.valid).toBe(true);
+        expect(validatedProject.release.valid).toBe(true);
+        expect(validatedProject.invalid_reason).toBeUndefined();
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
     });
 
     it('updates withGit flag based on .git directory presence', async () => {
@@ -224,6 +391,59 @@ describe('checkProjectValid', () => {
         const validatedProject = await checkProjectValid(project);
 
         expect(validatedProject.withGit).toBe(true);
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
+
+    it('does not repair missing launch path when passive validation disables repair', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-passive-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-passive-'),
+        );
+
+        fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
+
+        const project: ProjectDetails = {
+            name: 'Passive Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: path.join(projectDir, 'missing-Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project, {
+            repairMissingLaunchPath: false,
+        });
+
+        expect(validatedProject.valid).toBe(true);
+        expect(validatedProject.release.valid).toBe(true);
+        expect(SetProjectEditorRelease).not.toHaveBeenCalled();
 
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });

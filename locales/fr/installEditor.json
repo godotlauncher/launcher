@@ -5,8 +5,7 @@
   },
   "tabs": {
     "released": "Publiées",
-    "prerelease": "Préversion",
-    "installed": "Installées"
+    "prerelease": "Préversion"
   },
   "filters": {
     "showInstalledOnly": "Afficher uniquement les installées"
@@ -16,8 +15,6 @@
   },
   "errors": {
     "fetchError": "Une erreur s'est produite lors de la récupération des versions.",
-    "tryAgainLater": "Veuillez",
-    "tryAgain": "réessayer plus tard",
     "retryInline": "Veuillez réessayer. <Button>Réessayer</Button>",
     "noPlatformAsset": "Aucun fichier trouvé pour la plateforme",
     "invalidEditorVersion": "Version de l'éditeur invalide",
@@ -25,7 +22,8 @@
     "unsupportedFileExtension": "Extension de fichier non prise en charge"
   },
   "messages": {
-    "installError": "Quelque chose s'est mal passé lors de l'installation de la version"
+    "installError": "Quelque chose s'est mal passé lors de l'installation de la version",
+    "reinstallError": "Something went wrong when reinstalling release"
   },
   "table": {
     "headers": {
@@ -42,9 +40,10 @@
       "installed": "Installée - {{version}}",
       "installedGDScript": "Installée - {{version}} (GDScript)",
       "installedDotNet": "Installée - {{version}} .NET",
-      "download": "Télécharger {{version}}",
       "downloadGDScript": "Télécharger {{version}} (GDScript)",
-      "downloadDotNet": "Télécharger {{version}} .NET"
+      "downloadDotNet": "Télécharger {{version}} .NET",
+      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
+      "reinstallDotNet": "Reinstall {{version}} .NET"
     },
     "status": {
       "unavailable": "Indisponible"

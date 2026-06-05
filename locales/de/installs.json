@@ -1,71 +1,52 @@
 {
   "title": "Editor-Installationen",
-  "tabs": {
-    "installed": "Installiert",
-    "available": "Verfügbar"
-  },
+  "tabs": {},
   "buttons": {
     "install": "Editor installieren",
-    "installVersion": "Version installieren",
-    "refresh": "Aktualisieren",
-    "uninstall": "Deinstallieren",
-    "openFolder": "Ordner öffnen"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Suchen"
   },
   "table": {
-    "name": "Name",
-    "version": "Version",
-    "type": "Typ",
-    "size": "Größe",
-    "published": "Veröffentlicht",
-    "actions": "Aktionen",
-    "status": "Status"
+    "name": "Name"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "Vorabversion"
-  },
-  "types": {
-    "stable": "Stabil",
-    "beta": "Beta",
-    "dev": "Entwicklung",
-    "mono": ".NET"
+    "prerelease": "Vorabversion",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "Wird installiert...",
-    "installed": "Installiert",
-    "downloading": "Wird heruntergeladen...",
-    "unavailable": "Nicht verfügbar"
+    "installing": "Wird installiert..."
   },
   "messages": {
-    "noReleases": "Noch keine Releases installiert.",
-    "install": "Installieren.",
     "noReleasesCta": "Noch keine Releases installiert. <Link>Installieren</Link>",
-    "noInstalled": "Keine Godot-Versionen installiert",
-    "noAvailable": "Keine Versionen verfügbar",
-    "installing": "Wird installiert...",
-    "downloadProgress": "Wird heruntergeladen: {{percent}}%",
-    "installSuccess": "Editor erfolgreich installiert",
-    "uninstallSuccess": "Editor deinstalliert",
-    "unavailableHint": "Der Editor-Pfad ist nicht erreichbar. Binde das Speichermedium ein und versuche es erneut oder deinstalliere die Version.",
     "revalidating": "Installierte Releases werden überprüft...",
-    "revalidated": "Überprüfung abgeschlossen.",
     "revalidatedRelease": "{{version}} ist wieder verfügbar.",
     "revalidationFailed": "Überprüfung fehlgeschlagen. Prüfe das Speichermedium und versuche es erneut.",
     "revalidationStillMissing": "Die Überprüfung ist abgeschlossen, aber {{version}} ist weiterhin nicht verfügbar. Stelle sicher, dass {{path}} zugänglich ist, bevor du es erneut versuchst.",
-    "revalidationStillMissingNoPath": "Die Überprüfung ist abgeschlossen, aber {{version}} ist weiterhin nicht verfügbar. Stelle sicher, dass das Speichermedium eingehängt ist, bevor du es erneut versuchst."
+    "revalidationStillMissingNoPath": "Die Überprüfung ist abgeschlossen, aber {{version}} ist weiterhin nicht verfügbar. Stelle sicher, dass das Speichermedium eingehängt ist, bevor du es erneut versuchst.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "Godot Editor installieren",
-    "selectVersion": "Wählen Sie eine Version zum Installieren aus",
-    "includeMonoVersion": ".NET-Version einschließen",
-    "downloading": "Wird heruntergeladen...",
-    "extracting": "Wird entpackt...",
-    "buttons": {
-      "install": "Installieren",
-      "cancel": "Abbrechen"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }

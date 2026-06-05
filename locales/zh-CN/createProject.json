@@ -19,8 +19,6 @@
     "forwardPlus": "Forward Plus",
     "mobile": "移动",
     "compatible": "兼容",
-    "gles3": "GLES3",
-    "gles2": "GLES2",
     "forwardPlusFeatures": {
       "desktop": "仅支持桌面平台。",
       "advanced3d": "支持高级 3D 图形。",
@@ -59,7 +57,6 @@
     "create": "创建项目"
   },
   "errors": {
-    "projectExists": "项目 '{{name}}' 已存在",
     "invalidEditorVersion": "无效的编辑器版本：{{version}}",
     "failedProjectDefinition": "获取版本 {{version}} 的项目定义失败",
     "folderNotEmpty": "项目文件夹 '{{name}}' 已存在且非空，是否要添加现有项目？",

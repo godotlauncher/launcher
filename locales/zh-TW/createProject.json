@@ -19,8 +19,6 @@
     "forwardPlus": "Forward Plus",
     "mobile": "行動裝置",
     "compatible": "相容",
-    "gles3": "GLES3",
-    "gles2": "GLES2",
     "forwardPlusFeatures": {
       "desktop": "僅支援桌面平台。",
       "advanced3d": "提供進階 3D 圖形。",
@@ -59,7 +57,6 @@
     "create": "建立專案"
   },
   "errors": {
-    "projectExists": "專案 '{{name}}' 已存在",
     "invalidEditorVersion": "無效的編輯器版本：{{version}}",
     "failedProjectDefinition": "無法取得版本 {{version}} 的專案定義",
     "folderNotEmpty": "專案資料夾 '{{name}}' 已存在且非空，您是想新增現有專案嗎？",

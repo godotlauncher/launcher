@@ -59,70 +59,14 @@
       "successMessage": "發行清單已更新為最新建置。",
       "errorTitle": "無法重新整理快取",
       "errorMessage": "重新整理發行快取時發生問題，請稍後再試。"
-    },
-    "checkForUpdates": {
-      "title": "檢查更新",
-      "description": "當 Godot 啟動器啟動時自動檢查更新",
-      "enabled": "啟動時檢查更新"
     }
   },
   "general": {
     "language": {
       "label": "語言",
-      "title": "語言",
       "description": "選擇 Godot 啟動器的語言（不會更改 Godot 的語言）",
-      "system": "系統（自動偵測）",
-      "options": {
-        "system": "系統（自動偵測）"
-      }
-    },
-    "theme": {
-      "label": "主題",
-      "light": "淺色",
-      "dark": "深色",
-      "system": "系統"
-    },
-    "projectsLocation": {
-      "label": "預設專案位置",
-      "description": "新專案將建立於此"
-    },
-    "installLocation": {
-      "label": "Godot 安裝位置",
-      "description": "Godot 版本將安裝在此處"
-    },
-    "postLaunchAction": {
-      "label": "啟動專案後",
-      "none": "不執行任何操作",
-      "minimize": "最小化啟動器",
-      "closeToTray": "關閉到系統匣"
-    },
-    "autoCheckUpdates": {
-      "label": "自動檢查更新",
-      "description": "啟動時檢查 Godot 啟動器的更新"
-    },
-    "autoStart": {
-      "label": "隨系統啟動",
-      "description": "電腦啟動時啟動 Godot 啟動器"
-    },
-    "startInTray": {
-      "label": "啟動時最小化到系統匣",
-      "description": "啟動器以系統匣啟動"
+      "system": "系統（自動偵測）"
     }
-  },
-  "advanced": {
-    "confirmProjectRemove": {
-      "label": "移除專案前確認",
-      "description": "移除專案時顯示確認對話方塊"
-    },
-    "enableSymlinks": {
-      "label": "啟用符號連結（Windows）",
-      "description": "對編輯器設定使用符號連結"
-    }
-  },
-  "buttons": {
-    "save": "儲存設定",
-    "reset": "重設為預設值",
-    "openConfigFolder": "開啟設定資料夾"
   },
   "tools": {
     "overview": "當此索引標籤獲得焦點時，啟動器會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
@@ -163,9 +107,6 @@
     "betaChannel": "接收 Beta 更新",
     "betaChannelDescription": "從 GitHub 下載預發布版本；這些版本可能不如正式發布穩定。",
     "checkNow": "立即檢查更新",
-    "updateAvailable": "版本 {{version}} 可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
-    "updateReady": "有新版本可用，重新啟動 Godot 啟動器以安裝。 <Button>立即重新啟動</Button>",
-    "restartNow": "立即重新啟動。",
     "downloadNow": "下載更新",
     "skipVersion": "跳過此版本",
     "unskipVersion": "恢復已跳過的更新",
@@ -191,9 +132,5 @@
       "line1": "切回本機副本以避免提升提示。Godot 啟動器會將編輯器檔案複製到各專案中。",
       "line2": "現有符號連結會維持不變，直到其編輯器版本變更或重新安裝。"
     }
-  },
-  "messages": {
-    "saved": "設定已成功儲存",
-    "resetConfirm": "您確定要將所有設定重設為預設值嗎？"
   }
 }

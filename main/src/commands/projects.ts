@@ -6,6 +6,7 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { ProjectDetails } from '@shared';
+import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import { PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';
@@ -26,6 +27,7 @@ import {
 } from '../utils/godotProject.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
+import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import {
     getProjectsSnapshot,
     removeProjectFromList,
@@ -75,7 +77,6 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     const projectListPath = resolveProjectListPath();
 
     const prefs = await getUserPreferences();
-    const command = project.launch_path;
 
     let persistedProjects: ProjectDetails[] | null = null;
 
@@ -118,20 +119,34 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     }
 
     const projects = persistedProjects;
+    const storedProject = projects.find((p) => p.path === project.path);
+
+    if (storedProject) {
+        project = storedProject;
+        try {
+            await writeProjectLauncherConfig(
+                storedProject.path,
+                storedProject.release,
+                app.getVersion(),
+            );
+        } catch (error) {
+            logger.warn(
+                `Failed to write project launcher config for '${storedProject.name}'`,
+                error,
+            );
+        }
+    }
+
+    const command = project.launch_path;
 
     let editor: ChildProcess | ChildProcessByStdio<null, null, null> | null =
         null;
 
     // const stdio = ['ignore', 'inherit', 'inherit'];
 
-    if (process.platform === 'linux') {
-        // Linux, get the saved project as the tray does not update correctly
-        project = projects.find((p) => p.path === project.path) || project;
-    }
-
     if (process.platform === 'darwin') {
         // macOS
-        const options = ['-a', command, '--args', '--path', project.path, '-e'];
+        const options = [command, '--args', '--path', project.path, '-e'];
         if (project.open_windowed) {
             options.push('-w');
         }

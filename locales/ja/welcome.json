@@ -12,8 +12,6 @@
     "ready": "準備完了"
   },
   "navigation": {
-    "next": "次へ",
-    "previous": "前へ",
     "start": "開始",
     "nextMacOS": "次へ：MacOS",
     "nextWindows": "次へ：Windows",
@@ -21,12 +19,10 @@
     "nextCurrentSettings": "次へ：現在の設定",
     "nextSetLocations": "次へ：場所を設定",
     "nextCustomizeBehavior": "次へ：動作をカスタマイズ",
-    "nextWindowsSymlink": "次へ：Windowsシンボリックリンク",
     "nextReady": "次へ：準備完了",
     "backWelcome": "前へ：ようこそ",
     "backMacOS": "前へ：MacOS",
     "backWindows": "前へ：Windows",
-    "backLinux": "前へ：Linux",
     "backCurrentSettings": "前へ：現在の設定",
     "backSetLocations": "前へ：場所を設定",
     "backCustomizeBehavior": "前へ：動作をカスタマイズ"

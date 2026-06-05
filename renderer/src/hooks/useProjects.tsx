@@ -1,4 +1,5 @@
 import type {
+    AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CreateProjectResult,
@@ -18,7 +19,10 @@ import {
 interface ProjectsContext {
     projects: ProjectDetails[];
     loading: boolean;
-    addProject: (projectPath: string) => Promise<AddProjectToListResult>;
+    addProject: (
+        projectPath: string,
+        options?: AddProjectOptions,
+    ) => Promise<AddProjectToListResult>;
     setProjectEditor: (
         project: ProjectDetails,
         release: InstalledRelease,
@@ -27,7 +31,9 @@ interface ProjectsContext {
     showProjectMenu: (project: ProjectDetails) => Promise<void>;
     openProjectEditorFolder: (project: ProjectDetails) => Promise<void>;
     removeProject: (project: ProjectDetails) => Promise<void>;
-    launchProject: (project: ProjectDetails) => Promise<boolean>;
+    launchProject: (
+        project: ProjectDetails,
+    ) => Promise<ProjectDetails | undefined>;
     refreshProjects: () => Promise<void>;
     checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
     createProject: (
@@ -89,8 +95,14 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return result;
     };
 
-    const addProject = async (projectPath: string) => {
-        const addResult = await window.electron.addProject(projectPath);
+    const addProject = async (
+        projectPath: string,
+        options?: AddProjectOptions,
+    ) => {
+        const addResult = await window.electron.addProject(
+            projectPath,
+            options,
+        );
         if (addResult.success && addResult.projects) {
             setProjects(addResult.projects);
         }
@@ -132,7 +144,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             await window.electron.launchProject(project);
         }
 
-        return p?.valid ?? false;
+        return p;
     };
 
     const refreshProjects = async () => {

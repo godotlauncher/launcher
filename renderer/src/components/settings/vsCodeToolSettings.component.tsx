@@ -4,6 +4,7 @@ import { Folder, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../../hooks/usePreferences';
+import { WaitingForDialogOverlay } from '../waitingForDialogOverlay.component';
 
 type VSCodeToolSettingsProps = {
     tool?: CachedTool;
@@ -81,10 +82,9 @@ export const VSCodeToolSettings: React.FC<VSCodeToolSettingsProps> = ({
     return (
         <>
             {dialogOpen && (
-                <div className="absolute inset-0 z-10 w-full h-full bg-black/80 flex flex-col items-center justify-center">
-                    <p className="loading loading-infinity"></p>
-                    <p>{t('tools.vscode.waitingForDialog')}</p>
-                </div>
+                <WaitingForDialogOverlay
+                    message={t('tools.vscode.waitingForDialog')}
+                />
             )}
             <div className="flex flex-col gap-4">
                 <div>

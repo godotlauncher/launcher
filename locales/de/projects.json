@@ -2,12 +2,7 @@
   "title": "Projekte",
   "buttons": {
     "add": "Hinzufügen",
-    "newProject": "Neues Projekt",
-    "addProject": "Projekt hinzufügen",
-    "createProject": "Projekt erstellen",
-    "refresh": "Aktualisieren",
-    "launch": "Starten",
-    "changeEditor": "Editor wechseln"
+    "newProject": "Neues Projekt"
   },
   "search": {
     "placeholder": "Suchen"
@@ -16,20 +11,33 @@
     "name": "Name",
     "modified": "Geändert",
     "editor": "Editor",
-    "version": "Version",
-    "lastOpened": "Zuletzt geöffnet",
-    "actions": "Aktionen",
     "invalidProject": "Dieses Projekt ist ungültig, überprüfen Sie die Projekt- und Editorpfade!",
     "dotNetProject": "Dies ist ein .NET-Projekt",
     "vsCodeProject": "Visual Studio Code ist als externer Editor aktiviert",
     "prerelease": "Verwende eine Vorabversion des Godot-Editors",
     "windowedMode": "Dieses Projekt ist im Fenstermodus geöffnet",
-    "invalidRelease": "Editor nicht verfügbar",
-    "gitProject": "Projekt verwendet Git zur Versionsverwaltung"
+    "gitProject": "Projekt verwendet Git zur Versionsverwaltung",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location.",
+      "missingEditor": "Editor not found. Check the editor location."
+    }
   },
   "addProject": {
     "selectFile": "Projektdatei auswählen",
     "godotProject": "Godot-Projekt",
+    "editorResolution": {
+      "title": "Editor-Version erforderlich",
+      "message": "Dieses Projekt benötigt einen Editor, der nicht installiert ist.",
+      "version": "Version",
+      "channel": "Kanal",
+      "flavor": "Variante",
+      "baseVersion": "Basis",
+      "fallbackMessage": "Ein kompatibler installierter Editor kann als Ersatz verwendet werden.",
+      "editorActions": "Optionen",
+      "download": "{{version}} herunterladen",
+      "useFallback": "{{version}} verwenden",
+      "addMissing": "Mit fehlendem Editor hinzufügen"
+    },
     "errors": {
       "projectExists": "Projekt '{{path}}' existiert bereits",
       "invalidPath": "Ungültiger Projektpfad",
@@ -51,16 +59,7 @@
     }
   },
   "messages": {
-    "noProjects": "Keine Projekte gefunden",
-    "noReleases": "Keine Releases installiert.",
-    "goToInstalls": "Zu den Installationen gehen.",
     "noReleasesCta": "Noch keine Releases installiert. <Link>Zu den Installationen</Link>",
-    "projectAdded": "Projekt erfolgreich hinzugefügt",
-    "projectRemoved": "Projekt entfernt",
-    "editorChanged": "Editor erfolgreich gewechselt",
-    "invalidProject": "Dieses Projekt ist ungültig, überprüfen Sie die Projekt- und Editorpfade!",
-    "monoProject": "Dies ist ein .NET-Projekt",
-    "prereleaseVersion": "Verwende eine Vorabversion des Godot-Editors",
     "waitingForDialog": "Warten auf Dialog zum Hinzufügen des Projekts...",
     "needReleaseInstalled": "Sie benötigen mindestens eine installierte Version, um ein Projekt hinzuzufügen",
     "addProjectError": "Beim Hinzufügen des Projekts ist ein Fehler aufgetreten",
@@ -69,7 +68,15 @@
     "invalidReleaseEditor": "Der ausgewählte Editor ist nicht verfügbar. Binden Sie das Laufwerk ein oder installieren Sie die Version erneut.",
     "dropGodotFileOnly": "Bitte ziehen Sie eine project.godot-Datei hierher, um ein Projekt hinzuzufügen",
     "dropProjectHere": "project.godot-Datei hier ablegen, um Projekt hinzuzufügen",
-    "addingProjects": "Füge Projekte hinzu: {{current}}/{{total}}"
+    "addingProjects": "Füge Projekte hinzu: {{current}}/{{total}}",
+    "failedAddProject": "Failed to add project: {{error}}",
+    "dropProjectFilesHere": "Drop Godot project files here",
+    "dropProjectFilesHelpPrefix": "Drop one or more",
+    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "invalidReasons": {
+      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
+      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+    }
   },
   "changeEditor": {
     "errors": {
@@ -77,29 +84,6 @@
       "invalidEditorVersion": "Ungültige Editor-Version",
       "differentMajorVersion": "Es kann keine andere Hauptversion des Editors verwendet werden\nZum Schutz Ihres Projekts siehe offiziellen Migrationsleitfaden auf https://godotengine.org"
     }
-  },
-  "createProject": {
-    "title": "Neues Projekt",
-    "projectName": "Projektname",
-    "projectPath": "Projektpfad",
-    "selectVersion": "Godot-Version auswählen",
-    "renderer": "Renderer",
-    "editNow": "Jetzt bearbeiten",
-    "setupVSCode": "Visual Studio Code als Texteditor einrichten",
-    "vscodeNotInstalled": "Visual Studio Code ist auf diesem Computer nicht installiert",
-    "noVersionsInstalled": "Keine Godot-Versionen installiert",
-    "errors": {
-      "nameRequired": "Projektname ist erforderlich",
-      "pathRequired": "Projektpfad ist erforderlich",
-      "invalidPath": "Ungültiger Projektpfad"
-    }
-  },
-  "searchPlaceholder": "Projekte suchen...",
-  "editorSettings": {
-    "title": "Editor-Einstellungen",
-    "alreadyExists": "Editor-Einstellungen für {{version}} [.NET] sind bereits vorhanden und es wurden keine Änderungen vorgenommen, um Ihre Konfiguration zu schützen.",
-    "switchingToDotNet": "Wenn Sie von GDScript zu einer .NET-Version wechseln, können Sie den externen Editor manuell unter <strong>Editor-Einstellungen -> Dotnent</strong> konfigurieren (erweiterter Schalter: true).",
-    "readMore": "Mehr erfahren"
   },
   "initGit": {
     "errors": {

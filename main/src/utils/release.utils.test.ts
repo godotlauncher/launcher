@@ -556,7 +556,12 @@ suite('Releases Utils', () => {
             const result = await getStoredInstalledReleases();
 
             expect(result).toEqual(
-                mockReleases.map((release) => ({ ...release, valid: true })),
+                mockReleases.map((release) => ({
+                    ...release,
+                    base_version:
+                        release.version.match(/(\d+\.\d+)/)?.[1] ?? '0.0',
+                    valid: true,
+                })),
             );
         });
 
@@ -656,6 +661,8 @@ suite('Releases Utils', () => {
             expect(payload).toEqual(
                 releases.map((release) => ({
                     ...release,
+                    base_version:
+                        release.version.match(/(\d+\.\d+)/)?.[1] ?? '0.0',
                     valid: true,
                 })),
             );

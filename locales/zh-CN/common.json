@@ -2,19 +2,14 @@
   "buttons": {
     "ok": "确定",
     "cancel": "取消",
-    "close": "关闭",
-    "save": "保存",
-    "delete": "删除",
     "continue": "继续",
-    "skip": "跳过",
     "select": "选择",
     "retry": "重试",
     "remove": "删除",
     "copyPath": "复制路径",
-    "openPath": "打开路径"
+    "openPath": "打开路径",
+    "reinstall": "Reinstall"
   },
-  "loading": "加载中...",
-  "saving": "保存中...",
   "error": "错误",
   "success": "成功",
   "warning": "警告",
@@ -36,12 +31,6 @@
       "joinCommunity": "加入社区"
     },
     "update": {
-      "available": "可用，重启 Godot Launcher 以安装。",
-      "version": "版本 {{version}}",
-      "newVersion": "有新版本可用",
-      "restartNow": "立即重启。",
-      "bannerWithVersion": "版本 {{version}} 可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>",
-      "bannerNoVersion": "有新版本可用，重启 Godot Launcher 以安装。 <Button>立即重启</Button>",
       "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下载更新</DownloadButton> 或 <SkipButton>跳过此版本</SkipButton>",
       "availableNoVersion": "有新版本可用。<DownloadButton>下载更新</DownloadButton>",
       "readyWithVersion": "版本 {{version}} 已就绪，重新启动 Godot 启动器以安装。<RestartButton>立即重启</RestartButton>",

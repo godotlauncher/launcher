@@ -5,6 +5,7 @@ import type {
 } from '../app/index.js';
 import type { UserPreferences } from '../preferences/index.js';
 import type {
+    AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CreateProjectResult,
@@ -12,8 +13,10 @@ import type {
     RendererType,
 } from '../projects/index.js';
 import type {
+    AvailableReleasesResult,
     InstalledRelease,
     InstallReleaseResult,
+    RegisterCustomEngineResult,
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
@@ -35,11 +38,13 @@ export type ElectronRendererApi = {
         defaultPath: string,
         title: string,
         filters?: Electron.FileFilter[],
+        properties?: Electron.OpenDialogOptions['properties'],
     ) => Promise<Electron.OpenDialogReturnValue>;
     openDirectoryDialog: (
         defaultPath: string,
         title: string,
         filters?: Electron.FileFilter[],
+        properties?: Electron.OpenDialogOptions['properties'],
     ) => Promise<Electron.OpenDialogReturnValue>;
     openShellFolder: (pathToOpen: string) => Promise<void>;
 
@@ -51,14 +56,21 @@ export type ElectronRendererApi = {
     fileExists: (pathToCheck: string) => Promise<boolean>;
     ensureDirectory: (pathToCheck: string) => Promise<boolean>;
 
-    getAvailableReleases: () => Promise<ReleaseSummary[]>;
-    getAvailablePrereleases: () => Promise<ReleaseSummary[]>;
+    getAvailableReleases: () => Promise<AvailableReleasesResult>;
+    getAvailablePrereleases: () => Promise<AvailableReleasesResult>;
     getInstalledReleases: () => Promise<InstalledRelease[]>;
     installRelease: (
         release: ReleaseSummary,
         mono: boolean,
     ) => Promise<InstallReleaseResult>;
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
+    reinstallRelease: (
+        release: InstalledRelease,
+    ) => Promise<InstallReleaseResult>;
+    registerCustomEngine: (
+        manifestPath: string,
+        options?: { replaceExisting?: boolean },
+    ) => Promise<RegisterCustomEngineResult>;
 
     openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;
@@ -74,7 +86,10 @@ export type ElectronRendererApi = {
         overwriteProjectPath?: string,
     ) => Promise<CreateProjectResult>;
     removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
-    addProject: (path: string) => Promise<AddProjectToListResult>;
+    addProject: (
+        path: string,
+        options?: AddProjectOptions,
+    ) => Promise<AddProjectToListResult>;
     setProjectEditor: (
         project: ProjectDetails,
         release: InstalledRelease,

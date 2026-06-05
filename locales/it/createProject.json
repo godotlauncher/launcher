@@ -19,8 +19,6 @@
     "forwardPlus": "Forward Plus",
     "mobile": "Mobile",
     "compatible": "Compatibile",
-    "gles3": "GLES3",
-    "gles2": "GLES2",
     "forwardPlusFeatures": {
       "desktop": "Supporta solo le piattaforme desktop.",
       "advanced3d": "Offre grafica 3D avanzata.",
@@ -59,7 +57,6 @@
     "create": "Crea progetto"
   },
   "errors": {
-    "projectExists": "Il progetto '{{name}}' esiste già",
     "invalidEditorVersion": "Versione editor non valida: {{version}}",
     "failedProjectDefinition": "Impossibile ottenere la definizione del progetto per la versione: {{version}}",
     "folderNotEmpty": "La cartella del progetto '{{name}}' esiste già e non è vuota, volevi aggiungere un progetto esistente?",

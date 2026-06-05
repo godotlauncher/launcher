@@ -1,71 +1,52 @@
 {
   "title": "Editor Installs",
-  "tabs": {
-    "installed": "Installed",
-    "available": "Available"
-  },
+  "tabs": {},
   "buttons": {
     "install": "Install Editor",
-    "installVersion": "Install Version",
-    "refresh": "Refresh",
-    "uninstall": "Uninstall",
-    "openFolder": "Open Folder"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Search"
   },
   "table": {
-    "name": "Name",
-    "version": "Version",
-    "type": "Type",
-    "size": "Size",
-    "published": "Published",
-    "actions": "Actions",
-    "status": "Status"
+    "name": "Name"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "prerelease"
-  },
-  "types": {
-    "stable": "Stable",
-    "beta": "Beta",
-    "dev": "Development",
-    "mono": ".NET"
+    "prerelease": "prerelease",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "Installing...",
-    "installed": "Installed",
-    "downloading": "Downloading...",
-    "unavailable": "Unavailable"
+    "installing": "Installing..."
   },
   "messages": {
-    "noReleases": "No releases installed, yet.",
-    "install": "Install.",
     "noReleasesCta": "No releases installed yet. <Link>Install</Link>",
-    "noInstalled": "No Godot versions installed",
-    "noAvailable": "No versions available",
-    "installing": "Installing...",
-    "downloadProgress": "Downloading: {{percent}}%",
-    "installSuccess": "Editor installed successfully",
-    "uninstallSuccess": "Editor uninstalled",
-    "unavailableHint": "The editor path is not accessible. Mount the storage device and retry, or uninstall the release.",
     "revalidating": "Validating installed releases...",
-    "revalidated": "Validation complete.",
     "revalidatedRelease": "{{version}} is reachable again.",
     "revalidationFailed": "Validation failed. Check your storage device and try again.",
     "revalidationStillMissing": "Validation finished but {{version}} is still unavailable. Confirm {{path}} is accessible before retrying.",
-    "revalidationStillMissingNoPath": "Validation finished but {{version}} is still unavailable. Confirm the storage device is mounted before retrying."
+    "revalidationStillMissingNoPath": "Validation finished but {{version}} is still unavailable. Confirm the storage device is mounted before retrying.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "Install Godot Editor",
-    "selectVersion": "Select a version to install",
-    "includeMonoVersion": "Include .NET version",
-    "downloading": "Downloading...",
-    "extracting": "Extracting...",
-    "buttons": {
-      "install": "Install",
-      "cancel": "Cancel"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }

@@ -12,6 +12,7 @@ vi.mock('react-i18next', () => {
         'installEditor:table.tooltips.installed': 'Installed',
         'installEditor:table.tooltips.installedDotNet': 'Installed (.NET)',
         'common:buttons.retry': 'Retry',
+        'common:buttons.reinstall': 'Reinstall',
         'common:buttons.remove': 'Remove',
     };
 
@@ -54,6 +55,7 @@ describe('InstalledReleaseTable', () => {
                     },
                 ]}
                 onRetry={vi.fn()}
+                onReinstall={vi.fn()}
                 onRemove={vi.fn()}
                 loading={false}
             />,
@@ -61,7 +63,10 @@ describe('InstalledReleaseTable', () => {
 
         expect(html).toContain('Unavailable');
         expect(html).toContain('Retry');
+        expect(html).toContain('Reinstall');
         expect(html).toContain('Remove');
+        expect(html).toContain('btn-primary');
+        expect(html).toContain('btn-error');
     });
 
     it('does not show unavailable label for valid releases', () => {
@@ -69,6 +74,7 @@ describe('InstalledReleaseTable', () => {
             <InstalledReleaseTable
                 releases={[releaseDefaults]}
                 onRetry={vi.fn()}
+                onReinstall={vi.fn()}
                 onRemove={vi.fn()}
                 loading={false}
             />,
@@ -87,6 +93,7 @@ describe('InstalledReleaseTable', () => {
                     },
                 ]}
                 onRetry={vi.fn()}
+                onReinstall={vi.fn()}
                 onRemove={vi.fn()}
                 loading={true}
             />,

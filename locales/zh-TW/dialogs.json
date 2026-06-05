@@ -29,14 +29,17 @@
     "error": "錯誤",
     "errorMessage": "移除發行版本時發生錯誤。"
   },
-  "selectFolder": "選擇資料夾",
-  "selectFile": "選擇檔案",
   "error": {
-    "title": "錯誤",
-    "generic": "發生錯誤：{{message}}"
+    "title": "錯誤"
   },
   "preferencesError": {
     "title": "讀取偏好設定時發生錯誤",
     "message": "無法解析使用者偏好設定。將使用預設偏好設定。"
+  },
+  "removeCustomEditor": {
+    "menuLabel": "Remove Custom Editor",
+    "title": "Remove Custom Editor",
+    "message": "Remove custom editor \"{{name}}\" from the launcher?",
+    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
   }
 }

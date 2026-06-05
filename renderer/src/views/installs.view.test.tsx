@@ -42,6 +42,9 @@ vi.mock('../hooks/useRelease', () => {
             checkAllReleasesValid: vi.fn(() =>
                 Promise.resolve(installedReleases),
             ),
+            reinstallRelease: vi.fn(() =>
+                Promise.resolve({ success: true, version: '4.2.0' }),
+            ),
             removeRelease: vi.fn(),
             loading: true,
         }),
@@ -57,12 +60,16 @@ vi.mock('react-i18next', () => {
         'installs:status.installing': 'Installing...',
         'installs:status.unavailable': 'Unavailable',
         'installs:messages.unavailableHint':
-            'The editor path is not accessible. Mount the storage device and retry, or uninstall the release.',
+            'The editor path is not accessible. Mount the storage device and retry, or remove the release.',
+        'installs:messages.unavailableHintWithReinstall':
+            'The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.',
         'installs:badges.dotNet': '.NET',
         'installs:badges.prerelease': 'prerelease',
         'installs:messages.noReleasesCta': 'No releases installed yet.',
+        'installs:customEditor.waitingForDialog': 'Waiting for dialog...',
         'common:buttons.retry': 'Retry',
-        'installs:buttons.uninstall': 'Uninstall',
+        'common:buttons.reinstall': 'Reinstall',
+        'common:buttons.remove': 'Remove',
     };
 
     return {
@@ -80,13 +87,14 @@ vi.mock('react-i18next', () => {
 });
 
 describe('InstallsView', () => {
-    it('renders unavailable release guidance with retry/remove actions', () => {
+    it('renders unavailable release guidance with retry/reinstall/remove actions', () => {
         const html = renderToStaticMarkup(<InstallsView />);
 
-        expect(html).toContain('The editor path is not accessible');
+        expect(html).toContain('reinstall the editor');
         expect(html).toContain('Retry');
-        expect(html).toContain('Uninstall');
-        expect(html).toContain('disabled');
-        expect(html).toContain('loading-spinner');
+        expect(html).toContain('Reinstall');
+        expect(html).toContain('Remove');
+        expect(html).toContain('btn-primary');
+        expect(html).toContain('btn-error');
     });
 });

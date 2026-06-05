@@ -1,71 +1,52 @@
 {
   "title": "Installazzjonijiet tal-Editur",
-  "tabs": {
-    "installed": "Installati",
-    "available": "Disponibbli"
-  },
+  "tabs": {},
   "buttons": {
     "install": "Installa Editur",
-    "installVersion": "Installa Verżjoni",
-    "refresh": "Aġġorna",
-    "uninstall": "Żinstalla",
-    "openFolder": "Iftaħ Folder"
+    "addCustomEditor": "Add Custom Editor"
   },
   "search": {
     "placeholder": "Fittex"
   },
   "table": {
-    "name": "Isem",
-    "version": "Verżjoni",
-    "type": "Tip",
-    "size": "Daqs",
-    "published": "Ippubblikat",
-    "actions": "Azzjonijiet",
-    "status": "Stat"
+    "name": "Isem"
   },
   "badges": {
     "dotNet": ".NET",
-    "prerelease": "pre-rilaxx"
-  },
-  "types": {
-    "stable": "Stabbli",
-    "beta": "Beta",
-    "dev": "Żvilupp",
-    "mono": ".NET"
+    "prerelease": "pre-rilaxx",
+    "custom": "Custom"
   },
   "status": {
-    "installing": "Qed jinstalla...",
-    "installed": "Installat",
-    "downloading": "Qed jinżel...",
-    "unavailable": "Mhux disponibbli"
+    "installing": "Qed jinstalla..."
   },
   "messages": {
-    "noReleases": "Ebda releases installati, għadha.",
-    "install": "Installa.",
     "noReleasesCta": "Ebda releases installati għadha. <Link>Installa</Link>",
-    "noInstalled": "Ebda verżjonijiet ta' Godot installati",
-    "noAvailable": "Ebda verżjonijiet disponibbli",
-    "installing": "Qed jinstalla...",
-    "downloadProgress": "Qed jinżel: {{percent}}%",
-    "installSuccess": "Editur installat b'suċċess",
-    "uninstallSuccess": "Editur żinstallat",
-    "unavailableHint": "Il-perkors tal-editur mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa' pprova, jew neħħi r-rilaxx.",
     "revalidating": "Validazzjoni tar-rilaxxi installati...",
-    "revalidated": "Validazzjoni lesta.",
     "revalidatedRelease": "{{version}} issa hija disponibbli mill-ġdid.",
     "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova.",
     "revalidationStillMissing": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Iċċekkja li {{path}} hu aċċessibbli qabel terġa' tipprova.",
-    "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova."
+    "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova.",
+    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
+    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "registeredCustomEditor": "Registered custom editor {{name}}.",
+    "registerCustomEditorFailed": "Failed to register custom editor.",
+    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
   },
-  "install": {
-    "title": "Installa Editur Godot",
-    "selectVersion": "Agħżel verżjoni biex tinstalla",
-    "includeMonoVersion": "Inkludi verżjoni .NET",
-    "downloading": "Qed jinżel...",
-    "extracting": "Qed jestratti...",
-    "buttons": {
-      "install": "Installa",
-      "cancel": "Ikkanċella"
+  "customEditor": {
+    "selectManifestTitle": "Add Custom Editor Manifest",
+    "manifestFilterName": "Godot Launcher Editor Manifest",
+    "waitingForDialog": "Waiting for dialog...",
+    "replace": {
+      "title": "Replace custom editor?",
+      "message": "A custom editor with this version is already registered.",
+      "versionLabel": "Version",
+      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+    },
+    "drop": {
+      "title": "Drop manifest to add custom editor",
+      "unsupportedTitle": "Unsupported manifest file",
+      "helperPrefix": "Drop a",
+      "helperSuffix": "file."
     }
   }
 }
