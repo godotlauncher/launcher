@@ -15,7 +15,6 @@ import type {
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
-    ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type { CachedTool, InstalledTool } from '../tools/index.js';

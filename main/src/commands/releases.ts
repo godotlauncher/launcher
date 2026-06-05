@@ -30,7 +30,6 @@ export async function getAvailableReleases(): Promise<AvailableReleasesResult> {
 
     if (releases.lastUpdated + CACHE_LENGTH < Date.now()) {
         try {
-
             const newReleases = await getReleases(
                 'RELEASES',
                 releases.lastPublishDate,
