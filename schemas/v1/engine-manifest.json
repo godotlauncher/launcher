@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/godotlauncher/launcher/refs/heads/release/1.10/schemas/engine-manifest.json",
+  "$id": "https://raw.githubusercontent.com/godotlauncher/launcher/main/schemas/v1/engine-manifest.json",
   "title": "Godot Launcher Custom Editor Manifest",
   "type": "object",
   "additionalProperties": false,
@@ -9,7 +9,7 @@
     "version",
     "name",
     "base_version",
-    "mono",
+    "flavor",
     "config_version",
     "platforms"
   ],
@@ -36,8 +36,15 @@
       "type": "boolean",
       "default": false
     },
+    "flavor": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
     "mono": {
-      "type": "boolean"
+      "type": "boolean",
+      "deprecated": true,
+      "description": "Deprecated compatibility field. The launcher derives mono/.NET behavior from flavor === \"dotnet\"."
     },
     "config_version": {
       "enum": [4, 5]
