@@ -41,6 +41,13 @@ const projectUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
 
+vi.mock('../utils/releases.utils.js', () => ({
+    hasSameInstalledReleaseIdentity: (
+        first: InstalledRelease,
+        second: InstalledRelease,
+    ) => first.version === second.version && first.mono === second.mono,
+}));
+
 vi.mock('electron-log', () => ({
     default: {
         info: vi.fn(),
