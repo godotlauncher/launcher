@@ -18,14 +18,13 @@ import { setProjectEditor } from './setProjectEditor.js';
 async function getReleaseSummary(
     release: InstalledRelease,
 ): Promise<ReleaseSummary | undefined> {
-    const [availableReleases, availablePrereleases] = await Promise.all([
-        getAvailableReleases(),
-        getAvailablePrereleases(),
-    ]);
+    const [availableReleasesResult, availablePrereleasesResult] =
+        await Promise.all([getAvailableReleases(), getAvailablePrereleases()]);
 
-    return [...availableReleases, ...availablePrereleases].find(
-        (candidate) => candidate.version === release.version,
-    );
+    return [
+        ...availableReleasesResult.releases,
+        ...availablePrereleasesResult.releases,
+    ].find((candidate) => candidate.version === release.version);
 }
 
 function projectUsesRelease(

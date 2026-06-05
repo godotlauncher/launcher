@@ -11,6 +11,7 @@ import type {
     ProjectDetails,
 } from '../projects/index.js';
 import type {
+    AvailableReleasesResult,
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
@@ -47,8 +48,8 @@ export type EventChannelMapping = {
     'skip-app-update': Promise<string>;
     'unskip-app-update': Promise<void>;
 
-    'get-available-releases': Promise<ReleaseSummary[]>;
-    'get-available-prereleases': Promise<ReleaseSummary[]>;
+    'get-available-releases': Promise<AvailableReleasesResult>;
+    'get-available-prereleases': Promise<AvailableReleasesResult>;
     'get-installed-releases': Promise<InstalledRelease[]>;
     'install-release': Promise<InstallReleaseResult>;
     'remove-release': Promise<RemovedReleaseResult>;

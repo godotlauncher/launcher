@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { InstalledRelease, ReleaseSummary } from '@shared';
+import type { AvailableReleasesResult, InstalledRelease } from '@shared';
 import logger from 'electron-log';
 import { CACHE_LENGTH, MIN_VERSION } from '../constants.js';
 import { getReleases } from '../utils/github.utils.js';
@@ -18,60 +18,83 @@ export async function getInstalledReleases(): Promise<InstalledRelease[]> {
     return getStoredInstalledReleases();
 }
 
-export async function getAvailableReleases(): Promise<ReleaseSummary[]> {
+function getRefreshErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
+export async function getAvailableReleases(): Promise<AvailableReleasesResult> {
     const { releaseCachePath } = getDefaultDirs();
 
     let releases = await getStoredAvailableReleases(releaseCachePath);
+    let refreshError: string | undefined;
 
     if (releases.lastUpdated + CACHE_LENGTH < Date.now()) {
-        const newReleases = await getReleases(
-            'RELEASES',
-            releases.lastPublishDate,
-            MIN_VERSION,
-            1,
-            100,
-        );
+        try {
 
-        const allReleases = newReleases.releases
-            .concat(releases.releases)
-            .sort(sortByPublishDate);
+            const newReleases = await getReleases(
+                'RELEASES',
+                releases.lastPublishDate,
+                MIN_VERSION,
+                1,
+                100,
+            );
 
-        releases = await storeAvailableReleases(
-            releaseCachePath,
-            newReleases.lastPublishDate,
-            allReleases,
-        );
+            const allReleases = newReleases.releases
+                .concat(releases.releases)
+                .sort(sortByPublishDate);
+
+            releases = await storeAvailableReleases(
+                releaseCachePath,
+                newReleases.lastPublishDate,
+                allReleases,
+            );
+        } catch (error) {
+            logger.error(
+                'Failed to refresh available releases, using cached releases',
+                error,
+            );
+            refreshError = getRefreshErrorMessage(error);
+        }
     }
 
-    return releases.releases;
+    return { releases: releases.releases, refreshError };
 }
 
-export async function getAvailablePrereleases(): Promise<ReleaseSummary[]> {
+export async function getAvailablePrereleases(): Promise<AvailableReleasesResult> {
     const { prereleaseCachePath } = getDefaultDirs();
 
     let releases = await getStoredAvailableReleases(prereleaseCachePath);
+    let refreshError: string | undefined;
 
     if (releases.lastUpdated + CACHE_LENGTH < Date.now()) {
-        const newReleases = await getReleases(
-            'BUILDS',
-            releases.lastPublishDate,
-            MIN_VERSION,
-            1,
-            100,
-        );
+        try {
+            const newReleases = await getReleases(
+                'BUILDS',
+                releases.lastPublishDate,
+                MIN_VERSION,
+                1,
+                100,
+            );
 
-        const allReleases = newReleases.releases
-            .concat(releases.releases)
-            .sort(sortByPublishDate);
+            const allReleases = newReleases.releases
+                .concat(releases.releases)
+                .sort(sortByPublishDate);
 
-        releases = await storeAvailableReleases(
-            prereleaseCachePath,
-            newReleases.lastPublishDate,
-            allReleases,
-        );
+            releases = await storeAvailableReleases(
+                prereleaseCachePath,
+                newReleases.lastPublishDate,
+                allReleases,
+            );
+        } catch (error) {
+            logger.error(
+                'Failed to refresh available prereleases, using cached releases',
+                error,
+            );
+            refreshError = getRefreshErrorMessage(error);
+        }
     }
 
-    return releases.releases;
+    return { releases: releases.releases, refreshError };
 }
 
 async function removeCacheIfExists(cachePath: string): Promise<void> {

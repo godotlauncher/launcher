@@ -5,6 +5,11 @@ export type PublishedReleases = {
     lastPublishDate: Date;
 };
 
+export type AvailableReleasesResult = {
+    releases: ReleaseSummary[];
+    refreshError?: string;
+};
+
 export type ReleaseSummary = {
     version: string;
     version_number: number;

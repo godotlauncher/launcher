@@ -13,6 +13,7 @@ import type {
     RendererType,
 } from '../projects/index.js';
 import type {
+    AvailableReleasesResult,
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
@@ -55,8 +56,8 @@ export type ElectronRendererApi = {
     fileExists: (pathToCheck: string) => Promise<boolean>;
     ensureDirectory: (pathToCheck: string) => Promise<boolean>;
 
-    getAvailableReleases: () => Promise<ReleaseSummary[]>;
-    getAvailablePrereleases: () => Promise<ReleaseSummary[]>;
+    getAvailableReleases: () => Promise<AvailableReleasesResult>;
+    getAvailablePrereleases: () => Promise<AvailableReleasesResult>;
     getInstalledReleases: () => Promise<InstalledRelease[]>;
     installRelease: (
         release: ReleaseSummary,

@@ -1,8 +1,8 @@
 import type { InstalledRelease, ReleaseSummary } from '@shared';
 import clsx from 'clsx';
 import { CircleX, HardDrive, RefreshCcw, X } from 'lucide-react';
-import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InstalledReleaseTable } from '../../components/installedReleasesTable';
 import { InstallReleaseTable } from '../../components/installReleaseTable';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -37,6 +37,21 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
     } = useRelease();
 
     const { addAlert } = useAlerts();
+    const lastShownRefreshError = useRef<string | undefined>(undefined);
+
+    useEffect(() => {
+        if (!hasError) {
+            lastShownRefreshError.current = undefined;
+            return;
+        }
+
+        if (lastShownRefreshError.current === hasError) {
+            return;
+        }
+
+        lastShownRefreshError.current = hasError;
+        addAlert(t('errors.fetchError'), hasError);
+    }, [addAlert, hasError, t]);
 
     const installReleaseRequest = async (
         release: ReleaseSummary,
@@ -314,30 +329,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
                         {loading && (
                             <span className="loading loading-dots loading-sm"></span>
                         )}
-                        {hasError && (
-                            <div>
-                                <div>{t('errors.fetchError')}</div>
-                                <div>{hasError}</div>
-                                <div>
-                                    <Trans
-                                        ns="installEditor"
-                                        i18nKey="errors.retryInline"
-                                        components={{
-                                            Button: (
-                                                <button
-                                                    type="button"
-                                                    className="underline cursor-pointer hover:no-underline"
-                                                    onClick={async () =>
-                                                        await refreshAvailableReleases()
-                                                    }
-                                                />
-                                            ),
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        )}
-                        {!hasError && !loading && (
+                        {!loading && (
                             <div className="overflow-x-hidden overflow-y-auto">
                                 {tab !== 'INSTALLED' ? (
                                     <InstallReleaseTable

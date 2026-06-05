@@ -127,8 +127,12 @@ describe('reinstallRelease', () => {
             success: true,
             projects: [],
         });
-        releasesCommandMocks.getAvailableReleases.mockResolvedValue([]);
-        releasesCommandMocks.getAvailablePrereleases.mockResolvedValue([]);
+        releasesCommandMocks.getAvailableReleases.mockResolvedValue({
+            releases: [],
+        });
+        releasesCommandMocks.getAvailablePrereleases.mockResolvedValue({
+            releases: [],
+        });
     });
 
     it('skips download when validation finds a valid replacement', async () => {
@@ -148,9 +152,9 @@ describe('reinstallRelease', () => {
 
     it('installs matching release metadata and repairs projects', async () => {
         checksMocks.checkAndUpdateReleases.mockResolvedValue([invalidRelease]);
-        releasesCommandMocks.getAvailableReleases.mockResolvedValue([
-            releaseSummary,
-        ]);
+        releasesCommandMocks.getAvailableReleases.mockResolvedValue({
+            releases: [releaseSummary],
+        });
         installReleaseMocks.installRelease.mockResolvedValue({
             success: true,
             version: validRelease.version,

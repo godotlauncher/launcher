@@ -1,4 +1,5 @@
 import type {
+    AvailableReleasesResult,
     InstalledRelease,
     InstallReleaseResult,
     ReleaseSummary,
@@ -86,16 +87,26 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     >([]);
     const [loading, setLoading] = React.useState<boolean>(true);
 
+    const getRefreshError = (
+        ...results: AvailableReleasesResult[]
+    ): string | undefined => {
+        return results.find((result) => result.refreshError)?.refreshError;
+    };
+
     const updateAllReleases = () => {
         setLoading(true);
         setHasError(undefined);
         Promise.all([
-            window.electron.getAvailableReleases().then(setAvailableReleases),
-            window.electron
-                .getAvailablePrereleases()
-                .then(setAvailablePrereleases),
-            window.electron.getInstalledReleases().then(setInstalledReleases),
+            window.electron.getAvailableReleases(),
+            window.electron.getAvailablePrereleases(),
+            window.electron.getInstalledReleases(),
         ])
+            .then(([releasesResult, prereleasesResult, installed]) => {
+                setAvailableReleases(releasesResult.releases);
+                setAvailablePrereleases(prereleasesResult.releases);
+                setInstalledReleases(installed);
+                setHasError(getRefreshError(releasesResult, prereleasesResult));
+            })
             .catch((e) => setHasError(e.message))
             .finally(() => setLoading(false));
     };
@@ -207,9 +218,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             setLoading(true);
 
             Promise.all([
-                window.electron
-                    .getAvailableReleases()
-                    .then(setAvailableReleases),
+                window.electron.getAvailableReleases().then((result) => {
+                    setAvailableReleases(result.releases);
+                    if (result.refreshError) {
+                        setHasError(result.refreshError);
+                    }
+                }),
                 window.electron
                     .getInstalledReleases()
                     .then(setInstalledReleases),
@@ -237,9 +251,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 setLoading(true);
 
                 Promise.all([
-                    window.electron
-                        .getAvailableReleases()
-                        .then(setAvailableReleases),
+                    window.electron.getAvailableReleases().then((result) => {
+                        setAvailableReleases(result.releases);
+                        if (result.refreshError) {
+                            setHasError(result.refreshError);
+                        }
+                    }),
                     window.electron
                         .getInstalledReleases()
                         .then(setInstalledReleases),
