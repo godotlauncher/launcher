@@ -20,6 +20,7 @@ export default defineConfig({
     },
     test: {
         watch: false,
+        setupFiles: ['./vitest.setup.ts'],
         onConsoleLog(log, type) {
             const method = type === 'stderr' ? 'error' : 'log';
             console[method](log);

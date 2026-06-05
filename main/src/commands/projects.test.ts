@@ -124,6 +124,12 @@ const mainMocks = vi.hoisted(() => ({
 
 vi.mock('../mainWindow.js', () => mainMocks);
 
+const trayHelperMocks = vi.hoisted(() => ({
+    updateLinuxTray: vi.fn(),
+}));
+
+vi.mock('../helpers/tray.helper.js', () => trayHelperMocks);
+
 vi.mock('../i18n/index.js', () => ({
     t: (key: string) => key,
 }));
