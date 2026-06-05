@@ -268,11 +268,6 @@ export class ElectronApp implements OnModuleInit {
             willClose = false;
         });
 
-        mainWindow.on('hide', () => {
-            logger.debug('Window hidden, hiding dock icon');
-            this.hideDockIcon();
-        });
-
         mainWindow.on('closed', () => {
             this.disposeFocusRevalidation?.();
             this.disposeFocusRevalidation = undefined;
