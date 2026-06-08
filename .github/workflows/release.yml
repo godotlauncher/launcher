@@ -124,11 +124,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            distCommand: npm run dist:mac -- --publish onTag
+            distCommand: npm run dist:mac -- --publish onTagOrDraft
           - os: ubuntu-latest
-            distCommand: npm run dist:linux -- --publish onTag
+            distCommand: npm run dist:linux -- --publish onTagOrDraft
           - os: windows-latest
-            distCommand: npm run dist:win -- --publish onTag
+            distCommand: npm run dist:win -- --publish onTagOrDraft
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -215,7 +215,7 @@ jobs:
           git push origin :refs/tags/$TAG || true
 
           if command -v gh >/dev/null 2>&1; then
-            release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/$TAG" --jq '.id' 2>/dev/null || true)
+            release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate --jq ".[] | select(.tag_name == \"$TAG\") | .id" 2>/dev/null | head -n 1 || true)
             if [ -n "$release_id" ]; then
               echo "Deleting GitHub release $TAG (id: $release_id)"
               gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/$release_id" || true
