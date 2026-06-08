@@ -99,17 +99,17 @@ export default (<Configuration>{
     win: {
         icon: 'build-resources/win/icon.ico',
 
-        azureSignOptions: {
-            publisherName: process.env.WIN_SIGN_PUBLISHER_NAME,
-            endpoint: process.env.WIN_SIGN_ENDPOINT,
-            certificateProfileName:
-                process.env.WIN_SIGN_CERTIFICATE_PROFILE_NAME,
-            codeSigningAccountName:
-                process.env.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME,
-            timestampRfc3161: process.env.AZURE_TIMESTAMP_URL,
-            timestampDigest: process.env.AZURE_TIMESTAMP_DIGEST,
-            fileDigest: 'SHA256',
-        },
+        // azureSignOptions: {
+        //     publisherName: process.env.WIN_SIGN_PUBLISHER_NAME,
+        //     endpoint: process.env.WIN_SIGN_ENDPOINT,
+        //     certificateProfileName:
+        //         process.env.WIN_SIGN_CERTIFICATE_PROFILE_NAME,
+        //     codeSigningAccountName:
+        //         process.env.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME,
+        //     timestampRfc3161: process.env.AZURE_TIMESTAMP_URL,
+        //     timestampDigest: process.env.AZURE_TIMESTAMP_DIGEST,
+        //     fileDigest: 'SHA256',
+        // },
 
         target: [
             {
