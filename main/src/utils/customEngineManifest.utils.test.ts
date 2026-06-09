@@ -109,9 +109,9 @@ describe('parseCustomEngineManifest', () => {
             JSON.stringify({ ...manifest, name: undefined }),
         );
 
-        await expect(
-            parseCustomEngineManifest(manifestPath),
-        ).rejects.toThrow('Invalid custom editor manifest');
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'Invalid custom editor manifest',
+        );
     });
 
     it('fails when flavor is missing or empty', async () => {
@@ -119,17 +119,17 @@ describe('parseCustomEngineManifest', () => {
             JSON.stringify({ ...manifest, flavor: undefined }),
         );
 
-        await expect(
-            parseCustomEngineManifest(manifestPath),
-        ).rejects.toThrow('Invalid custom editor manifest');
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'Invalid custom editor manifest',
+        );
 
         fsMocks.readFile.mockResolvedValue(
             JSON.stringify({ ...manifest, flavor: '' }),
         );
 
-        await expect(
-            parseCustomEngineManifest(manifestPath),
-        ).rejects.toThrow('Invalid custom editor manifest');
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'Invalid custom editor manifest',
+        );
     });
 
     it('fails when no platform entry matches the current platform', async () => {
@@ -146,16 +146,16 @@ describe('parseCustomEngineManifest', () => {
             }),
         );
 
-        await expect(
-            parseCustomEngineManifest(manifestPath),
-        ).rejects.toThrow('does not include a compatible platform');
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'does not include a compatible platform',
+        );
     });
 
     it('fails when the resolved editor path does not exist', async () => {
         fsMocks.existsSync.mockReturnValue(false);
 
-        await expect(
-            parseCustomEngineManifest(manifestPath),
-        ).rejects.toThrow(editorPath);
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            editorPath,
+        );
     });
 });

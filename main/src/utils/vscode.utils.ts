@@ -101,14 +101,6 @@ function updateJSONCProperty(
     );
 }
 
-function updateJSONCProperties(text: string, values: JSONObject): string {
-    return Object.entries(values).reduce(
-        (updatedText, [key, value]) =>
-            updateJSONCProperty(updatedText, [key], value),
-        text,
-    );
-}
-
 function valuesEqual(left: unknown, right: unknown): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
 }
@@ -182,7 +174,7 @@ function createVSCodeSettings(
         'files.eol': '\n',
         'files.exclude': {
             '**/*.gd.uid': true,
-            '**/*.cs.uid': true
+            '**/*.cs.uid': true,
         },
     };
 }

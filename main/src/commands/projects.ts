@@ -423,7 +423,6 @@ export async function setProjectVSCode(
                     );
                 }
             }
-
         } else if (
             targetProject.editor_settings_file &&
             fs.existsSync(targetProject.editor_settings_file)
