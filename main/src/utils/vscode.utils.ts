@@ -194,7 +194,6 @@ function createVSCodeExtensions(isMono: boolean): {
         recommendations: [
             'geequlim.godot-tools',
             'mariodebono.godot-4-vscode-theme',
-            'eamodio.gitlens',
         ],
     };
 

@@ -163,6 +163,10 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         expect(writeCall).toBeDefined();
         const payload = JSON.parse(writeCall?.[1] as string);
         expect(payload.recommendations).toContain('geequlim.godot-tools');
+        expect(payload.recommendations).toContain(
+            'mariodebono.godot-4-vscode-theme',
+        );
+        expect(payload.recommendations).not.toContain('eamodio.gitlens');
         expect(payload.recommendations).not.toContain('ms-dotnettools.csharp');
     });
 
@@ -280,8 +284,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.promises.readFile).mockResolvedValue(`{
     "recommendations": [
         "geequlim.godot-tools",
-        "mariodebono.godot-4-vscode-theme",
-        "eamodio.gitlens", //this comment
+        "mariodebono.godot-4-vscode-theme", //this comment
     ]
 }`);
 
@@ -299,8 +302,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.promises.readFile).mockResolvedValue(`{
     "recommendations": [
         "geequlim.godot-tools",
-        "mariodebono.godot-4-vscode-theme",
-        "eamodio.gitlens", //this comment
+        "mariodebono.godot-4-vscode-theme", //this comment
     ]
 }`);
 
@@ -322,10 +324,10 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
             expect.arrayContaining([
                 'geequlim.godot-tools',
                 'mariodebono.godot-4-vscode-theme',
-                'eamodio.gitlens',
                 'ms-dotnettools.csharp',
             ]),
         );
+        expect(payload.recommendations).not.toContain('eamodio.gitlens');
     });
 
     test('backs up extensions.json with invalid recommendations shape', async () => {
