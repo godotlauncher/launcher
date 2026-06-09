@@ -68,7 +68,8 @@
     "invalidReasons": {
       "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
       "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+    },
+    "recoveredVSCodeConfig": "Algunos archivos de configuración de VS Code no eran válidos. Godot Launcher los volvió a crear y conservó los originales como copias .bad."
   },
   "changeEditor": {
     "errors": {

@@ -18,6 +18,12 @@ import { openProjectManager } from './releases.js';
 import { removeRelease } from './removeRelease.js';
 import { getUserPreferences, setUserPreferences } from './userPreferences.js';
 
+function formatRecoveredVSCodeConfigWarning(recoveredFiles: string[]): string {
+    return `${t('projects:messages.recoveredVSCodeConfig')}\n\n${recoveredFiles
+        .map((file) => `- ${file}`)
+        .join('\n')}`;
+}
+
 export async function showProjectMenu(project: ProjectDetails): Promise<void> {
     const mainWindow = getMainWindow();
 
@@ -80,10 +86,25 @@ export async function showProjectMenu(project: ProjectDetails): Promise<void> {
             enabled: project.valid && hasVSCode,
             click: async () => {
                 try {
-                    project = await setProjectVSCode(
+                    const updatedProject = await setProjectVSCode(
                         project,
                         !project.withVSCode,
                     );
+                    project = updatedProject;
+                    if (
+                        updatedProject.recoveredVSCodeConfigFiles &&
+                        updatedProject.recoveredVSCodeConfigFiles.length > 0
+                    ) {
+                        await dialog.showMessageBox(mainWindow, {
+                            type: 'warning',
+                            buttons: [t('common:buttons.ok')],
+                            title: t('common:warning'),
+                            message: t('common:warning'),
+                            detail: formatRecoveredVSCodeConfigWarning(
+                                updatedProject.recoveredVSCodeConfigFiles,
+                            ),
+                        });
+                    }
                 } catch (error) {
                     const message =
                         error instanceof Error ? error.message : String(error);

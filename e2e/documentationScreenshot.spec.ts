@@ -196,6 +196,42 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_vscode_config_recovered',
+        description: 'Add Project recovered VS Code config warning',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await stubAddProjectRecoveredVSCodeConfig(electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectAdd').click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: 'Warning',
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByText('.vscode/extensions.json'),
+            ).toBeVisible();
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const okButton = page.getByTestId('btnAlertOk');
+            if (await okButton.isVisible().catch(() => false)) {
+                await okButton.click();
+            }
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project',
         description: 'New Project view',
         navigate: async (
@@ -1303,13 +1339,13 @@ async function stubAppData(
             ipcMain.removeHandler('get-available-releases');
             ipcMain.handle(
                 'get-available-releases',
-                async () => injectedAvailableReleases,
+                async () => ({ releases: injectedAvailableReleases }),
             );
 
             ipcMain.removeHandler('get-available-prereleases');
             ipcMain.handle(
                 'get-available-prereleases',
-                async () => injectedAvailablePrereleases,
+                async () => ({ releases: injectedAvailablePrereleases }),
             );
 
             for (const win of BrowserWindow.getAllWindows()) {
@@ -1678,6 +1714,78 @@ async function stubAddProjectEditorResolution(
             projectPath:
                 '/Users/docs/Godot/Projects/imported-missing-editor/project.godot',
         },
+    );
+}
+
+async function stubAddProjectRecoveredVSCodeConfig(
+    electronApp: ElectronApplication,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain, BrowserWindow }, projectPath: string) => {
+            ipcMain.removeHandler('open-file-dialog');
+            ipcMain.handle('open-file-dialog', async () => ({
+                canceled: false,
+                filePaths: [projectPath],
+                bookmarks: [],
+            }));
+
+            ipcMain.removeHandler('add-project');
+            ipcMain.handle('add-project', async () => {
+                const projectDirectory = projectPath.replace(
+                    /\/project\.godot$/i,
+                    '',
+                );
+                const newProject: ProjectDetails = {
+                    name: 'Recovered-VSCode-Config',
+                    path: projectDirectory,
+                    version: '4.4.1-stable',
+                    version_number: 4.4,
+                    renderer: 'FORWARD_PLUS',
+                    editor_settings_path: `${projectDirectory}/.godot`,
+                    editor_settings_file: `${projectDirectory}/.godot/editor_settings-4.4.tres`,
+                    last_opened: null,
+                    open_windowed: false,
+                    release: {
+                        version: '4.4.1-stable',
+                        version_number: 4.4,
+                        install_path: '/Applications/Godot_4.4.1',
+                        editor_path:
+                            '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
+                        platform: 'darwin',
+                        arch: 'universal',
+                        mono: false,
+                        prerelease: false,
+                        config_version: 5,
+                        published_at: '2025-03-26T09:19:36Z',
+                        valid: true,
+                    },
+                    launch_path:
+                        '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
+                    config_version: 5,
+                    withVSCode: true,
+                    withGit: true,
+                    valid: true,
+                };
+                const projects = [newProject];
+
+                for (const win of BrowserWindow.getAllWindows()) {
+                    const webContents = win.webContents as any;
+                    webContents.__docsProjects = projects;
+                    win.webContents.send('projects-updated', projects);
+                }
+
+                return {
+                    success: true,
+                    projects,
+                    newProject,
+                    recoveredVSCodeConfigFiles: [
+                        '.vscode/settings.json.1712345678901.bad',
+                        '.vscode/extensions.json.1712345678902.bad',
+                    ],
+                };
+            });
+        },
+        '/Users/docs/Godot/Projects/recovered-vscode-config/project.godot',
     );
 }
 

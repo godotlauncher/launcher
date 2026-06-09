@@ -226,6 +226,10 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
 
 ### 4. Build and Test
 
+Install dependencies with `npm ci` if you have not already done so. Avoid
+`npm install` unless you are intentionally changing dependencies, because it can
+rewrite `package-lock.json` differently across Windows, macOS, and Linux.
+
 ```bash
 # Transpile backend
 npm run transpile:electron

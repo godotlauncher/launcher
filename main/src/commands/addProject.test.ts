@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addProject } from './addProject.js';
 
@@ -247,9 +248,9 @@ describe('addProject', () => {
         setProjectEditorRelease.mockResolvedValue('/fake/launch');
 
         // Mock VSCode utilities
-        updateVSCodeSettings.mockResolvedValue(undefined);
-        addVSCodeNETLaunchConfig.mockResolvedValue(undefined);
-        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
+        updateVSCodeSettings.mockResolvedValue([]);
+        addVSCodeNETLaunchConfig.mockResolvedValue([]);
+        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([]);
         createNewEditorSettings.mockResolvedValue('/fake/editor/settings');
         updateEditorSettings.mockResolvedValue(undefined);
         readProjectLauncherConfig.mockResolvedValue(null);
@@ -539,6 +540,56 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(result).not.toHaveProperty('additionalInfo');
+        expect(result.recoveredVSCodeConfigFiles).toBeUndefined();
+    });
+
+    it('returns recovered VS Code config files as project-relative paths', async () => {
+        const projectPath = path.resolve('/fake/project/project.godot');
+        const projectDir = path.dirname(projectPath);
+        const settingsBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'settings.json.1712345678901.bad',
+        );
+        const launchBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'launch.json.1712345678902.bad',
+        );
+        const extensionsBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'extensions.json.1712345678903.bad',
+        );
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return true;
+                return false;
+            }
+            return false;
+        });
+        updateVSCodeSettings.mockResolvedValue([settingsBackup, launchBackup]);
+        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
+            extensionsBackup,
+        ]);
+        addVSCodeNETLaunchConfig.mockResolvedValue([launchBackup]);
+
+        const result = await addProject(projectPath);
+
+        expect(result.success).toBe(true);
+        expect(result.recoveredVSCodeConfigFiles).toEqual([
+            '.vscode/settings.json.1712345678901.bad',
+            '.vscode/launch.json.1712345678902.bad',
+            '.vscode/extensions.json.1712345678903.bad',
+        ]);
     });
 
     it('should create new editor settings when VSCode is detected and settings do not exist', async () => {
