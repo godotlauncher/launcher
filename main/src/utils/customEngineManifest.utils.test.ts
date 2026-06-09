@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fsMocks = vi.hoisted(() => ({
@@ -38,6 +39,12 @@ const manifest = {
 };
 
 describe('parseCustomEngineManifest', () => {
+    const manifestPath = path.resolve(
+        '/engines/acme/godotlauncher-editor-manifest.json',
+    );
+    const installPath = path.resolve('/engines/acme');
+    const editorPath = path.resolve('/engines/acme/Godot.app');
+
     beforeEach(() => {
         vi.clearAllMocks();
         fsMocks.existsSync.mockReturnValue(true);
@@ -45,17 +52,15 @@ describe('parseCustomEngineManifest', () => {
     });
 
     it('parses a valid manifest into an installed custom release', async () => {
-        const release = await parseCustomEngineManifest(
-            '/engines/acme/godotlauncher-editor-manifest.json',
-        );
+        const release = await parseCustomEngineManifest(manifestPath);
 
         expect(release).toMatchObject({
             version: '4.6-custom.1',
             name: 'Acme Godot 4.6 Custom Engine',
             base_version: '4.6',
             version_number: 4.6,
-            install_path: '/engines/acme',
-            editor_path: '/engines/acme/Godot.app',
+            install_path: installPath,
+            editor_path: editorPath,
             platform: 'darwin',
             arch: 'arm64',
             mono: false,
@@ -72,9 +77,7 @@ describe('parseCustomEngineManifest', () => {
             JSON.stringify({ ...manifest, flavor: 'dotnet' }),
         );
 
-        const release = await parseCustomEngineManifest(
-            '/engines/acme/godotlauncher-editor-manifest.json',
-        );
+        const release = await parseCustomEngineManifest(manifestPath);
 
         expect(release.mono).toBe(true);
         expect(release.flavor).toBe('dotnet');
@@ -85,9 +88,7 @@ describe('parseCustomEngineManifest', () => {
             JSON.stringify({ ...manifest, flavor: 'steam' }),
         );
 
-        const release = await parseCustomEngineManifest(
-            '/engines/acme/godotlauncher-editor-manifest.json',
-        );
+        const release = await parseCustomEngineManifest(manifestPath);
 
         expect(release.mono).toBe(false);
         expect(release.flavor).toBe('steam');
@@ -98,9 +99,7 @@ describe('parseCustomEngineManifest', () => {
             JSON.stringify({ ...manifest, prerelease: true }),
         );
 
-        const release = await parseCustomEngineManifest(
-            '/engines/acme/godotlauncher-editor-manifest.json',
-        );
+        const release = await parseCustomEngineManifest(manifestPath);
 
         expect(release.prerelease).toBe(true);
     });
@@ -111,9 +110,7 @@ describe('parseCustomEngineManifest', () => {
         );
 
         await expect(
-            parseCustomEngineManifest(
-                '/engines/acme/godotlauncher-editor-manifest.json',
-            ),
+            parseCustomEngineManifest(manifestPath),
         ).rejects.toThrow('Invalid custom editor manifest');
     });
 
@@ -123,9 +120,7 @@ describe('parseCustomEngineManifest', () => {
         );
 
         await expect(
-            parseCustomEngineManifest(
-                '/engines/acme/godotlauncher-editor-manifest.json',
-            ),
+            parseCustomEngineManifest(manifestPath),
         ).rejects.toThrow('Invalid custom editor manifest');
 
         fsMocks.readFile.mockResolvedValue(
@@ -133,9 +128,7 @@ describe('parseCustomEngineManifest', () => {
         );
 
         await expect(
-            parseCustomEngineManifest(
-                '/engines/acme/godotlauncher-editor-manifest.json',
-            ),
+            parseCustomEngineManifest(manifestPath),
         ).rejects.toThrow('Invalid custom editor manifest');
     });
 
@@ -154,9 +147,7 @@ describe('parseCustomEngineManifest', () => {
         );
 
         await expect(
-            parseCustomEngineManifest(
-                '/engines/acme/godotlauncher-editor-manifest.json',
-            ),
+            parseCustomEngineManifest(manifestPath),
         ).rejects.toThrow('does not include a compatible platform');
     });
 
@@ -164,9 +155,7 @@ describe('parseCustomEngineManifest', () => {
         fsMocks.existsSync.mockReturnValue(false);
 
         await expect(
-            parseCustomEngineManifest(
-                '/engines/acme/godotlauncher-editor-manifest.json',
-            ),
-        ).rejects.toThrow('/engines/acme/Godot.app');
+            parseCustomEngineManifest(manifestPath),
+        ).rejects.toThrow(editorPath);
     });
 });

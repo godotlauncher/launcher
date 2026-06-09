@@ -1,12 +1,13 @@
 import * as fs from 'node:fs';
 import path from 'node:path';
 import logger from 'electron-log';
-import { type ParseError, parse } from 'jsonc-parser';
+import { applyEdits, modify, type ParseError, parse } from 'jsonc-parser';
 
 type JSONObject = Record<string, unknown>;
 
 type VSCodeConfigReadResult<T extends JSONObject> = {
     parsed: T | null;
+    raw: string | null;
     recoveredFiles: string[];
 };
 
@@ -61,7 +62,7 @@ async function readRecoverableVSCodeConfig<T extends JSONObject>(
     description: string,
 ): Promise<VSCodeConfigReadResult<T>> {
     if (!fs.existsSync(filePath)) {
-        return { parsed: null, recoveredFiles: [] };
+        return { parsed: null, raw: null, recoveredFiles: [] };
     }
 
     const raw = await fs.promises.readFile(filePath, 'utf-8');
@@ -72,7 +73,7 @@ async function readRecoverableVSCodeConfig<T extends JSONObject>(
     });
 
     if (errors.length === 0 && validator(parsed)) {
-        return { parsed, recoveredFiles: [] };
+        return { parsed, raw, recoveredFiles: [] };
     }
 
     logger.warn(`Recovering invalid VS Code ${description}`, {
@@ -80,7 +81,92 @@ async function readRecoverableVSCodeConfig<T extends JSONObject>(
         parseErrors: errors.length,
     });
     const backupPath = await preserveInvalidVSCodeConfig(filePath);
-    return { parsed: null, recoveredFiles: [backupPath] };
+    return { parsed: null, raw: null, recoveredFiles: [backupPath] };
+}
+
+function updateJSONCProperty(
+    text: string,
+    keyPath: (string | number)[],
+    value: unknown,
+): string {
+    return applyEdits(
+        text,
+        modify(text, keyPath, value, {
+            formattingOptions: {
+                insertSpaces: true,
+                tabSize: 4,
+                eol: '\n',
+            },
+        }),
+    );
+}
+
+function updateJSONCProperties(text: string, values: JSONObject): string {
+    return Object.entries(values).reduce(
+        (updatedText, [key, value]) =>
+            updateJSONCProperty(updatedText, [key], value),
+        text,
+    );
+}
+
+function valuesEqual(left: unknown, right: unknown): boolean {
+    return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function updateChangedJSONCProperties(
+    text: string,
+    existing: JSONObject,
+    values: JSONObject,
+): string {
+    return Object.entries(values).reduce((updatedText, [key, value]) => {
+        if (valuesEqual(existing[key], value)) {
+            return updatedText;
+        }
+
+        return updateJSONCProperty(updatedText, [key], value);
+    }, text);
+}
+
+function updateJSONCObjectEntries(
+    text: string,
+    key: string,
+    existingValue: unknown,
+    entries: JSONObject,
+): string {
+    if (!isJSONObject(existingValue)) {
+        return updateJSONCProperty(text, [key], entries);
+    }
+
+    return Object.entries(entries).reduce((updatedText, [entryKey, value]) => {
+        if (valuesEqual(existingValue[entryKey], value)) {
+            return updatedText;
+        }
+
+        return updateJSONCProperty(updatedText, [key, entryKey], value);
+    }, text);
+}
+
+function insertJSONCArrayItems(
+    text: string,
+    keyPath: (string | number)[],
+    startIndex: number,
+    values: string[],
+): string {
+    return values.reduce(
+        (updatedText, value, index) =>
+            applyEdits(
+                updatedText,
+                modify(updatedText, [...keyPath, startIndex + index], value, {
+                    formattingOptions: {
+                        insertSpaces: true,
+                        tabSize: 4,
+                        eol: '\n',
+                    },
+                    isArrayInsertion: true,
+                }),
+            ),
+        text,
+    );
 }
 
 function createVSCodeSettings(
@@ -96,6 +182,7 @@ function createVSCodeSettings(
         'files.eol': '\n',
         'files.exclude': {
             '**/*.gd.uid': true,
+            '**/*.cs.uid': true
         },
     };
 }
@@ -163,22 +250,33 @@ export async function addVSCodeSettings(
     }
 
     const settingsFile = path.resolve(settingsPath, 'settings.json');
-    let finalSettings: JSONObject = vsCodeConfig;
-    const { parsed, recoveredFiles } = await readRecoverableVSCodeConfig(
+    let settingsText = JSON.stringify(vsCodeConfig, null, 4);
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         settingsFile,
         isSettingsJSONObject,
         'settings.json',
     );
 
-    if (parsed) {
-        finalSettings = { ...parsed, ...vsCodeConfig };
+    if (parsed && raw !== null) {
+        const { 'files.exclude': filesExclude, ...topLevelConfig } =
+            vsCodeConfig;
+
+        settingsText = updateChangedJSONCProperties(
+            raw,
+            parsed,
+            topLevelConfig,
+        );
+        settingsText = updateJSONCObjectEntries(
+            settingsText,
+            'files.exclude',
+            parsed['files.exclude'],
+            filesExclude,
+        );
     }
 
-    await fs.promises.writeFile(
-        settingsFile,
-        JSON.stringify(finalSettings, null, 4),
-        'utf-8',
-    );
+    if (settingsText !== raw) {
+        await fs.promises.writeFile(settingsFile, settingsText, 'utf-8');
+    }
 
     if (isMono) {
         recoveredFiles.push(
@@ -217,14 +315,14 @@ export async function updateVSCodeSettings(
     }
 
     const settingsFile = path.resolve(settingsPath, 'settings.json');
-    let finalSettings: JSONObject = vsCodeConfig;
-    const { parsed, recoveredFiles } = await readRecoverableVSCodeConfig(
+    let settingsText = JSON.stringify(vsCodeConfig, null, 4);
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         settingsFile,
         isSettingsJSONObject,
         'settings.json',
     );
 
-    if (parsed) {
+    if (parsed && raw !== null) {
         const mergedExcludes =
             isJSONObject(parsed['files.exclude']) &&
             isJSONObject(vsCodeConfig['files.exclude'])
@@ -234,18 +332,25 @@ export async function updateVSCodeSettings(
                   }
                 : vsCodeConfig['files.exclude'];
 
-        finalSettings = {
-            ...parsed,
-            ...vsCodeConfig,
-            'files.exclude': mergedExcludes,
-        };
+        const { 'files.exclude': _filesExclude, ...topLevelConfig } =
+            vsCodeConfig;
+
+        settingsText = updateChangedJSONCProperties(
+            raw,
+            parsed,
+            topLevelConfig,
+        );
+        settingsText = updateJSONCObjectEntries(
+            settingsText,
+            'files.exclude',
+            parsed['files.exclude'],
+            mergedExcludes,
+        );
     }
 
-    await fs.promises.writeFile(
-        settingsFile,
-        JSON.stringify(finalSettings, null, 4),
-        'utf-8',
-    );
+    if (settingsText !== raw) {
+        await fs.promises.writeFile(settingsFile, settingsText, 'utf-8');
+    }
 
     if (isMono) {
         recoveredFiles.push(
@@ -292,33 +397,35 @@ export async function addVSCodeNETLaunchConfig(
         programPath = path.resolve(launchPath, 'Contents', 'MacOS', 'Godot');
     }
 
-    let launchConfig = createVSCodeLaunchConfig(programPath);
-    const { parsed, recoveredFiles } = await readRecoverableVSCodeConfig(
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         lanchJsonPath,
         isLaunchJSONObject,
         'launch.json',
     );
 
-    if (parsed) {
-        launchConfig = {
-            ...parsed,
-            configurations: parsed.configurations.map((config) => {
+    let launchConfigText = JSON.stringify(
+        createVSCodeLaunchConfig(programPath),
+        null,
+        4,
+    );
+    if (parsed && raw !== null) {
+        launchConfigText = parsed.configurations.reduce(
+            (updatedText, config, index) => {
                 if ('program' in config) {
-                    return {
-                        ...config,
-                        program: path.resolve(programPath),
-                    };
+                    return updateJSONCProperty(
+                        updatedText,
+                        ['configurations', index, 'program'],
+                        path.resolve(programPath),
+                    );
                 }
 
-                return config;
-            }),
-        };
+                return updatedText;
+            },
+            raw,
+        );
     }
 
-    await fs.promises.writeFile(
-        lanchJsonPath,
-        JSON.stringify(launchConfig, null, 4),
-    );
+    await fs.promises.writeFile(lanchJsonPath, launchConfigText);
 
     const preLaunchTask = {
         version: '2.0.0',
@@ -365,28 +472,36 @@ export async function addOrUpdateVSCodeRecommendedExtensions(
 
     const extensions = createVSCodeExtensions(isMono);
     const settingsFile = path.resolve(settingsPath, 'extensions.json');
-    const { parsed, recoveredFiles } = await readRecoverableVSCodeConfig(
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         settingsFile,
         isExtensionsJSONObject,
         'extensions.json',
     );
 
-    if (parsed) {
+    if (parsed && raw !== null) {
         const existingRecommendations = parsed.recommendations ?? [];
-        const finalExtensions = {
-            ...parsed,
-            recommendations: [
-                ...new Set([
-                    ...existingRecommendations,
-                    ...extensions.recommendations,
-                ]),
-            ],
-        };
-
-        await fs.promises.writeFile(
-            settingsFile,
-            JSON.stringify(finalExtensions, null, 4),
+        const missingRecommendations = extensions.recommendations.filter(
+            (recommendation) =>
+                !existingRecommendations.includes(recommendation),
         );
+
+        if (missingRecommendations.length > 0) {
+            const updatedExtensions =
+                parsed.recommendations === undefined
+                    ? updateJSONCProperty(
+                          raw,
+                          ['recommendations'],
+                          missingRecommendations,
+                      )
+                    : insertJSONCArrayItems(
+                          raw,
+                          ['recommendations'],
+                          existingRecommendations.length,
+                          missingRecommendations,
+                      );
+
+            await fs.promises.writeFile(settingsFile, updatedExtensions);
+        }
     } else {
         await fs.promises.writeFile(
             settingsFile,

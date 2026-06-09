@@ -1,6 +1,7 @@
 // Comprehensive tests for updateVSCodeSettings
 
 import * as fs from 'node:fs';
+import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { updateVSCodeSettings } from './vscode.utils.js';
 
@@ -565,7 +566,10 @@ describe('updateVSCodeSettings (comprehensive)', () => {
             expect(recoveredFiles).toEqual([]);
             expect(fs.promises.rename).not.toHaveBeenCalled();
             const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
-            const writtenSettings = JSON.parse(writeCall[1] as string);
+            const writtenSettingsText = writeCall[1] as string;
+            expect(writtenSettingsText).toContain('// This is a comment');
+            expect(writtenSettingsText).toContain('/* Multi-line comment */');
+            const writtenSettings = parseJSONC(writtenSettingsText);
 
             expect(writtenSettings['editor.fontSize']).toBe(14);
             expect(writtenSettings['files.exclude']['**/.git']).toBe(true);

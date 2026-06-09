@@ -5,7 +5,7 @@ import {
 } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { ProjectDetails } from '@shared';
+import type { ProjectDetails, SetProjectVSCodeResult } from '@shared';
 import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
@@ -46,6 +46,16 @@ const PROJECT_WRITE_MAX_ATTEMPTS = 2;
 function resolveProjectListPath(): string {
     const { configDir } = getDefaultDirs();
     return path.resolve(configDir, PROJECTS_FILENAME);
+}
+
+function toProjectRelativeDisplayPath(
+    projectDir: string,
+    filePath: string,
+): string {
+    return path
+        .relative(projectDir, filePath)
+        .split(path.sep)
+        .join(path.posix.sep);
 }
 
 export async function getProjectsDetails(): Promise<ProjectDetails[]> {
@@ -264,8 +274,9 @@ export async function setProjectWindowed(
 export async function setProjectVSCode(
     project: ProjectDetails,
     enable: boolean,
-): Promise<ProjectDetails> {
+): Promise<SetProjectVSCodeResult> {
     const projectListPath = resolveProjectListPath();
+    const recoveredVSCodeConfigFiles = new Set<string>();
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
         const { projects, version } =
@@ -369,23 +380,50 @@ export async function setProjectVSCode(
             targetProject.editor_settings_path =
                 path.dirname(editorSettingsFile);
 
-            await updateVSCodeSettings(
+            const recoveredSettingsFiles = await updateVSCodeSettings(
                 targetProject.path,
                 targetProject.launch_path,
                 targetProject.release.version_number,
                 targetProject.release.mono,
             );
-            await addOrUpdateVSCodeRecommendedExtensions(
-                targetProject.path,
-                targetProject.release.mono,
-            );
+            for (const recoveredFile of recoveredSettingsFiles ?? []) {
+                recoveredVSCodeConfigFiles.add(
+                    toProjectRelativeDisplayPath(
+                        targetProject.path,
+                        recoveredFile,
+                    ),
+                );
+            }
+
+            const recoveredExtensionFiles =
+                await addOrUpdateVSCodeRecommendedExtensions(
+                    targetProject.path,
+                    targetProject.release.mono,
+                );
+            for (const recoveredFile of recoveredExtensionFiles ?? []) {
+                recoveredVSCodeConfigFiles.add(
+                    toProjectRelativeDisplayPath(
+                        targetProject.path,
+                        recoveredFile,
+                    ),
+                );
+            }
 
             if (targetProject.release.mono) {
-                await addVSCodeNETLaunchConfig(
+                const recoveredLaunchFiles = await addVSCodeNETLaunchConfig(
                     targetProject.path,
                     targetProject.launch_path,
                 );
+                for (const recoveredFile of recoveredLaunchFiles ?? []) {
+                    recoveredVSCodeConfigFiles.add(
+                        toProjectRelativeDisplayPath(
+                            targetProject.path,
+                            recoveredFile,
+                        ),
+                    );
+                }
             }
+
         } else if (
             targetProject.editor_settings_file &&
             fs.existsSync(targetProject.editor_settings_file)
@@ -418,7 +456,13 @@ export async function setProjectVSCode(
             project.editor_settings_file = latestProject.editor_settings_file;
             project.editor_settings_path = latestProject.editor_settings_path;
 
-            return latestProject;
+            return {
+                ...latestProject,
+                recoveredVSCodeConfigFiles:
+                    recoveredVSCodeConfigFiles.size > 0
+                        ? [...recoveredVSCodeConfigFiles]
+                        : undefined,
+            };
         } catch (error) {
             if (
                 error instanceof JsonStoreConflictError &&

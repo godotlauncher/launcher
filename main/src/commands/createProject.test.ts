@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { InstalledRelease } from '@shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createProject } from './createProject.js';
@@ -169,7 +170,7 @@ describe('createProject', () => {
         expect(
             projectLauncherConfigMocks.writeProjectLauncherConfig,
         ).toHaveBeenCalledWith(
-            '/projects/Test-Project',
+            path.resolve('/projects/Test-Project'),
             expect.objectContaining({ version: '4.3-stable' }),
             '1.0.0',
         );

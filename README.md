@@ -86,6 +86,13 @@ For major changes or new features, please open an issue and clearly mark the tit
 3. Install dependencies with `npm ci`.
 4. Launch the app with `npm run dev`.
 
+Use `npm ci` for normal development and CI-like installs. It installs from
+`package-lock.json` without rewriting it, which avoids platform-only lockfile
+churn from optional native dependencies on Windows, macOS, and Linux. Use
+`npm install` only when intentionally adding, removing, or updating
+dependencies. If `npm install` changes only `package-lock.json` and
+`package.json` did not change, do not include that lockfile change in your PR.
+
 Once you have everything running, feel free to open pull requests with your improvements, fixes, or new features.
 
 **We appreciate all contributions!**

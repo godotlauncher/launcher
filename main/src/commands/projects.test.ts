@@ -417,6 +417,93 @@ describe('setProjectVSCode', () => {
         expect(result.withVSCode).toBe(true);
     });
 
+    it('returns recovered VS Code config files when enabling integration', async () => {
+        const project: ProjectDetails = {
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.2',
+            version_number: 4.2,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '/projects/demo/editor_data',
+            editor_settings_file:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.2',
+                version_number: 4.2,
+                install_path: '/godot',
+                editor_path: '/godot/godot.exe',
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: true,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/godot/godot.exe',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [JSON.parse(JSON.stringify(project)) as ProjectDetails],
+            version: 'v1',
+        });
+        getProjectDefinition.mockReturnValue({
+            editorConfigFilename: () => 'editor_settings-4.2.tres',
+            editorConfigFormat: 3,
+            resources: [],
+            projectFilename: 'project.godot',
+            configVersion: 5,
+            defaultRenderer: 'FORWARD_PLUS',
+        });
+        existsSync.mockImplementation(
+            (target: unknown) =>
+                target ===
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
+        );
+        updateEditorSettings.mockResolvedValue(undefined);
+        updateVSCodeSettings.mockResolvedValue([
+            path.resolve(
+                '/projects/demo',
+                '.vscode',
+                'settings.json.1712345678901.bad',
+            ),
+            path.resolve(
+                '/projects/demo',
+                '.vscode',
+                'launch.json.1712345678902.bad',
+            ),
+        ]);
+        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
+            path.resolve(
+                '/projects/demo',
+                '.vscode',
+                'extensions.json.1712345678903.bad',
+            ),
+        ]);
+        addVSCodeNETLaunchConfig.mockResolvedValue([
+            path.resolve(
+                '/projects/demo',
+                '.vscode',
+                'launch.json.1712345678902.bad',
+            ),
+        ]);
+
+        const result = await setProjectVSCode(project, true);
+
+        expect(result.withVSCode).toBe(true);
+        expect(result.recoveredVSCodeConfigFiles).toEqual([
+            '.vscode/settings.json.1712345678901.bad',
+            '.vscode/launch.json.1712345678902.bad',
+            '.vscode/extensions.json.1712345678903.bad',
+        ]);
+    });
+
     it('creates editor settings when enabling VS Code with no existing file', async () => {
         const project: ProjectDetails = {
             name: 'Demo',

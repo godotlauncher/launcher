@@ -73,6 +73,10 @@ export type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
 };
 
+export type SetProjectVSCodeResult = ProjectDetails & {
+    recoveredVSCodeConfigFiles?: string[];
+};
+
 export type RendererType = {
     5: 'FORWARD_PLUS' | 'MOBILE' | 'COMPATIBLE';
 };

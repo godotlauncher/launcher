@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { addVSCodeSettings, updateVSCodeSettings } from './vscode.utils.js';
 
@@ -263,11 +264,66 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
             .mock.calls.find((c) =>
                 c[0].toString().endsWith('extensions.json'),
             );
-        const payload = JSON.parse(writeCall?.[1] as string);
+        const writtenExtensions = writeCall?.[1] as string;
+        expect(writtenExtensions).toContain('// keep this recommendation');
+        const payload = parseJSONC(writtenExtensions);
         expect(payload.recommendations).toEqual(
             expect.arrayContaining([
                 'dbaeumer.vscode-eslint',
                 'geequlim.godot-tools',
+            ]),
+        );
+    });
+
+    test('does not rewrite JSONC extensions when recommendations are current', async () => {
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    "recommendations": [
+        "geequlim.godot-tools",
+        "mariodebono.godot-4-vscode-theme",
+        "eamodio.gitlens", //this comment
+    ]
+}`);
+
+        const recoveredFiles = await (
+            await import('./vscode.utils.js')
+        ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
+
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        expect(fs.promises.writeFile).not.toHaveBeenCalled();
+    });
+
+    test('preserves inline comments when inserting missing JSONC extension recommendations', async () => {
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    "recommendations": [
+        "geequlim.godot-tools",
+        "mariodebono.godot-4-vscode-theme",
+        "eamodio.gitlens", //this comment
+    ]
+}`);
+
+        const recoveredFiles = await (
+            await import('./vscode.utils.js')
+        ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
+
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        const writeCall = vi
+            .mocked(fs.promises.writeFile)
+            .mock.calls.find((c) =>
+                c[0].toString().endsWith('extensions.json'),
+            );
+        const writtenExtensions = writeCall?.[1] as string;
+        expect(writtenExtensions).toContain('//this comment');
+        const payload = parseJSONC(writtenExtensions);
+        expect(payload.recommendations).toEqual(
+            expect.arrayContaining([
+                'geequlim.godot-tools',
+                'mariodebono.godot-4-vscode-theme',
+                'eamodio.gitlens',
+                'ms-dotnettools.csharp',
             ]),
         );
     });
@@ -879,7 +935,10 @@ describe('updateVSCodeSettings', () => {
         expect(recoveredFiles).toEqual([]);
         expect(fs.promises.rename).not.toHaveBeenCalled();
         const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
-        const writtenSettings = JSON.parse(writeCall[1] as string);
+        const writtenSettingsText = writeCall[1] as string;
+        expect(writtenSettingsText).toContain('// This is a comment');
+        expect(writtenSettingsText).toContain('/* Multi-line');
+        const writtenSettings = parseJSONC(writtenSettingsText);
 
         expect(writtenSettings['editor.fontSize']).toBe(14);
         expect(writtenSettings['files.exclude']['**/.git']).toBe(true);
@@ -909,9 +968,64 @@ describe('updateVSCodeSettings', () => {
         expect(recoveredFiles).toEqual([]);
         expect(fs.promises.rename).not.toHaveBeenCalled();
         const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
-        const writtenSettings = JSON.parse(writeCall[1] as string);
+        const writtenSettings = parseJSONC(writeCall[1] as string);
         expect(writtenSettings['editor.fontSize']).toBe(14);
         expect(writtenSettings['files.exclude']['**/.git']).toBe(true);
+    });
+
+    test('should preserve comments inside files.exclude when adding launcher exclude', async () => {
+        vi.mocked(fs.existsSync).mockImplementation((p) =>
+            p.toString().endsWith('settings.json'),
+        );
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    "editor.fontSize": 14,
+    "files.exclude": {
+        "**/.git": true, // keep git hidden
+    }
+}`);
+
+        const recoveredFiles = await updateVSCodeSettings(
+            testProjectDir,
+            '/path/to/godot',
+            4,
+            false,
+        );
+
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
+        const writtenSettingsText = writeCall[1] as string;
+        expect(writtenSettingsText).toContain('// keep git hidden');
+        const writtenSettings = parseJSONC(writtenSettingsText);
+        expect(writtenSettings['files.exclude']['**/.git']).toBe(true);
+        expect(writtenSettings['files.exclude']['**/*.gd.uid']).toBe(true);
+    });
+
+    test('should not rewrite current JSONC settings', async () => {
+        vi.mocked(fs.existsSync).mockImplementation((p) =>
+            p.toString().endsWith('settings.json'),
+        );
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    "godotTools.editorPath.godot4": "/path/to/godot",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false,
+    "files.eol": "\\n",
+    "files.exclude": {
+        "**/*.gd.uid": true,
+        "**/*.cs.uid": true, // keep launcher exclude
+    }
+}`);
+
+        const recoveredFiles = await updateVSCodeSettings(
+            testProjectDir,
+            '/path/to/godot',
+            4,
+            false,
+        );
+
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        expect(fs.promises.writeFile).not.toHaveBeenCalled();
     });
 
     test('should overwrite launcher-managed keys but preserve others', async () => {
