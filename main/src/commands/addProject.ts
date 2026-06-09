@@ -54,6 +54,16 @@ import { getProjectsDetails } from './projects.js';
 import { getInstalledReleases } from './releases.js';
 import { getUserPreferences } from './userPreferences.js';
 
+function toProjectRelativeDisplayPath(
+    projectDir: string,
+    filePath: string,
+): string {
+    return path
+        .relative(projectDir, filePath)
+        .split(path.sep)
+        .join(path.posix.sep);
+}
+
 function isCompatibleCustomPlatform(release: InstalledRelease): boolean {
     return (
         release.source !== 'custom' ||
@@ -514,7 +524,7 @@ export async function addProject(
         );
         for (const recoveredFile of recoveredSettingsFiles ?? []) {
             recoveredVSCodeConfigFiles.add(
-                path.relative(dirname, recoveredFile),
+                toProjectRelativeDisplayPath(dirname, recoveredFile),
             );
         }
 
@@ -523,7 +533,7 @@ export async function addProject(
             await addOrUpdateVSCodeRecommendedExtensions(dirname, release.mono);
         for (const recoveredFile of recoveredExtensionFiles ?? []) {
             recoveredVSCodeConfigFiles.add(
-                path.relative(dirname, recoveredFile),
+                toProjectRelativeDisplayPath(dirname, recoveredFile),
             );
         }
 
@@ -535,7 +545,7 @@ export async function addProject(
             );
             for (const recoveredFile of recoveredLaunchFiles ?? []) {
                 recoveredVSCodeConfigFiles.add(
-                    path.relative(dirname, recoveredFile),
+                    toProjectRelativeDisplayPath(dirname, recoveredFile),
                 );
             }
         }

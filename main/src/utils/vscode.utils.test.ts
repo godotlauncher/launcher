@@ -218,17 +218,21 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.promises.readFile).mockResolvedValue('{ invalid json }');
         const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678901);
+        const extensionsFile = path.resolve(
+            projectDir,
+            '.vscode',
+            'extensions.json',
+        );
+        const backupFile = `${extensionsFile}.1712345678901.bad`;
 
         const recoveredFiles = await (
             await import('./vscode.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
-        expect(recoveredFiles).toEqual([
-            '/some/ext-project/.vscode/extensions.json',
-        ]);
+        expect(recoveredFiles).toEqual([backupFile]);
         expect(fs.promises.rename).toHaveBeenCalledWith(
-            '/some/ext-project/.vscode/extensions.json',
-            '/some/ext-project/.vscode/extensions.json.1712345678901.bad',
+            extensionsFile,
+            backupFile,
         );
         const writeCall = vi
             .mocked(fs.promises.writeFile)
@@ -274,17 +278,21 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
     "recommendations": "ms-dotnettools.csharp"
 }`);
         const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678902);
+        const extensionsFile = path.resolve(
+            projectDir,
+            '.vscode',
+            'extensions.json',
+        );
+        const backupFile = `${extensionsFile}.1712345678902.bad`;
 
         const recoveredFiles = await (
             await import('./vscode.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
-        expect(recoveredFiles).toEqual([
-            '/some/ext-project/.vscode/extensions.json',
-        ]);
+        expect(recoveredFiles).toEqual([backupFile]);
         expect(fs.promises.rename).toHaveBeenCalledWith(
-            '/some/ext-project/.vscode/extensions.json',
-            '/some/ext-project/.vscode/extensions.json.1712345678902.bad',
+            extensionsFile,
+            backupFile,
         );
         dateNowSpy.mockRestore();
     });
@@ -439,6 +447,8 @@ describe('addVSCodeNETLaunchConfig', () => {
         );
         vi.mocked(fs.promises.readFile).mockResolvedValue('{ invalid json }');
         const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678903);
+        const launchFile = path.resolve(projectDir, '.vscode', 'launch.json');
+        const backupFile = `${launchFile}.1712345678903.bad`;
 
         const mod =
             await vi.importActual<typeof import('./vscode.utils.js')>(
@@ -449,13 +459,8 @@ describe('addVSCodeNETLaunchConfig', () => {
             launchPath,
         );
 
-        expect(recoveredFiles).toEqual([
-            '/some/net-project/.vscode/launch.json',
-        ]);
-        expect(fs.promises.rename).toHaveBeenCalledWith(
-            '/some/net-project/.vscode/launch.json',
-            '/some/net-project/.vscode/launch.json.1712345678903.bad',
-        );
+        expect(recoveredFiles).toEqual([backupFile]);
+        expect(fs.promises.rename).toHaveBeenCalledWith(launchFile, backupFile);
         const launchCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('launch.json'));
@@ -809,10 +814,16 @@ describe('updateVSCodeSettings', () => {
             false,
         );
 
-        expect(recoveredFiles).toEqual(['/test/project/.vscode/settings.json']);
+        const settingsFile = path.resolve(
+            testProjectDir,
+            '.vscode',
+            'settings.json',
+        );
+        const backupFile = `${settingsFile}.1712345678904.bad`;
+        expect(recoveredFiles).toEqual([backupFile]);
         expect(fs.promises.rename).toHaveBeenCalledWith(
-            '/test/project/.vscode/settings.json',
-            '/test/project/.vscode/settings.json.1712345678904.bad',
+            settingsFile,
+            backupFile,
         );
         const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
         const writtenSettings = JSON.parse(writeCall[1] as string);

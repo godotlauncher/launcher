@@ -49,9 +49,10 @@ function dedupeRecoveredFiles(paths: string[]): string[] {
     return [...new Set(paths)];
 }
 
-async function preserveInvalidVSCodeConfig(filePath: string): Promise<void> {
+async function preserveInvalidVSCodeConfig(filePath: string): Promise<string> {
     const backupPath = `${filePath}.${Date.now()}.bad`;
     await fs.promises.rename(filePath, backupPath);
+    return backupPath;
 }
 
 async function readRecoverableVSCodeConfig<T extends JSONObject>(
@@ -78,8 +79,8 @@ async function readRecoverableVSCodeConfig<T extends JSONObject>(
         filePath,
         parseErrors: errors.length,
     });
-    await preserveInvalidVSCodeConfig(filePath);
-    return { parsed: null, recoveredFiles: [filePath] };
+    const backupPath = await preserveInvalidVSCodeConfig(filePath);
+    return { parsed: null, recoveredFiles: [backupPath] };
 }
 
 function createVSCodeSettings(

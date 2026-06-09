@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addProject } from './addProject.js';
 
@@ -543,6 +544,23 @@ describe('addProject', () => {
     });
 
     it('returns recovered VS Code config files as project-relative paths', async () => {
+        const projectPath = path.resolve('/fake/project/project.godot');
+        const projectDir = path.dirname(projectPath);
+        const settingsBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'settings.json.1712345678901.bad',
+        );
+        const launchBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'launch.json.1712345678902.bad',
+        );
+        const extensionsBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'extensions.json.1712345678903.bad',
+        );
         getInstalledTools.mockResolvedValue([
             {
                 name: 'VSCode',
@@ -558,24 +576,19 @@ describe('addProject', () => {
             }
             return false;
         });
-        updateVSCodeSettings.mockResolvedValue([
-            '/fake/project/.vscode/settings.json',
-            '/fake/project/.vscode/launch.json',
-        ]);
+        updateVSCodeSettings.mockResolvedValue([settingsBackup, launchBackup]);
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
-            '/fake/project/.vscode/extensions.json',
+            extensionsBackup,
         ]);
-        addVSCodeNETLaunchConfig.mockResolvedValue([
-            '/fake/project/.vscode/launch.json',
-        ]);
+        addVSCodeNETLaunchConfig.mockResolvedValue([launchBackup]);
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(projectPath);
 
         expect(result.success).toBe(true);
         expect(result.recoveredVSCodeConfigFiles).toEqual([
-            '.vscode/settings.json',
-            '.vscode/launch.json',
-            '.vscode/extensions.json',
+            '.vscode/settings.json.1712345678901.bad',
+            '.vscode/launch.json.1712345678902.bad',
+            '.vscode/extensions.json.1712345678903.bad',
         ]);
     });
 

@@ -1779,8 +1779,8 @@ async function stubAddProjectRecoveredVSCodeConfig(
                     projects,
                     newProject,
                     recoveredVSCodeConfigFiles: [
-                        '.vscode/settings.json',
-                        '.vscode/extensions.json',
+                        '.vscode/settings.json.1712345678901.bad',
+                        '.vscode/extensions.json.1712345678902.bad',
                     ],
                 };
             });
