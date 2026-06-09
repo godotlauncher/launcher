@@ -19,6 +19,7 @@ vi.mock('node:fs', () => ({
         existsSync: vi.fn(),
         promises: {
             mkdir: vi.fn(),
+            rename: vi.fn(),
             readFile: vi.fn(),
             writeFile: vi.fn(),
         },
@@ -26,6 +27,7 @@ vi.mock('node:fs', () => ({
     existsSync: vi.fn(),
     promises: {
         mkdir: vi.fn(),
+        rename: vi.fn(),
         readFile: vi.fn(),
         writeFile: vi.fn(),
     },
@@ -109,6 +111,7 @@ describe('updateVSCodeSettings (comprehensive)', () => {
         // Default mock behavior
         vi.mocked(fs.existsSync).mockReturnValue(false);
         vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
+        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
         vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
         vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
     });
@@ -538,7 +541,7 @@ describe('updateVSCodeSettings (comprehensive)', () => {
             );
         });
 
-        test('should handle settings.json with JSONC comments', async () => {
+        test('should parse settings.json with JSONC comments', async () => {
             const jsoncContent = `{
     // This is a comment
     "editor.fontSize": 14,
@@ -552,13 +555,20 @@ describe('updateVSCodeSettings (comprehensive)', () => {
             );
             vi.mocked(fs.promises.readFile).mockResolvedValue(jsoncContent);
 
-            // Should handle gracefully (JSON.parse will fail on comments)
-            await updateVSCodeSettings(projectDir, '/path/to/godot', 4, false);
+            const recoveredFiles = await updateVSCodeSettings(
+                projectDir,
+                '/path/to/godot',
+                4,
+                false,
+            );
 
+            expect(recoveredFiles).toEqual([]);
+            expect(fs.promises.rename).not.toHaveBeenCalled();
             const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
             const writtenSettings = JSON.parse(writeCall[1] as string);
 
-            // Should create fresh settings
+            expect(writtenSettings['editor.fontSize']).toBe(14);
+            expect(writtenSettings['files.exclude']['**/.git']).toBe(true);
             expect(writtenSettings['godotTools.editorPath.godot4']).toBe(
                 '/path/to/godot',
             );

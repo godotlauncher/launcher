@@ -451,6 +451,7 @@ export async function addProject(
 
     const tools = await getInstalledTools();
     const vsCodeTool = tools.find((t) => t.name === 'VSCode');
+    const recoveredVSCodeConfigFiles = new Set<string>();
 
     if (release && !addAsMissingEditor && withVSCode && vsCodeTool) {
         const activeConfig = config;
@@ -505,19 +506,38 @@ export async function addProject(
         }
 
         // Always update VSCode settings
-        await updateVSCodeSettings(
+        const recoveredSettingsFiles = await updateVSCodeSettings(
             dirname,
             launch_path,
             release.version_number,
             release.mono,
         );
+        for (const recoveredFile of recoveredSettingsFiles ?? []) {
+            recoveredVSCodeConfigFiles.add(
+                path.relative(dirname, recoveredFile),
+            );
+        }
 
         // Always update VSCode recommended extensions
-        await addOrUpdateVSCodeRecommendedExtensions(dirname, release.mono);
+        const recoveredExtensionFiles =
+            await addOrUpdateVSCodeRecommendedExtensions(dirname, release.mono);
+        for (const recoveredFile of recoveredExtensionFiles ?? []) {
+            recoveredVSCodeConfigFiles.add(
+                path.relative(dirname, recoveredFile),
+            );
+        }
 
         // Always setup .NET launch config if using mono
         if (release.mono) {
-            await addVSCodeNETLaunchConfig(dirname, launch_path);
+            const recoveredLaunchFiles = await addVSCodeNETLaunchConfig(
+                dirname,
+                launch_path,
+            );
+            for (const recoveredFile of recoveredLaunchFiles ?? []) {
+                recoveredVSCodeConfigFiles.add(
+                    path.relative(dirname, recoveredFile),
+                );
+            }
         }
     }
 
@@ -574,5 +594,9 @@ export async function addProject(
         success: true,
         projects: allProjects,
         newProject: project,
+        recoveredVSCodeConfigFiles:
+            recoveredVSCodeConfigFiles.size > 0
+                ? [...recoveredVSCodeConfigFiles]
+                : undefined,
     };
 }

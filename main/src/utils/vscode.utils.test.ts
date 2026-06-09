@@ -24,6 +24,7 @@ vi.mock('node:fs', () => ({
         existsSync: vi.fn(),
         promises: {
             mkdir: vi.fn(),
+            rename: vi.fn(),
             readFile: vi.fn(),
             writeFile: vi.fn(),
         },
@@ -31,6 +32,7 @@ vi.mock('node:fs', () => ({
     existsSync: vi.fn(),
     promises: {
         mkdir: vi.fn(),
+        rename: vi.fn(),
         readFile: vi.fn(),
         writeFile: vi.fn(),
     },
@@ -55,6 +57,7 @@ describe('addVSCodeSettings', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
+        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
         vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
         vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
         // default to no existing files
@@ -138,6 +141,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
+        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
         vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
         vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
         vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -210,24 +214,79 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         expect(unique.size).toBe(payload.recommendations.length);
     });
 
-    test('throws when extensions.json is corrupted', async () => {
+    test('backs up invalid extensions.json and writes a fresh one', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.promises.readFile).mockResolvedValue('{ invalid json }');
+        const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678901);
 
-        // Current implementation does not catch JSON.parse errors, expect rejection
-        await expect(
-            (
-                await import('./vscode.utils.js')
-            ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false),
-        ).rejects.toThrow();
+        const recoveredFiles = await (
+            await import('./vscode.utils.js')
+        ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
-        // Ensure no new file was written
+        expect(recoveredFiles).toEqual([
+            '/some/ext-project/.vscode/extensions.json',
+        ]);
+        expect(fs.promises.rename).toHaveBeenCalledWith(
+            '/some/ext-project/.vscode/extensions.json',
+            '/some/ext-project/.vscode/extensions.json.1712345678901.bad',
+        );
         const writeCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) =>
                 c[0].toString().endsWith('extensions.json'),
             );
-        expect(writeCall).toBeUndefined();
+        expect(writeCall).toBeDefined();
+        dateNowSpy.mockRestore();
+    });
+
+    test('parses JSONC extensions without creating a .bad backup', async () => {
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    // keep this recommendation
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+    ],
+}`);
+
+        const recoveredFiles = await (
+            await import('./vscode.utils.js')
+        ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
+
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        const writeCall = vi
+            .mocked(fs.promises.writeFile)
+            .mock.calls.find((c) =>
+                c[0].toString().endsWith('extensions.json'),
+            );
+        const payload = JSON.parse(writeCall?.[1] as string);
+        expect(payload.recommendations).toEqual(
+            expect.arrayContaining([
+                'dbaeumer.vscode-eslint',
+                'geequlim.godot-tools',
+            ]),
+        );
+    });
+
+    test('backs up extensions.json with invalid recommendations shape', async () => {
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    "recommendations": "ms-dotnettools.csharp"
+}`);
+        const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678902);
+
+        const recoveredFiles = await (
+            await import('./vscode.utils.js')
+        ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
+
+        expect(recoveredFiles).toEqual([
+            '/some/ext-project/.vscode/extensions.json',
+        ]);
+        expect(fs.promises.rename).toHaveBeenCalledWith(
+            '/some/ext-project/.vscode/extensions.json',
+            '/some/ext-project/.vscode/extensions.json.1712345678902.bad',
+        );
+        dateNowSpy.mockRestore();
     });
 
     test('preserves unrelated keys when merging', async () => {
@@ -264,6 +323,7 @@ describe('addVSCodeNETLaunchConfig', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
+        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
         vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
         vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
         vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -378,19 +438,31 @@ describe('addVSCodeNETLaunchConfig', () => {
             p.toString().endsWith('launch.json'),
         );
         vi.mocked(fs.promises.readFile).mockResolvedValue('{ invalid json }');
+        const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678903);
 
         const mod =
             await vi.importActual<typeof import('./vscode.utils.js')>(
                 './vscode.utils.js',
             );
-        await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
+        const recoveredFiles = await mod.addVSCodeNETLaunchConfig(
+            projectDir,
+            launchPath,
+        );
 
+        expect(recoveredFiles).toEqual([
+            '/some/net-project/.vscode/launch.json',
+        ]);
+        expect(fs.promises.rename).toHaveBeenCalledWith(
+            '/some/net-project/.vscode/launch.json',
+            '/some/net-project/.vscode/launch.json.1712345678903.bad',
+        );
         const launchCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('launch.json'));
         expect(launchCall).toBeDefined();
         const launchCfg = JSON.parse(launchCall?.[1] as string);
         expect(launchCfg.configurations[0].type).toBe('coreclr');
+        dateNowSpy.mockRestore();
     });
 
     test('does not overwrite existing tasks.json', async () => {
@@ -545,6 +617,7 @@ describe('updateVSCodeSettings', () => {
         // Default mock behavior
         vi.mocked(fs.existsSync).mockReturnValue(false);
         vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
+        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
         vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
     });
 
@@ -720,17 +793,27 @@ describe('updateVSCodeSettings', () => {
         expect(writtenSettings['files.exclude']['**/*.gd.uid']).toBe(true);
     });
 
-    test('should handle corrupted JSON gracefully and create new file', async () => {
+    test('should back up corrupted JSON before creating a new file', async () => {
         vi.mocked(fs.existsSync).mockImplementation((p) =>
             p.toString().endsWith('settings.json'),
         );
         vi.mocked(fs.promises.readFile).mockResolvedValue(
             '{ invalid json content }',
         );
+        const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678904);
 
-        // Should not throw, should create new settings
-        await updateVSCodeSettings(testProjectDir, '/path/to/godot', 4, false);
+        const recoveredFiles = await updateVSCodeSettings(
+            testProjectDir,
+            '/path/to/godot',
+            4,
+            false,
+        );
 
+        expect(recoveredFiles).toEqual(['/test/project/.vscode/settings.json']);
+        expect(fs.promises.rename).toHaveBeenCalledWith(
+            '/test/project/.vscode/settings.json',
+            '/test/project/.vscode/settings.json.1712345678904.bad',
+        );
         const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
         const writtenSettings = JSON.parse(writeCall[1] as string);
 
@@ -739,6 +822,7 @@ describe('updateVSCodeSettings', () => {
             '/path/to/godot',
         );
         expect(writtenSettings['editor.tabSize']).toBe(4);
+        dateNowSpy.mockRestore();
     });
 
     test('should handle empty settings.json file', async () => {
@@ -758,7 +842,7 @@ describe('updateVSCodeSettings', () => {
         expect(writtenSettings['editor.tabSize']).toBe(4);
     });
 
-    test('should handle settings with comments (JSONC) gracefully', async () => {
+    test('should parse settings with comments (JSONC) without backup', async () => {
         const jsoncContent = `{
     // This is a comment
     "editor.fontSize": 14,
@@ -774,16 +858,49 @@ describe('updateVSCodeSettings', () => {
         );
         vi.mocked(fs.promises.readFile).mockResolvedValue(jsoncContent);
 
-        // Should handle gracefully (JSON.parse will fail, but function should continue)
-        await updateVSCodeSettings(testProjectDir, '/path/to/godot', 4, false);
+        const recoveredFiles = await updateVSCodeSettings(
+            testProjectDir,
+            '/path/to/godot',
+            4,
+            false,
+        );
 
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
         const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
         const writtenSettings = JSON.parse(writeCall[1] as string);
 
-        // Should have fresh launcher settings (fallback behavior)
+        expect(writtenSettings['editor.fontSize']).toBe(14);
+        expect(writtenSettings['files.exclude']['**/.git']).toBe(true);
         expect(writtenSettings['godotTools.editorPath.godot4']).toBe(
             '/path/to/godot',
         );
+    });
+
+    test('should parse settings with trailing commas without backup', async () => {
+        vi.mocked(fs.existsSync).mockImplementation((p) =>
+            p.toString().endsWith('settings.json'),
+        );
+        vi.mocked(fs.promises.readFile).mockResolvedValue(`{
+    "editor.fontSize": 14,
+    "files.exclude": {
+        "**/.git": true,
+    },
+}`);
+
+        const recoveredFiles = await updateVSCodeSettings(
+            testProjectDir,
+            '/path/to/godot',
+            4,
+            false,
+        );
+
+        expect(recoveredFiles).toEqual([]);
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
+        const writtenSettings = JSON.parse(writeCall[1] as string);
+        expect(writtenSettings['editor.fontSize']).toBe(14);
+        expect(writtenSettings['files.exclude']['**/.git']).toBe(true);
     });
 
     test('should overwrite launcher-managed keys but preserve others', async () => {

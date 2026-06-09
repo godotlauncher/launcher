@@ -66,6 +66,7 @@ export type AddProjectToListResult = BackendResult & {
     projects?: ProjectDetails[];
     newProject?: ProjectDetails;
     editorResolution?: AddProjectEditorResolution;
+    recoveredVSCodeConfigFiles?: string[];
 };
 
 export type ChangeProjectEditorResult = BackendResult & {

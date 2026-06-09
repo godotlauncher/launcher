@@ -150,6 +150,29 @@ export const ProjectsView: React.FC = () => {
         );
     };
 
+    const showRecoveredVSCodeConfigWarning = (
+        recoveredFiles?: string[],
+    ): void => {
+        if (!recoveredFiles || recoveredFiles.length === 0) {
+            return;
+        }
+
+        addAlert(
+            t('common:warning'),
+            <div className="space-y-2">
+                <p>{t('messages.recoveredVSCodeConfig')}</p>
+                <ul className="list-disc pl-5">
+                    {recoveredFiles.map((file) => (
+                        <li key={file}>
+                            <code>{file}</code>
+                        </li>
+                    ))}
+                </ul>
+            </div>,
+            <TriangleAlert className="stroke-warning" />,
+        );
+    };
+
     const isProjectEditorDownloading = (project: ProjectDetails): boolean =>
         downloadingReleases.some(
             (release) =>
@@ -168,7 +191,10 @@ export const ProjectsView: React.FC = () => {
 
         if (!result.success) {
             showAddProjectError(result.error);
+            return;
         }
+
+        showRecoveredVSCodeConfigWarning(result.recoveredVSCodeConfigFiles);
     };
 
     const retryAddProject = async (
