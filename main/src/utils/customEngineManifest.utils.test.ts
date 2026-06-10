@@ -104,6 +104,20 @@ describe('parseCustomEngineManifest', () => {
         expect(release.prerelease).toBe(true);
     });
 
+    it('matches universal platform entries', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({
+                ...manifest,
+                platforms: [{ ...manifest.platforms[0], arch: 'universal' }],
+            }),
+        );
+
+        const release = await parseCustomEngineManifest(manifestPath);
+
+        expect(release.editor_path).toBe(editorPath);
+        expect(release.arch).toBe('arm64');
+    });
+
     it('fails when required fields are missing', async () => {
         fsMocks.readFile.mockResolvedValue(
             JSON.stringify({ ...manifest, name: undefined }),
@@ -125,6 +139,45 @@ describe('parseCustomEngineManifest', () => {
 
         fsMocks.readFile.mockResolvedValue(
             JSON.stringify({ ...manifest, flavor: '' }),
+        );
+
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'Invalid custom editor manifest',
+        );
+    });
+
+    it('fails when base_version includes a patch version', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({ ...manifest, base_version: '4.6.1' }),
+        );
+
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'Invalid custom editor manifest',
+        );
+    });
+
+    it('fails when config_version is not 5', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({ ...manifest, config_version: 4 }),
+        );
+
+        await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(
+            'Invalid custom editor manifest',
+        );
+    });
+
+    it('fails when arch is not x64, arm64, or universal', async () => {
+        fsMocks.readFile.mockResolvedValue(
+            JSON.stringify({
+                ...manifest,
+                platforms: [
+                    {
+                        platform: 'macos',
+                        arch: 'ia32',
+                        paths: { editor: './Godot.app' },
+                    },
+                ],
+            }),
         );
 
         await expect(parseCustomEngineManifest(manifestPath)).rejects.toThrow(

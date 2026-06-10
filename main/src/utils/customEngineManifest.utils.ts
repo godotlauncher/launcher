@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 const manifestPlatformSchema = z.object({
     platform: z.enum(['windows', 'linux', 'macos']),
-    arch: z.enum(['x64', 'arm64', 'ia32', 'arm', 'universal']),
+    arch: z.enum(['x64', 'arm64', 'universal']),
     paths: z.object({
         editor: z.string().min(1),
         console: z.string().min(1).optional(),
@@ -18,10 +18,10 @@ const engineManifestSchema = z.object({
     schema_version: z.literal(1),
     version: z.string().min(1),
     name: z.string().min(1),
-    base_version: z.string().regex(/^\d+\.\d+(?:\.\d+)?$/),
+    base_version: z.string().regex(/^\d+\.\d+$/),
     prerelease: z.boolean().optional().default(false),
     flavor: z.string().trim().min(1),
-    config_version: z.union([z.literal(4), z.literal(5)]),
+    config_version: z.literal(5),
     platforms: z.array(manifestPlatformSchema).min(1),
 });
 
