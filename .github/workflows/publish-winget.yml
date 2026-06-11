@@ -1,0 +1,138 @@
+name: Publish Winget
+
+run-name: Publish Winget ${{ inputs.tag }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish to Winget, for example v1.10.0'
+        required: true
+        type: string
+
+concurrency:
+  group: winget-${{ inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  MANIFEST_DIR: winget-manifests
+  PACKAGE_IDENTIFIER: GodotLauncher.Launcher
+
+jobs:
+  publish-winget:
+    name: Submit to winget-pkgs
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INPUT_TAG: ${{ inputs.tag }}
+      WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+    steps:
+      - name: Setup .NET for WingetCreate
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Validate, test, and submit to WinGet
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+
+          $tag = $env:INPUT_TAG.Trim()
+          if (-not $tag.StartsWith('v')) {
+            throw "Expected a v-prefixed release tag, for example v1.10.0. Got '$tag'."
+          }
+
+          $version = $tag.Substring(1)
+          $headers = @{
+            Accept = 'application/vnd.github+json'
+            Authorization = "Bearer $env:GH_TOKEN"
+            'User-Agent' = 'godotlauncher-winget-workflow'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+
+          $release = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/tags/$tag"
+
+          if ($release.draft) {
+            throw "Release '$tag' is a draft. Winget submissions must use public installer URLs."
+          }
+
+          function Get-ReleaseAssetUrl {
+            param([string] $Name)
+
+            $asset = $release.assets | Where-Object { $_.name -eq $Name } | Select-Object -First 1
+            if (-not $asset) {
+              $availableAssets = ($release.assets | ForEach-Object { $_.name }) -join ', '
+              throw "Release '$tag' is missing expected asset '$Name'. Available assets: $availableAssets"
+            }
+
+            return $asset.browser_download_url
+          }
+
+          $x64Url = Get-ReleaseAssetUrl -Name "Godot_Launcher-$version-win_x64.exe"
+          $arm64Url = Get-ReleaseAssetUrl -Name "Godot_Launcher-$version-win_arm64.exe"
+
+          curl.exe -JLO https://aka.ms/wingetcreate/latest
+
+          $manifestDir = Join-Path $PWD $env:MANIFEST_DIR
+          .\wingetcreate.exe update $env:PACKAGE_IDENTIFIER `
+            --version $version `
+            --urls "$x64Url|x64" "$arm64Url|arm64" `
+            --out $manifestDir
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          if (-not (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
+            Install-PackageProvider -Name NuGet -Force | Out-Null
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+            Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery
+            Import-Module Microsoft.WinGet.Client
+            Repair-WinGetPackageManager -AllUsers
+          }
+
+          winget validate --manifest $manifestDir --disable-interactivity
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          winget settings --enable LocalManifestFiles
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          winget install `
+            --manifest $manifestDir `
+            --silent `
+            --accept-package-agreements `
+            --accept-source-agreements `
+            --disable-interactivity
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          winget uninstall `
+            --id $env:PACKAGE_IDENTIFIER `
+            --silent `
+            --disable-interactivity
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          .\wingetcreate.exe submit `
+            --prtitle "Submitting Godot Launcher $version" `
+            --no-open `
+            $manifestDir
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
