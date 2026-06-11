@@ -97,7 +97,12 @@ jobs:
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(npm run --silent changelog -- --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          if [[ "${VERSION}" == *-* ]]; then
+            CHANGELOG_ARGS=(--stdout --latest-version "${VERSION}" --starting-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          else
+            CHANGELOG_ARGS=(--stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          fi
+          NOTES=$(npm run --silent changelog -- "${CHANGELOG_ARGS[@]}")
           {
             echo "notes<<EOF"
             echo "${NOTES}"
