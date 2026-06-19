@@ -51,10 +51,27 @@ function isSupportedCustomEngineManifestName(fileName: string): boolean {
     return SUPPORTED_CUSTOM_ENGINE_MANIFEST_NAMES.includes(fileName);
 }
 
-export const InstallsView: React.FC = () => {
+type InstallsViewProps = {
+    installOpen?: boolean;
+    onInstallOpenChange?: (open: boolean) => void;
+};
+
+export const InstallsView: React.FC<InstallsViewProps> = ({
+    installOpen: controlledInstallOpen,
+    onInstallOpenChange,
+}) => {
     const { t } = useTranslation(['installs', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
-    const [installOpen, setInstallOpen] = useState<boolean>(false);
+    const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
+    const installOpen = controlledInstallOpen ?? localInstallOpen;
+    const setInstallOpen = (open: boolean) => {
+        if (onInstallOpenChange) {
+            onInstallOpenChange(open);
+            return;
+        }
+
+        setLocalInstallOpen(open);
+    };
     const [isDraggingManifest, setIsDraggingManifest] =
         useState<boolean>(false);
     const [isDraggingSupportedManifest, setIsDraggingSupportedManifest] =

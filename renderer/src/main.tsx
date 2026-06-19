@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
+import { HashRouter } from 'react-router';
 import App from './App.tsx';
 import './index.css';
 import { AlertsProvider } from './hooks/useAlerts.tsx';
@@ -23,15 +24,17 @@ ReactDOM.createRoot(rootElement).render(
             <AppProvider>
                 <PreferencesProvider>
                     <ThemeProvider>
-                        <AppNavigationProvider>
-                            <ReleaseProvider>
-                                <ProjectsProvider>
-                                    <AlertsProvider>
-                                        <App />
-                                    </AlertsProvider>
-                                </ProjectsProvider>
-                            </ReleaseProvider>
-                        </AppNavigationProvider>
+                        <HashRouter>
+                            <AppNavigationProvider>
+                                <ReleaseProvider>
+                                    <ProjectsProvider>
+                                        <AlertsProvider>
+                                            <App />
+                                        </AlertsProvider>
+                                    </ProjectsProvider>
+                                </ReleaseProvider>
+                            </AppNavigationProvider>
+                        </HashRouter>
                     </ThemeProvider>
                 </PreferencesProvider>
             </AppProvider>
