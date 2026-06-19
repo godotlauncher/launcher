@@ -15,17 +15,29 @@ import { VSCodeToolSettings } from '../components/settings/vsCodeToolSettings.co
 import { WindowsSymlinkSetting } from '../components/settings/WindowsSymlinkSetting.component';
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
+import type { SettingsTab } from '../routes';
 
-export const SettingsView: React.FC = () => {
+type SettingsViewProps = {
+    activeTab?: SettingsTab;
+    onActiveTabChange?: (tab: SettingsTab) => void;
+};
+
+export const SettingsView: React.FC<SettingsViewProps> = ({
+    activeTab: controlledActiveTab,
+    onActiveTabChange,
+}) => {
     const { t } = useTranslation('settings');
-    const [activeTab, setActiveTab] = useState<
-        | 'projects'
-        | 'installs'
-        | 'appearance'
-        | 'behavior'
-        | 'tools'
-        | 'updates'
-    >('projects');
+    const [localActiveTab, setLocalActiveTab] =
+        useState<SettingsTab>('projects');
+    const activeTab = controlledActiveTab ?? localActiveTab;
+    const setActiveTab = (tab: SettingsTab) => {
+        if (onActiveTabChange) {
+            onActiveTabChange(tab);
+            return;
+        }
+
+        setLocalActiveTab(tab);
+    };
     const { preferences, savePreferences } = usePreferences();
 
     const { theme, setTheme } = useTheme();

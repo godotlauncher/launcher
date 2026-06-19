@@ -56,10 +56,27 @@ function getInvalidProjectMessageKey(project: ProjectDetails): string {
     }
 }
 
-export const ProjectsView: React.FC = () => {
+type ProjectsViewProps = {
+    createOpen?: boolean;
+    onCreateOpenChange?: (open: boolean) => void;
+};
+
+export const ProjectsView: React.FC<ProjectsViewProps> = ({
+    createOpen: controlledCreateOpen,
+    onCreateOpenChange,
+}) => {
     const { t } = useTranslation(['projects', 'common']);
     const [textSearch, setTextSearch] = useState<string>('');
-    const [createOpen, setCreateOpen] = useState<boolean>(false);
+    const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
+    const createOpen = controlledCreateOpen ?? localCreateOpen;
+    const setCreateOpen = (open: boolean) => {
+        if (onCreateOpenChange) {
+            onCreateOpenChange(open);
+            return;
+        }
+
+        setLocalCreateOpen(open);
+    };
 
     const [changeEditorFor, setChangeEditorFor] =
         useState<ProjectDetails | null>();

@@ -31,8 +31,8 @@ test.beforeEach(async () => {
 
   await mainPage.getByTestId('btnSettings').click();
   const settingsView = await mainPage.getByTestId('settingsTitle');
-  expect(settingsView).toHaveCount(1);
-  expect(settingsView.isVisible()).toBeTruthy();
+  await expect(settingsView).toHaveCount(1);
+  await expect(settingsView).toBeVisible();
   await mainPage.getByTestId("tabAppearance").click();
 
 });

@@ -74,6 +74,7 @@
         "react": "^19.2.7",
         "react-dom": "^19.2.7",
         "react-i18next": "^17.0.8",
+        "react-router": "^8.0.1",
         "reflect-metadata": "^0.2.2",
         "semver": "^7.8.2",
         "which": "^7.0.0",
