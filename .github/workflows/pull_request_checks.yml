@@ -17,10 +17,13 @@ jobs:
 
       # Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24' # Adjust the version as needed
+          node-version: '24'
           cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
 
       # Install dependencies
       - name: Install dependencies
