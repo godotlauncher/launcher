@@ -3,7 +3,7 @@
   "tabs": {},
   "buttons": {
     "install": "Install Editor",
-    "addCustomEditor": "Add Custom Editor",
+    "addCustomEditor": "Custom Editor",
     "selectCustomEditorManifest": "Select manifest file",
     "createCustomEditorManifest": "Create custom editor manifest"
   },

@@ -124,6 +124,7 @@ body,
 
 
 select:focus, input:focus {
-  user-select: none;
-  outline: none !important;
+  /* user-select: none; */
+  /* outline: none !important; */
+  @apply outline-none;
 }

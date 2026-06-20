@@ -3,9 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "Installa editor",
-    "addCustomEditor": "Add Custom Editor",
-    "selectCustomEditorManifest": "Select manifest file",
-    "createCustomEditorManifest": "Create custom editor manifest"
+    "addCustomEditor": "Editor personalizzato",
+    "selectCustomEditorManifest": "Seleziona file manifest",
+    "createCustomEditorManifest": "Crea manifest editor personalizzato"
   },
   "search": {
     "placeholder": "Cerca"
@@ -16,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "pre-release",
-    "custom": "Custom"
+    "custom": "Personalizzato"
   },
   "status": {
     "installing": "Installazione in corso..."
@@ -30,72 +30,72 @@
     "revalidationStillMissingNoPath": "La verifica è terminata ma {{version}} è ancora indisponibile. Assicurati che il dispositivo di archiviazione sia montato prima di riprovare.",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
     "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "registeredCustomEditor": "Editor personalizzato {{name}} registrato.",
+    "registerCustomEditorFailed": "Impossibile registrare l’editor personalizzato.",
+    "unavailableCustomEditorHint": "Il percorso dell’editor personalizzato non è accessibile. Monta il dispositivo di archiviazione e riprova, oppure rimuovi questa voce."
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "Aggiungi manifest editor personalizzato",
+    "manifestFilterName": "Manifest editor Godot Launcher",
+    "waitingForDialog": "In attesa della finestra di dialogo...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "Sostituire l’editor personalizzato?",
+      "message": "Un editor personalizzato con questa versione è già registrato.",
+      "versionLabel": "Versione",
+      "detail": "La sostituzione aggiornerà il record del launcher per usare il manifest selezionato. I file dell’editor non saranno eliminati."
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "Rilascia il manifest per aggiungere l’editor personalizzato",
+      "unsupportedTitle": "File manifest non supportato",
+      "helperPrefix": "Rilascia",
+      "helperSuffix": "qui."
     },
     "creator": {
-      "title": "Create Custom Editor Manifest",
-      "description": "Create a manifest file for a custom Godot editor and register it immediately.",
+      "title": "Crea manifest editor personalizzato",
+      "description": "Crea un file manifest per un editor Godot personalizzato e registralo immediatamente.",
       "fields": {
         "outputDirectory": {
-          "label": "Output folder",
-          "help": "Folder where godotlauncher-editor-manifest.json will be written."
+          "label": "Cartella di output",
+          "help": "Cartella in cui verrà scritto godotlauncher-editor-manifest.json."
         },
         "name": {
-          "label": "Display name",
-          "help": "Name shown in Godot Launcher for this custom editor.",
-          "placeholder": "Acme Godot 4.4 Custom Editor"
+          "label": "Nome visualizzato",
+          "help": "Nome mostrato in Godot Launcher per questo editor personalizzato.",
+          "placeholder": "Editor personalizzato Acme Godot 4.4"
         },
         "version": {
-          "label": "Manifest version",
-          "help": "Unique version identifier for this custom editor.",
+          "label": "Versione manifest",
+          "help": "Identificatore di versione univoco per questo editor personalizzato.",
           "placeholder": "4.4-custom.1"
         },
         "baseVersion": {
-          "label": "Base version",
-          "help": "Godot compatibility version in major.minor format.",
+          "label": "Versione base",
+          "help": "Versione di compatibilità Godot nel formato major.minor.",
           "placeholder": "4.4"
         },
         "flavor": {
-          "label": "Flavor",
-          "help": "Use gdscript for standard builds or dotnet for .NET builds. Custom values are allowed."
+          "label": "Variante",
+          "help": "Usa gdscript per build standard o dotnet per build .NET. Sono consentiti valori personalizzati."
         },
         "prerelease": {
           "label": "Prerelease",
-          "help": "Mark this editor as a prerelease build."
+          "help": "Contrassegna questo editor come build prerelease."
         },
         "platform": {
-          "label": "Platform",
-          "help": "Operating system this manifest entry supports."
+          "label": "Piattaforma",
+          "help": "Sistema operativo supportato da questa voce del manifest."
         },
         "arch": {
-          "label": "Architecture",
-          "help": "CPU architecture this editor supports. Universal works on any architecture for the selected platform."
+          "label": "Architettura",
+          "help": "Architettura CPU supportata da questo editor. Universal funziona su qualsiasi architettura per la piattaforma selezionata."
         },
         "editorPath": {
-          "label": "Editor path",
-          "help": "Path to the custom Godot editor executable or app bundle."
+          "label": "Percorso editor",
+          "help": "Percorso dell’eseguibile o app bundle dell’editor Godot personalizzato."
         },
         "consolePath": {
-          "label": "Console path",
-          "help": "Optional path to a console executable for this editor."
+          "label": "Percorso console",
+          "help": "Percorso facoltativo di un eseguibile console per questo editor."
         }
       },
       "platforms": {
@@ -109,43 +109,43 @@
         "arm64": "ARM64"
       },
       "constants": {
-        "title": "Generated values:",
-        "description": "schema_version is 1 and config_version is 5."
+        "title": "Valori generati:",
+        "description": "schema_version è 1 e config_version è 5."
       },
       "actions": {
-        "selectOutputDirectory": "Select output folder",
-        "selectEditorPath": "Select editor path",
-        "selectConsolePath": "Select console path",
-        "createAndRegister": "Create and register",
-        "creating": "Creating...",
-        "clearPlatform": "Clear platform"
+        "selectOutputDirectory": "Seleziona cartella di output",
+        "selectEditorPath": "Seleziona percorso editor",
+        "selectConsolePath": "Seleziona percorso console",
+        "createAndRegister": "Crea e registra",
+        "creating": "Creazione...",
+        "clearPlatform": "Cancella piattaforma"
       },
       "validation": {
         "outputDirectory": {
-          "required": "Output folder is required.",
-          "pathMissing": "Output folder does not exist."
+          "required": "La cartella di output è obbligatoria.",
+          "pathMissing": "La cartella di output non esiste."
         },
         "name": {
-          "required": "Display name is required."
+          "required": "Il nome visualizzato è obbligatorio."
         },
         "version": {
-          "required": "Manifest version is required."
+          "required": "La versione manifest è obbligatoria."
         },
         "baseVersion": {
-          "required": "Base version is required.",
-          "baseVersion": "Base version must use major.minor format, for example 4.4."
+          "required": "La versione base è obbligatoria.",
+          "baseVersion": "La versione base deve usare il formato major.minor, ad esempio 4.4."
         },
         "flavor": {
-          "required": "Flavor is required."
+          "required": "La variante è obbligatoria."
         },
         "editorPath": {
-          "required": "Editor path is required.",
-          "pathMissing": "Editor path does not exist."
+          "required": "Il percorso editor è obbligatorio.",
+          "pathMissing": "Il percorso editor non esiste."
         },
         "consolePath": {
-          "pathMissing": "Console path does not exist."
+          "pathMissing": "Il percorso console non esiste."
         },
-        "createFailed": "Failed to create custom editor manifest."
+        "createFailed": "Impossibile creare il manifest dell’editor personalizzato."
       }
     }
   }

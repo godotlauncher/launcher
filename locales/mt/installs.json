@@ -3,9 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "Installa Editur",
-    "addCustomEditor": "Add Custom Editor",
-    "selectCustomEditorManifest": "Select manifest file",
-    "createCustomEditorManifest": "Create custom editor manifest"
+    "addCustomEditor": "Editur personalizzat",
+    "selectCustomEditorManifest": "Agħżel fajl tal-manifest",
+    "createCustomEditorManifest": "Oħloq manifest tal-editur personalizzat"
   },
   "search": {
     "placeholder": "Fittex"
@@ -16,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "pre-rilaxx",
-    "custom": "Custom"
+    "custom": "Personalizzat"
   },
   "status": {
     "installing": "Qed jinstalla..."
@@ -30,72 +30,72 @@
     "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova.",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
     "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "registeredCustomEditor": "Editur personalizzat {{name}} ġie rreġistrat.",
+    "registerCustomEditorFailed": "Ma rnexxilniex nirreġistraw l-editur personalizzat.",
+    "unavailableCustomEditorHint": "Il-passaġġ tal-editur personalizzat mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, jew neħħi din l-entrata."
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "Żid manifest tal-editur personalizzat",
+    "manifestFilterName": "Manifest tal-editur ta’ Godot Launcher",
+    "waitingForDialog": "Qed nistennew id-djalogu...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "Tissostitwixxi l-editur personalizzat?",
+      "message": "Editur personalizzat b’din il-verżjoni diġà huwa rreġistrat.",
+      "versionLabel": "Verżjoni",
+      "detail": "Is-sostituzzjoni taġġorna r-rekord fil-launcher biex juża l-manifest magħżul. Il-fajls tal-editur tiegħek ma jitħassrux."
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "Waqqa’ l-manifest biex iżżid editur personalizzat",
+      "unsupportedTitle": "Fajl tal-manifest mhux appoġġjat",
+      "helperPrefix": "Waqqa’",
+      "helperSuffix": "hawn."
     },
     "creator": {
-      "title": "Create Custom Editor Manifest",
-      "description": "Create a manifest file for a custom Godot editor and register it immediately.",
+      "title": "Oħloq manifest tal-editur personalizzat",
+      "description": "Oħloq fajl tal-manifest għal editur Godot personalizzat u rreġistrah immedjatament.",
       "fields": {
         "outputDirectory": {
-          "label": "Output folder",
-          "help": "Folder where godotlauncher-editor-manifest.json will be written."
+          "label": "Folder tal-output",
+          "help": "Folder fejn jinkiteb godotlauncher-editor-manifest.json."
         },
         "name": {
-          "label": "Display name",
-          "help": "Name shown in Godot Launcher for this custom editor.",
-          "placeholder": "Acme Godot 4.4 Custom Editor"
+          "label": "Isem għall-wiri",
+          "help": "Isem muri f’Godot Launcher għal dan l-editur personalizzat.",
+          "placeholder": "Editur personalizzat Acme Godot 4.4"
         },
         "version": {
-          "label": "Manifest version",
-          "help": "Unique version identifier for this custom editor.",
+          "label": "Verżjoni tal-manifest",
+          "help": "Identifikatur uniku tal-verżjoni għal dan l-editur personalizzat.",
           "placeholder": "4.4-custom.1"
         },
         "baseVersion": {
-          "label": "Base version",
-          "help": "Godot compatibility version in major.minor format.",
+          "label": "Verżjoni bażi",
+          "help": "Verżjoni ta’ kompatibbiltà ta’ Godot fil-format major.minor.",
           "placeholder": "4.4"
         },
         "flavor": {
-          "label": "Flavor",
-          "help": "Use gdscript for standard builds or dotnet for .NET builds. Custom values are allowed."
+          "label": "Varjant",
+          "help": "Uża gdscript għal builds standard jew dotnet għal builds .NET. Valuri personalizzati huma permessi."
         },
         "prerelease": {
-          "label": "Prerelease",
-          "help": "Mark this editor as a prerelease build."
+          "label": "Pre-rilaxx",
+          "help": "Immarka dan l-editur bħala build ta’ pre-rilaxx."
         },
         "platform": {
-          "label": "Platform",
-          "help": "Operating system this manifest entry supports."
+          "label": "Pjattaforma",
+          "help": "Sistema operattiva appoġġjata minn din l-entrata tal-manifest."
         },
         "arch": {
-          "label": "Architecture",
-          "help": "CPU architecture this editor supports. Universal works on any architecture for the selected platform."
+          "label": "Arkitettura",
+          "help": "Arkitettura tas-CPU appoġġjata minn dan l-editur. Universal jaħdem fuq kwalunkwe arkitettura għall-pjattaforma magħżula."
         },
         "editorPath": {
-          "label": "Editor path",
-          "help": "Path to the custom Godot editor executable or app bundle."
+          "label": "Passaġġ tal-editur",
+          "help": "Passaġġ għall-eżekutibbli jew app bundle tal-editur Godot personalizzat."
         },
         "consolePath": {
-          "label": "Console path",
-          "help": "Optional path to a console executable for this editor."
+          "label": "Passaġġ tal-console",
+          "help": "Passaġġ fakultattiv għal eżekutibbli tal-console għal dan l-editur."
         }
       },
       "platforms": {
@@ -109,43 +109,43 @@
         "arm64": "ARM64"
       },
       "constants": {
-        "title": "Generated values:",
-        "description": "schema_version is 1 and config_version is 5."
+        "title": "Valuri ġġenerati:",
+        "description": "schema_version huwa 1 u config_version huwa 5."
       },
       "actions": {
-        "selectOutputDirectory": "Select output folder",
-        "selectEditorPath": "Select editor path",
-        "selectConsolePath": "Select console path",
-        "createAndRegister": "Create and register",
-        "creating": "Creating...",
-        "clearPlatform": "Clear platform"
+        "selectOutputDirectory": "Agħżel folder tal-output",
+        "selectEditorPath": "Agħżel passaġġ tal-editur",
+        "selectConsolePath": "Agħżel passaġġ tal-console",
+        "createAndRegister": "Oħloq u rreġistra",
+        "creating": "Qed jinħoloq...",
+        "clearPlatform": "Neħħi l-pjattaforma"
       },
       "validation": {
         "outputDirectory": {
-          "required": "Output folder is required.",
-          "pathMissing": "Output folder does not exist."
+          "required": "Il-folder tal-output huwa meħtieġ.",
+          "pathMissing": "Il-folder tal-output ma jeżistix."
         },
         "name": {
-          "required": "Display name is required."
+          "required": "L-isem għall-wiri huwa meħtieġ."
         },
         "version": {
-          "required": "Manifest version is required."
+          "required": "Il-verżjoni tal-manifest hija meħtieġa."
         },
         "baseVersion": {
-          "required": "Base version is required.",
-          "baseVersion": "Base version must use major.minor format, for example 4.4."
+          "required": "Il-verżjoni bażi hija meħtieġa.",
+          "baseVersion": "Il-verżjoni bażi trid tuża l-format major.minor, pereżempju 4.4."
         },
         "flavor": {
-          "required": "Flavor is required."
+          "required": "Il-varjant huwa meħtieġ."
         },
         "editorPath": {
-          "required": "Editor path is required.",
-          "pathMissing": "Editor path does not exist."
+          "required": "Il-passaġġ tal-editur huwa meħtieġ.",
+          "pathMissing": "Il-passaġġ tal-editur ma jeżistix."
         },
         "consolePath": {
-          "pathMissing": "Console path does not exist."
+          "pathMissing": "Il-passaġġ tal-console ma jeżistix."
         },
-        "createFailed": "Failed to create custom editor manifest."
+        "createFailed": "Ma rnexxilniex noħolqu l-manifest tal-editur personalizzat."
       }
     }
   }

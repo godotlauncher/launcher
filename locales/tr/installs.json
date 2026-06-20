@@ -3,9 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "Editör Yükle",
-    "addCustomEditor": "Add Custom Editor",
-    "selectCustomEditorManifest": "Select manifest file",
-    "createCustomEditorManifest": "Create custom editor manifest"
+    "addCustomEditor": "Özel editör",
+    "selectCustomEditorManifest": "Manifest dosyası seç",
+    "createCustomEditorManifest": "Özel editör manifesti oluştur"
   },
   "search": {
     "placeholder": "Ara"
@@ -16,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "ön sürüm",
-    "custom": "Custom"
+    "custom": "Özel"
   },
   "status": {
     "installing": "Yükleniyor..."
@@ -30,72 +30,72 @@
     "revalidationStillMissingNoPath": "Doğrulama tamamlandı ancak {{version}} hâlâ kullanılamıyor. Yeniden denemeden önce depolama aygıtının takılı olduğundan emin olun.",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
     "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "registeredCustomEditor": "Özel editör {{name}} kaydedildi.",
+    "registerCustomEditorFailed": "Özel editör kaydedilemedi.",
+    "unavailableCustomEditorHint": "Özel editör yoluna erişilemiyor. Depolama aygıtını bağlayıp yeniden deneyin veya bu girdiyi kaldırın."
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "Özel editör manifesti ekle",
+    "manifestFilterName": "Godot Launcher editör manifesti",
+    "waitingForDialog": "İletişim kutusu bekleniyor...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "Özel editör değiştirilsin mi?",
+      "message": "Bu sürüme sahip bir özel editör zaten kayıtlı.",
+      "versionLabel": "Sürüm",
+      "detail": "Değiştirme, launcher kaydını seçilen manifesti kullanacak şekilde günceller. Editör dosyalarınız silinmez."
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "Özel editör eklemek için manifesti bırakın",
+      "unsupportedTitle": "Desteklenmeyen manifest dosyası",
+      "helperPrefix": "Bırakın",
+      "helperSuffix": "buraya."
     },
     "creator": {
-      "title": "Create Custom Editor Manifest",
-      "description": "Create a manifest file for a custom Godot editor and register it immediately.",
+      "title": "Özel editör manifesti oluştur",
+      "description": "Özel bir Godot editörü için manifest dosyası oluşturun ve hemen kaydedin.",
       "fields": {
         "outputDirectory": {
-          "label": "Output folder",
-          "help": "Folder where godotlauncher-editor-manifest.json will be written."
+          "label": "Çıktı klasörü",
+          "help": "godotlauncher-editor-manifest.json dosyasının yazılacağı klasör."
         },
         "name": {
-          "label": "Display name",
-          "help": "Name shown in Godot Launcher for this custom editor.",
-          "placeholder": "Acme Godot 4.4 Custom Editor"
+          "label": "Görünen ad",
+          "help": "Bu özel editör için Godot Launcher’da gösterilen ad.",
+          "placeholder": "Acme Godot 4.4 özel editör"
         },
         "version": {
-          "label": "Manifest version",
-          "help": "Unique version identifier for this custom editor.",
+          "label": "Manifest sürümü",
+          "help": "Bu özel editör için benzersiz sürüm tanımlayıcısı.",
           "placeholder": "4.4-custom.1"
         },
         "baseVersion": {
-          "label": "Base version",
-          "help": "Godot compatibility version in major.minor format.",
+          "label": "Temel sürüm",
+          "help": "major.minor biçimindeki Godot uyumluluk sürümü.",
           "placeholder": "4.4"
         },
         "flavor": {
-          "label": "Flavor",
-          "help": "Use gdscript for standard builds or dotnet for .NET builds. Custom values are allowed."
+          "label": "Tür",
+          "help": "Standart derlemeler için gdscript, .NET derlemeleri için dotnet kullanın. Özel değerlere izin verilir."
         },
         "prerelease": {
-          "label": "Prerelease",
-          "help": "Mark this editor as a prerelease build."
+          "label": "Ön sürüm",
+          "help": "Bu editörü ön sürüm derlemesi olarak işaretle."
         },
         "platform": {
           "label": "Platform",
-          "help": "Operating system this manifest entry supports."
+          "help": "Bu manifest girdisinin desteklediği işletim sistemi."
         },
         "arch": {
-          "label": "Architecture",
-          "help": "CPU architecture this editor supports. Universal works on any architecture for the selected platform."
+          "label": "Mimari",
+          "help": "Bu editörün desteklediği CPU mimarisi. Universal, seçilen platformdaki tüm mimarilerde çalışır."
         },
         "editorPath": {
-          "label": "Editor path",
-          "help": "Path to the custom Godot editor executable or app bundle."
+          "label": "Editör yolu",
+          "help": "Özel Godot editörü yürütülebilir dosyasına veya uygulama paketine giden yol."
         },
         "consolePath": {
-          "label": "Console path",
-          "help": "Optional path to a console executable for this editor."
+          "label": "Konsol yolu",
+          "help": "Bu editör için isteğe bağlı konsol yürütülebilir dosyası yolu."
         }
       },
       "platforms": {
@@ -109,43 +109,43 @@
         "arm64": "ARM64"
       },
       "constants": {
-        "title": "Generated values:",
-        "description": "schema_version is 1 and config_version is 5."
+        "title": "Oluşturulan değerler:",
+        "description": "schema_version 1 ve config_version 5 değerindedir."
       },
       "actions": {
-        "selectOutputDirectory": "Select output folder",
-        "selectEditorPath": "Select editor path",
-        "selectConsolePath": "Select console path",
-        "createAndRegister": "Create and register",
-        "creating": "Creating...",
-        "clearPlatform": "Clear platform"
+        "selectOutputDirectory": "Çıktı klasörü seç",
+        "selectEditorPath": "Editör yolunu seç",
+        "selectConsolePath": "Konsol yolunu seç",
+        "createAndRegister": "Oluştur ve kaydet",
+        "creating": "Oluşturuluyor...",
+        "clearPlatform": "Platformu temizle"
       },
       "validation": {
         "outputDirectory": {
-          "required": "Output folder is required.",
-          "pathMissing": "Output folder does not exist."
+          "required": "Çıktı klasörü gerekli.",
+          "pathMissing": "Çıktı klasörü yok."
         },
         "name": {
-          "required": "Display name is required."
+          "required": "Görünen ad gerekli."
         },
         "version": {
-          "required": "Manifest version is required."
+          "required": "Manifest sürümü gerekli."
         },
         "baseVersion": {
-          "required": "Base version is required.",
-          "baseVersion": "Base version must use major.minor format, for example 4.4."
+          "required": "Temel sürüm gerekli.",
+          "baseVersion": "Temel sürüm major.minor biçimini kullanmalıdır, örneğin 4.4."
         },
         "flavor": {
-          "required": "Flavor is required."
+          "required": "Tür gerekli."
         },
         "editorPath": {
-          "required": "Editor path is required.",
-          "pathMissing": "Editor path does not exist."
+          "required": "Editör yolu gerekli.",
+          "pathMissing": "Editör yolu yok."
         },
         "consolePath": {
-          "pathMissing": "Console path does not exist."
+          "pathMissing": "Konsol yolu yok."
         },
-        "createFailed": "Failed to create custom editor manifest."
+        "createFailed": "Özel editör manifesti oluşturulamadı."
       }
     }
   }

@@ -3,9 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "安裝編輯器",
-    "addCustomEditor": "Add Custom Editor",
-    "selectCustomEditorManifest": "Select manifest file",
-    "createCustomEditorManifest": "Create custom editor manifest"
+    "addCustomEditor": "自訂編輯器",
+    "selectCustomEditorManifest": "選擇清單檔案",
+    "createCustomEditorManifest": "建立自訂編輯器清單"
   },
   "search": {
     "placeholder": "搜尋"
@@ -16,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "預先釋出",
-    "custom": "Custom"
+    "custom": "自訂"
   },
   "status": {
     "installing": "安裝中…"
@@ -30,72 +30,72 @@
     "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
     "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "registeredCustomEditor": "已註冊自訂編輯器 {{name}}。",
+    "registerCustomEditorFailed": "無法註冊自訂編輯器。",
+    "unavailableCustomEditorHint": "無法存取自訂編輯器路徑。請掛載儲存裝置後重試，或移除此項目。"
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "新增自訂編輯器清單",
+    "manifestFilterName": "Godot Launcher 編輯器清單",
+    "waitingForDialog": "正在等待對話框...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "取代自訂編輯器？",
+      "message": "已註冊此版本的自訂編輯器。",
+      "versionLabel": "版本",
+      "detail": "取代後，啟動器記錄會更新為使用選取的清單。不會刪除你的編輯器檔案。"
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "拖放清單以新增自訂編輯器",
+      "unsupportedTitle": "不支援的清單檔案",
+      "helperPrefix": "拖放",
+      "helperSuffix": "到這裡。"
     },
     "creator": {
-      "title": "Create Custom Editor Manifest",
-      "description": "Create a manifest file for a custom Godot editor and register it immediately.",
+      "title": "建立自訂編輯器清單",
+      "description": "建立自訂 Godot 編輯器的清單檔案並立即註冊。",
       "fields": {
         "outputDirectory": {
-          "label": "Output folder",
-          "help": "Folder where godotlauncher-editor-manifest.json will be written."
+          "label": "輸出資料夾",
+          "help": "寫入 godotlauncher-editor-manifest.json 的資料夾。"
         },
         "name": {
-          "label": "Display name",
-          "help": "Name shown in Godot Launcher for this custom editor.",
-          "placeholder": "Acme Godot 4.4 Custom Editor"
+          "label": "顯示名稱",
+          "help": "此自訂編輯器在 Godot Launcher 中顯示的名稱。",
+          "placeholder": "Acme Godot 4.4 自訂編輯器"
         },
         "version": {
-          "label": "Manifest version",
-          "help": "Unique version identifier for this custom editor.",
+          "label": "清單版本",
+          "help": "此自訂編輯器的唯一版本識別碼。",
           "placeholder": "4.4-custom.1"
         },
         "baseVersion": {
-          "label": "Base version",
-          "help": "Godot compatibility version in major.minor format.",
+          "label": "基礎版本",
+          "help": "major.minor 格式的 Godot 相容版本。",
           "placeholder": "4.4"
         },
         "flavor": {
-          "label": "Flavor",
-          "help": "Use gdscript for standard builds or dotnet for .NET builds. Custom values are allowed."
+          "label": "類型",
+          "help": "標準建置使用 gdscript，.NET 建置使用 dotnet。允許自訂值。"
         },
         "prerelease": {
-          "label": "Prerelease",
-          "help": "Mark this editor as a prerelease build."
+          "label": "預發布",
+          "help": "將此編輯器標記為預發布建置。"
         },
         "platform": {
-          "label": "Platform",
-          "help": "Operating system this manifest entry supports."
+          "label": "平台",
+          "help": "此清單項目支援的作業系統。"
         },
         "arch": {
-          "label": "Architecture",
-          "help": "CPU architecture this editor supports. Universal works on any architecture for the selected platform."
+          "label": "架構",
+          "help": "此編輯器支援的 CPU 架構。通用適用於所選平台的任何架構。"
         },
         "editorPath": {
-          "label": "Editor path",
-          "help": "Path to the custom Godot editor executable or app bundle."
+          "label": "編輯器路徑",
+          "help": "自訂 Godot 編輯器可執行檔或應用程式套件的路徑。"
         },
         "consolePath": {
-          "label": "Console path",
-          "help": "Optional path to a console executable for this editor."
+          "label": "主控台路徑",
+          "help": "此編輯器的選用主控台可執行檔路徑。"
         }
       },
       "platforms": {
@@ -104,48 +104,48 @@
         "macos": "macOS"
       },
       "architectures": {
-        "universal": "Universal",
+        "universal": "通用",
         "x64": "x64",
         "arm64": "ARM64"
       },
       "constants": {
-        "title": "Generated values:",
-        "description": "schema_version is 1 and config_version is 5."
+        "title": "產生的值：",
+        "description": "schema_version 為 1，config_version 為 5。"
       },
       "actions": {
-        "selectOutputDirectory": "Select output folder",
-        "selectEditorPath": "Select editor path",
-        "selectConsolePath": "Select console path",
-        "createAndRegister": "Create and register",
-        "creating": "Creating...",
-        "clearPlatform": "Clear platform"
+        "selectOutputDirectory": "選擇輸出資料夾",
+        "selectEditorPath": "選擇編輯器路徑",
+        "selectConsolePath": "選擇主控台路徑",
+        "createAndRegister": "建立並註冊",
+        "creating": "正在建立...",
+        "clearPlatform": "清除平台"
       },
       "validation": {
         "outputDirectory": {
-          "required": "Output folder is required.",
-          "pathMissing": "Output folder does not exist."
+          "required": "輸出資料夾為必填項目。",
+          "pathMissing": "輸出資料夾不存在。"
         },
         "name": {
-          "required": "Display name is required."
+          "required": "顯示名稱為必填項目。"
         },
         "version": {
-          "required": "Manifest version is required."
+          "required": "清單版本為必填項目。"
         },
         "baseVersion": {
-          "required": "Base version is required.",
-          "baseVersion": "Base version must use major.minor format, for example 4.4."
+          "required": "基礎版本為必填項目。",
+          "baseVersion": "基礎版本必須使用 major.minor 格式，例如 4.4。"
         },
         "flavor": {
-          "required": "Flavor is required."
+          "required": "類型為必填項目。"
         },
         "editorPath": {
-          "required": "Editor path is required.",
-          "pathMissing": "Editor path does not exist."
+          "required": "編輯器路徑為必填項目。",
+          "pathMissing": "編輯器路徑不存在。"
         },
         "consolePath": {
-          "pathMissing": "Console path does not exist."
+          "pathMissing": "主控台路徑不存在。"
         },
-        "createFailed": "Failed to create custom editor manifest."
+        "createFailed": "無法建立自訂編輯器清單。"
       }
     }
   }
