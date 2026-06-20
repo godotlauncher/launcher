@@ -166,6 +166,12 @@ describe('Drawer', () => {
                 defaultPrevented: true,
             }),
         ).toBe(false);
+        expect(
+            shouldCloseDrawerOnEscape(
+                { key: 'Escape' },
+                { hasOpenPopover: true },
+            ),
+        ).toBe(false);
     });
 
     it('creates a close button handler that closes unless the click is prevented', () => {

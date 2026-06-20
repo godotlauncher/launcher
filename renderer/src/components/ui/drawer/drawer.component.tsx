@@ -72,6 +72,11 @@ type DrawerEscapeEvent = {
     defaultPrevented?: boolean;
 };
 
+type DrawerEscapeOptions = {
+    closeOnEscape?: boolean;
+    hasOpenPopover?: boolean;
+};
+
 const drawerTransitionMs = 200;
 
 const drawerSideClassNames: Record<
@@ -133,9 +138,25 @@ export function shouldCloseDrawerOnBackdropClick(
 
 export function shouldCloseDrawerOnEscape(
     event: DrawerEscapeEvent,
-    closeOnEscape = true,
+    optionsOrCloseOnEscape: DrawerEscapeOptions | boolean = true,
 ): boolean {
-    return closeOnEscape && !event.defaultPrevented && event.key === 'Escape';
+    const options =
+        typeof optionsOrCloseOnEscape === 'boolean'
+            ? { closeOnEscape: optionsOrCloseOnEscape }
+            : optionsOrCloseOnEscape;
+    return (
+        (options.closeOnEscape ?? true) &&
+        !options.hasOpenPopover &&
+        !event.defaultPrevented &&
+        event.key === 'Escape'
+    );
+}
+
+function hasOpenPopover(): boolean {
+    return (
+        typeof document !== 'undefined' &&
+        Boolean(document.querySelector(':popover-open'))
+    );
 }
 
 export function createDrawerCloseButtonClickHandler(
@@ -387,7 +408,12 @@ const DrawerRoot: React.FC<DrawerProps> = ({
         }
 
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (shouldCloseDrawerOnEscape(event, closeOnEscape)) {
+            if (
+                shouldCloseDrawerOnEscape(event, {
+                    closeOnEscape,
+                    hasOpenPopover: hasOpenPopover(),
+                })
+            ) {
                 event.preventDefault();
                 onOpenChange(false);
                 return;

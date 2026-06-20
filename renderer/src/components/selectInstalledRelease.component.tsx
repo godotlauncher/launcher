@@ -1,11 +1,11 @@
 import type { InstalledRelease } from '@shared';
-import { TriangleAlert } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
-import { sortReleases } from '../releaseStoring.utils';
 import { InstallEditorSubView } from '../views/subViews/installEditor.subview';
 import { CloseButton } from './closeButton.component';
+import { getSelectableInstalledReleaseRows } from './selectInstalledRelease/selectInstalledRelease.model';
+import { SelectInstalledReleaseTable } from './selectInstalledRelease/selectInstalledReleaseTable.component';
 
 type InstalledReleaseSelectorProps = {
     title: string;
@@ -18,12 +18,8 @@ export const InstalledReleaseSelector: React.FC<
     InstalledReleaseSelectorProps
 > = ({ title, currentRelease, onReleaseSelected, onClose }) => {
     const { t } = useTranslation('common');
-    // const [textSearch, setTextSearch] = useState<string>("");
     const [selectedRelease, setSelectedRelease] =
         useState<InstalledRelease | null>(currentRelease);
-    const [filteredReleases, setFilteredReleases] = useState<
-        InstalledRelease[]
-    >([]);
     const [showInstallEditor, setShowInstallEditor] = useState<boolean>(false);
     const { installedReleases, downloadingReleases } = useRelease();
 
@@ -35,36 +31,15 @@ export const InstalledReleaseSelector: React.FC<
         }
     }, [currentRelease]);
 
-    const getFilteredRows = useCallback(() => {
-        // merge downloading and installed releases for proper display
-        const all = installedReleases
-            .filter(
-                (r) =>
-                    parseInt(r.version_number.toString(), 10) >=
-                    parseInt(currentRelease.version_number.toString(), 10),
-            )
-            .concat(
-                downloadingReleases.map((r) => ({
-                    version: r.version,
-                    version_number: -1,
-                    install_path: '',
-                    mono: r.mono,
-                    platform: '',
-                    arch: '',
-                    editor_path: '',
-                    prerelease: r.prerelease,
-                    config_version: 5,
-                    published_at: r.published_at,
-                    valid: true,
-                })),
-            );
-
-        return all.sort(sortReleases);
-    }, [installedReleases, downloadingReleases, currentRelease]);
-
-    useEffect(() => {
-        setFilteredReleases(getFilteredRows());
-    }, [getFilteredRows]);
+    const filteredReleases = useMemo(
+        () =>
+            getSelectableInstalledReleaseRows(
+                installedReleases,
+                downloadingReleases,
+                currentRelease,
+            ),
+        [installedReleases, downloadingReleases, currentRelease],
+    );
 
     return (
         <div className="absolute inset-0 z-20">
@@ -88,190 +63,16 @@ export const InstalledReleaseSelector: React.FC<
                     </div>
                     <div className="divider"></div>
                     <div className="flex flex-col gap-4">
-                        <table className="table table-md">
-                            <thead className="sticky top-0 bg-base-200 text-xs">
-                                <tr>
-                                    <th className="w-12"></th>
-                                    <th>
-                                        {t('selectRelease.tableHeaders.name')}
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="overflow-y-auto select-none">
-                                {filteredReleases.length === 0 && (
-                                    <tr>
-                                        <td colSpan={2} className="">
-                                            <div className="flex flex-row gap-2 text-warning items-center">
-                                                <TriangleAlert className="stroke-warning" />
-                                                {t('selectRelease.noReleases', {
-                                                    version: parseInt(
-                                                        currentRelease.version_number.toString(),
-                                                        10,
-                                                    ),
-                                                })}
-                                            </div>
-                                            <div>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-link"
-                                                    onClick={() =>
-                                                        setShowInstallEditor(
-                                                            true,
-                                                        )
-                                                    }
-                                                >
-                                                    {t(
-                                                        'selectRelease.installReleases',
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                                {filteredReleases.length > 0 &&
-                                    filteredReleases.map((row) => {
-                                        if (row.valid === false) {
-                                            return (
-                                                <tr
-                                                    key={`releaseSelectInvalid_${row.version}_${row.mono ? 'mono' : 'standard'}}`}
-                                                    className="opacity-60 cursor-not-allowed"
-                                                >
-                                                    <td>
-                                                        <TriangleAlert className="stroke-warning" />
-                                                    </td>
-                                                    <td>
-                                                        <div className="flex flex-col gap-1">
-                                                            <div className="flex flex-row gap-2 items-center">
-                                                                {row.name ??
-                                                                    row.version}
-                                                                <span className="badge badge-warning">
-                                                                    {t(
-                                                                        'selectRelease.unavailable',
-                                                                    )}
-                                                                </span>
-                                                                {row.source ===
-                                                                    'custom' && (
-                                                                    <span className="badge badge-info">
-                                                                        Custom
-                                                                    </span>
-                                                                )}
-                                                                {row.mono && (
-                                                                    <span className="badge badge-neutral">
-                                                                        {t(
-                                                                            'selectRelease.badges.dotnet',
-                                                                        )}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-xs text-warning">
-                                                                {t(
-                                                                    'selectRelease.unavailableHint',
-                                                                )}
-                                                            </p>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        }
-                                        if (!row.editor_path) {
-                                            return (
-                                                <tr
-                                                    key={`releaseSelectInvalid_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                    className="hover:bg-black/10 cursor-not-allowed"
-                                                >
-                                                    <td>
-                                                        <span className="loading loading-ring text-info p-0"></span>
-                                                    </td>
-                                                    <td>
-                                                        {row.name ??
-                                                            row.version}
-                                                        {row.source ===
-                                                            'custom' && (
-                                                            <span className="badge badge-info">
-                                                                Custom
-                                                            </span>
-                                                        )}
-                                                        {row.mono && (
-                                                            <span className="badge badge-neutral">
-                                                                {t(
-                                                                    'selectRelease.badges.dotnet',
-                                                                )}
-                                                            </span>
-                                                        )}
-                                                        {row.prerelease && (
-                                                            <span className="badge badge-secondary">
-                                                                {t(
-                                                                    'selectRelease.badges.prerelease',
-                                                                )}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        } else {
-                                            return (
-                                                <tr
-                                                    data-testid={`rowReleaseSelect_}`}
-                                                    onClick={() =>
-                                                        setSelectedRelease(row)
-                                                    }
-                                                    key={`releaseSelect_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                    className="even:bg-base-300 hover:bg-base-content/10 cursor-pointer"
-                                                >
-                                                    <td className="flex flex-col items-center justify-center">
-                                                        <input
-                                                            data-testid={`radioReleaseSelect_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                            type="radio"
-                                                            name="editor-select"
-                                                            className="radio radio-sm radio-info"
-                                                            checked={
-                                                                row.version ===
-                                                                    selectedRelease?.version &&
-                                                                row.mono ===
-                                                                    selectedRelease?.mono
-                                                            }
-                                                            onChange={() => {
-                                                                setSelectedRelease(
-                                                                    row,
-                                                                );
-                                                            }}
-                                                        />
-                                                    </td>
-                                                    <td>
-                                                        <div className="flex flex-col gap-1 justify-start">
-                                                            <div className="flex flex-row gap-2 ">
-                                                                {row.name ??
-                                                                    row.version}
-                                                                {row.source ===
-                                                                    'custom' && (
-                                                                    <span className="badge badge-info">
-                                                                        Custom
-                                                                    </span>
-                                                                )}
-                                                                {row.mono && (
-                                                                    <span className="badge badge-neutral">
-                                                                        {t(
-                                                                            'selectRelease.badges.dotnet',
-                                                                        )}
-                                                                    </span>
-                                                                )}
-                                                                {row.prerelease && (
-                                                                    <span className="badge badge-secondary">
-                                                                        {t(
-                                                                            'selectRelease.badges.prerelease',
-                                                                        )}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        }
-                                    })}
-                            </tbody>
-                        </table>
+                        <SelectInstalledReleaseTable
+                            rows={filteredReleases}
+                            currentRelease={currentRelease}
+                            selectedRelease={selectedRelease}
+                            t={t}
+                            onSelectedReleaseChange={setSelectedRelease}
+                            onInstallReleasesClick={() =>
+                                setShowInstallEditor(true)
+                            }
+                        />
                         <div className="flex flex-row justify-end w-full">
                             <button
                                 type="button"
