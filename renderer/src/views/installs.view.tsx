@@ -4,6 +4,7 @@ import logger from 'electron-log';
 import {
     BadgePlus,
     CheckCircle2,
+    ChevronDown,
     CircleX,
     EllipsisVertical,
     TriangleAlert,
@@ -15,6 +16,7 @@ import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.c
 import { useAlerts } from '../hooks/useAlerts';
 import { useRelease } from '../hooks/useRelease';
 import { sortReleases } from '../releaseStoring.utils';
+import { CustomEditorManifestDrawer } from './subViews/customEditorManifestDrawer.subview';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
 
 type ReleaseActionDependencies = {
@@ -77,6 +79,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const [isDraggingSupportedManifest, setIsDraggingSupportedManifest] =
         useState<boolean>(true);
     const [selectingCustomEditorManifest, setSelectingCustomEditorManifest] =
+        useState<boolean>(false);
+    const [customEditorManifestDrawerOpen, setCustomEditorManifestDrawerOpen] =
         useState<boolean>(false);
     const dragCounterRef = useRef<number>(0);
 
@@ -173,7 +177,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const registerManifest = async (
         manifestPath: string,
         replaceExisting = false,
-    ) => {
+        options: { onSuccess?: () => void } = {},
+    ): Promise<boolean> => {
         try {
             const result = await registerCustomEngine(manifestPath, {
                 replaceExisting,
@@ -190,7 +195,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     }),
                     <CheckCircle2 className="w-5 h-5 text-success" />,
                 );
-                return;
+                options.onSuccess?.();
+                return true;
             }
 
             if (result.duplicate && !replaceExisting) {
@@ -209,13 +215,13 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         <p>{t('customEditor.replace.detail')}</p>
                     </div>,
                     () => {
-                        void registerManifest(manifestPath, true);
+                        void registerManifest(manifestPath, true, options);
                         return true;
                     },
                     undefined,
                     <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
                 );
-                return;
+                return false;
             }
 
             addAlert(
@@ -223,12 +229,14 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 result.error ?? t('messages.registerCustomEditorFailed'),
                 <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
+            return false;
         } catch (error) {
             addAlert(
                 t('common:error'),
                 (error as Error).message,
                 <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
+            return false;
         }
     };
 
@@ -513,14 +521,47 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                             {t('title')}
                         </h1>
                         <div className="flex gap-2">
-                            <button
-                                type="button"
-                                data-testid="btnAddCustomEngine"
-                                className="btn btn-neutral"
-                                onClick={handleAddCustomEngine}
-                            >
-                                {t('buttons.addCustomEditor')}
-                            </button>
+                            <div className="dropdown dropdown-end">
+                                <button
+                                    type="button"
+                                    tabIndex={0}
+                                    data-testid="btnAddCustomEngineMenu"
+                                    className="btn btn-neutral"
+                                >
+                                    {t('buttons.addCustomEditor')}
+                                    <ChevronDown size={14} aria-hidden="true" />
+                                </button>
+                                <ul className="dropdown-content menu bg-base-300 rounded-box z-1 min-w-64 p-1 shadow-sm border border-base-100">
+                                    <li>
+                                        <button
+                                            type="button"
+                                            data-testid="btnAddCustomEngine"
+                                            onClick={() =>
+                                                void handleAddCustomEngine()
+                                            }
+                                        >
+                                            {t(
+                                                'buttons.selectCustomEditorManifest',
+                                            )}
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            type="button"
+                                            data-testid="btnCreateCustomEditorManifest"
+                                            onClick={() =>
+                                                setCustomEditorManifestDrawerOpen(
+                                                    true,
+                                                )
+                                            }
+                                        >
+                                            {t(
+                                                'buttons.createCustomEditorManifest',
+                                            )}
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                             <button
                                 type="button"
                                 data-testid="btnInstallEditor"
@@ -763,6 +804,16 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
             {installOpen && (
                 <InstallEditorSubView onClose={() => setInstallOpen(false)} />
             )}
+            <CustomEditorManifestDrawer
+                open={customEditorManifestDrawerOpen}
+                onOpenChange={setCustomEditorManifestDrawerOpen}
+                onManifestCreated={(manifestPath) =>
+                    registerManifest(manifestPath, false, {
+                        onSuccess: () =>
+                            setCustomEditorManifestDrawerOpen(false),
+                    })
+                }
+            />
         </>
     );
 };

@@ -525,6 +525,46 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_installs_custom_editor_menu',
+        description: 'Installs view add custom editor menu',
+        navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
+            await page.getByTestId('btnAddCustomEngineMenu').click();
+            await expect(
+                page.getByTestId('btnCreateCustomEditorManifest'),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+        },
+    },
+    {
+        fileBase: 'screen_installs_custom_editor_drawer',
+        description: 'Create custom editor manifest drawer',
+        navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
+            await page.getByTestId('btnAddCustomEngineMenu').click();
+            await page.getByTestId('btnCreateCustomEditorManifest').click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: 'Create custom editor manifest',
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            const drawer = page.getByRole('dialog', {
+                name: 'Create custom editor manifest',
+            });
+            if (await drawer.isVisible().catch(() => false)) {
+                await page.keyboard.press('Escape');
+            }
+            await page.waitForTimeout(300);
+        },
+    },
+    {
         fileBase: 'screen_installs_custom_manifest_drop',
         description: 'Installs view custom editor manifest drop prompt',
         navigate: async (page: ElectronPage) => {
@@ -566,6 +606,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             await stubCustomEditorDuplicateRegistration(electronApp);
             await applyTheme(page, theme);
             await page.getByTestId('btnInstalls').click();
+            await page.getByTestId('btnAddCustomEngineMenu').click();
             await page.getByTestId('btnAddCustomEngine').click();
             await expect(
                 page.getByRole('dialog', {

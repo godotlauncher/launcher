@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import type React from 'react';
 import type {
     ComponentProps,
+    CSSProperties,
     MouseEvent as ReactMouseEvent,
     ReactNode,
 } from 'react';
@@ -18,6 +19,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import './drawer.component.css';
 
 export type DrawerSide = 'left' | 'right' | 'top' | 'bottom';
 
@@ -32,6 +34,7 @@ type DrawerProps = {
     className?: string;
     panelClassName?: string;
     backdropClassName?: string;
+    width?: number | string;
 };
 
 type DrawerSlotProps = {
@@ -76,33 +79,23 @@ const drawerSideClassNames: Record<
     {
         container: string;
         panel: string;
-        open: string;
-        closed: string;
     }
 > = {
     left: {
         container: 'items-stretch justify-start',
         panel: 'h-full w-full max-w-md border-r border-base-300',
-        open: 'translate-x-0',
-        closed: '-translate-x-full',
     },
     right: {
         container: 'items-stretch justify-end',
         panel: 'h-full w-full max-w-md border-l border-base-300',
-        open: 'translate-x-0',
-        closed: 'translate-x-full',
     },
     top: {
         container: 'items-start justify-stretch',
         panel: 'w-full max-h-[85vh] border-b border-base-300',
-        open: 'translate-y-0',
-        closed: '-translate-y-full',
     },
     bottom: {
         container: 'items-end justify-stretch',
         panel: 'w-full max-h-[85vh] border-t border-base-300',
-        open: 'translate-y-0',
-        closed: 'translate-y-full',
     },
 };
 
@@ -311,6 +304,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
     className,
     panelClassName,
     backdropClassName,
+    width,
 }) => {
     const titleId = useId();
     const panelRef = useRef<HTMLElement | null>(null);
@@ -335,19 +329,8 @@ const DrawerRoot: React.FC<DrawerProps> = ({
     useEffect(() => {
         if (open) {
             setShouldRender(true);
-
-            if (typeof window === 'undefined') {
-                setVisible(true);
-                return;
-            }
-
-            const animationFrameId = window.requestAnimationFrame(() => {
-                setVisible(true);
-            });
-
-            return () => {
-                window.cancelAnimationFrame(animationFrameId);
-            };
+            setVisible(true);
+            return;
         }
 
         if (!shouldRender) {
@@ -433,6 +416,15 @@ const DrawerRoot: React.FC<DrawerProps> = ({
         return null;
     }
 
+    const drawerState = visible ? 'open' : 'closed';
+    const panelStyle: CSSProperties | undefined =
+        width === undefined
+            ? undefined
+            : {
+                  width: typeof width === 'number' ? `${width}px` : width,
+                  maxWidth: '100vw',
+              };
+
     return (
         <div
             className={clsx(
@@ -446,11 +438,11 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 aria-label="Close drawer"
                 tabIndex={-1}
                 className={clsx(
-                    'absolute inset-0 border-0 bg-black/80 p-0 transition-opacity duration-200 ease-out motion-reduce:transition-none',
-                    visible ? 'opacity-100' : 'opacity-0',
+                    'drawer-backdrop absolute inset-0 border-0 bg-black/80 p-0',
                     closeOnBackdrop ? 'cursor-pointer' : 'cursor-default',
                     backdropClassName,
                 )}
+                data-state={drawerState}
                 data-testid="drawerBackdrop"
                 onClick={handleBackdropClick}
             />
@@ -462,11 +454,13 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 aria-label={ariaLabel ?? (hasTitle ? undefined : 'Drawer')}
                 aria-labelledby={!ariaLabel && hasTitle ? titleId : undefined}
                 className={clsx(
-                    'relative z-10 flex flex-col overflow-hidden bg-base-100 text-base-content shadow-2xl outline-none transition-transform duration-200 ease-out motion-reduce:transition-none',
+                    'drawer-panel relative z-10 flex flex-col overflow-hidden bg-base-100 text-base-content shadow-2xl outline-none',
                     sideClassNames.panel,
-                    visible ? sideClassNames.open : sideClassNames.closed,
                     panelClassName,
                 )}
+                data-side={side}
+                data-state={drawerState}
+                style={panelStyle}
             >
                 <DrawerContext.Provider value={contextValue}>
                     {children}

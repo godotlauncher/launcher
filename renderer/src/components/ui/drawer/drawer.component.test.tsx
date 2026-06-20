@@ -86,7 +86,7 @@ describe('Drawer', () => {
         ['right', 'items-stretch justify-end', 'border-l border-base-300'],
         ['top', 'items-start justify-stretch', 'border-b border-base-300'],
         ['bottom', 'items-end justify-stretch', 'border-t border-base-300'],
-    ] as const)('renders %s side placement classes', (side, containerClassName, panelClassName) => {
+    ] as const)('renders %s side placement classes and state attributes', (side, containerClassName, panelClassName) => {
         const html = renderToStaticMarkup(
             <Drawer open onOpenChange={noop} side={side} ariaLabel={side}>
                 <Drawer.Body>{side}</Drawer.Body>
@@ -95,6 +95,10 @@ describe('Drawer', () => {
 
         expect(html).toContain(containerClassName);
         expect(html).toContain(panelClassName);
+        expect(html).toContain('class="drawer-backdrop');
+        expect(html).toContain('class="drawer-panel');
+        expect(html).toContain('data-state="open"');
+        expect(html).toContain(`data-side="${side}"`);
     });
 
     it('renders dialog accessibility attributes from a title slot', () => {
@@ -109,6 +113,7 @@ describe('Drawer', () => {
         expect(html).toContain('role="dialog"');
         expect(html).toContain('aria-modal="true"');
         expect(html).toContain('aria-labelledby=');
+        expect(html).toContain('data-state="open"');
     });
 
     it('renders dialog accessibility attributes from an aria label', () => {
@@ -121,6 +126,7 @@ describe('Drawer', () => {
         expect(html).toContain('role="dialog"');
         expect(html).toContain('aria-modal="true"');
         expect(html).toContain('aria-label="Project details"');
+        expect(html).toContain('data-state="open"');
     });
 
     it('detects backdrop clicks that should close the drawer', () => {

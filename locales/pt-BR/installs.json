@@ -3,7 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "Instalar editor",
-    "addCustomEditor": "Add Custom Editor"
+    "addCustomEditor": "Add Custom Editor",
+    "selectCustomEditorManifest": "Select manifest file",
+    "createCustomEditorManifest": "Create custom editor manifest"
   },
   "search": {
     "placeholder": "Pesquisar"
@@ -47,6 +49,104 @@
       "unsupportedTitle": "Unsupported manifest file",
       "helperPrefix": "Drop a",
       "helperSuffix": "file."
+    },
+    "creator": {
+      "title": "Create Custom Editor Manifest",
+      "description": "Create a manifest file for a custom Godot editor and register it immediately.",
+      "fields": {
+        "outputDirectory": {
+          "label": "Output folder",
+          "help": "Folder where godotlauncher-editor-manifest.json will be written."
+        },
+        "name": {
+          "label": "Display name",
+          "help": "Name shown in Godot Launcher for this custom editor.",
+          "placeholder": "Acme Godot 4.4 Custom Editor"
+        },
+        "version": {
+          "label": "Manifest version",
+          "help": "Unique version identifier for this custom editor.",
+          "placeholder": "4.4-custom.1"
+        },
+        "baseVersion": {
+          "label": "Base version",
+          "help": "Godot compatibility version in major.minor format.",
+          "placeholder": "4.4"
+        },
+        "flavor": {
+          "label": "Flavor",
+          "help": "Use gdscript for standard builds or dotnet for .NET builds. Custom values are allowed."
+        },
+        "prerelease": {
+          "label": "Prerelease",
+          "help": "Mark this editor as a prerelease build."
+        },
+        "platform": {
+          "label": "Platform",
+          "help": "Operating system this manifest entry supports."
+        },
+        "arch": {
+          "label": "Architecture",
+          "help": "CPU architecture this editor supports. Universal works on any architecture for the selected platform."
+        },
+        "editorPath": {
+          "label": "Editor path",
+          "help": "Path to the custom Godot editor executable or app bundle."
+        },
+        "consolePath": {
+          "label": "Console path",
+          "help": "Optional path to a console executable for this editor."
+        }
+      },
+      "platforms": {
+        "windows": "Windows",
+        "linux": "Linux",
+        "macos": "macOS"
+      },
+      "architectures": {
+        "universal": "Universal",
+        "x64": "x64",
+        "arm64": "ARM64"
+      },
+      "constants": {
+        "title": "Generated values:",
+        "description": "schema_version is 1 and config_version is 5."
+      },
+      "actions": {
+        "selectOutputDirectory": "Select output folder",
+        "selectEditorPath": "Select editor path",
+        "selectConsolePath": "Select console path",
+        "createAndRegister": "Create and register",
+        "creating": "Creating...",
+        "clearPlatform": "Clear platform"
+      },
+      "validation": {
+        "outputDirectory": {
+          "required": "Output folder is required.",
+          "pathMissing": "Output folder does not exist."
+        },
+        "name": {
+          "required": "Display name is required."
+        },
+        "version": {
+          "required": "Manifest version is required."
+        },
+        "baseVersion": {
+          "required": "Base version is required.",
+          "baseVersion": "Base version must use major.minor format, for example 4.4."
+        },
+        "flavor": {
+          "required": "Flavor is required."
+        },
+        "editorPath": {
+          "required": "Editor path is required.",
+          "pathMissing": "Editor path does not exist."
+        },
+        "consolePath": {
+          "pathMissing": "Console path does not exist."
+        },
+        "createFailed": "Failed to create custom editor manifest."
+      }
     }
   }
 }

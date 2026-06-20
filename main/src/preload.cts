@@ -1,6 +1,7 @@
 import type {
     AddProjectOptions,
     CheckForUpdatesOptions,
+    CustomEngineManifest,
     ElectronRendererApi,
     EventChannelMapping,
     InstalledRelease,
@@ -40,6 +41,10 @@ electron.contextBridge.exposeInMainWorld('electron', {
         manifestPath: string,
         options?: { replaceExisting?: boolean },
     ) => ipcInvoke('register-custom-engine', manifestPath, options),
+    createCustomEngineManifest: (
+        outputDirectory: string,
+        manifest: CustomEngineManifest,
+    ) => ipcInvoke('create-custom-engine-manifest', outputDirectory, manifest),
 
     openEditorProjectManager: (release: InstalledRelease) =>
         ipcInvoke('open-editor-project-manager', release),

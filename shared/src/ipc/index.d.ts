@@ -12,6 +12,7 @@ import type {
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
+    CreateCustomEngineManifestResult,
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
@@ -54,6 +55,7 @@ export type EventChannelMapping = {
     'remove-release': Promise<RemovedReleaseResult>;
     'reinstall-release': Promise<InstallReleaseResult>;
     'register-custom-engine': Promise<RegisterCustomEngineResult>;
+    'create-custom-engine-manifest': Promise<CreateCustomEngineManifestResult>;
 
     'open-editor-project-manager': Promise<void>;
     'check-all-releases-valid': Promise<InstalledRelease[]>;
