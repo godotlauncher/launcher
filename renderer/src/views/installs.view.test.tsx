@@ -55,6 +55,10 @@ vi.mock('react-i18next', () => {
     const dictionary: Record<string, string> = {
         'installs:title': 'Editor Installs',
         'installs:buttons.install': 'Install Editor',
+        'installs:buttons.addCustomEditor': 'Custom Editor',
+        'installs:buttons.selectCustomEditorManifest': 'Select manifest file',
+        'installs:buttons.createCustomEditorManifest':
+            'Create custom editor manifest',
         'installs:search.placeholder': 'Search',
         'installs:table.name': 'Name',
         'installs:status.installing': 'Installing...',
@@ -94,6 +98,9 @@ describe('InstallsView', () => {
         expect(html).toContain('Retry');
         expect(html).toContain('Reinstall');
         expect(html).toContain('Remove');
+        expect(html).toContain('Custom Editor');
+        expect(html).toContain('Select manifest file');
+        expect(html).toContain('Create custom editor manifest');
         expect(html).toContain('btn-primary');
         expect(html).toContain('btn-error');
     });

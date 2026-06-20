@@ -3,7 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "Установить редактор",
-    "addCustomEditor": "Add Custom Editor"
+    "addCustomEditor": "Пользовательский редактор",
+    "selectCustomEditorManifest": "Выбрать файл манифеста",
+    "createCustomEditorManifest": "Создать манифест пользовательского редактора"
   },
   "search": {
     "placeholder": "Поиск"
@@ -14,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "пререлиз",
-    "custom": "Custom"
+    "custom": "Пользовательский"
   },
   "status": {
     "installing": "Установка..."
@@ -28,25 +30,123 @@
     "revalidationStillMissingNoPath": "Проверка завершена, но {{version}} по-прежнему недоступно. Убедитесь, что устройство хранения подключено, прежде чем повторять попытку.",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
     "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "registeredCustomEditor": "Пользовательский редактор {{name}} зарегистрирован.",
+    "registerCustomEditorFailed": "Не удалось зарегистрировать пользовательский редактор.",
+    "unavailableCustomEditorHint": "Путь к пользовательскому редактору недоступен. Подключите устройство хранения и повторите попытку или удалите эту запись."
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "Добавить манифест пользовательского редактора",
+    "manifestFilterName": "Манифест редактора Godot Launcher",
+    "waitingForDialog": "Ожидание диалога...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "Заменить пользовательский редактор?",
+      "message": "Пользовательский редактор с этой версией уже зарегистрирован.",
+      "versionLabel": "Версия",
+      "detail": "При замене запись лаунчера будет обновлена для использования выбранного манифеста. Файлы редактора не будут удалены."
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "Перетащите манифест, чтобы добавить пользовательский редактор",
+      "unsupportedTitle": "Неподдерживаемый файл манифеста",
+      "helperPrefix": "Перетащите",
+      "helperSuffix": "сюда."
+    },
+    "creator": {
+      "title": "Создать манифест пользовательского редактора",
+      "description": "Создайте файл манифеста для пользовательского редактора Godot и сразу зарегистрируйте его.",
+      "fields": {
+        "outputDirectory": {
+          "label": "Папка вывода",
+          "help": "Папка, в которую будет записан godotlauncher-editor-manifest.json."
+        },
+        "name": {
+          "label": "Отображаемое имя",
+          "help": "Имя, отображаемое в Godot Launcher для этого пользовательского редактора.",
+          "placeholder": "Acme Godot 4.4 Пользовательский редактор"
+        },
+        "version": {
+          "label": "Версия манифеста",
+          "help": "Уникальный идентификатор версии для этого пользовательского редактора.",
+          "placeholder": "4.4-custom.1"
+        },
+        "baseVersion": {
+          "label": "Базовая версия",
+          "help": "Версия совместимости Godot в формате major.minor.",
+          "placeholder": "4.4"
+        },
+        "flavor": {
+          "label": "Вариант",
+          "help": "Используйте gdscript для стандартных сборок или dotnet для сборок .NET. Пользовательские значения разрешены."
+        },
+        "prerelease": {
+          "label": "Предрелиз",
+          "help": "Пометить этот редактор как предрелизную сборку."
+        },
+        "platform": {
+          "label": "Платформа",
+          "help": "Операционная система, поддерживаемая этой записью манифеста."
+        },
+        "arch": {
+          "label": "Архитектура",
+          "help": "Архитектура CPU, поддерживаемая этим редактором. Универсальная работает на любой архитектуре для выбранной платформы."
+        },
+        "editorPath": {
+          "label": "Путь к редактору",
+          "help": "Путь к исполняемому файлу или пакету приложения пользовательского редактора Godot."
+        },
+        "consolePath": {
+          "label": "Путь к консоли",
+          "help": "Необязательный путь к консольному исполняемому файлу для этого редактора."
+        }
+      },
+      "platforms": {
+        "windows": "Windows",
+        "linux": "Linux",
+        "macos": "macOS"
+      },
+      "architectures": {
+        "universal": "Универсальная",
+        "x64": "x64",
+        "arm64": "ARM64"
+      },
+      "constants": {
+        "title": "Сгенерированные значения:",
+        "description": "schema_version равен 1, а config_version равен 5."
+      },
+      "actions": {
+        "selectOutputDirectory": "Выбрать папку вывода",
+        "selectEditorPath": "Выбрать путь к редактору",
+        "selectConsolePath": "Выбрать путь к консоли",
+        "createAndRegister": "Создать и зарегистрировать",
+        "creating": "Создание...",
+        "clearPlatform": "Очистить платформу"
+      },
+      "validation": {
+        "outputDirectory": {
+          "required": "Папка вывода обязательна.",
+          "pathMissing": "Папка вывода не существует."
+        },
+        "name": {
+          "required": "Отображаемое имя обязательно."
+        },
+        "version": {
+          "required": "Версия манифеста обязательна."
+        },
+        "baseVersion": {
+          "required": "Базовая версия обязательна.",
+          "baseVersion": "Базовая версия должна использовать формат major.minor, например 4.4."
+        },
+        "flavor": {
+          "required": "Вариант обязателен."
+        },
+        "editorPath": {
+          "required": "Путь к редактору обязателен.",
+          "pathMissing": "Путь к редактору не существует."
+        },
+        "consolePath": {
+          "pathMissing": "Путь к консоли не существует."
+        },
+        "createFailed": "Не удалось создать манифест пользовательского редактора."
+      }
     }
   }
 }

@@ -14,6 +14,8 @@ import type {
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
+    CreateCustomEngineManifestResult,
+    CustomEngineManifest,
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
@@ -71,6 +73,10 @@ export type ElectronRendererApi = {
         manifestPath: string,
         options?: { replaceExisting?: boolean },
     ) => Promise<RegisterCustomEngineResult>;
+    createCustomEngineManifest: (
+        outputDirectory: string,
+        manifest: CustomEngineManifest,
+    ) => Promise<CreateCustomEngineManifestResult>;
 
     openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;

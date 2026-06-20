@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import type {
     AddProjectOptions,
+    CustomEngineManifest,
     InstalledRelease,
     ProjectDetails,
     RendererType,
@@ -59,6 +60,7 @@ import {
     getAvailableLanguages,
     getCurrentLanguage,
 } from './i18n/index.js';
+import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import {
     getConfigDir,
@@ -226,6 +228,12 @@ export function registerHandlers() {
             manifestPath: string,
             options?: { replaceExisting?: boolean },
         ) => await registerCustomEngine(manifestPath, options),
+    );
+
+    ipcMainHandler(
+        'create-custom-engine-manifest',
+        async (_, outputDirectory: string, manifest: CustomEngineManifest) =>
+            await createCustomEngineManifest(outputDirectory, manifest),
     );
 
     ipcMainHandler(

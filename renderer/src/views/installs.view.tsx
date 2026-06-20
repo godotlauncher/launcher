@@ -1,20 +1,22 @@
 import type { InstalledRelease, InstallReleaseResult } from '@shared';
 import logger from 'electron-log';
 
-import {
-    BadgePlus,
-    CheckCircle2,
-    CircleX,
-    EllipsisVertical,
-    TriangleAlert,
-    TriangleAlertIcon,
-} from 'lucide-react';
+import { CheckCircle2, TriangleAlert, TriangleAlertIcon } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useRelease } from '../hooks/useRelease';
-import { sortReleases } from '../releaseStoring.utils';
+import { CustomEditorManifestDropOverlay } from './installs/components/customEditorManifestDropOverlay.component';
+import { InstalledReleaseList } from './installs/components/installedReleaseList.component';
+import { InstallsHeader } from './installs/components/installsHeader.component';
+import {
+    getFilteredInstalledReleaseRows,
+    getReleaseActionKey,
+    isSupportedCustomEngineManifestName,
+    type ReleaseAction,
+} from './installs/installsView.model';
+import { CustomEditorManifestDrawer } from './subViews/customEditorManifestDrawer.subview';
 import { InstallEditorSubView } from './subViews/installEditor.subview';
 
 type ReleaseActionDependencies = {
@@ -36,20 +38,6 @@ export const createReleaseActions = (
         await dependencies.removeRelease(release);
     },
 });
-
-type ReleaseAction = 'retry' | 'reinstall' | 'remove';
-
-function getReleaseActionKey(release: InstalledRelease): string {
-    return `${release.version}_${release.mono ? 'mono' : 'standard'}`;
-}
-
-const SUPPORTED_CUSTOM_ENGINE_MANIFEST_NAMES = [
-    'godotlauncher-editor-manifest.json',
-];
-
-function isSupportedCustomEngineManifestName(fileName: string): boolean {
-    return SUPPORTED_CUSTOM_ENGINE_MANIFEST_NAMES.includes(fileName);
-}
 
 type InstallsViewProps = {
     installOpen?: boolean;
@@ -77,6 +65,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const [isDraggingSupportedManifest, setIsDraggingSupportedManifest] =
         useState<boolean>(true);
     const [selectingCustomEditorManifest, setSelectingCustomEditorManifest] =
+        useState<boolean>(false);
+    const [customEditorManifestDrawerOpen, setCustomEditorManifestDrawerOpen] =
         useState<boolean>(false);
     const dragCounterRef = useRef<number>(0);
 
@@ -117,49 +107,6 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         showReleaseMenu(release);
     };
 
-    const getFilteredRows = () => {
-        const downloadingReleaseRows: InstalledRelease[] =
-            downloadingReleases.map((r) => ({
-                version: r.version,
-                version_number: -1,
-                install_path: '',
-                mono: r.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: r.prerelease,
-                config_version: 5,
-                published_at: r.published_at,
-                valid: true,
-            }));
-        const all = installedReleases
-            .map((release) => {
-                const downloadingRelease = downloadingReleaseRows.find(
-                    (r) =>
-                        r.version === release.version &&
-                        r.mono === release.mono,
-                );
-
-                return downloadingRelease ?? release;
-            })
-            .concat(
-                downloadingReleaseRows.filter(
-                    (release) =>
-                        !installedReleases.some(
-                            (installedRelease) =>
-                                installedRelease.version === release.version &&
-                                installedRelease.mono === release.mono,
-                        ),
-                ),
-            );
-
-        if (textSearch === '') return all.sort(sortReleases);
-        const selection = all.filter((row) =>
-            row.version.toLowerCase().includes(textSearch.toLowerCase()),
-        );
-        return selection.sort(sortReleases);
-    };
-
     const releaseActions = useMemo(
         () =>
             createReleaseActions({
@@ -173,7 +120,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const registerManifest = async (
         manifestPath: string,
         replaceExisting = false,
-    ) => {
+        options: { onSuccess?: () => void } = {},
+    ): Promise<boolean> => {
         try {
             const result = await registerCustomEngine(manifestPath, {
                 replaceExisting,
@@ -190,7 +138,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     }),
                     <CheckCircle2 className="w-5 h-5 text-success" />,
                 );
-                return;
+                options.onSuccess?.();
+                return true;
             }
 
             if (result.duplicate && !replaceExisting) {
@@ -209,13 +158,13 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         <p>{t('customEditor.replace.detail')}</p>
                     </div>,
                     () => {
-                        void registerManifest(manifestPath, true);
+                        void registerManifest(manifestPath, true, options);
                         return true;
                     },
                     undefined,
                     <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
                 );
-                return;
+                return false;
             }
 
             addAlert(
@@ -223,12 +172,14 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 result.error ?? t('messages.registerCustomEditorFailed'),
                 <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
+            return false;
         } catch (error) {
             addAlert(
                 t('common:error'),
                 (error as Error).message,
                 <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
             );
+            return false;
         }
     };
 
@@ -454,6 +405,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         }
     };
 
+    const filteredRows = getFilteredInstalledReleaseRows(
+        installedReleases,
+        downloadingReleases,
+        textSearch,
+    );
+
     return (
         <>
             {selectingCustomEditorManifest && (
@@ -471,86 +428,30 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 onDrop={handleDrop}
             >
                 {isDraggingManifest && (
-                    <div
-                        className={`absolute inset-0 z-30 border-4 border-dashed flex items-center justify-center pointer-events-none ${
-                            isDraggingSupportedManifest
-                                ? 'bg-primary/20 border-primary'
-                                : 'bg-error/20 border-error'
-                        }`}
-                    >
-                        <div className="bg-base-100 p-8 rounded-lg shadow-xl max-w-lg text-center flex flex-col gap-3">
-                            <BadgePlus
-                                className={`w-10 h-10 mx-auto ${
-                                    isDraggingSupportedManifest
-                                        ? 'text-primary'
-                                        : 'text-error'
-                                }`}
-                            />
-                            <p
-                                className={`text-2xl font-bold ${
-                                    isDraggingSupportedManifest
-                                        ? 'text-primary'
-                                        : 'text-error'
-                                }`}
-                            >
-                                {isDraggingSupportedManifest
-                                    ? t('customEditor.drop.title')
-                                    : t('customEditor.drop.unsupportedTitle')}
-                            </p>
-                            <p className="text-sm text-base-content/70">
-                                {t('customEditor.drop.helperPrefix')}{' '}
-                                <code className="font-mono bg-base-300 px-2 rounded text-warning">
-                                    godotlauncher-editor-manifest.json
-                                </code>{' '}
-                                {t('customEditor.drop.helperSuffix')}
-                            </p>
-                        </div>
-                    </div>
+                    <CustomEditorManifestDropOverlay
+                        supported={isDraggingSupportedManifest}
+                        t={t}
+                    />
                 )}
-                <div className="flex flex-col gap-2 w-full">
-                    <div className="flex flex-row justify-between">
-                        <h1 data-testid="installsTitle" className="text-2xl">
-                            {t('title')}
-                        </h1>
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                data-testid="btnAddCustomEngine"
-                                className="btn btn-neutral"
-                                onClick={handleAddCustomEngine}
-                            >
-                                {t('buttons.addCustomEditor')}
-                            </button>
-                            <button
-                                type="button"
-                                data-testid="btnInstallEditor"
-                                className="btn btn-primary"
-                                onClick={() => setInstallOpen(true)}
-                            >
-                                {t('buttons.install')}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="flex flex-row justify-end my-2 items-center">
-                        <input
-                            type="text"
-                            placeholder={t('search.placeholder')}
-                            className="input input-bordered w-full max-w-xs"
-                            onChange={(e) => setTextSearch(e.target.value)}
-                            value={textSearch}
-                        />
-                        {textSearch.length > 0 && (
-                            <button
-                                type="button"
-                                tabIndex={-1}
-                                onClick={() => setTextSearch('')}
-                                className="absolute right-4 w-6 h-6"
-                            >
-                                <CircleX />
-                            </button>
-                        )}
-                    </div>
-                </div>
+                <InstallsHeader
+                    title={t('title')}
+                    searchPlaceholder={t('search.placeholder')}
+                    searchValue={textSearch}
+                    onSearchChange={setTextSearch}
+                    addCustomEditorLabel={t('buttons.addCustomEditor')}
+                    selectManifestLabel={t(
+                        'buttons.selectCustomEditorManifest',
+                    )}
+                    createManifestLabel={t(
+                        'buttons.createCustomEditorManifest',
+                    )}
+                    installLabel={t('buttons.install')}
+                    onSelectManifest={() => void handleAddCustomEngine()}
+                    onCreateManifest={() =>
+                        setCustomEditorManifestDrawerOpen(true)
+                    }
+                    onInstall={() => setInstallOpen(true)}
+                />
                 <div className="divider m-0"></div>
 
                 {installedReleases.length < 1 &&
@@ -572,197 +473,30 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         />
                     </div>
                 ) : (
-                    <div className="overflow-auto h-full">
-                        <table className="table table-md">
-                            <thead className="sticky top-0 bg-base-200 text-xs">
-                                <tr>
-                                    <th>{t('table.name')}</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="overflow-y-auto">
-                                {getFilteredRows().map((row) => (
-                                    <tr
-                                        key={`installedReleaseRow_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                        className="even:bg-base-100 hover:bg-base-content/10"
-                                    >
-                                        <td>
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex flex-row gap-2 flex-wrap items-center">
-                                                    {row.valid === false && (
-                                                        <TriangleAlert className="w-4 h-4 text-warning" />
-                                                    )}
-                                                    <span>
-                                                        {row.name ??
-                                                            row.version}
-                                                    </span>
-                                                    {row.source ===
-                                                        'custom' && (
-                                                        <span className="badge badge-info">
-                                                            {t('badges.custom')}
-                                                        </span>
-                                                    )}
-                                                    {row.mono && (
-                                                        <span className="badge">
-                                                            {t('badges.dotNet')}
-                                                        </span>
-                                                    )}
-                                                    {row.prerelease && (
-                                                        <span className="badge badge-secondary">
-                                                            {t(
-                                                                'badges.prerelease',
-                                                            )}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {row.name && (
-                                                    <div className="text-xs text-base-content/50">
-                                                        {row.version}
-                                                    </div>
-                                                )}
-                                                <div className="text-xs text-base-content/50 flex flex-col gap-1">
-                                                    {row.valid === false ? (
-                                                        <>
-                                                            <span>
-                                                                {row.source ===
-                                                                'custom'
-                                                                    ? t(
-                                                                          'messages.unavailableCustomEditorHint',
-                                                                      )
-                                                                    : t(
-                                                                          'messages.unavailableHintWithReinstall',
-                                                                      )}
-                                                            </span>
-                                                            <div className="flex flex-row flex-wrap gap-2">
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-xs flex items-center gap-2"
-                                                                    onClick={() =>
-                                                                        handleRetry(
-                                                                            row,
-                                                                        )
-                                                                    }
-                                                                    disabled={isReleaseActionBusy(
-                                                                        row,
-                                                                    )}
-                                                                >
-                                                                    {isReleaseActionBusy(
-                                                                        row,
-                                                                        'retry',
-                                                                    ) && (
-                                                                        <span className="loading loading-spinner loading-xs"></span>
-                                                                    )}
-                                                                    {t(
-                                                                        'buttons.retry',
-                                                                        {
-                                                                            ns: 'common',
-                                                                        },
-                                                                    )}
-                                                                </button>
-                                                                {row.source !==
-                                                                    'custom' && (
-                                                                    <button
-                                                                        type="button"
-                                                                        data-testid={`btnReinstallRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                                        className="btn btn-primary btn-xs flex items-center gap-2"
-                                                                        onClick={() =>
-                                                                            handleReinstall(
-                                                                                row,
-                                                                            )
-                                                                        }
-                                                                        disabled={isReleaseActionBusy(
-                                                                            row,
-                                                                        )}
-                                                                        aria-label={t(
-                                                                            'buttons.reinstall',
-                                                                            {
-                                                                                ns: 'common',
-                                                                            },
-                                                                        )}
-                                                                    >
-                                                                        {isReleaseActionBusy(
-                                                                            row,
-                                                                            'reinstall',
-                                                                        ) && (
-                                                                            <span className="loading loading-spinner loading-xs"></span>
-                                                                        )}
-                                                                        {t(
-                                                                            'buttons.reinstall',
-                                                                            {
-                                                                                ns: 'common',
-                                                                            },
-                                                                        )}
-                                                                    </button>
-                                                                )}
-                                                                <button
-                                                                    type="button"
-                                                                    data-testid={`btnRemoveRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                                    className="btn btn-error btn-xs"
-                                                                    onClick={() =>
-                                                                        handleRemove(
-                                                                            row,
-                                                                        )
-                                                                    }
-                                                                    disabled={isReleaseActionBusy(
-                                                                        row,
-                                                                    )}
-                                                                >
-                                                                    {isReleaseActionBusy(
-                                                                        row,
-                                                                        'remove',
-                                                                    ) && (
-                                                                        <span className="loading loading-spinner loading-xs"></span>
-                                                                    )}
-                                                                    {t(
-                                                                        'buttons.remove',
-                                                                        {
-                                                                            ns: 'common',
-                                                                        },
-                                                                    )}
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        row.install_path || (
-                                                            <div className="flex flex-row gap-2 items-center">
-                                                                <div className="loading loading-ring loading-sm"></div>
-                                                                {t(
-                                                                    'status.installing',
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="flex flex-row justify-end">
-                                            {row.install_path &&
-                                                row.valid !== false && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) =>
-                                                            onOpenReleaseMoreOptions(
-                                                                e,
-                                                                row,
-                                                            )
-                                                        }
-                                                        className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"
-                                                    >
-                                                        <EllipsisVertical />
-                                                    </button>
-                                                )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <InstalledReleaseList
+                        rows={filteredRows}
+                        t={t}
+                        isReleaseActionBusy={isReleaseActionBusy}
+                        onRetry={(release) => void handleRetry(release)}
+                        onReinstall={(release) => void handleReinstall(release)}
+                        onRemove={(release) => void handleRemove(release)}
+                        onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                    />
                 )}
             </section>
             {installOpen && (
                 <InstallEditorSubView onClose={() => setInstallOpen(false)} />
             )}
+            <CustomEditorManifestDrawer
+                open={customEditorManifestDrawerOpen}
+                onOpenChange={setCustomEditorManifestDrawerOpen}
+                onManifestCreated={(manifestPath) =>
+                    registerManifest(manifestPath, false, {
+                        onSuccess: () =>
+                            setCustomEditorManifestDrawerOpen(false),
+                    })
+                }
+            />
         </>
     );
 };

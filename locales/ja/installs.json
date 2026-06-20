@@ -3,7 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "エディタをインストール",
-    "addCustomEditor": "Add Custom Editor"
+    "addCustomEditor": "カスタムエディタ",
+    "selectCustomEditorManifest": "マニフェストファイルを選択",
+    "createCustomEditorManifest": "カスタムエディタマニフェストを作成"
   },
   "search": {
     "placeholder": "検索"
@@ -14,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "プレリリース",
-    "custom": "Custom"
+    "custom": "カスタム"
   },
   "status": {
     "installing": "インストール中..."
@@ -28,25 +30,123 @@
     "revalidationStillMissingNoPath": "検証は完了しましたが {{version}} はまだ利用できません。再試行する前にストレージデバイスがマウントされているか確認してください。",
     "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
     "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "registeredCustomEditor": "カスタムエディタ {{name}} を登録しました。",
+    "registerCustomEditorFailed": "カスタムエディタを登録できませんでした。",
+    "unavailableCustomEditorHint": "カスタムエディタのパスにアクセスできません。ストレージデバイスをマウントして再試行するか、この項目を削除してください。"
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "カスタムエディタのマニフェストを追加",
+    "manifestFilterName": "Godot Launcher エディタマニフェスト",
+    "waitingForDialog": "ダイアログを待機中...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "カスタムエディタを置き換えますか？",
+      "message": "このバージョンのカスタムエディタは既に登録されています。",
+      "versionLabel": "バージョン",
+      "detail": "置き換えると、選択したマニフェストを使うようにランチャーの記録が更新されます。エディタファイルは削除されません。"
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "マニフェストをドロップしてカスタムエディタを追加",
+      "unsupportedTitle": "サポートされていないマニフェストファイル",
+      "helperPrefix": "次のファイルをドロップ:",
+      "helperSuffix": "。"
+    },
+    "creator": {
+      "title": "カスタムエディタマニフェストを作成",
+      "description": "カスタム Godot エディタ用のマニフェストファイルを作成し、すぐに登録します。",
+      "fields": {
+        "outputDirectory": {
+          "label": "出力フォルダー",
+          "help": "godotlauncher-editor-manifest.json が書き込まれるフォルダー。"
+        },
+        "name": {
+          "label": "表示名",
+          "help": "このカスタムエディタに Godot Launcher で表示される名前。",
+          "placeholder": "Acme Godot 4.4 カスタムエディタ"
+        },
+        "version": {
+          "label": "マニフェストバージョン",
+          "help": "このカスタムエディタの一意のバージョン識別子。",
+          "placeholder": "4.4-custom.1"
+        },
+        "baseVersion": {
+          "label": "ベースバージョン",
+          "help": "major.minor 形式の Godot 互換バージョン。",
+          "placeholder": "4.4"
+        },
+        "flavor": {
+          "label": "フレーバー",
+          "help": "標準ビルドには gdscript、.NET ビルドには dotnet を使用します。カスタム値も使用できます。"
+        },
+        "prerelease": {
+          "label": "プレリリース",
+          "help": "このエディタをプレリリースビルドとしてマークします。"
+        },
+        "platform": {
+          "label": "プラットフォーム",
+          "help": "このマニフェスト項目が対応するオペレーティングシステム。"
+        },
+        "arch": {
+          "label": "アーキテクチャ",
+          "help": "このエディタが対応する CPU アーキテクチャ。ユニバーサルは選択したプラットフォームのすべてのアーキテクチャで動作します。"
+        },
+        "editorPath": {
+          "label": "エディタパス",
+          "help": "カスタム Godot エディタの実行ファイルまたはアプリバンドルへのパス。"
+        },
+        "consolePath": {
+          "label": "コンソールパス",
+          "help": "このエディタ用のコンソール実行ファイルへの任意のパス。"
+        }
+      },
+      "platforms": {
+        "windows": "Windows",
+        "linux": "Linux",
+        "macos": "macOS"
+      },
+      "architectures": {
+        "universal": "ユニバーサル",
+        "x64": "x64",
+        "arm64": "ARM64"
+      },
+      "constants": {
+        "title": "生成された値:",
+        "description": "schema_version は 1、config_version は 5 です。"
+      },
+      "actions": {
+        "selectOutputDirectory": "出力フォルダーを選択",
+        "selectEditorPath": "エディタパスを選択",
+        "selectConsolePath": "コンソールパスを選択",
+        "createAndRegister": "作成して登録",
+        "creating": "作成中...",
+        "clearPlatform": "プラットフォームをクリア"
+      },
+      "validation": {
+        "outputDirectory": {
+          "required": "出力フォルダーは必須です。",
+          "pathMissing": "出力フォルダーが存在しません。"
+        },
+        "name": {
+          "required": "表示名は必須です。"
+        },
+        "version": {
+          "required": "マニフェストバージョンは必須です。"
+        },
+        "baseVersion": {
+          "required": "ベースバージョンは必須です。",
+          "baseVersion": "ベースバージョンは major.minor 形式を使用する必要があります。例: 4.4。"
+        },
+        "flavor": {
+          "required": "フレーバーは必須です。"
+        },
+        "editorPath": {
+          "required": "エディタパスは必須です。",
+          "pathMissing": "エディタパスが存在しません。"
+        },
+        "consolePath": {
+          "pathMissing": "コンソールパスが存在しません。"
+        },
+        "createFailed": "カスタムエディタマニフェストを作成できませんでした。"
+      }
     }
   }
 }
