@@ -1,0 +1,158 @@
+name: SignPath Test Signing
+
+on:
+  workflow_dispatch:
+    inputs:
+      signing_policy_slug:
+        description: 'SignPath test signing policy slug'
+        required: true
+        default: 'test-signing'
+        type: string
+      artifact_configuration_slug:
+        description: 'SignPath artifact configuration slug'
+        required: true
+        default: 'initial'
+        type: string
+      arch:
+        description: 'Windows installer architecture to test sign'
+        required: true
+        default: 'x64'
+        type: choice
+        options:
+          - x64
+          - arm64
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  signpath-test:
+    name: Build and submit Windows installers
+    runs-on: windows-latest
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+    steps:
+      - name: Validate SignPath configuration
+        shell: pwsh
+        run: |
+          $missing = @()
+
+          foreach ($name in @(
+              'SIGNPATH_API_TOKEN',
+              'SIGNPATH_ORGANIZATION_ID',
+              'SIGNPATH_PROJECT_SLUG'
+          )) {
+              if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+                  $missing += $name
+              }
+          }
+
+          if ($missing.Count -gt 0) {
+              throw "Missing GitHub secret/variable(s): $($missing -join ', ')"
+          }
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read package version
+        id: package_version
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build unsigned Windows installers
+        run: npm run dist:win -- --publish never
+
+      - name: Prepare SignPath input artifact
+        id: prepare_unsigned_artifact
+        shell: pwsh
+        run: |
+          $version = "${{ steps.package_version.outputs.version }}"
+          $arch = "${{ inputs.arch }}"
+          $unsignedDir = Join-Path $env:GITHUB_WORKSPACE 'signpath-unsigned'
+
+          New-Item -ItemType Directory -Force -Path $unsignedDir | Out-Null
+
+          $installers = Get-ChildItem -Path 'dist' -Filter "Godot_Launcher-$version-win_$arch.exe" -File
+          if ($installers.Count -eq 0) {
+              throw "No Windows $arch installer found for version $version."
+          }
+
+          if ($installers.Count -gt 1) {
+              throw "Expected one Windows $arch installer for version $version, found $($installers.Count)."
+          }
+
+          $unsignedInstaller = Join-Path $unsignedDir $installers[0].Name
+          Copy-Item -LiteralPath $installers[0].FullName -Destination $unsignedInstaller
+          "unsigned_installer=$unsignedInstaller" >> $env:GITHUB_OUTPUT
+
+          Write-Host "Prepared unsigned artifact file: $($installers[0].Name)"
+
+      - name: Upload unsigned artifact
+        id: upload_unsigned_artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.prepare_unsigned_artifact.outputs.unsigned_installer }}
+          if-no-files-found: error
+          archive: false
+
+      - name: Submit SignPath test signing request
+        id: submit_signpath_request
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_artifact.outputs['artifact-id'] }}
+          wait-for-completion: true
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed
+          skip-decompress: true
+
+      - name: Show SignPath request
+        shell: pwsh
+        run: |
+          Write-Host "SignPath request: ${{ steps.submit_signpath_request.outputs['signing-request-web-url'] }}"
+
+      - name: Inspect signed artifacts
+        shell: pwsh
+        run: |
+          $signedDir = Join-Path $env:GITHUB_WORKSPACE 'signpath-signed'
+          $signedInstallers = Get-ChildItem -Path $signedDir -Filter '*.exe' -Recurse -File
+
+          if ($signedInstallers.Count -eq 0) {
+              throw "SignPath completed, but no signed EXE files were downloaded."
+          }
+
+          foreach ($installer in $signedInstallers) {
+              $signature = Get-AuthenticodeSignature -FilePath $installer.FullName
+              Write-Host "Signed artifact: $($installer.Name)"
+              Write-Host "  Signature status: $($signature.Status)"
+              Write-Host "  Signer subject: $($signature.SignerCertificate.Subject)"
+              Write-Host "  Signer thumbprint: $($signature.SignerCertificate.Thumbprint)"
+          }
+
+      - name: Upload signed artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-signed-windows-${{ steps.package_version.outputs.version }}
+          path: signpath-signed/**
+          if-no-files-found: error
