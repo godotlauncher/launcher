@@ -6,6 +6,7 @@ import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import {
     initializeProjectGit,
     launchProject,
+    removeProject,
     setProjectVSCode,
 } from './projects.js';
 
@@ -193,8 +194,9 @@ vi.mock('electron-updater', () => ({
 
 const { existsSync } = fsMocks;
 const { getDefaultDirs } = platformMocks;
-const { getProjectsSnapshot, storeProjectsList } = projectUtilsMocks;
-const { getProjectDefinition } = godotUtilsMocks;
+const { getProjectsSnapshot, removeProjectFromList, storeProjectsList } =
+    projectUtilsMocks;
+const { getProjectDefinition, removeProjectEditor } = godotUtilsMocks;
 const { createNewEditorSettings, updateEditorSettings } = godotProjectMocks;
 const {
     updateVSCodeSettings,
@@ -271,6 +273,7 @@ describe('launchProject', () => {
             '/projects/demo',
             expect.objectContaining({ version: '4.3-stable' }),
             '1.0.0',
+            expect.any(Date),
         );
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
@@ -281,6 +284,62 @@ describe('launchProject', () => {
                 }),
             ]),
             expect.objectContaining({ expectedVersion: 'v1' }),
+        );
+    });
+});
+
+describe('removeProject', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        removeProjectEditor.mockResolvedValue(undefined);
+        removeProjectFromList.mockResolvedValue([]);
+        writeProjectLauncherConfig.mockResolvedValue(undefined);
+    });
+
+    it('writes last opened to project launcher config before removing a project', async () => {
+        const lastOpened = new Date('2024-05-06T07:08:09.000Z');
+        const project: ProjectDetails = {
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.3-stable',
+            version_number: 4.3,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: lastOpened,
+            open_windowed: false,
+            release: {
+                version: '4.3-stable',
+                version_number: 4.3,
+                install_path: '/godot',
+                editor_path: '/godot/godot',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/project/editor/Godot.app',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        await removeProject(project);
+
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
+            lastOpened,
+        );
+        expect(removeProjectFromList).toHaveBeenCalledWith(
+            path.resolve('/config', 'projects.json'),
+            '/projects/demo',
         );
     });
 });

@@ -321,6 +321,49 @@ describe('addProject', () => {
         expect(result.newProject?.release.mono).toBe(false);
     });
 
+    it('restores last opened from .godotlauncher when importing', async () => {
+        const lastOpened = new Date('2024-05-06T07:08:09.000Z');
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            project: {
+                last_opened: lastOpened,
+            },
+            editor: {
+                channel: 'official',
+                flavor: 'gdscript',
+                base_version: '4.3',
+                version: '4.3-stable',
+            },
+        });
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.3-stable',
+                version_number: 4.3,
+                install_path: '/install/4.3',
+                editor_path: '/install/4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.last_opened).toBe(lastOpened);
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
+            lastOpened,
+        );
+    });
+
     it('returns a resolution for an official .godotlauncher version with an installed fallback', async () => {
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },

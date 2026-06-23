@@ -558,7 +558,7 @@ export async function addProject(
             release?.version ?? `${releaseBaseVersion.toFixed(1)} (missing)`,
         version_number: release?.version_number ?? releaseBaseVersion,
         renderer,
-        last_opened: null,
+        last_opened: projectLauncherConfig?.project?.last_opened ?? null,
         launch_path,
         editor_settings_path: editorSettingsFile
             ? path.dirname(editorSettingsFile)
@@ -591,11 +591,20 @@ export async function addProject(
     };
 
     if (shouldWriteProjectLauncherConfig) {
-        await writeProjectLauncherConfig(
-            dirname,
-            project.release,
-            app.getVersion(),
-        );
+        if (project.last_opened) {
+            await writeProjectLauncherConfig(
+                dirname,
+                project.release,
+                app.getVersion(),
+                project.last_opened,
+            );
+        } else {
+            await writeProjectLauncherConfig(
+                dirname,
+                project.release,
+                app.getVersion(),
+            );
+        }
     }
 
     const allProjects = await addProjectToList(projectListPath, project);

@@ -65,6 +65,55 @@ version=4.6-custom.1
         });
     });
 
+    it('serializes and parses the optional last opened timestamp', () => {
+        const lastOpened = new Date('2024-05-06T07:08:09.000Z');
+        const config = createProjectLauncherConfig(
+            release,
+            '1.9.0',
+            lastOpened,
+        );
+
+        expect(serializeProjectLauncherConfig(config)).toBe(`[config]
+version=1
+
+[launcher]
+version=1.9.0
+
+[project]
+last_opened=2024-05-06T07:08:09.000Z
+
+[editor]
+channel=official
+flavor=gdscript
+base_version=4.3
+version=4.3-stable
+`);
+
+        expect(
+            parseProjectLauncherConfig(serializeProjectLauncherConfig(config)),
+        ).toEqual(config);
+    });
+
+    it('ignores invalid last opened timestamps', () => {
+        const config = parseProjectLauncherConfig(`[config]
+version=1
+
+[launcher]
+version=1.9.0
+
+[project]
+last_opened=not-a-date
+
+[editor]
+channel=official
+flavor=gdscript
+base_version=4.3
+version=4.3-stable
+`);
+
+        expect(config?.project).toBeUndefined();
+    });
+
     it('ignores unsupported config versions', () => {
         const config = parseProjectLauncherConfig(`[config]
 version=2

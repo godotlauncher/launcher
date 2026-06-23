@@ -75,6 +75,22 @@ export async function removeProject(
     // await removeEditorSymlink(project.launch_path);
     await removeProjectEditor(project);
 
+    if (project.last_opened) {
+        try {
+            await writeProjectLauncherConfig(
+                project.path,
+                project.release,
+                app.getVersion(),
+                project.last_opened,
+            );
+        } catch (error) {
+            logger.warn(
+                `Failed to write project launcher config for '${project.name}' before removing it`,
+                error,
+            );
+        }
+    }
+
     const projects = await removeProjectFromList(projectListPath, project.path);
     if (process.platform === 'linux') {
         await updateLinuxTray();
@@ -138,6 +154,7 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
                 storedProject.path,
                 storedProject.release,
                 app.getVersion(),
+                storedProject.last_opened,
             );
         } catch (error) {
             logger.warn(

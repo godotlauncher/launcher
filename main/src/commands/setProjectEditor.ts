@@ -197,11 +197,20 @@ export async function setProjectEditor(
         updatedProjects[projectIndex] = updatedProject;
 
         try {
-            await writeProjectLauncherConfig(
-                updatedProject.path,
-                updatedProject.release,
-                app.getVersion(),
-            );
+            if (updatedProject.last_opened) {
+                await writeProjectLauncherConfig(
+                    updatedProject.path,
+                    updatedProject.release,
+                    app.getVersion(),
+                    updatedProject.last_opened,
+                );
+            } else {
+                await writeProjectLauncherConfig(
+                    updatedProject.path,
+                    updatedProject.release,
+                    app.getVersion(),
+                );
+            }
             const storedProjects = await storeProjectsList(
                 projectListPath,
                 updatedProjects,
