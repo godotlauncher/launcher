@@ -35,6 +35,10 @@ vi.mock('../commands/userPreferences.js', () => ({
     getUserPreferences: vi.fn(),
 }));
 
+vi.mock('../pathResolver.js', () => ({
+    getAssetPath: vi.fn(() => '/assets'),
+}));
+
 describe('godot.utils.windows', () => {
     beforeEach(() => {
         vi.clearAllMocks();
