@@ -28,8 +28,8 @@
     "revalidationFailed": "Weryfikacja nie powiodła się. Sprawdź urządzenie pamięci i spróbuj ponownie.",
     "revalidationStillMissing": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że {{path}} jest dostępne przed ponowną próbą.",
     "revalidationStillMissingNoPath": "Weryfikacja zakończona, ale {{version}} wciąż jest niedostępne. Upewnij się, że urządzenie pamięci jest zamontowane przed ponowną próbą.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "Ścieżka edytora jest niedostępna. Zamontuj nośnik i spróbuj ponownie, zainstaluj edytor ponownie albo usuń ten wpis.",
+    "reinstallFailed": "Ponowna instalacja nie powiodła się. Sprawdź połączenie i spróbuj ponownie.",
     "registeredCustomEditor": "Zarejestrowano edytor niestandardowy {{name}}.",
     "registerCustomEditorFailed": "Nie udało się zarejestrować edytora niestandardowego.",
     "unavailableCustomEditorHint": "Ścieżka edytora niestandardowego jest niedostępna. Zamontuj urządzenie pamięci i spróbuj ponownie albo usuń ten wpis."

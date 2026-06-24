@@ -37,9 +37,9 @@
     "message": "Ma setax jiġi analizzat il-preferenzi tal-utent. Qed jintużaw il-preferenzi default."
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "Neħħi editur personalizzat",
+    "title": "Neħħi editur personalizzat",
+    "message": "Tneħħi l-editur personalizzat \"{{name}}\" mil-launcher?",
+    "detail": "Dan ineħħi r-reġistrazzjoni tal-editur personalizzat. Ma jħassarx il-fajls tal-editur fuq it-tagħmir tiegħek."
   }
 }

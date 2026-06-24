@@ -6,7 +6,7 @@
     "appearance": "Erscheinungsbild",
     "behavior": "Verhalten",
     "tools": "Werkzeuge",
-    "updates": "Updates"
+    "updates": "Aktualisierungen"
   },
   "appearance": {
     "theme": {
@@ -101,7 +101,7 @@
     }
   },
   "updates": {
-    "title": "Updates",
+    "title": "Aktualisierungen",
     "description": "Konfigurieren Sie, wie der GD Launcher nach Updates sucht",
     "autoCheck": "Automatisch nach Updates suchen",
     "betaChannel": "Beta-Updates erhalten",
@@ -111,7 +111,9 @@
     "skipVersion": "Diese Version überspringen",
     "unskipVersion": "Übersprungene Version wieder aktivieren",
     "readyWithVersion": "Version {{version}} ist bereit, starte Godot Launcher neu, um sie zu installieren. <Button>Jetzt neu starten</Button>",
-    "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <Button>Jetzt neu starten</Button>"
+    "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <Button>Jetzt neu starten</Button>",
+    "manualWithVersion": "Version {{version}} ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <Button>Download-Seite öffnen</Button>",
+    "manualNoVersion": "Eine neue Version ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <Button>Download-Seite öffnen</Button>"
   },
   "windowsSymlinks": {
     "title": "Editor-Symlinks",

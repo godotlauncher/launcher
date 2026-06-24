@@ -8,7 +8,7 @@
     "remove": "削除",
     "copyPath": "パスをコピー",
     "openPath": "パスを開く",
-    "reinstall": "Reinstall"
+    "reinstall": "再インストール"
   },
   "error": "エラー",
   "success": "成功",
@@ -34,7 +34,9 @@
       "availableWithVersion": "バージョン {{version}} が利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton> または <SkipButton>このバージョンをスキップ</SkipButton>",
       "availableNoVersion": "新しいバージョンが利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton>",
       "readyWithVersion": "バージョン {{version}} のアップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
-      "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>"
+      "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
+      "manualWithVersion": "バージョン {{version}} が利用可能ですが、この rpm-ostree システムでは自動インストールはサポートされていません。<ReleaseLink>手動でダウンロード</ReleaseLink>または<SkipButton>このバージョンをスキップ</SkipButton>",
+      "manualNoVersion": "新しいバージョンが利用可能ですが、この rpm-ostree システムでは自動インストールはサポートされていません。<ReleaseLink>手動でダウンロード</ReleaseLink>"
     }
   },
   "selectRelease": {

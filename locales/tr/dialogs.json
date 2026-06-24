@@ -37,9 +37,9 @@
     "message": "Kullanıcı tercihleri ayrıştırılamadı. Varsayılan tercihler kullanılıyor."
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "Özel düzenleyiciyi kaldır",
+    "title": "Özel düzenleyiciyi kaldır",
+    "message": "\"{{name}}\" özel düzenleyicisi başlatıcıdan kaldırılsın mı?",
+    "detail": "Bu, özel düzenleyicinin kaydını kaldırır. Cihazınızdaki düzenleyici dosyalarını silmez."
   }
 }

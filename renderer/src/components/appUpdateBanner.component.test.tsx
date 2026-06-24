@@ -61,6 +61,7 @@ vi.mock('react-i18next', () => ({
 describe('AppUpdateBanner', () => {
     const installAndRelaunch = vi.fn();
     const downloadAppUpdate = vi.fn();
+    const openUpdateUrl = vi.fn();
     const skipAppUpdate = vi.fn();
 
     beforeEach(() => {
@@ -79,6 +80,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
         }) as BannerTransElement;
@@ -104,6 +106,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
         }) as BannerTransElement;
@@ -130,6 +133,7 @@ describe('AppUpdateBanner', () => {
                 }}
                 installAndRelaunch={installAndRelaunch}
                 downloadAppUpdate={downloadAppUpdate}
+                openUpdateUrl={openUpdateUrl}
                 skipAppUpdate={skipAppUpdate}
             />,
         );
@@ -150,6 +154,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
         }) as BannerTransElement;
@@ -160,6 +165,63 @@ describe('AppUpdateBanner', () => {
         await content.props.components.RestartButton?.props.onClick();
 
         expect(installAndRelaunch).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders manual update banner with download page and skip actions', async () => {
+        const content = getAppUpdateBannerContent({
+            updateAvailable: {
+                available: true,
+                downloaded: false,
+                type: 'manual',
+                version: '1.9.1',
+                url: 'https://example.com/releases/v1.9.1',
+                message:
+                    'Version 1.9.1 is available. Automatic installation is not supported on this rpm-ostree system.',
+            },
+            installAndRelaunch,
+            downloadAppUpdate,
+            openUpdateUrl,
+            skipAppUpdate,
+            t: (key: string) => dictionary[key] ?? key,
+        }) as BannerTransElement;
+
+        expect(content.props.i18nKey).toBe('app.update.manualWithVersion');
+        expect(content.props.components.ReleaseLink).toBeDefined();
+        expect(content.props.components.SkipButton).toBeDefined();
+
+        await content.props.components.ReleaseLink?.props.onClick();
+        await content.props.components.SkipButton?.props.onClick();
+
+        expect(openUpdateUrl).toHaveBeenCalledWith(
+            'https://example.com/releases/v1.9.1',
+        );
+        expect(skipAppUpdate).toHaveBeenCalledWith('1.9.1');
+        expect(downloadAppUpdate).not.toHaveBeenCalled();
+        expect(installAndRelaunch).not.toHaveBeenCalled();
+    });
+
+    it('opens the launcher download page for manual updates without an explicit URL', async () => {
+        const content = getAppUpdateBannerContent({
+            updateAvailable: {
+                available: true,
+                downloaded: false,
+                type: 'manual',
+                version: '1.9.1',
+                message:
+                    'Version 1.9.1 is available. Automatic installation is not supported on this rpm-ostree system.',
+            },
+            installAndRelaunch,
+            downloadAppUpdate,
+            openUpdateUrl,
+            skipAppUpdate,
+            t: (key: string) => dictionary[key] ?? key,
+        }) as BannerTransElement;
+
+        await content.props.components.ReleaseLink?.props.onClick();
+
+        expect(openUpdateUrl).toHaveBeenCalledWith(
+            'https://godotlauncher.org/download/',
+        );
     });
 
     it('renders error banner with retry action', async () => {
@@ -173,6 +235,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
         }) as BannerFragmentElement;

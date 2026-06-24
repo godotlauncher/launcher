@@ -14,7 +14,7 @@ export type { View };
 type AppNavigationContext = {
     currentView: View;
     setCurrentView: (view: View) => void;
-    openExternalLink: (url: string) => void;
+    openExternalLink: (url: string) => Promise<void>;
 };
 
 const appNavigationContext = createContext<AppNavigationContext>(

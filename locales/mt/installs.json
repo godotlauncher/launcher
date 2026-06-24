@@ -28,8 +28,8 @@
     "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova.",
     "revalidationStillMissing": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Iċċekkja li {{path}} hu aċċessibbli qabel terġa' tipprova.",
     "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "Il-mogħdija tal-editur mhix aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, erġa’ installa l-editur, jew neħħi din l-entrata.",
+    "reinstallFailed": "L-installazzjoni mill-ġdid falliet. Iċċekkja l-konnessjoni tiegħek u erġa’ pprova.",
     "registeredCustomEditor": "Editur personalizzat {{name}} ġie rreġistrat.",
     "registerCustomEditorFailed": "Ma rnexxilniex nirreġistraw l-editur personalizzat.",
     "unavailableCustomEditorHint": "Il-passaġġ tal-editur personalizzat mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, jew neħħi din l-entrata."

@@ -111,7 +111,9 @@
     "skipVersion": "跳過此版本",
     "unskipVersion": "恢復已跳過的更新",
     "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
-    "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>"
+    "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
+    "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>",
+    "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>"
   },
   "windowsSymlinks": {
     "title": "編輯器符號連結",

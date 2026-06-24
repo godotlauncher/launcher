@@ -28,8 +28,8 @@
     "revalidationFailed": "La validación falló. Revisa el dispositivo de almacenamiento y vuelve a intentarlo.",
     "revalidationStillMissing": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que {{path}} sea accesible antes de volver a intentarlo.",
     "revalidationStillMissingNoPath": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que el dispositivo de almacenamiento esté montado antes de volver a intentarlo.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "No se puede acceder a la ruta del editor. Monta el dispositivo de almacenamiento y vuelve a intentarlo, reinstala el editor o elimina esta entrada.",
+    "reinstallFailed": "La reinstalación falló. Comprueba tu conexión e inténtalo de nuevo.",
     "registeredCustomEditor": "Editor personalizado {{name}} registrado.",
     "registerCustomEditorFailed": "No se pudo registrar el editor personalizado.",
     "unavailableCustomEditorHint": "La ruta del editor personalizado no está accesible. Monta el dispositivo de almacenamiento e inténtalo de nuevo, o elimina esta entrada."

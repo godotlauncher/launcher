@@ -23,7 +23,7 @@
   },
   "messages": {
     "installError": "安裝發行版本時發生問題",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "重新安裝版本時發生問題"
   },
   "table": {
     "headers": {
@@ -42,8 +42,8 @@
       "installedDotNet": "已安裝 - {{version}} .NET",
       "downloadGDScript": "下載 {{version}}（GDScript）",
       "downloadDotNet": "下載 {{version}} .NET",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "重新安裝 {{version}} (GDScript)",
+      "reinstallDotNet": "重新安裝 {{version}} .NET"
     },
     "status": {
       "unavailable": "無法使用"

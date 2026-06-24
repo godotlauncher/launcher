@@ -323,6 +323,7 @@ function MainLayout() {
                     installAndRelaunch={installAndRelaunch}
                     downloadAppUpdate={downloadAppUpdate}
                     skipAppUpdate={skipAppUpdate}
+                    openUpdateUrl={openExternalLink}
                 />
                 <div className="border-t-2 border-solid border-base-200">
                     <ul className="menu menu-md rounded-box w-56 gap-1 ">

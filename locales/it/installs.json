@@ -28,8 +28,8 @@
     "revalidationFailed": "Verifica non riuscita. Controlla il dispositivo di archiviazione e riprova.",
     "revalidationStillMissing": "La verifica è terminata ma {{version}} è ancora indisponibile. Assicurati che {{path}} sia accessibile prima di riprovare.",
     "revalidationStillMissingNoPath": "La verifica è terminata ma {{version}} è ancora indisponibile. Assicurati che il dispositivo di archiviazione sia montato prima di riprovare.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "Il percorso dell’editor non è accessibile. Monta il dispositivo di archiviazione e riprova, reinstalla l’editor o rimuovi questa voce.",
+    "reinstallFailed": "Reinstallazione non riuscita. Controlla la connessione e riprova.",
     "registeredCustomEditor": "Editor personalizzato {{name}} registrato.",
     "registerCustomEditorFailed": "Impossibile registrare l’editor personalizzato.",
     "unavailableCustomEditorHint": "Il percorso dell’editor personalizzato non è accessibile. Monta il dispositivo di archiviazione e riprova, oppure rimuovi questa voce."
@@ -78,8 +78,8 @@
           "help": "Usa gdscript per build standard o dotnet per build .NET. Sono consentiti valori personalizzati."
         },
         "prerelease": {
-          "label": "Prerelease",
-          "help": "Contrassegna questo editor come build prerelease."
+          "label": "Pre-release",
+          "help": "Contrassegna questo editor come build pre-release."
         },
         "platform": {
           "label": "Piattaforma",

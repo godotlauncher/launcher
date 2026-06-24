@@ -28,8 +28,8 @@
     "revalidationFailed": "Échec de la validation. Vérifiez votre périphérique de stockage puis réessayez.",
     "revalidationStillMissing": "La validation est terminée mais {{version}} reste indisponible. Vérifiez que {{path}} est accessible avant de réessayer.",
     "revalidationStillMissingNoPath": "La validation est terminée mais {{version}} reste indisponible. Vérifiez que le périphérique de stockage est monté avant de réessayer.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "Le chemin de l’éditeur n’est pas accessible. Montez le périphérique de stockage et réessayez, réinstallez l’éditeur ou supprimez cette entrée.",
+    "reinstallFailed": "La réinstallation a échoué. Vérifiez votre connexion et réessayez.",
     "registeredCustomEditor": "Éditeur personnalisé {{name}} enregistré.",
     "registerCustomEditorFailed": "Impossible d’enregistrer l’éditeur personnalisé.",
     "unavailableCustomEditorHint": "Le chemin de l’éditeur personnalisé n’est pas accessible. Montez le périphérique de stockage et réessayez, ou supprimez cette entrée."
