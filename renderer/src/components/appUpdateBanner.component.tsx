@@ -1,7 +1,7 @@
 import type { AppUpdateMessage } from '@shared';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { LAUNCHER_GITHUB_RELEASES_URL } from '../constants';
+import { LAUNCHER_DOWNLOAD_URL } from '../constants';
 
 type AppUpdateBannerProps = {
     updateAvailable: AppUpdateMessage | undefined;
@@ -120,7 +120,7 @@ export function getAppUpdateBannerContent({
 
         case 'manual': {
             const version = updateAvailable.version;
-            const url = updateAvailable.url ?? LAUNCHER_GITHUB_RELEASES_URL;
+            const url = updateAvailable.url ?? LAUNCHER_DOWNLOAD_URL;
             return (
                 <Trans
                     ns="common"

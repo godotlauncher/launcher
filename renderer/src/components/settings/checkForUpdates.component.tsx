@@ -1,6 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { LAUNCHER_GITHUB_RELEASES_URL } from '../../constants';
+import { LAUNCHER_DOWNLOAD_URL } from '../../constants';
 import { useApp } from '../../hooks/useApp';
 import { usePreferences } from '../../hooks/usePreferences';
 
@@ -46,7 +46,7 @@ export const CheckForUpdates: React.FC = () => {
 
     const openManualUpdateUrl = async () => {
         await window.electron.openExternal(
-            updateAvailable?.url ?? LAUNCHER_GITHUB_RELEASES_URL,
+            updateAvailable?.url ?? LAUNCHER_DOWNLOAD_URL,
         );
     };
 

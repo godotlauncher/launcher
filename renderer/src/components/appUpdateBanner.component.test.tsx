@@ -200,6 +200,30 @@ describe('AppUpdateBanner', () => {
         expect(installAndRelaunch).not.toHaveBeenCalled();
     });
 
+    it('opens the launcher download page for manual updates without an explicit URL', async () => {
+        const content = getAppUpdateBannerContent({
+            updateAvailable: {
+                available: true,
+                downloaded: false,
+                type: 'manual',
+                version: '1.9.1',
+                message:
+                    'Version 1.9.1 is available. Automatic installation is not supported on this rpm-ostree system.',
+            },
+            installAndRelaunch,
+            downloadAppUpdate,
+            openUpdateUrl,
+            skipAppUpdate,
+            t: (key: string) => dictionary[key] ?? key,
+        }) as BannerTransElement;
+
+        await content.props.components.ReleaseLink?.props.onClick();
+
+        expect(openUpdateUrl).toHaveBeenCalledWith(
+            'https://godotlauncher.org/download/',
+        );
+    });
+
     it('renders error banner with retry action', async () => {
         const content = getAppUpdateBannerContent({
             updateAvailable: {

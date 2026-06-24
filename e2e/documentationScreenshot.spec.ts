@@ -470,6 +470,24 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_update_manual',
+        description: 'Projects view with update banner (manual install)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppUpdateBannerScreenshot(page, electronApp, theme, {
+                available: true,
+                downloaded: false,
+                type: 'manual',
+                version: '1.9.1',
+                message: 'New version available: 1.9.1',
+                url: 'https://github.com/godotlauncher/launcher/releases/tag/v1.9.1',
+            });
+        },
+    },
+    {
         fileBase: 'screen_projects_update_error',
         description: 'Projects view with update banner (error)',
         navigate: async (
@@ -802,6 +820,26 @@ const SCREENSHOTS: ScreenshotConfig[] = [
                     type: 'ready',
                     version: '1.9.1',
                     message: 'Update downloaded, restart to install.',
+                },
+            });
+        },
+    },
+    {
+        fileBase: 'screen_settings_updates_manual',
+        description: 'Settings (Updates tab, manual install)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareUpdatesScreenshot(page, electronApp, theme, {
+                updateMessage: {
+                    available: true,
+                    downloaded: false,
+                    type: 'manual',
+                    version: '1.9.1',
+                    message: 'New version available: 1.9.1',
+                    url: 'https://github.com/godotlauncher/launcher/releases/tag/v1.9.1',
                 },
             });
         },

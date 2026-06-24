@@ -16,8 +16,7 @@ let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
 const execFileAsync = promisify(execFile);
 const RPM_OSTREE_STATUS_TIMEOUT_MS = 3000;
-const LAUNCHER_RELEASES_URL =
-    'https://github.com/godotlauncher/launcher/releases';
+const LAUNCHER_DOWNLOAD_URL = 'https://godotlauncher.org/download/';
 
 type PrereleaseChannel = 'alpha' | 'beta' | 'rc';
 type AutoUpdateCheckOptions = CheckForUpdatesOptions & {
@@ -73,12 +72,6 @@ function isNewerVersion(
     }
 
     return semver.gt(normalizedCandidateVersion, normalizedCurrentVersion);
-}
-
-function getReleaseUrl(version?: string): string {
-    return version
-        ? `${LAUNCHER_RELEASES_URL}/tag/v${version}`
-        : LAUNCHER_RELEASES_URL;
 }
 
 export async function isRpmOstreeSystem(): Promise<boolean> {
@@ -244,7 +237,7 @@ export async function checkForUpdates(
               ? 'available'
               : 'none',
         version: newVersion,
-        url: requiresManualUpdate ? getReleaseUrl(newVersion) : undefined,
+        url: requiresManualUpdate ? LAUNCHER_DOWNLOAD_URL : undefined,
         message:
             hasNewVersion && !isSkippedVersion
                 ? requiresManualUpdate

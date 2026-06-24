@@ -244,9 +244,7 @@ describe('autoUpdater', () => {
         expect(payload.downloaded).toBe(false);
         expect(payload.type).toBe('manual');
         expect(payload.version).toBe('1.9.1');
-        expect(payload.url).toBe(
-            'https://github.com/godotlauncher/launcher/releases/tag/v1.9.1',
-        );
+        expect(payload.url).toBe('https://godotlauncher.org/download/');
     });
 
     it('detects rpm-ostree systems when status succeeds', async () => {
