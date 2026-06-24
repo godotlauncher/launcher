@@ -8,7 +8,7 @@
     "remove": "Удалить",
     "copyPath": "Копировать путь",
     "openPath": "Открыть путь",
-    "reinstall": "Reinstall"
+    "reinstall": "Переустановить"
   },
   "error": "Ошибка",
   "success": "Успешно",
@@ -35,8 +35,8 @@
       "availableNoVersion": "Доступна новая версия. <DownloadButton>Скачать обновление</DownloadButton>",
       "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
       "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
-      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
-      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
+      "manualWithVersion": "Версия {{version}} доступна, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink> или <SkipButton>Пропустить эту версию</SkipButton>",
+      "manualNoVersion": "Доступна новая версия, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink>"
     }
   },
   "selectRelease": {

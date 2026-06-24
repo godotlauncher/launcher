@@ -8,7 +8,7 @@
     "remove": "Eliminar",
     "copyPath": "Copiar ruta",
     "openPath": "Abrir ruta",
-    "reinstall": "Reinstall"
+    "reinstall": "Reinstalar"
   },
   "error": "Error",
   "success": "Éxito",
@@ -35,8 +35,8 @@
       "availableNoVersion": "Una nueva versión está disponible. <DownloadButton>Descargar actualización</DownloadButton>",
       "readyWithVersion": "La versión {{version}} está lista, reinicia Godot Launcher para instalarla. <RestartButton>Reiniciar ahora</RestartButton>",
       "readyNoVersion": "La actualización está lista, reinicia Godot Launcher para instalarla. <RestartButton>Reiniciar ahora</RestartButton>",
-      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
-      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
+      "manualWithVersion": "La versión {{version}} está disponible, pero la instalación automática no es compatible con este sistema rpm-ostree. <ReleaseLink>Descargar manualmente</ReleaseLink> o <SkipButton>Omitir esta versión</SkipButton>",
+      "manualNoVersion": "Hay una nueva versión disponible, pero la instalación automática no es compatible con este sistema rpm-ostree. <ReleaseLink>Descargar manualmente</ReleaseLink>"
     }
   },
   "selectRelease": {

@@ -28,8 +28,8 @@
     "revalidationFailed": "验证失败。请检查存储设备并重试。",
     "revalidationStillMissing": "验证已完成，但 {{version}} 仍不可用。再次尝试前请确认 {{path}} 可访问。",
     "revalidationStillMissingNoPath": "验证已完成，但 {{version}} 仍不可用。再次尝试前请确认存储设备已挂载。",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "无法访问编辑器路径。请挂载存储设备后重试、重新安装编辑器，或移除此条目。",
+    "reinstallFailed": "重新安装失败。请检查连接后重试。",
     "registeredCustomEditor": "{{name}} 自定义编辑器已注册。",
     "registerCustomEditorFailed": "注册自定义编辑器失败。",
     "unavailableCustomEditorHint": "无法访问自定义编辑器路径。请挂载存储设备后重试，或移除此条目。"

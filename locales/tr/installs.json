@@ -28,8 +28,8 @@
     "revalidationFailed": "Doğrulama başarısız oldu. Depolama aygıtını kontrol edin ve tekrar deneyin.",
     "revalidationStillMissing": "Doğrulama tamamlandı ancak {{version}} hâlâ kullanılamıyor. Yeniden denemeden önce {{path}} yolunun erişilebilir olduğundan emin olun.",
     "revalidationStillMissingNoPath": "Doğrulama tamamlandı ancak {{version}} hâlâ kullanılamıyor. Yeniden denemeden önce depolama aygıtının takılı olduğundan emin olun.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "Düzenleyici yoluna erişilemiyor. Depolama aygıtını bağlayıp tekrar deneyin, düzenleyiciyi yeniden yükleyin veya bu girdiyi kaldırın.",
+    "reinstallFailed": "Yeniden yükleme başarısız oldu. Bağlantınızı kontrol edip tekrar deneyin.",
     "registeredCustomEditor": "Özel editör {{name}} kaydedildi.",
     "registerCustomEditorFailed": "Özel editör kaydedilemedi.",
     "unavailableCustomEditorHint": "Özel editör yoluna erişilemiyor. Depolama aygıtını bağlayıp yeniden deneyin veya bu girdiyi kaldırın."

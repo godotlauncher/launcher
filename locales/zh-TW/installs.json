@@ -28,8 +28,8 @@
     "revalidationFailed": "驗證失敗。請檢查儲存裝置並再試一次。",
     "revalidationStillMissing": "驗證已完成，但 {{version}} 仍無法使用。請確認 {{path}} 可存取後再試一次。",
     "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "無法存取編輯器路徑。請掛載儲存裝置後重試、重新安裝編輯器，或移除此項目。",
+    "reinstallFailed": "重新安裝失敗。請檢查連線後再試一次。",
     "registeredCustomEditor": "已註冊自訂編輯器 {{name}}。",
     "registerCustomEditorFailed": "無法註冊自訂編輯器。",
     "unavailableCustomEditorHint": "無法存取自訂編輯器路徑。請掛載儲存裝置後重試，或移除此項目。"

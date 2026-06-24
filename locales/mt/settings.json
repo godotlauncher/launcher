@@ -1,5 +1,5 @@
 {
-  "title": "Settings",
+  "title": "Issettjar",
   "tabs": {
     "projects": "Proġetti",
     "installs": "Installazzjonijiet",
@@ -112,8 +112,8 @@
     "unskipVersion": "Erġa’ attiva l-aġġornament maqbuż",
     "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
     "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <Button>Ibda mill-ġdid issa</Button>",
-    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
-    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
+    "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <Button>Iftaħ il-paġna tat-tniżżil</Button>",
+    "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <Button>Iftaħ il-paġna tat-tniżżil</Button>"
   },
   "windowsSymlinks": {
     "title": "Symlinks tal-editur",

@@ -23,7 +23,7 @@
   },
   "messages": {
     "installError": "Coś poszło nie tak podczas instalacji wydania",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "Coś poszło nie tak podczas ponownej instalacji wydania"
   },
   "table": {
     "headers": {
@@ -42,8 +42,8 @@
       "installedDotNet": "Zainstalowano - {{version}} .NET",
       "downloadGDScript": "Pobierz {{version}} (GDScript)",
       "downloadDotNet": "Pobierz {{version}} .NET",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "Zainstaluj ponownie {{version}} (GDScript)",
+      "reinstallDotNet": "Zainstaluj ponownie {{version}} .NET"
     },
     "status": {
       "unavailable": "Niedostępne"

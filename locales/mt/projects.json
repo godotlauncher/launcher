@@ -18,8 +18,8 @@
     "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
     "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
+      "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
     }
   },
   "addProject": {
@@ -61,13 +61,13 @@
     "dropGodotFileOnly": "Jekk jogħġbok waqqa' fajl project.godot biex iżżid proġett",
     "dropProjectHere": "Waqqa' l-fajl project.godot hawn biex iżżid proġett",
     "addingProjects": "Qed iżżid proġetti: {{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "Ma setax jiżdied il-proġett: {{error}}",
+    "dropProjectFilesHere": "Waqqa’ l-fajls tal-proġett Godot hawn",
+    "dropProjectFilesHelpPrefix": "Waqqa’ wieħed jew aktar",
+    "dropProjectFilesHelpSuffix": "fajls biex iżżidhom mal-launcher.",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+      "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
+      "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
     },
     "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
   },

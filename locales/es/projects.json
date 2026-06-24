@@ -18,8 +18,8 @@
     "windowedMode": "Este proyecto se abre en modo ventana",
     "gitProject": "El proyecto usa Git para el control de versiones",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "No se encontró el archivo del proyecto. Comprueba la ubicación del proyecto.",
+      "missingEditor": "No se encontró el editor. Comprueba la ubicación del editor."
     }
   },
   "addProject": {
@@ -61,13 +61,13 @@
     "dropGodotFileOnly": "Por favor, arrastre un archivo project.godot para añadir un proyecto",
     "dropProjectHere": "Suelte el archivo project.godot aquí para añadir el proyecto",
     "addingProjects": "Añadiendo proyectos: {{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "No se pudo añadir el proyecto: {{error}}",
+    "dropProjectFilesHere": "Suelta aquí los archivos de proyecto de Godot",
+    "dropProjectFilesHelpPrefix": "Suelta uno o más",
+    "dropProjectFilesHelpSuffix": "archivos para añadirlos al launcher.",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
+      "missingProjectFile": "No se encontró el archivo del proyecto. Comprueba la ubicación del proyecto o elimínalo y vuelve a añadirlo.",
+      "missingEditor": "El editor seleccionado no está disponible. Monta la unidad o elige otro editor."
     },
     "recoveredVSCodeConfig": "Algunos archivos de configuración de VS Code no eran válidos. Godot Launcher los volvió a crear y conservó los originales como copias .bad."
   },

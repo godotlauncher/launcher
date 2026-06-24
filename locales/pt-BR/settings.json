@@ -112,8 +112,8 @@
     "unskipVersion": "Reativar atualização ignorada",
     "readyWithVersion": "A versão {{version}} está pronta, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
     "readyNoVersion": "A atualização está pronta, reinicie o Godot Launcher para instalar. <Button>Reiniciar agora</Button>",
-    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
-    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
+    "manualWithVersion": "A versão {{version}} está disponível, mas a instalação automática não é compatível com este sistema rpm-ostree. <Button>Abrir página de download</Button>",
+    "manualNoVersion": "Há uma nova versão disponível, mas a instalação automática não é compatível com este sistema rpm-ostree. <Button>Abrir página de download</Button>"
   },
   "windowsSymlinks": {
     "title": "Links simbólicos do editor",

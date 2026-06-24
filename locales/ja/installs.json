@@ -28,8 +28,8 @@
     "revalidationFailed": "検証に失敗しました。ストレージデバイスを確認してから再試行してください。",
     "revalidationStillMissing": "検証は完了しましたが {{version}} はまだ利用できません。再試行する前に {{path}} がアクセス可能か確認してください。",
     "revalidationStillMissingNoPath": "検証は完了しましたが {{version}} はまだ利用できません。再試行する前にストレージデバイスがマウントされているか確認してください。",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "エディターのパスにアクセスできません。ストレージデバイスをマウントして再試行するか、エディターを再インストールするか、この項目を削除してください。",
+    "reinstallFailed": "再インストールに失敗しました。接続を確認してもう一度お試しください。",
     "registeredCustomEditor": "カスタムエディタ {{name}} を登録しました。",
     "registerCustomEditorFailed": "カスタムエディタを登録できませんでした。",
     "unavailableCustomEditorHint": "カスタムエディタのパスにアクセスできません。ストレージデバイスをマウントして再試行するか、この項目を削除してください。"

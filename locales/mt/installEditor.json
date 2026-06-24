@@ -23,7 +23,7 @@
   },
   "messages": {
     "installError": "Xi ħaġa marret ħażin meta nstalla r-release",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "Xi ħaġa marret ħażin waqt l-installazzjoni mill-ġdid tar-rilaxx"
   },
   "table": {
     "headers": {
@@ -42,8 +42,8 @@
       "installedDotNet": "Installat - {{version}} .NET",
       "downloadGDScript": "Niżżel {{version}} (GDScript)",
       "downloadDotNet": "Niżżel {{version}} .NET",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "Erġa’ installa {{version}} (GDScript)",
+      "reinstallDotNet": "Erġa’ installa {{version}} .NET"
     },
     "status": {
       "unavailable": "Mhux disponibbli"

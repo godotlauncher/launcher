@@ -28,8 +28,8 @@
     "revalidationFailed": "Не удалось выполнить проверку. Проверьте устройство хранения и повторите попытку.",
     "revalidationStillMissing": "Проверка завершена, но {{version}} по-прежнему недоступно. Убедитесь, что {{path}} доступен, прежде чем повторять попытку.",
     "revalidationStillMissingNoPath": "Проверка завершена, но {{version}} по-прежнему недоступно. Убедитесь, что устройство хранения подключено, прежде чем повторять попытку.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
+    "unavailableHintWithReinstall": "Путь к редактору недоступен. Подключите устройство хранения и повторите попытку, переустановите редактор или удалите эту запись.",
+    "reinstallFailed": "Переустановка не удалась. Проверьте подключение и повторите попытку.",
     "registeredCustomEditor": "Пользовательский редактор {{name}} зарегистрирован.",
     "registerCustomEditorFailed": "Не удалось зарегистрировать пользовательский редактор.",
     "unavailableCustomEditorHint": "Путь к пользовательскому редактору недоступен. Подключите устройство хранения и повторите попытку или удалите эту запись."

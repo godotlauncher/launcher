@@ -8,7 +8,7 @@
     "remove": "移除",
     "copyPath": "複製路徑",
     "openPath": "開啟路徑",
-    "reinstall": "Reinstall"
+    "reinstall": "重新安裝"
   },
   "error": "錯誤",
   "success": "成功",
@@ -35,8 +35,8 @@
       "availableNoVersion": "有新版本可用。<DownloadButton>下載更新</DownloadButton>",
       "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
       "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
-      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
-      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
+      "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>或<SkipButton>略過此版本</SkipButton>",
+      "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>"
     }
   },
   "selectRelease": {
