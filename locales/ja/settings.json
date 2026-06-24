@@ -111,7 +111,9 @@
     "skipVersion": "このバージョンをスキップ",
     "unskipVersion": "スキップした更新を戻す",
     "readyWithVersion": "バージョン {{version}} のアップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<Button>今すぐ再起動</Button>",
-    "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<Button>今すぐ再起動</Button>"
+    "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<Button>今すぐ再起動</Button>",
+    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
+    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
   },
   "windowsSymlinks": {
     "title": "エディタシンボリックリンク",

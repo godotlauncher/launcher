@@ -34,7 +34,9 @@
       "availableWithVersion": "Версия {{version}} доступна. <DownloadButton>Скачать обновление</DownloadButton> или <SkipButton>Пропустить эту версию</SkipButton>",
       "availableNoVersion": "Доступна новая версия. <DownloadButton>Скачать обновление</DownloadButton>",
       "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
-      "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>"
+      "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
+      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
+      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
     }
   },
   "selectRelease": {

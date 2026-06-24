@@ -34,7 +34,9 @@
       "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下载更新</DownloadButton> 或 <SkipButton>跳过此版本</SkipButton>",
       "availableNoVersion": "有新版本可用。<DownloadButton>下载更新</DownloadButton>",
       "readyWithVersion": "版本 {{version}} 已就绪，重新启动 Godot 启动器以安装。<RestartButton>立即重启</RestartButton>",
-      "readyNoVersion": "更新已就绪，重新启动 Godot 启动器以安装。<RestartButton>立即重启</RestartButton>"
+      "readyNoVersion": "更新已就绪，重新启动 Godot 启动器以安装。<RestartButton>立即重启</RestartButton>",
+      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
+      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
     }
   },
   "selectRelease": {

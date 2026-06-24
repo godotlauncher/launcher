@@ -111,7 +111,9 @@
     "skipVersion": "Aqbeż din il-verżjoni",
     "unskipVersion": "Erġa’ attiva l-aġġornament maqbuż",
     "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-    "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <Button>Ibda mill-ġdid issa</Button>"
+    "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <Button>Ibda mill-ġdid issa</Button>",
+    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
+    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
   },
   "windowsSymlinks": {
     "title": "Symlinks tal-editur",

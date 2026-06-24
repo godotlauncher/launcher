@@ -34,7 +34,9 @@
       "availableWithVersion": "Il-verżjoni {{version}} hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
       "availableNoVersion": "Verżjoni ġdida hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton>",
       "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
-      "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>"
+      "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
+      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
+      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
     }
   },
   "selectRelease": {

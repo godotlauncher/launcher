@@ -34,7 +34,9 @@
       "availableWithVersion": "Sürüm {{version}} mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton> veya <SkipButton>Bu sürümü atla</SkipButton>",
       "availableNoVersion": "Yeni bir sürüm mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton>",
       "readyWithVersion": "{{version}} sürümü hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
-      "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>"
+      "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
+      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
+      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
     }
   },
   "selectRelease": {

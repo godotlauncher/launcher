@@ -1,8 +1,24 @@
 import type { BrowserWindow } from 'electron';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
     const checkForUpdates = vi.fn();
+    const execFile = vi.fn(
+        (
+            _command: string,
+            _args: string[],
+            _options: unknown,
+            callback: (
+                error: Error | null,
+                stdout: string,
+                stderr: string,
+            ) => void,
+        ) => {
+            callback(null, '{}', '');
+        },
+    );
+    const existsSync = vi.fn(() => false);
+    const findExecutable = vi.fn(async () => null as string | null);
     const on = vi.fn();
     const downloadUpdate = vi.fn();
     const quitAndInstall = vi.fn();
@@ -28,6 +44,9 @@ const mocks = vi.hoisted(() => {
         autoUpdater,
         checkForUpdates,
         downloadUpdate,
+        execFile,
+        existsSync,
+        findExecutable,
         getVersion,
         ipcWebContentsSend,
         on,
@@ -40,6 +59,14 @@ vi.mock('electron-updater', () => ({
     default: {
         autoUpdater: mocks.autoUpdater,
     },
+}));
+
+vi.mock('node:child_process', () => ({
+    execFile: mocks.execFile,
+}));
+
+vi.mock('node:fs', () => ({
+    existsSync: mocks.existsSync,
 }));
 
 vi.mock('electron', () => ({
@@ -62,13 +89,27 @@ vi.mock('./utils.js', () => ({
     ipcWebContentsSend: mocks.ipcWebContentsSend,
 }));
 
+vi.mock('./utils/platform.utils.js', () => ({
+    findExecutable: mocks.findExecutable,
+}));
+
 import {
     checkForUpdates,
     downloadAppUpdate,
     installUpdateAndRestart,
+    isRpmOstreeSystem,
     setBetaChannel,
     setupAutoUpdate,
 } from './autoUpdater.js';
+
+const originalPlatform = process.platform;
+
+function setPlatform(platform: NodeJS.Platform) {
+    Object.defineProperty(process, 'platform', {
+        configurable: true,
+        value: platform,
+    });
+}
 
 describe('autoUpdater', () => {
     beforeEach(() => {
@@ -78,6 +119,27 @@ describe('autoUpdater', () => {
         mocks.autoUpdater.currentVersion = { version: '1.9.0' };
         mocks.getVersion.mockReturnValue('1.9.0');
         mocks.checkForUpdates.mockResolvedValue(null);
+        mocks.existsSync.mockReturnValue(false);
+        mocks.findExecutable.mockResolvedValue(null);
+        mocks.execFile.mockImplementation(
+            (
+                _command: string,
+                _args: string[],
+                _options: unknown,
+                callback: (
+                    error: Error | null,
+                    stdout: string,
+                    stderr: string,
+                ) => void,
+            ) => {
+                callback(null, '{}', '');
+            },
+        );
+        setPlatform(originalPlatform);
+    });
+
+    afterEach(() => {
+        setPlatform(originalPlatform);
     });
 
     it('uses current prerelease channel for prerelease builds', () => {
@@ -165,6 +227,43 @@ describe('autoUpdater', () => {
         expect(payload.version).toBe('1.9.1');
     });
 
+    it('reports manual update instructions on rpm-ostree systems', async () => {
+        setPlatform('linux');
+        mocks.existsSync.mockReturnValue(true);
+        mocks.autoUpdater.currentVersion = { version: '1.9.0' };
+        mocks.checkForUpdates.mockResolvedValue({
+            updateInfo: { version: '1.9.1' },
+        });
+
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+        await checkForUpdates();
+
+        const payload = mocks.ipcWebContentsSend.mock.calls.at(-1)?.[2];
+        expect(payload.available).toBe(true);
+        expect(payload.downloaded).toBe(false);
+        expect(payload.type).toBe('manual');
+        expect(payload.version).toBe('1.9.1');
+        expect(payload.url).toBe(
+            'https://github.com/godotlauncher/launcher/releases/tag/v1.9.1',
+        );
+    });
+
+    it('detects rpm-ostree systems when status succeeds', async () => {
+        setPlatform('linux');
+        mocks.existsSync.mockReturnValue(false);
+        mocks.findExecutable.mockResolvedValue('/usr/bin/rpm-ostree');
+
+        await expect(isRpmOstreeSystem()).resolves.toBe(true);
+
+        expect(mocks.execFile).toHaveBeenCalledWith(
+            '/usr/bin/rpm-ostree',
+            ['status', '--json'],
+            { timeout: 3000, windowsHide: true },
+            expect.any(Function),
+        );
+    });
+
     it('does not auto-download when update-available event is emitted', async () => {
         const browserWindow = { webContents: {} } as BrowserWindow;
         await setupAutoUpdate(browserWindow, false);
@@ -177,6 +276,26 @@ describe('autoUpdater', () => {
         availableHandler?.({ version: '1.9.1' });
 
         expect(mocks.downloadUpdate).not.toHaveBeenCalled();
+    });
+
+    it('reports install errors to the renderer', async () => {
+        const browserWindow = { webContents: {} } as BrowserWindow;
+        await setupAutoUpdate(browserWindow, false);
+
+        const errorHandler = mocks.on.mock.calls.find(
+            (call) => call[0] === 'error',
+        )?.[1];
+        expect(errorHandler).toBeTypeOf('function');
+
+        errorHandler?.(new Error('install failed'));
+
+        const payload = mocks.ipcWebContentsSend.mock.calls.at(-1)?.[2];
+        expect(payload).toEqual({
+            available: true,
+            downloaded: false,
+            type: 'error',
+            message: 'Failed to install update',
+        });
     });
 
     it('registers updater event listeners before first startup check', async () => {

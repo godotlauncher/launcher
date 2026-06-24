@@ -112,6 +112,25 @@ describe('CheckForUpdates', () => {
         expect(html).toContain('updates.readyWithVersion');
     });
 
+    it('shows manual guidance without download action on unsupported systems', () => {
+        appState.updateAvailable = {
+            available: true,
+            downloaded: false,
+            type: 'manual',
+            version: '1.9.1',
+            url: 'https://example.com/releases/v1.9.1',
+            message:
+                'Version 1.9.1 is available. Automatic installation is not supported on this rpm-ostree system.',
+        };
+
+        const html = renderToStaticMarkup(<CheckForUpdates />);
+
+        expect(html).toContain('Check for updates');
+        expect(html).not.toContain('Download update');
+        expect(html).toContain('Skip this version');
+        expect(html).toContain('updates.manualWithVersion');
+    });
+
     it('shows unskip action when a skipped version exists', () => {
         preferencesState.preferences.skipped_app_update_version = '1.9.1';
 

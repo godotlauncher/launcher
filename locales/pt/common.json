@@ -34,7 +34,9 @@
       "availableWithVersion": "A versão {{version}} está disponível. <DownloadButton>Baixar atualização</DownloadButton> ou <SkipButton>Ignorar esta versão</SkipButton>",
       "availableNoVersion": "Está disponível uma nova versão. <DownloadButton>Baixar atualização</DownloadButton>",
       "readyWithVersion": "A versão {{version}} está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>",
-      "readyNoVersion": "A atualização está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>"
+      "readyNoVersion": "A atualização está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>",
+      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
+      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
     }
   },
   "selectRelease": {

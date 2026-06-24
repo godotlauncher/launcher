@@ -111,7 +111,9 @@
     "skipVersion": "Omitir esta versión",
     "unskipVersion": "Restaurar actualización omitida",
     "readyWithVersion": "La versión {{version}} está lista, reinicia Godot Launcher para instalarla. <Button>Reiniciar ahora</Button>",
-    "readyNoVersion": "La actualización está lista, reinicia Godot Launcher para instalarla. <Button>Reiniciar ahora</Button>"
+    "readyNoVersion": "La actualización está lista, reinicia Godot Launcher para instalarla. <Button>Reiniciar ahora</Button>",
+    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
+    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
   },
   "windowsSymlinks": {
     "title": "Enlaces simbólicos del editor",

@@ -1,12 +1,14 @@
 import type { AppUpdateMessage } from '@shared';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { LAUNCHER_GITHUB_RELEASES_URL } from '../constants';
 
 type AppUpdateBannerProps = {
     updateAvailable: AppUpdateMessage | undefined;
     installAndRelaunch: () => Promise<void>;
     downloadAppUpdate: () => Promise<void>;
     skipAppUpdate: (version: string) => Promise<void>;
+    openUpdateUrl: (url: string) => Promise<void>;
 };
 
 type AppUpdateBannerContentProps = AppUpdateBannerProps & {
@@ -20,6 +22,7 @@ export function getAppUpdateBannerContent({
     installAndRelaunch,
     downloadAppUpdate,
     skipAppUpdate,
+    openUpdateUrl,
     t,
 }: AppUpdateBannerContentProps): ReactNode {
     if (!updateAvailable) {
@@ -114,6 +117,44 @@ export function getAppUpdateBannerContent({
                     }}
                 />
             );
+
+        case 'manual': {
+            const version = updateAvailable.version;
+            const url = updateAvailable.url ?? LAUNCHER_GITHUB_RELEASES_URL;
+            return (
+                <Trans
+                    ns="common"
+                    i18nKey={
+                        version
+                            ? 'app.update.manualWithVersion'
+                            : 'app.update.manualNoVersion'
+                    }
+                    values={{ version }}
+                    components={{
+                        ReleaseLink: (
+                            <button
+                                data-testid="btnAppUpdateManual"
+                                type="button"
+                                onClick={() => openUpdateUrl(url)}
+                                className={bannerLinkClass}
+                            />
+                        ),
+                        ...(version
+                            ? {
+                                  SkipButton: (
+                                      <button
+                                          data-testid="btnAppUpdateManualSkip"
+                                          type="button"
+                                          onClick={() => skipAppUpdate(version)}
+                                          className={bannerLinkClass}
+                                      />
+                                  ),
+                              }
+                            : {}),
+                    }}
+                />
+            );
+        }
 
         case 'error':
             return (

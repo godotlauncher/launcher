@@ -7,6 +7,8 @@ export const LAUNCHER_THIRD_PARTY_RAW_URL =
 
 // GItHub
 export const LAUNCHER_GITHUB_URL = 'https://github.com/godotlauncher/launcher';
+export const LAUNCHER_GITHUB_RELEASES_URL =
+    'https://github.com/godotlauncher/launcher/releases';
 export const LAUNCHER_GITHUB_ISSUES_URL =
     'https://github.com/godotlauncher/launcher/issues';
 export const LAUNCHER_GITHUB_PROPOSALS_URL =

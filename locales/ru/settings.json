@@ -111,7 +111,9 @@
     "skipVersion": "Пропустить эту версию",
     "unskipVersion": "Вернуть пропущенное обновление",
     "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
-    "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>"
+    "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <Button>Перезапустить сейчас</Button>",
+    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
+    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
   },
   "windowsSymlinks": {
     "title": "Символические ссылки редактора",

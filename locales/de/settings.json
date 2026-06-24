@@ -111,7 +111,9 @@
     "skipVersion": "Diese Version überspringen",
     "unskipVersion": "Übersprungene Version wieder aktivieren",
     "readyWithVersion": "Version {{version}} ist bereit, starte Godot Launcher neu, um sie zu installieren. <Button>Jetzt neu starten</Button>",
-    "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <Button>Jetzt neu starten</Button>"
+    "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <Button>Jetzt neu starten</Button>",
+    "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>",
+    "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <Button>Open download page</Button>"
   },
   "windowsSymlinks": {
     "title": "Editor-Symlinks",
