@@ -14,7 +14,7 @@
     "project": {
         "openProjectFolder": "Open Project Folder",
         "openEditorSettingsFolder": "Open Editor Settings Folder",
-        "openWindowed": "Open Windowed",
+        "openWindowed": "Use Windowed Mode",
         "openWindowedTooltip": "When this option is checked, Godot will launch in windowed mode.",
         "useVSCode": "Use Visual Studio Code as Text Editor",
         "useVSCodeTooltip": "Toggle Visual Studio Code as the external script editor for this project.",

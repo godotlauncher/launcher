@@ -14,7 +14,7 @@
     "project": {
         "openProjectFolder": "Proje Klasörünü Aç",
         "openEditorSettingsFolder": "Editör Ayarları Klasörünü Aç",
-        "openWindowed": "Pencere Modunda Aç",
+        "openWindowed": "Pencere modunu kullan",
         "openWindowedTooltip": "Bu seçenek işaretlendiğinde, Godot pencere modunda başlatılacaktır.",
         "exportEditorSettings": "Editör Ayarlarını Dosyaya Aktar",
         "importEditorSettings": "Editör Ayarlarını Dosyadan İçe Aktar",
