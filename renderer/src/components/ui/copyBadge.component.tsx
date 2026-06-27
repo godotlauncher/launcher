@@ -62,12 +62,9 @@ export const CopyBadge: React.FC<CopyBadgeProps> = ({
                 {value}
             </span>
             <span
-                className={clsx(
-                    'grid h-5 w-5 shrink-0 place-items-center',
-                    {
-                        'text-success': copied,
-                    }
-                )}
+                className={clsx('grid h-5 w-5 shrink-0 place-items-center', {
+                    'text-success': copied,
+                })}
                 aria-hidden="true"
             >
                 <Icon size={13} strokeWidth={2.2} />
