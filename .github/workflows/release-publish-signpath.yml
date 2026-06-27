@@ -1,0 +1,313 @@
+name: Release Publish (SignPath)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: 'Run ID from Release Build (SignPath)'
+        required: true
+        type: string
+      publish_release:
+        description: 'Publish the draft release after uploading assets'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_CONNECTOR_URL: ${{ vars.SIGNPATH_CONNECTOR_URL || 'https://githubactions.connectors.signpath.io' }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build workflow artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download "${{ inputs.build_run_id }}" --name signpath-release-manifest --dir release-input
+          gh run download "${{ inputs.build_run_id }}" --name release-dist-windows --dir dist/windows
+          gh run download "${{ inputs.build_run_id }}" --name release-dist-linux --dir dist/linux
+          gh run download "${{ inputs.build_run_id }}" --name release-dist-macos --dir dist/macos
+
+      - name: Read release manifest
+        id: manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const manifest = require('./release-input/signpath-release-manifest.json');
+          console.log(`version=${manifest.version}`);
+          console.log(`tag=${manifest.tag}`);
+          console.log(`windows_request_id=${manifest.requests.windows.id}`);
+          console.log(`linux_request_id=${manifest.requests.linux.id}`);
+          NODE
+
+      - name: Download signed Windows and Linux artifacts
+        shell: bash
+        env:
+          WINDOWS_REQUEST_ID: ${{ steps.manifest.outputs.windows_request_id }}
+          LINUX_REQUEST_ID: ${{ steps.manifest.outputs.linux_request_id }}
+        run: |
+          set -euo pipefail
+
+          download_signed_artifact() {
+            local request_id="$1"
+            local target_zip="$2"
+            local target_dir="$3"
+            local base_url="${SIGNPATH_CONNECTOR_URL%/}"
+            local url="${base_url}/${SIGNPATH_ORGANIZATION_ID}/SigningRequests/${request_id}/SignedArtifact?api-version=1.0"
+
+            mkdir -p "${target_dir}"
+            curl --fail --location --show-error \
+              --header "Authorization: Bearer ${SIGNPATH_API_TOKEN}" \
+              --output "${target_zip}" \
+              "${url}"
+            unzip -o "${target_zip}" -d "${target_dir}"
+          }
+
+          download_signed_artifact "${WINDOWS_REQUEST_ID}" signed-windows.zip signed/windows
+          download_signed_artifact "${LINUX_REQUEST_ID}" signed-linux.zip signed/linux
+
+      - name: Replace unsigned artifacts with signed artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          windows_count=0
+          while IFS= read -r -d '' file; do
+            cp "${file}" "dist/windows/$(basename "${file}")"
+            windows_count=$((windows_count + 1))
+          done < <(find signed/windows -type f -name '*.exe' -print0)
+
+          linux_count=0
+          while IFS= read -r -d '' file; do
+            cp "${file}" "dist/linux/$(basename "${file}")"
+            linux_count=$((linux_count + 1))
+          done < <(find signed/linux -type f -print0)
+
+          if [ "${windows_count}" -eq 0 ]; then
+            echo "No signed Windows artifacts were found." >&2
+            exit 1
+          fi
+
+          if [ "${linux_count}" -eq 0 ]; then
+            echo "No signed Linux artifacts were found." >&2
+            exit 1
+          fi
+
+      - name: Regenerate Windows updater metadata
+        shell: bash
+        env:
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          set -euo pipefail
+          rm -f dist/windows/*.blockmap dist/windows/*.yml
+
+          node <<'NODE'
+          const fs = require('fs/promises');
+          const path = require('path');
+          const crypto = require('crypto');
+          const yaml = require('js-yaml');
+          const { createReadStream } = require('fs');
+          const { executeAppBuilderAsJson } = require('app-builder-lib/out/util/appBuilder');
+
+          function hashFile(file) {
+            return new Promise((resolve, reject) => {
+              const hash = crypto.createHash('sha512');
+              createReadStream(file)
+                .on('data', chunk => hash.update(chunk))
+                .on('error', reject)
+                .on('end', () => resolve(hash.digest('base64')));
+            });
+          }
+
+          function order(name) {
+            if (name.includes('_x64.')) return 0;
+            if (name.includes('_arm64.')) return 1;
+            return 2;
+          }
+
+          async function main() {
+            const version = process.env.VERSION;
+            const distDir = path.resolve('dist/windows');
+            const artifacts = (await fs.readdir(distDir))
+              .filter(name => name.startsWith(`Godot_Launcher-${version}-win_`) && name.endsWith('.exe'))
+              .sort((a, b) => order(a) - order(b) || a.localeCompare(b));
+
+            if (artifacts.length === 0) {
+              throw new Error(`No signed Windows installers found for ${version}`);
+            }
+
+            const files = [];
+            for (const name of artifacts) {
+              const artifactPath = path.join(distDir, name);
+              const blockMapPath = `${artifactPath}.blockmap`;
+              await executeAppBuilderAsJson(['blockmap', '--input', artifactPath, '--output', blockMapPath]);
+
+              const [artifactStat, blockMapStat, sha512] = await Promise.all([
+                fs.stat(artifactPath),
+                fs.stat(blockMapPath),
+                hashFile(artifactPath),
+              ]);
+
+              files.push({
+                url: name,
+                sha512,
+                size: artifactStat.size,
+                blockMapSize: blockMapStat.size,
+              });
+            }
+
+            await fs.writeFile(path.join(distDir, 'latest.yml'), yaml.dump({
+              version,
+              files,
+              path: files[0].url,
+              sha512: files[0].sha512,
+              releaseDate: new Date().toISOString(),
+            }, { lineWidth: -1 }), 'utf8');
+          }
+
+          main().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Regenerate Linux updater metadata
+        shell: bash
+        env:
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          node <<'NODE'
+          const fs = require('fs/promises');
+          const path = require('path');
+          const crypto = require('crypto');
+          const yaml = require('js-yaml');
+          const { createReadStream } = require('fs');
+
+          function hashFile(file) {
+            return new Promise((resolve, reject) => {
+              const hash = crypto.createHash('sha512');
+              createReadStream(file)
+                .on('data', chunk => hash.update(chunk))
+                .on('error', reject)
+                .on('end', () => resolve(hash.digest('base64')));
+            });
+          }
+
+          function artifactOrder(name) {
+            if (name.endsWith('.AppImage')) return 0;
+            if (name.endsWith('.deb')) return 1;
+            if (name.endsWith('.rpm')) return 2;
+            return 3;
+          }
+
+          async function readYaml(file) {
+            try {
+              return yaml.load(await fs.readFile(file, 'utf8')) || {};
+            } catch (error) {
+              if (error.code === 'ENOENT') return {};
+              throw error;
+            }
+          }
+
+          async function writeUpdateInfo(fileName, arch) {
+            const version = process.env.VERSION;
+            const distDir = path.resolve('dist/linux');
+            const updateFile = path.join(distDir, fileName);
+            const existing = await readYaml(updateFile);
+            const existingFiles = new Map((existing.files || []).map(file => [file.url || file.path, file]));
+            const artifacts = (await fs.readdir(distDir))
+              .filter(name => name.startsWith(`Godot_Launcher-${version}-linux_${arch}.`))
+              .filter(name => name.endsWith('.AppImage') || name.endsWith('.deb') || name.endsWith('.rpm'))
+              .sort((a, b) => artifactOrder(a) - artifactOrder(b) || a.localeCompare(b));
+
+            if (artifacts.length === 0) return;
+
+            const files = [];
+            for (const name of artifacts) {
+              const artifactPath = path.join(distDir, name);
+              const [artifactStat, sha512] = await Promise.all([
+                fs.stat(artifactPath),
+                hashFile(artifactPath),
+              ]);
+              files.push({
+                ...(existingFiles.get(name) || {}),
+                url: name,
+                sha512,
+                size: artifactStat.size,
+              });
+            }
+
+            await fs.writeFile(updateFile, yaml.dump({
+              ...existing,
+              version,
+              files,
+              path: files[0].url,
+              sha512: files[0].sha512,
+              releaseDate: new Date().toISOString(),
+            }, { lineWidth: -1 }), 'utf8');
+          }
+
+          async function main() {
+            await writeUpdateInfo('latest-linux.yml', 'x64');
+            await writeUpdateInfo('latest-linux-arm64.yml', 'arm64');
+          }
+
+          main().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Collect release assets
+        shell: bash
+        env:
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+
+          find dist/windows -maxdepth 1 -type f \( -name "Godot_Launcher-${VERSION}-win_*" -o -name 'latest.yml' \) -exec cp {} release-assets/ \;
+          find dist/linux -maxdepth 1 -type f \( -name "Godot_Launcher-${VERSION}-linux_*" -o -name 'latest-linux*.yml' \) -exec cp {} release-assets/ \;
+          find dist/macos -maxdepth 1 -type f \( -name "Godot_Launcher-${VERSION}-mac_*" -o -name 'latest-mac.*' \) -exec cp {} release-assets/ \;
+
+          find release-assets -maxdepth 1 -type f -print | sort
+
+      - name: Upload release assets
+        shell: bash
+        env:
+          TAG: ${{ steps.manifest.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release upload "${TAG}" release-assets/* --clobber
+
+      - name: Publish draft release
+        if: ${{ inputs.publish_release }}
+        shell: bash
+        env:
+          TAG: ${{ steps.manifest.outputs.tag }}
+        run: gh release edit "${TAG}" --draft=false
