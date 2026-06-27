@@ -7,6 +7,7 @@ import {
     ChevronUp,
     Copy,
     EllipsisVertical,
+    ImageOff,
     TriangleAlert,
 } from 'lucide-react';
 import type React from 'react';
@@ -150,110 +151,147 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                 key={`projectRow_${row.path}`}
                                 className="relative hover:bg-base-content/5"
                             >
-                                <td className="p-2 flex flex-col gap-1">
+                                <td className="p-2">
                                     {busyProjects.includes(row.path) && (
                                         <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg ">
                                             <div className="loading loading-bars"></div>
                                         </div>
                                     )}
-                                    <div className="font-bold flex text-lg gap-2 items-center justify-start">
-                                        {!row.valid && (
-                                            <Tooltip
-                                                tip={t(
-                                                    getInvalidProjectTableKey(
-                                                        row,
-                                                    ),
-                                                )}
-                                            >
-                                                <TriangleAlert className="stroke-warning" />
-                                            </Tooltip>
-                                        )}
+                                    <div className="grid grid-cols-[52px_minmax(0,1fr)] gap-2 items-center">
                                         <button
                                             type="button"
                                             onClick={() => onLaunchProject(row)}
-                                            className="flex items-center hover:underline gap-2"
+                                            className="w-full h-full flex items-center justify-center overflow-hidden shrink-0 rounded-2xl bg-base-content/5 outline-none"
+                                            aria-label={`Launch ${row.name}`}
                                         >
-                                            {row.name}
+                                            {row.icon_path && (
+                                                <img
+                                                    src={row.icon_path}
+                                                    className="w-full h-full object-contain"
+                                                    alt=""
+                                                />
+                                            )}
+                                            {!row.icon_path && (
+                                                <ImageOff className="w-6 h-6 stroke-base-content/30" />
+                                            )}
                                         </button>
-                                        {row.withVSCode && (
-                                            <Tooltip
-                                                tip={t('table.vsCodeProject')}
-                                                tone="primary"
-                                                className="flex items-center"
+                                        <div className="min-w-0 flex flex-col gap-1">
+                                            <div className="font-bold flex text-lg gap-2 items-center justify-start min-w-0">
+                                                {!row.valid && (
+                                                    <Tooltip
+                                                        tip={t(
+                                                            getInvalidProjectTableKey(
+                                                                row,
+                                                            ),
+                                                        )}
+                                                    >
+                                                        <TriangleAlert className="stroke-warning shrink-0" />
+                                                    </Tooltip>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        onLaunchProject(row)
+                                                    }
+                                                    className="min-w-0 flex items-center hover:underline gap-2"
+                                                >
+                                                    <span className="truncate">
+                                                        {row.name}
+                                                    </span>
+                                                </button>
+                                                {row.withVSCode && (
+                                                    <Tooltip
+                                                        tip={t(
+                                                            'table.vsCodeProject',
+                                                        )}
+                                                        tone="primary"
+                                                        className="flex items-center"
+                                                    >
+                                                        <span className="text-xs text-base-content/50 ">
+                                                            <img
+                                                                src={vscodeIcon}
+                                                                className="w-4 h-4"
+                                                                alt="VSCode"
+                                                            />
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+                                                {row.withGit && (
+                                                    <Tooltip
+                                                        tip={t(
+                                                            'table.gitProject',
+                                                        )}
+                                                        tone="primary"
+                                                        className="flex items-center"
+                                                    >
+                                                        <span className="text-xs text-base-content/50 ">
+                                                            <img
+                                                                src={
+                                                                    gitIconColor
+                                                                }
+                                                                className="w-4 h-4 "
+                                                                alt="Git"
+                                                            />
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+                                                {row.release.mono && (
+                                                    <Tooltip
+                                                        tip={t(
+                                                            'table.dotNetProject',
+                                                        )}
+                                                        tone="primary"
+                                                        className="flex items-center"
+                                                    >
+                                                        <span className="badge badge-outline text-xs text-base-content/50 ">
+                                                            c#
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+                                                {row.release.prerelease && (
+                                                    <Tooltip
+                                                        tip={t(
+                                                            'table.prerelease',
+                                                        )}
+                                                        tone="secondary"
+                                                        className="right-0 flex items-center"
+                                                    >
+                                                        <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
+                                                            pr
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+                                                {row.open_windowed && (
+                                                    <Tooltip
+                                                        tip={t(
+                                                            'table.windowedMode',
+                                                        )}
+                                                        tone="primary"
+                                                        className="flex items-center"
+                                                    >
+                                                        <span className="badge badge-outline text-xs text-base-content/50">
+                                                            w
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    window.navigator.clipboard.writeText(
+                                                        row.path,
+                                                    );
+                                                }}
+                                                className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
                                             >
-                                                <span className="text-xs text-base-content/50 ">
-                                                    <img
-                                                        src={vscodeIcon}
-                                                        className="w-4 h-4"
-                                                        alt="VSCode"
-                                                    />
-                                                </span>
-                                            </Tooltip>
-                                        )}
-                                        {row.withGit && (
-                                            <Tooltip
-                                                tip={t('table.gitProject')}
-                                                tone="primary"
-                                                className="flex items-center"
-                                            >
-                                                <span className="text-xs text-base-content/50 ">
-                                                    <img
-                                                        src={gitIconColor}
-                                                        className="w-4 h-4 "
-                                                        alt="Git"
-                                                    />
-                                                </span>
-                                            </Tooltip>
-                                        )}
-                                        {row.release.mono && (
-                                            <Tooltip
-                                                tip={t('table.dotNetProject')}
-                                                tone="primary"
-                                                className="flex items-center"
-                                            >
-                                                <span className="badge badge-outline text-xs text-base-content/50 ">
-                                                    c#
-                                                </span>
-                                            </Tooltip>
-                                        )}
-                                        {row.release.prerelease && (
-                                            <Tooltip
-                                                tip={t('table.prerelease')}
-                                                tone="secondary"
-                                                className="right-0 flex items-center"
-                                            >
-                                                <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
-                                                    pr
-                                                </span>
-                                            </Tooltip>
-                                        )}
-                                        {row.open_windowed && (
-                                            <Tooltip
-                                                tip={t('table.windowedMode')}
-                                                tone="primary"
-                                                className="flex items-center"
-                                            >
-                                                <span className="badge badge-outline text-xs text-base-content/50">
-                                                    w
-                                                </span>
-                                            </Tooltip>
-                                        )}
+                                                <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis text-left">
+                                                    {row.path}
+                                                </p>
+                                                <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary shrink-0" />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            window.navigator.clipboard.writeText(
-                                                row.path,
-                                            );
-                                        }}
-                                        className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
-                                    >
-                                        <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis text-left">
-                                            {row.path}
-                                        </p>
-                                        <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary" />
-                                    </button>
                                 </td>
 
                                 <td className="">

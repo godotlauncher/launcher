@@ -15,6 +15,7 @@ export type ProjectDetails = {
     version_number: number;
     renderer: string;
     path: string;
+    icon_path?: string;
     editor_settings_path: string;
     editor_settings_file: string;
     last_opened: Date | null;

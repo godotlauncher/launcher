@@ -345,6 +345,71 @@ describe('checkProjectValid', () => {
         fs.rmSync(releaseDir, { recursive: true, force: true });
     });
 
+    it('refreshes project icon path from project.godot', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-icon-'),
+        );
+        const releaseDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-release-icon-'),
+        );
+        const iconPath = path.join(projectDir, 'assets', 'icon.svg');
+
+        fs.mkdirSync(path.dirname(iconPath), { recursive: true });
+        fs.writeFileSync(iconPath, '<svg></svg>');
+        fs.writeFileSync(
+            path.join(projectDir, 'project.godot'),
+            `config_version=5
+
+[application]
+config/icon="res://assets/icon.svg"
+`,
+        );
+
+        const project: ProjectDetails = {
+            name: 'Icon Project',
+            version: '4.2.0',
+            version_number: 40200,
+            renderer: 'forward_plus',
+            path: projectDir,
+            editor_settings_path: '',
+            editor_settings_file: '',
+            last_opened: null,
+            release: {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: releaseDir,
+                editor_path: path.join(releaseDir, 'Godot.exe'),
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: path.join(projectDir, 'Godot.exe'),
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+            icon_path: 'file:///stale/icon.svg',
+        };
+
+        fs.writeFileSync(project.launch_path, '');
+        fs.writeFileSync(project.release.editor_path, '');
+
+        const validatedProject = await checkProjectValid(project);
+
+        expect(validatedProject.icon_path).toBe(
+            `data:image/svg+xml;base64,${Buffer.from('<svg></svg>').toString(
+                'base64',
+            )}`,
+        );
+
+        fs.rmSync(projectDir, { recursive: true, force: true });
+        fs.rmSync(releaseDir, { recursive: true, force: true });
+    });
+
     it('updates withGit flag based on .git directory presence', async () => {
         const projectDir = fs.mkdtempSync(
             path.join(os.tmpdir(), 'launcher-project-git-'),

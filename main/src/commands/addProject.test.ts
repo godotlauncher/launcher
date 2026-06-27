@@ -24,6 +24,7 @@ const godotProjectMocks = vi.hoisted(() => ({
     getProjectNameFromParsed: vi.fn(),
     getProjectRendererFromParsed: vi.fn(),
     getProjectConfigVersionFromParsed: vi.fn(),
+    getProjectIconUrlFromParsed: vi.fn(),
     createNewEditorSettings: vi.fn(),
     updateEditorSettings: vi.fn(),
 }));
@@ -161,6 +162,7 @@ const {
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     getProjectConfigVersionFromParsed,
+    getProjectIconUrlFromParsed,
     createNewEditorSettings,
     updateEditorSettings,
 } = godotProjectMocks;
@@ -196,6 +198,7 @@ describe('addProject', () => {
         getProjectNameFromParsed.mockResolvedValue('Sample Project');
         getProjectRendererFromParsed.mockResolvedValue('FORWARD_PLUS');
         getProjectConfigVersionFromParsed.mockResolvedValue(5);
+        getProjectIconUrlFromParsed.mockReturnValue(undefined);
 
         getDefaultDirs.mockReturnValue({
             configDir: '/config',
@@ -584,6 +587,23 @@ describe('addProject', () => {
         expect(result.success).toBe(true);
         expect(result).not.toHaveProperty('additionalInfo');
         expect(result.recoveredVSCodeConfigFiles).toBeUndefined();
+    });
+
+    it('stores the resolved project icon url when importing', async () => {
+        getProjectIconUrlFromParsed.mockReturnValue(
+            'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+        );
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.icon_path).toBe(
+            'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+        );
+        expect(getProjectIconUrlFromParsed).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.any(Map),
+        );
     });
 
     it('returns recovered VS Code config files as project-relative paths', async () => {

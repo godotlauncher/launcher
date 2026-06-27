@@ -28,6 +28,7 @@ import {
     createNewEditorSettings,
     type GodotProjectFile,
     getProjectConfigVersionFromParsed,
+    getProjectIconUrlFromParsed,
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     parseGodotProjectFile,
@@ -554,6 +555,7 @@ export async function addProject(
     const project: ProjectDetails = {
         path: dirname,
         name: projectName,
+        icon_path: getProjectIconUrlFromParsed(dirname, parsedConfig),
         version:
             release?.version ?? `${releaseBaseVersion.toFixed(1)} (missing)`,
         version_number: release?.version_number ?? releaseBaseVersion,
