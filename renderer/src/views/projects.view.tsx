@@ -10,12 +10,17 @@ import { ChevronDown, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
+import {
+    type ActionMenuAnchorRect,
+    getActionMenuAnchorRect,
+} from '../components/ui/actionMenu.component';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
+import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
 import { ProjectsTable } from './projects/components/projectsTable.component';
@@ -35,7 +40,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     createOpen: controlledCreateOpen,
     onCreateOpenChange,
 }) => {
-    const { t } = useTranslation(['projects', 'common']);
+    const { t } = useTranslation(['projects', 'common', 'menus', 'dialogs']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -57,8 +62,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         total: number;
     } | null>(null);
     const dragCounterRef = useRef<number>(0);
+    const skipRemoveProjectConfirmRef = useRef<boolean>(false);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
+    const [projectActionsMenu, setProjectActionsMenu] = useState<{
+        project: ProjectDetails;
+        anchorRect: ActionMenuAnchorRect;
+        hasVSCode: boolean;
+        hasGit: boolean;
+    } | null>(null);
 
     // Initialize sortData from localStorage or use default
     const [sortData, setSortData] = useState<ProjectSortData>(() => {
@@ -80,7 +92,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
     const { addAlert, addCustomConfirm } = useAlerts();
 
-    const { preferences } = usePreferences();
+    const { preferences, updatePreferences } = usePreferences();
     const {
         installedReleases,
         availableReleases,
@@ -94,19 +106,182 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const {
         projects,
         setProjectEditor,
+        setProjectWindowed,
+        setProjectVSCode,
+        initializeProjectGit,
+        exportProjectEditorSettings,
+        importProjectEditorSettings,
         addProject,
         launchProject,
+        openProjectFolder,
+        openProjectEditorFolder,
+        removeProject,
         loading,
-        showProjectMenu,
     } = useProjects();
     const { setCurrentView } = useAppNavigation();
 
-    const onProjectMoreOptions = (
+    const getProjectMenuToolAvailability = async (): Promise<{
+        hasVSCode: boolean;
+        hasGit: boolean;
+    }> => {
+        const tools = await window.electron.getCachedTools();
+        return {
+            hasVSCode: tools.some(
+                (tool) => tool.name === 'VSCode' && tool.verified,
+            ),
+            hasGit: tools.some((tool) => tool.name === 'Git' && tool.verified),
+        };
+    };
+
+    const onProjectMoreOptions = async (
         e: React.MouseEvent,
         project: ProjectDetails,
     ) => {
         e.stopPropagation();
-        showProjectMenu(project);
+        const anchorRect = getActionMenuAnchorRect(e.currentTarget);
+        let toolAvailability = {
+            hasVSCode: false,
+            hasGit: false,
+        };
+        try {
+            toolAvailability = await getProjectMenuToolAvailability();
+        } catch (error) {
+            showProjectActionError(error);
+        }
+        setProjectActionsMenu({
+            project,
+            anchorRect,
+            ...toolAvailability,
+        });
+    };
+
+    const showProjectActionError = (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        addAlert(
+            t('common:error'),
+            message,
+            <TriangleAlert className="stroke-error" />,
+        );
+    };
+
+    const runProjectAction = (action: () => Promise<void>) => {
+        void action().catch(showProjectActionError);
+    };
+
+    const handleToggleProjectWindowed = (project: ProjectDetails) => {
+        runProjectAction(async () => {
+            await setProjectWindowed(project, !project.open_windowed);
+        });
+    };
+
+    const handleToggleProjectVSCode = (project: ProjectDetails) => {
+        runProjectAction(async () => {
+            const updatedProject = await setProjectVSCode(
+                project,
+                !project.withVSCode,
+            );
+            showRecoveredVSCodeConfigWarning(
+                updatedProject.recoveredVSCodeConfigFiles,
+            );
+        });
+    };
+
+    const handleInitializeProjectGit = (project: ProjectDetails) => {
+        runProjectAction(async () => {
+            await initializeProjectGit(project);
+        });
+    };
+
+    const handleImportEditorSettings = (project: ProjectDetails) => {
+        addCustomConfirm(
+            t('dialogs:importSettings.title'),
+            <div className="flex flex-col gap-2">
+                <p>{t('dialogs:importSettings.message')}</p>
+                <p>{t('dialogs:importSettings.detail')}</p>
+            </div>,
+            [
+                {
+                    typeClass: 'btn-warning',
+                    text: t('dialogs:importSettings.continue'),
+                    onClick: async () => {
+                        try {
+                            await importProjectEditorSettings(project);
+                        } catch (error) {
+                            showProjectActionError(error);
+                        }
+                        return true;
+                    },
+                },
+                {
+                    isCancel: true,
+                    typeClass: 'btn-neutral',
+                    text: t('dialogs:importSettings.cancel'),
+                    onClick: () => true,
+                },
+            ],
+            <TriangleAlert className="stroke-warning" />,
+        );
+    };
+
+    const handleRemoveProject = (project: ProjectDetails) => {
+        const removeSelectedProject = async () => {
+            await removeProject(project);
+        };
+
+        if (!preferences?.confirm_project_remove) {
+            runProjectAction(removeSelectedProject);
+            return;
+        }
+
+        skipRemoveProjectConfirmRef.current = false;
+        addCustomConfirm(
+            t('dialogs:removeProject.title'),
+            <div className="flex flex-col gap-3">
+                <p>
+                    {t('dialogs:removeProject.message', {
+                        projectName: project.name,
+                    })}
+                </p>
+                <p>{t('dialogs:removeProject.detail')}</p>
+                <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm"
+                        onChange={(event) => {
+                            skipRemoveProjectConfirmRef.current =
+                                event.currentTarget.checked;
+                        }}
+                    />
+                    <span>{t('dialogs:removeProject.doNotAskAgain')}</span>
+                </label>
+            </div>,
+            [
+                {
+                    typeClass: 'btn-error',
+                    text: t('dialogs:removeProject.ok'),
+                    onClick: async () => {
+                        if (skipRemoveProjectConfirmRef.current) {
+                            updatePreferences({
+                                confirm_project_remove: false,
+                            });
+                        }
+                        try {
+                            await removeSelectedProject();
+                        } catch (error) {
+                            showProjectActionError(error);
+                        }
+                        return true;
+                    },
+                },
+                {
+                    isCancel: true,
+                    typeClass: 'btn-neutral',
+                    text: t('dialogs:removeProject.cancel'),
+                    onClick: () => true,
+                },
+            ],
+            <TriangleAlert className="stroke-warning" />,
+        );
     };
 
     const findDownloadableRelease = (
@@ -595,6 +770,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     createDisabled={installedReleases.length < 1}
                     addLabel={t('buttons.add')}
                     createLabel={t('buttons.newProject')}
+                    copyPathLabel={t('common:buttons.copyPath')}
+                    copiedLabel={t('common:success')}
                 />
 
                 {!releaseLoading && installedReleases.length < 1 && (
@@ -632,6 +809,28 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     t={t}
                 />
             </div>
+            <ProjectActionsMenu
+                project={projectActionsMenu?.project ?? null}
+                anchorRect={projectActionsMenu?.anchorRect ?? null}
+                hasVSCode={projectActionsMenu?.hasVSCode ?? false}
+                hasGit={projectActionsMenu?.hasGit ?? false}
+                t={t}
+                onClose={() => setProjectActionsMenu(null)}
+                onOpenProjectFolder={(project) =>
+                    runProjectAction(() => openProjectFolder(project))
+                }
+                onOpenEditorSettingsFolder={(project) =>
+                    runProjectAction(() => openProjectEditorFolder(project))
+                }
+                onToggleWindowed={handleToggleProjectWindowed}
+                onToggleVSCode={handleToggleProjectVSCode}
+                onInitializeGit={handleInitializeProjectGit}
+                onExportEditorSettings={(project) =>
+                    runProjectAction(() => exportProjectEditorSettings(project))
+                }
+                onImportEditorSettings={handleImportEditorSettings}
+                onRemoveProject={handleRemoveProject}
+            />
             {createOpen && (
                 <CreateProjectSubView
                     onClose={() => {

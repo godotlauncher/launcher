@@ -75,11 +75,6 @@ electron.contextBridge.exposeInMainWorld('electron', {
     openShellFolder: (pathToOpen: string) =>
         ipcInvoke('shell-open-folder', pathToOpen),
 
-    showProjectMenu: (project: ProjectDetails) =>
-        ipcInvoke('show-project-menu', project),
-    showReleaseMenu: (release: InstalledRelease) =>
-        ipcInvoke('show-release-menu', release),
-
     openExternal: (url: string) => ipcInvoke('open-external', url),
 
     // ##### file utils #####
@@ -116,6 +111,16 @@ electron.contextBridge.exposeInMainWorld('electron', {
         ipcInvoke('add-project', projectPath, options),
     setProjectEditor: (project: ProjectDetails, release: InstalledRelease) =>
         ipcInvoke('set-project-editor', project, release),
+    setProjectWindowed: (project: ProjectDetails, openWindowed: boolean) =>
+        ipcInvoke('set-project-windowed', project, openWindowed),
+    setProjectVSCode: (project: ProjectDetails, enable: boolean) =>
+        ipcInvoke('set-project-vscode', project, enable),
+    initializeProjectGit: (project: ProjectDetails) =>
+        ipcInvoke('initialize-project-git', project),
+    exportProjectEditorSettings: (project: ProjectDetails) =>
+        ipcInvoke('export-project-editor-settings', project),
+    importProjectEditorSettings: (project: ProjectDetails) =>
+        ipcInvoke('import-project-editor-settings', project),
 
     launchProject: (project: ProjectDetails) =>
         ipcInvoke('launch-project', project),

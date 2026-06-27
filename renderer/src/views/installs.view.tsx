@@ -4,12 +4,18 @@ import logger from 'electron-log';
 import { CheckCircle2, TriangleAlert, TriangleAlertIcon } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import {
+    type ActionMenuAnchorRect,
+    getActionMenuAnchorRect,
+} from '../components/ui/actionMenu.component';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
+import { usePreferences } from '../hooks/usePreferences';
 import { useRelease } from '../hooks/useRelease';
 import { CustomEditorManifestDropOverlay } from './installs/components/customEditorManifestDropOverlay.component';
 import { InstalledReleaseList } from './installs/components/installedReleaseList.component';
 import { InstallsHeader } from './installs/components/installsHeader.component';
+import { ReleaseActionsMenu } from './installs/components/releaseActionsMenu.component';
 import {
     getFilteredInstalledReleaseRows,
     getReleaseActionKey,
@@ -24,7 +30,7 @@ type ReleaseActionDependencies = {
     reinstallRelease: (
         release: InstalledRelease,
     ) => Promise<InstallReleaseResult>;
-    removeRelease: (release: InstalledRelease) => Promise<void>;
+    removeRelease: (release: InstalledRelease) => Promise<unknown>;
 };
 
 export const createReleaseActions = (
@@ -48,7 +54,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     installOpen: controlledInstallOpen,
     onInstallOpenChange,
 }) => {
-    const { t } = useTranslation(['installs', 'common']);
+    const { t } = useTranslation(['installs', 'common', 'menus', 'dialogs']);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
     const installOpen = controlledInstallOpen ?? localInstallOpen;
@@ -68,13 +74,17 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         useState<boolean>(false);
     const [customEditorManifestDrawerOpen, setCustomEditorManifestDrawerOpen] =
         useState<boolean>(false);
+    const [releaseActionsMenu, setReleaseActionsMenu] = useState<{
+        release: InstalledRelease;
+        anchorRect: ActionMenuAnchorRect;
+    } | null>(null);
     const dragCounterRef = useRef<number>(0);
 
     const { addAlert, addConfirm } = useAlerts();
+    const { preferences } = usePreferences();
     const {
         installedReleases,
         downloadingReleases,
-        showReleaseMenu,
         checkAllReleasesValid,
         reinstallRelease,
         registerCustomEngine,
@@ -104,7 +114,65 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         release: InstalledRelease,
     ) => {
         e.stopPropagation();
-        showReleaseMenu(release);
+        setReleaseActionsMenu({
+            release,
+            anchorRect: getActionMenuAnchorRect(e.currentTarget),
+        });
+    };
+
+    const showReleaseActionError = (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        addAlert(
+            t('common:error'),
+            message,
+            <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+        );
+    };
+
+    const runReleaseAction = (action: () => Promise<void>) => {
+        void action().catch(showReleaseActionError);
+    };
+
+    const handleRemoveReleaseFromMenu = (release: InstalledRelease) => {
+        addConfirm(
+            release.source === 'custom'
+                ? t('dialogs:removeCustomEditor.title')
+                : t('dialogs:removeRelease.title'),
+            <div className="flex flex-col gap-2">
+                <p>
+                    {release.source === 'custom'
+                        ? t('dialogs:removeCustomEditor.message', {
+                              name: release.name ?? release.version,
+                          })
+                        : t('dialogs:removeRelease.message', {
+                              version: release.version,
+                          })}
+                </p>
+                <p>
+                    {release.source === 'custom'
+                        ? t('dialogs:removeCustomEditor.detail')
+                        : t('dialogs:removeRelease.detail')}
+                </p>
+            </div>,
+            async () => {
+                try {
+                    const result = await removeRelease(release);
+                    if (!result.success) {
+                        addAlert(
+                            t('dialogs:removeRelease.error'),
+                            result.error ??
+                                t('dialogs:removeRelease.errorMessage'),
+                            <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                        );
+                    }
+                } catch (error) {
+                    showReleaseActionError(error);
+                }
+                return true;
+            },
+            undefined,
+            <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
+        );
     };
 
     const releaseActions = useMemo(
@@ -435,6 +503,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 )}
                 <InstallsHeader
                     title={t('title')}
+                    installLocation={preferences?.install_location}
                     searchPlaceholder={t('search.placeholder')}
                     searchValue={textSearch}
                     onSearchChange={setTextSearch}
@@ -446,6 +515,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         'buttons.createCustomEditorManifest',
                     )}
                     installLabel={t('buttons.install')}
+                    copyPathLabel={t('common:buttons.copyPath')}
+                    copiedLabel={t('common:success')}
                     onSelectManifest={() => void handleAddCustomEngine()}
                     onCreateManifest={() =>
                         setCustomEditorManifestDrawerOpen(true)
@@ -484,6 +555,23 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     />
                 )}
             </section>
+            <ReleaseActionsMenu
+                release={releaseActionsMenu?.release ?? null}
+                anchorRect={releaseActionsMenu?.anchorRect ?? null}
+                t={t}
+                onClose={() => setReleaseActionsMenu(null)}
+                onOpenInstalledFolder={(release) =>
+                    runReleaseAction(() =>
+                        window.electron.openShellFolder(release.install_path),
+                    )
+                }
+                onStartProjectManager={(release) =>
+                    runReleaseAction(() =>
+                        window.electron.openEditorProjectManager(release),
+                    )
+                }
+                onRemoveRelease={handleRemoveReleaseFromMenu}
+            />
             {installOpen && (
                 <InstallEditorSubView onClose={() => setInstallOpen(false)} />
             )}

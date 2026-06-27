@@ -11,6 +11,7 @@ import type {
     CreateProjectResult,
     ProjectDetails,
     RendererType,
+    SetProjectVSCodeResult,
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
@@ -49,9 +50,6 @@ export type ElectronRendererApi = {
         properties?: Electron.OpenDialogOptions['properties'],
     ) => Promise<Electron.OpenDialogReturnValue>;
     openShellFolder: (pathToOpen: string) => Promise<void>;
-
-    showProjectMenu: (project: ProjectDetails) => Promise<void>;
-    showReleaseMenu: (release: InstalledRelease) => Promise<void>;
 
     getPathForFile: (file: File) => string;
     pathExists: (pathToCheck: string) => Promise<boolean>;
@@ -100,6 +98,17 @@ export type ElectronRendererApi = {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
+    setProjectWindowed: (
+        project: ProjectDetails,
+        openWindowed: boolean,
+    ) => Promise<ProjectDetails>;
+    setProjectVSCode: (
+        project: ProjectDetails,
+        enable: boolean,
+    ) => Promise<SetProjectVSCodeResult>;
+    initializeProjectGit: (project: ProjectDetails) => Promise<ProjectDetails>;
+    exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
+    importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     launchProject: (project: ProjectDetails) => Promise<void>;
     checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
     checkAllProjectsValid: () => Promise<ProjectDetails[]>;

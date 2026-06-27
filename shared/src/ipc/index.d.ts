@@ -9,6 +9,7 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectResult,
     ProjectDetails,
+    SetProjectVSCodeResult,
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
@@ -38,9 +39,6 @@ export type EventChannelMapping = {
     'file-exists': Promise<boolean>;
     'ensure-directory': Promise<boolean>;
 
-    'show-project-menu': Promise<void>;
-    'show-release-menu': Promise<void>;
-
     'open-external': Promise<void>;
     'relaunch-app': Promise<void>;
     'install-update-and-restart': Promise<void>;
@@ -66,6 +64,11 @@ export type EventChannelMapping = {
     'remove-project': Promise<ProjectDetails[]>;
     'add-project': Promise<AddProjectToListResult>;
     'set-project-editor': Promise<ChangeProjectEditorResult>;
+    'set-project-windowed': Promise<ProjectDetails>;
+    'set-project-vscode': Promise<SetProjectVSCodeResult>;
+    'initialize-project-git': Promise<ProjectDetails>;
+    'export-project-editor-settings': Promise<void>;
+    'import-project-editor-settings': Promise<void>;
     'launch-project': Promise<void>;
     'check-project-valid': Promise<ProjectDetails>;
     'check-all-projects-valid': Promise<ProjectDetails[]>;

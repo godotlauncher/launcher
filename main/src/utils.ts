@@ -1,18 +1,14 @@
-import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { EventChannelMapping } from '@shared';
 import {
     type IpcMainInvokeEvent,
     ipcMain,
-    type NativeImage,
-    nativeImage,
-    nativeTheme,
     type WebContents,
     type WebFrameMain,
 } from 'electron';
 import { getCurrentAppConfigIfInitialized } from './config/index.js';
 import { getMainWindow } from './mainWindow.js';
-import { getAssetPath, getUIPath } from './pathResolver.js';
+import { getUIPath } from './pathResolver.js';
 
 export function isDev(): boolean {
     const appConfig = getCurrentAppConfigIfInitialized();
@@ -21,17 +17,6 @@ export function isDev(): boolean {
     }
 
     return process.env.NODE_ENV === 'development';
-}
-
-export function getThemedMenuIcon(iconName: string): NativeImage {
-    const theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
-    const iconPath = path.join(
-        getAssetPath(),
-        'menu_icons',
-        `${iconName}-${theme}.png`,
-    );
-    const image = nativeImage.createFromPath(iconPath);
-    return image.resize({ width: 24, height: 24 });
 }
 
 export function ipcMainHandler<Channel extends keyof EventChannelMapping>(

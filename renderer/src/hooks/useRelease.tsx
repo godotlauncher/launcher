@@ -3,6 +3,7 @@ import type {
     InstalledRelease,
     InstallReleaseResult,
     ReleaseSummary,
+    RemovedReleaseResult,
 } from '@shared';
 import React from 'react';
 
@@ -42,11 +43,10 @@ type ReleaseContext = {
         mono: boolean,
     ) => InstalledRelease | undefined;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
-    removeRelease: (release: InstalledRelease) => Promise<void>;
+    removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
     isDownloadingRelease: (version: string, mono: boolean) => boolean;
 
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;
-    showReleaseMenu: (release: InstalledRelease) => Promise<void>;
 };
 const releaseContext = React.createContext<ReleaseContext>(
     {} as ReleaseContext,
@@ -121,10 +121,6 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         };
     }, []);
 
-    const showReleaseMenu = async (release: InstalledRelease) => {
-        await window.electron.showReleaseMenu(release);
-    };
-
     const refreshAvailableReleases = async () => {
         updateAllReleases();
     };
@@ -193,12 +189,16 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         );
     };
 
-    const removeRelease = async (release: InstalledRelease): Promise<void> => {
+    const removeRelease = async (
+        release: InstalledRelease,
+    ): Promise<RemovedReleaseResult> => {
         const result = await window.electron.removeRelease(release);
 
         if (result.success) {
             updateAllReleases();
         }
+
+        return result;
     };
 
     const installRelease = async (
@@ -318,7 +318,6 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 removeRelease,
                 isDownloadingRelease,
                 checkAllReleasesValid,
-                showReleaseMenu,
             }}
         >
             {' '}
