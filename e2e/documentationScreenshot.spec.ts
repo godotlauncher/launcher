@@ -1034,10 +1034,14 @@ const SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE: InstalledRelease = {
     valid: true,
 };
 
+const SAMPLE_PROJECT_ICON_PATH =
+    'data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEyOCIgd2lkdGg9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iMTI0IiBoZWlnaHQ9IjEyNCIgcng9IjE0IiBmaWxsPSIjMzYzZDUyIiBzdHJva2U9IiMyMTI1MzIiIHN0cm9rZS13aWR0aD0iNCIvPjxnIHRyYW5zZm9ybT0ic2NhbGUoLjEwMSkgdHJhbnNsYXRlKDEyMiAxMjIpIj48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNMTA1IDY3M3YzM3E0MDcgMzU0IDgxNCAwdi0zM3oiLz48cGF0aCBmaWxsPSIjNDc4Y2JmIiBkPSJtMTA1IDY3MyAxNTIgMTRxMTIgMSAxNSAxNGw0IDY3IDEzMiAxMCA4LTYxcTItMTEgMTUtMTVoMTYycTEzIDQgMTUgMTVsOCA2MSAxMzItMTAgNC02N3EzLTEzIDE1LTE0bDE1Mi0xNFY0MjdxMzAtMzkgNTYtODEtMzUtNTktODMtMTA4LTQzIDIwLTgyIDQ3LTQwLTM3LTg4LTY0IDctNTEgOC0xMDItNTktMjgtMTIzLTQyLTI2IDQzLTQ2IDg5LTQ5LTctOTggMC0yMC00Ni00Ni04OS02NCAxNC0xMjMgNDIgMSA1MSA4IDEwMi00OCAyNy04OCA2NC0zOS0yNy04Mi00Ny00OCA0OS04MyAxMDggMjYgNDIgNTYgODF6bTAgMzN2MzljMCAyNzYgODEzIDI3NiA4MTMgMHYtMzlsLTEzNCAxMi01IDY5cS0yIDEwLTE0IDEzbC0xNjIgMTFxLTEyIDAtMTYtMTFsLTEwLTY1SDQ0N2wtMTAgNjVxLTQgMTEtMTYgMTFsLTE2Mi0xMXEtMTItMy0xNC0xM2wtNS02OXoiLz48cGF0aCBkPSJNNDgzIDYwMGMzIDM0IDU1IDM0IDU4IDB2LTg2Yy0zLTM0LTU1LTM0LTU4IDB6Ii8+PGNpcmNsZSBjeD0iNzI1IiBjeT0iNTI2IiByPSI5MCIvPjxjaXJjbGUgY3g9IjI5OSIgY3k9IjUyNiIgcj0iOTAiLz48L2c+PGcgZmlsbD0iIzQxNDA0MiI+PGNpcmNsZSBjeD0iMzA3IiBjeT0iNTMyIiByPSI2MCIvPjxjaXJjbGUgY3g9IjcxNyIgY3k9IjUzMiIgcj0iNjAiLz48L2c+PC9nPjwvc3ZnPg0K';
+
 const SAMPLE_PROJECTS: ProjectDetails[] = [
     {
         name: 'My-Awesome-Game',
         path: '/Users/docs/Godot/Projects/my-awesome-game',
+        icon_path: SAMPLE_PROJECT_ICON_PATH,
         version: '4.4.1-stable',
         version_number: 4.4,
         renderer: 'FORWARD_PLUS',
@@ -1057,6 +1061,7 @@ const SAMPLE_PROJECTS: ProjectDetails[] = [
     {
         name: 'My-Other-Game',
         path: '/Users/docs/Godot/Projects/my-other-game',
+        icon_path: SAMPLE_PROJECT_ICON_PATH,
         version: '4.6.1-stable',
         version_number: 4.6,
         renderer: 'FORWARD_PLUS',
@@ -1078,6 +1083,7 @@ const SAMPLE_PROJECTS: ProjectDetails[] = [
 const SAMPLE_PROJECT_WITH_MISSING_EDITOR: ProjectDetails = {
     name: 'Archive-Prototype',
     path: '/Volumes/Archive/Godot/Projects/archive-prototype',
+    icon_path: SAMPLE_PROJECT_ICON_PATH,
     version: SAMPLE_UNAVAILABLE_RELEASE.version,
     version_number: SAMPLE_UNAVAILABLE_RELEASE.version_number,
     renderer: 'FORWARD_PLUS',
@@ -1718,9 +1724,11 @@ async function stubAddProjectEditorResolution(
             {
                 fallbackRelease,
                 projectPath,
+                projectIconPath,
             }: {
                 fallbackRelease: InstalledRelease;
                 projectPath: string;
+                projectIconPath: string;
             },
         ) => {
             ipcMain.removeHandler('open-file-dialog');
@@ -1740,6 +1748,7 @@ async function stubAddProjectEditorResolution(
                     const newProject: ProjectDetails = {
                         name: 'Imported-Missing-Editor-Game',
                         path: projectDirectory,
+                        icon_path: projectIconPath,
                         version: '4.6.3-stable',
                         version_number: 4.6,
                         renderer: 'FORWARD_PLUS',
@@ -1792,6 +1801,7 @@ async function stubAddProjectEditorResolution(
             fallbackRelease: SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE,
             projectPath:
                 '/Users/docs/Godot/Projects/imported-missing-editor/project.godot',
+            projectIconPath: SAMPLE_PROJECT_ICON_PATH,
         },
     );
 }
@@ -1800,7 +1810,13 @@ async function stubAddProjectRecoveredVSCodeConfig(
     electronApp: ElectronApplication,
 ) {
     await electronApp.evaluate(
-        ({ ipcMain, BrowserWindow }, projectPath: string) => {
+        (
+            { ipcMain, BrowserWindow },
+            {
+                projectPath,
+                projectIconPath,
+            }: { projectPath: string; projectIconPath: string },
+        ) => {
             ipcMain.removeHandler('open-file-dialog');
             ipcMain.handle('open-file-dialog', async () => ({
                 canceled: false,
@@ -1817,6 +1833,7 @@ async function stubAddProjectRecoveredVSCodeConfig(
                 const newProject: ProjectDetails = {
                     name: 'Recovered-VSCode-Config',
                     path: projectDirectory,
+                    icon_path: projectIconPath,
                     version: '4.4.1-stable',
                     version_number: 4.4,
                     renderer: 'FORWARD_PLUS',
@@ -1864,7 +1881,11 @@ async function stubAddProjectRecoveredVSCodeConfig(
                 };
             });
         },
-        '/Users/docs/Godot/Projects/recovered-vscode-config/project.godot',
+        {
+            projectPath:
+                '/Users/docs/Godot/Projects/recovered-vscode-config/project.godot',
+            projectIconPath: SAMPLE_PROJECT_ICON_PATH,
+        },
     );
 }
 

@@ -1,4 +1,11 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { describe, expect, test } from 'vitest';
+import {
+    getProjectIconUrlFromParsed,
+    parseGodotProjectFile,
+} from './godotProject.utils.js';
 
 describe('decode project.godot file', () => {
     test('Should decode project.godot file', () => {
@@ -70,5 +77,105 @@ renderer/rendering_method="mobile"
         expect(serialized.replace(/\s/g, '')).toMatch(
             projectFile.replace(/\s/g, ''),
         );
+    });
+});
+
+describe('getProjectIconUrlFromParsed', () => {
+    test('extracts a root res:// icon url', () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'godot-project-icon-root-'),
+        );
+        const iconPath = path.join(projectDir, 'icon.svg');
+        fs.writeFileSync(iconPath, '<svg></svg>');
+
+        const parsedProject = parseGodotProjectFile(`config_version=5
+
+[application]
+config/icon="res://icon.svg"
+`);
+
+        expect(getProjectIconUrlFromParsed(projectDir, parsedProject)).toBe(
+            `data:image/svg+xml;base64,${Buffer.from('<svg></svg>').toString(
+                'base64',
+            )}`,
+        );
+    });
+
+    test('extracts a nested res:// icon url', () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'godot-project-icon-nested-'),
+        );
+        const iconPath = path.join(projectDir, 'assets', 'icon.svg');
+        fs.mkdirSync(path.dirname(iconPath), { recursive: true });
+        fs.writeFileSync(iconPath, '<svg></svg>');
+
+        const parsedProject = parseGodotProjectFile(`config_version=5
+
+[application]
+config/icon="res://assets/icon.svg"
+`);
+
+        expect(getProjectIconUrlFromParsed(projectDir, parsedProject)).toBe(
+            `data:image/svg+xml;base64,${Buffer.from('<svg></svg>').toString(
+                'base64',
+            )}`,
+        );
+    });
+
+    test('changes the icon url when the icon file changes', () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'godot-project-icon-refresh-'),
+        );
+        const iconPath = path.join(projectDir, 'icon.svg');
+        const parsedProject = parseGodotProjectFile(`config_version=5
+
+[application]
+config/icon="res://icon.svg"
+`);
+
+        fs.writeFileSync(iconPath, '<svg>one</svg>');
+        const firstUrl = getProjectIconUrlFromParsed(projectDir, parsedProject);
+
+        fs.writeFileSync(iconPath, '<svg>two</svg>');
+        const secondUrl = getProjectIconUrlFromParsed(
+            projectDir,
+            parsedProject,
+        );
+
+        expect(firstUrl).not.toBe(secondUrl);
+        expect(secondUrl).toBe(
+            `data:image/svg+xml;base64,${Buffer.from('<svg>two</svg>').toString(
+                'base64',
+            )}`,
+        );
+    });
+
+    test('returns undefined when the icon is missing or unsupported', () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'godot-project-icon-missing-'),
+        );
+
+        expect(
+            getProjectIconUrlFromParsed(
+                projectDir,
+                parseGodotProjectFile(`config_version=5`),
+            ),
+        ).toBeUndefined();
+        expect(
+            getProjectIconUrlFromParsed(
+                projectDir,
+                parseGodotProjectFile(`[application]
+config/icon="uid://abc123"
+`),
+            ),
+        ).toBeUndefined();
+        expect(
+            getProjectIconUrlFromParsed(
+                projectDir,
+                parseGodotProjectFile(`[application]
+config/icon="res://missing.svg"
+`),
+            ),
+        ).toBeUndefined();
     });
 });

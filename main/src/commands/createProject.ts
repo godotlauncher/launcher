@@ -24,7 +24,11 @@ import {
     getProjectDefinition,
     SetProjectEditorRelease,
 } from '../utils/godot.utils.js';
-import { createNewEditorSettings } from '../utils/godotProject.utils.js';
+import {
+    createNewEditorSettings,
+    getProjectIconUrlFromParsed,
+    parseGodotProjectFile,
+} from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
@@ -141,6 +145,7 @@ export async function createProject(
                 }),
             };
         }
+        const parsedProjectFile = parseGodotProjectFile(projectFile);
 
         await fs.promises.mkdir(projectPath, { recursive: true });
         // write project file
@@ -241,6 +246,10 @@ export async function createProject(
                 name: projectName,
                 version: release.version,
                 version_number: release.version_number,
+                icon_path: getProjectIconUrlFromParsed(
+                    projectPath,
+                    parsedProjectFile,
+                ),
                 last_opened: null,
                 launch_path: launch_path,
                 editor_settings_path: path.dirname(editorSettingsPath),

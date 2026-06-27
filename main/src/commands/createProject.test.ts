@@ -60,6 +60,8 @@ vi.mock('../utils/godot.utils.js', () => godotUtilsMocks);
 
 const godotProjectMocks = vi.hoisted(() => ({
     createNewEditorSettings: vi.fn(),
+    getProjectIconUrlFromParsed: vi.fn(),
+    parseGodotProjectFile: vi.fn(),
 }));
 
 vi.mock('../utils/godotProject.utils.js', () => godotProjectMocks);
@@ -139,6 +141,10 @@ describe('createProject', () => {
             editorConfigFormat: 3,
         });
         godotUtilsMocks.createProjectFile.mockResolvedValue('project file');
+        godotProjectMocks.parseGodotProjectFile.mockReturnValue(new Map());
+        godotProjectMocks.getProjectIconUrlFromParsed.mockReturnValue(
+            'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+        );
         godotUtilsMocks.SetProjectEditorRelease.mockResolvedValue(
             '/launch/Godot',
         );
@@ -173,6 +179,9 @@ describe('createProject', () => {
             path.resolve('/projects/Test-Project'),
             expect.objectContaining({ version: '4.3-stable' }),
             '1.0.0',
+        );
+        expect(result.projectDetails?.icon_path).toBe(
+            'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
         );
     });
 });
