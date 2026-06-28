@@ -5,7 +5,6 @@ import {
     ChevronDown,
     ChevronsUpDown,
     ChevronUp,
-    Copy,
     EllipsisVertical,
     ImageOff,
     TriangleAlert,
@@ -13,6 +12,7 @@ import {
 import type React from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
 import vscodeIcon from '../../../assets/icons/vscode.svg';
+import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import {
     getInvalidProjectTableKey,
@@ -151,7 +151,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                 key={`projectRow_${row.path}`}
                                 className="relative hover:bg-base-content/5"
                             >
-                                <td className="p-2">
+                                <td className="px-0 py-3">
                                     {busyProjects.includes(row.path) && (
                                         <div className="absolute bg-black/50 inset-0 z-10 flex items-center justify-center rounded-lg ">
                                             <div className="loading loading-bars"></div>
@@ -185,7 +185,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                             ),
                                                         )}
                                                     >
-                                                        <TriangleAlert className="stroke-warning shrink-0" />
+                                                        <TriangleAlert className="stroke-warning shrink-0 size-6" />
                                                     </Tooltip>
                                                 )}
                                                 <button
@@ -275,21 +275,17 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                     </Tooltip>
                                                 )}
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    window.navigator.clipboard.writeText(
-                                                        row.path,
-                                                    );
-                                                }}
-                                                className="py-0 text-xs flex rounded-full bg-base-100 px-2 text-base-content/50 items-center active:text-secondary"
-                                            >
-                                                <p className="flex-1 w-0 overflow-hidden whitespace-nowrap text-ellipsis text-left">
-                                                    {row.path}
-                                                </p>
-                                                <Copy className="stroke-base-content/50 w-4 hover:stroke-info active:stroke-secondary shrink-0" />
-                                            </button>
+                                            <CopyBadge
+                                                value={row.path}
+                                                label={t(
+                                                    'common:buttons.copyPath',
+                                                )}
+                                                copiedLabel={t(
+                                                    'common:success',
+                                                )}
+                                                className="w-full"
+                                                data-testid={`btnCopyProjectPath_${row.path}`}
+                                            />
                                         </div>
                                     </div>
                                 </td>
@@ -320,6 +316,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                 <td className="p-0 pr-2">
                                     <button
                                         type="button"
+                                        data-testid="btnProjectMoreOptions"
                                         onClick={(event) =>
                                             onProjectMoreOptions(event, row)
                                         }

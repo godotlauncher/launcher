@@ -17,6 +17,14 @@ vi.mock('../hooks/useAlerts', () => ({
     }),
 }));
 
+vi.mock('../hooks/usePreferences', () => ({
+    usePreferences: () => ({
+        preferences: {
+            install_location: '/Users/test/GodotEditors',
+        },
+    }),
+}));
+
 vi.mock('../hooks/useRelease', () => {
     const installedReleases: InstalledRelease[] = [
         {
@@ -38,7 +46,6 @@ vi.mock('../hooks/useRelease', () => {
         useRelease: () => ({
             installedReleases,
             downloadingReleases: [],
-            showReleaseMenu: vi.fn(),
             checkAllReleasesValid: vi.fn(() =>
                 Promise.resolve(installedReleases),
             ),
@@ -99,6 +106,7 @@ describe('InstallsView', () => {
         expect(html).toContain('Reinstall');
         expect(html).toContain('Remove');
         expect(html).toContain('Custom Editor');
+        expect(html).toContain('/Users/test/GodotEditors');
         expect(html).toContain('Select manifest file');
         expect(html).toContain('Create custom editor manifest');
         expect(html).toContain('btn-primary');

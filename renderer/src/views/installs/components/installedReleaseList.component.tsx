@@ -174,6 +174,7 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                             {row.install_path && row.valid !== false && (
                                 <button
                                     type="button"
+                                    data-testid="btnReleaseMoreOptions"
                                     onClick={(event) =>
                                         onOpenReleaseMoreOptions(event, row)
                                     }

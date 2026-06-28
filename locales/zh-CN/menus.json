@@ -14,7 +14,7 @@
     "project": {
         "openProjectFolder": "打开项目文件夹",
         "openEditorSettingsFolder": "打开编辑器设置文件夹",
-        "openWindowed": "以窗口模式打开",
+        "openWindowed": "使用窗口模式",
         "openWindowedTooltip": "选中此选项时，Godot 将以窗口模式启动。",
         "exportEditorSettings": "将编辑器设置导出到文件",
         "importEditorSettings": "从文件导入编辑器设置",

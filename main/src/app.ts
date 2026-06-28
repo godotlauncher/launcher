@@ -25,12 +25,18 @@ import {
 } from './commands/fileSystem.js';
 import { getInstalledTools } from './commands/installedTools.js';
 import { installRelease } from './commands/installRelease.js';
-import { showProjectMenu, showReleaseMenu } from './commands/menuCommands.js';
+import {
+    exportProjectEditorSettings,
+    importProjectEditorSettings,
+} from './commands/projectEditorSettings.js';
 import {
     checkProjectIsValid,
     getProjectsDetails,
+    initializeProjectGit,
     launchProject,
     removeProject,
+    setProjectVSCode,
+    setProjectWindowed,
 } from './commands/projects.js';
 import { registerCustomEngine } from './commands/registerCustomEngine.js';
 import { reinstallRelease } from './commands/reinstallRelease.js';
@@ -300,6 +306,36 @@ export function registerHandlers() {
             await setProjectEditor(project, newRelease),
     );
 
+    ipcMainHandler(
+        'set-project-windowed',
+        async (_, project: ProjectDetails, openWindowed: boolean) =>
+            await setProjectWindowed(project, openWindowed),
+    );
+
+    ipcMainHandler(
+        'set-project-vscode',
+        async (_, project: ProjectDetails, enable: boolean) =>
+            await setProjectVSCode(project, enable),
+    );
+
+    ipcMainHandler(
+        'initialize-project-git',
+        async (_, project: ProjectDetails) =>
+            await initializeProjectGit(project),
+    );
+
+    ipcMainHandler(
+        'export-project-editor-settings',
+        async (_, project: ProjectDetails) =>
+            await exportProjectEditorSettings(project),
+    );
+
+    ipcMainHandler(
+        'import-project-editor-settings',
+        async (_, project: ProjectDetails) =>
+            await importProjectEditorSettings(project),
+    );
+
     ipcMainHandler('launch-project', async (_, project: ProjectDetails) =>
         launchProject(project),
     );
@@ -352,14 +388,6 @@ export function registerHandlers() {
     ipcMainHandler(
         'ensure-directory',
         async (_, pathToCheck: string) => await ensureDirectory(pathToCheck),
-    );
-
-    ipcMainHandler('show-project-menu', (_, project: ProjectDetails) =>
-        showProjectMenu(project),
-    );
-
-    ipcMainHandler('show-release-menu', (_, release: InstalledRelease) =>
-        showReleaseMenu(release),
     );
 
     // ##### tools #####

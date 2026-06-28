@@ -1,4 +1,5 @@
 import type React from 'react';
+import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { SearchField } from '../../../components/ui/searchField.component';
 
 type ProjectsHeaderProps = {
@@ -12,6 +13,8 @@ type ProjectsHeaderProps = {
     createDisabled: boolean;
     addLabel: string;
     createLabel: string;
+    copyPathLabel: string;
+    copiedLabel: string;
 };
 
 export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
@@ -25,6 +28,8 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     createDisabled,
     addLabel,
     createLabel,
+    copyPathLabel,
+    copiedLabel,
 }) => (
     <div className="flex flex-col gap-2 w-full">
         <div className="flex flex-row justify-between items-start">
@@ -32,7 +37,14 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                 <h1 data-testid="projectsTitle" className="text-2xl">
                     {title}
                 </h1>
-                <p className="badge text-base-content/50">{projectsLocation}</p>
+                {projectsLocation && (
+                    <CopyBadge
+                        value={projectsLocation}
+                        label={copyPathLabel}
+                        copiedLabel={copiedLabel}
+                        data-testid="btnCopyProjectsLocation"
+                    />
+                )}
             </div>
             <div className="flex gap-2">
                 <button

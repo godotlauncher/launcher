@@ -91,6 +91,41 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_menu',
+        description: 'Projects view action menu',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await expect(
+                page.getByRole('button', {
+                    name: SAMPLE_PROJECT_PROTOTYPE.name,
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await openProjectActionsMenu(page, SAMPLE_PROJECT_PROTOTYPE.name);
+            await expect(
+                page.getByRole('button', {
+                    name: 'Initialize Git Repository',
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await closeActionMenu(page);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_missing_editor',
         description: 'Projects view with unavailable editor',
         navigate: async (
@@ -227,6 +262,10 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             if (await okButton.isVisible().catch(() => false)) {
                 await okButton.click();
             }
+            const closeButton = page.getByTestId('btnCloseCreateProject');
+            if (await closeButton.isVisible().catch(() => false)) {
+                await closeButton.click();
+            }
             await prepareAppWithStubbedData(page, electronApp);
             await applyTheme(page, theme);
         },
@@ -276,11 +315,11 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             const selectedCustomRelease = await page
                 .locator('select')
                 .first()
-                .evaluate((select) => {
+                .evaluate((select, customReleaseName) => {
                     const releaseSelect = select as HTMLSelectElement;
                     const customOption = Array.from(releaseSelect.options).find(
                         (option) =>
-                            option.textContent?.includes('Studio Custom 4.7'),
+                            option.textContent?.includes(customReleaseName),
                     );
 
                     if (!customOption) {
@@ -292,7 +331,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
                         new Event('change', { bubbles: true }),
                     );
                     return true;
-                });
+                }, SAMPLE_CUSTOM_RELEASE.name);
             expect(selectedCustomRelease).toBe(true);
             await page.waitForTimeout(600);
         },
@@ -515,6 +554,21 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_installs_menu',
+        description: 'Installs view action menu',
+        navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
+            await expect(
+                page.getByText(SAMPLE_INSTALLED_RELEASES[0].version, {
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await openFirstReleaseActionsMenu(page);
+            await page.waitForTimeout(600);
+        },
+        cleanup: closeActionMenu,
+    },
+    {
         fileBase: 'screen_installs_custom_editors',
         description: 'Installs view with custom and unavailable editors',
         navigate: async (
@@ -528,9 +582,9 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             });
             await applyTheme(page, theme);
             await page.getByTestId('btnInstalls').click();
-            await expect(page.getByText('Studio Custom 4.7')).toBeVisible({
-                timeout: 10000,
-            });
+            await expect(
+                page.getByText(SAMPLE_CUSTOM_RELEASE.name),
+            ).toBeVisible({ timeout: 10000 });
             await page.waitForTimeout(600);
         },
         cleanup: async (
@@ -921,37 +975,37 @@ const SCREENSHOTS: ScreenshotConfig[] = [
 
 const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
     {
-        version: '4.4.1-stable',
-        version_number: 4.4,
-        install_path: '/Applications/Godot_4.4.1',
-        editor_path: '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
+        version: '4.7-stable',
+        version_number: 4.7,
+        install_path: '/Applications/Godot_4.7',
+        editor_path: '/Applications/Godot_4.7/Godot.app/Contents/MacOS/Godot',
         platform: 'darwin',
         arch: 'universal',
         mono: false,
         prerelease: false,
         config_version: 5,
-        published_at: '2025-03-26T09:19:36Z',
+        published_at: '2026-06-18T12:06:17Z',
         valid: true,
     },
     {
-        version: '4.6.1-stable',
-        version_number: 4.6,
-        install_path: '/Applications/Godot_4.6.1_mono',
+        version: '4.5.1-stable',
+        version_number: 4.5,
+        install_path: '/Applications/Godot_4.5.1_dotnet',
         editor_path:
-            '/Applications/Godot_4.6.1_mono/Godot_mono.app/Contents/MacOS/Godot',
+            '/Applications/Godot_4.5.1_dotnet/Godot_mono.app/Contents/MacOS/Godot',
         platform: 'darwin',
         arch: 'universal',
         mono: true,
         prerelease: false,
         config_version: 5,
-        published_at: '2026-02-16T20:26:38Z',
+        published_at: '2025-08-18T17:04:20Z',
         valid: true,
     },
 ];
 
 const SAMPLE_CUSTOM_RELEASE: InstalledRelease = {
     version: '4.7.0-custom.1',
-    name: 'Studio Custom 4.7',
+    name: 'Fake 4.7 Custom Editor',
     base_version: '4.7',
     flavor: 'gdscript',
     version_number: 4.7,
@@ -1039,20 +1093,20 @@ const SAMPLE_PROJECT_ICON_PATH =
 
 const SAMPLE_PROJECTS: ProjectDetails[] = [
     {
-        name: 'My-Awesome-Game',
+        name: 'My-Awesome-game',
         path: '/Users/docs/Godot/Projects/my-awesome-game',
         icon_path: SAMPLE_PROJECT_ICON_PATH,
-        version: '4.4.1-stable',
-        version_number: 4.4,
+        version: '4.7-stable',
+        version_number: 4.7,
         renderer: 'FORWARD_PLUS',
         editor_settings_path:
             '/Users/docs/Godot/Projects/my-awesome-game/.godot',
         editor_settings_file:
-            '/Users/docs/Godot/Projects/my-awesome-game/.godot/editor_settings-4.4.tres',
+            '/Users/docs/Godot/Projects/my-awesome-game/.godot/editor_settings-4.7.tres',
         last_opened: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
         open_windowed: false,
         release: SAMPLE_INSTALLED_RELEASES[0],
-        launch_path: '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
+        launch_path: '/Applications/Godot_4.7/Godot.app/Contents/MacOS/Godot',
         config_version: 5,
         withVSCode: true,
         withGit: true,
@@ -1062,23 +1116,44 @@ const SAMPLE_PROJECTS: ProjectDetails[] = [
         name: 'My-Other-Game',
         path: '/Users/docs/Godot/Projects/my-other-game',
         icon_path: SAMPLE_PROJECT_ICON_PATH,
-        version: '4.6.1-stable',
-        version_number: 4.6,
+        version: '4.5.1-stable',
+        version_number: 4.5,
         renderer: 'FORWARD_PLUS',
         editor_settings_path: '/Users/docs/Godot/Projects/my-other-game/.godot',
         editor_settings_file:
-            '/Users/docs/Godot/Projects/my-other-game/.godot/editor_settings-4.6.tres',
+            '/Users/docs/Godot/Projects/my-other-game/.godot/editor_settings-4.5.tres',
         last_opened: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         open_windowed: false,
         release: SAMPLE_INSTALLED_RELEASES[1],
         launch_path:
-            '/Applications/Godot_4.6.1_mono/Godot_mono.app/Contents/MacOS/Godot',
+            '/Applications/Godot_4.5.1_dotnet/Godot_mono.app/Contents/MacOS/Godot',
         config_version: 5,
         withVSCode: true,
         withGit: true,
         valid: true,
     },
+    {
+        name: 'My-Prototype',
+        path: '/Users/docs/Godot/Projects/my-prototype',
+        icon_path: SAMPLE_PROJECT_ICON_PATH,
+        version: SAMPLE_CUSTOM_RELEASE.version,
+        version_number: SAMPLE_CUSTOM_RELEASE.version_number,
+        renderer: 'FORWARD_PLUS',
+        editor_settings_path: '/Users/docs/Godot/Projects/my-prototype/.godot',
+        editor_settings_file:
+            '/Users/docs/Godot/Projects/my-prototype/.godot/editor_settings-4.7.tres',
+        last_opened: new Date(Date.now() - 6 * 60 * 60 * 1000),
+        open_windowed: false,
+        release: SAMPLE_CUSTOM_RELEASE,
+        launch_path: SAMPLE_CUSTOM_RELEASE.editor_path,
+        config_version: 5,
+        withVSCode: true,
+        withGit: false,
+        valid: true,
+    },
 ];
+
+const SAMPLE_PROJECT_PROTOTYPE = SAMPLE_PROJECTS[2];
 
 const SAMPLE_PROJECT_WITH_MISSING_EDITOR: ProjectDetails = {
     name: 'Archive-Prototype',
@@ -1190,7 +1265,7 @@ async function seedLauncherData(homeDir: string) {
     await writeJson(path.join(configDir, 'projects.json'), SAMPLE_PROJECTS);
     await writeJson(
         path.join(configDir, 'installed-releases.json'),
-        SAMPLE_INSTALLED_RELEASES,
+        SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
     );
     await writeJson(
         path.join(configDir, 'releases.json'),
@@ -1487,7 +1562,7 @@ async function prepareAppWithStubbedData(
         electronApp,
         options.preferences ?? SAMPLE_PREFS,
         options.projects ?? SAMPLE_PROJECTS,
-        options.installedReleases ?? SAMPLE_INSTALLED_RELEASES,
+        options.installedReleases ?? SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
         options.availableReleases ?? SAMPLE_AVAILABLE_RELEASES,
         options.availablePrereleases ?? SAMPLE_AVAILABLE_PRERELEASES,
     );
@@ -1634,7 +1709,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         await mainPage.getByTestId('btnProjects').click();
         await expect(
             mainPage.getByRole('button', {
-                name: 'My-Awesome-Game',
+                name: 'My-Awesome-game',
                 exact: true,
             }),
         ).toBeVisible({
@@ -1648,17 +1723,25 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         ).toBeVisible({
             timeout: 10000,
         });
-        await mainPage.getByTestId('btnInstalls').click();
         await expect(
-            mainPage.getByText('4.4.1-stable', { exact: true }),
+            mainPage.getByRole('button', {
+                name: 'My-Prototype',
+                exact: true,
+            }),
         ).toBeVisible({
             timeout: 10000,
         });
-        await expect(mainPage.getByText('4.6.1-stable')).toBeVisible({
+        await mainPage.getByTestId('btnInstalls').click();
+        await expect(
+            mainPage.getByText('4.7-stable', { exact: true }),
+        ).toBeVisible({
+            timeout: 10000,
+        });
+        await expect(mainPage.getByText('4.5.1-stable')).toBeVisible({
             timeout: 10000,
         });
         await expect(
-            mainPage.getByText('/Applications/Godot_4.6.1_mono', {
+            mainPage.getByText('/Applications/Godot_4.5.1_dotnet', {
                 exact: true,
             }),
         ).toBeVisible({
@@ -1713,6 +1796,33 @@ async function captureScreenshot(
         path: webpPath,
         contentType: 'image/webp',
     });
+}
+
+async function openProjectActionsMenu(page: ElectronPage, projectName: string) {
+    const projectRow = page
+        .locator('tr')
+        .filter({ has: page.getByRole('button', { name: projectName }) });
+    await projectRow
+        .locator('[data-testid="btnProjectMoreOptions"]:visible')
+        .click();
+    await expect(page.getByRole('dialog').first()).toBeVisible({
+        timeout: 10000,
+    });
+}
+
+async function openFirstReleaseActionsMenu(page: ElectronPage) {
+    await page
+        .locator('[data-testid="btnReleaseMoreOptions"]:visible')
+        .first()
+        .click();
+    await expect(page.getByRole('dialog').first()).toBeVisible({
+        timeout: 10000,
+    });
+}
+
+async function closeActionMenu(page: ElectronPage) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
 }
 
 async function stubAddProjectEditorResolution(
