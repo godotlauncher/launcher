@@ -9,14 +9,19 @@ on:
         default: "test-signing"
         type: string
       windows_artifact_configuration_slug:
-        description: "SignPath Windows artifact configuration slug; falls back to SIGNPATH_WINDOWS_ARTIFACT_CONFIGURATION_SLUG"
-        required: false
-        default: ""
+        description: "SignPath Windows artifact configuration slug"
+        required: true
+        default: "release-windows"
         type: string
-      linux_artifact_configuration_slug:
-        description: "SignPath Linux artifact configuration slug; falls back to SIGNPATH_LINUX_ARTIFACT_CONFIGURATION_SLUG"
-        required: false
-        default: ""
+      linux_deb_artifact_configuration_slug:
+        description: "SignPath Linux deb artifact configuration slug"
+        required: true
+        default: "release-linux-deb"
+        type: string
+      linux_rpm_artifact_configuration_slug:
+        description: "SignPath Linux rpm artifact configuration slug"
+        required: true
+        default: "release-linux-rpm"
         type: string
 
 permissions:
@@ -32,7 +37,6 @@ jobs:
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
       SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
       SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
-      SIGNPATH_ARTIFACT_CONFIGURATION_SLUG: ${{ inputs.windows_artifact_configuration_slug || vars.SIGNPATH_WINDOWS_ARTIFACT_CONFIGURATION_SLUG }}
     steps:
       - name: Validate SignPath configuration
         shell: pwsh
@@ -42,8 +46,7 @@ jobs:
           foreach ($name in @(
               'SIGNPATH_API_TOKEN',
               'SIGNPATH_ORGANIZATION_ID',
-              'SIGNPATH_PROJECT_SLUG',
-              'SIGNPATH_ARTIFACT_CONFIGURATION_SLUG'
+              'SIGNPATH_PROJECT_SLUG'
           )) {
               if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
                   $missing += $name
@@ -88,10 +91,10 @@ jobs:
             dist/latest.yml
           if-no-files-found: error
 
-      - name: Prepare SignPath input
+      - name: Prepare Windows SignPath input
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path signpath-unsigned | Out-Null
+          New-Item -ItemType Directory -Force -Path signpath-unsigned-windows | Out-Null
           $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-${{ steps.package_version.outputs.version }}-win_*.exe" -File
 
           if ($installers.Count -eq 0) {
@@ -99,16 +102,16 @@ jobs:
           }
 
           foreach ($installer in $installers) {
-              Copy-Item -LiteralPath $installer.FullName -Destination (Join-Path signpath-unsigned $installer.Name)
+              Copy-Item -LiteralPath $installer.FullName -Destination (Join-Path signpath-unsigned-windows $installer.Name)
               Write-Host "Prepared unsigned artifact file: $($installer.Name)"
           }
 
-      - name: Upload SignPath input
+      - name: Upload Windows SignPath input
         id: upload_unsigned
         uses: actions/upload-artifact@v7
         with:
           name: signpath-test-unsigned-windows-${{ steps.package_version.outputs.version }}
-          path: signpath-unsigned/*.exe
+          path: signpath-unsigned-windows/*.exe
           if-no-files-found: error
 
       - name: Submit Windows SignPath test signing request
@@ -119,12 +122,12 @@ jobs:
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ inputs.signing_policy_slug }}
-          artifact-configuration-slug: ${{ env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+          artifact-configuration-slug: ${{ inputs.windows_artifact_configuration_slug }}
           github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ${{ github.workspace }}\signpath-signed
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-windows
 
-      - name: Show SignPath request
+      - name: Show Windows SignPath request
         shell: pwsh
         run: |
           Write-Host "SignPath request: ${{ steps.submit_signpath.outputs.signing-request-web-url }}"
@@ -132,7 +135,7 @@ jobs:
       - name: Inspect signed Windows artifacts
         shell: pwsh
         run: |
-          $signedDir = Join-Path $env:GITHUB_WORKSPACE 'signpath-signed'
+          $signedDir = Join-Path $env:GITHUB_WORKSPACE 'signpath-signed-windows'
           $signedInstallers = Get-ChildItem -Path $signedDir -Filter '*.exe' -Recurse -File
 
           if ($signedInstallers.Count -eq 0) {
@@ -147,11 +150,11 @@ jobs:
               Write-Host "  Signer thumbprint: $($signature.SignerCertificate.Thumbprint)"
           }
 
-      - name: Upload signed Windows artifact
+      - name: Upload signed Windows artifacts
         uses: actions/upload-artifact@v7
         with:
           name: signpath-test-signed-windows-${{ steps.package_version.outputs.version }}
-          path: signpath-signed/**
+          path: signpath-signed-windows/**
           if-no-files-found: error
 
   build-linux:
@@ -161,7 +164,6 @@ jobs:
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
       SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
       SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
-      SIGNPATH_ARTIFACT_CONFIGURATION_SLUG: ${{ inputs.linux_artifact_configuration_slug || vars.SIGNPATH_LINUX_ARTIFACT_CONFIGURATION_SLUG }}
     steps:
       - name: Validate SignPath configuration
         shell: bash
@@ -172,8 +174,7 @@ jobs:
           for name in \
             SIGNPATH_API_TOKEN \
             SIGNPATH_ORGANIZATION_ID \
-            SIGNPATH_PROJECT_SLUG \
-            SIGNPATH_ARTIFACT_CONFIGURATION_SLUG; do
+            SIGNPATH_PROJECT_SLUG; do
             if [ -z "${!name:-}" ]; then
               missing+=("${name}")
             fi
@@ -218,199 +219,125 @@ jobs:
             dist/latest-linux*.yml
           if-no-files-found: error
 
-      - name: Prepare SignPath input
+      - name: Prepare Linux deb SignPath input
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p signpath-unsigned
+          mkdir -p signpath-unsigned-linux-deb
           shopt -s nullglob
-          artifacts=(
-            dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.AppImage
-            dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.deb
-            dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.rpm
-          )
+          debs=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.deb)
 
-          if [ "${#artifacts[@]}" -eq 0 ]; then
-            echo "No Linux artifacts found for version ${{ steps.package_version.outputs.version }}." >&2
+          if [ "${#debs[@]}" -eq 0 ]; then
+            echo "No Linux deb artifacts found for version ${{ steps.package_version.outputs.version }}." >&2
             exit 1
           fi
 
-          cp "${artifacts[@]}" signpath-unsigned/
-          printf 'Prepared unsigned artifact files:\n'
-          printf '  %s\n' "${artifacts[@]##*/}"
+          cp "${debs[@]}" signpath-unsigned-linux-deb/
+          printf 'Prepared unsigned deb files:\n'
+          printf '  %s\n' "${debs[@]##*/}"
 
-      - name: Upload SignPath input
-        id: upload_unsigned
+      - name: Upload Linux deb SignPath input
+        id: upload_unsigned_deb
         uses: actions/upload-artifact@v7
         with:
-          name: signpath-test-unsigned-linux-${{ steps.package_version.outputs.version }}
-          path: signpath-unsigned/*
+          name: signpath-test-unsigned-linux-deb-${{ steps.package_version.outputs.version }}
+          path: signpath-unsigned-linux-deb/*.deb
           if-no-files-found: error
 
-      - name: Submit Linux SignPath test signing request
-        id: submit_signpath
+      - name: Submit Linux deb SignPath test signing request
+        id: submit_signpath_deb
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ inputs.signing_policy_slug }}
-          artifact-configuration-slug: ${{ env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
-          github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
+          artifact-configuration-slug: ${{ inputs.linux_deb_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_deb.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ${{ github.workspace }}/signpath-signed
+          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-deb
 
-      - name: Show SignPath request
+      - name: Show Linux deb SignPath request
         shell: bash
         run: |
-          echo "SignPath request: ${{ steps.submit_signpath.outputs.signing-request-web-url }}"
+          echo "SignPath request: ${{ steps.submit_signpath_deb.outputs.signing-request-web-url }}"
 
-      - name: Inspect signed Linux artifacts
+      - name: Inspect signed Linux deb artifacts
         shell: bash
         run: |
           set -euo pipefail
+          mapfile -t signed_artifacts < <(find signpath-signed-linux-deb -type f -name '*.deb' | sort)
 
-          if [ ! -d signpath-signed ]; then
-            echo "SignPath completed, but no signed Linux artifact directory was downloaded." >&2
-            exit 1
-          fi
-
-          mapfile -t signed_artifacts < <(find signpath-signed -type f \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) | sort)
           if [ "${#signed_artifacts[@]}" -eq 0 ]; then
-            echo "SignPath completed, but no signed Linux artifacts were downloaded." >&2
+            echo "SignPath completed, but no signed Linux deb artifacts were downloaded." >&2
             exit 1
           fi
 
-          printf 'Signed Linux artifacts:\n'
+          printf 'Signed Linux deb artifacts:\n'
           printf '  %s\n' "${signed_artifacts[@]}"
 
-      - name: Upload signed Linux artifact
+      - name: Prepare Linux rpm SignPath input
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p signpath-unsigned-linux-rpm
+          shopt -s nullglob
+          rpms=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.rpm)
+
+          if [ "${#rpms[@]}" -eq 0 ]; then
+            echo "No Linux rpm artifacts found for version ${{ steps.package_version.outputs.version }}." >&2
+            exit 1
+          fi
+
+          cp "${rpms[@]}" signpath-unsigned-linux-rpm/
+          printf 'Prepared unsigned rpm files:\n'
+          printf '  %s\n' "${rpms[@]##*/}"
+
+      - name: Upload Linux rpm SignPath input
+        id: upload_unsigned_rpm
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-test-unsigned-linux-rpm-${{ steps.package_version.outputs.version }}
+          path: signpath-unsigned-linux-rpm/*.rpm
+          if-no-files-found: error
+
+      - name: Submit Linux rpm SignPath test signing request
+        id: submit_signpath_rpm
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.linux_rpm_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_rpm.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-rpm
+
+      - name: Show Linux rpm SignPath request
+        shell: bash
+        run: |
+          echo "SignPath request: ${{ steps.submit_signpath_rpm.outputs.signing-request-web-url }}"
+
+      - name: Inspect signed Linux rpm artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t signed_artifacts < <(find signpath-signed-linux-rpm -type f -name '*.rpm' | sort)
+
+          if [ "${#signed_artifacts[@]}" -eq 0 ]; then
+            echo "SignPath completed, but no signed Linux rpm artifacts were downloaded." >&2
+            exit 1
+          fi
+
+          printf 'Signed Linux rpm artifacts:\n'
+          printf '  %s\n' "${signed_artifacts[@]}"
+
+      - name: Upload signed Linux artifacts
         uses: actions/upload-artifact@v7
         with:
           name: signpath-test-signed-linux-${{ steps.package_version.outputs.version }}
-          path: signpath-signed/**
-          if-no-files-found: error
-
-  build-macos:
-    name: Build macOS artifacts with test SignPath policy
-    runs-on: macos-latest
-    env:
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      CSC_NAME: ${{ vars.MACOS_CERTIFICATE_SUBJECT_NAME }}
-      FORCE_MAC_CODE_SIGNING: true
-      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
-      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
-      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
-      SIGNPATH_SIGNING_POLICY_SLUG: ${{ inputs.signing_policy_slug }}
-    steps:
-      - name: Validate SignPath and Apple configuration
-        shell: bash
-        run: |
-          set -euo pipefail
-          missing=()
-
-          for name in \
-            APPLE_ID \
-            APPLE_APP_SPECIFIC_PASSWORD \
-            APPLE_TEAM_ID \
-            CSC_NAME \
-            SIGNPATH_API_TOKEN \
-            SIGNPATH_ORGANIZATION_ID \
-            SIGNPATH_PROJECT_SLUG \
-            SIGNPATH_SIGNING_POLICY_SLUG; do
-            if [ -z "${!name:-}" ]; then
-              missing+=("${name}")
-            fi
-          done
-
-          if [ "${#missing[@]}" -gt 0 ]; then
-            printf 'Missing GitHub secret/variable(s): %s\n' "${missing[*]}" >&2
-            exit 1
-          fi
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Fetch tags
-        run: git fetch --tags --force
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Sync npm version
-        run: npm install --global npm@11.16.0
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Read package version
-        id: package_version
-        shell: bash
-        run: |
-          version="$(node -p "require('./package.json').version")"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-
-      - name: Install SignPath CryptoTokenKit
-        shell: bash
-        run: |
-          set -euo pipefail
-          dmg_path="${RUNNER_TEMP}/SignPathCryptoTokenKit.dmg"
-          mount_path="${RUNNER_TEMP}/signpath-ctk"
-          ctk_url="${SIGNPATH_MACOS_CRYPTOTOKENKIT_DMG_URL:-https://download.signpath.io/cryptoproviders/macos-cryptotokenkit/2-latest/SignPathCryptoTokenKit.dmg}"
-
-          mkdir -p "${mount_path}"
-          curl --fail --location --show-error --output "${dmg_path}" "${ctk_url}"
-          hdiutil attach "${dmg_path}" -mountroot "${mount_path}" -quiet
-
-          ctk_app="$(find "${mount_path}" -maxdepth 3 -name 'SignPathCryptoTokenKit.app' -print -quit)"
-          if [ -z "${ctk_app}" ]; then
-            echo "SignPathCryptoTokenKit.app was not found." >&2
-            exit 1
-          fi
-
-          open "${ctk_app}" --args \
-            --organization-id "${SIGNPATH_ORGANIZATION_ID}" \
-            --project-slug "${SIGNPATH_PROJECT_SLUG}" \
-            --signing-policy-slug "${SIGNPATH_SIGNING_POLICY_SLUG}"
-
-          sleep 20
-          security find-identity -v -p codesigning
-        env:
-          SIGNPATH_MACOS_CRYPTOTOKENKIT_DMG_URL: ${{ vars.SIGNPATH_MACOS_CRYPTOTOKENKIT_DMG_URL }}
-
-      - name: Build signed and notarized macOS artifacts
-        run: npm run dist:mac -- --publish never
-
-      - name: Inspect macOS artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          artifacts=(
-            dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-mac_*
-            dist/latest-mac.*
-          )
-
-          if [ "${#artifacts[@]}" -eq 0 ]; then
-            echo "No macOS artifacts found for version ${{ steps.package_version.outputs.version }}." >&2
-            exit 1
-          fi
-
-          printf 'Built macOS artifacts:\n'
-          printf '  %s\n' "${artifacts[@]}"
-
-      - name: Upload macOS dist artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: signpath-test-dist-macos-${{ steps.package_version.outputs.version }}
           path: |
-            dist/Godot_Launcher-${{ steps.package_version.outputs.version }}-mac_*
-            dist/latest-mac.*
+            signpath-signed-linux-deb/**
+            signpath-signed-linux-rpm/**
           if-no-files-found: error
