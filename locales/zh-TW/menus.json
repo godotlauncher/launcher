@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "開啟專案資料夾",
+        "launchEditor": "在 Godot 中編輯",
+        "projectSettings": "專案設定",
         "openEditorSettingsFolder": "開啟編輯器設定資料夾",
         "openWindowed": "使用視窗模式",
         "openWindowedTooltip": "勾選此選項時，Godot 將以視窗模式啟動。",

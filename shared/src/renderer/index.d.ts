@@ -10,6 +10,8 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectResult,
     ProjectDetails,
+    RenameProjectOptions,
+    RenameProjectResult,
     RendererType,
     SetProjectVSCodeResult,
 } from '../projects/index.js';
@@ -90,6 +92,11 @@ export type ElectronRendererApi = {
         overwriteProjectPath?: string,
     ) => Promise<CreateProjectResult>;
     removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
+    renameProject: (
+        project: ProjectDetails,
+        options: RenameProjectOptions,
+    ) => Promise<RenameProjectResult>;
+    getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
     addProject: (
         path: string,
         options?: AddProjectOptions,

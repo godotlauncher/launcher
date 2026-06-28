@@ -4,6 +4,7 @@ import type {
     CustomEngineManifest,
     InstalledRelease,
     ProjectDetails,
+    RenameProjectOptions,
     RendererType,
     UserPreferences,
 } from '@shared';
@@ -31,10 +32,12 @@ import {
 } from './commands/projectEditorSettings.js';
 import {
     checkProjectIsValid,
+    getProjectGodotName,
     getProjectsDetails,
     initializeProjectGit,
     launchProject,
     removeProject,
+    renameProject,
     setProjectVSCode,
     setProjectWindowed,
 } from './commands/projects.js';
@@ -292,6 +295,18 @@ export function registerHandlers() {
     ipcMainHandler(
         'remove-project',
         async (_, project: ProjectDetails) => await removeProject(project),
+    );
+
+    ipcMainHandler(
+        'rename-project',
+        async (_, project: ProjectDetails, options: RenameProjectOptions) =>
+            await renameProject(project, options),
+    );
+
+    ipcMainHandler(
+        'get-project-godot-name',
+        async (_, project: ProjectDetails) =>
+            await getProjectGodotName(project),
     );
 
     ipcMainHandler(

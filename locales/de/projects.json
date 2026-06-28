@@ -86,6 +86,43 @@
       "differentMajorVersion": "Es kann keine andere Hauptversion des Editors verwendet werden\nZum Schutz Ihres Projekts siehe offiziellen Migrationsleitfaden auf https://godotengine.org"
     }
   },
+  "editProject": {
+    "title": "Projekteinstellungen",
+    "description": "Aktualisiere die Namenseinstellungen des Projekts.",
+    "fields": {
+      "name": {
+        "label": "Projektname",
+        "help": "Name, der in Godot Launcher angezeigt wird.",
+        "placeholder": "Mein Projekt"
+      },
+      "path": {
+        "label": "Projektordner"
+      }
+    },
+    "godot": {
+      "renameLabel": "Godot-Projekt ebenfalls umbenennen",
+      "loading": "Godot-Projekt wird geprüft...",
+      "currentName": "Aktueller Godot-Projektname: {{name}}",
+      "unavailable": "project.godot ist nicht verfügbar. Nur der Launcher-Name kann geändert werden."
+    },
+    "actions": {
+      "update": "Aktualisieren",
+      "updating": "Wird aktualisiert..."
+    },
+    "validation": {
+      "required": "Projektname ist erforderlich.",
+      "invalidName": "Projektname darf keine Zeilenumbrüche oder Steuerzeichen enthalten."
+    },
+    "updateFailed": "Projekt konnte nicht aktualisiert werden."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Projekt nicht gefunden",
+      "nameRequired": "Projektname ist erforderlich.",
+      "invalidName": "Projektname darf keine Zeilenumbrüche oder Steuerzeichen enthalten.",
+      "nameExists": "Projekt mit dem Namen '{{name}}' existiert bereits."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Projekt nicht gefunden",

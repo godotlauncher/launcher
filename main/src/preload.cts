@@ -7,6 +7,7 @@ import type {
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
+    RenameProjectOptions,
     RendererType,
     UserPreferences,
 } from '@shared';
@@ -107,6 +108,10 @@ electron.contextBridge.exposeInMainWorld('electron', {
     getProjectsDetails: () => ipcInvoke('get-projects-details'),
     removeProject: (project: ProjectDetails) =>
         ipcInvoke('remove-project', project),
+    renameProject: (project: ProjectDetails, options: RenameProjectOptions) =>
+        ipcInvoke('rename-project', project, options),
+    getProjectGodotName: (project: ProjectDetails) =>
+        ipcInvoke('get-project-godot-name', project),
     addProject: (projectPath: string, options?: AddProjectOptions) =>
         ipcInvoke('add-project', projectPath, options),
     setProjectEditor: (project: ProjectDetails, release: InstalledRelease) =>

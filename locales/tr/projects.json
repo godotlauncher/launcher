@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
     }
   },
+  "editProject": {
+    "title": "Proje ayarları",
+    "description": "Proje adı ayarlarını güncelle.",
+    "fields": {
+      "name": {
+        "label": "Proje adı",
+        "help": "Godot Launcher'da gösterilen ad.",
+        "placeholder": "Projem"
+      },
+      "path": {
+        "label": "Proje klasörü"
+      }
+    },
+    "godot": {
+      "renameLabel": "Godot projesini de yeniden adlandır",
+      "loading": "Godot projesi denetleniyor...",
+      "currentName": "Geçerli Godot proje adı: {{name}}",
+      "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
+    },
+    "actions": {
+      "update": "Güncelle",
+      "updating": "Güncelleniyor..."
+    },
+    "validation": {
+      "required": "Proje adı gereklidir.",
+      "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez."
+    },
+    "updateFailed": "Proje güncellenemedi."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Proje bulunamadı",
+      "nameRequired": "Proje adı gereklidir.",
+      "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez.",
+      "nameExists": "'{{name}}' adlı proje zaten var."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Proje bulunamadı",

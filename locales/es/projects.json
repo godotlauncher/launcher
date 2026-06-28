@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "No se pudo determinar la plantilla de configuración del editor para esta versión de Godot."
     }
   },
+  "editProject": {
+    "title": "Configuración del proyecto",
+    "description": "Actualiza la configuración del nombre del proyecto.",
+    "fields": {
+      "name": {
+        "label": "Nombre del proyecto",
+        "help": "Nombre mostrado en Godot Launcher.",
+        "placeholder": "Mi proyecto"
+      },
+      "path": {
+        "label": "Carpeta del proyecto"
+      }
+    },
+    "godot": {
+      "renameLabel": "Renombrar también el proyecto de Godot",
+      "loading": "Comprobando proyecto de Godot...",
+      "currentName": "Nombre actual del proyecto de Godot: {{name}}",
+      "unavailable": "project.godot no está disponible. Solo se puede cambiar el nombre del launcher."
+    },
+    "actions": {
+      "update": "Actualizar",
+      "updating": "Actualizando..."
+    },
+    "validation": {
+      "required": "El nombre del proyecto es obligatorio.",
+      "invalidName": "El nombre del proyecto no puede contener saltos de línea ni caracteres de control."
+    },
+    "updateFailed": "No se pudo actualizar el proyecto."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Proyecto no encontrado",
+      "nameRequired": "El nombre del proyecto es obligatorio.",
+      "invalidName": "El nombre del proyecto no puede contener saltos de línea ni caracteres de control.",
+      "nameExists": "Ya existe un proyecto con el nombre '{{name}}'."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Proyecto no encontrado",

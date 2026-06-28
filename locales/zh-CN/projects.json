@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "无法确定此 Godot 版本的编辑器设置模板。"
     }
   },
+  "editProject": {
+    "title": "项目设置",
+    "description": "更新项目命名设置。",
+    "fields": {
+      "name": {
+        "label": "项目名称",
+        "help": "显示在 Godot Launcher 中的名称。",
+        "placeholder": "我的项目"
+      },
+      "path": {
+        "label": "项目文件夹"
+      }
+    },
+    "godot": {
+      "renameLabel": "同时重命名 Godot 项目",
+      "loading": "正在检查 Godot 项目...",
+      "currentName": "当前 Godot 项目名称：{{name}}",
+      "unavailable": "project.godot 不可用。只能更改启动器中的名称。"
+    },
+    "actions": {
+      "update": "更新",
+      "updating": "正在更新..."
+    },
+    "validation": {
+      "required": "项目名称为必填项。",
+      "invalidName": "项目名称不能包含换行符或控制字符。"
+    },
+    "updateFailed": "无法更新项目。"
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "未找到项目",
+      "nameRequired": "项目名称为必填项。",
+      "invalidName": "项目名称不能包含换行符或控制字符。",
+      "nameExists": "名为 '{{name}}' 的项目已存在。"
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "未找到项目",

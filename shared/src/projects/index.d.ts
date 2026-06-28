@@ -78,6 +78,17 @@ export type SetProjectVSCodeResult = ProjectDetails & {
     recoveredVSCodeConfigFiles?: string[];
 };
 
+export type RenameProjectOptions = {
+    name: string;
+    renameGodotProject: boolean;
+};
+
+export type RenameProjectResult = BackendResult & {
+    project?: ProjectDetails;
+    projects?: ProjectDetails[];
+    errorField?: 'name' | 'godot';
+};
+
 export type RendererType = {
     5: 'FORWARD_PLUS' | 'MOBILE' | 'COMPATIBLE';
 };

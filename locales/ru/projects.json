@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Не удалось определить шаблон настроек редактора для этой версии Godot."
     }
   },
+  "editProject": {
+    "title": "Настройки проекта",
+    "description": "Обновите настройки имени проекта.",
+    "fields": {
+      "name": {
+        "label": "Имя проекта",
+        "help": "Имя, отображаемое в Godot Launcher.",
+        "placeholder": "Мой проект"
+      },
+      "path": {
+        "label": "Папка проекта"
+      }
+    },
+    "godot": {
+      "renameLabel": "Также переименовать проект Godot",
+      "loading": "Проверка проекта Godot...",
+      "currentName": "Текущее имя проекта Godot: {{name}}",
+      "unavailable": "project.godot недоступен. Можно изменить только имя в лаунчере."
+    },
+    "actions": {
+      "update": "Обновить",
+      "updating": "Обновление..."
+    },
+    "validation": {
+      "required": "Имя проекта обязательно.",
+      "invalidName": "Имя проекта не может содержать переносы строк или управляющие символы."
+    },
+    "updateFailed": "Не удалось обновить проект."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Проект не найден",
+      "nameRequired": "Имя проекта обязательно.",
+      "invalidName": "Имя проекта не может содержать переносы строк или управляющие символы.",
+      "nameExists": "Проект с именем '{{name}}' уже существует."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Проект не найден",

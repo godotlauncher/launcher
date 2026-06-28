@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Abrir pasta do projeto",
+        "launchEditor": "Editar no Godot",
+        "projectSettings": "Definições do projeto",
         "openEditorSettingsFolder": "Abrir pasta das definições do editor",
         "openWindowed": "Usar modo de janela",
         "openWindowedTooltip": "Quando esta opção está ativa, o Godot inicia em modo de janela.",

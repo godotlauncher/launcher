@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Ouvrir le dossier du projet",
+        "launchEditor": "Modifier dans Godot",
+        "projectSettings": "Paramètres du projet",
         "openEditorSettingsFolder": "Ouvrir le dossier des paramètres de l'éditeur",
         "openWindowed": "Utiliser le mode fenêtré",
         "openWindowedTooltip": "Lorsque cette option est cochée, Godot se lancera en mode fenêtré.",

@@ -9,6 +9,7 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectResult,
     ProjectDetails,
+    RenameProjectResult,
     SetProjectVSCodeResult,
 } from '../projects/index.js';
 import type {
@@ -62,6 +63,8 @@ export type EventChannelMapping = {
     'create-project': Promise<CreateProjectResult>;
     'get-projects-details': Promise<ProjectDetails[]>;
     'remove-project': Promise<ProjectDetails[]>;
+    'rename-project': Promise<RenameProjectResult>;
+    'get-project-godot-name': Promise<string | null>;
     'add-project': Promise<AddProjectToListResult>;
     'set-project-editor': Promise<ChangeProjectEditorResult>;
     'set-project-windowed': Promise<ProjectDetails>;

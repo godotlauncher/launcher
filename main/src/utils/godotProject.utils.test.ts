@@ -5,6 +5,8 @@ import { describe, expect, test } from 'vitest';
 import {
     getProjectIconUrlFromParsed,
     parseGodotProjectFile,
+    replaceGodotProjectNameInContent,
+    updateGodotProjectName,
 } from './godotProject.utils.js';
 
 describe('decode project.godot file', () => {
@@ -177,5 +179,80 @@ config/icon="res://missing.svg"
 `),
             ),
         ).toBeUndefined();
+    });
+});
+
+describe('update Godot project name', () => {
+    test('updates only application config/name and preserves surrounding content', () => {
+        const projectFile = `config_version=5
+
+; keep this comment
+[application]
+config/name="Old Name" ; inline comment
+config/features=PackedStringArray("4.4")
+
+[rendering]
+renderer/rendering_method="mobile"
+`;
+
+        const updated = replaceGodotProjectNameInContent(
+            projectFile,
+            'New "Name"',
+        );
+
+        expect(updated).toContain(
+            'config/name="New \\"Name\\"" ; inline comment',
+        );
+        expect(updated).toContain('; keep this comment');
+        expect(updated).toContain('config/features=PackedStringArray("4.4")');
+        expect(updated).toContain('[rendering]');
+        expect(updated).toContain('renderer/rendering_method="mobile"');
+    });
+
+    test('preserves CRLF line endings', () => {
+        const projectFile =
+            'config_version=5\r\n\r\n[application]\r\nconfig/name="Old"\r\n';
+
+        const updated = replaceGodotProjectNameInContent(projectFile, 'New');
+
+        expect(updated).toBe(
+            'config_version=5\r\n\r\n[application]\r\nconfig/name="New"\r\n',
+        );
+    });
+
+    test('throws when application section is missing', () => {
+        expect(() =>
+            replaceGodotProjectNameInContent(
+                'config_version=5\n[rendering]\n',
+                'New',
+            ),
+        ).toThrow('Could not find [application] section in project.godot');
+    });
+
+    test('throws when application config name is missing', () => {
+        expect(() =>
+            replaceGodotProjectNameInContent(
+                'config_version=5\n[application]\nconfig/icon="res://icon.svg"\n',
+                'New',
+            ),
+        ).toThrow('Could not find application config/name in project.godot');
+    });
+
+    test('writes the updated project file through a temporary file', async () => {
+        const projectDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'godot-project-rename-'),
+        );
+        const projectFilePath = path.join(projectDir, 'project.godot');
+        fs.writeFileSync(
+            projectFilePath,
+            'config_version=5\n\n[application]\nconfig/name="Old"\n',
+            'utf-8',
+        );
+
+        await updateGodotProjectName(projectDir, 'New');
+
+        expect(fs.readFileSync(projectFilePath, 'utf-8')).toBe(
+            'config_version=5\n\n[application]\nconfig/name="New"\n',
+        );
     });
 });

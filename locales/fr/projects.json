@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Impossible de déterminer le modèle de paramètres de l'éditeur pour cette version de Godot."
     }
   },
+  "editProject": {
+    "title": "Paramètres du projet",
+    "description": "Mettre à jour les paramètres de nom du projet.",
+    "fields": {
+      "name": {
+        "label": "Nom du projet",
+        "help": "Nom affiché dans Godot Launcher.",
+        "placeholder": "Mon projet"
+      },
+      "path": {
+        "label": "Dossier du projet"
+      }
+    },
+    "godot": {
+      "renameLabel": "Renommer aussi le projet Godot",
+      "loading": "Vérification du projet Godot...",
+      "currentName": "Nom actuel du projet Godot : {{name}}",
+      "unavailable": "project.godot est indisponible. Seul le nom dans le launcher peut être modifié."
+    },
+    "actions": {
+      "update": "Mettre à jour",
+      "updating": "Mise à jour..."
+    },
+    "validation": {
+      "required": "Le nom du projet est requis.",
+      "invalidName": "Le nom du projet ne peut pas contenir de sauts de ligne ni de caractères de contrôle."
+    },
+    "updateFailed": "Impossible de mettre à jour le projet."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Projet introuvable",
+      "nameRequired": "Le nom du projet est requis.",
+      "invalidName": "Le nom du projet ne peut pas contenir de sauts de ligne ni de caractères de contrôle.",
+      "nameExists": "Un projet nommé '{{name}}' existe déjà."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Projet introuvable",

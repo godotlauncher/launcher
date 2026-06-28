@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
     }
   },
+  "editProject": {
+    "title": "專案設定",
+    "description": "更新專案命名設定。",
+    "fields": {
+      "name": {
+        "label": "專案名稱",
+        "help": "顯示在 Godot Launcher 中的名稱。",
+        "placeholder": "我的專案"
+      },
+      "path": {
+        "label": "專案資料夾"
+      }
+    },
+    "godot": {
+      "renameLabel": "同時重新命名 Godot 專案",
+      "loading": "正在檢查 Godot 專案...",
+      "currentName": "目前的 Godot 專案名稱：{{name}}",
+      "unavailable": "project.godot 無法使用。只能變更啟動器中的名稱。"
+    },
+    "actions": {
+      "update": "更新",
+      "updating": "正在更新..."
+    },
+    "validation": {
+      "required": "專案名稱為必填。",
+      "invalidName": "專案名稱不能包含換行或控制字元。"
+    },
+    "updateFailed": "無法更新專案。"
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "找不到專案",
+      "nameRequired": "專案名稱為必填。",
+      "invalidName": "專案名稱不能包含換行或控制字元。",
+      "nameExists": "名為 '{{name}}' 的專案已存在。"
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "找不到專案",

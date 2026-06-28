@@ -4,9 +4,11 @@ import type { ProjectDetails } from '@shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import {
+    getProjectGodotName,
     initializeProjectGit,
     launchProject,
     removeProject,
+    renameProject,
     setProjectVSCode,
 } from './projects.js';
 
@@ -58,6 +60,8 @@ vi.mock('../utils/godot.utils.js', () => godotUtilsMocks);
 
 const godotProjectMocks = vi.hoisted(() => ({
     createNewEditorSettings: vi.fn(),
+    readGodotProjectName: vi.fn(),
+    updateGodotProjectName: vi.fn(),
     updateEditorSettings: vi.fn(),
 }));
 
@@ -197,7 +201,12 @@ const { getDefaultDirs } = platformMocks;
 const { getProjectsSnapshot, removeProjectFromList, storeProjectsList } =
     projectUtilsMocks;
 const { getProjectDefinition, removeProjectEditor } = godotUtilsMocks;
-const { createNewEditorSettings, updateEditorSettings } = godotProjectMocks;
+const {
+    createNewEditorSettings,
+    readGodotProjectName,
+    updateGodotProjectName,
+    updateEditorSettings,
+} = godotProjectMocks;
 const {
     updateVSCodeSettings,
     addVSCodeNETLaunchConfig,
@@ -341,6 +350,194 @@ describe('removeProject', () => {
             path.resolve('/config', 'projects.json'),
             '/projects/demo',
         );
+    });
+});
+
+describe('renameProject', () => {
+    const createProject = (overrides: Partial<ProjectDetails> = {}) =>
+        ({
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.2',
+            version_number: 4.2,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '/launcher/editors/Demo/editor_data',
+            editor_settings_file:
+                '/launcher/editors/Demo/editor_data/editor_settings-4.2.tres',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.2',
+                version_number: 4.2,
+                install_path: '/godot',
+                editor_path: '/godot/godot.exe',
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/launcher/editors/Demo/godot.exe',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+            ...overrides,
+        }) satisfies ProjectDetails;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        windowMock = { webContents: {} };
+        getMainWindow.mockReturnValue(windowMock);
+        updateGodotProjectName.mockResolvedValue(undefined);
+        storeProjectsList.mockImplementation(
+            async (_path, projects, _options) => projects,
+        );
+    });
+
+    it('renames the launcher project name by path', async () => {
+        const project = createProject();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        const result = await renameProject(project, {
+            name: ' Renamed Demo ',
+            renameGodotProject: false,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.project).toEqual(
+            expect.objectContaining({
+                name: 'Renamed Demo',
+                path: '/projects/demo',
+                launch_path: '/launcher/editors/Demo/godot.exe',
+                editor_settings_path: '/launcher/editors/Demo/editor_data',
+                editor_settings_file:
+                    '/launcher/editors/Demo/editor_data/editor_settings-4.2.tres',
+            }),
+        );
+        expect(updateGodotProjectName).not.toHaveBeenCalled();
+        expect(storeProjectsList).toHaveBeenCalledWith(
+            path.resolve('/config', 'projects.json'),
+            expect.arrayContaining([
+                expect.objectContaining({
+                    name: 'Renamed Demo',
+                    path: '/projects/demo',
+                }),
+            ]),
+            expect.objectContaining({ expectedVersion: 'v1' }),
+        );
+        expect(ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            windowMock.webContents,
+            expect.any(Array),
+        );
+    });
+
+    it('renames the launcher and Godot project names together', async () => {
+        const project = createProject();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        const result = await renameProject(project, {
+            name: 'Renamed Demo',
+            renameGodotProject: true,
+        });
+
+        expect(result.success).toBe(true);
+        expect(updateGodotProjectName).toHaveBeenCalledWith(
+            '/projects/demo',
+            'Renamed Demo',
+        );
+        expect(result.project?.name).toBe('Renamed Demo');
+    });
+
+    it('rejects duplicate launcher names from other project paths', async () => {
+        const project = createProject();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [
+                project,
+                createProject({
+                    name: 'Existing Name',
+                    path: '/projects/existing',
+                }),
+            ],
+            version: 'v1',
+        });
+
+        const result = await renameProject(project, {
+            name: 'Existing Name',
+            renameGodotProject: true,
+        });
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                success: false,
+                errorField: 'name',
+            }),
+        );
+        expect(updateGodotProjectName).not.toHaveBeenCalled();
+        expect(storeProjectsList).not.toHaveBeenCalled();
+    });
+
+    it('reports Godot project rename failures on the Godot field', async () => {
+        const project = createProject();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        updateGodotProjectName.mockRejectedValue(
+            new Error('Cannot write file'),
+        );
+
+        const result = await renameProject(project, {
+            name: 'Renamed Demo',
+            renameGodotProject: true,
+        });
+
+        expect(result).toEqual({
+            success: false,
+            error: 'Cannot write file',
+            errorField: 'godot',
+        });
+        expect(storeProjectsList).not.toHaveBeenCalled();
+    });
+
+    it('retries when the project list changes while renaming', async () => {
+        const project = createProject();
+        getProjectsSnapshot
+            .mockResolvedValueOnce({ projects: [project], version: 'v1' })
+            .mockResolvedValueOnce({ projects: [project], version: 'v2' });
+        storeProjectsList
+            .mockRejectedValueOnce(
+                new JsonStoreConflictError('/config/projects.json'),
+            )
+            .mockImplementationOnce(
+                async (_path, projects, _options) => projects,
+            );
+
+        const result = await renameProject(project, {
+            name: 'Renamed Demo',
+            renameGodotProject: false,
+        });
+
+        expect(result.success).toBe(true);
+        expect(storeProjectsList).toHaveBeenCalledTimes(2);
+    });
+
+    it('reads the current Godot project name', async () => {
+        const project = createProject();
+        readGodotProjectName.mockResolvedValue('Demo');
+
+        await expect(getProjectGodotName(project)).resolves.toBe('Demo');
+        expect(readGodotProjectName).toHaveBeenCalledWith('/projects/demo');
     });
 });
 
