@@ -269,8 +269,23 @@ jobs:
           shopt -s nullglob
 
           for arch in x64 arm64; do
-            debs=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_"${arch}".deb)
-            rpms=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_"${arch}".rpm)
+            case "${arch}" in
+              x64)
+                deb_arch="amd64"
+                rpm_arch="x86_64"
+                ;;
+              arm64)
+                deb_arch="arm64"
+                rpm_arch="aarch64"
+                ;;
+              *)
+                echo "Unsupported Linux architecture: ${arch}" >&2
+                exit 1
+                ;;
+            esac
+
+            debs=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_"${deb_arch}".deb)
+            rpms=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_"${rpm_arch}".rpm)
 
             if [ "${#debs[@]}" -ne 1 ]; then
               echo "Expected one Linux ${arch} deb artifact for version ${{ steps.package_version.outputs.version }}, found ${#debs[@]}." >&2
