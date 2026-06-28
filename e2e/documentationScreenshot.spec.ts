@@ -126,6 +126,52 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_rename_drawer',
+        description: 'Project rename drawer',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await expect(
+                page.getByRole('button', {
+                    name: SAMPLE_PROJECT_PROTOTYPE.name,
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await openProjectActionsMenu(page, SAMPLE_PROJECT_PROTOTYPE.name);
+            await page
+                .getByRole('button', { name: 'Project Settings' })
+                .click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: `${SAMPLE_PROJECT_PROTOTYPE.name} Settings`,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            const nameField = page.locator('#projectEditName');
+            await nameField.fill('My-Renamed-Prototype');
+            await expect(
+                page.getByRole('checkbox', {
+                    name: /Also rename Godot project/,
+                }),
+            ).toBeEnabled({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_missing_editor',
         description: 'Projects view with unavailable editor',
         navigate: async (
@@ -1483,6 +1529,14 @@ async function stubAppData(
                 },
                 valid: project.valid ?? true,
             }));
+
+            ipcMain.removeHandler('get-project-godot-name');
+            ipcMain.handle('get-project-godot-name', async (_, project) => {
+                const matchingProject = normalizedProjects.find(
+                    (candidate) => candidate.path === project.path,
+                );
+                return matchingProject?.name ?? null;
+            });
 
             ipcMain.removeHandler('get-installed-releases');
             ipcMain.handle(
