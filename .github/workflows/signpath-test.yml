@@ -92,30 +92,39 @@ jobs:
           if-no-files-found: error
 
       - name: Prepare Windows SignPath input
+        id: prepare_windows
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path signpath-unsigned-windows | Out-Null
-          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-${{ steps.package_version.outputs.version }}-win_*.exe" -File
+          foreach ($arch in @('x64', 'arm64')) {
+              $unsignedDir = "signpath-unsigned-windows-$arch"
+              New-Item -ItemType Directory -Force -Path $unsignedDir | Out-Null
+              $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-${{ steps.package_version.outputs.version }}-win_$arch.exe" -File
 
-          if ($installers.Count -eq 0) {
-              throw "No Windows installers found for version ${{ steps.package_version.outputs.version }}."
+              if ($installers.Count -eq 0) {
+                  throw "No Windows $arch installer found for version ${{ steps.package_version.outputs.version }}."
+              }
+
+              if ($installers.Count -gt 1) {
+                  throw "Expected one Windows $arch installer for version ${{ steps.package_version.outputs.version }}, found $($installers.Count)."
+              }
+
+              Copy-Item -LiteralPath $installers[0].FullName -Destination (Join-Path $unsignedDir $installers[0].Name)
+              Write-Host "Prepared unsigned $arch artifact file: $($installers[0].Name)"
+              "$($arch)_name=$($installers[0].Name)" >> $env:GITHUB_OUTPUT
+              "$($arch)_path=$(Join-Path $unsignedDir $installers[0].Name)" >> $env:GITHUB_OUTPUT
           }
 
-          foreach ($installer in $installers) {
-              Copy-Item -LiteralPath $installer.FullName -Destination (Join-Path signpath-unsigned-windows $installer.Name)
-              Write-Host "Prepared unsigned artifact file: $($installer.Name)"
-          }
-
-      - name: Upload Windows SignPath input
-        id: upload_unsigned
+      - name: Upload Windows x64 SignPath input
+        id: upload_unsigned_x64
         uses: actions/upload-artifact@v7
         with:
-          name: signpath-test-unsigned-windows-${{ steps.package_version.outputs.version }}
-          path: signpath-unsigned-windows/*.exe
+          name: ${{ steps.prepare_windows.outputs.x64_name }}
+          path: ${{ steps.prepare_windows.outputs.x64_path }}
           if-no-files-found: error
+          archive: false
 
-      - name: Submit Windows SignPath test signing request
-        id: submit_signpath
+      - name: Submit Windows x64 SignPath test signing request
+        id: submit_signpath_x64
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -123,20 +132,51 @@ jobs:
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ inputs.signing_policy_slug }}
           artifact-configuration-slug: ${{ inputs.windows_artifact_configuration_slug }}
-          github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
+          github-artifact-id: ${{ steps.upload_unsigned_x64.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ${{ github.workspace }}\signpath-signed-windows
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-windows-x64
+          skip-decompress: true
 
-      - name: Show Windows SignPath request
+      - name: Show Windows x64 SignPath request
         shell: pwsh
         run: |
-          Write-Host "SignPath request: ${{ steps.submit_signpath.outputs.signing-request-web-url }}"
+          Write-Host "SignPath request: ${{ steps.submit_signpath_x64.outputs.signing-request-web-url }}"
+
+      - name: Upload Windows arm64 SignPath input
+        id: upload_unsigned_arm64
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.prepare_windows.outputs.arm64_name }}
+          path: ${{ steps.prepare_windows.outputs.arm64_path }}
+          if-no-files-found: error
+          archive: false
+
+      - name: Submit Windows arm64 SignPath test signing request
+        id: submit_signpath_arm64
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.windows_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_arm64.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-windows-arm64
+          skip-decompress: true
+
+      - name: Show Windows arm64 SignPath request
+        shell: pwsh
+        run: |
+          Write-Host "SignPath request: ${{ steps.submit_signpath_arm64.outputs.signing-request-web-url }}"
 
       - name: Inspect signed Windows artifacts
         shell: pwsh
         run: |
-          $signedDir = Join-Path $env:GITHUB_WORKSPACE 'signpath-signed-windows'
-          $signedInstallers = Get-ChildItem -Path $signedDir -Filter '*.exe' -Recurse -File
+          $signedInstallers = Get-ChildItem -Path @(
+              (Join-Path $env:GITHUB_WORKSPACE 'signpath-signed-windows-x64'),
+              (Join-Path $env:GITHUB_WORKSPACE 'signpath-signed-windows-arm64')
+          ) -Filter '*.exe' -Recurse -File
 
           if ($signedInstallers.Count -eq 0) {
               throw "SignPath completed, but no signed Windows EXE files were downloaded."
@@ -154,7 +194,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: signpath-test-signed-windows-${{ steps.package_version.outputs.version }}
-          path: signpath-signed-windows/**
+          path: |
+            signpath-signed-windows-x64/**
+            signpath-signed-windows-arm64/**
           if-no-files-found: error
 
   build-linux:
@@ -219,33 +261,50 @@ jobs:
             dist/latest-linux*.yml
           if-no-files-found: error
 
-      - name: Prepare Linux deb SignPath input
+      - name: Prepare Linux SignPath input
+        id: prepare_linux
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p signpath-unsigned-linux-deb
           shopt -s nullglob
-          debs=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.deb)
 
-          if [ "${#debs[@]}" -eq 0 ]; then
-            echo "No Linux deb artifacts found for version ${{ steps.package_version.outputs.version }}." >&2
-            exit 1
-          fi
+          for arch in x64 arm64; do
+            debs=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_"${arch}".deb)
+            rpms=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_"${arch}".rpm)
 
-          cp "${debs[@]}" signpath-unsigned-linux-deb/
-          printf 'Prepared unsigned deb files:\n'
-          printf '  %s\n' "${debs[@]##*/}"
+            if [ "${#debs[@]}" -ne 1 ]; then
+              echo "Expected one Linux ${arch} deb artifact for version ${{ steps.package_version.outputs.version }}, found ${#debs[@]}." >&2
+              exit 1
+            fi
 
-      - name: Upload Linux deb SignPath input
-        id: upload_unsigned_deb
+            if [ "${#rpms[@]}" -ne 1 ]; then
+              echo "Expected one Linux ${arch} rpm artifact for version ${{ steps.package_version.outputs.version }}, found ${#rpms[@]}." >&2
+              exit 1
+            fi
+
+            mkdir -p "signpath-unsigned-linux-deb-${arch}" "signpath-unsigned-linux-rpm-${arch}"
+            cp "${debs[0]}" "signpath-unsigned-linux-deb-${arch}/"
+            cp "${rpms[0]}" "signpath-unsigned-linux-rpm-${arch}/"
+            printf 'Prepared unsigned Linux %s files:\n' "${arch}"
+            printf '  %s\n' "${debs[0]##*/}" "${rpms[0]##*/}"
+
+            echo "deb_${arch}_name=${debs[0]##*/}" >> "$GITHUB_OUTPUT"
+            echo "deb_${arch}_path=signpath-unsigned-linux-deb-${arch}/${debs[0]##*/}" >> "$GITHUB_OUTPUT"
+            echo "rpm_${arch}_name=${rpms[0]##*/}" >> "$GITHUB_OUTPUT"
+            echo "rpm_${arch}_path=signpath-unsigned-linux-rpm-${arch}/${rpms[0]##*/}" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Upload Linux x64 deb SignPath input
+        id: upload_unsigned_deb_x64
         uses: actions/upload-artifact@v7
         with:
-          name: signpath-test-unsigned-linux-deb-${{ steps.package_version.outputs.version }}
-          path: signpath-unsigned-linux-deb/*.deb
+          name: ${{ steps.prepare_linux.outputs.deb_x64_name }}
+          path: ${{ steps.prepare_linux.outputs.deb_x64_path }}
           if-no-files-found: error
+          archive: false
 
-      - name: Submit Linux deb SignPath test signing request
-        id: submit_signpath_deb
+      - name: Submit Linux x64 deb SignPath test signing request
+        id: submit_signpath_deb_x64
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -253,56 +312,55 @@ jobs:
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ inputs.signing_policy_slug }}
           artifact-configuration-slug: ${{ inputs.linux_deb_artifact_configuration_slug }}
-          github-artifact-id: ${{ steps.upload_unsigned_deb.outputs.artifact-id }}
+          github-artifact-id: ${{ steps.upload_unsigned_deb_x64.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-deb
+          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-deb-x64
+          skip-decompress: true
 
-      - name: Show Linux deb SignPath request
+      - name: Show Linux x64 deb SignPath request
         shell: bash
         run: |
-          echo "SignPath request: ${{ steps.submit_signpath_deb.outputs.signing-request-web-url }}"
+          echo "SignPath request: ${{ steps.submit_signpath_deb_x64.outputs.signing-request-web-url }}"
 
-      - name: Inspect signed Linux deb artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t signed_artifacts < <(find signpath-signed-linux-deb -type f -name '*.deb' | sort)
-
-          if [ "${#signed_artifacts[@]}" -eq 0 ]; then
-            echo "SignPath completed, but no signed Linux deb artifacts were downloaded." >&2
-            exit 1
-          fi
-
-          printf 'Signed Linux deb artifacts:\n'
-          printf '  %s\n' "${signed_artifacts[@]}"
-
-      - name: Prepare Linux rpm SignPath input
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p signpath-unsigned-linux-rpm
-          shopt -s nullglob
-          rpms=(dist/Godot_Launcher-"${{ steps.package_version.outputs.version }}"-linux_*.rpm)
-
-          if [ "${#rpms[@]}" -eq 0 ]; then
-            echo "No Linux rpm artifacts found for version ${{ steps.package_version.outputs.version }}." >&2
-            exit 1
-          fi
-
-          cp "${rpms[@]}" signpath-unsigned-linux-rpm/
-          printf 'Prepared unsigned rpm files:\n'
-          printf '  %s\n' "${rpms[@]##*/}"
-
-      - name: Upload Linux rpm SignPath input
-        id: upload_unsigned_rpm
+      - name: Upload Linux arm64 deb SignPath input
+        id: upload_unsigned_deb_arm64
         uses: actions/upload-artifact@v7
         with:
-          name: signpath-test-unsigned-linux-rpm-${{ steps.package_version.outputs.version }}
-          path: signpath-unsigned-linux-rpm/*.rpm
+          name: ${{ steps.prepare_linux.outputs.deb_arm64_name }}
+          path: ${{ steps.prepare_linux.outputs.deb_arm64_path }}
           if-no-files-found: error
+          archive: false
 
-      - name: Submit Linux rpm SignPath test signing request
-        id: submit_signpath_rpm
+      - name: Submit Linux arm64 deb SignPath test signing request
+        id: submit_signpath_deb_arm64
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.linux_deb_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_deb_arm64.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-deb-arm64
+          skip-decompress: true
+
+      - name: Show Linux arm64 deb SignPath request
+        shell: bash
+        run: |
+          echo "SignPath request: ${{ steps.submit_signpath_deb_arm64.outputs.signing-request-web-url }}"
+
+      - name: Upload Linux x64 rpm SignPath input
+        id: upload_unsigned_rpm_x64
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.prepare_linux.outputs.rpm_x64_name }}
+          path: ${{ steps.prepare_linux.outputs.rpm_x64_path }}
+          if-no-files-found: error
+          archive: false
+
+      - name: Submit Linux x64 rpm SignPath test signing request
+        id: submit_signpath_rpm_x64
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -310,34 +368,68 @@ jobs:
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ inputs.signing_policy_slug }}
           artifact-configuration-slug: ${{ inputs.linux_rpm_artifact_configuration_slug }}
-          github-artifact-id: ${{ steps.upload_unsigned_rpm.outputs.artifact-id }}
+          github-artifact-id: ${{ steps.upload_unsigned_rpm_x64.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-rpm
+          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-rpm-x64
+          skip-decompress: true
 
-      - name: Show Linux rpm SignPath request
+      - name: Show Linux x64 rpm SignPath request
         shell: bash
         run: |
-          echo "SignPath request: ${{ steps.submit_signpath_rpm.outputs.signing-request-web-url }}"
+          echo "SignPath request: ${{ steps.submit_signpath_rpm_x64.outputs.signing-request-web-url }}"
 
-      - name: Inspect signed Linux rpm artifacts
+      - name: Upload Linux arm64 rpm SignPath input
+        id: upload_unsigned_rpm_arm64
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.prepare_linux.outputs.rpm_arm64_name }}
+          path: ${{ steps.prepare_linux.outputs.rpm_arm64_path }}
+          if-no-files-found: error
+          archive: false
+
+      - name: Submit Linux arm64 rpm SignPath test signing request
+        id: submit_signpath_rpm_arm64
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.linux_rpm_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_rpm_arm64.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ${{ github.workspace }}/signpath-signed-linux-rpm-arm64
+          skip-decompress: true
+
+      - name: Show Linux arm64 rpm SignPath request
+        shell: bash
+        run: |
+          echo "SignPath request: ${{ steps.submit_signpath_rpm_arm64.outputs.signing-request-web-url }}"
+
+      - name: Inspect signed Linux artifacts
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t signed_artifacts < <(find signpath-signed-linux-rpm -type f -name '*.rpm' | sort)
 
-          if [ "${#signed_artifacts[@]}" -eq 0 ]; then
-            echo "SignPath completed, but no signed Linux rpm artifacts were downloaded." >&2
-            exit 1
-          fi
+          for file_type in deb rpm; do
+            mapfile -t signed_artifacts < <(find signpath-signed-linux-"${file_type}"-* -type f -name "*.${file_type}" | sort)
 
-          printf 'Signed Linux rpm artifacts:\n'
-          printf '  %s\n' "${signed_artifacts[@]}"
+            if [ "${#signed_artifacts[@]}" -ne 2 ]; then
+              echo "Expected two signed Linux ${file_type} artifacts, found ${#signed_artifacts[@]}." >&2
+              exit 1
+            fi
+
+            printf 'Signed Linux %s artifacts:\n' "${file_type}"
+            printf '  %s\n' "${signed_artifacts[@]}"
+          done
 
       - name: Upload signed Linux artifacts
         uses: actions/upload-artifact@v7
         with:
           name: signpath-test-signed-linux-${{ steps.package_version.outputs.version }}
           path: |
-            signpath-signed-linux-deb/**
-            signpath-signed-linux-rpm/**
+            signpath-signed-linux-deb-x64/**
+            signpath-signed-linux-deb-arm64/**
+            signpath-signed-linux-rpm-x64/**
+            signpath-signed-linux-rpm-arm64/**
           if-no-files-found: error
