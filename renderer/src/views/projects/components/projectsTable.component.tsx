@@ -316,6 +316,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                 <td className="p-0 pr-2">
                                     <button
                                         type="button"
+                                        data-testid="btnProjectMoreOptions"
                                         onClick={(event) =>
                                             onProjectMoreOptions(event, row)
                                         }
