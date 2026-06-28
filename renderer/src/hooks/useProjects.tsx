@@ -5,6 +5,8 @@ import type {
     CreateProjectResult,
     InstalledRelease,
     ProjectDetails,
+    RenameProjectOptions,
+    RenameProjectResult,
     RendererType,
     SetProjectVSCodeResult,
 } from '@shared';
@@ -41,6 +43,11 @@ interface ProjectsContext {
     importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     openProjectFolder: (project: ProjectDetails) => Promise<void>;
     openProjectEditorFolder: (project: ProjectDetails) => Promise<void>;
+    renameProject: (
+        project: ProjectDetails,
+        options: RenameProjectOptions,
+    ) => Promise<RenameProjectResult>;
+    getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
     removeProject: (project: ProjectDetails) => Promise<void>;
     launchProject: (
         project: ProjectDetails,
@@ -187,6 +194,21 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         await window.electron.openShellFolder(project.editor_settings_path);
     };
 
+    const renameProject = async (
+        project: ProjectDetails,
+        options: RenameProjectOptions,
+    ) => {
+        const result = await window.electron.renameProject(project, options);
+        if (result.success && result.projects) {
+            setProjects(result.projects);
+        }
+        return result;
+    };
+
+    const getProjectGodotName = async (project: ProjectDetails) => {
+        return await window.electron.getProjectGodotName(project);
+    };
+
     const removeProject = async (project: ProjectDetails) => {
         const result = await window.electron.removeProject(project);
         setProjects(result);
@@ -239,6 +261,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 importProjectEditorSettings,
                 openProjectFolder,
                 openProjectEditorFolder,
+                renameProject,
+                getProjectGodotName,
                 removeProject,
                 launchProject,
                 refreshProjects,

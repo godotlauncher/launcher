@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { InstalledRelease, ProjectDetails } from '@shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setProjectEditor } from './setProjectEditor.js';
@@ -278,6 +279,19 @@ describe('setProjectEditor', () => {
         expect(result.success).toBe(true);
         expect(createNewEditorSettings).toHaveBeenCalledTimes(1);
         expect(updateEditorSettings).not.toHaveBeenCalled();
+    });
+
+    it('should reuse the existing editor folder when the project name changes', async () => {
+        mockProject.name = 'Renamed Project';
+
+        const result = await setProjectEditor(mockProject, mockNewRelease);
+
+        expect(result.success).toBe(true);
+        expect(SetProjectEditorRelease).toHaveBeenCalledWith(
+            path.dirname('/fake/launch/old'),
+            mockNewRelease,
+            mockOldRelease,
+        );
     });
 
     it('should update existing editor settings when they exist', async () => {

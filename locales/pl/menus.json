@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Otwórz folder projektu",
+        "launchEditor": "Edytuj w Godot",
+        "projectSettings": "Ustawienia projektu",
         "openEditorSettingsFolder": "Otwórz folder ustawień edytora",
         "openWindowed": "Użyj trybu okienkowego",
         "openWindowedTooltip": "Gdy ta opcja jest zaznaczona, Godot uruchomi się w trybie okienkowym.",

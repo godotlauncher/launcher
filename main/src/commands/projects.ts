@@ -5,7 +5,12 @@ import {
 } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { ProjectDetails, SetProjectVSCodeResult } from '@shared';
+import type {
+    ProjectDetails,
+    RenameProjectOptions,
+    RenameProjectResult,
+    SetProjectVSCodeResult,
+} from '@shared';
 import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
@@ -23,7 +28,9 @@ import {
 } from '../utils/godot.utils.js';
 import {
     createNewEditorSettings,
+    readGodotProjectName,
     updateEditorSettings,
+    updateGodotProjectName,
 } from '../utils/godotProject.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
@@ -286,6 +293,137 @@ export async function setProjectWindowed(
     );
 
     return updatedProject;
+}
+
+function validateProjectName(name: string): RenameProjectResult | null {
+    if (name.length === 0) {
+        return {
+            success: false,
+            error: t('projects:renameProject.errors.nameRequired'),
+            errorField: 'name',
+        };
+    }
+
+    if (hasControlCharacters(name)) {
+        return {
+            success: false,
+            error: t('projects:renameProject.errors.invalidName'),
+            errorField: 'name',
+        };
+    }
+
+    return null;
+}
+
+function hasControlCharacters(value: string): boolean {
+    return Array.from(value).some((character) => {
+        const codePoint = character.codePointAt(0) ?? 0;
+        return codePoint <= 31 || codePoint === 127;
+    });
+}
+
+export async function getProjectGodotName(
+    project: ProjectDetails,
+): Promise<string | null> {
+    return await readGodotProjectName(project.path);
+}
+
+export async function renameProject(
+    project: ProjectDetails,
+    options: RenameProjectOptions,
+): Promise<RenameProjectResult> {
+    const projectListPath = resolveProjectListPath();
+    const newName = options.name.trim();
+    const validationError = validateProjectName(newName);
+
+    if (validationError) {
+        return validationError;
+    }
+
+    for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
+
+        if (projectIndex === -1) {
+            return {
+                success: false,
+                error: t('projects:renameProject.errors.projectNotFound'),
+            };
+        }
+
+        const duplicateProject = projects.find(
+            (p) => p.path !== project.path && p.name === newName,
+        );
+
+        if (duplicateProject) {
+            return {
+                success: false,
+                error: t('projects:renameProject.errors.nameExists', {
+                    name: newName,
+                }),
+                errorField: 'name',
+            };
+        }
+
+        if (options.renameGodotProject) {
+            try {
+                await updateGodotProjectName(
+                    projects[projectIndex].path,
+                    newName,
+                );
+            } catch (error) {
+                return {
+                    success: false,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                    errorField: 'godot',
+                };
+            }
+        }
+
+        const updatedProject: ProjectDetails = {
+            ...projects[projectIndex],
+            name: newName,
+        };
+        const updatedProjects = [...projects];
+        updatedProjects[projectIndex] = updatedProject;
+
+        try {
+            const storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
+            const latestProject =
+                storedProjects.find((p) => p.path === updatedProject.path) ??
+                updatedProject;
+
+            project.name = latestProject.name;
+
+            ipcWebContentsSend(
+                'projects-updated',
+                getMainWindow()?.webContents,
+                storedProjects,
+            );
+
+            return {
+                success: true,
+                project: latestProject,
+                projects: storedProjects,
+            };
+        } catch (error) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    throw new Error('Failed to rename project due to concurrent modifications');
 }
 
 export async function setProjectVSCode(

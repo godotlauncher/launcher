@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Impossibile determinare il modello di impostazioni dell'editor per questa versione di Godot."
     }
   },
+  "editProject": {
+    "title": "Impostazioni progetto",
+    "description": "Aggiorna le impostazioni del nome del progetto.",
+    "fields": {
+      "name": {
+        "label": "Nome progetto",
+        "help": "Nome mostrato in Godot Launcher.",
+        "placeholder": "Il mio progetto"
+      },
+      "path": {
+        "label": "Cartella progetto"
+      }
+    },
+    "godot": {
+      "renameLabel": "Rinomina anche il progetto Godot",
+      "loading": "Controllo del progetto Godot...",
+      "currentName": "Nome attuale del progetto Godot: {{name}}",
+      "unavailable": "project.godot non è disponibile. Puoi modificare solo il nome nel launcher."
+    },
+    "actions": {
+      "update": "Aggiorna",
+      "updating": "Aggiornamento..."
+    },
+    "validation": {
+      "required": "Il nome del progetto è obbligatorio.",
+      "invalidName": "Il nome del progetto non può contenere interruzioni di riga o caratteri di controllo."
+    },
+    "updateFailed": "Impossibile aggiornare il progetto."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Progetto non trovato",
+      "nameRequired": "Il nome del progetto è obbligatorio.",
+      "invalidName": "Il nome del progetto non può contenere interruzioni di riga o caratteri di controllo.",
+      "nameExists": "Esiste già un progetto con il nome '{{name}}'."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Progetto non trovato",

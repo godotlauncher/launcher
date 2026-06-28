@@ -22,6 +22,7 @@ import {
     getInvalidProjectMessageKey,
 } from './projects/projectsView.model';
 import { CreateProjectSubView } from './subViews/createProject.subview';
+import { ProjectSettingsDrawer } from './subViews/projectSettingsDrawer.subview';
 
 type ProjectsViewProps = {
     createOpen?: boolean;
@@ -47,6 +48,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
     const [changeEditorFor, setChangeEditorFor] =
         useState<ProjectDetails | null>();
+    const [editProjectFor, setEditProjectFor] = useState<ProjectDetails | null>(
+        null,
+    );
     const [addingProject, setAddingProject] = useState<boolean>(false);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
@@ -78,6 +82,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         launchProject,
         openProjectFolder,
         openProjectEditorFolder,
+        renameProject,
+        getProjectGodotName,
         removeProject,
         loading,
     } = useProjects();
@@ -274,6 +280,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 hasGit={projectActionsMenu?.hasGit ?? false}
                 t={t}
                 onClose={() => setProjectActionsMenu(null)}
+                onLaunchProject={(project) => void onLaunchProject(project)}
+                onProjectSettings={setEditProjectFor}
                 onOpenProjectFolder={(project) =>
                     runProjectAction(() => openProjectFolder(project))
                 }
@@ -288,6 +296,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 }
                 onImportEditorSettings={handleImportEditorSettings}
                 onRemoveProject={handleRemoveProject}
+            />
+            <ProjectSettingsDrawer
+                project={editProjectFor}
+                open={Boolean(editProjectFor)}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setEditProjectFor(null);
+                    }
+                }}
+                onRenameProject={renameProject}
+                getProjectGodotName={getProjectGodotName}
             />
             {createOpen && (
                 <CreateProjectSubView

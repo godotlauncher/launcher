@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
     }
   },
+  "editProject": {
+    "title": "Settings tal-Proġett",
+    "description": "Aġġorna s-settings tal-isem tal-proġett.",
+    "fields": {
+      "name": {
+        "label": "Isem tal-proġett",
+        "help": "Isem muri f'Godot Launcher.",
+        "placeholder": "Il-Proġett Tiegħi"
+      },
+      "path": {
+        "label": "Folder tal-proġett"
+      }
+    },
+    "godot": {
+      "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",
+      "loading": "Qed jiġi ċċekkjat il-proġett Godot...",
+      "currentName": "Isem attwali tal-proġett Godot: {{name}}",
+      "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem fil-launcher."
+    },
+    "actions": {
+      "update": "Aġġorna",
+      "updating": "Qed jiġi aġġornat..."
+    },
+    "validation": {
+      "required": "L-isem tal-proġett huwa meħtieġ.",
+      "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters."
+    },
+    "updateFailed": "Ma setax jiġi aġġornat il-proġett."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Proġett ma nstabx",
+      "nameRequired": "L-isem tal-proġett huwa meħtieġ.",
+      "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters.",
+      "nameExists": "Diġà jeżisti proġett bl-isem '{{name}}'."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Il-proġett ma nstabx",

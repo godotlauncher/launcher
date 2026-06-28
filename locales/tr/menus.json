@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Proje Klasörünü Aç",
+        "launchEditor": "Godot'ta düzenle",
+        "projectSettings": "Proje ayarları",
         "openEditorSettingsFolder": "Editör Ayarları Klasörünü Aç",
         "openWindowed": "Pencere modunu kullan",
         "openWindowedTooltip": "Bu seçenek işaretlendiğinde, Godot pencere modunda başlatılacaktır.",

@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Não foi possível determinar o modelo de definições do editor para esta versão do Godot."
     }
   },
+  "editProject": {
+    "title": "Definições do projeto",
+    "description": "Atualiza as definições do nome do projeto.",
+    "fields": {
+      "name": {
+        "label": "Nome do projeto",
+        "help": "Nome apresentado no Godot Launcher.",
+        "placeholder": "O meu projeto"
+      },
+      "path": {
+        "label": "Pasta do projeto"
+      }
+    },
+    "godot": {
+      "renameLabel": "Mudar também o nome do projeto Godot",
+      "loading": "A verificar o projeto Godot...",
+      "currentName": "Nome atual do projeto Godot: {{name}}",
+      "unavailable": "project.godot não está disponível. Apenas o nome no launcher pode ser alterado."
+    },
+    "actions": {
+      "update": "Atualizar",
+      "updating": "A atualizar..."
+    },
+    "validation": {
+      "required": "O nome do projeto é obrigatório.",
+      "invalidName": "O nome do projeto não pode conter quebras de linha nem caracteres de controlo."
+    },
+    "updateFailed": "Não foi possível atualizar o projeto."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Projeto não encontrado",
+      "nameRequired": "O nome do projeto é obrigatório.",
+      "invalidName": "O nome do projeto não pode conter quebras de linha nem caracteres de controlo.",
+      "nameExists": "Já existe um projeto com o nome '{{name}}'."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Projeto não encontrado",

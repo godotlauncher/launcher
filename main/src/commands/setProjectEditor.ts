@@ -40,6 +40,25 @@ import { getUserPreferences } from './userPreferences.js';
 
 const PROJECT_EDITOR_MAX_ATTEMPTS = 2;
 
+function resolveProjectEditorPath(
+    project: ProjectDetails,
+    installLocation: string,
+): string {
+    if (project.launch_path) {
+        return path.dirname(project.launch_path);
+    }
+
+    if (project.editor_settings_file) {
+        return path.dirname(path.dirname(project.editor_settings_file));
+    }
+
+    if (project.editor_settings_path) {
+        return path.dirname(project.editor_settings_path);
+    }
+
+    return path.resolve(installLocation, EDITOR_CONFIG_DIRNAME, project.name);
+}
+
 export async function setProjectEditor(
     project: ProjectDetails,
     newRelease: InstalledRelease,
@@ -99,10 +118,9 @@ export async function setProjectEditor(
             };
         }
 
-        const projectEditorPath = path.resolve(
+        const projectEditorPath = resolveProjectEditorPath(
+            currentProject,
             installLocation,
-            EDITOR_CONFIG_DIRNAME,
-            currentProject.name,
         );
 
         const newLaunchPath = await SetProjectEditorRelease(

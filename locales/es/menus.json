@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Abrir carpeta del proyecto",
+        "launchEditor": "Editar en Godot",
+        "projectSettings": "Configuración del proyecto",
         "openEditorSettingsFolder": "Abrir carpeta de configuración del editor",
         "openWindowed": "Usar modo ventana",
         "openWindowedTooltip": "Cuando esta opción está marcada, Godot se iniciará en modo ventana.",

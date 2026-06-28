@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Открыть папку проекта",
+        "launchEditor": "Редактировать в Godot",
+        "projectSettings": "Настройки проекта",
         "openEditorSettingsFolder": "Открыть папку настроек редактора",
         "openWindowed": "Использовать оконный режим",
         "openWindowedTooltip": "Когда эта опция включена, Godot запустится в оконном режиме.",

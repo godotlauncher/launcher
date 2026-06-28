@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。"
     }
   },
+  "editProject": {
+    "title": "プロジェクト設定",
+    "description": "プロジェクト名の設定を更新します。",
+    "fields": {
+      "name": {
+        "label": "プロジェクト名",
+        "help": "Godot Launcher に表示される名前です。",
+        "placeholder": "マイプロジェクト"
+      },
+      "path": {
+        "label": "プロジェクトフォルダー"
+      }
+    },
+    "godot": {
+      "renameLabel": "Godot プロジェクト名も変更する",
+      "loading": "Godot プロジェクトを確認中...",
+      "currentName": "現在の Godot プロジェクト名: {{name}}",
+      "unavailable": "project.godot が利用できません。Launcher の名前のみ変更できます。"
+    },
+    "actions": {
+      "update": "更新",
+      "updating": "更新中..."
+    },
+    "validation": {
+      "required": "プロジェクト名は必須です。",
+      "invalidName": "プロジェクト名に改行や制御文字は使用できません。"
+    },
+    "updateFailed": "プロジェクトを更新できませんでした。"
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "プロジェクトが見つかりません",
+      "nameRequired": "プロジェクト名は必須です。",
+      "invalidName": "プロジェクト名に改行や制御文字は使用できません。",
+      "nameExists": "'{{name}}' という名前のプロジェクトは既に存在します。"
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "プロジェクトが見つかりません",

@@ -86,6 +86,43 @@
       "invalidProjectDefinition": "Nie można ustalić szablonu ustawień edytora dla tej wersji Godot."
     }
   },
+  "editProject": {
+    "title": "Ustawienia projektu",
+    "description": "Zaktualizuj ustawienia nazwy projektu.",
+    "fields": {
+      "name": {
+        "label": "Nazwa projektu",
+        "help": "Nazwa wyświetlana w Godot Launcher.",
+        "placeholder": "Mój projekt"
+      },
+      "path": {
+        "label": "Folder projektu"
+      }
+    },
+    "godot": {
+      "renameLabel": "Zmień także nazwę projektu Godot",
+      "loading": "Sprawdzanie projektu Godot...",
+      "currentName": "Aktualna nazwa projektu Godot: {{name}}",
+      "unavailable": "project.godot jest niedostępny. Można zmienić tylko nazwę w launcherze."
+    },
+    "actions": {
+      "update": "Aktualizuj",
+      "updating": "Aktualizowanie..."
+    },
+    "validation": {
+      "required": "Nazwa projektu jest wymagana.",
+      "invalidName": "Nazwa projektu nie może zawierać znaków nowej linii ani znaków sterujących."
+    },
+    "updateFailed": "Nie udało się zaktualizować projektu."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Projekt nie znaleziony",
+      "nameRequired": "Nazwa projektu jest wymagana.",
+      "invalidName": "Nazwa projektu nie może zawierać znaków nowej linii ani znaków sterujących.",
+      "nameExists": "Projekt o nazwie '{{name}}' już istnieje."
+    }
+  },
   "initGit": {
     "errors": {
       "projectNotFound": "Nie znaleziono projektu",

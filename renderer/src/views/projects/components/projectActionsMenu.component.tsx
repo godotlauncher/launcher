@@ -1,5 +1,13 @@
 import type { ProjectDetails } from '@shared';
-import { Download, FolderOpen, PanelTop, Trash2, Upload } from 'lucide-react';
+import {
+    Download,
+    FolderOpen,
+    PanelTop,
+    Pencil,
+    SquarePen,
+    Trash2,
+    Upload,
+} from 'lucide-react';
 import type React from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
 import vscodeIcon from '../../../assets/icons/vscode.svg';
@@ -18,6 +26,8 @@ type ProjectActionsMenuProps = {
     hasGit: boolean;
     t: Translate;
     onClose: () => void;
+    onLaunchProject: (project: ProjectDetails) => void;
+    onProjectSettings: (project: ProjectDetails) => void;
     onOpenProjectFolder: (project: ProjectDetails) => void;
     onOpenEditorSettingsFolder: (project: ProjectDetails) => void;
     onToggleWindowed: (project: ProjectDetails) => void;
@@ -37,6 +47,8 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     hasGit,
     t,
     onClose,
+    onLaunchProject,
+    onProjectSettings,
     onOpenProjectFolder,
     onOpenEditorSettingsFolder,
     onToggleWindowed,
@@ -48,6 +60,23 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
 }) => {
     const items: ActionMenuItem[] = project
         ? [
+              {
+                  key: 'launch-editor',
+                  label: t('project.launchEditor', { ns: 'menus' }),
+                  icon: <Pencil className={`${iconClassName} stroke-info`} />,
+                  disabled: !project.valid,
+                  onSelect: () => onLaunchProject(project),
+              },
+              {
+                  key: 'project-settings',
+                  label: t('project.projectSettings', { ns: 'menus' }),
+                  icon: <SquarePen className={iconClassName} />,
+                  onSelect: () => onProjectSettings(project),
+              },
+              {
+                  type: 'separator',
+                  key: 'project-primary-separator',
+              },
               {
                   key: 'open-project-folder',
                   label: t('project.openProjectFolder', { ns: 'menus' }),

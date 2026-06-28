@@ -13,6 +13,8 @@
     },
     "project": {
         "openProjectFolder": "Iftaħ Folder tal-Proġett",
+        "launchEditor": "Editja f'Godot",
+        "projectSettings": "Settings tal-Proġett",
         "openEditorSettingsFolder": "Iftaħ Folder tas-Settings tal-Editur",
         "openWindowed": "Uża window mode",
         "openWindowedTooltip": "Meta din l-għażla hija magħżula, Godot se jinħoloq f'window mode.",
