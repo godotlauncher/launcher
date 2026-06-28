@@ -1,0 +1,396 @@
+name: Release Build (SignPath)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark GitHub release as prerelease'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npx biome check --reporter summary
+
+      - name: Run build:sources
+        run: npm run build:sources
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+  tag-release:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Read package version
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
+          git push origin "v${{ steps.get_version.outputs.version }}"
+
+  create-release:
+    needs: tag-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract release notes
+        id: release_notes
+        shell: bash
+        run: |
+          NOTES=$(npm run --silent changelog -- --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          {
+            echo "notes<<EOF"
+            echo "${NOTES}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create draft GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: true
+          prerelease: ${{ inputs.prerelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    needs:
+      - tag-release
+      - create-release
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      signing_request_id: ${{ steps.submit_signpath.outputs.signing-request-id }}
+      signing_request_web_url: ${{ steps.submit_signpath.outputs.signing-request-web-url }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build unsigned Windows artifacts
+        run: npm run dist:win -- --publish never
+
+      - name: Upload Windows dist artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-windows
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-win_*
+            dist/latest.yml
+          if-no-files-found: error
+
+      - name: Prepare SignPath input
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path signpath-unsigned | Out-Null
+          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$env:VERSION-win_*.exe" -File
+          if ($installers.Count -eq 0) {
+              throw "No Windows installers found for version $env:VERSION."
+          }
+          foreach ($installer in $installers) {
+              Copy-Item -LiteralPath $installer.FullName -Destination (Join-Path signpath-unsigned $installer.Name)
+          }
+
+      - name: Upload SignPath input
+        id: upload_unsigned
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-unsigned-windows
+          path: signpath-unsigned/*.exe
+          if-no-files-found: error
+
+      - name: Submit Windows SignPath request
+        id: submit_signpath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_WINDOWS_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_WINDOWS_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
+          wait-for-completion: false
+
+  build-linux:
+    needs:
+      - tag-release
+      - create-release
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      signing_request_id: ${{ steps.submit_signpath.outputs.signing-request-id }}
+      signing_request_web_url: ${{ steps.submit_signpath.outputs.signing-request-web-url }}
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build unsigned Linux artifacts
+        run: npm run dist:linux -- --publish never
+
+      - name: Upload Linux dist artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-linux
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-linux_*
+            dist/latest-linux*.yml
+          if-no-files-found: error
+
+      - name: Prepare SignPath input
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p signpath-unsigned
+          shopt -s nullglob
+          artifacts=(
+            dist/Godot_Launcher-"${VERSION}"-linux_*.AppImage
+            dist/Godot_Launcher-"${VERSION}"-linux_*.deb
+            dist/Godot_Launcher-"${VERSION}"-linux_*.rpm
+          )
+          if [ "${#artifacts[@]}" -eq 0 ]; then
+            echo "No Linux artifacts found for version ${VERSION}." >&2
+            exit 1
+          fi
+          cp "${artifacts[@]}" signpath-unsigned/
+
+      - name: Upload SignPath input
+        id: upload_unsigned
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-unsigned-linux
+          path: signpath-unsigned/*
+          if-no-files-found: error
+
+      - name: Submit Linux SignPath request
+        id: submit_signpath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_LINUX_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_LINUX_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
+          wait-for-completion: false
+
+  build-macos:
+    needs:
+      - tag-release
+      - create-release
+    runs-on: macos-latest
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      CSC_NAME: ${{ vars.MACOS_CERTIFICATE_SUBJECT_NAME }}
+      FORCE_MAC_CODE_SIGNING: true
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+      SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_MACOS_POLICY_SLUG }}
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install SignPath CryptoTokenKit
+        shell: bash
+        run: |
+          set -euo pipefail
+          dmg_path="${RUNNER_TEMP}/SignPathCryptoTokenKit.dmg"
+          mount_path="${RUNNER_TEMP}/signpath-ctk"
+          ctk_url="${SIGNPATH_MACOS_CRYPTOTOKENKIT_DMG_URL:-https://download.signpath.io/cryptoproviders/macos-cryptotokenkit/2-latest/SignPathCryptoTokenKit.dmg}"
+
+          mkdir -p "${mount_path}"
+          curl --fail --location --show-error --output "${dmg_path}" "${ctk_url}"
+          hdiutil attach "${dmg_path}" -mountroot "${mount_path}" -quiet
+
+          ctk_app="$(find "${mount_path}" -maxdepth 3 -name 'SignPathCryptoTokenKit.app' -print -quit)"
+          if [ -z "${ctk_app}" ]; then
+            echo "SignPathCryptoTokenKit.app was not found." >&2
+            exit 1
+          fi
+
+          open "${ctk_app}" --args \
+            --organization-id "${SIGNPATH_ORGANIZATION_ID}" \
+            --project-slug "${SIGNPATH_PROJECT_SLUG}" \
+            --signing-policy-slug "${SIGNPATH_SIGNING_POLICY_SLUG}"
+
+          sleep 20
+          security find-identity -v -p codesigning
+        env:
+          SIGNPATH_MACOS_CRYPTOTOKENKIT_DMG_URL: ${{ vars.SIGNPATH_MACOS_CRYPTOTOKENKIT_DMG_URL }}
+
+      - name: Build signed and notarized macOS artifacts
+        run: npm run dist:mac -- --publish never
+
+      - name: Upload macOS dist artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-macos
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-mac_*
+            dist/latest-mac.*
+          if-no-files-found: error
+
+  upload-manifest:
+    needs:
+      - tag-release
+      - build-windows
+      - build-linux
+      - build-macos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write SignPath release manifest
+        shell: bash
+        run: |
+          cat > signpath-release-manifest.json <<JSON
+          {
+            "version": "${{ needs.tag-release.outputs.version }}",
+            "tag": "v${{ needs.tag-release.outputs.version }}",
+            "buildRunId": "${{ github.run_id }}",
+            "requests": {
+              "windows": {
+                "id": "${{ needs.build-windows.outputs.signing_request_id }}",
+                "webUrl": "${{ needs.build-windows.outputs.signing_request_web_url }}"
+              },
+              "linux": {
+                "id": "${{ needs.build-linux.outputs.signing_request_id }}",
+                "webUrl": "${{ needs.build-linux.outputs.signing_request_web_url }}"
+              }
+            }
+          }
+          JSON
+          cat signpath-release-manifest.json
+
+      - name: Upload SignPath release manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-release-manifest
+          path: signpath-release-manifest.json
+          if-no-files-found: error
