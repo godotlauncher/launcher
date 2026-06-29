@@ -4,15 +4,30 @@ on:
   workflow_dispatch:
     inputs:
       draft:
-        description: 'Create GitHub release as draft'
+        description: "Create GitHub release as draft"
         required: false
         default: true
         type: boolean
       prerelease:
-        description: 'Mark GitHub release as prerelease'
+        description: "Mark GitHub release as prerelease"
         required: false
         default: false
         type: boolean
+      signpath_signing_policy_slug:
+        description: "SignPath Windows signing policy slug"
+        required: true
+        default: "test-signing"
+        type: string
+      signpath_windows_artifact_configuration_slug:
+        description: "SignPath Windows artifact configuration slug"
+        required: true
+        default: "release-windows"
+        type: string
+      signpath_wait_timeout_seconds:
+        description: "Maximum seconds to wait for SignPath approval and signing"
+        required: true
+        default: "18000"
+        type: string
 
 jobs:
   checks:
@@ -26,8 +41,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
 
       - name: Sync npm version
         run: npm install --global npm@11.16.0
@@ -60,7 +75,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Get version
         id: get_version
@@ -91,7 +106,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Sync npm version
         run: npm install --global npm@11.16.0
@@ -126,8 +141,230 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  sign-windows:
+    needs:
+      - tag-release
+      - create-release
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Validate SignPath configuration
+        shell: pwsh
+        run: |
+          $missing = @()
+
+          foreach ($name in @(
+              'SIGNPATH_API_TOKEN',
+              'SIGNPATH_ORGANIZATION_ID',
+              'SIGNPATH_PROJECT_SLUG'
+          )) {
+              if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+                  $missing += $name
+              }
+          }
+
+          if ($missing.Count -gt 0) {
+              throw "Missing GitHub secret/variable(s): $($missing -join ', ')"
+          }
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build unsigned Windows artifacts
+        run: npm run dist:win -- --publish never
+
+      - name: Upload unsigned Windows dist artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-windows-unsigned-${{ env.VERSION }}
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-win_*
+            dist/latest.yml
+          if-no-files-found: error
+
+      - name: Prepare Windows SignPath input
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path signpath-unsigned-windows | Out-Null
+          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$env:VERSION-win_*.exe" -File
+
+          if ($installers.Count -lt 1 -or $installers.Count -gt 3) {
+              throw "Expected 1 to 3 Windows installers for version $env:VERSION, found $($installers.Count)."
+          }
+
+          foreach ($installer in $installers) {
+              Copy-Item -LiteralPath $installer.FullName -Destination (Join-Path signpath-unsigned-windows $installer.Name)
+              Write-Host "Prepared unsigned Windows artifact file: $($installer.Name)"
+          }
+
+      - name: Upload Windows SignPath input
+        id: upload_unsigned_windows
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-unsigned-windows-${{ env.VERSION }}
+          path: signpath-unsigned-windows/*.exe
+          if-no-files-found: error
+
+      - name: Submit Windows SignPath signing request
+        id: submit_signpath_windows
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signpath_signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.signpath_windows_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_windows.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: ${{ inputs.signpath_wait_timeout_seconds }}
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-windows
+
+      - name: Show Windows SignPath request
+        shell: pwsh
+        run: |
+          Write-Host "SignPath request: ${{ steps.submit_signpath_windows.outputs.signing-request-web-url }}"
+
+      - name: Replace unsigned Windows artifacts with signed artifacts
+        shell: pwsh
+        run: |
+          $signedInstallers = Get-ChildItem -Path signpath-signed-windows -Filter "Godot_Launcher-$env:VERSION-win_*.exe" -Recurse -File
+
+          if ($signedInstallers.Count -lt 1 -or $signedInstallers.Count -gt 3) {
+              throw "Expected 1 to 3 signed Windows installers for version $env:VERSION, found $($signedInstallers.Count)."
+          }
+
+          foreach ($installer in $signedInstallers) {
+              $target = Join-Path 'dist' $installer.Name
+              Copy-Item -LiteralPath $installer.FullName -Destination $target -Force
+
+              $signature = Get-AuthenticodeSignature -FilePath $target
+              Write-Host "Signed artifact: $($installer.Name)"
+              Write-Host "  Signature status: $($signature.Status)"
+              Write-Host "  Signer subject: $($signature.SignerCertificate.Subject)"
+              Write-Host "  Signer thumbprint: $($signature.SignerCertificate.Thumbprint)"
+          }
+
+      - name: Regenerate Windows updater metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f dist/*.blockmap dist/*.yml
+
+          node <<'NODE'
+          const fs = require('fs/promises');
+          const path = require('path');
+          const crypto = require('crypto');
+          const yaml = require('js-yaml');
+          const { createReadStream } = require('fs');
+          const { executeAppBuilderAsJson } = require('app-builder-lib/out/util/appBuilder');
+
+          function hashFile(file) {
+            return new Promise((resolve, reject) => {
+              const hash = crypto.createHash('sha512');
+              createReadStream(file)
+                .on('data', chunk => hash.update(chunk))
+                .on('error', reject)
+                .on('end', () => resolve(hash.digest('base64')));
+            });
+          }
+
+          function order(name) {
+            if (name.includes('_x64.')) return 0;
+            if (name.includes('_arm64.')) return 1;
+            return 2;
+          }
+
+          async function main() {
+            const version = process.env.VERSION;
+            const distDir = path.resolve('dist');
+            const artifacts = (await fs.readdir(distDir))
+              .filter(name => name.startsWith(`Godot_Launcher-${version}-win_`) && name.endsWith('.exe'))
+              .sort((a, b) => order(a) - order(b) || a.localeCompare(b));
+
+            if (artifacts.length === 0) {
+              throw new Error(`No signed Windows installers found for ${version}`);
+            }
+
+            const files = [];
+            for (const name of artifacts) {
+              const artifactPath = path.join(distDir, name);
+              const blockMapPath = `${artifactPath}.blockmap`;
+              await executeAppBuilderAsJson(['blockmap', '--input', artifactPath, '--output', blockMapPath]);
+
+              const [artifactStat, blockMapStat, sha512] = await Promise.all([
+                fs.stat(artifactPath),
+                fs.stat(blockMapPath),
+                hashFile(artifactPath),
+              ]);
+
+              files.push({
+                url: name,
+                sha512,
+                size: artifactStat.size,
+                blockMapSize: blockMapStat.size,
+              });
+            }
+
+            await fs.writeFile(path.join(distDir, 'latest.yml'), yaml.dump({
+              version,
+              files,
+              path: files[0].url,
+              sha512: files[0].sha512,
+              releaseDate: new Date().toISOString(),
+            }, { lineWidth: -1 }), 'utf8');
+          }
+
+          main().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload signed Windows release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload "v${VERSION}" dist/Godot_Launcher-"${VERSION}"-win_* dist/latest.yml --clobber
+
+      - name: Upload signed Windows workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-windows-signed-${{ env.VERSION }}
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-win_*
+            dist/latest.yml
+          if-no-files-found: error
+
   build-and-publish:
-    needs: create-release
+    needs:
+      - create-release
+      - sign-windows
     permissions:
       contents: write
     strategy:
@@ -138,8 +375,6 @@ jobs:
             distCommand: npm run dist:mac -- --publish onTagOrDraft
           - os: ubuntu-latest
             distCommand: npm run dist:linux -- --publish onTagOrDraft
-          - os: windows-latest
-            distCommand: npm run dist:win -- --publish onTagOrDraft
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -148,15 +383,6 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       CSC_LINK: ${{ secrets.CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-      WIN_SIGN_PUBLISHER_NAME: ${{ vars.WIN_SIGN_PUBLISHER_NAME }}
-      WIN_SIGN_ENDPOINT: ${{ vars.WIN_SIGN_ENDPOINT }}
-      WIN_SIGN_CERTIFICATE_PROFILE_NAME: ${{ vars.WIN_SIGN_CERTIFICATE_PROFILE_NAME }}
-      WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME: ${{ vars.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_TIMESTAMP_URL: ${{ vars.AZURE_TIMESTAMP_URL }}
-      AZURE_TIMESTAMP_DIGEST: ${{ vars.AZURE_TIMESTAMP_DIGEST }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -169,8 +395,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
 
       - name: Sync npm version
         run: npm install --global npm@11.16.0
@@ -188,6 +414,7 @@ jobs:
     needs:
       - tag-release
       - create-release
+      - sign-windows
       - build-and-publish
     if: ${{ success() && inputs.draft == false }}
     runs-on: ubuntu-latest
@@ -206,6 +433,7 @@ jobs:
     needs:
       - tag-release
       - create-release
+      - sign-windows
       - build-and-publish
     if: ${{ failure() && needs.tag-release.result == 'success' }}
     runs-on: ubuntu-latest
