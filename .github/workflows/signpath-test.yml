@@ -82,8 +82,8 @@ jobs:
         with:
           name: signpath-test-dist-windows-unsigned-${{ steps.package_version.outputs.version }}
           path: |
-            dist/Godot_Launcher-${{ steps.package_version.outputs.version }}-win_*
-            dist/latest.yml
+            dist/Godot_Launcher-${{ steps.package_version.outputs.version }}-win*
+            dist/*.yml
           if-no-files-found: error
 
       - name: Prepare Windows SignPath input
@@ -91,7 +91,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path signpath-unsigned-windows | Out-Null
           $version = "${{ steps.package_version.outputs.version }}"
-          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$version-win_*.exe" -File
+          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$version-win*.exe" -File
 
           if ($installers.Count -lt 1 -or $installers.Count -gt 3) {
               throw "Expected 1 to 3 Windows installers for version $version, found $($installers.Count)."
@@ -133,7 +133,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ steps.package_version.outputs.version }}"
-          $signedInstallers = Get-ChildItem -Path signpath-signed-windows -Filter "Godot_Launcher-$version-win_*.exe" -Recurse -File
+          $signedInstallers = Get-ChildItem -Path signpath-signed-windows -Filter "Godot_Launcher-$version-win*.exe" -Recurse -File
 
           if ($signedInstallers.Count -lt 1 -or $signedInstallers.Count -gt 3) {
               throw "Expected 1 to 3 signed Windows installers for version $version, found $($signedInstallers.Count)."

@@ -204,15 +204,15 @@ jobs:
         with:
           name: release-dist-windows-unsigned-${{ env.VERSION }}
           path: |
-            dist/Godot_Launcher-${{ env.VERSION }}-win_*
-            dist/latest.yml
+            dist/Godot_Launcher-${{ env.VERSION }}-win*
+            dist/*.yml
           if-no-files-found: error
 
       - name: Prepare Windows SignPath input
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path signpath-unsigned-windows | Out-Null
-          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$env:VERSION-win_*.exe" -File
+          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$env:VERSION-win*.exe" -File
 
           if ($installers.Count -lt 1 -or $installers.Count -gt 3) {
               throw "Expected 1 to 3 Windows installers for version $env:VERSION, found $($installers.Count)."
@@ -253,7 +253,7 @@ jobs:
       - name: Replace unsigned Windows artifacts with signed artifacts
         shell: pwsh
         run: |
-          $signedInstallers = Get-ChildItem -Path signpath-signed-windows -Filter "Godot_Launcher-$env:VERSION-win_*.exe" -Recurse -File
+          $signedInstallers = Get-ChildItem -Path signpath-signed-windows -Filter "Godot_Launcher-$env:VERSION-win*.exe" -Recurse -File
 
           if ($signedInstallers.Count -lt 1 -or $signedInstallers.Count -gt 3) {
               throw "Expected 1 to 3 signed Windows installers for version $env:VERSION, found $($signedInstallers.Count)."
@@ -274,7 +274,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f dist/*.blockmap dist/*.yml
+          rm -f dist/*.blockmap
 
           node <<'NODE'
           const fs = require('fs/promises');
@@ -296,46 +296,88 @@ jobs:
 
           function order(name) {
             if (name.includes('_x64.')) return 0;
-            if (name.includes('_arm64.')) return 1;
-            return 2;
+            if (name.endsWith('-win.exe')) return 1;
+            if (name.includes('_arm64.')) return 2;
+            return 3;
+          }
+
+          function channelFor(version) {
+            if (version.includes('beta')) return 'beta';
+            if (version.includes('alpha')) return 'alpha';
+            if (version.includes('rc')) return 'rc';
+            return 'latest';
+          }
+
+          function updateInfoFileName(version) {
+            const channel = channelFor(version);
+            return channel === 'latest' ? 'latest.yml' : `${channel}.yml`;
+          }
+
+          async function readYaml(file) {
+            try {
+              return yaml.load(await fs.readFile(file, 'utf8')) || {};
+            } catch (error) {
+              if (error.code === 'ENOENT') return {};
+              throw error;
+            }
+          }
+
+          function fileKey(file) {
+            return file.url || file.path;
+          }
+
+          function orderFromExisting(existing, artifacts) {
+            const knownOrder = new Map((existing.files || []).map((file, index) => [fileKey(file), index]));
+            return artifacts.sort((a, b) => {
+              const aOrder = knownOrder.has(a) ? knownOrder.get(a) : Number.MAX_SAFE_INTEGER;
+              const bOrder = knownOrder.has(b) ? knownOrder.get(b) : Number.MAX_SAFE_INTEGER;
+              return aOrder - bOrder || order(a) - order(b) || a.localeCompare(b);
+            });
+          }
+
+          function metadataForPath(files, requestedPath) {
+            return files.find(file => file.url === requestedPath || file.path === requestedPath) || files[0];
           }
 
           async function main() {
             const version = process.env.VERSION;
             const distDir = path.resolve('dist');
+            const updateFilePath = path.join(distDir, updateInfoFileName(version));
+            const existing = await readYaml(updateFilePath);
+            const existingFiles = new Map((existing.files || []).map(file => [fileKey(file), file]));
             const artifacts = (await fs.readdir(distDir))
-              .filter(name => name.startsWith(`Godot_Launcher-${version}-win_`) && name.endsWith('.exe'))
-              .sort((a, b) => order(a) - order(b) || a.localeCompare(b));
+              .filter(name => name.startsWith(`Godot_Launcher-${version}-win`) && name.endsWith('.exe'));
 
             if (artifacts.length === 0) {
               throw new Error(`No signed Windows installers found for ${version}`);
             }
 
             const files = [];
-            for (const name of artifacts) {
+            for (const name of orderFromExisting(existing, artifacts)) {
               const artifactPath = path.join(distDir, name);
               const blockMapPath = `${artifactPath}.blockmap`;
               await executeAppBuilderAsJson(['blockmap', '--input', artifactPath, '--output', blockMapPath]);
 
-              const [artifactStat, blockMapStat, sha512] = await Promise.all([
+              const [artifactStat, sha512] = await Promise.all([
                 fs.stat(artifactPath),
-                fs.stat(blockMapPath),
                 hashFile(artifactPath),
               ]);
 
               files.push({
+                ...(existingFiles.get(name) || {}),
                 url: name,
                 sha512,
                 size: artifactStat.size,
-                blockMapSize: blockMapStat.size,
               });
             }
 
-            await fs.writeFile(path.join(distDir, 'latest.yml'), yaml.dump({
+            const topLevelFile = metadataForPath(files, existing.path);
+            await fs.writeFile(updateFilePath, yaml.dump({
+              ...existing,
               version,
               files,
-              path: files[0].url,
-              sha512: files[0].sha512,
+              path: topLevelFile.url,
+              sha512: topLevelFile.sha512,
               releaseDate: new Date().toISOString(),
             }, { lineWidth: -1 }), 'utf8');
           }
@@ -350,15 +392,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh release upload "v${VERSION}" dist/Godot_Launcher-"${VERSION}"-win_* dist/latest.yml --clobber
+          gh release upload "v${VERSION}" dist/Godot_Launcher-"${VERSION}"-win* dist/*.yml --clobber
 
       - name: Upload signed Windows workflow artifact
         uses: actions/upload-artifact@v7
         with:
           name: release-dist-windows-signed-${{ env.VERSION }}
           path: |
-            dist/Godot_Launcher-${{ env.VERSION }}-win_*
-            dist/latest.yml
+            dist/Godot_Launcher-${{ env.VERSION }}-win*
+            dist/*.yml
           if-no-files-found: error
 
   build-and-publish:
