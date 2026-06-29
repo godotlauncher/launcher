@@ -196,6 +196,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Resolve Windows updater metadata filename
+        id: windows_update_metadata
+        shell: pwsh
+        run: |
+          $file = if ($env:VERSION -like '*-alpha*') {
+              'alpha.yml'
+          } elseif ($env:VERSION -like '*-beta*') {
+              'beta.yml'
+          } elseif ($env:VERSION -like '*-rc*') {
+              'rc.yml'
+          } else {
+              'latest.yml'
+          }
+
+          "file=$file" >> $env:GITHUB_OUTPUT
+          Write-Host "Windows updater metadata: dist/$file"
+
       - name: Build unsigned Windows artifacts
         run: npm run dist:win -- --publish never
 
@@ -205,7 +222,7 @@ jobs:
           name: release-dist-windows-unsigned-${{ env.VERSION }}
           path: |
             dist/Godot_Launcher-${{ env.VERSION }}-win*
-            dist/*.yml
+            dist/${{ steps.windows_update_metadata.outputs.file }}
           if-no-files-found: error
 
       - name: Prepare Windows SignPath input
@@ -390,9 +407,11 @@ jobs:
 
       - name: Upload signed Windows release assets
         shell: bash
+        env:
+          WINDOWS_UPDATE_METADATA: ${{ steps.windows_update_metadata.outputs.file }}
         run: |
           set -euo pipefail
-          gh release upload "v${VERSION}" dist/Godot_Launcher-"${VERSION}"-win* dist/*.yml --clobber
+          gh release upload "v${VERSION}" dist/Godot_Launcher-"${VERSION}"-win* "dist/${WINDOWS_UPDATE_METADATA}" --clobber
 
       - name: Upload signed Windows workflow artifact
         uses: actions/upload-artifact@v7
@@ -400,7 +419,7 @@ jobs:
           name: release-dist-windows-signed-${{ env.VERSION }}
           path: |
             dist/Godot_Launcher-${{ env.VERSION }}-win*
-            dist/*.yml
+            dist/${{ steps.windows_update_metadata.outputs.file }}
           if-no-files-found: error
 
   build-and-publish:
