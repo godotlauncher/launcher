@@ -56,7 +56,7 @@
     },
     "auto-changelog": {
         "tagPattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
-        "ignoreCommitPattern": "^ci|[R|r]elease|[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG"
+        "ignoreCommitPattern": "^[C|c]i|[R|r]elease|[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG"
     },
     "dependencies": {
         "@mariodebono/di": "^1.0.1",
