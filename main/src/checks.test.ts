@@ -39,6 +39,14 @@ vi.mock('./utils/godot.utils.js', () => godotUtilsMocks);
 
 vi.mock('./utils/projects.utils.js', () => projectsUtilsMocks);
 
+vi.mock('electron', () => ({
+    app: {
+        getAppPath: vi.fn(() => '/app/path'),
+        getLocale: vi.fn(() => 'en'),
+        isPackaged: false,
+    },
+}));
+
 vi.mock('electron-log', () => ({
     default: {
         info: vi.fn(),

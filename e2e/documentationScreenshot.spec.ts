@@ -51,9 +51,13 @@ const THEMES: ThemeConfig[] = [
     },
 ];
 
+const SCREENSHOT_MIN_WIDTH = 1024;
+const SCREENSHOT_MIN_HEIGHT = 600;
+
 type ScreenshotConfig = {
     fileBase: string;
     description: string;
+    viewportHeight?: number;
     navigate: (
         page: ElectronPage,
         electronApp: ElectronApplication,
@@ -767,12 +771,62 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             await page.waitForTimeout(400);
         },
         cleanup: async (page: ElectronPage) => {
+            await dismissVisibleAlert(page);
             const closeButton = page.getByTestId('btnCloseInstallEditor');
             if (await closeButton.isVisible().catch(() => false)) {
                 await closeButton.click();
             } else {
                 await page.keyboard.press('Escape');
             }
+            await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_installs_download_error',
+        description: 'Install New Version view with download error',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                installedReleases: SAMPLE_INSTALLED_RELEASES_WITHOUT_LATEST,
+            });
+            await stubInstallReleaseFailure(
+                electronApp,
+                'Download interrupted. The Godot download server may be busy or the connection was closed. Please try again in a few minutes.',
+            );
+            await applyTheme(page, theme);
+            await page.getByTestId('btnInstalls').click();
+
+            const installButton = page.getByTestId('btnInstallEditor');
+            const closeButton = page.getByTestId('btnCloseInstallEditor');
+            await expect(installButton).toBeVisible({ timeout: 10000 });
+            await installButton.click({ force: true });
+            await expect(closeButton).toBeVisible({ timeout: 10000 });
+
+            await page.getByTestId('btnDownload4.7-stable').click();
+            await expect(
+                page.getByText('Download interrupted.', { exact: false }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await dismissVisibleAlert(page);
+
+            const closeButton = page.getByTestId('btnCloseInstallEditor');
+            if (await closeButton.isVisible().catch(() => false)) {
+                await closeButton.click();
+            } else {
+                await page.keyboard.press('Escape');
+            }
+
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
             await page.waitForTimeout(600);
         },
     },
@@ -808,27 +862,21 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_settings_behavior',
         description: 'Settings (Behavior tab)',
+        viewportHeight: 800,
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabBehavior').click();
-            await page.setViewportSize({ width: 1024, height: 800 });
             await page.waitForTimeout(600);
-        },
-        cleanup: async (page: ElectronPage) => {
-            await page.setViewportSize({ width: 1024, height: 600 });
         },
     },
     {
         fileBase: 'screen_settings_tools',
         description: 'Settings (Tools tab)',
+        viewportHeight: 800,
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnSettings').click();
             await page.getByTestId('tabTools').click();
-            await page.setViewportSize({ width: 1024, height: 800 });
             await page.waitForTimeout(600);
-        },
-        cleanup: async (page: ElectronPage) => {
-            await page.setViewportSize({ width: 1024, height: 600 });
         },
     },
     {
@@ -1109,6 +1157,11 @@ const SAMPLE_UNAVAILABLE_CUSTOM_RELEASE: InstalledRelease = {
 
 const SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM: InstalledRelease[] = [
     ...SAMPLE_INSTALLED_RELEASES,
+    SAMPLE_CUSTOM_RELEASE,
+];
+
+const SAMPLE_INSTALLED_RELEASES_WITHOUT_LATEST: InstalledRelease[] = [
+    SAMPLE_INSTALLED_RELEASES[1],
     SAMPLE_CUSTOM_RELEASE,
 ];
 
@@ -1621,9 +1674,25 @@ async function prepareAppWithStubbedData(
         options.availablePrereleases ?? SAMPLE_AVAILABLE_PRERELEASES,
     );
     await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
-    await page.reload();
+    await reloadScreenshotPage(page);
     await waitForPreloadScript(page);
-    await page.setViewportSize({ width: 1024, height: 600 });
+    await setScreenshotViewport(page);
+}
+
+async function reloadScreenshotPage(page: ElectronPage) {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            await page.reload({ waitUntil: 'load', timeout: 15000 });
+            return;
+        } catch (error) {
+            lastError = error;
+            await page.waitForTimeout(500 * attempt);
+        }
+    }
+
+    throw lastError;
 }
 
 async function navigateToUpdatesTab(page: ElectronPage) {
@@ -1807,6 +1876,7 @@ test('captures documentation screenshots for each main view', async ({}, testInf
             await applyTheme(mainPage, theme);
 
             for (const shot of SCREENSHOTS) {
+                await setScreenshotViewport(mainPage, shot.viewportHeight);
                 await shot.navigate(mainPage, electronApp, theme);
                 const themedFileName = `${shot.fileBase}_${theme.name}`;
                 const themedDescription = `${shot.description} in ${theme.description}`;
@@ -1826,6 +1896,16 @@ test('captures documentation screenshots for each main view', async ({}, testInf
         await fs.rm(fixtureHome, { recursive: true, force: true });
     }
 });
+
+async function setScreenshotViewport(
+    page: ElectronPage,
+    height = SCREENSHOT_MIN_HEIGHT,
+) {
+    await page.setViewportSize({
+        width: SCREENSHOT_MIN_WIDTH,
+        height: Math.max(SCREENSHOT_MIN_HEIGHT, height),
+    });
+}
 
 async function captureScreenshot(
     page: ElectronPage,
@@ -1877,6 +1957,28 @@ async function openFirstReleaseActionsMenu(page: ElectronPage) {
 async function closeActionMenu(page: ElectronPage) {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(200);
+}
+
+async function dismissVisibleAlert(page: ElectronPage) {
+    const alertOkButton = page.getByTestId('btnAlertOk');
+    if (await alertOkButton.isVisible().catch(() => false)) {
+        await alertOkButton.click({ force: true });
+        await page.waitForTimeout(200);
+    }
+}
+
+async function stubInstallReleaseFailure(
+    electronApp: ElectronApplication,
+    error: string,
+) {
+    await electronApp.evaluate(({ ipcMain }, message: string) => {
+        ipcMain.removeHandler('install-release');
+        ipcMain.handle('install-release', async (_, release) => ({
+            success: false,
+            error: message,
+            version: release.version,
+        }));
+    }, error);
 }
 
 async function stubAddProjectEditorResolution(

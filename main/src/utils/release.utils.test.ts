@@ -54,7 +54,7 @@ vi.mock('node:stream', () => ({
 }));
 
 vi.mock('node:stream/promises', () => ({
-    finished: vi.fn().mockResolvedValue(undefined),
+    pipeline: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('electron-log', () => ({
@@ -65,6 +65,25 @@ vi.mock('electron-log', () => ({
         debug: vi.fn(),
         log: vi.fn(),
     },
+}));
+
+vi.mock('../i18n/index.js', () => ({
+    t: vi.fn((key: string, options?: Record<string, string>) => {
+        switch (key) {
+            case 'installEditor:errors.downloadInterrupted':
+                return 'localized download interrupted';
+            case 'installEditor:errors.downloadFailed':
+                return `localized download failed: ${options?.error}`;
+            case 'installEditor:errors.downloadFailedUnknown':
+                return 'localized download failed unknown';
+            case 'installEditor:errors.downloadHttpError':
+                return `localized download http error: ${options?.status}`;
+            case 'installEditor:errors.downloadEmptyResponse':
+                return 'localized download empty response';
+            default:
+                return key;
+        }
+    }),
 }));
 
 vi.mock('./projects.utils.js', () => ({
@@ -411,7 +430,7 @@ suite('Releases Utils', () => {
 
             // Reset mocks
             vi.mocked(fs.createWriteStream).mockClear();
-            vi.mocked(streamPromises.finished).mockClear();
+            vi.mocked(streamPromises.pipeline).mockClear();
             vi.mocked(Readable.fromWeb).mockClear();
         });
 
@@ -422,6 +441,7 @@ suite('Releases Utils', () => {
             expect(fs.createWriteStream).toHaveBeenCalledWith(downloadPath, {
                 flags: 'wx',
             });
+            expect(streamPromises.pipeline).toHaveBeenCalled();
         });
 
         test('should throw an error if download fetch fails', async () => {
@@ -433,7 +453,27 @@ suite('Releases Utils', () => {
 
             await expect(
                 downloadReleaseAsset(mockAsset, downloadPath),
-            ).rejects.toThrow('Failed to download asset: Network Error');
+            ).rejects.toThrow('localized download http error: Network Error');
+        });
+
+        test('should show a retryable error if the download is interrupted before a response', async () => {
+            vi.mocked(global.fetch).mockRejectedValueOnce(
+                new TypeError('terminated'),
+            );
+
+            await expect(
+                downloadReleaseAsset(mockAsset, downloadPath),
+            ).rejects.toThrow('localized download interrupted');
+        });
+
+        test('should show a retryable error if the response stream is interrupted', async () => {
+            vi.mocked(streamPromises.pipeline).mockRejectedValueOnce(
+                new TypeError('terminated'),
+            );
+
+            await expect(
+                downloadReleaseAsset(mockAsset, downloadPath),
+            ).rejects.toThrow('localized download interrupted');
         });
     });
 

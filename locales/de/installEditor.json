@@ -19,7 +19,12 @@
     "noPlatformAsset": "Kein Asset für Plattform gefunden",
     "invalidEditorVersion": "Ungültige Editor-Version",
     "unsupportedPlatform": "Nicht unterstützte Plattform",
-    "unsupportedFileExtension": "Nicht unterstützte Dateierweiterung"
+    "unsupportedFileExtension": "Nicht unterstützte Dateierweiterung",
+    "downloadInterrupted": "Download unterbrochen. Der Godot-Downloadserver ist möglicherweise ausgelastet oder die Verbindung wurde geschlossen. Bitte versuchen Sie es in einigen Minuten erneut.",
+    "downloadFailed": "Download fehlgeschlagen: {{error}}",
+    "downloadFailedUnknown": "Download fehlgeschlagen. Bitte versuchen Sie es in einigen Minuten erneut.",
+    "downloadHttpError": "Asset konnte nicht heruntergeladen werden: {{status}}",
+    "downloadEmptyResponse": "Download fehlgeschlagen: leere Antwort vom Server"
   },
   "messages": {
     "installError": "Beim Installieren des Releases ist ein Fehler aufgetreten",

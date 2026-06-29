@@ -19,7 +19,12 @@
     "noPlatformAsset": "Ebda Asset ma nstab għall-pjattaforma",
     "invalidEditorVersion": "Verżjoni tal-editur invalida",
     "unsupportedPlatform": "Pjattaforma mhux supportata",
-    "unsupportedFileExtension": "Estensjoni tal-fajl mhux supportata"
+    "unsupportedFileExtension": "Estensjoni tal-fajl mhux supportata",
+    "downloadInterrupted": "It-tniżżil ġie interrott. Is-server tat-tniżżil ta' Godot jista' jkun okkupat jew il-konnessjoni ngħalqet. Erġa' pprova fi ftit minuti.",
+    "downloadFailed": "It-tniżżil falla: {{error}}",
+    "downloadFailedUnknown": "It-tniżżil falla. Erġa' pprova fi ftit minuti.",
+    "downloadHttpError": "Ma setax jitniżżel l-assett: {{status}}",
+    "downloadEmptyResponse": "It-tniżżil falla: tweġiba vojta mis-server"
   },
   "messages": {
     "installError": "Xi ħaġa marret ħażin meta nstalla r-release",

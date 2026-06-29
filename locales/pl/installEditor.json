@@ -19,7 +19,12 @@
     "noPlatformAsset": "Nie znaleziono zasobu dla platformy",
     "invalidEditorVersion": "Nieprawidłowa wersja edytora",
     "unsupportedPlatform": "Nieobsługiwana platforma",
-    "unsupportedFileExtension": "Nieobsługiwane rozszerzenie pliku"
+    "unsupportedFileExtension": "Nieobsługiwane rozszerzenie pliku",
+    "downloadInterrupted": "Pobieranie zostało przerwane. Serwer pobierania Godot może być zajęty albo połączenie zostało zamknięte. Spróbuj ponownie za kilka minut.",
+    "downloadFailed": "Pobieranie nie powiodło się: {{error}}",
+    "downloadFailedUnknown": "Pobieranie nie powiodło się. Spróbuj ponownie za kilka minut.",
+    "downloadHttpError": "Nie udało się pobrać zasobu: {{status}}",
+    "downloadEmptyResponse": "Pobieranie nie powiodło się: pusta odpowiedź z serwera"
   },
   "messages": {
     "installError": "Coś poszło nie tak podczas instalacji wydania",

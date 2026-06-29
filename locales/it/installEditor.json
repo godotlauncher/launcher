@@ -19,7 +19,12 @@
     "noPlatformAsset": "Nessuna risorsa trovata per la piattaforma",
     "invalidEditorVersion": "Versione editor non valida",
     "unsupportedPlatform": "Piattaforma non supportata",
-    "unsupportedFileExtension": "Estensione file non supportata"
+    "unsupportedFileExtension": "Estensione file non supportata",
+    "downloadInterrupted": "Download interrotto. Il server di download di Godot potrebbe essere occupato o la connessione è stata chiusa. Riprova tra qualche minuto.",
+    "downloadFailed": "Download non riuscito: {{error}}",
+    "downloadFailedUnknown": "Download non riuscito. Riprova tra qualche minuto.",
+    "downloadHttpError": "Impossibile scaricare la risorsa: {{status}}",
+    "downloadEmptyResponse": "Download non riuscito: risposta vuota dal server"
   },
   "messages": {
     "installError": "Qualcosa è andato storto durante l'installazione della versione",
