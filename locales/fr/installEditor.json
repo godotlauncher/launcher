@@ -19,7 +19,12 @@
     "noPlatformAsset": "Aucun fichier trouvé pour la plateforme",
     "invalidEditorVersion": "Version de l'éditeur invalide",
     "unsupportedPlatform": "Plateforme non prise en charge",
-    "unsupportedFileExtension": "Extension de fichier non prise en charge"
+    "unsupportedFileExtension": "Extension de fichier non prise en charge",
+    "downloadInterrupted": "Téléchargement interrompu. Le serveur de téléchargement de Godot est peut-être occupé ou la connexion a été fermée. Veuillez réessayer dans quelques minutes.",
+    "downloadFailed": "Échec du téléchargement : {{error}}",
+    "downloadFailedUnknown": "Échec du téléchargement. Veuillez réessayer dans quelques minutes.",
+    "downloadHttpError": "Impossible de télécharger le fichier : {{status}}",
+    "downloadEmptyResponse": "Échec du téléchargement : réponse vide du serveur"
   },
   "messages": {
     "installError": "Quelque chose s'est mal passé lors de l'installation de la version",

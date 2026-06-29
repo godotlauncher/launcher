@@ -19,7 +19,12 @@
     "noPlatformAsset": "Nenhum recurso encontrado para a plataforma",
     "invalidEditorVersion": "Versão do editor inválida",
     "unsupportedPlatform": "Plataforma não suportada",
-    "unsupportedFileExtension": "Extensão de ficheiro não suportada"
+    "unsupportedFileExtension": "Extensão de ficheiro não suportada",
+    "downloadInterrupted": "Transferência interrompida. O servidor de transferências do Godot pode estar ocupado ou a ligação foi fechada. Tente novamente dentro de alguns minutos.",
+    "downloadFailed": "A transferência falhou: {{error}}",
+    "downloadFailedUnknown": "A transferência falhou. Tente novamente dentro de alguns minutos.",
+    "downloadHttpError": "Não foi possível transferir o recurso: {{status}}",
+    "downloadEmptyResponse": "A transferência falhou: resposta vazia do servidor"
   },
   "messages": {
     "installError": "Ocorreu um problema ao instalar a versão",
