@@ -19,7 +19,12 @@
     "noPlatformAsset": "No Asset found for platform",
     "invalidEditorVersion": "Invalid editor version",
     "unsupportedPlatform": "Unsupported platform",
-    "unsupportedFileExtension": "Unsupported file extension"
+    "unsupportedFileExtension": "Unsupported file extension",
+    "downloadInterrupted": "Download interrupted. The Godot download server may be busy or the connection was closed. Please try again in a few minutes.",
+    "downloadFailed": "Download failed: {{error}}",
+    "downloadFailedUnknown": "Download failed. Please try again in a few minutes.",
+    "downloadHttpError": "Failed to download asset: {{status}}",
+    "downloadEmptyResponse": "Download failed: empty response from server"
   },
   "messages": {
     "installError": "Something went wrong when installing release",

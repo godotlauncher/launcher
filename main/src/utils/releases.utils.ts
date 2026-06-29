@@ -1,11 +1,12 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Readable } from 'node:stream';
-import { finished } from 'node:stream/promises';
+import { pipeline } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
 import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
 import logger from 'electron-log';
 import { PROJECTS_FILENAME } from '../constants.js';
+import { t } from '../i18n/index.js';
 import type { ReleaseAsset } from '../types/github.js';
 import { removeProjectEditor } from './godot.utils.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
@@ -133,6 +134,24 @@ export function getPlatformAsset(
     return platformAsset;
 }
 
+function getDownloadErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        if (
+            error.name === 'AbortError' ||
+            error.message === 'terminated' ||
+            error.message.includes('terminated')
+        ) {
+            return t('installEditor:errors.downloadInterrupted');
+        }
+
+        return t('installEditor:errors.downloadFailed', {
+            error: error.message,
+        });
+    }
+
+    return t('installEditor:errors.downloadFailedUnknown');
+}
+
 type ReleaseSummaryCache = {
     lastPublishDate: Date;
     lastUpdated: number;
@@ -143,19 +162,32 @@ export async function downloadReleaseAsset(
     asset: AssetSummary,
     downloadPath: string,
 ): Promise<void> {
-    const res = await fetch(asset.download_url);
+    let res: Response;
+    try {
+        res = await fetch(asset.download_url);
+    } catch (error) {
+        throw new Error(getDownloadErrorMessage(error), { cause: error });
+    }
+
     if (!res.ok) {
-        throw new Error(`Failed to download asset: ${res.statusText}`);
+        throw new Error(
+            t('installEditor:errors.downloadHttpError', {
+                status: res.statusText || String(res.status),
+            }),
+        );
+    }
+    if (!res.body) {
+        throw new Error(t('installEditor:errors.downloadEmptyResponse'));
     }
 
     const fileStream = fs.createWriteStream(downloadPath, { flags: 'wx' });
-    if (res.body) {
-        await finished(
-            Readable.fromWeb(res.body as unknown as ReadableStream).pipe(
-                fileStream,
-            ),
+    try {
+        await pipeline(
+            Readable.fromWeb(res.body as unknown as ReadableStream),
+            fileStream,
         );
-        fileStream.close();
+    } catch (error) {
+        throw new Error(getDownloadErrorMessage(error), { cause: error });
     }
 }
 

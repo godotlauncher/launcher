@@ -26,6 +26,11 @@ async function removeExistingEditorTarget(targetPath: string): Promise<void> {
 export async function removeProjectEditorDarwin(
     project: ProjectDetails,
 ): Promise<void> {
+    if (!project.launch_path) {
+        logger.debug('Skipping macOS project editor removal: missing path');
+        return;
+    }
+
     // remove editor files
     await removeExistingEditorTarget(project.launch_path);
 }
@@ -36,7 +41,7 @@ export async function setProjectEditorReleaseDarwin(
     previousRelease?: InstalledRelease,
 ): Promise<LaunchPath> {
     // remove previous editor
-    if (previousRelease) {
+    if (previousRelease?.editor_path) {
         const appPath = path.resolve(
             projectEditorPath,
             path.basename(previousRelease.editor_path),

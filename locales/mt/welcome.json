@@ -8,7 +8,7 @@
     "currentSettings": "Settings Kurrenti",
     "setLocations": "Issettja Indirizzi",
     "customizeBehavior": "Ippersonalizza l-Imġiba",
-    "windowsSymlink": "Windows Symlink",
+    "windowsSymlink": "Symlink tal-Windows",
     "ready": "Lest"
   },
   "navigation": {
@@ -58,7 +58,7 @@
     "autoCheckUpdates": "Iċċekkja Awtomatikament għal Aġġornamenti:",
     "autoStart": "Ibda Awtomatikament Meta l-Kompjuter Jibda:",
     "autoStartType": "Tip ta' Bidu Awtomatiku:",
-    "systemTray": "System Tray",
+    "systemTray": "Trej tas-sistema",
     "normalWindow": "Window Normali",
     "yes": "Iva",
     "no": "Le",

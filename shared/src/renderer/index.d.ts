@@ -10,10 +10,15 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectResult,
     ProjectDetails,
+    RenameProjectOptions,
+    RenameProjectResult,
     RendererType,
+    SetProjectVSCodeResult,
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
+    CreateCustomEngineManifestResult,
+    CustomEngineManifest,
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
@@ -48,9 +53,6 @@ export type ElectronRendererApi = {
     ) => Promise<Electron.OpenDialogReturnValue>;
     openShellFolder: (pathToOpen: string) => Promise<void>;
 
-    showProjectMenu: (project: ProjectDetails) => Promise<void>;
-    showReleaseMenu: (release: InstalledRelease) => Promise<void>;
-
     getPathForFile: (file: File) => string;
     pathExists: (pathToCheck: string) => Promise<boolean>;
     fileExists: (pathToCheck: string) => Promise<boolean>;
@@ -71,6 +73,10 @@ export type ElectronRendererApi = {
         manifestPath: string,
         options?: { replaceExisting?: boolean },
     ) => Promise<RegisterCustomEngineResult>;
+    createCustomEngineManifest: (
+        outputDirectory: string,
+        manifest: CustomEngineManifest,
+    ) => Promise<CreateCustomEngineManifestResult>;
 
     openEditorProjectManager: (release: InstalledRelease) => Promise<void>;
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;
@@ -86,6 +92,11 @@ export type ElectronRendererApi = {
         overwriteProjectPath?: string,
     ) => Promise<CreateProjectResult>;
     removeProject: (project: ProjectDetails) => Promise<ProjectDetails[]>;
+    renameProject: (
+        project: ProjectDetails,
+        options: RenameProjectOptions,
+    ) => Promise<RenameProjectResult>;
+    getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
     addProject: (
         path: string,
         options?: AddProjectOptions,
@@ -94,6 +105,17 @@ export type ElectronRendererApi = {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
+    setProjectWindowed: (
+        project: ProjectDetails,
+        openWindowed: boolean,
+    ) => Promise<ProjectDetails>;
+    setProjectVSCode: (
+        project: ProjectDetails,
+        enable: boolean,
+    ) => Promise<SetProjectVSCodeResult>;
+    initializeProjectGit: (project: ProjectDetails) => Promise<ProjectDetails>;
+    exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
+    importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     launchProject: (project: ProjectDetails) => Promise<void>;
     checkProjectValid: (project: ProjectDetails) => Promise<ProjectDetails>;
     checkAllProjectsValid: () => Promise<ProjectDetails[]>;

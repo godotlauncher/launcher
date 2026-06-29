@@ -1,12 +1,12 @@
 # Godot Launcher
 
-**Godot Launcher** is a streamlined, open-source tool designed to simplify and accelerate your Godot game development workflow. It automates Git initialization, configures VSCode instantly, manages multiple Godot versions seamlessly, and keeps project settings isolated. Quickly prototype ideas, access projects effortlessly from the system tray, and stay up-to-date with automatic updates.
+**Godot Launcher** is a streamlined, open-source tool designed to simplify and accelerate your Godot game development workflow. It automates Git initialization, configures VSCode instantly, manages multiple Godot versions and custom editor builds seamlessly, and keeps project settings isolated. Quickly prototype ideas, access projects effortlessly from the system tray, and stay up-to-date with automatic updates.
 
 Spend less time configuring your environment and more time creating amazing games.
 
 ✅ **Free, Open Source, and Community-Driven.**\
 ✅ **Cross-platform support, available on Windows, MacOS, and Linux.**\
-✅ **Designed for modern Godot workflows, focusing on widely used versions.**
+✅ **Designed for modern Godot workflows, focusing on v4.0 and later.**
 
 ![Screen shot of the project view with menu open](docs/screenshots/screen_projects_view_dark.webp)
 
@@ -26,6 +26,12 @@ The best way to get the latest installer is from [the Godot Launcher website](ht
 - **Install and Switch Versions:** Seamlessly download and manage multiple Godot Editor versions. Experiment with the latest pre-releases or fall back to stable editions in seconds.
 - **Fast Prototyping:** Quickly spin up new ideas using different editor builds. Testing features and previews is a breeze.
 - **Modern Godot Support:** The launcher focuses on the most commonly used versions of Godot. Since Godot 3.x adoption is steadily decreasing, custom configurations for it have not been included yet.
+
+### **Custom Editor Support**
+
+- **Register Custom Builds:** Add locally compiled Godot editors or team-distributed builds alongside official releases.
+- **Create Manifests in the App:** Generate the custom editor manifest from Godot Launcher instead of writing `godotlauncher-editor-manifest.json` by hand.
+- **Use Custom Editors Per Project:** Select registered custom editors for projects like any other installed editor.
 
 ### **Per-Project Editor Settings**
 
@@ -86,6 +92,13 @@ For major changes or new features, please open an issue and clearly mark the tit
 3. Install dependencies with `npm ci`.
 4. Launch the app with `npm run dev`.
 
+Use `npm ci` for normal development and CI-like installs. It installs from
+`package-lock.json` without rewriting it, which avoids platform-only lockfile
+churn from optional native dependencies on Windows, macOS, and Linux. Use
+`npm install` only when intentionally adding, removing, or updating
+dependencies. If `npm install` changes only `package-lock.json` and
+`package.json` did not change, do not include that lockfile change in your PR.
+
 Once you have everything running, feel free to open pull requests with your improvements, fixes, or new features.
 
 **We appreciate all contributions!**
@@ -99,3 +112,9 @@ Visit the **[official Godot Launcher documentation](https://docs.godotlauncher.o
 Godot Launcher is licensed under the [MIT License](./LICENSE.txt). A copy of the license is provided in the repository for your convenience. By contributing to or using this project, you agree to the terms stated therein.
 
 This project also includes third-party assets and libraries, which are licensed under their respective terms. For details, please refer to [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+
+## Signing Policy
+
+Windows releases signed by SignPath.
+
+Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).

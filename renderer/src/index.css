@@ -107,7 +107,7 @@ body,
   background-color: "#1d232a";
 
   font-family: 'Nunito Sans', sans-serif;
-  font-size: 16px;
+  font-size: 14px;
 
   @apply select-none;
   /* @apply bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100; */
@@ -123,8 +123,8 @@ body,
 } */
 
 
-/* *:focus {
-  user-select: none;
-  outline: none !important;
-
-} */
+select:focus, input:focus {
+  /* user-select: none; */
+  /* outline: none !important; */
+  @apply outline-none;
+}

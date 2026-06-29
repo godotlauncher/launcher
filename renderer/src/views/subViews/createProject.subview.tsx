@@ -1,6 +1,5 @@
 import type { CachedTool, RendererType } from '@shared';
-import clsx from 'clsx';
-import { CircleHelp, Folder, FolderPlus, X } from 'lucide-react';
+import { CircleHelp, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
@@ -9,74 +8,19 @@ import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
-import { sortReleases } from '../../releaseStoring.utils';
-
-const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;
-
-const isWindowsDriveRootPath = (pathToCheck: string) =>
-    /^[a-zA-Z]:[\\/]*$/.test(pathToCheck);
-
-const normalizeBasePathForJoin = (
-    rawBasePath: string,
-    separator: '\\' | '/',
-) => {
-    const trimmedPath = rawBasePath.trim();
-
-    if (trimmedPath.length === 0) {
-        return '';
-    }
-
-    if (/^[\\/]+$/.test(trimmedPath)) {
-        return separator;
-    }
-
-    if (separator === '\\' && isWindowsDriveRootPath(trimmedPath)) {
-        return `${trimmedPath.slice(0, 2)}\\`;
-    }
-
-    return trimmedPath.replace(/[\\/]+$/g, '');
-};
-
-const joinBasePathWithProjectSegment = (
-    rawBasePath: string,
-    segment: string,
-    separator: '\\' | '/',
-) => {
-    const normalizedBasePath = normalizeBasePathForJoin(rawBasePath, separator);
-
-    if (normalizedBasePath.length === 0) {
-        return segment;
-    }
-
-    if (normalizedBasePath === separator) {
-        return `${separator}${segment}`;
-    }
-
-    if (separator === '\\' && isWindowsDriveRootPath(normalizedBasePath)) {
-        return `${normalizedBasePath}${segment}`;
-    }
-
-    return `${normalizedBasePath}${separator}${segment}`;
-};
-
-const getProjectPathSuffixDisplay = (
-    rawBasePath: string,
-    segment: string,
-    separator: '\\' | '/',
-) => {
-    const trimmedBasePath = rawBasePath.trim();
-
-    if (
-        trimmedBasePath.length === 0 ||
-        /^[\\/]+$/.test(trimmedBasePath) ||
-        /[\\/]+$/.test(trimmedBasePath) ||
-        (separator === '\\' && isWindowsDriveRootPath(trimmedBasePath))
-    ) {
-        return segment;
-    }
-
-    return `${separator}${segment}`;
-};
+import { CreateProjectActions } from './createProject/components/createProjectActions.component';
+import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
+import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
+import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
+import {
+    buildCreateProjectReleaseRows,
+    getDefaultRendererForReleaseVersion,
+    getProjectPathSuffixDisplay,
+    isVerifiedToolAvailable,
+    joinBasePathWithProjectSegment,
+    normalizeBasePathForJoin,
+    OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
+} from './createProject/createProject.model';
 
 type SubViewProps = {
     onClose: () => void;
@@ -93,19 +37,14 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const [checkingOverwriteBasePath, setCheckingOverwriteBasePath] =
         useState<boolean>(false);
     const [editNow, setEditNow] = useState<boolean>(true);
-
     const [error, setError] = useState<string | undefined>();
     const [creating, setCreating] = useState<boolean>(false);
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
-
     const [tools, setTools] = useState<CachedTool[]>([]);
-
     const [overwriteProjectPath, setOverwriteProjectPath] =
         useState<boolean>(false);
-
     const [withGit, setWithGit] = useState<boolean>(true);
     const [withVSCode, setWithVSCode] = useState<boolean>(true);
-
     const [loadingTools, setLoadingTools] = useState<boolean>(true);
     const inputNameRef = useRef<HTMLInputElement>(null);
     const overwritePathCheckRequestRef = useRef<number>(0);
@@ -119,28 +58,15 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const pathSeparator = platform === 'win32' ? '\\' : '/';
     const defaultOverwriteBasePath = preferences?.projects_location ?? '';
 
-    // Derive allReleases from installedReleases and downloadingReleases
-    const allReleases = useMemo(() => {
-        return installedReleases
-            .concat(
-                downloadingReleases.map((r) => ({
-                    version: r.version,
-                    version_number: -1,
-                    install_path: '',
-                    mono: r.mono,
-                    platform: '',
-                    arch: '',
-                    editor_path: '',
-                    prerelease: r.prerelease,
-                    config_version: 5,
-                    published_at: r.published_at,
-                    valid: true,
-                })),
-            )
-            .sort(sortReleases);
-    }, [installedReleases, downloadingReleases]);
+    const allReleases = useMemo(
+        () =>
+            buildCreateProjectReleaseRows(
+                installedReleases,
+                downloadingReleases,
+            ),
+        [installedReleases, downloadingReleases],
+    );
 
-    // Derive projectPath from projectName and preferences
     const derivedProjectPath = useMemo(() => {
         const basePath = preferences?.projects_location || '';
         if (platform === 'win32') {
@@ -200,7 +126,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             .length > 0 &&
         (isOverwritePathEmpty || isOverwritePathChangedFromDefault);
 
-    // Initialize overwrite base path from preferences once.
     useEffect(() => {
         if (
             !overwriteBasePathInitializedRef.current &&
@@ -211,7 +136,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         }
     }, [preferences?.projects_location]);
 
-    // Check if overwrite base path exists to drive folder icon state.
     useEffect(() => {
         if (!overwriteProjectPath) {
             overwritePathCheckRequestRef.current += 1;
@@ -267,6 +191,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             setError(t('project.nameRequired'));
             return;
         }
+
         setCreating(true);
         const result = await createProject(
             projectName,
@@ -292,24 +217,22 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const changeRelease = (index: number) => {
         setReleaseIndex(index);
         const release = allReleases[index];
-        const versionInt = parseInt(release.version, 10);
 
-        if (versionInt >= 4) {
-            setRenderer('FORWARD_PLUS');
-        } else if (versionInt >= 3) {
-            // setRenderer('GLES3');
+        if (!release) {
+            return;
+        }
+
+        const defaultRenderer = getDefaultRendererForReleaseVersion(
+            release.version,
+        );
+
+        if (defaultRenderer) {
+            setRenderer(defaultRenderer);
         }
     };
 
-    const onRendererChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setRenderer(e.target.value as RendererType[5]);
-    };
-
     const hasTool = useCallback(
-        (name: string): boolean => {
-            const tool = tools.find((tool) => tool.name === name);
-            return tool?.verified === true && (tool.path?.length || 0) > 0;
-        },
+        (name: string): boolean => isVerifiedToolAvailable(tools, name),
         [tools],
     );
 
@@ -368,78 +291,8 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         }
     };
 
-    const getRendererType = (versionInt: number) => {
-        if (versionInt >= 4) {
-            return (
-                <div className="flex flex-row gap-4 p-4">
-                    <label className="flex cursor-pointer gap-2">
-                        <input
-                            type="radio"
-                            name="project-renderer"
-                            data-testid="radioNewProjectRendererForward"
-                            className="radio checked:bg-info justify-start items-center"
-                            value="FORWARD_PLUS"
-                            onChange={onRendererChanged}
-                            checked={renderer === 'FORWARD_PLUS'}
-                        />
-                        <span className="">{t('renderer.forwardPlus')}</span>
-                    </label>
-                    <label className="flex cursor-pointer gap-2">
-                        <input
-                            type="radio"
-                            name="project-renderer"
-                            data-testid="radioNewProjectRendererMobile"
-                            className="radio checked:bg-info justify-start items-center"
-                            value="MOBILE"
-                            onChange={onRendererChanged}
-                            checked={renderer === 'MOBILE'}
-                        />
-                        <span className="">{t('renderer.mobile')}</span>
-                    </label>
-                    <label className="flex cursor-pointer gap-2">
-                        <input
-                            type="radio"
-                            name="project-renderer"
-                            data-testid="radioNewProjectRendererCompatible"
-                            className="radio checked:bg-info justify-start items-center"
-                            value="COMPATIBLE"
-                            onChange={onRendererChanged}
-                            checked={renderer === 'COMPATIBLE'}
-                        />
-                        <span className="">{t('renderer.compatible')}</span>
-                    </label>
-                </div>
-            );
-        }
-
-        // if (versionInt >= 3) {
-        //     return (<>
-        //         <div className="flex flex-row gap-4 p-4">
-        //             <label className="flex cursor-pointer gap-2">
-        //                 <input type="radio"
-        //                     name="project-renderer"
-        //                     data-testid="radioNewProjectRendererForward"
-        //                     className="radio checked:bg-info justify-start items-center"
-        //                     value="GLES3"
-        //                     onChange={onRendererChanged}
-        //                     checked={renderer === 'GLES3'}
-        //                 />
-        //                 <span className="">GLES3</span>
-        //             </label>
-        //             <label className="flex cursor-pointer gap-2">
-        //                 <input type="radio"
-        //                     name="project-renderer"
-        //                     data-testid="radioNewProjectRendererMobile"
-        //                     className="radio checked:bg-info justify-start items-center"
-        //                     value="GLES2"
-        //                     onChange={onRendererChanged}
-        //                     checked={renderer === 'GLES2'} />
-        //                 <span className="">GLES2</span>
-        //             </label>
-        //         </div>
-        //     </>);
-        // }
-    };
+    const gitAvailable = hasTool('Git');
+    const vsCodeAvailable = hasTool('VSCode');
 
     return (
         <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
@@ -468,382 +321,65 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                 </div>
                 <div className="divider my-2 "></div>
                 <div className="flex flex-col gap-4 p-1">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-row gap-2 items-center">
-                            <h2 className="text-md">{t('project.title')}</h2>
-                            {allReleases[releaseIndex]?.mono && (
-                                <p className="badge badge-outline text-base-content/50">
-                                    {t('project.dotNetBadge')}
-                                </p>
-                            )}
-                            {allReleases[releaseIndex]?.prerelease && (
-                                <p className="badge badge-outline text-base-content/50">
-                                    {t('project.prereleaseBadge')}
-                                </p>
-                            )}
-                        </div>
-                        {installedReleases.length < 1 && (
-                            <p className="text-warning">
-                                {t('project.noVersionsInstalled')}
-                            </p>
-                        )}
-                        <div className="flex flex-row gap-2">
-                            <div className="flex flex-col gap-2 w-full">
-                                <input
-                                    ref={inputNameRef}
-                                    data-testid="inputProjectName"
-                                    className="input input-bordered w-full"
-                                    type="text"
-                                    placeholder={t('project.nameplaceholder')}
-                                    onChange={(e) =>
-                                        setProjectName(
-                                            e.target.value.replace(/\s/g, '-'),
-                                        )
-                                    }
-                                    onKeyDown={(event) => {
-                                        if (event.key === ' ') {
-                                            event.currentTarget.value = `${event.currentTarget.value}-`;
-                                            event.preventDefault();
-                                        }
-                                    }}
-                                />
-                                <label className="input w-full z-10">
-                                    <input
-                                        data-testid="inputProjectPath"
-                                        className="input input-bordered w-full active:outline-0 outline-0"
-                                        type="text"
-                                        value={
-                                            overwriteProjectPath
-                                                ? overwriteBasePath
-                                                : derivedProjectPath
-                                        }
-                                        title={
-                                            overwriteProjectPath
-                                                ? overwriteDisplayPath
-                                                : derivedProjectPath
-                                        }
-                                        onChange={(e) =>
-                                            setOverwriteBasePath(e.target.value)
-                                        }
-                                        disabled={!overwriteProjectPath}
-                                    />
-                                    {overwriteProjectPath && (
-                                        <span
-                                            data-testid="overwriteProjectPathSuffix"
-                                            className="max-w-45 whitespace-nowrap text-base-content/50 select-none "
-                                        >
-                                            {overwritePathSuffixDisplay}
-                                        </span>
-                                    )}
-                                    {showUseDefaultPathAction && (
-                                        <button
-                                            type="button"
-                                            data-testid="btnUseDefaultProjectPath"
-                                            className="btn btn-ghost btn-xs h-6 min-h-6 px-2 text-xs"
-                                            onClick={() =>
-                                                setOverwriteBasePath(
-                                                    defaultOverwriteBasePath,
-                                                )
-                                            }
-                                        >
-                                            {t('project.useDefaultPath')}
-                                        </button>
-                                    )}
-                                    {overwriteProjectPath && (
-                                        <span
-                                            className="tooltip tooltip-top"
-                                            data-tip={t(
-                                                'project.selectFolderTooltip',
-                                            )}
-                                        >
-                                            <button
-                                                type="button"
-                                                data-testid="btnSelectProjectFolder"
-                                                className="flex items-center"
-                                                data-path-missing={
-                                                    overwriteBasePathMissing
-                                                }
-                                                disabled={!overwriteProjectPath}
-                                                onClick={
-                                                    handleSelectProjectFolder
-                                                }
-                                            >
-                                                {showFolderCreateIcon ? (
-                                                    <FolderPlus className="w-5 h-5 stroke-primary"></FolderPlus>
-                                                ) : (
-                                                    <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary"></Folder>
-                                                )}
-                                            </button>
-                                        </span>
-                                    )}
-                                </label>
-                                {overwriteProjectPath &&
-                                    isOverwritePathEmpty && (
-                                        <p
-                                            data-testid="msgOverwritePathRequired"
-                                            className="text-error text-xs"
-                                        >
-                                            {t('project.overwritePathRequired')}
-                                        </p>
-                                    )}
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <select
-                                    className="select select-bordered w-[300px]"
-                                    onChange={(e) =>
-                                        changeRelease(+e.target.value)
-                                    }
-                                >
-                                    {allReleases.map((release, i) => (
-                                        <option
-                                            disabled={
-                                                release.editor_path?.length ===
-                                                0
-                                            }
-                                            key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
-                                            value={i}
-                                        >
-                                            {release.editor_path?.length > 0
-                                                ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
-                                                : `${release.name ?? release.version} ${t('project.downloading')}`}
-                                        </option>
-                                    ))}
-                                </select>
-                                <label className="flex h-10 cursor-pointer gap-2 items-center w-[300px]">
-                                    <input
-                                        type="checkbox"
-                                        data-testid="checkboxOverwriteProjectPath"
-                                        className="checkbox"
-                                        checked={overwriteProjectPath}
-                                        onChange={(e) =>
-                                            setOverwriteProjectPath(
-                                                e.target.checked,
-                                            )
-                                        }
-                                    />
-                                    <span className="">
-                                        {t('project.overwritePath')}
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                    <CreateProjectProjectSection
+                        t={t}
+                        releases={allReleases}
+                        releaseIndex={releaseIndex}
+                        inputNameRef={inputNameRef}
+                        installedReleaseCount={installedReleases.length}
+                        derivedProjectPath={derivedProjectPath}
+                        overwriteProjectPath={overwriteProjectPath}
+                        overwriteBasePath={overwriteBasePath}
+                        overwriteDisplayPath={overwriteDisplayPath}
+                        overwritePathSuffixDisplay={overwritePathSuffixDisplay}
+                        showUseDefaultPathAction={showUseDefaultPathAction}
+                        showFolderCreateIcon={showFolderCreateIcon}
+                        overwriteBasePathMissing={overwriteBasePathMissing}
+                        isOverwritePathEmpty={isOverwritePathEmpty}
+                        onProjectNameChange={setProjectName}
+                        onReleaseChange={changeRelease}
+                        onOverwriteBasePathChange={setOverwriteBasePath}
+                        onUseDefaultPath={() =>
+                            setOverwriteBasePath(defaultOverwriteBasePath)
+                        }
+                        onSelectProjectFolder={() =>
+                            void handleSelectProjectFolder()
+                        }
+                        onOverwriteProjectPathChange={setOverwriteProjectPath}
+                    />
                     <div className="flex flex-row justify-between">
-                        <div className="flex flex-col flex-1 gap-2">
-                            <h2 className="text-md">{t('renderer.title')}</h2>
-                            {getRendererType(
-                                allReleases[releaseIndex]?.version_number || 0,
-                            )}
-                            <div className="text-sm">
-                                {renderer === 'FORWARD_PLUS' && (
-                                    <ul className="list-disc ml-10">
-                                        <li className="">
-                                            {t(
-                                                'renderer.forwardPlusFeatures.desktop',
-                                            )}
-                                        </li>
-                                        <li className="">
-                                            {t(
-                                                'renderer.forwardPlusFeatures.advanced3d',
-                                            )}
-                                        </li>
-                                        <li className="">
-                                            {t(
-                                                'renderer.forwardPlusFeatures.scalable',
-                                            )}
-                                        </li>
-                                        <li className="">
-                                            {t(
-                                                'renderer.forwardPlusFeatures.renderingDevice',
-                                            )}
-                                        </li>
-                                        <li className="">
-                                            {t(
-                                                'renderer.forwardPlusFeatures.slowerSimple',
-                                            )}
-                                        </li>
-                                    </ul>
-                                )}
-                                {renderer === 'MOBILE' && (
-                                    <ul className="list-disc ml-10">
-                                        <li>
-                                            {t(
-                                                'renderer.mobileFeatures.platforms',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.mobileFeatures.less3d',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.mobileFeatures.lessScalable',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.mobileFeatures.renderingDevice',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.mobileFeatures.fastSimple',
-                                            )}
-                                        </li>
-                                    </ul>
-                                )}
-                                {renderer === 'COMPATIBLE' && (
-                                    <ul className="list-disc ml-10">
-                                        <li>
-                                            {t(
-                                                'renderer.compatibleFeatures.platforms',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.compatibleFeatures.least3d',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.compatibleFeatures.lowEnd',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.compatibleFeatures.opengl',
-                                            )}
-                                        </li>
-                                        <li>
-                                            {t(
-                                                'renderer.compatibleFeatures.fastest',
-                                            )}
-                                        </li>
-                                    </ul>
-                                )}
-                                {/* {renderer === 'GLES3' &&
-                                    <ul className="list-disc ml-10">
-                                        <li>Higher visual quality</li>
-                                        <li>All features available</li>
-                                        <li>Incompatible with older hardware</li>
-                                        <li>Not recommended for web games</li>
-                                    </ul>
-                                }
-
-                                {renderer === 'GLES2' &&
-                                    <ul className="list-disc ml-10">
-                                        <li>Lower visual quality</li>
-                                        <li>Some features not available</li>
-                                        <li>Works on most hardware</li>
-                                        <li>Recommended for web games</li>
-                                    </ul>
-                                } */}
-                            </div>
-                        </div>
-
-                        <div className="flex-1">
-                            <div className="flex flex-col gap-2">
-                                <h2 className="text-md flex items-center gap-4">
-                                    {t('otherSettings.title')}{' '}
-                                    {loadingTools && (
-                                        <span className="loading loading-dots loading-xs"></span>
-                                    )}
-                                </h2>
-
-                                <div
-                                    className={clsx(
-                                        'flex flex-col gap-4 p-4 ',
-                                        { invisible: loadingTools },
-                                    )}
-                                >
-                                    <label className="flex cursor-pointer gap-2 items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            disabled={!hasTool('Git')}
-                                            checked={withGit}
-                                            onChange={(e) =>
-                                                setWithGit(e.target.checked)
-                                            }
-                                        />
-                                        <span className="">
-                                            {t('otherSettings.initGit')}
-                                        </span>
-                                    </label>
-                                    {!hasTool('Git') && (
-                                        <span className="text-sm text-warning">
-                                            {t('otherSettings.gitNotInstalled')}
-                                        </span>
-                                    )}
-
-                                    <div className="divider m-0"></div>
-                                    <label className="flex cursor-pointer gap-2 items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            disabled={!hasTool('VSCode')}
-                                            checked={withVSCode}
-                                            onChange={(e) =>
-                                                setWithVSCode(e.target.checked)
-                                            }
-                                        />
-                                        <span className="">
-                                            {t('otherSettings.setupVSCode')}
-                                        </span>
-                                    </label>
-                                    {!hasTool('VSCode') && (
-                                        <span>
-                                            {' '}
-                                            <button
-                                                type="button"
-                                                className="text-sm text-warning items-center flex flex-row gap-2"
-                                                onClick={showVSCodeHelp}
-                                            >
-                                                <CircleHelp className="stroke-warning" />
-                                                {t(
-                                                    'otherSettings.vscodeNotInstalled',
-                                                )}
-                                            </button>
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <CreateProjectRendererSection
+                            t={t}
+                            renderer={renderer}
+                            versionNumber={
+                                allReleases[releaseIndex]?.version_number || 0
+                            }
+                            onRendererChange={setRenderer}
+                        />
+                        <CreateProjectToolOptionsSection
+                            t={t}
+                            loadingTools={loadingTools}
+                            gitAvailable={gitAvailable}
+                            vsCodeAvailable={vsCodeAvailable}
+                            withGit={withGit}
+                            withVSCode={withVSCode}
+                            onWithGitChange={setWithGit}
+                            onWithVSCodeChange={setWithVSCode}
+                            onVSCodeHelp={showVSCodeHelp}
+                        />
                     </div>
-                    <div className="flex flex-row justify-between items-center gap-4">
-                        <p className="text-error overflow-auto max-h-20 max-w-[70%] flex-1">
-                            {error}
-                        </p>
-                        <div className="flex gap-4 items-center">
-                            <label className="flex items-center ">
-                                <input
-                                    type="checkbox"
-                                    className="checkbox checkbox-primary"
-                                    checked={editNow}
-                                    onChange={(e) =>
-                                        setEditNow(e.currentTarget.checked)
-                                    }
-                                />
-                                <span className="ml-2">
-                                    {t('buttons.editNow')}
-                                </span>
-                            </label>
-                            <button
-                                type="button"
-                                disabled={
-                                    creating ||
-                                    installedReleases.length < 1 ||
-                                    isOverwritePathEmpty
-                                }
-                                data-testid="btnCreateProject"
-                                onClick={() => onCreateProject()}
-                                className="btn btn-primary "
-                            >
-                                {t('buttons.create')}
-                            </button>
-                        </div>
-                    </div>
+                    <CreateProjectActions
+                        error={error}
+                        editNow={editNow}
+                        creating={creating}
+                        createDisabled={
+                            installedReleases.length < 1 || isOverwritePathEmpty
+                        }
+                        editNowLabel={t('buttons.editNow')}
+                        createLabel={t('buttons.create')}
+                        onEditNowChange={setEditNow}
+                        onCreateProject={() => void onCreateProject()}
+                    />
                 </div>
             </div>
         </div>

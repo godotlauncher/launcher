@@ -13,8 +13,10 @@
     },
     "project": {
         "openProjectFolder": "Iftaħ Folder tal-Proġett",
+        "launchEditor": "Editja f'Godot",
+        "projectSettings": "Settings tal-Proġett",
         "openEditorSettingsFolder": "Iftaħ Folder tas-Settings tal-Editur",
-        "openWindowed": "Iftaħ f'Window",
+        "openWindowed": "Uża window mode",
         "openWindowedTooltip": "Meta din l-għażla hija magħżula, Godot se jinħoloq f'window mode.",
         "exportEditorSettings": "Esporta Settings tal-Editur għal Fajl",
         "importEditorSettings": "Importa Settings tal-Editur minn Fajl",

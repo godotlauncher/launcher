@@ -15,6 +15,7 @@ export type ProjectDetails = {
     version_number: number;
     renderer: string;
     path: string;
+    icon_path?: string;
     editor_settings_path: string;
     editor_settings_file: string;
     last_opened: Date | null;
@@ -66,10 +67,26 @@ export type AddProjectToListResult = BackendResult & {
     projects?: ProjectDetails[];
     newProject?: ProjectDetails;
     editorResolution?: AddProjectEditorResolution;
+    recoveredVSCodeConfigFiles?: string[];
 };
 
 export type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
+};
+
+export type SetProjectVSCodeResult = ProjectDetails & {
+    recoveredVSCodeConfigFiles?: string[];
+};
+
+export type RenameProjectOptions = {
+    name: string;
+    renameGodotProject: boolean;
+};
+
+export type RenameProjectResult = BackendResult & {
+    project?: ProjectDetails;
+    projects?: ProjectDetails[];
+    errorField?: 'name' | 'godot';
 };
 
 export type RendererType = {

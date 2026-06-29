@@ -64,6 +64,13 @@ For bug fixes, if you're unsure about the best solution, discuss it first on [Di
 
 ## Pull Request Guidelines
 
+### Local Development and Dependencies
+
+- Use the npm version declared in `package.json` through the `packageManager` field.
+- Use `npm ci` for normal setup, branch switching, and CI-like installs.
+- Use `npm install` only when you intentionally add, remove, or update dependencies.
+- Do not commit `package-lock.json` changes caused only by platform-specific optional dependencies. If `package.json` did not change and the lockfile only changed after installing on Windows, macOS, or Linux, leave it out of the PR.
+
 ### Keep PRs Simple and Focused
 
 - Each PR should address **one issue or feature at a time** to make reviews easier.  

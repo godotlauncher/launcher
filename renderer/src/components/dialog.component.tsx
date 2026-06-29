@@ -21,9 +21,9 @@ export const Dialog: React.FC<DialogProps> = ({
                 aria-modal="true"
                 aria-label={title}
             >
-                <header className="flex items-start gap-3 px-5 py-4 border-b border-base-300 bg-base-200/60">
+                <header className="flex items-center gap-3 px-5 py-4 border-b border-base-300 bg-base-200/60">
                     {icon && (
-                        <div className="shrink-0 w-9 h-9 rounded-full bg-base-100 border border-base-300 flex items-center justify-center">
+                        <div className="w-6 h-6 flex items-center justify-center">
                             {icon}
                         </div>
                     )}
@@ -31,7 +31,7 @@ export const Dialog: React.FC<DialogProps> = ({
                         {title}
                     </h1>
                 </header>
-                <div className="px-5 py-4 overflow-auto text-sm leading-6 text-base-content/80">
+                <div className="px-5 py-4 overflow-auto leading-6 text-base-content/80">
                     {children}
                 </div>
                 {footer && (

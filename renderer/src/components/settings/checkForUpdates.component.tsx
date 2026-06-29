@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { LAUNCHER_DOWNLOAD_URL } from '../../constants';
 import { useApp } from '../../hooks/useApp';
 import { usePreferences } from '../../hooks/usePreferences';
 
@@ -41,6 +42,12 @@ export const CheckForUpdates: React.FC = () => {
     const handleUnskipVersion = async () => {
         await unskipAppUpdate();
         await loadPreferences();
+    };
+
+    const openManualUpdateUrl = async () => {
+        await window.electron.openExternal(
+            updateAvailable?.url ?? LAUNCHER_DOWNLOAD_URL,
+        );
     };
 
     return (
@@ -115,6 +122,16 @@ export const CheckForUpdates: React.FC = () => {
                                     )}
                                 </>
                             )}
+                            {updateAvailable?.type === 'manual' &&
+                                updateAvailable.version && (
+                                    <button
+                                        type="button"
+                                        onClick={handleSkipVersion}
+                                        className="btn btn-ghost"
+                                    >
+                                        {t('updates.skipVersion')}
+                                    </button>
+                                )}
                             {preferences?.skipped_app_update_version && (
                                 <button
                                     type="button"
@@ -166,6 +183,33 @@ export const CheckForUpdates: React.FC = () => {
                                             }}
                                         />
                                     )}
+                                </div>
+                            )}
+                        {updateAvailable &&
+                            updateAvailable?.type === 'manual' && (
+                                <div className="gap-2 p-4 m-2 text-sm text-info rounded-xl bg-base-200">
+                                    <Trans
+                                        ns="settings"
+                                        i18nKey={
+                                            updateAvailable.version
+                                                ? 'updates.manualWithVersion'
+                                                : 'updates.manualNoVersion'
+                                        }
+                                        values={{
+                                            version: updateAvailable.version,
+                                        }}
+                                        components={{
+                                            Button: (
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        openManualUpdateUrl
+                                                    }
+                                                    className="underline cursor-pointer hover:no-underline"
+                                                />
+                                            ),
+                                        }}
+                                    />
                                 </div>
                             )}
                     </div>

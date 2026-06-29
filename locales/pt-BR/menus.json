@@ -13,8 +13,10 @@
     },
     "project": {
         "openProjectFolder": "Abrir pasta do projeto",
+        "launchEditor": "Editar no Godot",
+        "projectSettings": "Configurações do projeto",
         "openEditorSettingsFolder": "Abrir pasta de configurações do editor",
-        "openWindowed": "Abrir em janela",
+        "openWindowed": "Usar modo janela",
         "openWindowedTooltip": "Quando esta opção está marcada, o Godot será iniciado no modo janela.",
         "exportEditorSettings": "Exportar configurações do editor para arquivo",
         "importEditorSettings": "Importar configurações do editor de arquivo",

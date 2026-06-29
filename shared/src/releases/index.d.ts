@@ -30,6 +30,29 @@ export type AssetSummary = {
 
 export type EditorChannel = 'official' | 'custom';
 export type EditorFlavor = 'gdscript' | 'dotnet' | (string & {});
+export type CustomEngineManifestPlatformName = 'windows' | 'linux' | 'macos';
+export type CustomEngineManifestArch = 'x64' | 'arm64' | 'universal';
+
+export type CustomEngineManifestPlatform = {
+    platform: CustomEngineManifestPlatformName;
+    arch: CustomEngineManifestArch;
+    paths: {
+        editor: string;
+        console?: string;
+    };
+};
+
+export type CustomEngineManifest = {
+    $schema?: string;
+    schema_version: 1;
+    version: string;
+    name: string;
+    base_version: string;
+    prerelease?: boolean;
+    flavor: EditorFlavor;
+    config_version: 5;
+    platforms: CustomEngineManifestPlatform[];
+};
 
 export type InstalledRelease = {
     version: string;
@@ -67,4 +90,8 @@ export type RegisterCustomEngineResult = BackendResult & {
     release?: InstalledRelease;
     releases?: InstalledRelease[];
     duplicate?: InstalledRelease;
+};
+
+export type CreateCustomEngineManifestResult = BackendResult & {
+    manifestPath?: string;
 };

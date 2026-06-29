@@ -4,30 +4,48 @@ on:
   workflow_dispatch:
     inputs:
       draft:
-        description: 'Create GitHub release as draft'
+        description: "Create GitHub release as draft"
         required: false
         default: true
         type: boolean
       prerelease:
-        description: 'Mark GitHub release as prerelease'
+        description: "Mark GitHub release as prerelease"
         required: false
         default: false
         type: boolean
+      signpath_signing_policy_slug:
+        description: "SignPath Windows signing policy slug"
+        required: true
+        default: "test-signing"
+        type: string
+      signpath_windows_artifact_configuration_slug:
+        description: "SignPath Windows artifact configuration slug"
+        required: true
+        default: "release-windows"
+        type: string
+      signpath_wait_timeout_seconds:
+        description: "Maximum seconds to wait for SignPath approval and signing"
+        required: true
+        default: "18000"
+        type: string
 
 jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
 
       - name: Install dependencies
         run: npm ci
@@ -50,14 +68,14 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Get version
         id: get_version
@@ -81,14 +99,17 @@ jobs:
       VERSION: ${{ needs.tag-release.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
 
       - name: Install dependencies
         run: npm ci
@@ -97,7 +118,12 @@ jobs:
         id: release_notes
         shell: bash
         run: |
-          NOTES=$(npm run --silent changelog -- --stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          if [[ "${VERSION}" == *-* ]]; then
+            CHANGELOG_ARGS=(--stdout --latest-version "${VERSION}" --starting-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          else
+            CHANGELOG_ARGS=(--stdout --starting-version "${VERSION}" --ending-version "${VERSION}" --hide-credit --template ./auto-changelog-release.hbs)
+          fi
+          NOTES=$(npm run --silent changelog -- "${CHANGELOG_ARGS[@]}")
           {
             echo "notes<<EOF"
             echo "${NOTES}"
@@ -115,8 +141,291 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  sign-windows:
+    needs:
+      - tag-release
+      - create-release
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+      VERSION: ${{ needs.tag-release.outputs.version }}
+    steps:
+      - name: Validate SignPath configuration
+        shell: pwsh
+        run: |
+          $missing = @()
+
+          foreach ($name in @(
+              'SIGNPATH_API_TOKEN',
+              'SIGNPATH_ORGANIZATION_ID',
+              'SIGNPATH_PROJECT_SLUG'
+          )) {
+              if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+                  $missing += $name
+              }
+          }
+
+          if ($missing.Count -gt 0) {
+              throw "Missing GitHub secret/variable(s): $($missing -join ', ')"
+          }
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve Windows updater metadata filename
+        id: windows_update_metadata
+        shell: pwsh
+        run: |
+          $file = if ($env:VERSION -like '*-alpha*') {
+              'alpha.yml'
+          } elseif ($env:VERSION -like '*-beta*') {
+              'beta.yml'
+          } elseif ($env:VERSION -like '*-rc*') {
+              'rc.yml'
+          } else {
+              'latest.yml'
+          }
+
+          "file=$file" >> $env:GITHUB_OUTPUT
+          Write-Host "Windows updater metadata: dist/$file"
+
+      - name: Build unsigned Windows artifacts
+        run: npm run dist:win -- --publish never
+
+      - name: Upload unsigned Windows dist artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-windows-unsigned-${{ env.VERSION }}
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-win*
+            dist/${{ steps.windows_update_metadata.outputs.file }}
+          if-no-files-found: error
+
+      - name: Prepare Windows SignPath input
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path signpath-unsigned-windows | Out-Null
+          $installers = Get-ChildItem -Path dist -Filter "Godot_Launcher-$env:VERSION-win*.exe" -File
+
+          if ($installers.Count -lt 1 -or $installers.Count -gt 3) {
+              throw "Expected 1 to 3 Windows installers for version $env:VERSION, found $($installers.Count)."
+          }
+
+          foreach ($installer in $installers) {
+              Copy-Item -LiteralPath $installer.FullName -Destination (Join-Path signpath-unsigned-windows $installer.Name)
+              Write-Host "Prepared unsigned Windows artifact file: $($installer.Name)"
+          }
+
+      - name: Upload Windows SignPath input
+        id: upload_unsigned_windows
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-unsigned-windows-${{ env.VERSION }}
+          path: signpath-unsigned-windows/*.exe
+          if-no-files-found: error
+
+      - name: Submit Windows SignPath signing request
+        id: submit_signpath_windows
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signpath_signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.signpath_windows_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_windows.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: ${{ inputs.signpath_wait_timeout_seconds }}
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-windows
+
+      - name: Show Windows SignPath request
+        shell: pwsh
+        run: |
+          Write-Host "SignPath request: ${{ steps.submit_signpath_windows.outputs.signing-request-web-url }}"
+
+      - name: Replace unsigned Windows artifacts with signed artifacts
+        shell: pwsh
+        run: |
+          $signedInstallers = Get-ChildItem -Path signpath-signed-windows -Filter "Godot_Launcher-$env:VERSION-win*.exe" -Recurse -File
+
+          if ($signedInstallers.Count -lt 1 -or $signedInstallers.Count -gt 3) {
+              throw "Expected 1 to 3 signed Windows installers for version $env:VERSION, found $($signedInstallers.Count)."
+          }
+
+          foreach ($installer in $signedInstallers) {
+              $target = Join-Path 'dist' $installer.Name
+              Copy-Item -LiteralPath $installer.FullName -Destination $target -Force
+
+              $signature = Get-AuthenticodeSignature -FilePath $target
+              Write-Host "Signed artifact: $($installer.Name)"
+              Write-Host "  Signature status: $($signature.Status)"
+              Write-Host "  Signer subject: $($signature.SignerCertificate.Subject)"
+              Write-Host "  Signer thumbprint: $($signature.SignerCertificate.Thumbprint)"
+          }
+
+      - name: Regenerate Windows updater metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f dist/*.blockmap
+
+          node <<'NODE'
+          const fs = require('fs/promises');
+          const path = require('path');
+          const crypto = require('crypto');
+          const yaml = require('js-yaml');
+          const { createReadStream } = require('fs');
+          const { executeAppBuilderAsJson } = require('app-builder-lib/out/util/appBuilder');
+
+          function hashFile(file) {
+            return new Promise((resolve, reject) => {
+              const hash = crypto.createHash('sha512');
+              createReadStream(file)
+                .on('data', chunk => hash.update(chunk))
+                .on('error', reject)
+                .on('end', () => resolve(hash.digest('base64')));
+            });
+          }
+
+          function order(name) {
+            if (name.includes('_x64.')) return 0;
+            if (name.endsWith('-win.exe')) return 1;
+            if (name.includes('_arm64.')) return 2;
+            return 3;
+          }
+
+          function channelFor(version) {
+            if (version.includes('beta')) return 'beta';
+            if (version.includes('alpha')) return 'alpha';
+            if (version.includes('rc')) return 'rc';
+            return 'latest';
+          }
+
+          function updateInfoFileName(version) {
+            const channel = channelFor(version);
+            return channel === 'latest' ? 'latest.yml' : `${channel}.yml`;
+          }
+
+          async function readYaml(file) {
+            try {
+              return yaml.load(await fs.readFile(file, 'utf8')) || {};
+            } catch (error) {
+              if (error.code === 'ENOENT') return {};
+              throw error;
+            }
+          }
+
+          function fileKey(file) {
+            return file.url || file.path;
+          }
+
+          function orderFromExisting(existing, artifacts) {
+            const knownOrder = new Map((existing.files || []).map((file, index) => [fileKey(file), index]));
+            return artifacts.sort((a, b) => {
+              const aOrder = knownOrder.has(a) ? knownOrder.get(a) : Number.MAX_SAFE_INTEGER;
+              const bOrder = knownOrder.has(b) ? knownOrder.get(b) : Number.MAX_SAFE_INTEGER;
+              return aOrder - bOrder || order(a) - order(b) || a.localeCompare(b);
+            });
+          }
+
+          function metadataForPath(files, requestedPath) {
+            return files.find(file => file.url === requestedPath || file.path === requestedPath) || files[0];
+          }
+
+          async function main() {
+            const version = process.env.VERSION;
+            const distDir = path.resolve('dist');
+            const updateFilePath = path.join(distDir, updateInfoFileName(version));
+            const existing = await readYaml(updateFilePath);
+            const existingFiles = new Map((existing.files || []).map(file => [fileKey(file), file]));
+            const artifacts = (await fs.readdir(distDir))
+              .filter(name => name.startsWith(`Godot_Launcher-${version}-win`) && name.endsWith('.exe'));
+
+            if (artifacts.length === 0) {
+              throw new Error(`No signed Windows installers found for ${version}`);
+            }
+
+            const files = [];
+            for (const name of orderFromExisting(existing, artifacts)) {
+              const artifactPath = path.join(distDir, name);
+              const blockMapPath = `${artifactPath}.blockmap`;
+              await executeAppBuilderAsJson(['blockmap', '--input', artifactPath, '--output', blockMapPath]);
+
+              const [artifactStat, sha512] = await Promise.all([
+                fs.stat(artifactPath),
+                hashFile(artifactPath),
+              ]);
+
+              files.push({
+                ...(existingFiles.get(name) || {}),
+                url: name,
+                sha512,
+                size: artifactStat.size,
+              });
+            }
+
+            const topLevelFile = metadataForPath(files, existing.path);
+            await fs.writeFile(updateFilePath, yaml.dump({
+              ...existing,
+              version,
+              files,
+              path: topLevelFile.url,
+              sha512: topLevelFile.sha512,
+              releaseDate: new Date().toISOString(),
+            }, { lineWidth: -1 }), 'utf8');
+          }
+
+          main().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload signed Windows release assets
+        shell: bash
+        env:
+          WINDOWS_UPDATE_METADATA: ${{ steps.windows_update_metadata.outputs.file }}
+        run: |
+          set -euo pipefail
+          gh release upload "v${VERSION}" dist/Godot_Launcher-"${VERSION}"-win* "dist/${WINDOWS_UPDATE_METADATA}" --clobber
+
+      - name: Upload signed Windows workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist-windows-signed-${{ env.VERSION }}
+          path: |
+            dist/Godot_Launcher-${{ env.VERSION }}-win*
+            dist/${{ steps.windows_update_metadata.outputs.file }}
+          if-no-files-found: error
+
   build-and-publish:
-    needs: create-release
+    needs:
+      - create-release
+      - sign-windows
     permissions:
       contents: write
     strategy:
@@ -124,11 +433,9 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            distCommand: npm run dist:mac -- --publish onTag
+            distCommand: npm run dist:mac -- --publish onTagOrDraft
           - os: ubuntu-latest
-            distCommand: npm run dist:linux -- --publish onTag
-          - os: windows-latest
-            distCommand: npm run dist:win -- --publish onTag
+            distCommand: npm run dist:linux -- --publish onTagOrDraft
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -137,18 +444,9 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       CSC_LINK: ${{ secrets.CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-      WIN_SIGN_PUBLISHER_NAME: ${{ vars.WIN_SIGN_PUBLISHER_NAME }}
-      WIN_SIGN_ENDPOINT: ${{ vars.WIN_SIGN_ENDPOINT }}
-      WIN_SIGN_CERTIFICATE_PROFILE_NAME: ${{ vars.WIN_SIGN_CERTIFICATE_PROFILE_NAME }}
-      WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME: ${{ vars.WIN_SIGN_CODE_SIGNING_ACCOUNT_NAME }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_TIMESTAMP_URL: ${{ vars.AZURE_TIMESTAMP_URL }}
-      AZURE_TIMESTAMP_DIGEST: ${{ vars.AZURE_TIMESTAMP_DIGEST }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -156,10 +454,13 @@ jobs:
         run: git fetch --tags --force
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
+
+      - name: Sync npm version
+        run: npm install --global npm@11.16.0
 
       - name: Install dependencies
         run: npm ci
@@ -174,6 +475,7 @@ jobs:
     needs:
       - tag-release
       - create-release
+      - sign-windows
       - build-and-publish
     if: ${{ success() && inputs.draft == false }}
     runs-on: ubuntu-latest
@@ -192,6 +494,7 @@ jobs:
     needs:
       - tag-release
       - create-release
+      - sign-windows
       - build-and-publish
     if: ${{ failure() && needs.tag-release.result == 'success' }}
     runs-on: ubuntu-latest
@@ -202,7 +505,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -215,7 +518,7 @@ jobs:
           git push origin :refs/tags/$TAG || true
 
           if command -v gh >/dev/null 2>&1; then
-            release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/$TAG" --jq '.id' 2>/dev/null || true)
+            release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate --jq ".[] | select(.tag_name == \"$TAG\") | .id" 2>/dev/null | head -n 1 || true)
             if [ -n "$release_id" ]; then
               echo "Deleting GitHub release $TAG (id: $release_id)"
               gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/$release_id" || true

@@ -37,9 +37,9 @@
     "message": "Nie można przeanalizować preferencji użytkownika. Zostają użyte domyślne preferencje."
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "Usuń niestandardowy edytor",
+    "title": "Usuń niestandardowy edytor",
+    "message": "Usunąć niestandardowy edytor „{{name}}” z launchera?",
+    "detail": "Spowoduje to wyrejestrowanie niestandardowego edytora. Pliki edytora na urządzeniu nie zostaną usunięte."
   }
 }

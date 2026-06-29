@@ -2,16 +2,19 @@ import {
     createContext,
     type FC,
     type PropsWithChildren,
+    useCallback,
     useContext,
-    useState,
+    useMemo,
 } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { appViewRoutes, getViewFromPathname, type View } from '../routes';
 
-export type View = 'projects' | 'installs' | 'settings' | 'help';
+export type { View };
 
 type AppNavigationContext = {
     currentView: View;
     setCurrentView: (view: View) => void;
-    openExternalLink: (url: string) => void;
+    openExternalLink: (url: string) => Promise<void>;
 };
 
 const appNavigationContext = createContext<AppNavigationContext>(
@@ -33,11 +36,24 @@ type AppNavigationProviderProps = PropsWithChildren;
 export const AppNavigationProvider: FC<AppNavigationProviderProps> = ({
     children,
 }) => {
-    const [currentView, setCurrentView] = useState<View>('projects');
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    const openExternalLink = async (url: string) => {
+    const currentView = useMemo(
+        () => getViewFromPathname(location.pathname),
+        [location.pathname],
+    );
+
+    const setCurrentView = useCallback(
+        (view: View) => {
+            navigate(appViewRoutes[view]);
+        },
+        [navigate],
+    );
+
+    const openExternalLink = useCallback(async (url: string) => {
         await window.electron.openExternal(url);
-    };
+    }, []);
 
     return (
         <appNavigationContext.Provider

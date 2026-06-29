@@ -13,8 +13,10 @@
     },
     "project": {
         "openProjectFolder": "プロジェクトフォルダを開く",
+        "launchEditor": "Godotで編集",
+        "projectSettings": "プロジェクト設定",
         "openEditorSettingsFolder": "エディタ設定フォルダを開く",
-        "openWindowed": "ウィンドウモードで開く",
+        "openWindowed": "ウィンドウモードを使用",
         "openWindowedTooltip": "このオプションをオンにすると、Godotがウィンドウモードで起動します。",
         "exportEditorSettings": "エディタ設定をファイルにエクスポート",
         "importEditorSettings": "ファイルからエディタ設定をインポート",

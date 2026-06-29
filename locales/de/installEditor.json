@@ -19,17 +19,22 @@
     "noPlatformAsset": "Kein Asset für Plattform gefunden",
     "invalidEditorVersion": "Ungültige Editor-Version",
     "unsupportedPlatform": "Nicht unterstützte Plattform",
-    "unsupportedFileExtension": "Nicht unterstützte Dateierweiterung"
+    "unsupportedFileExtension": "Nicht unterstützte Dateierweiterung",
+    "downloadInterrupted": "Download unterbrochen. Der Godot-Downloadserver ist möglicherweise ausgelastet oder die Verbindung wurde geschlossen. Bitte versuchen Sie es in einigen Minuten erneut.",
+    "downloadFailed": "Download fehlgeschlagen: {{error}}",
+    "downloadFailedUnknown": "Download fehlgeschlagen. Bitte versuchen Sie es in einigen Minuten erneut.",
+    "downloadHttpError": "Asset konnte nicht heruntergeladen werden: {{status}}",
+    "downloadEmptyResponse": "Download fehlgeschlagen: leere Antwort vom Server"
   },
   "messages": {
     "installError": "Beim Installieren des Releases ist ein Fehler aufgetreten",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "Beim Neuinstallieren der Version ist ein Fehler aufgetreten."
   },
   "table": {
     "headers": {
       "version": "Version",
       "released": "Veröffentlicht",
-      "download": "Download",
+      "download": "Herunterladen",
       "installed": "Installiert"
     },
     "gdscript": "(GDScript)",
@@ -40,10 +45,10 @@
       "installed": "Installiert - {{version}}",
       "installedGDScript": "Installiert - {{version}} (GDScript)",
       "installedDotNet": "Installiert - {{version}} .NET",
-      "downloadGDScript": "Download {{version}} (GDScript)",
-      "downloadDotNet": "Download {{version}} .NET",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "downloadGDScript": "{{version}} herunterladen (GDScript)",
+      "downloadDotNet": "{{version}} .NET herunterladen",
+      "reinstallGDScript": "{{version}} neu installieren (GDScript)",
+      "reinstallDotNet": "{{version}} .NET neu installieren"
     },
     "status": {
       "unavailable": "Nicht verfügbar"

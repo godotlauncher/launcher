@@ -1,15 +1,22 @@
+import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { setInterval } from 'node:timers';
+import { promisify } from 'node:util';
 import type { AppUpdateMessage, CheckForUpdatesOptions } from '@shared';
 import { app, type BrowserWindow, type WebContents } from 'electron';
 import logger from 'electron-log';
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import semver from 'semver';
+import { findExecutable } from './utils/platform.utils.js';
 import { ipcWebContentsSend } from './utils.js';
 
 let interval: NodeJS.Timeout;
 
 let webContents: WebContents;
 const { autoUpdater } = electronUpdater;
+const execFileAsync = promisify(execFile);
+const RPM_OSTREE_STATUS_TIMEOUT_MS = 3000;
+const LAUNCHER_DOWNLOAD_URL = 'https://godotlauncher.org/download/';
 
 type PrereleaseChannel = 'alpha' | 'beta' | 'rc';
 type AutoUpdateCheckOptions = CheckForUpdatesOptions & {
@@ -65,6 +72,31 @@ function isNewerVersion(
     }
 
     return semver.gt(normalizedCandidateVersion, normalizedCurrentVersion);
+}
+
+export async function isRpmOstreeSystem(): Promise<boolean> {
+    if (process.platform !== 'linux') {
+        return false;
+    }
+
+    if (existsSync('/run/ostree-booted')) {
+        return true;
+    }
+
+    const rpmOstreePath = await findExecutable('rpm-ostree');
+    if (!rpmOstreePath) {
+        return false;
+    }
+
+    try {
+        await execFileAsync(rpmOstreePath, ['status', '--json'], {
+            timeout: RPM_OSTREE_STATUS_TIMEOUT_MS,
+            windowsHide: true,
+        });
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 function applyBetaChannelSettings(enabled: boolean) {
@@ -194,14 +226,23 @@ export async function checkForUpdates(
         );
     }
 
+    const requiresManualUpdate =
+        hasNewVersion && !isSkippedVersion && (await isRpmOstreeSystem());
     const payload: AppUpdateMessage = {
         available: hasNewVersion && !isSkippedVersion,
         downloaded: false,
-        type: hasNewVersion && !isSkippedVersion ? 'available' : 'none',
+        type: requiresManualUpdate
+            ? 'manual'
+            : hasNewVersion && !isSkippedVersion
+              ? 'available'
+              : 'none',
         version: newVersion,
+        url: requiresManualUpdate ? LAUNCHER_DOWNLOAD_URL : undefined,
         message:
             hasNewVersion && !isSkippedVersion
-                ? `New version available: ${newVersion}`
+                ? requiresManualUpdate
+                    ? `Version ${newVersion} is available. Automatic installation is not supported on this rpm-ostree system.`
+                    : `New version available: ${newVersion}`
                 : 'No updates available',
     };
     ipcWebContentsSend('app-updates', webContents, payload);
@@ -231,6 +272,16 @@ export async function setupAutoUpdate(
 
     autoUpdater.on('update-available', (info) => {
         logger.info(`Update available: ${info.version}`);
+    });
+
+    autoUpdater.on('error', (error: Error) => {
+        logger.error('Error updating app', error);
+        ipcWebContentsSend('app-updates', webContents, {
+            available: true,
+            downloaded: false,
+            type: 'error',
+            message: 'Failed to install update',
+        });
     });
 
     autoUpdater.on('download-progress', (progress) => {

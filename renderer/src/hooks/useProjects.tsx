@@ -5,7 +5,10 @@ import type {
     CreateProjectResult,
     InstalledRelease,
     ProjectDetails,
+    RenameProjectOptions,
+    RenameProjectResult,
     RendererType,
+    SetProjectVSCodeResult,
 } from '@shared';
 import {
     createContext,
@@ -27,9 +30,24 @@ interface ProjectsContext {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
+    setProjectWindowed: (
+        project: ProjectDetails,
+        openWindowed: boolean,
+    ) => Promise<ProjectDetails>;
+    setProjectVSCode: (
+        project: ProjectDetails,
+        enable: boolean,
+    ) => Promise<SetProjectVSCodeResult>;
+    initializeProjectGit: (project: ProjectDetails) => Promise<ProjectDetails>;
+    exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
+    importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     openProjectFolder: (project: ProjectDetails) => Promise<void>;
-    showProjectMenu: (project: ProjectDetails) => Promise<void>;
     openProjectEditorFolder: (project: ProjectDetails) => Promise<void>;
+    renameProject: (
+        project: ProjectDetails,
+        options: RenameProjectOptions,
+    ) => Promise<RenameProjectResult>;
+    getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
     removeProject: (project: ProjectDetails) => Promise<void>;
     launchProject: (
         project: ProjectDetails,
@@ -121,12 +139,74 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return result;
     };
 
+    const updateProjectState = (updatedProject: ProjectDetails) => {
+        setProjects((currentProjects) =>
+            currentProjects.map((project) =>
+                project.path === updatedProject.path ? updatedProject : project,
+            ),
+        );
+    };
+
+    const setProjectWindowed = async (
+        project: ProjectDetails,
+        openWindowed: boolean,
+    ) => {
+        const updatedProject = await window.electron.setProjectWindowed(
+            project,
+            openWindowed,
+        );
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
+    const setProjectVSCode = async (
+        project: ProjectDetails,
+        enable: boolean,
+    ) => {
+        const updatedProject = await window.electron.setProjectVSCode(
+            project,
+            enable,
+        );
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
+    const initializeProjectGit = async (project: ProjectDetails) => {
+        const updatedProject =
+            await window.electron.initializeProjectGit(project);
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
+    const exportProjectEditorSettings = async (project: ProjectDetails) => {
+        await window.electron.exportProjectEditorSettings(project);
+    };
+
+    const importProjectEditorSettings = async (project: ProjectDetails) => {
+        await window.electron.importProjectEditorSettings(project);
+    };
+
     const openProjectFolder = async (project: ProjectDetails) => {
         await window.electron.openShellFolder(project.path);
     };
 
     const openProjectEditorFolder = async (project: ProjectDetails) => {
         await window.electron.openShellFolder(project.editor_settings_path);
+    };
+
+    const renameProject = async (
+        project: ProjectDetails,
+        options: RenameProjectOptions,
+    ) => {
+        const result = await window.electron.renameProject(project, options);
+        if (result.success && result.projects) {
+            setProjects(result.projects);
+        }
+        return result;
+    };
+
+    const getProjectGodotName = async (project: ProjectDetails) => {
+        return await window.electron.getProjectGodotName(project);
     };
 
     const removeProject = async (project: ProjectDetails) => {
@@ -156,10 +236,6 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return result;
     };
 
-    const showProjectMenu = async (project: ProjectDetails) => {
-        await window.electron.showProjectMenu(project);
-    };
-
     // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
         const off = window.electron.subscribeProjects(setProjects);
@@ -178,14 +254,20 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 loading,
                 addProject,
                 setProjectEditor,
+                setProjectWindowed,
+                setProjectVSCode,
+                initializeProjectGit,
+                exportProjectEditorSettings,
+                importProjectEditorSettings,
                 openProjectFolder,
                 openProjectEditorFolder,
+                renameProject,
+                getProjectGodotName,
                 removeProject,
                 launchProject,
                 refreshProjects,
                 checkProjectValid,
                 createProject,
-                showProjectMenu,
             }}
         >
             {children}

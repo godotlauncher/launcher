@@ -3,7 +3,9 @@
   "tabs": {},
   "buttons": {
     "install": "Instalar editor",
-    "addCustomEditor": "Add Custom Editor"
+    "addCustomEditor": "Editor personalizado",
+    "selectCustomEditorManifest": "Seleccionar archivo de manifiesto",
+    "createCustomEditorManifest": "Crear manifiesto de editor personalizado"
   },
   "search": {
     "placeholder": "Buscar"
@@ -14,7 +16,7 @@
   "badges": {
     "dotNet": ".NET",
     "prerelease": "prelanzamiento",
-    "custom": "Custom"
+    "custom": "Personalizado"
   },
   "status": {
     "installing": "Instalando..."
@@ -26,27 +28,125 @@
     "revalidationFailed": "La validación falló. Revisa el dispositivo de almacenamiento y vuelve a intentarlo.",
     "revalidationStillMissing": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que {{path}} sea accesible antes de volver a intentarlo.",
     "revalidationStillMissingNoPath": "La validación finalizó, pero {{version}} sigue sin estar disponible. Asegúrate de que el dispositivo de almacenamiento esté montado antes de volver a intentarlo.",
-    "unavailableHintWithReinstall": "The editor path is not accessible. Mount the storage device and retry, reinstall the editor, or remove this entry.",
-    "reinstallFailed": "Reinstall failed. Check your connection and try again.",
-    "registeredCustomEditor": "Registered custom editor {{name}}.",
-    "registerCustomEditorFailed": "Failed to register custom editor.",
-    "unavailableCustomEditorHint": "The custom editor path is not accessible. Mount the storage device and retry, or remove this entry."
+    "unavailableHintWithReinstall": "No se puede acceder a la ruta del editor. Monta el dispositivo de almacenamiento y vuelve a intentarlo, reinstala el editor o elimina esta entrada.",
+    "reinstallFailed": "La reinstalación falló. Comprueba tu conexión e inténtalo de nuevo.",
+    "registeredCustomEditor": "Editor personalizado {{name}} registrado.",
+    "registerCustomEditorFailed": "No se pudo registrar el editor personalizado.",
+    "unavailableCustomEditorHint": "La ruta del editor personalizado no está accesible. Monta el dispositivo de almacenamiento e inténtalo de nuevo, o elimina esta entrada."
   },
   "customEditor": {
-    "selectManifestTitle": "Add Custom Editor Manifest",
-    "manifestFilterName": "Godot Launcher Editor Manifest",
-    "waitingForDialog": "Waiting for dialog...",
+    "selectManifestTitle": "Añadir manifiesto de editor personalizado",
+    "manifestFilterName": "Manifiesto de editor de Godot Launcher",
+    "waitingForDialog": "Esperando al diálogo...",
     "replace": {
-      "title": "Replace custom editor?",
-      "message": "A custom editor with this version is already registered.",
-      "versionLabel": "Version",
-      "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+      "title": "¿Reemplazar editor personalizado?",
+      "message": "Ya hay un editor personalizado con esta versión registrado.",
+      "versionLabel": "Versión",
+      "detail": "Al reemplazarlo, se actualizará el registro del launcher para usar el manifiesto seleccionado. No se eliminarán los archivos del editor."
     },
     "drop": {
-      "title": "Drop manifest to add custom editor",
-      "unsupportedTitle": "Unsupported manifest file",
-      "helperPrefix": "Drop a",
-      "helperSuffix": "file."
+      "title": "Suelta el manifiesto para añadir el editor personalizado",
+      "unsupportedTitle": "Archivo de manifiesto no compatible",
+      "helperPrefix": "Suelta",
+      "helperSuffix": "aquí."
+    },
+    "creator": {
+      "title": "Crear manifiesto de editor personalizado",
+      "description": "Crea un archivo de manifiesto para un editor de Godot personalizado y regístralo de inmediato.",
+      "fields": {
+        "outputDirectory": {
+          "label": "Carpeta de salida",
+          "help": "Carpeta donde se escribirá godotlauncher-editor-manifest.json."
+        },
+        "name": {
+          "label": "Nombre visible",
+          "help": "Nombre que se muestra en Godot Launcher para este editor personalizado.",
+          "placeholder": "Editor personalizado Acme Godot 4.4"
+        },
+        "version": {
+          "label": "Versión del manifiesto",
+          "help": "Identificador de versión único para este editor personalizado.",
+          "placeholder": "4.4-custom.1"
+        },
+        "baseVersion": {
+          "label": "Versión base",
+          "help": "Versión de compatibilidad de Godot en formato major.minor.",
+          "placeholder": "4.4"
+        },
+        "flavor": {
+          "label": "Tipo",
+          "help": "Usa gdscript para compilaciones estándar o dotnet para compilaciones .NET. Se permiten valores personalizados."
+        },
+        "prerelease": {
+          "label": "Prelanzamiento",
+          "help": "Marcar este editor como una versión preliminar."
+        },
+        "platform": {
+          "label": "Plataforma",
+          "help": "Sistema operativo compatible con esta entrada del manifiesto."
+        },
+        "arch": {
+          "label": "Arquitectura",
+          "help": "Arquitectura de CPU compatible con este editor. Universal funciona en cualquier arquitectura para la plataforma seleccionada."
+        },
+        "editorPath": {
+          "label": "Ruta del editor",
+          "help": "Ruta al ejecutable o paquete de app del editor de Godot personalizado."
+        },
+        "consolePath": {
+          "label": "Ruta de consola",
+          "help": "Ruta opcional a un ejecutable de consola para este editor."
+        }
+      },
+      "platforms": {
+        "windows": "Windows",
+        "linux": "Linux",
+        "macos": "macOS"
+      },
+      "architectures": {
+        "universal": "Universal",
+        "x64": "x64",
+        "arm64": "ARM64"
+      },
+      "constants": {
+        "title": "Valores generados:",
+        "description": "schema_version es 1 y config_version es 5."
+      },
+      "actions": {
+        "selectOutputDirectory": "Seleccionar carpeta de salida",
+        "selectEditorPath": "Seleccionar ruta del editor",
+        "selectConsolePath": "Seleccionar ruta de consola",
+        "createAndRegister": "Crear y registrar",
+        "creating": "Creando...",
+        "clearPlatform": "Borrar plataforma"
+      },
+      "validation": {
+        "outputDirectory": {
+          "required": "Se requiere la carpeta de salida.",
+          "pathMissing": "La carpeta de salida no existe."
+        },
+        "name": {
+          "required": "Se requiere el nombre visible."
+        },
+        "version": {
+          "required": "Se requiere la versión del manifiesto."
+        },
+        "baseVersion": {
+          "required": "Se requiere la versión base.",
+          "baseVersion": "La versión base debe usar el formato major.minor, por ejemplo 4.4."
+        },
+        "flavor": {
+          "required": "Se requiere el tipo."
+        },
+        "editorPath": {
+          "required": "Se requiere la ruta del editor.",
+          "pathMissing": "La ruta del editor no existe."
+        },
+        "consolePath": {
+          "pathMissing": "La ruta de consola no existe."
+        },
+        "createFailed": "No se pudo crear el manifiesto del editor personalizado."
+      }
     }
   }
 }

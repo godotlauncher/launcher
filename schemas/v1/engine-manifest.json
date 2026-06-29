@@ -30,7 +30,7 @@
     },
     "base_version": {
       "type": "string",
-      "pattern": "^\\d+\\.\\d+(?:\\.\\d+)?$"
+      "pattern": "^\\d+\\.\\d+$"
     },
     "prerelease": {
       "type": "boolean",
@@ -47,7 +47,7 @@
       "description": "Deprecated compatibility field. The launcher derives mono/.NET behavior from flavor === \"dotnet\"."
     },
     "config_version": {
-      "enum": [4, 5]
+      "const": 5
     },
     "platforms": {
       "type": "array",
@@ -61,7 +61,7 @@
             "enum": ["windows", "linux", "macos"]
           },
           "arch": {
-            "enum": ["x64", "arm64", "ia32", "arm", "universal"]
+            "enum": ["x64", "arm64", "universal"]
           },
           "paths": {
             "type": "object",

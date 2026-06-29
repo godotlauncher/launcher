@@ -37,9 +37,9 @@
     "message": "Impossibile analizzare le preferenze utente. Utilizzo delle preferenze predefinite."
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "Rimuovi editor personalizzato",
+    "title": "Rimuovi editor personalizzato",
+    "message": "Rimuovere l’editor personalizzato \"{{name}}\" dal launcher?",
+    "detail": "Questo annullerà la registrazione dell’editor personalizzato. Non eliminerà i file dell’editor dal dispositivo."
   }
 }

@@ -6,7 +6,10 @@ import logger from 'electron-log';
 import { getCurrentAppConfig } from './config/index.js';
 import { PROJECTS_FILENAME } from './constants.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
-import { parseGodotProjectFile } from './utils/godotProject.utils.js';
+import {
+    getProjectIconUrlFromParsed,
+    parseGodotProjectFile,
+} from './utils/godotProject.utils.js';
 import { JsonStoreConflictError } from './utils/jsonStore.js';
 import { getDefaultDirs } from './utils/platform.utils.js';
 import {
@@ -137,15 +140,33 @@ export async function checkProjectValid(
     logger.info(`Checking project '${project.name}'`);
 
     // check project path
-    const projectFileExists = await pathExistsForValidation(
-        path.resolve(project.path, 'project.godot'),
-    );
+    const projectFilePath = path.resolve(project.path, 'project.godot');
+    const projectFileExists = await pathExistsForValidation(projectFilePath);
     project.valid = projectFileExists;
+    project.icon_path = undefined;
     delete project.invalid_reason;
 
     if (!projectFileExists) {
         logger.warn(`Project '${project.name}' has an invalid path`);
         project.invalid_reason = 'missing_project_file';
+    } else {
+        try {
+            const projectFileContent = await fs.promises.readFile(
+                projectFilePath,
+                'utf-8',
+            );
+            const parsedProject = parseGodotProjectFile(projectFileContent);
+            project.icon_path = getProjectIconUrlFromParsed(
+                project.path,
+                parsedProject,
+            );
+        } catch (error) {
+            logger.warn(
+                `Failed to read project icon for '${project.name}': ${String(
+                    error,
+                )}`,
+            );
+        }
     }
 
     // check release

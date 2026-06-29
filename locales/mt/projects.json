@@ -18,8 +18,8 @@
     "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
     "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
+      "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
     }
   },
   "addProject": {
@@ -61,14 +61,15 @@
     "dropGodotFileOnly": "Jekk jogħġbok waqqa' fajl project.godot biex iżżid proġett",
     "dropProjectHere": "Waqqa' l-fajl project.godot hawn biex iżżid proġett",
     "addingProjects": "Qed iżżid proġetti: {{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "Ma setax jiżdied il-proġett: {{error}}",
+    "dropProjectFilesHere": "Waqqa’ l-fajls tal-proġett Godot hawn",
+    "dropProjectFilesHelpPrefix": "Waqqa’ wieħed jew aktar",
+    "dropProjectFilesHelpSuffix": "fajls biex iżżidhom mal-launcher.",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+      "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
+      "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
+    },
+    "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
   },
   "changeEditor": {
     "errors": {
@@ -83,6 +84,43 @@
       "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter.",
       "missingLaunchPath": "Il-perkors tat-tnedija ta' Godot għal dan il-proġett mhux magħruf.",
       "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
+    }
+  },
+  "editProject": {
+    "title": "Settings tal-Proġett",
+    "description": "Aġġorna s-settings tal-isem tal-proġett.",
+    "fields": {
+      "name": {
+        "label": "Isem tal-proġett",
+        "help": "Isem muri f'Godot Launcher.",
+        "placeholder": "Il-Proġett Tiegħi"
+      },
+      "path": {
+        "label": "Folder tal-proġett"
+      }
+    },
+    "godot": {
+      "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",
+      "loading": "Qed jiġi ċċekkjat il-proġett Godot...",
+      "currentName": "Isem attwali tal-proġett Godot: {{name}}",
+      "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem fil-launcher."
+    },
+    "actions": {
+      "update": "Aġġorna",
+      "updating": "Qed jiġi aġġornat..."
+    },
+    "validation": {
+      "required": "L-isem tal-proġett huwa meħtieġ.",
+      "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters."
+    },
+    "updateFailed": "Ma setax jiġi aġġornat il-proġett."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Proġett ma nstabx",
+      "nameRequired": "L-isem tal-proġett huwa meħtieġ.",
+      "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters.",
+      "nameExists": "Diġà jeżisti proġett bl-isem '{{name}}'."
     }
   },
   "initGit": {

@@ -1,10 +1,16 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { InstalledRelease, LaunchPath, ProjectDetails } from '@shared';
+import logger from 'electron-log';
 
 export async function removeProjectEditorLinux(
     project: ProjectDetails,
 ): Promise<void> {
+    if (!project.launch_path) {
+        logger.debug('Skipping Linux project editor removal: missing path');
+        return;
+    }
+
     // remove editor files
     if (fs.existsSync(project.launch_path)) {
         const baseFileName = path.basename(project.launch_path);
@@ -31,7 +37,7 @@ export async function setProjectEditorReleaseLinux(
     previousRelease?: InstalledRelease,
 ): Promise<LaunchPath> {
     // remove previous editor
-    if (previousRelease) {
+    if (previousRelease?.editor_path) {
         const baseFileName = path.basename(previousRelease.editor_path);
         const binPath = path.resolve(projectEditorPath, baseFileName);
         if (fs.existsSync(binPath)) {

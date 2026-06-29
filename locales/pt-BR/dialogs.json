@@ -37,9 +37,9 @@
     "message": "Não foi possível analisar as preferências do usuário. Usando as preferências padrão."
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "Remover editor personalizado",
+    "title": "Remover editor personalizado",
+    "message": "Remover o editor personalizado \"{{name}}\" do launcher?",
+    "detail": "Isso removerá o registro do editor personalizado. Os arquivos do editor no seu dispositivo não serão excluídos."
   }
 }

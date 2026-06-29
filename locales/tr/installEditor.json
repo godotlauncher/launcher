@@ -19,11 +19,16 @@
     "noPlatformAsset": "Platform için Varlık bulunamadı",
     "invalidEditorVersion": "Geçersiz editör sürümü",
     "unsupportedPlatform": "Desteklenmeyen platform",
-    "unsupportedFileExtension": "Desteklenmeyen dosya uzantısı"
+    "unsupportedFileExtension": "Desteklenmeyen dosya uzantısı",
+    "downloadInterrupted": "İndirme kesildi. Godot indirme sunucusu meşgul olabilir veya bağlantı kapatılmış olabilir. Lütfen birkaç dakika sonra tekrar deneyin.",
+    "downloadFailed": "İndirme başarısız oldu: {{error}}",
+    "downloadFailedUnknown": "İndirme başarısız oldu. Lütfen birkaç dakika sonra tekrar deneyin.",
+    "downloadHttpError": "Varlık indirilemedi: {{status}}",
+    "downloadEmptyResponse": "İndirme başarısız oldu: sunucudan boş yanıt geldi"
   },
   "messages": {
     "installError": "Sürüm yüklenirken bir şeyler ters gitti",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "Sürüm yeniden yüklenirken bir şeyler ters gitti"
   },
   "table": {
     "headers": {
@@ -42,8 +47,8 @@
       "installedDotNet": "Kuruldu - {{version}} .NET",
       "downloadGDScript": "{{version}} İndir (GDScript)",
       "downloadDotNet": "{{version}} .NET İndir",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "{{version}} sürümünü yeniden yükle (GDScript)",
+      "reinstallDotNet": "{{version}} .NET sürümünü yeniden yükle"
     },
     "status": {
       "unavailable": "Kullanılamıyor"

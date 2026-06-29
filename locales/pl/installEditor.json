@@ -19,11 +19,16 @@
     "noPlatformAsset": "Nie znaleziono zasobu dla platformy",
     "invalidEditorVersion": "Nieprawidłowa wersja edytora",
     "unsupportedPlatform": "Nieobsługiwana platforma",
-    "unsupportedFileExtension": "Nieobsługiwane rozszerzenie pliku"
+    "unsupportedFileExtension": "Nieobsługiwane rozszerzenie pliku",
+    "downloadInterrupted": "Pobieranie zostało przerwane. Serwer pobierania Godot może być zajęty albo połączenie zostało zamknięte. Spróbuj ponownie za kilka minut.",
+    "downloadFailed": "Pobieranie nie powiodło się: {{error}}",
+    "downloadFailedUnknown": "Pobieranie nie powiodło się. Spróbuj ponownie za kilka minut.",
+    "downloadHttpError": "Nie udało się pobrać zasobu: {{status}}",
+    "downloadEmptyResponse": "Pobieranie nie powiodło się: pusta odpowiedź z serwera"
   },
   "messages": {
     "installError": "Coś poszło nie tak podczas instalacji wydania",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "Coś poszło nie tak podczas ponownej instalacji wydania"
   },
   "table": {
     "headers": {
@@ -42,8 +47,8 @@
       "installedDotNet": "Zainstalowano - {{version}} .NET",
       "downloadGDScript": "Pobierz {{version}} (GDScript)",
       "downloadDotNet": "Pobierz {{version}} .NET",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "Zainstaluj ponownie {{version}} (GDScript)",
+      "reinstallDotNet": "Zainstaluj ponownie {{version}} .NET"
     },
     "status": {
       "unavailable": "Niedostępne"
