@@ -113,7 +113,7 @@ export function useReleaseActions({
         addAlert(
             t('common:error'),
             message,
-            <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+            <TriangleAlertIcon className="inline text-error" />,
         );
     };
 
@@ -150,7 +150,7 @@ export function useReleaseActions({
                             t('dialogs:removeRelease.error'),
                             result.error ??
                                 t('dialogs:removeRelease.errorMessage'),
-                            <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                            <TriangleAlertIcon className="inline text-error" />,
                         );
                     }
                 } catch (error) {
@@ -235,7 +235,7 @@ export function useReleaseActions({
                             </button>
                         </span>
                     </span>,
-                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
+                    <TriangleAlertIcon className="inline text-warning" />,
                 );
             } else {
                 addAlert(
@@ -243,14 +243,14 @@ export function useReleaseActions({
                     t('messages.revalidationStillMissingNoPath', {
                         version: release.version,
                     }),
-                    <TriangleAlertIcon className="inline w-4 h-4 text-warning" />,
+                    <TriangleAlertIcon className="inline text-warning" />,
                 );
             }
         } catch (error) {
             addAlert(
                 t('common:error'),
                 t('messages.revalidationFailed'),
-                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                <TriangleAlertIcon className="inline text-error" />,
             );
             logger.error(error);
         } finally {
@@ -273,13 +273,13 @@ export function useReleaseActions({
             addAlert(
                 t('common:error'),
                 result.error || t('messages.reinstallFailed'),
-                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                <TriangleAlertIcon className="inline text-error" />,
             );
         } catch (error) {
             addAlert(
                 t('common:error'),
                 t('messages.reinstallFailed'),
-                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                <TriangleAlertIcon className="inline text-error" />,
             );
             logger.error(error);
         } finally {

@@ -1,4 +1,5 @@
 import type { InstalledRelease, ReleaseSummary } from '@shared';
+import { TriangleAlertIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -43,6 +44,13 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
     const { addAlert } = useAlerts();
     const lastShownRefreshError = useRef<string | undefined>(undefined);
+    const showInstallError = (message: string) => {
+        addAlert(
+            t('common:error', { ns: 'common' }),
+            message,
+            <TriangleAlertIcon className="inline text-error" />,
+        );
+    };
 
     useEffect(() => {
         if (!hasError) {
@@ -67,7 +75,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
         if (result.success) {
             await refreshAvailableReleases();
         } else {
-            addAlert('Error', result.error || t('messages.installError'));
+            showInstallError(result.error || t('messages.installError'));
         }
     };
 
@@ -82,7 +90,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
 
         const result = await reinstallRelease(installedRelease);
         if (!result.success) {
-            addAlert('Error', result.error || t('messages.reinstallError'));
+            showInstallError(result.error || t('messages.reinstallError'));
         }
     };
 
@@ -97,7 +105,7 @@ export const InstallEditorSubView: React.FC<SubviewProps> = ({ onClose }) => {
     const onReinstall = async (release: InstalledRelease) => {
         const result = await reinstallRelease(release);
         if (!result.success) {
-            addAlert('Error', result.error || t('messages.reinstallError'));
+            showInstallError(result.error || t('messages.reinstallError'));
         }
     };
 

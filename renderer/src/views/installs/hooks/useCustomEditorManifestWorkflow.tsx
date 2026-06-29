@@ -53,7 +53,7 @@ export function useCustomEditorManifestWorkflow({
                             result.release?.version ??
                             '',
                     }),
-                    <CheckCircle2 className="w-5 h-5 text-success" />,
+                    <CheckCircle2 className="text-success" />,
                 );
                 options.onSuccess?.();
                 return true;
@@ -87,14 +87,14 @@ export function useCustomEditorManifestWorkflow({
             addAlert(
                 t('common:error'),
                 result.error ?? t('messages.registerCustomEditorFailed'),
-                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                <TriangleAlertIcon className="inline text-error" />,
             );
             return false;
         } catch (error) {
             addAlert(
                 t('common:error'),
                 (error as Error).message,
-                <TriangleAlertIcon className="inline w-4 h-4 text-error" />,
+                <TriangleAlertIcon className="inline text-error" />,
             );
             return false;
         }
