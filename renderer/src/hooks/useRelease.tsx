@@ -2,6 +2,7 @@ import type {
     AvailableReleasesResult,
     InstalledRelease,
     InstallReleaseResult,
+    ReleaseInstallProgress,
     ReleaseSummary,
     RemovedReleaseResult,
 } from '@shared';
@@ -11,12 +12,8 @@ type ReleaseContext = {
     availableReleases: ReleaseSummary[];
     availablePrereleases: ReleaseSummary[];
     installedReleases: InstalledRelease[];
-    downloadingReleases: Array<{
-        version: string;
-        mono: boolean;
-        prerelease: boolean;
-        published_at: string;
-    }>;
+    downloadingReleases: ReleaseInstallProgress[];
+    releaseInstallProgress: ReleaseInstallProgress[];
     loading: boolean;
     hasError: string | undefined;
     refreshAvailableReleases: () => Promise<void>;
@@ -42,6 +39,10 @@ type ReleaseContext = {
         version: string,
         mono: boolean,
     ) => InstalledRelease | undefined;
+    getReleaseInstallProgress: (
+        version: string,
+        mono: boolean,
+    ) => ReleaseInstallProgress | undefined;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
     isDownloadingRelease: (version: string, mono: boolean) => boolean;
@@ -62,13 +63,6 @@ export const useRelease = () => {
 
 type ReleaseProviderProps = React.PropsWithChildren;
 
-type DownloadingRelease = {
-    version: string;
-    mono: boolean;
-    prerelease: boolean;
-    published_at: string;
-};
-
 export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     children,
 }) => {
@@ -82,8 +76,8 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const [installedReleases, setInstalledReleases] = React.useState<
         InstalledRelease[]
     >([]);
-    const [downloadingReleases, setDownloadingReleases] = React.useState<
-        DownloadingRelease[]
+    const [releaseInstallProgress, setReleaseInstallProgress] = React.useState<
+        ReleaseInstallProgress[]
     >([]);
     const [loading, setLoading] = React.useState<boolean>(true);
 
@@ -111,13 +105,52 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             .finally(() => setLoading(false));
     };
 
+    const upsertInstalledRelease = React.useCallback(
+        (release: InstalledRelease) => {
+            setInstalledReleases((prevReleases) => {
+                const nextReleases = prevReleases.filter(
+                    (storedRelease) =>
+                        storedRelease.version !== release.version ||
+                        storedRelease.mono !== release.mono,
+                );
+                nextReleases.push(release);
+                return nextReleases;
+            });
+        },
+        [],
+    );
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: Only want to run on mount
     React.useEffect(() => {
         const off = window.electron.subscribeReleases(setInstalledReleases);
+        const offInstallProgress =
+            window.electron.subscribeReleaseInstallProgress((progress) => {
+                setReleaseInstallProgress((prevProgress) => {
+                    const nextProgress = prevProgress.filter(
+                        (candidate) =>
+                            candidate.version !== progress.version ||
+                            candidate.mono !== progress.mono,
+                    );
+
+                    if (
+                        progress.stage === 'complete' ||
+                        progress.stage === 'error'
+                    ) {
+                        return nextProgress;
+                    }
+
+                    return [...nextProgress, progress];
+                });
+
+                if (progress.stage === 'complete' && progress.release) {
+                    upsertInstalledRelease(progress.release);
+                }
+            });
         updateAllReleases();
 
         return () => {
             off();
+            offInstallProgress();
         };
     }, []);
 
@@ -135,42 +168,17 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         }
     };
 
+    const downloadingReleases = React.useMemo(
+        () =>
+            releaseInstallProgress.filter(
+                (progress) =>
+                    progress.stage !== 'complete' && progress.stage !== 'error',
+            ),
+        [releaseInstallProgress],
+    );
+
     const isDownloadingRelease = (version: string, mono: boolean): boolean => {
-        return downloadingReleases.some(
-            (r) => r.version === version && r.mono === mono,
-        );
-    };
-
-    const addDownloadingRelease = (release: DownloadingRelease) => {
-        setDownloadingReleases((prevValue) => {
-            if (
-                prevValue.some(
-                    (r) =>
-                        r.version === release.version &&
-                        r.mono === release.mono,
-                )
-            ) {
-                return prevValue;
-            }
-
-            return [...prevValue, release];
-        });
-    };
-
-    const removeDownloadingRelease = (version: string, mono: boolean) => {
-        setDownloadingReleases((prevReleases) => {
-            const index = prevReleases.findIndex(
-                (r) => r.version === version && r.mono === mono,
-            );
-
-            if (index > -1) {
-                const newDownloadingReleases = [...prevReleases];
-                newDownloadingReleases.splice(index, 1);
-                return newDownloadingReleases;
-            }
-
-            return prevReleases;
-        });
+        return Boolean(getReleaseInstallProgress(version, mono));
     };
 
     const isInstalledRelease = (version: string, mono: boolean): boolean => {
@@ -186,6 +194,16 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     ): InstalledRelease | undefined => {
         return installedReleases.find(
             (r) => r.version === version && r.mono === mono,
+        );
+    };
+
+    const getReleaseInstallProgress = (
+        version: string,
+        mono: boolean,
+    ): ReleaseInstallProgress | undefined => {
+        return releaseInstallProgress.find(
+            (progress) =>
+                progress.version === version && progress.mono === mono,
         );
     };
 
@@ -205,14 +223,16 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         release: ReleaseSummary,
         mono: boolean,
     ): Promise<InstallReleaseResult> => {
-        addDownloadingRelease({
-            version: release.version,
-            mono,
-            prerelease: release.prerelease,
-            published_at: release.published_at ?? '',
-        });
-
-        const result = await window.electron.installRelease(release, mono);
+        let result: InstallReleaseResult;
+        try {
+            result = await window.electron.installRelease(release, mono);
+        } catch (error) {
+            return {
+                success: false,
+                version: release.version,
+                error: (error as Error).message,
+            };
+        }
 
         if (result.success) {
             setLoading(true);
@@ -230,20 +250,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             ]).finally(() => setLoading(false));
         }
 
-        removeDownloadingRelease(release.version, mono);
         return result;
     };
 
     const reinstallRelease = async (
         release: InstalledRelease,
     ): Promise<InstallReleaseResult> => {
-        addDownloadingRelease({
-            version: release.version,
-            mono: release.mono,
-            prerelease: release.prerelease,
-            published_at: release.published_at ?? '',
-        });
-
         try {
             const result = await window.electron.reinstallRelease(release);
 
@@ -264,8 +276,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             }
 
             return result;
-        } finally {
-            removeDownloadingRelease(release.version, release.mono);
+        } catch (error) {
+            return {
+                success: false,
+                version: release.version,
+                error: (error as Error).message,
+            };
         }
     };
 
@@ -306,6 +322,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 availablePrereleases,
                 installedReleases,
                 downloadingReleases,
+                releaseInstallProgress,
                 loading,
                 hasError,
                 refreshAvailableReleases,
@@ -314,6 +331,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 reinstallRelease,
                 registerCustomEngine,
                 getInstalledRelease,
+                getReleaseInstallProgress,
                 isInstalledRelease,
                 removeRelease,
                 isDownloadingRelease,

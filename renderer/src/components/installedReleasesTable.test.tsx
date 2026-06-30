@@ -4,6 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { InstalledReleaseTable } from './installedReleasesTable';
 
+vi.mock('../hooks/useRelease', () => ({
+    useRelease: () => ({
+        getReleaseInstallProgress: vi.fn(() => undefined),
+    }),
+}));
+
 vi.mock('react-i18next', () => {
     const dictionary: Record<string, string> = {
         'installEditor:table.status.unavailable': 'Unavailable',

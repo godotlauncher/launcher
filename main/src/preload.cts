@@ -143,6 +143,8 @@ electron.contextBridge.exposeInMainWorld('electron', {
 
     subscribeProjects: (callback) => ipcOn('projects-updated', callback),
     subscribeReleases: (callback) => ipcOn('releases-updated', callback),
+    subscribeReleaseInstallProgress: (callback) =>
+        ipcOn('release-install-progress', callback),
 
     subscribeAppUpdates: (callback) => ipcOn('app-updates', callback),
 

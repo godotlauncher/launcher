@@ -22,6 +22,7 @@ import type {
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
+    ReleaseInstallProgress,
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
@@ -134,6 +135,9 @@ export type ElectronRendererApi = {
     ) => UnsubscribeFunction;
     subscribeReleases: (
         callback: (releases: InstalledRelease[]) => void,
+    ) => UnsubscribeFunction;
+    subscribeReleaseInstallProgress: (
+        callback: (progress: ReleaseInstallProgress) => void,
     ) => UnsubscribeFunction;
     subscribeAppUpdates: (
         callback: (message: AppUpdateMessage) => void,

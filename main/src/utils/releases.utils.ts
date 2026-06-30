@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { Readable } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
 import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
@@ -134,6 +134,16 @@ export function getPlatformAsset(
     return platformAsset;
 }
 
+export type DownloadReleaseAssetProgress = {
+    receivedBytes: number;
+    totalBytes?: number;
+};
+
+export type DownloadReleaseAssetOptions = {
+    idleTimeoutMs?: number;
+    onProgress?: (progress: DownloadReleaseAssetProgress) => void;
+};
+
 function getDownloadErrorMessage(error: unknown): string {
     if (error instanceof Error) {
         if (
@@ -161,15 +171,37 @@ type ReleaseSummaryCache = {
 export async function downloadReleaseAsset(
     asset: AssetSummary,
     downloadPath: string,
+    options: DownloadReleaseAssetOptions = {},
 ): Promise<void> {
+    const idleTimeoutMs = options.idleTimeoutMs ?? 120_000;
+    const controller = new AbortController();
+    let idleTimeout: NodeJS.Timeout | undefined;
+    const clearIdleTimeout = () => {
+        if (idleTimeout) {
+            clearTimeout(idleTimeout);
+            idleTimeout = undefined;
+        }
+    };
+    const resetIdleTimeout = () => {
+        clearIdleTimeout();
+        idleTimeout = setTimeout(() => {
+            controller.abort();
+        }, idleTimeoutMs);
+    };
+
     let res: Response;
     try {
-        res = await fetch(asset.download_url);
+        resetIdleTimeout();
+        res = await fetch(asset.download_url, {
+            signal: controller.signal,
+        });
     } catch (error) {
+        clearIdleTimeout();
         throw new Error(getDownloadErrorMessage(error), { cause: error });
     }
 
     if (!res.ok) {
+        clearIdleTimeout();
         throw new Error(
             t('installEditor:errors.downloadHttpError', {
                 status: res.statusText || String(res.status),
@@ -177,17 +209,41 @@ export async function downloadReleaseAsset(
         );
     }
     if (!res.body) {
+        clearIdleTimeout();
         throw new Error(t('installEditor:errors.downloadEmptyResponse'));
     }
+
+    const totalBytesHeader = res.headers.get('content-length');
+    const parsedTotalBytes = totalBytesHeader
+        ? Number.parseInt(totalBytesHeader, 10)
+        : Number.NaN;
+    const totalBytes = Number.isFinite(parsedTotalBytes)
+        ? parsedTotalBytes
+        : undefined;
+    let receivedBytes = 0;
+    const progressStream = new Transform({
+        transform(chunk: Buffer, _encoding, callback) {
+            resetIdleTimeout();
+            receivedBytes += chunk.length;
+            options.onProgress?.({
+                receivedBytes,
+                totalBytes,
+            });
+            callback(null, chunk);
+        },
+    });
 
     const fileStream = fs.createWriteStream(downloadPath, { flags: 'wx' });
     try {
         await pipeline(
             Readable.fromWeb(res.body as unknown as ReadableStream),
+            progressStream,
             fileStream,
         );
     } catch (error) {
         throw new Error(getDownloadErrorMessage(error), { cause: error });
+    } finally {
+        clearIdleTimeout();
     }
 }
 
