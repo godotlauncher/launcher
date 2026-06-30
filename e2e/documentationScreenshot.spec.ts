@@ -8,6 +8,7 @@ import type {
     AppUpdateMessage,
     InstalledRelease,
     ProjectDetails,
+    ReleaseInstallProgress,
     ReleaseSummary,
     UserPreferences,
 } from '@shared';
@@ -620,6 +621,43 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     },
     {
         fileBase: 'screen_installs_custom_editors',
+        description: 'Installs view with a custom editor',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                installedReleases: SAMPLE_INSTALLED_RELEASES_CUSTOM_OVERVIEW,
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnInstalls').click();
+            await expect(
+                page.getByText(SAMPLE_INSTALLED_RELEASES[0].version, {
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByText(SAMPLE_CUSTOM_RELEASE.name),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByText(SAMPLE_INSTALLED_RELEASES[1].version, {
+                    exact: true,
+                }),
+            ).not.toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_installs_full_details',
         description: 'Installs view with custom and unavailable editors',
         navigate: async (
             page: ElectronPage,
@@ -778,6 +816,75 @@ const SCREENSHOTS: ScreenshotConfig[] = [
             } else {
                 await page.keyboard.press('Escape');
             }
+            await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_installs_download_progress',
+        description: 'Install New Version view with download progress',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                installedReleases: SAMPLE_INSTALLED_RELEASES_WITHOUT_LATEST,
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnInstalls').click();
+
+            const installButton = page.getByTestId('btnInstallEditor');
+            const closeButton = page.getByTestId('btnCloseInstallEditor');
+            await expect(installButton).toBeVisible({ timeout: 10000 });
+            await installButton.click({ force: true });
+            await expect(closeButton).toBeVisible({ timeout: 10000 });
+
+            const release = SAMPLE_AVAILABLE_RELEASES[0];
+            await publishReleaseInstallProgress(electronApp, [
+                {
+                    id: `${release.version}:gdscript`,
+                    version: release.version,
+                    mono: false,
+                    prerelease: release.prerelease,
+                    published_at: release.published_at,
+                    stage: 'downloading',
+                    percent: 55,
+                    receivedBytes: 56 * 1024 * 1024,
+                    totalBytes: 102 * 1024 * 1024,
+                },
+                {
+                    id: `${release.version}:dotnet`,
+                    version: release.version,
+                    mono: true,
+                    prerelease: release.prerelease,
+                    published_at: release.published_at,
+                    stage: 'queued',
+                    queuePosition: 1,
+                },
+            ]);
+
+            await expect(page.getByText('Downloading').first()).toBeVisible({
+                timeout: 10000,
+            });
+            await expect(page.getByText('Queued #1').first()).toBeVisible({
+                timeout: 10000,
+            });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const closeButton = page.getByTestId('btnCloseInstallEditor');
+            if (await closeButton.isVisible().catch(() => false)) {
+                await closeButton.click();
+            } else {
+                await page.keyboard.press('Escape');
+            }
+
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
             await page.waitForTimeout(600);
         },
     },
@@ -1099,7 +1206,7 @@ const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
 
 const SAMPLE_CUSTOM_RELEASE: InstalledRelease = {
     version: '4.7.0-custom.1',
-    name: 'Fake 4.7 Custom Editor',
+    name: 'Acme 4.7 Custom Editor',
     base_version: '4.7',
     flavor: 'gdscript',
     version_number: 4.7,
@@ -1157,6 +1264,11 @@ const SAMPLE_UNAVAILABLE_CUSTOM_RELEASE: InstalledRelease = {
 
 const SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM: InstalledRelease[] = [
     ...SAMPLE_INSTALLED_RELEASES,
+    SAMPLE_CUSTOM_RELEASE,
+];
+
+const SAMPLE_INSTALLED_RELEASES_CUSTOM_OVERVIEW: InstalledRelease[] = [
+    SAMPLE_INSTALLED_RELEASES[0],
     SAMPLE_CUSTOM_RELEASE,
 ];
 
@@ -1965,6 +2077,25 @@ async function dismissVisibleAlert(page: ElectronPage) {
         await alertOkButton.click({ force: true });
         await page.waitForTimeout(200);
     }
+}
+
+async function publishReleaseInstallProgress(
+    electronApp: ElectronApplication,
+    progressEvents: ReleaseInstallProgress[],
+) {
+    await electronApp.evaluate(
+        (
+            { BrowserWindow },
+            injectedProgressEvents: ReleaseInstallProgress[],
+        ) => {
+            for (const win of BrowserWindow.getAllWindows()) {
+                for (const progress of injectedProgressEvents) {
+                    win.webContents.send('release-install-progress', progress);
+                }
+            }
+        },
+        progressEvents,
+    );
 }
 
 async function stubInstallReleaseFailure(
