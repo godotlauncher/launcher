@@ -1,7 +1,13 @@
-import { expect, test, _electron } from '@playwright/test';
+import {
+    expect,
+    test,
+    _electron,
+    type ElectronApplication,
+    type TestInfo,
+} from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { SCREENSHOTS } from './documentationScreenshots';
+import { SCREENSHOT_GROUPS } from './documentationScreenshots';
 import { THEMES } from './documentationScreenshots/themes';
 import {
     applyTheme,
@@ -11,11 +17,41 @@ import {
     setScreenshotViewport,
     waitForPreloadScript,
 } from './documentationScreenshots/runtime';
+import type {
+    ElectronPage,
+    ScreenshotConfig,
+    ThemeConfig,
+} from './documentationScreenshots/types';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
 
-test('captures documentation screenshots for each main view', async ({}, testInfo) => {
-    testInfo.setTimeout(240000);
+test.describe.configure({ mode: 'serial' });
+
+for (const theme of THEMES) {
+    for (const group of SCREENSHOT_GROUPS) {
+        test(`captures ${group.name} documentation screenshots in ${theme.description}`, async ({}, testInfo) => {
+            testInfo.setTimeout(group.timeout);
+
+            await withDocumentationApp(async (mainPage, electronApp) => {
+                await applyTheme(mainPage, theme);
+                await captureScreenshotsForGroup(
+                    mainPage,
+                    electronApp,
+                    testInfo,
+                    theme,
+                    group.screenshots,
+                );
+            });
+        });
+    }
+}
+
+async function withDocumentationApp(
+    runScreenshots: (
+        mainPage: ElectronPage,
+        electronApp: ElectronApplication,
+    ) => Promise<void>,
+) {
     const fixtureHome = await createFixtureHome();
     const overrideHomeScript = path.resolve(
         process.cwd(),
@@ -50,72 +86,84 @@ test('captures documentation screenshots for each main view', async ({}, testInf
 
     try {
         const mainPage = await electronApp.firstWindow();
-        await waitForPreloadScript(mainPage);
-        await ensureMainNavigationReady(mainPage, electronApp);
-        await mainPage.getByTestId('btnProjects').click();
-        await expect(
-            mainPage.getByRole('button', {
-                name: 'My-Awesome-game',
-                exact: true,
-            }),
-        ).toBeVisible({
-            timeout: 10000,
-        });
-        await expect(
-            mainPage.getByRole('button', {
-                name: 'My-Other-Game',
-                exact: true,
-            }),
-        ).toBeVisible({
-            timeout: 10000,
-        });
-        await expect(
-            mainPage.getByRole('button', {
-                name: 'My-Prototype',
-                exact: true,
-            }),
-        ).toBeVisible({
-            timeout: 10000,
-        });
-        await mainPage.getByTestId('btnInstalls').click();
-        await expect(
-            mainPage.getByText('4.7-stable', { exact: true }),
-        ).toBeVisible({
-            timeout: 10000,
-        });
-        await expect(mainPage.getByText('4.5.1-stable')).toBeVisible({
-            timeout: 10000,
-        });
-        await expect(
-            mainPage.getByText('/Applications/Godot_4.5.1_dotnet', {
-                exact: true,
-            }),
-        ).toBeVisible({
-            timeout: 10000,
-        });
-        await mainPage.getByTestId('btnProjects').click();
-
-        for (const theme of THEMES) {
-            await applyTheme(mainPage, theme);
-
-            for (const shot of SCREENSHOTS) {
-                await setScreenshotViewport(mainPage, shot.viewportHeight);
-                await shot.navigate(mainPage, electronApp, theme);
-                const themedFileName = `${shot.fileBase}_${theme.name}`;
-                const themedDescription = `${shot.description} in ${theme.description}`;
-                await captureScreenshot(
-                    mainPage,
-                    testInfo,
-                    themedFileName,
-                    themedDescription,
-                );
-                if (shot.cleanup) {
-                    await shot.cleanup(mainPage, electronApp, theme);
-                }
-            }
-        }
+        await primeDocumentationApp(mainPage, electronApp);
+        await runScreenshots(mainPage, electronApp);
     } finally {
         await electronApp.close();
         await fs.rm(fixtureHome, { recursive: true, force: true });
     }
-});
+}
+
+async function primeDocumentationApp(
+    mainPage: ElectronPage,
+    electronApp: ElectronApplication,
+) {
+    await waitForPreloadScript(mainPage);
+    await ensureMainNavigationReady(mainPage, electronApp);
+    await mainPage.getByTestId('btnProjects').click();
+    await expect(
+        mainPage.getByRole('button', {
+            name: 'My-Awesome-game',
+            exact: true,
+        }),
+    ).toBeVisible({
+        timeout: 10000,
+    });
+    await expect(
+        mainPage.getByRole('button', {
+            name: 'My-Other-Game',
+            exact: true,
+        }),
+    ).toBeVisible({
+        timeout: 10000,
+    });
+    await expect(
+        mainPage.getByRole('button', {
+            name: 'My-Prototype',
+            exact: true,
+        }),
+    ).toBeVisible({
+        timeout: 10000,
+    });
+    await mainPage.getByTestId('btnInstalls').click();
+    await expect(mainPage.getByText('4.7-stable', { exact: true })).toBeVisible(
+        {
+            timeout: 10000,
+        },
+    );
+    await expect(mainPage.getByText('4.5.1-stable')).toBeVisible({
+        timeout: 10000,
+    });
+    await expect(
+        mainPage.getByText('/Applications/Godot_4.5.1_dotnet', {
+            exact: true,
+        }),
+    ).toBeVisible({
+        timeout: 10000,
+    });
+    await mainPage.getByTestId('btnProjects').click();
+}
+
+async function captureScreenshotsForGroup(
+    mainPage: ElectronPage,
+    electronApp: ElectronApplication,
+    testInfo: TestInfo,
+    theme: ThemeConfig,
+    screenshots: ScreenshotConfig[],
+) {
+    for (const shot of screenshots) {
+        await setScreenshotViewport(mainPage, shot.viewportHeight);
+        await shot.navigate(mainPage, electronApp, theme);
+        const themedFileName = `${shot.fileBase}_${theme.name}`;
+        const themedDescription = `${shot.description} in ${theme.description}`;
+        await captureScreenshot(
+            mainPage,
+            testInfo,
+            themedFileName,
+            themedDescription,
+        );
+        if (shot.cleanup) {
+            await shot.cleanup(mainPage, electronApp, theme);
+        }
+    }
+}
