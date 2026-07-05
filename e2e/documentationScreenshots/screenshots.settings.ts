@@ -1,9 +1,14 @@
 import type { ElectronApplication } from '@playwright/test';
 import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import { prepareUpdatesScreenshot } from './runtime';
+import {
+    APP_UPDATE_MESSAGE,
+    APP_UPDATE_RELEASE_URL,
+    APP_UPDATE_VERSION,
+} from './versions';
 
 export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
-{
+    {
         fileBase: 'screen_settings_projects',
         description: 'Settings (Projects tab)',
         navigate: async (page: ElectronPage) => {
@@ -99,8 +104,8 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
                     available: true,
                     downloaded: false,
                     type: 'available',
-                    version: '1.9.1',
-                    message: 'New version available: 1.9.1',
+                    version: APP_UPDATE_VERSION,
+                    message: APP_UPDATE_MESSAGE,
                 },
             });
         },
@@ -118,7 +123,7 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
                     available: true,
                     downloaded: false,
                     type: 'downloading',
-                    version: '1.9.1',
+                    version: APP_UPDATE_VERSION,
                     message: 'Downloading update: 55%',
                 },
             });
@@ -137,7 +142,7 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
                     available: true,
                     downloaded: true,
                     type: 'ready',
-                    version: '1.9.1',
+                    version: APP_UPDATE_VERSION,
                     message: 'Update downloaded, restart to install.',
                 },
             });
@@ -156,9 +161,9 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
                     available: true,
                     downloaded: false,
                     type: 'manual',
-                    version: '1.9.1',
-                    message: 'New version available: 1.9.1',
-                    url: 'https://github.com/godotlauncher/launcher/releases/tag/v1.9.1',
+                    version: APP_UPDATE_VERSION,
+                    message: APP_UPDATE_MESSAGE,
+                    url: APP_UPDATE_RELEASE_URL,
                 },
             });
         },
@@ -191,13 +196,13 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await prepareUpdatesScreenshot(page, electronApp, theme, {
                 preferences: {
-                    skipped_app_update_version: '1.9.1',
+                    skipped_app_update_version: APP_UPDATE_VERSION,
                 },
                 updateMessage: {
                     available: false,
                     downloaded: false,
                     type: 'none',
-                    version: '1.9.1',
+                    version: APP_UPDATE_VERSION,
                     message: 'No updates available',
                 },
             });
@@ -214,16 +219,16 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await prepareUpdatesScreenshot(page, electronApp, theme, {
                 preferences: {
-                    skipped_app_update_version: '1.9.1',
+                    skipped_app_update_version: APP_UPDATE_VERSION,
                 },
                 updateMessage: {
                     available: true,
                     downloaded: false,
                     type: 'available',
-                    version: '1.9.1',
-                    message: 'New version available: 1.9.1',
+                    version: APP_UPDATE_VERSION,
+                    message: APP_UPDATE_MESSAGE,
                 },
             });
         },
-    }
+    },
 ];

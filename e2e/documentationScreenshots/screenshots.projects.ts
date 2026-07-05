@@ -24,9 +24,14 @@ import {
     stubAddProjectRecoveredVSCodeConfig,
     stubInstalledTools,
 } from './runtime';
+import {
+    APP_UPDATE_MESSAGE,
+    APP_UPDATE_RELEASE_URL,
+    APP_UPDATE_VERSION,
+} from './versions';
 
 export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
-{
+    {
         fileBase: 'screen_projects_view',
         description: 'Projects view',
         navigate: async (page: ElectronPage) => {
@@ -459,8 +464,8 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 available: true,
                 downloaded: false,
                 type: 'available',
-                version: '1.9.1',
-                message: 'New version available: 1.9.1',
+                version: APP_UPDATE_VERSION,
+                message: APP_UPDATE_MESSAGE,
             });
         },
     },
@@ -476,7 +481,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 available: true,
                 downloaded: false,
                 type: 'downloading',
-                version: '1.9.1',
+                version: APP_UPDATE_VERSION,
                 message: 'Downloading update: 55%',
             });
         },
@@ -493,7 +498,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 available: true,
                 downloaded: true,
                 type: 'ready',
-                version: '1.9.1',
+                version: APP_UPDATE_VERSION,
                 message: 'Update downloaded, restart to install.',
             });
         },
@@ -510,9 +515,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 available: true,
                 downloaded: false,
                 type: 'manual',
-                version: '1.9.1',
-                message: 'New version available: 1.9.1',
-                url: 'https://github.com/godotlauncher/launcher/releases/tag/v1.9.1',
+                version: APP_UPDATE_VERSION,
+                message: APP_UPDATE_MESSAGE,
+                url: APP_UPDATE_RELEASE_URL,
             });
         },
     },
@@ -528,9 +533,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 available: true,
                 downloaded: false,
                 type: 'error',
-                version: '1.9.1',
+                version: APP_UPDATE_VERSION,
                 message: 'Failed to download update',
             });
         },
-    }
+    },
 ];
