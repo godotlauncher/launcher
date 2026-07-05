@@ -7,6 +7,7 @@ import {
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
     SAMPLE_PROJECT_PROTOTYPE,
+    SAMPLE_PROJECTS,
     SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
     TOOLS_NONE,
     TOOLS_NO_GIT,
@@ -70,6 +71,80 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             theme: ThemeConfig,
         ) => {
             await closeActionMenu(page);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_change_editor_version_current',
+        description: 'Projects view with current editor version selected',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const project = SAMPLE_PROJECTS[0];
+
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectRow = page.locator('tbody tr').filter({
+                has: page.getByRole('button', {
+                    name: project.name,
+                    exact: true,
+                }),
+            });
+            await expect(projectRow).toBeVisible({ timeout: 10000 });
+            await projectRow
+                .getByRole('button', { name: project.version })
+                .click();
+            await expect(
+                page.getByText('Select editor version', { exact: true }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_change_editor_version_custom',
+        description: 'Projects view with custom editor version selected',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const project = SAMPLE_PROJECT_PROTOTYPE;
+
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectRow = page.locator('tbody tr').filter({
+                has: page.getByRole('button', {
+                    name: project.name,
+                    exact: true,
+                }),
+            });
+            await expect(projectRow).toBeVisible({ timeout: 10000 });
+            await projectRow
+                .getByRole('button', { name: project.version })
+                .click();
+            await expect(
+                page.getByText('Select editor version', { exact: true }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
             await prepareAppWithStubbedData(page, electronApp);
             await applyTheme(page, theme);
         },

@@ -483,6 +483,8 @@ export async function captureScreenshot(
     const webpPath = path.join(outputDir, `${baseName}.webp`);
     await fs.mkdir(outputDir, { recursive: true });
 
+    await page.mouse.move(0, 0);
+
     await page.screenshot({
         path: pngPath,
         fullPage: true,
