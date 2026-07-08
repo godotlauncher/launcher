@@ -15,6 +15,7 @@ type ReleaseContext = {
     downloadingReleases: ReleaseInstallProgress[];
     releaseInstallProgress: ReleaseInstallProgress[];
     loading: boolean;
+    initialized: boolean;
     hasError: string | undefined;
     refreshAvailableReleases: () => Promise<void>;
     clearReleaseCache: () => Promise<void>;
@@ -80,6 +81,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         ReleaseInstallProgress[]
     >([]);
     const [loading, setLoading] = React.useState<boolean>(true);
+    const [initialized, setInitialized] = React.useState<boolean>(false);
 
     const getRefreshError = (
         ...results: AvailableReleasesResult[]
@@ -102,7 +104,10 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 setHasError(getRefreshError(releasesResult, prereleasesResult));
             })
             .catch((e) => setHasError(e.message))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                setInitialized(true);
+                setLoading(false);
+            });
     };
 
     const upsertInstalledRelease = React.useCallback(
@@ -324,6 +329,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 downloadingReleases,
                 releaseInstallProgress,
                 loading,
+                initialized,
                 hasError,
                 refreshAvailableReleases,
                 clearReleaseCache,
