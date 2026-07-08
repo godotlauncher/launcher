@@ -131,15 +131,24 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
-          body: ${{ steps.release_notes.outputs.notes }}
-          draft: true
-          prerelease: ${{ inputs.prerelease }}
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ steps.release_notes.outputs.notes }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+
+          notes_file="$RUNNER_TEMP/release-notes.md"
+          printf '%s\n' "$RELEASE_NOTES" > "$notes_file"
+
+          args=(--title "v${VERSION}" --notes-file "$notes_file" --draft)
+
+          if [[ "$PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+
+          gh release create "v${VERSION}" "${args[@]}"
 
   sign-windows:
     needs:
