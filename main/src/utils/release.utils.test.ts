@@ -43,15 +43,21 @@ vi.mock('node:fs', () => ({
     },
 }));
 
-vi.mock('node:stream', () => ({
-    Readable: {
-        fromWeb: vi.fn(() => ({
-            pipe: vi.fn((dest) => dest),
-            on: vi.fn(),
-            push: vi.fn(),
-        })),
-    },
-}));
+vi.mock('node:stream', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('node:stream')>();
+
+    return {
+        ...actual,
+        Readable: {
+            ...actual.Readable,
+            fromWeb: vi.fn(() => ({
+                pipe: vi.fn((dest) => dest),
+                on: vi.fn(),
+                push: vi.fn(),
+            })),
+        },
+    };
+});
 
 vi.mock('node:stream/promises', () => ({
     pipeline: vi.fn().mockResolvedValue(undefined),
@@ -425,6 +431,9 @@ suite('Releases Utils', () => {
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 statusText: 'OK',
+                headers: {
+                    get: vi.fn(() => null),
+                },
                 body: {}, // Simple mock body
             });
 
@@ -437,7 +446,12 @@ suite('Releases Utils', () => {
         test('should download and save an asset successfully', async () => {
             await downloadReleaseAsset(mockAsset, downloadPath);
 
-            expect(global.fetch).toHaveBeenCalledWith(mockAsset.download_url);
+            expect(global.fetch).toHaveBeenCalledWith(
+                mockAsset.download_url,
+                expect.objectContaining({
+                    signal: expect.any(Object),
+                }),
+            );
             expect(fs.createWriteStream).toHaveBeenCalledWith(downloadPath, {
                 flags: 'wx',
             });
@@ -448,6 +462,9 @@ suite('Releases Utils', () => {
             vi.mocked(global.fetch).mockResolvedValueOnce({
                 ok: false,
                 statusText: 'Network Error',
+                headers: {
+                    get: vi.fn(() => null),
+                },
                 body: null,
             } as Response);
 
@@ -474,6 +491,51 @@ suite('Releases Utils', () => {
             await expect(
                 downloadReleaseAsset(mockAsset, downloadPath),
             ).rejects.toThrow('localized download interrupted');
+        });
+
+        test('should report byte progress when content length is available', async () => {
+            const onProgress = vi.fn();
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                statusText: 'OK',
+                headers: {
+                    get: vi.fn((name: string) =>
+                        name === 'content-length' ? '10' : null,
+                    ),
+                },
+                body: {},
+            } as unknown as Response);
+            vi.mocked(streamPromises.pipeline).mockImplementationOnce(
+                async (...streams: unknown[]) => {
+                    const progressStream = streams[1] as NodeJS.WritableStream;
+                    progressStream.write(Buffer.alloc(4));
+                    progressStream.write(Buffer.alloc(6));
+                },
+            );
+
+            await downloadReleaseAsset(mockAsset, downloadPath, { onProgress });
+
+            expect(onProgress).toHaveBeenLastCalledWith({
+                receivedBytes: 10,
+                totalBytes: 10,
+            });
+        });
+
+        test('should report byte progress when content length is unknown', async () => {
+            const onProgress = vi.fn();
+            vi.mocked(streamPromises.pipeline).mockImplementationOnce(
+                async (...streams: unknown[]) => {
+                    const progressStream = streams[1] as NodeJS.WritableStream;
+                    progressStream.write(Buffer.alloc(4));
+                },
+            );
+
+            await downloadReleaseAsset(mockAsset, downloadPath, { onProgress });
+
+            expect(onProgress).toHaveBeenCalledWith({
+                receivedBytes: 4,
+                totalBytes: undefined,
+            });
         });
     });
 

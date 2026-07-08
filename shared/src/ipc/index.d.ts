@@ -18,6 +18,7 @@ import type {
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
+    ReleaseInstallProgress,
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type { CachedTool, InstalledTool } from '../tools/index.js';
@@ -82,6 +83,7 @@ export type EventChannelMapping = {
 
     'projects-updated': ProjectDetails[];
     'releases-updated': InstalledRelease[];
+    'release-install-progress': ReleaseInstallProgress;
 
     'get-platform': Promise<string>;
     'get-app-version': Promise<string>;

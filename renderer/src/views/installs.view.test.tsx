@@ -46,6 +46,8 @@ vi.mock('../hooks/useRelease', () => {
         useRelease: () => ({
             installedReleases,
             downloadingReleases: [],
+            releaseInstallProgress: [],
+            getReleaseInstallProgress: vi.fn(() => undefined),
             checkAllReleasesValid: vi.fn(() =>
                 Promise.resolve(installedReleases),
             ),

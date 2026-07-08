@@ -1,4 +1,8 @@
-import type { InstalledRelease, ReleaseSummary } from '@shared';
+import type {
+    InstalledRelease,
+    ReleaseInstallProgress,
+    ReleaseSummary,
+} from '@shared';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { InstallReleaseTable } from './installReleaseTable';
@@ -18,12 +22,17 @@ const invalidRelease: InstalledRelease = {
 };
 
 let downloadingStandardRelease = false;
+let standardProgress: ReleaseInstallProgress | undefined;
 
 vi.mock('../hooks/useRelease', () => ({
     useRelease: () => ({
         getInstalledRelease: (version: string, mono: boolean) =>
             version === invalidRelease.version && mono === invalidRelease.mono
                 ? invalidRelease
+                : undefined,
+        getReleaseInstallProgress: (version: string, mono: boolean) =>
+            version === invalidRelease.version && mono === invalidRelease.mono
+                ? standardProgress
                 : undefined,
         isDownloadingRelease: vi.fn(
             (version: string, mono: boolean) =>
@@ -87,6 +96,7 @@ const releaseSummary: ReleaseSummary = {
 describe('InstallReleaseTable', () => {
     it('shows warning reinstall action for invalid installed releases instead of download', () => {
         downloadingStandardRelease = false;
+        standardProgress = undefined;
         const html = renderToStaticMarkup(
             <InstallReleaseTable
                 releases={[releaseSummary]}
@@ -104,6 +114,17 @@ describe('InstallReleaseTable', () => {
 
     it('shows installing state when reinstall is in progress', () => {
         downloadingStandardRelease = true;
+        standardProgress = {
+            id: 'install-1',
+            version: invalidRelease.version,
+            mono: invalidRelease.mono,
+            prerelease: invalidRelease.prerelease,
+            published_at: invalidRelease.published_at,
+            stage: 'downloading',
+            percent: 55,
+            receivedBytes: 55,
+            totalBytes: 100,
+        };
         const html = renderToStaticMarkup(
             <InstallReleaseTable
                 releases={[releaseSummary]}
@@ -112,8 +133,9 @@ describe('InstallReleaseTable', () => {
             />,
         );
 
-        expect(html).toContain('Installing...');
-        expect(html).toContain('loading-ring');
+        expect(html).toContain('Downloading');
+        expect(html).toContain('55%');
+        expect(html).toContain('progress');
         expect(html).not.toContain('Reinstall');
     });
 });

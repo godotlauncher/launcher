@@ -1,6 +1,8 @@
 import type { InstalledRelease } from '@shared';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
+import { useRelease } from '../../hooks/useRelease';
+import { ReleaseInstallProgressIndicator } from '../releaseInstallProgress.component';
 import { getSelectableReleaseKey } from './selectInstalledRelease.model';
 
 type Translate = (
@@ -86,6 +88,8 @@ const ReleaseRow: React.FC<ReleaseRowProps> = ({
     t,
     onSelectedReleaseChange,
 }) => {
+    const { getReleaseInstallProgress } = useRelease();
+
     if (row.valid === false) {
         return (
             <tr
@@ -114,6 +118,8 @@ const ReleaseRow: React.FC<ReleaseRowProps> = ({
     }
 
     if (!row.editor_path) {
+        const progress = getReleaseInstallProgress(row.version, row.mono);
+
         return (
             <tr
                 key={`releaseSelectInvalid_${getSelectableReleaseKey(row)}`}
@@ -123,8 +129,18 @@ const ReleaseRow: React.FC<ReleaseRowProps> = ({
                     <span className="loading loading-ring text-info p-0"></span>
                 </td>
                 <td>
-                    {row.name ?? row.version}
-                    <ReleaseBadges row={row} t={t} />
+                    <div className="flex flex-col gap-2">
+                        <div>
+                            {row.name ?? row.version}
+                            <ReleaseBadges row={row} t={t} />
+                        </div>
+                        {progress && (
+                            <ReleaseInstallProgressIndicator
+                                progress={progress}
+                                className="max-w-72"
+                            />
+                        )}
+                    </div>
                 </td>
             </tr>
         );

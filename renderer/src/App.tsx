@@ -14,6 +14,7 @@ import './App.css';
 
 import clsx from 'clsx';
 import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
+import { shouldShowAppLoading } from './App.model';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
 import rocketBlack from './assets/icons/godot_launcher_black.svg';
 import rocketWhite from './assets/icons/godot_launcher_white.svg';
@@ -34,7 +35,7 @@ import { WelcomeView } from './views/welcome.view';
 
 function App() {
     const { preferences, platform, updatePreferences } = usePreferences();
-    const { loading: releaseLoading } = useRelease();
+    const { initialized: releasesInitialized } = useRelease();
 
     const prefsLoading = !preferences;
     const firstRun = preferences?.first_run || false;
@@ -44,7 +45,12 @@ function App() {
         document.title = `Godot Launcher ${version}`;
     }, []);
 
-    if (releaseLoading || prefsLoading) {
+    if (
+        shouldShowAppLoading({
+            prefsLoading,
+            releasesInitialized,
+        })
+    ) {
         return <LoadingView />;
     }
 

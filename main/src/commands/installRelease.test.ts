@@ -34,13 +34,17 @@ vi.mock('os', () => ({
     },
 }));
 
-const decompressMocks = vi.hoisted(() => ({
-    decompress: vi.fn(),
+const extractZipMocks = vi.hoisted(() => ({
+    extractZipArchive: vi.fn(),
 }));
 
-vi.mock('decompress', () => ({
-    default: decompressMocks.decompress,
+vi.mock('../utils/extractZip.utils.js', () => extractZipMocks);
+
+const ipcMocks = vi.hoisted(() => ({
+    ipcSendToMainWindowSync: vi.fn(),
 }));
+
+vi.mock('../utils.js', () => ipcMocks);
 
 vi.mock('electron-updater', () => ({
     default: {
@@ -147,7 +151,7 @@ describe('installRelease', () => {
             configVersion: 5,
         });
 
-        decompressMocks.decompress.mockResolvedValue(undefined);
+        extractZipMocks.extractZipArchive.mockResolvedValue(undefined);
         checksMocks.checkAndUpdateProjects.mockResolvedValue(undefined);
 
         osMocks.platform.mockReturnValue('win32');
@@ -192,10 +196,14 @@ describe('installRelease', () => {
         expect(releasesUtilsMocks.downloadReleaseAsset).toHaveBeenCalledWith(
             arm64Asset,
             path.resolve(expectedDownloadPath, arm64Asset.name),
+            expect.any(Object),
         );
-        expect(decompressMocks.decompress).toHaveBeenCalledWith(
+        expect(extractZipMocks.extractZipArchive).toHaveBeenCalledWith(
             path.resolve(expectedDownloadPath, arm64Asset.name),
-            expectedInstallPath,
+            expect.objectContaining({
+                dir: expectedInstallPath,
+                onEntry: expect.any(Function),
+            }),
         );
         expect(
             releasesUtilsMocks.addStoredInstalledRelease,
@@ -211,6 +219,14 @@ describe('installRelease', () => {
         expect(result.success).toBe(true);
         expect(result.release?.arch).toBe('arm64');
         expect(result.release?.editor_path).toBe(expectedEditorPath);
+        expect(ipcMocks.ipcSendToMainWindowSync).toHaveBeenCalledWith(
+            'release-install-progress',
+            expect.objectContaining({
+                stage: 'complete',
+                version: release.version,
+                mono: false,
+            }),
+        );
     });
 
     it('shares concurrent install requests for the same editor identity', async () => {
@@ -258,5 +274,146 @@ describe('installRelease', () => {
         ).toHaveBeenCalledTimes(1);
         expect(firstResult.success).toBe(true);
         expect(secondResult).toEqual(firstResult);
+    });
+
+    it('runs different editor installs one at a time', async () => {
+        const firstAsset: AssetSummary = {
+            name: 'Godot_v4.5.3-stable_windows_arm64.exe.zip',
+            download_url:
+                'https://example.com/Godot_v4.5.3-stable_windows_arm64.exe.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const secondAsset: AssetSummary = {
+            name: 'Godot_v4.5.4-stable_windows_arm64.exe.zip',
+            download_url:
+                'https://example.com/Godot_v4.5.4-stable_windows_arm64.exe.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const firstRelease: ReleaseSummary = {
+            name: 'Godot_v4.5.3-stable',
+            version: 'Godot_v4.5.3-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-01T00:00:00Z',
+            assets: [firstAsset],
+        };
+        const secondRelease: ReleaseSummary = {
+            name: 'Godot_v4.5.4-stable',
+            version: 'Godot_v4.5.4-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-02T00:00:00Z',
+            assets: [secondAsset],
+        };
+
+        let resolveFirstDownload: (() => void) | undefined;
+        releasesUtilsMocks.downloadReleaseAsset.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveFirstDownload = resolve;
+                }),
+        );
+
+        const firstInstall = installRelease(firstRelease, false);
+        const secondInstall = installRelease(secondRelease, false);
+
+        await vi.waitFor(() =>
+            expect(
+                releasesUtilsMocks.downloadReleaseAsset,
+            ).toHaveBeenCalledTimes(1),
+        );
+
+        expect(releasesUtilsMocks.downloadReleaseAsset).toHaveBeenCalledWith(
+            firstAsset,
+            expect.any(String),
+            expect.any(Object),
+        );
+        expect(
+            releasesUtilsMocks.downloadReleaseAsset,
+        ).not.toHaveBeenCalledWith(
+            secondAsset,
+            expect.any(String),
+            expect.any(Object),
+        );
+
+        resolveFirstDownload?.();
+        await firstInstall;
+        await vi.waitFor(() =>
+            expect(
+                releasesUtilsMocks.downloadReleaseAsset,
+            ).toHaveBeenCalledTimes(2),
+        );
+
+        const secondResult = await secondInstall;
+        expect(secondResult.success).toBe(true);
+        expect(
+            releasesUtilsMocks.downloadReleaseAsset,
+        ).toHaveBeenLastCalledWith(
+            secondAsset,
+            expect.any(String),
+            expect.any(Object),
+        );
+    });
+
+    it('continues queued installs after a failed install', async () => {
+        const firstAsset: AssetSummary = {
+            name: 'Godot_v4.5.5-stable_windows_arm64.exe.zip',
+            download_url:
+                'https://example.com/Godot_v4.5.5-stable_windows_arm64.exe.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const secondAsset: AssetSummary = {
+            name: 'Godot_v4.5.6-stable_windows_arm64.exe.zip',
+            download_url:
+                'https://example.com/Godot_v4.5.6-stable_windows_arm64.exe.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const firstRelease: ReleaseSummary = {
+            name: 'Godot_v4.5.5-stable',
+            version: 'Godot_v4.5.5-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-01T00:00:00Z',
+            assets: [firstAsset],
+        };
+        const secondRelease: ReleaseSummary = {
+            name: 'Godot_v4.5.6-stable',
+            version: 'Godot_v4.5.6-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-02T00:00:00Z',
+            assets: [secondAsset],
+        };
+
+        releasesUtilsMocks.downloadReleaseAsset.mockRejectedValueOnce(
+            new Error('network failed'),
+        );
+
+        const [firstResult, secondResult] = await Promise.all([
+            installRelease(firstRelease, false),
+            installRelease(secondRelease, false),
+        ]);
+
+        expect(firstResult.success).toBe(false);
+        expect(firstResult.error).toBe('network failed');
+        expect(secondResult.success).toBe(true);
+        expect(ipcMocks.ipcSendToMainWindowSync).toHaveBeenCalledWith(
+            'release-install-progress',
+            expect.objectContaining({
+                stage: 'error',
+                version: firstRelease.version,
+            }),
+        );
+        expect(releasesUtilsMocks.downloadReleaseAsset).toHaveBeenCalledTimes(
+            2,
+        );
     });
 });
