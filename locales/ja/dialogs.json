@@ -37,9 +37,9 @@
     "message": "ユーザー設定を解析できませんでした。デフォルト設定を使用します。"
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "カスタムエディターを削除",
+    "title": "カスタムエディターを削除",
+    "message": "ランチャーからカスタムエディター「{{name}}」を削除しますか？",
+    "detail": "これによりカスタムエディターの登録が解除されます。デバイス上のエディターファイルは削除されません。"
   }
 }

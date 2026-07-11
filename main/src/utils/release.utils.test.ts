@@ -43,18 +43,24 @@ vi.mock('node:fs', () => ({
     },
 }));
 
-vi.mock('node:stream', () => ({
-    Readable: {
-        fromWeb: vi.fn(() => ({
-            pipe: vi.fn((dest) => dest),
-            on: vi.fn(),
-            push: vi.fn(),
-        })),
-    },
-}));
+vi.mock('node:stream', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('node:stream')>();
+
+    return {
+        ...actual,
+        Readable: {
+            ...actual.Readable,
+            fromWeb: vi.fn(() => ({
+                pipe: vi.fn((dest) => dest),
+                on: vi.fn(),
+                push: vi.fn(),
+            })),
+        },
+    };
+});
 
 vi.mock('node:stream/promises', () => ({
-    finished: vi.fn().mockResolvedValue(undefined),
+    pipeline: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('electron-log', () => ({
@@ -65,6 +71,25 @@ vi.mock('electron-log', () => ({
         debug: vi.fn(),
         log: vi.fn(),
     },
+}));
+
+vi.mock('../i18n/index.js', () => ({
+    t: vi.fn((key: string, options?: Record<string, string>) => {
+        switch (key) {
+            case 'installEditor:errors.downloadInterrupted':
+                return 'localized download interrupted';
+            case 'installEditor:errors.downloadFailed':
+                return `localized download failed: ${options?.error}`;
+            case 'installEditor:errors.downloadFailedUnknown':
+                return 'localized download failed unknown';
+            case 'installEditor:errors.downloadHttpError':
+                return `localized download http error: ${options?.status}`;
+            case 'installEditor:errors.downloadEmptyResponse':
+                return 'localized download empty response';
+            default:
+                return key;
+        }
+    }),
 }));
 
 vi.mock('./projects.utils.js', () => ({
@@ -406,34 +431,111 @@ suite('Releases Utils', () => {
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 statusText: 'OK',
+                headers: {
+                    get: vi.fn(() => null),
+                },
                 body: {}, // Simple mock body
             });
 
             // Reset mocks
             vi.mocked(fs.createWriteStream).mockClear();
-            vi.mocked(streamPromises.finished).mockClear();
+            vi.mocked(streamPromises.pipeline).mockClear();
             vi.mocked(Readable.fromWeb).mockClear();
         });
 
         test('should download and save an asset successfully', async () => {
             await downloadReleaseAsset(mockAsset, downloadPath);
 
-            expect(global.fetch).toHaveBeenCalledWith(mockAsset.download_url);
+            expect(global.fetch).toHaveBeenCalledWith(
+                mockAsset.download_url,
+                expect.objectContaining({
+                    signal: expect.any(Object),
+                }),
+            );
             expect(fs.createWriteStream).toHaveBeenCalledWith(downloadPath, {
                 flags: 'wx',
             });
+            expect(streamPromises.pipeline).toHaveBeenCalled();
         });
 
         test('should throw an error if download fetch fails', async () => {
             vi.mocked(global.fetch).mockResolvedValueOnce({
                 ok: false,
                 statusText: 'Network Error',
+                headers: {
+                    get: vi.fn(() => null),
+                },
                 body: null,
             } as Response);
 
             await expect(
                 downloadReleaseAsset(mockAsset, downloadPath),
-            ).rejects.toThrow('Failed to download asset: Network Error');
+            ).rejects.toThrow('localized download http error: Network Error');
+        });
+
+        test('should show a retryable error if the download is interrupted before a response', async () => {
+            vi.mocked(global.fetch).mockRejectedValueOnce(
+                new TypeError('terminated'),
+            );
+
+            await expect(
+                downloadReleaseAsset(mockAsset, downloadPath),
+            ).rejects.toThrow('localized download interrupted');
+        });
+
+        test('should show a retryable error if the response stream is interrupted', async () => {
+            vi.mocked(streamPromises.pipeline).mockRejectedValueOnce(
+                new TypeError('terminated'),
+            );
+
+            await expect(
+                downloadReleaseAsset(mockAsset, downloadPath),
+            ).rejects.toThrow('localized download interrupted');
+        });
+
+        test('should report byte progress when content length is available', async () => {
+            const onProgress = vi.fn();
+            vi.mocked(global.fetch).mockResolvedValueOnce({
+                ok: true,
+                statusText: 'OK',
+                headers: {
+                    get: vi.fn((name: string) =>
+                        name === 'content-length' ? '10' : null,
+                    ),
+                },
+                body: {},
+            } as unknown as Response);
+            vi.mocked(streamPromises.pipeline).mockImplementationOnce(
+                async (...streams: unknown[]) => {
+                    const progressStream = streams[1] as NodeJS.WritableStream;
+                    progressStream.write(Buffer.alloc(4));
+                    progressStream.write(Buffer.alloc(6));
+                },
+            );
+
+            await downloadReleaseAsset(mockAsset, downloadPath, { onProgress });
+
+            expect(onProgress).toHaveBeenLastCalledWith({
+                receivedBytes: 10,
+                totalBytes: 10,
+            });
+        });
+
+        test('should report byte progress when content length is unknown', async () => {
+            const onProgress = vi.fn();
+            vi.mocked(streamPromises.pipeline).mockImplementationOnce(
+                async (...streams: unknown[]) => {
+                    const progressStream = streams[1] as NodeJS.WritableStream;
+                    progressStream.write(Buffer.alloc(4));
+                },
+            );
+
+            await downloadReleaseAsset(mockAsset, downloadPath, { onProgress });
+
+            expect(onProgress).toHaveBeenCalledWith({
+                receivedBytes: 4,
+                totalBytes: undefined,
+            });
         });
     });
 

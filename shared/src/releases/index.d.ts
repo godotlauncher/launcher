@@ -30,6 +30,29 @@ export type AssetSummary = {
 
 export type EditorChannel = 'official' | 'custom';
 export type EditorFlavor = 'gdscript' | 'dotnet' | (string & {});
+export type CustomEngineManifestPlatformName = 'windows' | 'linux' | 'macos';
+export type CustomEngineManifestArch = 'x64' | 'arm64' | 'universal';
+
+export type CustomEngineManifestPlatform = {
+    platform: CustomEngineManifestPlatformName;
+    arch: CustomEngineManifestArch;
+    paths: {
+        editor: string;
+        console?: string;
+    };
+};
+
+export type CustomEngineManifest = {
+    $schema?: string;
+    schema_version: 1;
+    version: string;
+    name: string;
+    base_version: string;
+    prerelease?: boolean;
+    flavor: EditorFlavor;
+    config_version: 5;
+    platforms: CustomEngineManifestPlatform[];
+};
 
 export type InstalledRelease = {
     version: string;
@@ -57,6 +80,31 @@ export type InstallReleaseResult = BackendResult & {
     release?: InstalledRelease;
 };
 
+export type ReleaseInstallProgressStage =
+    | 'queued'
+    | 'preparing'
+    | 'downloading'
+    | 'extracting'
+    | 'registering'
+    | 'validating'
+    | 'complete'
+    | 'error';
+
+export type ReleaseInstallProgress = {
+    id: string;
+    version: string;
+    mono: boolean;
+    prerelease: boolean;
+    published_at: string | null;
+    stage: ReleaseInstallProgressStage;
+    percent?: number;
+    queuePosition?: number;
+    receivedBytes?: number;
+    totalBytes?: number;
+    error?: string;
+    release?: InstalledRelease;
+};
+
 export type RemovedReleaseResult = BackendResult & {
     version: string;
     mono: boolean;
@@ -67,4 +115,8 @@ export type RegisterCustomEngineResult = BackendResult & {
     release?: InstalledRelease;
     releases?: InstalledRelease[];
     duplicate?: InstalledRelease;
+};
+
+export type CreateCustomEngineManifestResult = BackendResult & {
+    manifestPath?: string;
 };

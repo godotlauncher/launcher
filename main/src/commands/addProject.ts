@@ -28,6 +28,7 @@ import {
     createNewEditorSettings,
     type GodotProjectFile,
     getProjectConfigVersionFromParsed,
+    getProjectIconUrlFromParsed,
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     parseGodotProjectFile,
@@ -53,6 +54,16 @@ import { getInstalledTools } from './installedTools.js';
 import { getProjectsDetails } from './projects.js';
 import { getInstalledReleases } from './releases.js';
 import { getUserPreferences } from './userPreferences.js';
+
+function toProjectRelativeDisplayPath(
+    projectDir: string,
+    filePath: string,
+): string {
+    return path
+        .relative(projectDir, filePath)
+        .split(path.sep)
+        .join(path.posix.sep);
+}
 
 function isCompatibleCustomPlatform(release: InstalledRelease): boolean {
     return (
@@ -451,6 +462,7 @@ export async function addProject(
 
     const tools = await getInstalledTools();
     const vsCodeTool = tools.find((t) => t.name === 'VSCode');
+    const recoveredVSCodeConfigFiles = new Set<string>();
 
     if (release && !addAsMissingEditor && withVSCode && vsCodeTool) {
         const activeConfig = config;
@@ -505,30 +517,50 @@ export async function addProject(
         }
 
         // Always update VSCode settings
-        await updateVSCodeSettings(
+        const recoveredSettingsFiles = await updateVSCodeSettings(
             dirname,
             launch_path,
             release.version_number,
             release.mono,
         );
+        for (const recoveredFile of recoveredSettingsFiles ?? []) {
+            recoveredVSCodeConfigFiles.add(
+                toProjectRelativeDisplayPath(dirname, recoveredFile),
+            );
+        }
 
         // Always update VSCode recommended extensions
-        await addOrUpdateVSCodeRecommendedExtensions(dirname, release.mono);
+        const recoveredExtensionFiles =
+            await addOrUpdateVSCodeRecommendedExtensions(dirname, release.mono);
+        for (const recoveredFile of recoveredExtensionFiles ?? []) {
+            recoveredVSCodeConfigFiles.add(
+                toProjectRelativeDisplayPath(dirname, recoveredFile),
+            );
+        }
 
         // Always setup .NET launch config if using mono
         if (release.mono) {
-            await addVSCodeNETLaunchConfig(dirname, launch_path);
+            const recoveredLaunchFiles = await addVSCodeNETLaunchConfig(
+                dirname,
+                launch_path,
+            );
+            for (const recoveredFile of recoveredLaunchFiles ?? []) {
+                recoveredVSCodeConfigFiles.add(
+                    toProjectRelativeDisplayPath(dirname, recoveredFile),
+                );
+            }
         }
     }
 
     const project: ProjectDetails = {
         path: dirname,
         name: projectName,
+        icon_path: getProjectIconUrlFromParsed(dirname, parsedConfig),
         version:
             release?.version ?? `${releaseBaseVersion.toFixed(1)} (missing)`,
         version_number: release?.version_number ?? releaseBaseVersion,
         renderer,
-        last_opened: null,
+        last_opened: projectLauncherConfig?.project?.last_opened ?? null,
         launch_path,
         editor_settings_path: editorSettingsFile
             ? path.dirname(editorSettingsFile)
@@ -561,11 +593,20 @@ export async function addProject(
     };
 
     if (shouldWriteProjectLauncherConfig) {
-        await writeProjectLauncherConfig(
-            dirname,
-            project.release,
-            app.getVersion(),
-        );
+        if (project.last_opened) {
+            await writeProjectLauncherConfig(
+                dirname,
+                project.release,
+                app.getVersion(),
+                project.last_opened,
+            );
+        } else {
+            await writeProjectLauncherConfig(
+                dirname,
+                project.release,
+                app.getVersion(),
+            );
+        }
     }
 
     const allProjects = await addProjectToList(projectListPath, project);
@@ -574,5 +615,9 @@ export async function addProject(
         success: true,
         projects: allProjects,
         newProject: project,
+        recoveredVSCodeConfigFiles:
+            recoveredVSCodeConfigFiles.size > 0
+                ? [...recoveredVSCodeConfigFiles]
+                : undefined,
     };
 }

@@ -13,8 +13,10 @@
     },
     "project": {
         "openProjectFolder": "Projektordner öffnen",
+        "launchEditor": "In Godot bearbeiten",
+        "projectSettings": "Projekteinstellungen",
         "openEditorSettingsFolder": "Editor-Einstellungsordner öffnen",
-        "openWindowed": "Im Fenster öffnen",
+        "openWindowed": "Fenstermodus verwenden",
         "openWindowedTooltip": "Wenn diese Option aktiviert ist, wird Godot im Fenstermodus gestartet.",
         "useVSCode": "Visual Studio Code als Texteditor verwenden",
         "useVSCodeTooltip": "Visual Studio Code als externen Skripteditor für dieses Projekt ein- oder ausschalten.",

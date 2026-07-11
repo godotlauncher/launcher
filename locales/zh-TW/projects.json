@@ -18,8 +18,8 @@
     "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
     "gitProject": "此專案使用 Git 進行版本控制",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "找不到專案檔案。請檢查專案位置。",
+      "missingEditor": "找不到編輯器。請檢查編輯器位置。"
     }
   },
   "addProject": {
@@ -61,14 +61,15 @@
     "dropGodotFileOnly": "請拖放 project.godot 檔案以新增專案",
     "dropProjectHere": "將 project.godot 檔案拖放到此處以新增專案",
     "addingProjects": "正在新增專案：{{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "新增專案失敗：{{error}}",
+    "dropProjectFilesHere": "將 Godot 專案檔案拖放到這裡",
+    "dropProjectFilesHelpPrefix": "拖放一個或多個",
+    "dropProjectFilesHelpSuffix": "檔案以將其新增至啟動器。",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+      "missingProjectFile": "找不到專案檔案。請檢查專案位置，或移除後重新新增專案。",
+      "missingEditor": "所選編輯器無法使用。請掛載磁碟機或選擇其他編輯器。"
+    },
+    "recoveredVSCodeConfig": "部分 VS Code 設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。"
   },
   "changeEditor": {
     "errors": {
@@ -83,6 +84,43 @@
       "vscodeNotInstalled": "此電腦上未安裝 Visual Studio Code。",
       "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
       "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
+    }
+  },
+  "editProject": {
+    "title": "專案設定",
+    "description": "更新專案命名設定。",
+    "fields": {
+      "name": {
+        "label": "專案名稱",
+        "help": "顯示在 Godot Launcher 中的名稱。",
+        "placeholder": "我的專案"
+      },
+      "path": {
+        "label": "專案資料夾"
+      }
+    },
+    "godot": {
+      "renameLabel": "同時重新命名 Godot 專案",
+      "loading": "正在檢查 Godot 專案...",
+      "currentName": "目前的 Godot 專案名稱：{{name}}",
+      "unavailable": "project.godot 無法使用。只能變更啟動器中的名稱。"
+    },
+    "actions": {
+      "update": "更新",
+      "updating": "正在更新..."
+    },
+    "validation": {
+      "required": "專案名稱為必填。",
+      "invalidName": "專案名稱不能包含換行或控制字元。"
+    },
+    "updateFailed": "無法更新專案。"
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "找不到專案",
+      "nameRequired": "專案名稱為必填。",
+      "invalidName": "專案名稱不能包含換行或控制字元。",
+      "nameExists": "名為 '{{name}}' 的專案已存在。"
     }
   },
   "initGit": {

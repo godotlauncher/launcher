@@ -1,11 +1,12 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { Readable } from 'node:stream';
-import { finished } from 'node:stream/promises';
+import { Readable, Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
 import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
 import logger from 'electron-log';
 import { PROJECTS_FILENAME } from '../constants.js';
+import { t } from '../i18n/index.js';
 import type { ReleaseAsset } from '../types/github.js';
 import { removeProjectEditor } from './godot.utils.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
@@ -133,6 +134,34 @@ export function getPlatformAsset(
     return platformAsset;
 }
 
+export type DownloadReleaseAssetProgress = {
+    receivedBytes: number;
+    totalBytes?: number;
+};
+
+export type DownloadReleaseAssetOptions = {
+    idleTimeoutMs?: number;
+    onProgress?: (progress: DownloadReleaseAssetProgress) => void;
+};
+
+function getDownloadErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        if (
+            error.name === 'AbortError' ||
+            error.message === 'terminated' ||
+            error.message.includes('terminated')
+        ) {
+            return t('installEditor:errors.downloadInterrupted');
+        }
+
+        return t('installEditor:errors.downloadFailed', {
+            error: error.message,
+        });
+    }
+
+    return t('installEditor:errors.downloadFailedUnknown');
+}
+
 type ReleaseSummaryCache = {
     lastPublishDate: Date;
     lastUpdated: number;
@@ -142,20 +171,79 @@ type ReleaseSummaryCache = {
 export async function downloadReleaseAsset(
     asset: AssetSummary,
     downloadPath: string,
+    options: DownloadReleaseAssetOptions = {},
 ): Promise<void> {
-    const res = await fetch(asset.download_url);
-    if (!res.ok) {
-        throw new Error(`Failed to download asset: ${res.statusText}`);
+    const idleTimeoutMs = options.idleTimeoutMs ?? 120_000;
+    const controller = new AbortController();
+    let idleTimeout: NodeJS.Timeout | undefined;
+    const clearIdleTimeout = () => {
+        if (idleTimeout) {
+            clearTimeout(idleTimeout);
+            idleTimeout = undefined;
+        }
+    };
+    const resetIdleTimeout = () => {
+        clearIdleTimeout();
+        idleTimeout = setTimeout(() => {
+            controller.abort();
+        }, idleTimeoutMs);
+    };
+
+    let res: Response;
+    try {
+        resetIdleTimeout();
+        res = await fetch(asset.download_url, {
+            signal: controller.signal,
+        });
+    } catch (error) {
+        clearIdleTimeout();
+        throw new Error(getDownloadErrorMessage(error), { cause: error });
     }
 
-    const fileStream = fs.createWriteStream(downloadPath, { flags: 'wx' });
-    if (res.body) {
-        await finished(
-            Readable.fromWeb(res.body as unknown as ReadableStream).pipe(
-                fileStream,
-            ),
+    if (!res.ok) {
+        clearIdleTimeout();
+        throw new Error(
+            t('installEditor:errors.downloadHttpError', {
+                status: res.statusText || String(res.status),
+            }),
         );
-        fileStream.close();
+    }
+    if (!res.body) {
+        clearIdleTimeout();
+        throw new Error(t('installEditor:errors.downloadEmptyResponse'));
+    }
+
+    const totalBytesHeader = res.headers.get('content-length');
+    const parsedTotalBytes = totalBytesHeader
+        ? Number.parseInt(totalBytesHeader, 10)
+        : Number.NaN;
+    const totalBytes = Number.isFinite(parsedTotalBytes)
+        ? parsedTotalBytes
+        : undefined;
+    let receivedBytes = 0;
+    const progressStream = new Transform({
+        transform(chunk: Buffer, _encoding, callback) {
+            resetIdleTimeout();
+            receivedBytes += chunk.length;
+            options.onProgress?.({
+                receivedBytes,
+                totalBytes,
+            });
+            callback(null, chunk);
+        },
+    });
+
+    const fileStream = fs.createWriteStream(downloadPath, { flags: 'wx' });
+    try {
+        await pipeline(
+            Readable.fromWeb(res.body as unknown as ReadableStream),
+            progressStream,
+            fileStream,
+        );
+    } catch (error) {
+        throw new Error(getDownloadErrorMessage(error), { cause: error });
+    } finally {
+        clearIdleTimeout();
     }
 }
 

@@ -18,8 +18,8 @@
     "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています",
     "gitProject": "このプロジェクトはバージョン管理に Git を使用しています",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認してください。",
+      "missingEditor": "エディターが見つかりません。エディターの場所を確認してください。"
     }
   },
   "addProject": {
@@ -61,14 +61,15 @@
     "dropGodotFileOnly": "プロジェクトを追加するには project.godot ファイルをドロップしてください",
     "dropProjectHere": "ここに project.godot ファイルをドロップしてプロジェクトを追加",
     "addingProjects": "プロジェクトを追加中: {{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "プロジェクトの追加に失敗しました: {{error}}",
+    "dropProjectFilesHere": "Godot プロジェクトファイルをここにドロップ",
+    "dropProjectFilesHelpPrefix": "1 つ以上の",
+    "dropProjectFilesHelpSuffix": "ファイルをドロップしてランチャーに追加します。",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+      "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認するか、プロジェクトを削除して再追加してください。",
+      "missingEditor": "選択したエディターは利用できません。ドライブをマウントするか、別のエディターを選択してください。"
+    },
+    "recoveredVSCodeConfig": "一部の VS Code 設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。"
   },
   "changeEditor": {
     "errors": {
@@ -83,6 +84,43 @@
       "vscodeNotInstalled": "このコンピューターに Visual Studio Code がインストールされていません。",
       "missingLaunchPath": "このプロジェクトの Godot 起動パスが見つかりません。",
       "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。"
+    }
+  },
+  "editProject": {
+    "title": "プロジェクト設定",
+    "description": "プロジェクト名の設定を更新します。",
+    "fields": {
+      "name": {
+        "label": "プロジェクト名",
+        "help": "Godot Launcher に表示される名前です。",
+        "placeholder": "マイプロジェクト"
+      },
+      "path": {
+        "label": "プロジェクトフォルダー"
+      }
+    },
+    "godot": {
+      "renameLabel": "Godot プロジェクト名も変更する",
+      "loading": "Godot プロジェクトを確認中...",
+      "currentName": "現在の Godot プロジェクト名: {{name}}",
+      "unavailable": "project.godot が利用できません。Launcher の名前のみ変更できます。"
+    },
+    "actions": {
+      "update": "更新",
+      "updating": "更新中..."
+    },
+    "validation": {
+      "required": "プロジェクト名は必須です。",
+      "invalidName": "プロジェクト名に改行や制御文字は使用できません。"
+    },
+    "updateFailed": "プロジェクトを更新できませんでした。"
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "プロジェクトが見つかりません",
+      "nameRequired": "プロジェクト名は必須です。",
+      "invalidName": "プロジェクト名に改行や制御文字は使用できません。",
+      "nameExists": "'{{name}}' という名前のプロジェクトは既に存在します。"
     }
   },
   "initGit": {

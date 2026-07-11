@@ -51,7 +51,7 @@ test('Can view projects', async () => {
 
   await mainPage.getByTestId('btnProjects').click();
   const projectsView = await mainPage.getByTestId('projectsTitle');
-  expect(projectsView).toHaveCount(1);
+  await expect(projectsView).toHaveCount(1);
 
 });
 
@@ -59,7 +59,7 @@ test('Can view installs', async () => {
 
   await mainPage.getByTestId('btnInstalls').click();
   const installsView = await mainPage.getByTestId('installsTitle');
-  expect(installsView).toHaveCount(1);
+  await expect(installsView).toHaveCount(1);
 
 });
 
@@ -67,6 +67,6 @@ test('Can view settings', async () => {
 
   await mainPage.getByTestId('btnSettings').click();
   const settingsView = await mainPage.getByTestId('settingsTitle');
-  expect(settingsView).toHaveCount(1);
+  await expect(settingsView).toHaveCount(1);
 
 });

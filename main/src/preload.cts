@@ -1,11 +1,13 @@
 import type {
     AddProjectOptions,
     CheckForUpdatesOptions,
+    CustomEngineManifest,
     ElectronRendererApi,
     EventChannelMapping,
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
+    RenameProjectOptions,
     RendererType,
     UserPreferences,
 } from '@shared';
@@ -40,6 +42,10 @@ electron.contextBridge.exposeInMainWorld('electron', {
         manifestPath: string,
         options?: { replaceExisting?: boolean },
     ) => ipcInvoke('register-custom-engine', manifestPath, options),
+    createCustomEngineManifest: (
+        outputDirectory: string,
+        manifest: CustomEngineManifest,
+    ) => ipcInvoke('create-custom-engine-manifest', outputDirectory, manifest),
 
     openEditorProjectManager: (release: InstalledRelease) =>
         ipcInvoke('open-editor-project-manager', release),
@@ -69,11 +75,6 @@ electron.contextBridge.exposeInMainWorld('electron', {
 
     openShellFolder: (pathToOpen: string) =>
         ipcInvoke('shell-open-folder', pathToOpen),
-
-    showProjectMenu: (project: ProjectDetails) =>
-        ipcInvoke('show-project-menu', project),
-    showReleaseMenu: (release: InstalledRelease) =>
-        ipcInvoke('show-release-menu', release),
 
     openExternal: (url: string) => ipcInvoke('open-external', url),
 
@@ -107,10 +108,24 @@ electron.contextBridge.exposeInMainWorld('electron', {
     getProjectsDetails: () => ipcInvoke('get-projects-details'),
     removeProject: (project: ProjectDetails) =>
         ipcInvoke('remove-project', project),
+    renameProject: (project: ProjectDetails, options: RenameProjectOptions) =>
+        ipcInvoke('rename-project', project, options),
+    getProjectGodotName: (project: ProjectDetails) =>
+        ipcInvoke('get-project-godot-name', project),
     addProject: (projectPath: string, options?: AddProjectOptions) =>
         ipcInvoke('add-project', projectPath, options),
     setProjectEditor: (project: ProjectDetails, release: InstalledRelease) =>
         ipcInvoke('set-project-editor', project, release),
+    setProjectWindowed: (project: ProjectDetails, openWindowed: boolean) =>
+        ipcInvoke('set-project-windowed', project, openWindowed),
+    setProjectVSCode: (project: ProjectDetails, enable: boolean) =>
+        ipcInvoke('set-project-vscode', project, enable),
+    initializeProjectGit: (project: ProjectDetails) =>
+        ipcInvoke('initialize-project-git', project),
+    exportProjectEditorSettings: (project: ProjectDetails) =>
+        ipcInvoke('export-project-editor-settings', project),
+    importProjectEditorSettings: (project: ProjectDetails) =>
+        ipcInvoke('import-project-editor-settings', project),
 
     launchProject: (project: ProjectDetails) =>
         ipcInvoke('launch-project', project),
@@ -128,6 +143,8 @@ electron.contextBridge.exposeInMainWorld('electron', {
 
     subscribeProjects: (callback) => ipcOn('projects-updated', callback),
     subscribeReleases: (callback) => ipcOn('releases-updated', callback),
+    subscribeReleaseInstallProgress: (callback) =>
+        ipcOn('release-install-progress', callback),
 
     subscribeAppUpdates: (callback) => ipcOn('app-updates', callback),
 

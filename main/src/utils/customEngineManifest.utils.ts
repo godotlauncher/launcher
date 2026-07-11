@@ -1,27 +1,35 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { EditorFlavor, InstalledRelease } from '@shared';
+import type {
+    CreateCustomEngineManifestResult,
+    CustomEngineManifest,
+    EditorFlavor,
+    InstalledRelease,
+} from '@shared';
 import { z } from 'zod';
 
-const manifestPlatformSchema = z.object({
+export const CUSTOM_ENGINE_MANIFEST_FILE_NAME =
+    'godotlauncher-editor-manifest.json';
+
+export const manifestPlatformSchema = z.object({
     platform: z.enum(['windows', 'linux', 'macos']),
-    arch: z.enum(['x64', 'arm64', 'ia32', 'arm', 'universal']),
+    arch: z.enum(['x64', 'arm64', 'universal']),
     paths: z.object({
         editor: z.string().min(1),
         console: z.string().min(1).optional(),
     }),
 });
 
-const engineManifestSchema = z.object({
+export const engineManifestSchema = z.object({
     $schema: z.string().optional(),
     schema_version: z.literal(1),
     version: z.string().min(1),
     name: z.string().min(1),
-    base_version: z.string().regex(/^\d+\.\d+(?:\.\d+)?$/),
+    base_version: z.string().regex(/^\d+\.\d+$/),
     prerelease: z.boolean().optional().default(false),
     flavor: z.string().trim().min(1),
-    config_version: z.union([z.literal(4), z.literal(5)]),
+    config_version: z.literal(5),
     platforms: z.array(manifestPlatformSchema).min(1),
 });
 
@@ -62,6 +70,68 @@ function formatManifestError(error: z.ZodError): string {
             return location ? `${location}: ${issue.message}` : issue.message;
         })
         .join('; ');
+}
+
+function resolveAbsoluteDirectory(outputDirectory: string): string {
+    if (
+        typeof outputDirectory !== 'string' ||
+        outputDirectory.trim().length === 0
+    ) {
+        throw new Error('Output directory is required.');
+    }
+
+    if (!path.isAbsolute(outputDirectory)) {
+        throw new Error('Output directory must be an absolute path.');
+    }
+
+    return path.resolve(outputDirectory);
+}
+
+export async function createCustomEngineManifest(
+    outputDirectory: string,
+    manifest: CustomEngineManifest,
+): Promise<CreateCustomEngineManifestResult> {
+    try {
+        const resolvedOutputDirectory =
+            resolveAbsoluteDirectory(outputDirectory);
+        const stats = await fs.promises.stat(resolvedOutputDirectory);
+
+        if (!stats.isDirectory()) {
+            return {
+                success: false,
+                error: 'Output path exists but is not a directory.',
+            };
+        }
+
+        const result = engineManifestSchema.safeParse(manifest);
+
+        if (!result.success) {
+            return {
+                success: false,
+                error: `Invalid custom editor manifest: ${formatManifestError(result.error)}`,
+            };
+        }
+
+        const manifestPath = path.join(
+            resolvedOutputDirectory,
+            CUSTOM_ENGINE_MANIFEST_FILE_NAME,
+        );
+        await fs.promises.writeFile(
+            manifestPath,
+            `${JSON.stringify(result.data, null, 2)}\n`,
+            'utf-8',
+        );
+
+        return {
+            success: true,
+            manifestPath,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: (error as Error).message,
+        };
+    }
 }
 
 export async function parseCustomEngineManifest(

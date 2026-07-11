@@ -8,7 +8,7 @@
     "remove": "Neħħi",
     "copyPath": "Ikopja l-perkors",
     "openPath": "Iftaħ il-perkors",
-    "reinstall": "Reinstall"
+    "reinstall": "Erġa’ installa"
   },
   "error": "Żball",
   "success": "Suċċess",
@@ -27,14 +27,16 @@
       "projects": "Proġetti",
       "installs": "Installazzjonijiet",
       "help": "Għajnuna",
-      "settings": "Settings",
+      "settings": "Issettjar",
       "joinCommunity": "Ingħaqad mal-Komunità"
     },
     "update": {
       "availableWithVersion": "Il-verżjoni {{version}} hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
       "availableNoVersion": "Verżjoni ġdida hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton>",
       "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
-      "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>"
+      "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
+      "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
+      "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink>"
     }
   },
   "selectRelease": {

@@ -1,6 +1,219 @@
 import * as fs from 'node:fs';
 import path from 'node:path';
 import logger from 'electron-log';
+import { applyEdits, modify, type ParseError, parse } from 'jsonc-parser';
+
+type JSONObject = Record<string, unknown>;
+
+type VSCodeConfigReadResult<T extends JSONObject> = {
+    parsed: T | null;
+    raw: string | null;
+    recoveredFiles: string[];
+};
+
+function isJSONObject(value: unknown): value is JSONObject {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+    return (
+        Array.isArray(value) &&
+        value.every((entry) => typeof entry === 'string')
+    );
+}
+
+function isSettingsJSONObject(value: unknown): value is JSONObject {
+    return isJSONObject(value);
+}
+
+function isExtensionsJSONObject(
+    value: unknown,
+): value is JSONObject & { recommendations?: string[] } {
+    return (
+        isJSONObject(value) &&
+        (value.recommendations === undefined ||
+            isStringArray(value.recommendations))
+    );
+}
+
+function isLaunchJSONObject(
+    value: unknown,
+): value is JSONObject & { configurations: JSONObject[] } {
+    return (
+        isJSONObject(value) &&
+        Array.isArray(value.configurations) &&
+        value.configurations.every(isJSONObject)
+    );
+}
+
+function dedupeRecoveredFiles(paths: string[]): string[] {
+    return [...new Set(paths)];
+}
+
+async function preserveInvalidVSCodeConfig(filePath: string): Promise<string> {
+    const backupPath = `${filePath}.${Date.now()}.bad`;
+    await fs.promises.rename(filePath, backupPath);
+    return backupPath;
+}
+
+async function readRecoverableVSCodeConfig<T extends JSONObject>(
+    filePath: string,
+    validator: (value: unknown) => value is T,
+    description: string,
+): Promise<VSCodeConfigReadResult<T>> {
+    if (!fs.existsSync(filePath)) {
+        return { parsed: null, raw: null, recoveredFiles: [] };
+    }
+
+    const raw = await fs.promises.readFile(filePath, 'utf-8');
+    const errors: ParseError[] = [];
+    const parsed = parse(raw, errors, {
+        allowTrailingComma: true,
+        disallowComments: false,
+    });
+
+    if (errors.length === 0 && validator(parsed)) {
+        return { parsed, raw, recoveredFiles: [] };
+    }
+
+    logger.warn(`Recovering invalid VS Code ${description}`, {
+        filePath,
+        parseErrors: errors.length,
+    });
+    const backupPath = await preserveInvalidVSCodeConfig(filePath);
+    return { parsed: null, raw: null, recoveredFiles: [backupPath] };
+}
+
+function updateJSONCProperty(
+    text: string,
+    keyPath: (string | number)[],
+    value: unknown,
+): string {
+    return applyEdits(
+        text,
+        modify(text, keyPath, value, {
+            formattingOptions: {
+                insertSpaces: true,
+                tabSize: 4,
+                eol: '\n',
+            },
+        }),
+    );
+}
+
+function valuesEqual(left: unknown, right: unknown): boolean {
+    return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function updateChangedJSONCProperties(
+    text: string,
+    existing: JSONObject,
+    values: JSONObject,
+): string {
+    return Object.entries(values).reduce((updatedText, [key, value]) => {
+        if (valuesEqual(existing[key], value)) {
+            return updatedText;
+        }
+
+        return updateJSONCProperty(updatedText, [key], value);
+    }, text);
+}
+
+function updateJSONCObjectEntries(
+    text: string,
+    key: string,
+    existingValue: unknown,
+    entries: JSONObject,
+): string {
+    if (!isJSONObject(existingValue)) {
+        return updateJSONCProperty(text, [key], entries);
+    }
+
+    return Object.entries(entries).reduce((updatedText, [entryKey, value]) => {
+        if (valuesEqual(existingValue[entryKey], value)) {
+            return updatedText;
+        }
+
+        return updateJSONCProperty(updatedText, [key, entryKey], value);
+    }, text);
+}
+
+function insertJSONCArrayItems(
+    text: string,
+    keyPath: (string | number)[],
+    startIndex: number,
+    values: string[],
+): string {
+    return values.reduce(
+        (updatedText, value, index) =>
+            applyEdits(
+                updatedText,
+                modify(updatedText, [...keyPath, startIndex + index], value, {
+                    formattingOptions: {
+                        insertSpaces: true,
+                        tabSize: 4,
+                        eol: '\n',
+                    },
+                    isArrayInsertion: true,
+                }),
+            ),
+        text,
+    );
+}
+
+function createVSCodeSettings(
+    launchPath: string,
+    editorVersion: number,
+): JSONObject & { 'files.exclude': JSONObject } {
+    const godot_version = Math.floor(editorVersion);
+
+    return {
+        [`godotTools.editorPath.godot${godot_version}`]: launchPath,
+        'editor.tabSize': 4,
+        'editor.insertSpaces': false,
+        'files.eol': '\n',
+        'files.exclude': {
+            '**/*.gd.uid': true,
+            '**/*.cs.uid': true,
+        },
+    };
+}
+
+function createVSCodeExtensions(isMono: boolean): {
+    recommendations: string[];
+} {
+    const extensions = {
+        recommendations: [
+            'geequlim.godot-tools',
+            'mariodebono.godot-4-vscode-theme',
+        ],
+    };
+
+    if (isMono) {
+        extensions.recommendations.push('ms-dotnettools.csharp');
+    }
+
+    return extensions;
+}
+
+function createVSCodeLaunchConfig(programPath: string): JSONObject {
+    return {
+        version: '0.2.0',
+        configurations: [
+            {
+                name: 'Play',
+                type: 'coreclr',
+                request: 'launch',
+                preLaunchTask: 'build',
+                program: path.resolve(programPath),
+                args: [],
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: it is the template for the vscode config
+                cwd: '${workspaceFolder}',
+                stopAtEntry: false,
+            },
+        ],
+    };
+}
 
 /**
  * Adds or updates VSCode settings for a Godot project.
@@ -19,19 +232,8 @@ export async function addVSCodeSettings(
     launchPath: string,
     editorVersion: number,
     isMono: boolean,
-) {
-    const godot_version = Math.floor(editorVersion);
-
-    const vsCodeConfig = {
-        [`godotTools.editorPath.godot${godot_version}`]: launchPath,
-        'editor.tabSize': 4,
-        'editor.insertSpaces': false,
-        'files.eol': '\n',
-        'files.exclude': {
-            '**/*.gd.uid': true, // Exclude Godot's autogenerated UID files
-        },
-    };
-
+): Promise<string[]> {
+    const vsCodeConfig = createVSCodeSettings(launchPath, editorVersion);
     const settingsPath = path.resolve(projectDir, '.vscode');
 
     if (!fs.existsSync(settingsPath)) {
@@ -39,30 +241,41 @@ export async function addVSCodeSettings(
     }
 
     const settingsFile = path.resolve(settingsPath, 'settings.json');
+    let settingsText = JSON.stringify(vsCodeConfig, null, 4);
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
+        settingsFile,
+        isSettingsJSONObject,
+        'settings.json',
+    );
 
-    if (fs.existsSync(settingsFile)) {
-        const existingSettings = await fs.promises.readFile(
-            settingsFile,
-            'utf-8',
+    if (parsed && raw !== null) {
+        const { 'files.exclude': filesExclude, ...topLevelConfig } =
+            vsCodeConfig;
+
+        settingsText = updateChangedJSONCProperties(
+            raw,
+            parsed,
+            topLevelConfig,
         );
-        const parsed = JSON.parse(existingSettings);
-        Object.assign(parsed, vsCodeConfig);
-        await fs.promises.writeFile(
-            settingsFile,
-            JSON.stringify(parsed, null, 4),
-            'utf-8',
+        settingsText = updateJSONCObjectEntries(
+            settingsText,
+            'files.exclude',
+            parsed['files.exclude'],
+            filesExclude,
         );
-    } else {
-        await fs.promises.writeFile(
-            settingsFile,
-            JSON.stringify(vsCodeConfig, null, 4),
-            'utf-8',
-        );
+    }
+
+    if (settingsText !== raw) {
+        await fs.promises.writeFile(settingsFile, settingsText, 'utf-8');
     }
 
     if (isMono) {
-        await addVSCodeNETLaunchConfig(projectDir, launchPath);
+        recoveredFiles.push(
+            ...((await addVSCodeNETLaunchConfig(projectDir, launchPath)) ?? []),
+        );
     }
+
+    return dedupeRecoveredFiles(recoveredFiles);
 }
 
 /**
@@ -84,19 +297,8 @@ export async function updateVSCodeSettings(
     launchPath: string,
     editorVersion: number,
     isMono: boolean,
-): Promise<void> {
-    const godot_version = Math.floor(editorVersion);
-
-    const vsCodeConfig = {
-        [`godotTools.editorPath.godot${godot_version}`]: launchPath,
-        'editor.tabSize': 4,
-        'editor.insertSpaces': false,
-        'files.eol': '\n',
-        'files.exclude': {
-            '**/*.gd.uid': true, // Exclude Godot's autogenerated UID files
-        },
-    };
-
+): Promise<string[]> {
+    const vsCodeConfig = createVSCodeSettings(launchPath, editorVersion);
     const settingsPath = path.resolve(projectDir, '.vscode');
 
     if (!fs.existsSync(settingsPath)) {
@@ -104,44 +306,50 @@ export async function updateVSCodeSettings(
     }
 
     const settingsFile = path.resolve(settingsPath, 'settings.json');
-
-    let finalSettings = vsCodeConfig;
-
-    if (fs.existsSync(settingsFile)) {
-        try {
-            const existingSettings = await fs.promises.readFile(
-                settingsFile,
-                'utf-8',
-            );
-            const parsed = JSON.parse(existingSettings);
-
-            // deep merge files.exclude to preserve user excludes
-            if (parsed['files.exclude'] && vsCodeConfig['files.exclude']) {
-                vsCodeConfig['files.exclude'] = {
-                    ...parsed['files.exclude'],
-                    ...vsCodeConfig['files.exclude'],
-                };
-            }
-
-            finalSettings = { ...parsed, ...vsCodeConfig };
-        } catch (error) {
-            logger.warn(
-                'Failed to parse existing VS Code settings, will create new file',
-                error,
-            );
-            // fallback to vsCodeConfig if parsing fails
-        }
-    }
-
-    await fs.promises.writeFile(
+    let settingsText = JSON.stringify(vsCodeConfig, null, 4);
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         settingsFile,
-        JSON.stringify(finalSettings, null, 4),
-        'utf-8',
+        isSettingsJSONObject,
+        'settings.json',
     );
 
-    if (isMono) {
-        await addVSCodeNETLaunchConfig(projectDir, launchPath);
+    if (parsed && raw !== null) {
+        const mergedExcludes =
+            isJSONObject(parsed['files.exclude']) &&
+            isJSONObject(vsCodeConfig['files.exclude'])
+                ? {
+                      ...parsed['files.exclude'],
+                      ...vsCodeConfig['files.exclude'],
+                  }
+                : vsCodeConfig['files.exclude'];
+
+        const { 'files.exclude': _filesExclude, ...topLevelConfig } =
+            vsCodeConfig;
+
+        settingsText = updateChangedJSONCProperties(
+            raw,
+            parsed,
+            topLevelConfig,
+        );
+        settingsText = updateJSONCObjectEntries(
+            settingsText,
+            'files.exclude',
+            parsed['files.exclude'],
+            mergedExcludes,
+        );
     }
+
+    if (settingsText !== raw) {
+        await fs.promises.writeFile(settingsFile, settingsText, 'utf-8');
+    }
+
+    if (isMono) {
+        recoveredFiles.push(
+            ...((await addVSCodeNETLaunchConfig(projectDir, launchPath)) ?? []),
+        );
+    }
+
+    return dedupeRecoveredFiles(recoveredFiles);
 }
 
 /**
@@ -165,12 +373,9 @@ export async function updateVSCodeSettings(
 export async function addVSCodeNETLaunchConfig(
     projectDir: string,
     launchPath: string,
-) {
+): Promise<string[]> {
     const lanchJsonPath = path.resolve(projectDir, '.vscode', 'launch.json');
     const preLaunchTaskPath = path.resolve(projectDir, '.vscode', 'tasks.json');
-
-    // if there is already a launch config file update the program path
-    // if not create a new launch config file
 
     if (!fs.existsSync(path.resolve(projectDir, '.vscode'))) {
         await fs.promises.mkdir(path.resolve(projectDir, '.vscode'), {
@@ -183,51 +388,35 @@ export async function addVSCodeNETLaunchConfig(
         programPath = path.resolve(launchPath, 'Contents', 'MacOS', 'Godot');
     }
 
-    let launchConfig = {
-        version: '0.2.0',
-        configurations: [
-            {
-                name: 'Play',
-                type: 'coreclr',
-                request: 'launch',
-                preLaunchTask: 'build',
-                program: path.resolve(programPath),
-                args: [],
-                // biome-ignore lint/suspicious/noTemplateCurlyInString: it is the template for the vscode config
-                cwd: '${workspaceFolder}',
-                stopAtEntry: false,
-            },
-        ],
-    };
-
-    if (fs.existsSync(lanchJsonPath)) {
-        const existingLaunchConfig = await fs.promises.readFile(
-            lanchJsonPath,
-            'utf-8',
-        );
-
-        try {
-            const parsed = JSON.parse(existingLaunchConfig);
-            // update the program path
-            parsed.configurations = parsed.configurations.map(
-                (config: { program?: string }) => {
-                    if (config.program) {
-                        config.program = path.resolve(programPath);
-                    }
-                    return config;
-                },
-            );
-
-            launchConfig = parsed;
-        } catch (error) {
-            logger.error('Failed to parse existing launch config', error);
-            logger.info('Creating new launch config file');
-        }
-    }
-    await fs.promises.writeFile(
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         lanchJsonPath,
-        JSON.stringify(launchConfig, null, 4),
+        isLaunchJSONObject,
+        'launch.json',
     );
+
+    let launchConfigText = JSON.stringify(
+        createVSCodeLaunchConfig(programPath),
+        null,
+        4,
+    );
+    if (parsed && raw !== null) {
+        launchConfigText = parsed.configurations.reduce(
+            (updatedText, config, index) => {
+                if ('program' in config) {
+                    return updateJSONCProperty(
+                        updatedText,
+                        ['configurations', index, 'program'],
+                        path.resolve(programPath),
+                    );
+                }
+
+                return updatedText;
+            },
+            raw,
+        );
+    }
+
+    await fs.promises.writeFile(lanchJsonPath, launchConfigText);
 
     const preLaunchTask = {
         version: '2.0.0',
@@ -249,6 +438,8 @@ export async function addVSCodeNETLaunchConfig(
             JSON.stringify(preLaunchTask, null, 4),
         );
     }
+
+    return dedupeRecoveredFiles(recoveredFiles);
 }
 
 /**
@@ -263,52 +454,53 @@ export async function addVSCodeNETLaunchConfig(
 export async function addOrUpdateVSCodeRecommendedExtensions(
     projectDir: string,
     isMono: boolean,
-) {
-    // create vscode settings in project folder
+): Promise<string[]> {
     const settingsPath = path.resolve(projectDir, '.vscode');
 
     if (!fs.existsSync(settingsPath)) {
         await fs.promises.mkdir(settingsPath, { recursive: true });
     }
 
-    // add recommended extensions
-    const extensions = {
-        recommendations: [
-            'geequlim.godot-tools',
-            'mariodebono.godot-4-vscode-theme',
-            'eamodio.gitlens',
-        ],
-    };
-
-    if (isMono) {
-        extensions.recommendations.push('ms-dotnettools.csharp');
-    }
-
+    const extensions = createVSCodeExtensions(isMono);
     const settingsFile = path.resolve(settingsPath, 'extensions.json');
+    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
+        settingsFile,
+        isExtensionsJSONObject,
+        'extensions.json',
+    );
 
-    // check if file exists and merge with existing extensions
-    if (fs.existsSync(settingsFile)) {
-        const existingExtensions = await fs.promises.readFile(
-            settingsFile,
-            'utf-8',
+    if (parsed && raw !== null) {
+        const existingRecommendations = parsed.recommendations ?? [];
+        const missingRecommendations = extensions.recommendations.filter(
+            (recommendation) =>
+                !existingRecommendations.includes(recommendation),
         );
-        const parsed = JSON.parse(existingExtensions);
-        parsed.recommendations = [
-            ...new Set([
-                ...parsed.recommendations,
-                ...extensions.recommendations,
-            ]),
-        ];
-        await fs.promises.writeFile(
-            settingsFile,
-            JSON.stringify(parsed, null, 4),
-        );
+
+        if (missingRecommendations.length > 0) {
+            const updatedExtensions =
+                parsed.recommendations === undefined
+                    ? updateJSONCProperty(
+                          raw,
+                          ['recommendations'],
+                          missingRecommendations,
+                      )
+                    : insertJSONCArrayItems(
+                          raw,
+                          ['recommendations'],
+                          existingRecommendations.length,
+                          missingRecommendations,
+                      );
+
+            await fs.promises.writeFile(settingsFile, updatedExtensions);
+        }
     } else {
         await fs.promises.writeFile(
             settingsFile,
             JSON.stringify(extensions, null, 4),
         );
     }
+
+    return dedupeRecoveredFiles(recoveredFiles);
 }
 
 /**

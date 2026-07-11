@@ -9,12 +9,16 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectResult,
     ProjectDetails,
+    RenameProjectResult,
+    SetProjectVSCodeResult,
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
+    CreateCustomEngineManifestResult,
     InstalledRelease,
     InstallReleaseResult,
     RegisterCustomEngineResult,
+    ReleaseInstallProgress,
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type { CachedTool, InstalledTool } from '../tools/index.js';
@@ -37,9 +41,6 @@ export type EventChannelMapping = {
     'file-exists': Promise<boolean>;
     'ensure-directory': Promise<boolean>;
 
-    'show-project-menu': Promise<void>;
-    'show-release-menu': Promise<void>;
-
     'open-external': Promise<void>;
     'relaunch-app': Promise<void>;
     'install-update-and-restart': Promise<void>;
@@ -54,6 +55,7 @@ export type EventChannelMapping = {
     'remove-release': Promise<RemovedReleaseResult>;
     'reinstall-release': Promise<InstallReleaseResult>;
     'register-custom-engine': Promise<RegisterCustomEngineResult>;
+    'create-custom-engine-manifest': Promise<CreateCustomEngineManifestResult>;
 
     'open-editor-project-manager': Promise<void>;
     'check-all-releases-valid': Promise<InstalledRelease[]>;
@@ -62,8 +64,15 @@ export type EventChannelMapping = {
     'create-project': Promise<CreateProjectResult>;
     'get-projects-details': Promise<ProjectDetails[]>;
     'remove-project': Promise<ProjectDetails[]>;
+    'rename-project': Promise<RenameProjectResult>;
+    'get-project-godot-name': Promise<string | null>;
     'add-project': Promise<AddProjectToListResult>;
     'set-project-editor': Promise<ChangeProjectEditorResult>;
+    'set-project-windowed': Promise<ProjectDetails>;
+    'set-project-vscode': Promise<SetProjectVSCodeResult>;
+    'initialize-project-git': Promise<ProjectDetails>;
+    'export-project-editor-settings': Promise<void>;
+    'import-project-editor-settings': Promise<void>;
     'launch-project': Promise<void>;
     'check-project-valid': Promise<ProjectDetails>;
     'check-all-projects-valid': Promise<ProjectDetails[]>;
@@ -74,6 +83,7 @@ export type EventChannelMapping = {
 
     'projects-updated': ProjectDetails[];
     'releases-updated': InstalledRelease[];
+    'release-install-progress': ReleaseInstallProgress;
 
     'get-platform': Promise<string>;
     'get-app-version': Promise<string>;

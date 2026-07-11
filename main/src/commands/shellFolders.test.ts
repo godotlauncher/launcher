@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { dialog } from 'electron';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { openDirectoryDialog, openFileDialog } from './shellFolders.js';
@@ -46,7 +47,7 @@ describe('shellFolders dialog helpers', () => {
         ]);
 
         expect(dialog.showOpenDialog).toHaveBeenCalledWith(mainWindowMock, {
-            defaultPath: '/tmp',
+            defaultPath: path.resolve('/tmp'),
             filters: [{ name: 'JSON', extensions: ['json'] }],
             title: 'Select File',
             properties: ['openFile'],
@@ -57,7 +58,7 @@ describe('shellFolders dialog helpers', () => {
         await openDirectoryDialog('/tmp', 'Select Folder');
 
         expect(dialog.showOpenDialog).toHaveBeenCalledWith(mainWindowMock, {
-            defaultPath: '/tmp',
+            defaultPath: path.resolve('/tmp'),
             filters: [],
             title: 'Select Folder',
             properties: ['openDirectory', 'createDirectory', 'promptToCreate'],

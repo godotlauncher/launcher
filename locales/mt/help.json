@@ -3,8 +3,8 @@
   "thirdPartyNotices": "Avviżi ta' Partijiet Terzi",
   "launcher": {
     "title": "Godot Launcher",
-    "changelog": "Change Log",
-    "homePage": "Home Page",
+    "changelog": "Reġistru tal-bidliet",
+    "homePage": "Paġna ewlenija",
     "docs": "Dokumentazzjoni tal-Launcher"
   },
   "godot": {

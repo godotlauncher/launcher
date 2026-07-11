@@ -19,11 +19,16 @@
     "noPlatformAsset": "Не найден ресурс для платформы",
     "invalidEditorVersion": "Неверная версия редактора",
     "unsupportedPlatform": "Неподдерживаемая платформа",
-    "unsupportedFileExtension": "Неподдерживаемое расширение файла"
+    "unsupportedFileExtension": "Неподдерживаемое расширение файла",
+    "downloadInterrupted": "Загрузка прервана. Сервер загрузки Godot может быть перегружен или соединение было закрыто. Повторите попытку через несколько минут.",
+    "downloadFailed": "Не удалось выполнить загрузку: {{error}}",
+    "downloadFailedUnknown": "Не удалось выполнить загрузку. Повторите попытку через несколько минут.",
+    "downloadHttpError": "Не удалось загрузить ресурс: {{status}}",
+    "downloadEmptyResponse": "Не удалось выполнить загрузку: пустой ответ от сервера"
   },
   "messages": {
     "installError": "Что-то пошло не так при установке версии",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "Что-то пошло не так при переустановке версии"
   },
   "table": {
     "headers": {
@@ -42,8 +47,8 @@
       "installedDotNet": "Установлено - {{version}} .NET",
       "downloadGDScript": "Загрузить {{version}} (GDScript)",
       "downloadDotNet": "Загрузить {{version}} .NET",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "Переустановить {{version}} (GDScript)",
+      "reinstallDotNet": "Переустановить {{version}} .NET"
     },
     "status": {
       "unavailable": "Недоступно"

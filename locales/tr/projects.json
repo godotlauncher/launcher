@@ -18,8 +18,8 @@
     "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
     "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
+      "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."
     }
   },
   "addProject": {
@@ -61,14 +61,15 @@
     "dropGodotFileOnly": "Proje eklemek için lütfen bir project.godot dosyasını sürükleyin",
     "dropProjectHere": "Proje eklemek için project.godot dosyasını buraya bırakın",
     "addingProjects": "Projeler ekleniyor: {{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "Proje eklenemedi: {{error}}",
+    "dropProjectFilesHere": "Godot proje dosyalarını buraya bırakın",
+    "dropProjectFilesHelpPrefix": "Bir veya daha fazla",
+    "dropProjectFilesHelpSuffix": "dosyayı başlatıcıya eklemek için bırakın.",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+      "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
+      "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
+    },
+    "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
   },
   "changeEditor": {
     "errors": {
@@ -83,6 +84,43 @@
       "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
       "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
       "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
+    }
+  },
+  "editProject": {
+    "title": "Proje ayarları",
+    "description": "Proje adı ayarlarını güncelle.",
+    "fields": {
+      "name": {
+        "label": "Proje adı",
+        "help": "Godot Launcher'da gösterilen ad.",
+        "placeholder": "Projem"
+      },
+      "path": {
+        "label": "Proje klasörü"
+      }
+    },
+    "godot": {
+      "renameLabel": "Godot projesini de yeniden adlandır",
+      "loading": "Godot projesi denetleniyor...",
+      "currentName": "Geçerli Godot proje adı: {{name}}",
+      "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
+    },
+    "actions": {
+      "update": "Güncelle",
+      "updating": "Güncelleniyor..."
+    },
+    "validation": {
+      "required": "Proje adı gereklidir.",
+      "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez."
+    },
+    "updateFailed": "Proje güncellenemedi."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Proje bulunamadı",
+      "nameRequired": "Proje adı gereklidir.",
+      "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez.",
+      "nameExists": "'{{name}}' adlı proje zaten var."
     }
   },
   "initGit": {

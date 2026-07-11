@@ -19,11 +19,16 @@
     "noPlatformAsset": "プラットフォーム用のアセットが見つかりません",
     "invalidEditorVersion": "無効なエディタバージョン",
     "unsupportedPlatform": "サポートされていないプラットフォーム",
-    "unsupportedFileExtension": "サポートされていないファイル拡張子"
+    "unsupportedFileExtension": "サポートされていないファイル拡張子",
+    "downloadInterrupted": "ダウンロードが中断されました。Godot のダウンロードサーバーが混雑しているか、接続が閉じられた可能性があります。数分後にもう一度お試しください。",
+    "downloadFailed": "ダウンロードに失敗しました: {{error}}",
+    "downloadFailedUnknown": "ダウンロードに失敗しました。数分後にもう一度お試しください。",
+    "downloadHttpError": "アセットのダウンロードに失敗しました: {{status}}",
+    "downloadEmptyResponse": "ダウンロードに失敗しました: サーバーから空の応答が返されました"
   },
   "messages": {
     "installError": "リリースのインストール中に問題が発生しました",
-    "reinstallError": "Something went wrong when reinstalling release"
+    "reinstallError": "リリースの再インストール中に問題が発生しました"
   },
   "table": {
     "headers": {
@@ -42,8 +47,8 @@
       "installedDotNet": "インストール済み - {{version}} .NET",
       "downloadGDScript": "{{version}}（GDScript）をダウンロード",
       "downloadDotNet": "{{version}} .NETをダウンロード",
-      "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstall {{version}} .NET"
+      "reinstallGDScript": "{{version}} を再インストール (GDScript)",
+      "reinstallDotNet": "{{version}} .NET を再インストール"
     },
     "status": {
       "unavailable": "利用不可"

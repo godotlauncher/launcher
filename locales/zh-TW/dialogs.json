@@ -37,9 +37,9 @@
     "message": "無法解析使用者偏好設定。將使用預設偏好設定。"
   },
   "removeCustomEditor": {
-    "menuLabel": "Remove Custom Editor",
-    "title": "Remove Custom Editor",
-    "message": "Remove custom editor \"{{name}}\" from the launcher?",
-    "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
+    "menuLabel": "移除自訂編輯器",
+    "title": "移除自訂編輯器",
+    "message": "要從啟動器中移除自訂編輯器「{{name}}」嗎？",
+    "detail": "這會取消註冊自訂編輯器，但不會刪除裝置上的編輯器檔案。"
   }
 }

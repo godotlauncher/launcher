@@ -1,8 +1,10 @@
 import * as fs from 'node:fs';
 import type {
     AddProjectOptions,
+    CustomEngineManifest,
     InstalledRelease,
     ProjectDetails,
+    RenameProjectOptions,
     RendererType,
     UserPreferences,
 } from '@shared';
@@ -24,12 +26,20 @@ import {
 } from './commands/fileSystem.js';
 import { getInstalledTools } from './commands/installedTools.js';
 import { installRelease } from './commands/installRelease.js';
-import { showProjectMenu, showReleaseMenu } from './commands/menuCommands.js';
+import {
+    exportProjectEditorSettings,
+    importProjectEditorSettings,
+} from './commands/projectEditorSettings.js';
 import {
     checkProjectIsValid,
+    getProjectGodotName,
     getProjectsDetails,
+    initializeProjectGit,
     launchProject,
     removeProject,
+    renameProject,
+    setProjectVSCode,
+    setProjectWindowed,
 } from './commands/projects.js';
 import { registerCustomEngine } from './commands/registerCustomEngine.js';
 import { reinstallRelease } from './commands/reinstallRelease.js';
@@ -59,6 +69,7 @@ import {
     getAvailableLanguages,
     getCurrentLanguage,
 } from './i18n/index.js';
+import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import {
     getConfigDir,
@@ -229,6 +240,12 @@ export function registerHandlers() {
     );
 
     ipcMainHandler(
+        'create-custom-engine-manifest',
+        async (_, outputDirectory: string, manifest: CustomEngineManifest) =>
+            await createCustomEngineManifest(outputDirectory, manifest),
+    );
+
+    ipcMainHandler(
         'open-editor-project-manager',
         async (_, release) => await openProjectManager(release),
     );
@@ -281,6 +298,18 @@ export function registerHandlers() {
     );
 
     ipcMainHandler(
+        'rename-project',
+        async (_, project: ProjectDetails, options: RenameProjectOptions) =>
+            await renameProject(project, options),
+    );
+
+    ipcMainHandler(
+        'get-project-godot-name',
+        async (_, project: ProjectDetails) =>
+            await getProjectGodotName(project),
+    );
+
+    ipcMainHandler(
         'add-project',
         async (_, projectPath: string, options?: AddProjectOptions) =>
             await addProject(projectPath, options),
@@ -290,6 +319,36 @@ export function registerHandlers() {
         'set-project-editor',
         async (_, project: ProjectDetails, newRelease: InstalledRelease) =>
             await setProjectEditor(project, newRelease),
+    );
+
+    ipcMainHandler(
+        'set-project-windowed',
+        async (_, project: ProjectDetails, openWindowed: boolean) =>
+            await setProjectWindowed(project, openWindowed),
+    );
+
+    ipcMainHandler(
+        'set-project-vscode',
+        async (_, project: ProjectDetails, enable: boolean) =>
+            await setProjectVSCode(project, enable),
+    );
+
+    ipcMainHandler(
+        'initialize-project-git',
+        async (_, project: ProjectDetails) =>
+            await initializeProjectGit(project),
+    );
+
+    ipcMainHandler(
+        'export-project-editor-settings',
+        async (_, project: ProjectDetails) =>
+            await exportProjectEditorSettings(project),
+    );
+
+    ipcMainHandler(
+        'import-project-editor-settings',
+        async (_, project: ProjectDetails) =>
+            await importProjectEditorSettings(project),
     );
 
     ipcMainHandler('launch-project', async (_, project: ProjectDetails) =>
@@ -344,14 +403,6 @@ export function registerHandlers() {
     ipcMainHandler(
         'ensure-directory',
         async (_, pathToCheck: string) => await ensureDirectory(pathToCheck),
-    );
-
-    ipcMainHandler('show-project-menu', (_, project: ProjectDetails) =>
-        showProjectMenu(project),
-    );
-
-    ipcMainHandler('show-release-menu', (_, release: InstalledRelease) =>
-        showReleaseMenu(release),
     );
 
     // ##### tools #####

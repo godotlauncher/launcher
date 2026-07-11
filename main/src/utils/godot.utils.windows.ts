@@ -46,6 +46,11 @@ export async function removeProjectReleaseEditorWindows(
     projectEditorPath: string,
     release: InstalledRelease,
 ) {
+    if (!release.editor_path) {
+        logger.debug('Skipping Windows project editor removal: missing path');
+        return;
+    }
+
     if (fs.existsSync(projectEditorPath)) {
         // remove all files based on mono or not
         const baseFileName = path.basename(release.editor_path);

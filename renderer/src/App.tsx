@@ -1,10 +1,20 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+    Navigate,
+    NavLink,
+    Outlet,
+    Route,
+    Routes,
+    useNavigate,
+    useParams,
+} from 'react-router';
 
 import './App.css';
 
 import clsx from 'clsx';
 import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
+import { shouldShowAppLoading } from './App.model';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
 import rocketBlack from './assets/icons/godot_launcher_black.svg';
 import rocketWhite from './assets/icons/godot_launcher_white.svg';
@@ -12,10 +22,11 @@ import { AppUpdateBanner } from './components/appUpdateBanner.component';
 import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 import { COMMUNITY_DISCORD_URL } from './constants';
 import { useApp } from './hooks/useApp';
-import { useAppNavigation, type View } from './hooks/useAppNavigation';
+import { useAppNavigation } from './hooks/useAppNavigation';
 import { usePreferences } from './hooks/usePreferences';
 import { useRelease } from './hooks/useRelease';
 import { useTheme } from './hooks/useTheme';
+import { appRoutePaths, defaultSettingsTab, isSettingsTab } from './routes';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
 import { ProjectsView } from './views/projects.view';
@@ -23,15 +34,255 @@ import { SettingsView } from './views/settings.view';
 import { WelcomeView } from './views/welcome.view';
 
 function App() {
-    const { t } = useTranslation('common');
-    const [loading, setLoading] = React.useState(true);
-
-    const { currentView, setCurrentView, openExternalLink } =
-        useAppNavigation();
-
-    const { installedReleases, loading: releaseLoading } = useRelease();
     const { preferences, platform, updatePreferences } = usePreferences();
+    const { initialized: releasesInitialized } = useRelease();
 
+    const prefsLoading = !preferences;
+    const firstRun = preferences?.first_run || false;
+    const version = import.meta.env.VITE_APP_VERSION;
+
+    useEffect(() => {
+        document.title = `Godot Launcher ${version}`;
+    }, []);
+
+    if (
+        shouldShowAppLoading({
+            prefsLoading,
+            releasesInitialized,
+        })
+    ) {
+        return <LoadingView />;
+    }
+
+    if (firstRun) {
+        return <WelcomeRoutes />;
+    }
+
+    if (
+        platform === 'win32' &&
+        preferences &&
+        !preferences.windows_symlink_win_notify
+    ) {
+        return (
+            <WindowsSymlinkNoticeRoutes
+                onContinue={() => {
+                    updatePreferences({
+                        windows_symlink_win_notify: true,
+                        prefs_version: Math.max(
+                            preferences.prefs_version ?? 3,
+                            3,
+                        ),
+                    });
+                }}
+            />
+        );
+    }
+
+    return <MainAppRoutes />;
+}
+
+function LoadingView() {
+    const { t } = useTranslation('common');
+    const { theme, systemTheme } = useTheme();
+    const themeToUse = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
+
+    return (
+        <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-base-100 gap-4">
+            <img
+                src={themeToUse === 'dark' ? rocketWhite : rocketBlack}
+                alt="Godot Launcher Logo"
+                className="w-10 h-10 animate-bounce"
+            />
+            <span className="">{t('app.loadingMessage')}</span>
+        </div>
+    );
+}
+
+function WelcomeRoutes() {
+    return (
+        <Routes>
+            <Route path={appRoutePaths.welcome} element={<WelcomeView />} />
+            <Route
+                path="*"
+                element={<Navigate to={appRoutePaths.welcome} replace />}
+            />
+        </Routes>
+    );
+}
+
+type WindowsSymlinkNoticeRoutesProps = {
+    onContinue: () => void;
+};
+
+function WindowsSymlinkNoticeRoutes({
+    onContinue,
+}: WindowsSymlinkNoticeRoutesProps) {
+    return (
+        <Routes>
+            <Route
+                path={appRoutePaths.windowsSymlinkNotice}
+                element={<WindowsSymlinkNotice onContinue={onContinue} />}
+            />
+            <Route
+                path="*"
+                element={
+                    <Navigate to={appRoutePaths.windowsSymlinkNotice} replace />
+                }
+            />
+        </Routes>
+    );
+}
+
+type WindowsSymlinkNoticeProps = {
+    onContinue: () => void;
+};
+
+function WindowsSymlinkNotice({ onContinue }: WindowsSymlinkNoticeProps) {
+    const { t } = useTranslation('common');
+
+    return (
+        <div className="flex flex-col items-center justify-start w-full h-full">
+            <div className="flex flex-col h-[535px] w-[1008px] p-10">
+                <WindowsStep />
+                <div className="flex-1"></div>
+                <div className="flex justify-center">
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={onContinue}
+                    >
+                        {t('buttons.continue')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function MainAppRoutes() {
+    return (
+        <Routes>
+            <Route path={appRoutePaths.welcome} element={<DefaultRoute />} />
+            <Route
+                path={appRoutePaths.windowsSymlinkNotice}
+                element={<DefaultRoute />}
+            />
+            <Route path={appRoutePaths.root} element={<MainLayout />}>
+                <Route index element={<DefaultRoute />} />
+                <Route
+                    path={routeSegment(appRoutePaths.projects)}
+                    element={<ProjectsRoute />}
+                />
+                <Route
+                    path={routeSegment(appRoutePaths.projectNew)}
+                    element={<ProjectsRoute createOpen />}
+                />
+                <Route
+                    path={routeSegment(appRoutePaths.installs)}
+                    element={<InstallsRoute />}
+                />
+                <Route
+                    path={routeSegment(appRoutePaths.installEditor)}
+                    element={<InstallsRoute installOpen />}
+                />
+                <Route
+                    path={routeSegment(appRoutePaths.settings)}
+                    element={<DefaultSettingsRoute />}
+                />
+                <Route path="settings/:tab" element={<SettingsRoute />} />
+                <Route
+                    path={routeSegment(appRoutePaths.help)}
+                    element={<HelpVIew />}
+                />
+                <Route path="*" element={<DefaultRoute />} />
+            </Route>
+        </Routes>
+    );
+}
+
+function routeSegment(path: string): string {
+    return path.replace(/^\//, '');
+}
+
+function DefaultRoute() {
+    const { installedReleases } = useRelease();
+
+    return (
+        <Navigate
+            to={
+                installedReleases.length < 1
+                    ? appRoutePaths.installs
+                    : appRoutePaths.projects
+            }
+            replace
+        />
+    );
+}
+
+function DefaultSettingsRoute() {
+    return (
+        <Navigate to={appRoutePaths.settingsTab(defaultSettingsTab)} replace />
+    );
+}
+
+function ProjectsRoute({ createOpen = false }: { createOpen?: boolean }) {
+    const navigate = useNavigate();
+
+    return (
+        <ProjectsView
+            createOpen={createOpen}
+            onCreateOpenChange={(open) => {
+                if (open) {
+                    navigate(appRoutePaths.projectNew);
+                    return;
+                }
+
+                navigate(appRoutePaths.projects, { replace: true });
+            }}
+        />
+    );
+}
+
+function InstallsRoute({ installOpen = false }: { installOpen?: boolean }) {
+    const navigate = useNavigate();
+
+    return (
+        <InstallsView
+            installOpen={installOpen}
+            onInstallOpenChange={(open) => {
+                if (open) {
+                    navigate(appRoutePaths.installEditor);
+                    return;
+                }
+
+                navigate(appRoutePaths.installs, { replace: true });
+            }}
+        />
+    );
+}
+
+function SettingsRoute() {
+    const navigate = useNavigate();
+    const { tab } = useParams();
+
+    if (!isSettingsTab(tab)) {
+        return <DefaultSettingsRoute />;
+    }
+
+    return (
+        <SettingsView
+            activeTab={tab}
+            onActiveTabChange={(nextTab) => {
+                navigate(appRoutePaths.settingsTab(nextTab));
+            }}
+        />
+    );
+}
+
+function MainLayout() {
+    const { t } = useTranslation('common');
+    const { currentView, openExternalLink } = useAppNavigation();
+    const { installedReleases } = useRelease();
     const {
         updateAvailable,
         installAndRelaunch,
@@ -39,125 +290,34 @@ function App() {
         skipAppUpdate,
     } = useApp();
 
-    const { theme, systemTheme } = useTheme();
-
-    // Derive values from preferences and loading state
-    const prefsLoading = !preferences;
-    const firstRun = preferences?.first_run || false;
-    // set the title of the app
-    const version = import.meta.env.VITE_APP_VERSION;
-
-    useEffect(() => {
-        document.title = `Godot Launcher ${version}`;
-    });
-
-    useEffect(() => {
-        if (!releaseLoading) {
-            // Coordinating loading states is a valid use case
-            setLoading(false);
-            if (installedReleases.length < 1) {
-                setCurrentView('installs');
-            }
-        }
-    }, [releaseLoading, installedReleases.length, setCurrentView]);
-
-    const changeView = (view: View) => {
-        setCurrentView(view);
-    };
-
-    const ShowView = () => {
-        switch (currentView) {
-            case 'projects':
-                return <ProjectsView />;
-            case 'installs':
-                return <InstallsView />;
-            case 'settings':
-                return <SettingsView />;
-            case 'help':
-                return <HelpVIew />;
-        }
-    };
-
-    if (loading || prefsLoading) {
-        const themeToUse = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
-        return (
-            <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-base-100 gap-4">
-                <img
-                    src={themeToUse === 'dark' ? rocketWhite : rocketBlack}
-                    alt="Godot Launcher Logo"
-                    className="w-10 h-10 animate-bounce"
-                />
-                <span className="">{t('app.loadingMessage')}</span>
-            </div>
-        );
-    }
-
-    if (firstRun) {
-        return <WelcomeView />;
-    }
-
-    // if the user is on windows and has not acknowledged the symlink change, show the windows step
-    if (
-        platform === 'win32' &&
-        preferences &&
-        !preferences.windows_symlink_win_notify
-    ) {
-        return (
-            <div className="flex flex-col items-center justify-start w-full h-full">
-                <div className="flex flex-col h-[535px] w-[1008px] p-10">
-                    <WindowsStep />
-                    <div className="flex-1"></div>
-                    <div className="flex justify-center">
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={() => {
-                                updatePreferences({
-                                    windows_symlink_win_notify: true,
-                                    prefs_version: Math.max(
-                                        preferences.prefs_version ?? 3,
-                                        3,
-                                    ),
-                                });
-                            }}
-                        >
-                            {t('buttons.continue')}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const viewClassName = (view: string) =>
+        clsx('py-2 rounded-md', {
+            'menu-active': currentView === view,
+        });
 
     return (
         <div className="flex h-full overflow-hidden">
             <div className="flex flex-col h-full w-56 border-r-2 border-solid border-base-200">
                 <ul className="menu rounded-box w-56 gap-2">
                     <li>
-                        <button
-                            type="button"
+                        <NavLink
+                            to={appRoutePaths.projects}
                             data-testid="btnProjects"
-                            className={clsx('py-2 rounded-md', {
-                                'menu-active': currentView === 'projects',
-                            })}
-                            onClick={() => changeView('projects')}
+                            className={viewClassName('projects')}
                         >
                             <Package /> {t('app.navigation.projects')}
-                        </button>
+                        </NavLink>
                     </li>
                     <li>
-                        <button
-                            type="button"
+                        <NavLink
+                            to={appRoutePaths.installs}
                             data-testid="btnInstalls"
-                            className={clsx('py-2 rounded-md', {
-                                'menu-active': currentView === 'installs',
-                            })}
-                            onClick={() => changeView('installs')}
+                            className={viewClassName('installs')}
                         >
                             {' '}
                             <HardDrive />
                             {t('app.navigation.installs')}
-                        </button>
+                        </NavLink>
                         {installedReleases.length < 1 && (
                             <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
                         )}
@@ -169,9 +329,9 @@ function App() {
                     installAndRelaunch={installAndRelaunch}
                     downloadAppUpdate={downloadAppUpdate}
                     skipAppUpdate={skipAppUpdate}
+                    openUpdateUrl={openExternalLink}
                 />
                 <div className="border-t-2 border-solid border-base-200">
-                    {/* <div className="flex flex-row items-center mx-2 rounded p-2 bg-info/50 h-10 text-xs text-white">Update Available</div> */}
                     <ul className="menu menu-md rounded-box w-56 gap-1 ">
                         <li>
                             <button
@@ -192,31 +352,31 @@ function App() {
                         </li>
 
                         <li>
-                            <button
-                                type="button"
+                            <NavLink
+                                to={appRoutePaths.help}
                                 data-testid="btnHelp"
                                 className={clsx('py-2 rounded-md relative', {
                                     'menu-active': currentView === 'help',
                                 })}
-                                onClick={() => changeView('help')}
                             >
                                 <CircleHelp />
                                 {t('app.navigation.help')}
-                            </button>
+                            </NavLink>
                         </li>
 
                         <li className="">
-                            <button
-                                type="button"
+                            <NavLink
+                                to={appRoutePaths.settingsTab(
+                                    defaultSettingsTab,
+                                )}
                                 data-testid="btnSettings"
                                 className={clsx('py-2 rounded-md relative', {
                                     'menu-active': currentView === 'settings',
                                 })}
-                                onClick={() => changeView('settings')}
                             >
                                 <Settings />
                                 {t('app.navigation.settings')}
-                            </button>
+                            </NavLink>
                         </li>
                     </ul>
                 </div>
@@ -224,7 +384,7 @@ function App() {
             </div>
 
             <div className="flex flex-row flex-1 p-2 bg-base-200">
-                {ShowView()}
+                <Outlet />
             </div>
         </div>
     );

@@ -68,7 +68,8 @@
     "invalidReasons": {
       "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
       "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+    },
+    "recoveredVSCodeConfig": "Some VS Code config files were invalid. Godot Launcher recreated them and preserved the originals as .bad copies."
   },
   "changeEditor": {
     "errors": {
@@ -83,6 +84,43 @@
       "vscodeNotInstalled": "Visual Studio Code is not installed on this computer.",
       "missingLaunchPath": "Godot launch path is missing for this project.",
       "invalidProjectDefinition": "Unable to determine editor settings template for this Godot version."
+    }
+  },
+  "editProject": {
+    "title": "Project Settings",
+    "description": "Update project naming settings.",
+    "fields": {
+      "name": {
+        "label": "Project name",
+        "help": "Name shown in Godot Launcher.",
+        "placeholder": "My Project"
+      },
+      "path": {
+        "label": "Project folder"
+      }
+    },
+    "godot": {
+      "renameLabel": "Also rename Godot project",
+      "loading": "Checking Godot project...",
+      "currentName": "Current Godot project name: {{name}}",
+      "unavailable": "project.godot is unavailable. Only the launcher name can be changed."
+    },
+    "actions": {
+      "update": "Update",
+      "updating": "Updating..."
+    },
+    "validation": {
+      "required": "Project name is required.",
+      "invalidName": "Project name cannot contain line breaks or control characters."
+    },
+    "updateFailed": "Could not update the project."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Project not found",
+      "nameRequired": "Project name is required.",
+      "invalidName": "Project name cannot contain line breaks or control characters.",
+      "nameExists": "Project with name '{{name}}' already exists."
     }
   },
   "initGit": {

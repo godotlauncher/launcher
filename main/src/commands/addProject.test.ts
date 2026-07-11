@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addProject } from './addProject.js';
 
@@ -23,6 +24,7 @@ const godotProjectMocks = vi.hoisted(() => ({
     getProjectNameFromParsed: vi.fn(),
     getProjectRendererFromParsed: vi.fn(),
     getProjectConfigVersionFromParsed: vi.fn(),
+    getProjectIconUrlFromParsed: vi.fn(),
     createNewEditorSettings: vi.fn(),
     updateEditorSettings: vi.fn(),
 }));
@@ -160,6 +162,7 @@ const {
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     getProjectConfigVersionFromParsed,
+    getProjectIconUrlFromParsed,
     createNewEditorSettings,
     updateEditorSettings,
 } = godotProjectMocks;
@@ -195,6 +198,7 @@ describe('addProject', () => {
         getProjectNameFromParsed.mockResolvedValue('Sample Project');
         getProjectRendererFromParsed.mockResolvedValue('FORWARD_PLUS');
         getProjectConfigVersionFromParsed.mockResolvedValue(5);
+        getProjectIconUrlFromParsed.mockReturnValue(undefined);
 
         getDefaultDirs.mockReturnValue({
             configDir: '/config',
@@ -247,9 +251,9 @@ describe('addProject', () => {
         setProjectEditorRelease.mockResolvedValue('/fake/launch');
 
         // Mock VSCode utilities
-        updateVSCodeSettings.mockResolvedValue(undefined);
-        addVSCodeNETLaunchConfig.mockResolvedValue(undefined);
-        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
+        updateVSCodeSettings.mockResolvedValue([]);
+        addVSCodeNETLaunchConfig.mockResolvedValue([]);
+        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([]);
         createNewEditorSettings.mockResolvedValue('/fake/editor/settings');
         updateEditorSettings.mockResolvedValue(undefined);
         readProjectLauncherConfig.mockResolvedValue(null);
@@ -318,6 +322,49 @@ describe('addProject', () => {
         expect(result.success).toBe(true);
         expect(result.newProject?.release.version).toBe('4.3-beta1');
         expect(result.newProject?.release.mono).toBe(false);
+    });
+
+    it('restores last opened from .godotlauncher when importing', async () => {
+        const lastOpened = new Date('2024-05-06T07:08:09.000Z');
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            project: {
+                last_opened: lastOpened,
+            },
+            editor: {
+                channel: 'official',
+                flavor: 'gdscript',
+                base_version: '4.3',
+                version: '4.3-stable',
+            },
+        });
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.3-stable',
+                version_number: 4.3,
+                install_path: '/install/4.3',
+                editor_path: '/install/4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.last_opened).toBe(lastOpened);
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ version: '4.3-stable' }),
+            '1.0.0',
+            lastOpened,
+        );
     });
 
     it('returns a resolution for an official .godotlauncher version with an installed fallback', async () => {
@@ -539,6 +586,73 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(result).not.toHaveProperty('additionalInfo');
+        expect(result.recoveredVSCodeConfigFiles).toBeUndefined();
+    });
+
+    it('stores the resolved project icon url when importing', async () => {
+        getProjectIconUrlFromParsed.mockReturnValue(
+            'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+        );
+
+        const result = await addProject('/fake/project/project.godot');
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.icon_path).toBe(
+            'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+        );
+        expect(getProjectIconUrlFromParsed).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.any(Map),
+        );
+    });
+
+    it('returns recovered VS Code config files as project-relative paths', async () => {
+        const projectPath = path.resolve('/fake/project/project.godot');
+        const projectDir = path.dirname(projectPath);
+        const settingsBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'settings.json.1712345678901.bad',
+        );
+        const launchBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'launch.json.1712345678902.bad',
+        );
+        const extensionsBackup = path.resolve(
+            projectDir,
+            '.vscode',
+            'extensions.json.1712345678903.bad',
+        );
+        getInstalledTools.mockResolvedValue([
+            {
+                name: 'VSCode',
+                version: '1.85.0',
+                path: '/usr/bin/code',
+            },
+        ]);
+        existsSync.mockImplementation((target) => {
+            if (typeof target === 'string') {
+                if (target.endsWith('project.godot')) return true;
+                if (target.includes('.vscode')) return true;
+                return false;
+            }
+            return false;
+        });
+        updateVSCodeSettings.mockResolvedValue([settingsBackup, launchBackup]);
+        addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
+            extensionsBackup,
+        ]);
+        addVSCodeNETLaunchConfig.mockResolvedValue([launchBackup]);
+
+        const result = await addProject(projectPath);
+
+        expect(result.success).toBe(true);
+        expect(result.recoveredVSCodeConfigFiles).toEqual([
+            '.vscode/settings.json.1712345678901.bad',
+            '.vscode/launch.json.1712345678902.bad',
+            '.vscode/extensions.json.1712345678903.bad',
+        ]);
     });
 
     it('should create new editor settings when VSCode is detected and settings do not exist', async () => {

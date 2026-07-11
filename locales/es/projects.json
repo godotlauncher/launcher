@@ -18,8 +18,8 @@
     "windowedMode": "Este proyecto se abre en modo ventana",
     "gitProject": "El proyecto usa Git para el control de versiones",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location.",
-      "missingEditor": "Editor not found. Check the editor location."
+      "missingProjectFile": "No se encontró el archivo del proyecto. Comprueba la ubicación del proyecto.",
+      "missingEditor": "No se encontró el editor. Comprueba la ubicación del editor."
     }
   },
   "addProject": {
@@ -61,14 +61,15 @@
     "dropGodotFileOnly": "Por favor, arrastre un archivo project.godot para añadir un proyecto",
     "dropProjectHere": "Suelte el archivo project.godot aquí para añadir el proyecto",
     "addingProjects": "Añadiendo proyectos: {{current}}/{{total}}",
-    "failedAddProject": "Failed to add project: {{error}}",
-    "dropProjectFilesHere": "Drop Godot project files here",
-    "dropProjectFilesHelpPrefix": "Drop one or more",
-    "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+    "failedAddProject": "No se pudo añadir el proyecto: {{error}}",
+    "dropProjectFilesHere": "Suelta aquí los archivos de proyecto de Godot",
+    "dropProjectFilesHelpPrefix": "Suelta uno o más",
+    "dropProjectFilesHelpSuffix": "archivos para añadirlos al launcher.",
     "invalidReasons": {
-      "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
-      "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
-    }
+      "missingProjectFile": "No se encontró el archivo del proyecto. Comprueba la ubicación del proyecto o elimínalo y vuelve a añadirlo.",
+      "missingEditor": "El editor seleccionado no está disponible. Monta la unidad o elige otro editor."
+    },
+    "recoveredVSCodeConfig": "Algunos archivos de configuración de VS Code no eran válidos. Godot Launcher los volvió a crear y conservó los originales como copias .bad."
   },
   "changeEditor": {
     "errors": {
@@ -83,6 +84,43 @@
       "vscodeNotInstalled": "Visual Studio Code no está instalado en este ordenador.",
       "missingLaunchPath": "Falta la ruta de inicio de Godot para este proyecto.",
       "invalidProjectDefinition": "No se pudo determinar la plantilla de configuración del editor para esta versión de Godot."
+    }
+  },
+  "editProject": {
+    "title": "Configuración del proyecto",
+    "description": "Actualiza la configuración del nombre del proyecto.",
+    "fields": {
+      "name": {
+        "label": "Nombre del proyecto",
+        "help": "Nombre mostrado en Godot Launcher.",
+        "placeholder": "Mi proyecto"
+      },
+      "path": {
+        "label": "Carpeta del proyecto"
+      }
+    },
+    "godot": {
+      "renameLabel": "Renombrar también el proyecto de Godot",
+      "loading": "Comprobando proyecto de Godot...",
+      "currentName": "Nombre actual del proyecto de Godot: {{name}}",
+      "unavailable": "project.godot no está disponible. Solo se puede cambiar el nombre del launcher."
+    },
+    "actions": {
+      "update": "Actualizar",
+      "updating": "Actualizando..."
+    },
+    "validation": {
+      "required": "El nombre del proyecto es obligatorio.",
+      "invalidName": "El nombre del proyecto no puede contener saltos de línea ni caracteres de control."
+    },
+    "updateFailed": "No se pudo actualizar el proyecto."
+  },
+  "renameProject": {
+    "errors": {
+      "projectNotFound": "Proyecto no encontrado",
+      "nameRequired": "El nombre del proyecto es obligatorio.",
+      "invalidName": "El nombre del proyecto no puede contener saltos de línea ni caracteres de control.",
+      "nameExists": "Ya existe un proyecto con el nombre '{{name}}'."
     }
   },
   "initGit": {
