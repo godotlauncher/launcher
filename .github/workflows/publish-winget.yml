@@ -105,9 +105,8 @@ jobs:
             throw "WingetCreate did not generate the expected manifest directory '$manifestPath'."
           }
 
-          Install-PackageProvider -Name NuGet -Force | Out-Null
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
+          Import-Module Microsoft.PowerShell.PSResourceGet
+          Install-PSResource -Name Microsoft.WinGet.Client -Repository PSGallery -TrustRepository -Reinstall -Quiet
           Import-Module Microsoft.WinGet.Client
           Repair-WinGetPackageManager -Force -Latest
           winget --version
