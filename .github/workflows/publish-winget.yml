@@ -36,7 +36,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Validate, test, and submit to WinGet
+      - name: Generate, validate, and submit to WinGet
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -111,40 +111,12 @@ jobs:
           Repair-WinGetPackageManager -Force -Latest
           winget --version
 
-
           winget validate --manifest $manifestPath --disable-interactivity
 
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
 
-          winget settings --enable LocalManifestFiles
-
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
-
-          winget install `
-            --manifest $manifestPath `
-            --architecture x64 `
-            --silent `
-            --accept-package-agreements `
-            --accept-source-agreements `
-            --disable-interactivity
-
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
-
-          winget uninstall `
-            --id $env:PACKAGE_IDENTIFIER `
-            --exact `
-            --silent `
-            --disable-interactivity
-
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
 
           .\wingetcreate.exe submit `
             --prtitle "Submitting Godot Launcher $version" `
