@@ -17,6 +17,8 @@ concurrency:
 env:
   MANIFEST_DIR: winget-manifests
   PACKAGE_IDENTIFIER: GodotLauncher.Launcher
+  WINGETCREATE_VERSION: 1.12.8.0
+  WINGETCREATE_SHA256: 8bd738851b524885410112678e3771b341c5c716de60fbbecb88ab0a363ed85d
 
 jobs:
   publish-winget:
@@ -30,7 +32,7 @@ jobs:
       WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
     steps:
       - name: Setup .NET for WingetCreate
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '6.0.x'
 
@@ -40,9 +42,13 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $ProgressPreference = 'SilentlyContinue'
 
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            throw 'The WINGET_CREATE_GITHUB_TOKEN repository secret is not configured.'
+          }
+
           $tag = $env:INPUT_TAG.Trim()
-          if (-not $tag.StartsWith('v')) {
-            throw "Expected a v-prefixed release tag, for example v1.10.0. Got '$tag'."
+          if ($tag -notmatch '^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+            throw "Expected a v-prefixed semantic version tag, for example v1.10.0. Got '$tag'."
           }
 
           $version = $tag.Substring(1)
@@ -76,7 +82,13 @@ jobs:
           $x64Url = Get-ReleaseAssetUrl -Name "Godot_Launcher-$version-win_x64.exe"
           $arm64Url = Get-ReleaseAssetUrl -Name "Godot_Launcher-$version-win_arm64.exe"
 
-          curl.exe -JLO https://aka.ms/wingetcreate/latest
+          $wingetCreateUrl = "https://github.com/microsoft/winget-create/releases/download/v$env:WINGETCREATE_VERSION/wingetcreate.exe"
+          Invoke-WebRequest -Uri $wingetCreateUrl -OutFile wingetcreate.exe
+
+          $wingetCreateHash = (Get-FileHash -Path wingetcreate.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($wingetCreateHash -ne $env:WINGETCREATE_SHA256) {
+            throw "WingetCreate checksum mismatch. Expected '$env:WINGETCREATE_SHA256', got '$wingetCreateHash'."
+          }
 
           $manifestDir = Join-Path $PWD $env:MANIFEST_DIR
           .\wingetcreate.exe update $env:PACKAGE_IDENTIFIER `
@@ -110,6 +122,7 @@ jobs:
 
           winget install `
             --manifest $manifestDir `
+            --architecture x64 `
             --silent `
             --accept-package-agreements `
             --accept-source-agreements `
@@ -121,6 +134,7 @@ jobs:
 
           winget uninstall `
             --id $env:PACKAGE_IDENTIFIER `
+            --exact `
             --silent `
             --disable-interactivity
 
@@ -136,3 +150,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
+
+      - name: Upload generated WinGet manifests
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: winget-manifests-${{ inputs.tag }}
+          path: ${{ env.MANIFEST_DIR }}
+          if-no-files-found: warn
