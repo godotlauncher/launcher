@@ -38,6 +38,7 @@ async function initializeI18n(): Promise<void> {
             lng: state.locale,
             fallbackLng: state.fallbackLocale,
             supportedLngs: state.supportedLocales,
+            lowerCaseLng: true,
             ns: state.namespaces,
             defaultNS: 'common',
             resources: {},
