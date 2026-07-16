@@ -1,4 +1,4 @@
-import type { SetAutoStartResult, UserPreferences } from '@shared';
+import type { SetAutoStartResult, UserPreferences } from '@shared/contracts';
 import {
     createContext,
     type PropsWithChildren,
@@ -7,6 +7,7 @@ import {
     useEffect,
     useState,
 } from 'react';
+import { appBridge } from '../bridge.ts';
 
 interface AppPreferences {
     preferences: UserPreferences | null;
@@ -43,7 +44,7 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
     const [platform, setPlatform] = useState<string>('');
 
     const loadPreferences = useCallback(async () => {
-        const preferences = await window.electron.getUserPreferences();
+        const preferences = await appBridge.getUserPreferences();
         setPreferences(preferences);
         return preferences;
     }, []);
@@ -51,7 +52,7 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
     const savePreferences = useCallback(
         async (preferences: UserPreferences) => {
             const newPreferences =
-                await window.electron.setUserPreferences(preferences);
+                await appBridge.setUserPreferences(preferences);
             setPreferences({ ...newPreferences });
             return newPreferences;
         },
@@ -59,7 +60,7 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
     );
 
     useEffect(() => {
-        window.electron.getPlatform().then(setPlatform);
+        appBridge.getPlatform().then(setPlatform);
         // Load preferences on mount - this is intentional initial data fetching
         void loadPreferences();
     }, [loadPreferences]);
@@ -76,13 +77,13 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
         autoStart: boolean,
         hidden: boolean,
     ): Promise<SetAutoStartResult> => {
-        const result = await window.electron.setAutoStart(autoStart, hidden);
+        const result = await appBridge.setAutoStart(autoStart, hidden);
         await loadPreferences();
         return result;
     };
 
     const setAutoUpdates = async (enabled: boolean): Promise<boolean> => {
-        const result = await window.electron.setAutoCheckUpdates(enabled);
+        const result = await appBridge.setAutoCheckUpdates(enabled);
         await loadPreferences();
         return result;
     };
@@ -93,7 +94,7 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
         setPreferences((prev) =>
             prev ? { ...prev, receive_beta_updates: enabled } : prev,
         );
-        const result = await window.electron.setReceiveBetaUpdates(enabled);
+        const result = await appBridge.setReceiveBetaUpdates(enabled);
         await loadPreferences();
         return result;
     };

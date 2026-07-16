@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "確定",
-    "cancel": "取消",
-    "continue": "繼續",
-    "select": "選擇",
-    "retry": "重試",
-    "remove": "移除",
-    "copyPath": "複製路徑",
-    "openPath": "開啟路徑",
-    "reinstall": "重新安裝"
-  },
-  "error": "錯誤",
-  "success": "成功",
-  "warning": "警告",
-  "info": "資訊",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "路徑必須是非空字串。",
-      "pathMustBeAbsolute": "路徑必須是絕對路徑。",
-      "targetNotDirectory": "目標路徑已存在，但不是資料夾。"
+    "buttons": {
+        "ok": "確定",
+        "cancel": "取消",
+        "continue": "繼續",
+        "select": "選擇",
+        "retry": "重試",
+        "remove": "移除",
+        "copyPath": "複製路徑",
+        "openPath": "開啟路徑",
+        "reinstall": "重新安裝"
+    },
+    "error": "錯誤",
+    "success": "成功",
+    "warning": "警告",
+    "info": "資訊",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "路徑必須是非空字串。",
+            "pathMustBeAbsolute": "路徑必須是絕對路徑。",
+            "targetNotDirectory": "目標路徑已存在，但不是資料夾。"
+        }
+    },
+    "app": {
+        "loadingMessage": "正在準備中…",
+        "navigation": {
+            "projects": "專案",
+            "installs": "安裝",
+            "help": "說明",
+            "settings": "設定",
+            "joinCommunity": "加入社群"
+        },
+        "update": {
+            "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下載更新</DownloadButton> 或 <SkipButton>跳過此版本</SkipButton>",
+            "availableNoVersion": "有新版本可用。<DownloadButton>下載更新</DownloadButton>",
+            "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
+            "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
+            "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>或<SkipButton>略過此版本</SkipButton>",
+            "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "選擇編輯器版本",
+        "tableHeaders": {
+            "name": "名稱"
+        },
+        "noReleases": "找不到發行版本，需要 {{version}}.x 的編輯器版本",
+        "installReleases": "安裝發行版本",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "預先釋出"
+        },
+        "unavailable": "版本無法使用",
+        "unavailableHint": "在繼續之前，請掛載磁碟機或選擇其他編輯器。"
     }
-  },
-  "app": {
-    "loadingMessage": "正在準備中…",
-    "navigation": {
-      "projects": "專案",
-      "installs": "安裝",
-      "help": "說明",
-      "settings": "設定",
-      "joinCommunity": "加入社群"
-    },
-    "update": {
-      "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下載更新</DownloadButton> 或 <SkipButton>跳過此版本</SkipButton>",
-      "availableNoVersion": "有新版本可用。<DownloadButton>下載更新</DownloadButton>",
-      "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
-      "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
-      "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>或<SkipButton>略過此版本</SkipButton>",
-      "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "選擇編輯器版本",
-    "tableHeaders": {
-      "name": "名稱"
-    },
-    "noReleases": "找不到發行版本，需要 {{version}}.x 的編輯器版本",
-    "installReleases": "安裝發行版本",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "預先釋出"
-    },
-    "unavailable": "版本無法使用",
-    "unavailableHint": "在繼續之前，請掛載磁碟機或選擇其他編輯器。"
-  }
 }

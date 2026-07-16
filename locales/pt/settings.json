@@ -1,138 +1,138 @@
 {
-  "title": "Definições",
-  "tabs": {
-    "projects": "Projetos",
-    "installs": "Instalações",
-    "appearance": "Aparência",
-    "behavior": "Comportamento",
-    "tools": "Ferramentas",
-    "updates": "Atualizações"
-  },
-  "appearance": {
-    "theme": {
-      "title": "Tema",
-      "description": "Personalize a aparência do Godot Launcher",
-      "light": "Claro",
-      "dark": "Escuro",
-      "system": "Sistema (automático)"
+    "title": "Definições",
+    "tabs": {
+        "projects": "Projetos",
+        "installs": "Instalações",
+        "appearance": "Aparência",
+        "behavior": "Comportamento",
+        "tools": "Ferramentas",
+        "updates": "Atualizações"
+    },
+    "appearance": {
+        "theme": {
+            "title": "Tema",
+            "description": "Personalize a aparência do Godot Launcher",
+            "light": "Claro",
+            "dark": "Escuro",
+            "system": "Sistema (automático)"
+        }
+    },
+    "behavior": {
+        "projects": {
+            "title": "Projetos",
+            "description": "Escolha o comportamento do Godot Launcher para os projetos.",
+            "confirmRemove": "Pedir confirmação ao remover projetos."
+        },
+        "autoStart": {
+            "title": "Preferência de arranque",
+            "description": "Escolha o que o Godot Launcher faz quando o computador inicia",
+            "linuxWarning": "O arranque automático não é suportado no Linux de momento",
+            "startOnBoot": "Iniciar quando o computador arranca.",
+            "startInTray": "Iniciar na bandeja."
+        },
+        "projectLaunch": {
+            "title": "Ação após iniciar projeto",
+            "description": "Escolha o que o Godot Launcher faz depois de iniciar um projeto",
+            "none": "Nada",
+            "minimize": "Minimizar",
+            "closeToTray": "Fechar para a bandeja do sistema"
+        },
+        "projectsLocation": {
+            "title": "Localização de projetos",
+            "description": "Selecione uma localização para novos projetos. Os projetos existentes não serão afetados.",
+            "defaultLocation": "Localização predefinida",
+            "waitingForDialog": "A aguardar diálogo..."
+        },
+        "editorsLocation": {
+            "title": "Localização das instalações do editor",
+            "description": "Escolha uma localização para as instalações do editor. As instalações existentes não serão afetadas.",
+            "installLocation": "Local de instalação",
+            "waitingForDialog": "A aguardar diálogo..."
+        },
+        "clearReleaseCache": {
+            "title": "Atualizar Cache De Versões",
+            "description": "Remove os metadados de versões de Godot guardados e obtém as builds mais recentes do GitHub.",
+            "cta": "Atualizar cache",
+            "clearing": "A atualizar...",
+            "cooldownNotice": "A atualização da cache está temporariamente desativada para evitar atingir os limites do GitHub.",
+            "successTitle": "Cache Atualizada Com Sucesso",
+            "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
+            "errorTitle": "Não Foi Possível Atualizar A Cache",
+            "errorMessage": "Ocorreu um problema ao atualizar a cache de versões. Tente novamente mais tarde."
+        }
+    },
+    "general": {
+        "language": {
+            "label": "Idioma",
+            "description": "Selecione o idioma do Godot Launcher (não altera o idioma do Godot)",
+            "system": "Sistema (deteção automática)"
+        }
+    },
+    "tools": {
+        "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma nova procura completa se alterou instalações neste sistema.",
+        "actions": {
+            "refresh": "Reescanear ferramentas",
+            "scanning": "Reescanear..."
+        },
+        "status": {
+            "available": "Disponível",
+            "missing": "Não encontrado",
+            "invalid": "Caminho não encontrado",
+            "unknown": "Desconhecido"
+        },
+        "git": {
+            "title": "Git",
+            "description": "O Git é um sistema de controlo de versões distribuído para gerir alterações de código e colaboração.",
+            "installed": "Instalado:",
+            "version": "Versão:"
+        },
+        "vscode": {
+            "title": "Visual Studio Code",
+            "description": "Um editor de código rápido e extensível com suporte GDScript e .NET para o Godot.",
+            "notDetectedTitle": "Visual Studio Code não detetado!",
+            "notDetectedMessage": "O Godot Launcher só consegue detetar automaticamente o VS Code se este estiver no PATH. Em alternativa, pode indicar abaixo o caminho para o executável.",
+            "pathLabel": "Caminho para o executável do Visual Studio Code",
+            "selectExecutable": "Selecionar executável do Visual Studio Code",
+            "autodetected": "(detetado automaticamente)",
+            "noPathSet": "sem caminho definido",
+            "clearCustomPath": "Limpar caminho personalizado",
+            "waitingForDialog": "A aguardar diálogo...",
+            "installed": "Instalado:"
+        }
+    },
+    "updates": {
+        "title": "Atualizações",
+        "description": "Configure como o Godot Launcher procura atualizações",
+        "autoCheck": "Procurar atualizações automaticamente",
+        "betaChannel": "Receber atualizações beta",
+        "betaChannelDescription": "Baixe builds pré-lançamento do GitHub; podem ser menos estáveis que os lançamentos oficiais.",
+        "checkNow": "Procurar atualizações",
+        "downloadNow": "Baixar atualização",
+        "skipVersion": "Ignorar esta versão",
+        "unskipVersion": "Reativar atualização ignorada",
+        "readyWithVersion": "A versão {{version}} está pronta, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>",
+        "readyNoVersion": "A atualização está pronta, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>",
+        "manualWithVersion": "A versão {{version}} está disponível, mas a instalação automática não é suportada neste sistema rpm-ostree. <Button>Abrir página de transferência</Button>",
+        "manualNoVersion": "Está disponível uma nova versão, mas a instalação automática não é suportada neste sistema rpm-ostree. <Button>Abrir página de transferência</Button>"
+    },
+    "windowsSymlinks": {
+        "title": "Ligações simbólicas do editor",
+        "windowsOnly": "Apenas Windows",
+        "description": "Escolha se os editores dos projetos usam ligações simbólicas opcionais ou mantêm cópias locais.",
+        "checkbox": "Utilizar ligações simbólicas para os editores dos projetos no Windows. Mantém-se desativado por predefinição para poder optar quando estiver preparado para potenciais pedidos de elevação durante as atualizações do editor.",
+        "note": "Alterar esta definição não converte as ligações existentes; afeta apenas o comportamento das atualizações futuras do editor.",
+        "enableTitle": "Ativar ligações simbólicas do editor",
+        "disableTitle": "Desativar ligações simbólicas do editor",
+        "enableAction": "Ativar ligações simbólicas",
+        "disableAction": "Desativar ligações simbólicas",
+        "enableDescription": {
+            "line1": "Quando ativado, o Godot Launcher liga cada projeto ao editor instalado em vez de o copiar.",
+            "line2": "Isto mantém o uso de disco reduzido, mas o Windows pode solicitar aprovação de administrador quando são criadas novas ligações simbólicas.",
+            "line3": "Os projetos existentes mantêm as cópias locais até que a versão do editor seja alterada ou reinstalada."
+        },
+        "disableDescription": {
+            "line1": "Volte a utilizar cópias locais para evitar pedidos de elevação. O Godot Launcher irá copiar os ficheiros do editor para cada projeto.",
+            "line2": "As ligações simbólicas existentes mantêm-se até que a versão do editor seja alterada ou reinstalada."
+        }
     }
-  },
-  "behavior": {
-    "projects": {
-      "title": "Projetos",
-      "description": "Escolha o comportamento do Godot Launcher para os projetos.",
-      "confirmRemove": "Pedir confirmação ao remover projetos."
-    },
-    "autoStart": {
-      "title": "Preferência de arranque",
-      "description": "Escolha o que o Godot Launcher faz quando o computador inicia",
-      "linuxWarning": "O arranque automático não é suportado no Linux de momento",
-      "startOnBoot": "Iniciar quando o computador arranca.",
-      "startInTray": "Iniciar na bandeja."
-    },
-    "projectLaunch": {
-      "title": "Ação após iniciar projeto",
-      "description": "Escolha o que o Godot Launcher faz depois de iniciar um projeto",
-      "none": "Nada",
-      "minimize": "Minimizar",
-      "closeToTray": "Fechar para a bandeja do sistema"
-    },
-    "projectsLocation": {
-      "title": "Localização de projetos",
-      "description": "Selecione uma localização para novos projetos. Os projetos existentes não serão afetados.",
-      "defaultLocation": "Localização predefinida",
-      "waitingForDialog": "A aguardar diálogo..."
-    },
-    "editorsLocation": {
-      "title": "Localização das instalações do editor",
-      "description": "Escolha uma localização para as instalações do editor. As instalações existentes não serão afetadas.",
-      "installLocation": "Local de instalação",
-      "waitingForDialog": "A aguardar diálogo..."
-    },
-    "clearReleaseCache": {
-      "title": "Atualizar Cache De Versões",
-      "description": "Remove os metadados de versões de Godot guardados e obtém as builds mais recentes do GitHub.",
-      "cta": "Atualizar cache",
-      "clearing": "A atualizar...",
-      "cooldownNotice": "A atualização da cache está temporariamente desativada para evitar atingir os limites do GitHub.",
-      "successTitle": "Cache Atualizada Com Sucesso",
-      "successMessage": "As listas de versões foram atualizadas com as builds mais recentes.",
-      "errorTitle": "Não Foi Possível Atualizar A Cache",
-      "errorMessage": "Ocorreu um problema ao atualizar a cache de versões. Tente novamente mais tarde."
-    }
-  },
-  "general": {
-    "language": {
-      "label": "Idioma",
-      "description": "Selecione o idioma do Godot Launcher (não altera o idioma do Godot)",
-      "system": "Sistema (deteção automática)"
-    }
-  },
-  "tools": {
-    "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma nova procura completa se alterou instalações neste sistema.",
-    "actions": {
-      "refresh": "Reescanear ferramentas",
-      "scanning": "Reescanear..."
-    },
-    "status": {
-      "available": "Disponível",
-      "missing": "Não encontrado",
-      "invalid": "Caminho não encontrado",
-      "unknown": "Desconhecido"
-    },
-    "git": {
-      "title": "Git",
-      "description": "O Git é um sistema de controlo de versões distribuído para gerir alterações de código e colaboração.",
-      "installed": "Instalado:",
-      "version": "Versão:"
-    },
-    "vscode": {
-      "title": "Visual Studio Code",
-      "description": "Um editor de código rápido e extensível com suporte GDScript e .NET para o Godot.",
-      "notDetectedTitle": "Visual Studio Code não detetado!",
-      "notDetectedMessage": "O Godot Launcher só consegue detetar automaticamente o VS Code se este estiver no PATH. Em alternativa, pode indicar abaixo o caminho para o executável.",
-      "pathLabel": "Caminho para o executável do Visual Studio Code",
-      "selectExecutable": "Selecionar executável do Visual Studio Code",
-      "autodetected": "(detetado automaticamente)",
-      "noPathSet": "sem caminho definido",
-      "clearCustomPath": "Limpar caminho personalizado",
-      "waitingForDialog": "A aguardar diálogo...",
-      "installed": "Instalado:"
-    }
-  },
-  "updates": {
-    "title": "Atualizações",
-    "description": "Configure como o Godot Launcher procura atualizações",
-    "autoCheck": "Procurar atualizações automaticamente",
-    "betaChannel": "Receber atualizações beta",
-    "betaChannelDescription": "Baixe builds pré-lançamento do GitHub; podem ser menos estáveis que os lançamentos oficiais.",
-    "checkNow": "Procurar atualizações",
-    "downloadNow": "Baixar atualização",
-    "skipVersion": "Ignorar esta versão",
-    "unskipVersion": "Reativar atualização ignorada",
-    "readyWithVersion": "A versão {{version}} está pronta, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>",
-    "readyNoVersion": "A atualização está pronta, reinicia o Godot Launcher para a instalar. <Button>Reinicia agora</Button>",
-    "manualWithVersion": "A versão {{version}} está disponível, mas a instalação automática não é suportada neste sistema rpm-ostree. <Button>Abrir página de transferência</Button>",
-    "manualNoVersion": "Está disponível uma nova versão, mas a instalação automática não é suportada neste sistema rpm-ostree. <Button>Abrir página de transferência</Button>"
-  },
-  "windowsSymlinks": {
-    "title": "Ligações simbólicas do editor",
-    "windowsOnly": "Apenas Windows",
-    "description": "Escolha se os editores dos projetos usam ligações simbólicas opcionais ou mantêm cópias locais.",
-    "checkbox": "Utilizar ligações simbólicas para os editores dos projetos no Windows. Mantém-se desativado por predefinição para poder optar quando estiver preparado para potenciais pedidos de elevação durante as atualizações do editor.",
-    "note": "Alterar esta definição não converte as ligações existentes; afeta apenas o comportamento das atualizações futuras do editor.",
-    "enableTitle": "Ativar ligações simbólicas do editor",
-    "disableTitle": "Desativar ligações simbólicas do editor",
-    "enableAction": "Ativar ligações simbólicas",
-    "disableAction": "Desativar ligações simbólicas",
-    "enableDescription": {
-      "line1": "Quando ativado, o Godot Launcher liga cada projeto ao editor instalado em vez de o copiar.",
-      "line2": "Isto mantém o uso de disco reduzido, mas o Windows pode solicitar aprovação de administrador quando são criadas novas ligações simbólicas.",
-      "line3": "Os projetos existentes mantêm as cópias locais até que a versão do editor seja alterada ou reinstalada."
-    },
-    "disableDescription": {
-      "line1": "Volte a utilizar cópias locais para evitar pedidos de elevação. O Godot Launcher irá copiar os ficheiros do editor para cada projeto.",
-      "line2": "As ligações simbólicas existentes mantêm-se até que a versão do editor seja alterada ou reinstalada."
-    }
-  }
 }

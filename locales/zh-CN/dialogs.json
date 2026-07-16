@@ -1,45 +1,45 @@
 {
-  "importSettings": {
-    "title": "导入编辑器设置",
-    "message": "您确定要从文件导入编辑器设置吗？",
-    "detail": "这将替换当前的编辑器设置，并会创建备份。",
-    "continue": "继续",
-    "cancel": "取消",
-    "selectFile": "导入编辑器设置文件",
-    "textResource": "文本资源"
-  },
-  "exportSettings": {
-    "title": "导出编辑器设置到文件",
-    "allFiles": "所有文件"
-  },
-  "removeProject": {
-    "title": "从列表中移除项目",
-    "message": "您确定要从列表中移除项目 \"{{projectName}}\" 吗？",
-    "detail": "这不会删除设备上的项目。",
-    "ok": "确定",
-    "cancel": "取消",
-    "doNotAskAgain": "不再询问我"
-  },
-  "removeRelease": {
-    "title": "移除发行版本",
-    "message": "您确定要删除发行版本 \"{{version}}\" 吗？",
-    "detail": "这将从您的设备中删除该版本。您可以稍后重新安装。",
-    "ok": "确定",
-    "cancel": "取消",
-    "error": "错误",
-    "errorMessage": "移除发行版本时发生错误。"
-  },
-  "error": {
-    "title": "错误"
-  },
-  "preferencesError": {
-    "title": "读取首选项时出错",
-    "message": "无法解析用户首选项。将使用默认首选项。"
-  },
-  "removeCustomEditor": {
-    "menuLabel": "移除自定义编辑器",
-    "title": "移除自定义编辑器",
-    "message": "要从启动器中移除自定义编辑器“{{name}}”吗？",
-    "detail": "这会取消注册自定义编辑器，但不会删除设备上的编辑器文件。"
-  }
+    "importSettings": {
+        "title": "导入编辑器设置",
+        "message": "您确定要从文件导入编辑器设置吗？",
+        "detail": "这将替换当前的编辑器设置，并会创建备份。",
+        "continue": "继续",
+        "cancel": "取消",
+        "selectFile": "导入编辑器设置文件",
+        "textResource": "文本资源"
+    },
+    "exportSettings": {
+        "title": "导出编辑器设置到文件",
+        "allFiles": "所有文件"
+    },
+    "removeProject": {
+        "title": "从列表中移除项目",
+        "message": "您确定要从列表中移除项目 \"{{projectName}}\" 吗？",
+        "detail": "这不会删除设备上的项目。",
+        "ok": "确定",
+        "cancel": "取消",
+        "doNotAskAgain": "不再询问我"
+    },
+    "removeRelease": {
+        "title": "移除发行版本",
+        "message": "您确定要删除发行版本 \"{{version}}\" 吗？",
+        "detail": "这将从您的设备中删除该版本。您可以稍后重新安装。",
+        "ok": "确定",
+        "cancel": "取消",
+        "error": "错误",
+        "errorMessage": "移除发行版本时发生错误。"
+    },
+    "error": {
+        "title": "错误"
+    },
+    "preferencesError": {
+        "title": "读取首选项时出错",
+        "message": "无法解析用户首选项。将使用默认首选项。"
+    },
+    "removeCustomEditor": {
+        "menuLabel": "移除自定义编辑器",
+        "title": "移除自定义编辑器",
+        "message": "要从启动器中移除自定义编辑器“{{name}}”吗？",
+        "detail": "这会取消注册自定义编辑器，但不会删除设备上的编辑器文件。"
+    }
 }

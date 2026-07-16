@@ -1,4 +1,8 @@
-import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
+import type {
+    AssetSummary,
+    InstalledRelease,
+    ReleaseSummary,
+} from '@shared/contracts';
 import {
     afterEach,
     beforeEach,

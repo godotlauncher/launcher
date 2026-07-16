@@ -1,4 +1,8 @@
-import type { CachedTool, InstalledRelease, RendererType } from '@shared';
+import type {
+    CachedTool,
+    InstalledRelease,
+    RendererType,
+} from '@shared/contracts';
 import { sortReleases } from '../../../releaseStoring.utils';
 
 export const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;

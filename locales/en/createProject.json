@@ -1,66 +1,66 @@
 {
-  "title": "New Project",
-  "project": {
-    "title": "Project",
-    "dotNetBadge": ".NET",
-    "prereleaseBadge": "prerelease",
-    "noVersionsInstalled": "No Godot versions installed",
-    "nameplaceholder": "Project Name",
-    "downloading": "Downloading...",
-    "nameRequired": "Project name is required",
-    "overwritePath": "Overwrite Project Path",
-    "selectFolderDialogTitle": "Select Project Folder",
-    "selectFolderTooltip": "Open a dialog to select the project folder",
-    "useDefaultPath": "Use default path",
-    "overwritePathRequired": "Path is required when overwrite path is enabled."
-  },
-  "renderer": {
-    "title": "Renderer",
-    "forwardPlus": "Forward Plus",
-    "mobile": "Mobile",
-    "compatible": "Compatible",
-    "forwardPlusFeatures": {
-      "desktop": "Supports desktop platforms only.",
-      "advanced3d": "Advanced 3D graphics available.",
-      "scalable": "Can scale to large complex scenes.",
-      "renderingDevice": "Uses RenderingDevice backend.",
-      "slowerSimple": "Slower rendering of simple scenes."
+    "title": "New Project",
+    "project": {
+        "title": "Project",
+        "dotNetBadge": ".NET",
+        "prereleaseBadge": "prerelease",
+        "noVersionsInstalled": "No Godot versions installed",
+        "nameplaceholder": "Project Name",
+        "downloading": "Downloading...",
+        "nameRequired": "Project name is required",
+        "overwritePath": "Overwrite Project Path",
+        "selectFolderDialogTitle": "Select Project Folder",
+        "selectFolderTooltip": "Open a dialog to select the project folder",
+        "useDefaultPath": "Use default path",
+        "overwritePathRequired": "Path is required when overwrite path is enabled."
     },
-    "mobileFeatures": {
-      "platforms": "Supports desktop + mobile platforms.",
-      "less3d": "Less advanced 3D graphics.",
-      "lessScalable": "Less scalable for complex scenes.",
-      "renderingDevice": "Uses RenderingDevice backend.",
-      "fastSimple": "Fast rendering of simple scenes."
+    "renderer": {
+        "title": "Renderer",
+        "forwardPlus": "Forward Plus",
+        "mobile": "Mobile",
+        "compatible": "Compatible",
+        "forwardPlusFeatures": {
+            "desktop": "Supports desktop platforms only.",
+            "advanced3d": "Advanced 3D graphics available.",
+            "scalable": "Can scale to large complex scenes.",
+            "renderingDevice": "Uses RenderingDevice backend.",
+            "slowerSimple": "Slower rendering of simple scenes."
+        },
+        "mobileFeatures": {
+            "platforms": "Supports desktop + mobile platforms.",
+            "less3d": "Less advanced 3D graphics.",
+            "lessScalable": "Less scalable for complex scenes.",
+            "renderingDevice": "Uses RenderingDevice backend.",
+            "fastSimple": "Fast rendering of simple scenes."
+        },
+        "compatibleFeatures": {
+            "platforms": "Supports desktop, mobile + web platforms.",
+            "least3d": "Least advanced 3D graphics (currently work-in-progress).",
+            "lowEnd": "Intended for low-end/older devices.",
+            "opengl": "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).",
+            "fastest": "Fastest rendering of simple scenes."
+        }
     },
-    "compatibleFeatures": {
-      "platforms": "Supports desktop, mobile + web platforms.",
-      "least3d": "Least advanced 3D graphics (currently work-in-progress).",
-      "lowEnd": "Intended for low-end/older devices.",
-      "opengl": "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).",
-      "fastest": "Fastest rendering of simple scenes."
+    "otherSettings": {
+        "title": "Other Settings",
+        "initGit": "Initialize Git Repository",
+        "gitNotInstalled": "Git is not installed on this computer",
+        "setupVSCode": "Setup Visual Studio Code as Text Editor",
+        "vscodeNotInstalled": "Visual Studio Code is not installed on this computer",
+        "vscodeHelp": {
+            "title": "Why is Visual Studio Code not detected?",
+            "message": "Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the VS Code executable in the settings."
+        }
+    },
+    "buttons": {
+        "editNow": "Edit now",
+        "create": "Create Project"
+    },
+    "errors": {
+        "invalidEditorVersion": "Invalid editor version: {{version}}",
+        "failedProjectDefinition": "Failed to get project definition for version: {{version}}",
+        "folderNotEmpty": "Project folder '{{name}}' already exists and is not empty, did you mean to add an existing project?",
+        "failedCreateFile": "Failed to create project file: {{error}}",
+        "pathNotDirectory": "Selected path already exists and is not a folder"
     }
-  },
-  "otherSettings": {
-    "title": "Other Settings",
-    "initGit": "Initialize Git Repository",
-    "gitNotInstalled": "Git is not installed on this computer",
-    "setupVSCode": "Setup Visual Studio Code as Text Editor",
-    "vscodeNotInstalled": "Visual Studio Code is not installed on this computer",
-    "vscodeHelp": {
-      "title": "Why is Visual Studio Code not detected?",
-      "message": "Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the VS Code executable in the settings."
-    }
-  },
-  "buttons": {
-    "editNow": "Edit now",
-    "create": "Create Project"
-  },
-  "errors": {
-    "invalidEditorVersion": "Invalid editor version: {{version}}",
-    "failedProjectDefinition": "Failed to get project definition for version: {{version}}",
-    "folderNotEmpty": "Project folder '{{name}}' already exists and is not empty, did you mean to add an existing project?",
-    "failedCreateFile": "Failed to create project file: {{error}}",
-    "pathNotDirectory": "Selected path already exists and is not a folder"
-  }
 }

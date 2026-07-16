@@ -1,8 +1,8 @@
-import type { ScreenshotConfig } from './types';
 import { HELP_SCREENSHOTS } from './screenshots.help';
 import { INSTALLS_SCREENSHOTS } from './screenshots.installs';
 import { PROJECT_SCREENSHOTS } from './screenshots.projects';
 import { SETTINGS_SCREENSHOTS } from './screenshots.settings';
+import type { ScreenshotConfig } from './types';
 
 export const SCREENSHOT_GROUPS = [
     {

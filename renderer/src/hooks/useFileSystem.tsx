@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { appBridge } from '../bridge.ts';
 
 type FileSystemHook = {
     pathExists: (pathToCheck: string) => Promise<boolean>;
@@ -8,15 +9,15 @@ type FileSystemHook = {
 
 export const useFileSystem = (): FileSystemHook => {
     const pathExists = useCallback(
-        (pathToCheck: string) => window.electron.pathExists(pathToCheck),
+        (pathToCheck: string) => appBridge.pathExists(pathToCheck),
         [],
     );
     const fileExists = useCallback(
-        (pathToCheck: string) => window.electron.fileExists(pathToCheck),
+        (pathToCheck: string) => appBridge.fileExists(pathToCheck),
         [],
     );
     const ensureDirectory = useCallback(
-        (pathToCheck: string) => window.electron.ensureDirectory(pathToCheck),
+        (pathToCheck: string) => appBridge.ensureDirectory(pathToCheck),
         [],
     );
 

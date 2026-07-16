@@ -1,4 +1,4 @@
-import type { InstalledRelease, ReleaseSummary } from '@shared';
+import type { InstalledRelease, ReleaseSummary } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
     buildInstallEditorInstalledRows,

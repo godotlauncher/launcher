@@ -34,7 +34,6 @@ export default (<Configuration>{
 
     files: ['dist-electron', 'dist-react'],
     extraResources: [
-        'dist-electron/preload.cjs',
         {
             from: 'main/assets',
             to: 'assets',

@@ -1,4 +1,4 @@
-import type { ProjectDetails } from '@shared';
+import type { ProjectDetails } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { ProjectActionsMenu } from './projectActionsMenu.component';

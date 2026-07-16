@@ -1,8 +1,12 @@
-import type { AddProjectOptions, AddProjectToListResult } from '@shared';
+import type {
+    AddProjectOptions,
+    AddProjectToListResult,
+} from '@shared/contracts';
 import logger from 'electron-log';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useRef, useState } from 'react';
+import { getPathForFile } from '../../../bridge.ts';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -79,7 +83,7 @@ export function useProjectDropImport({
                 const file = item.getAsFile();
                 if (file && /^project(\s*\(\d+\))?\.godot$/i.test(file.name)) {
                     try {
-                        const filePath = window.electron.getPathForFile(file);
+                        const filePath = getPathForFile(file);
                         if (filePath) {
                             godotFiles.push(filePath);
                         }

@@ -1,109 +1,74 @@
+import {
+    createI18nRendererBridge,
+    type I18nBridgeState,
+} from '@mariodebono/di-electron-i18n/renderer';
 import logger from 'electron-log';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import IPCBackend from './ipc-backend';
+import { appBridge } from '../bridge.ts';
 
-const ipcBackend = new IPCBackend();
+const i18nBridge = createI18nRendererBridge();
 
-/**
- * Initialize i18next for React renderer process
- * Fetches translations from Electron main process via IPC
- */
-async function initializeI18n() {
+async function addStateResources(state: I18nBridgeState): Promise<void> {
+    const fallbackResources =
+        state.locale === state.fallbackLocale
+            ? state.resources
+            : await i18nBridge.getResources(state.fallbackLocale);
+
+    for (const [namespace, resource] of Object.entries(fallbackResources)) {
+        i18n.addResourceBundle(
+            state.fallbackLocale,
+            namespace,
+            resource,
+            true,
+            true,
+        );
+    }
+
+    for (const [namespace, resource] of Object.entries(state.resources)) {
+        i18n.addResourceBundle(state.locale, namespace, resource, true, true);
+    }
+}
+
+async function initializeI18n(): Promise<void> {
     try {
-        // Get current language from main process
-        const currentLang = await window.electron.i18n.getCurrentLanguage();
-        const availableLanguages =
-            await window.electron.i18n.getAvailableLanguages();
+        const state = await i18nBridge.getState();
 
-        logger.info(`[i18n] Initializing with language: ${currentLang}`);
-        logger.info('[i18n] Available languages:', availableLanguages);
+        await i18n.use(initReactI18next).init({
+            lng: state.locale,
+            fallbackLng: state.fallbackLocale,
+            supportedLngs: state.supportedLocales,
+            ns: state.namespaces,
+            defaultNS: 'common',
+            resources: {},
+            interpolation: {
+                escapeValue: false,
+            },
+            react: {
+                useSuspense: false,
+            },
+        });
 
-        const fallbackLng = {
-            de: ['en'],
-            fr: ['en'],
-            es: ['en'],
-            pl: ['en'],
-            'pt-BR': ['pt', 'en'],
-            pt: ['en'],
-            'zh-CN': ['zh-CN', 'en'],
-            'zh-TW': ['zh-TW', 'en'],
-            ru: ['en'],
-            ja: ['en'],
-            tr: ['en'],
-            mt: ['en'],
-            default: ['en'],
-        } as const;
-
-        await i18n
-            .use(ipcBackend)
-            .use(initReactI18next)
-            .init({
-                lng: currentLang,
-                fallbackLng,
-                supportedLngs: availableLanguages,
-                ns: [
-                    'common',
-                    'projects',
-                    'installs',
-                    'settings',
-                    'help',
-                    'createProject',
-                    'installEditor',
-                    'welcome',
-                ],
-                defaultNS: 'common',
-                interpolation: {
-                    escapeValue: false, // React already escapes
-                },
-                react: {
-                    useSuspense: false, // We'll handle loading states manually
-                },
-            });
-
+        await addStateResources(state);
+        await i18n.changeLanguage(state.locale);
         logger.info(
-            `[i18n] Initialized successfully with language: ${i18n.language}`,
+            `[i18n] Initialized successfully with language: ${state.locale}`,
         );
     } catch (error) {
         logger.error('[i18n] Failed to initialize:', error);
     }
 }
 
-// Initialize immediately when module is imported
-initializeI18n();
+void initializeI18n();
 
-/**
- * Change language and reload translations
- * @param language Locale code to switch to
- */
-export async function changeLanguage(language: string): Promise<void> {
+export async function changeLanguage(preference: string): Promise<void> {
     try {
-        logger.info(`[i18n] Changing language to: ${language}`);
-
-        // Request language change from main process (also updates preferences)
-        const newTranslations =
-            await window.electron.i18n.changeLanguage(language);
-
-        // Clear backend cache
-        ipcBackend.clearCache();
-
-        // Change language in i18next (this will trigger re-fetch from backend)
-        await i18n.changeLanguage(language);
-
-        // Manually add new translations to ensure immediate update
-        Object.keys(newTranslations).forEach((ns) => {
-            i18n.addResourceBundle(
-                language,
-                ns,
-                newTranslations[ns],
-                true,
-                true,
-            );
-        });
-
-        logger.info(
-            `[i18n] Language changed successfully to: ${i18n.language}`,
-        );
+        logger.info(`[i18n] Changing language preference: ${preference}`);
+        await appBridge.changeLanguage(preference);
+        const state = await i18nBridge.getState();
+        await addStateResources(state);
+        await i18n.changeLanguage(state.locale);
+        logger.info(`[i18n] Language changed successfully to: ${state.locale}`);
     } catch (error) {
         logger.error('[i18n] Failed to change language:', error);
         throw error;

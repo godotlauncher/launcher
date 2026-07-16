@@ -1,14 +1,4 @@
-import { expect, type ElectronApplication } from '@playwright/test';
-import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
-import {
-    SAMPLE_AVAILABLE_RELEASES,
-    SAMPLE_CUSTOM_RELEASE,
-    SAMPLE_INSTALLED_RELEASES,
-    SAMPLE_INSTALLED_RELEASES_CUSTOM_OVERVIEW,
-    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
-    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
-    SAMPLE_INSTALLED_RELEASES_WITHOUT_LATEST,
-} from './sampleData';
+import { type ElectronApplication, expect } from '@playwright/test';
 import {
     applyTheme,
     closeActionMenu,
@@ -21,9 +11,19 @@ import {
     stubCustomEditorDuplicateRegistration,
     stubInstallReleaseFailure,
 } from './runtime';
+import {
+    SAMPLE_AVAILABLE_RELEASES,
+    SAMPLE_CUSTOM_RELEASE,
+    SAMPLE_INSTALLED_RELEASES,
+    SAMPLE_INSTALLED_RELEASES_CUSTOM_OVERVIEW,
+    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
+    SAMPLE_INSTALLED_RELEASES_WITHOUT_LATEST,
+} from './sampleData';
+import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 
 export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
-{
+    {
         fileBase: 'screen_installs_view',
         description: 'Installs view',
         navigate: async (page: ElectronPage) => {
@@ -363,5 +363,5 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.waitForTimeout(600);
         },
-    }
+    },
 ];

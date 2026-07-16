@@ -1,4 +1,4 @@
-import type { ProjectDetails } from '@shared';
+import type { ProjectDetails } from '@shared/contracts';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import {

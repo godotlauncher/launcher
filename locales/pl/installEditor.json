@@ -1,57 +1,57 @@
 {
-  "title": "Zainstaluj edytor Godot",
-  "search": {
-    "placeholder": "Szukaj"
-  },
-  "tabs": {
-    "released": "Wydane",
-    "prerelease": "Wersja testowa"
-  },
-  "filters": {
-    "showInstalledOnly": "Pokaż tylko zainstalowane"
-  },
-  "buttons": {
-    "reload": "Przeładuj listę wydań"
-  },
-  "errors": {
-    "fetchError": "Wystąpił błąd podczas pobierania wydań.",
-    "retryInline": "Proszę spróbuj ponownie. <Button>Spróbuj ponownie</Button>",
-    "noPlatformAsset": "Nie znaleziono zasobu dla platformy",
-    "invalidEditorVersion": "Nieprawidłowa wersja edytora",
-    "unsupportedPlatform": "Nieobsługiwana platforma",
-    "unsupportedFileExtension": "Nieobsługiwane rozszerzenie pliku",
-    "downloadInterrupted": "Pobieranie zostało przerwane. Serwer pobierania Godot może być zajęty albo połączenie zostało zamknięte. Spróbuj ponownie za kilka minut.",
-    "downloadFailed": "Pobieranie nie powiodło się: {{error}}",
-    "downloadFailedUnknown": "Pobieranie nie powiodło się. Spróbuj ponownie za kilka minut.",
-    "downloadHttpError": "Nie udało się pobrać zasobu: {{status}}",
-    "downloadEmptyResponse": "Pobieranie nie powiodło się: pusta odpowiedź z serwera"
-  },
-  "messages": {
-    "installError": "Coś poszło nie tak podczas instalacji wydania",
-    "reinstallError": "Coś poszło nie tak podczas ponownej instalacji wydania"
-  },
-  "table": {
-    "headers": {
-      "version": "Wersja",
-      "released": "Wydano",
-      "download": "Pobierz",
-      "installed": "Zainstalowano"
+    "title": "Zainstaluj edytor Godot",
+    "search": {
+        "placeholder": "Szukaj"
     },
-    "gdscript": "(GDScript)",
-    "dotnet": "(.NET)",
-    "installing": "Instalowanie...",
-    "downloading": "pobieranie...",
-    "tooltips": {
-      "installed": "Zainstalowano - {{version}}",
-      "installedGDScript": "Zainstalowano - {{version}} (GDScript)",
-      "installedDotNet": "Zainstalowano - {{version}} .NET",
-      "downloadGDScript": "Pobierz {{version}} (GDScript)",
-      "downloadDotNet": "Pobierz {{version}} .NET",
-      "reinstallGDScript": "Zainstaluj ponownie {{version}} (GDScript)",
-      "reinstallDotNet": "Zainstaluj ponownie {{version}} .NET"
+    "tabs": {
+        "released": "Wydane",
+        "prerelease": "Wersja testowa"
     },
-    "status": {
-      "unavailable": "Niedostępne"
+    "filters": {
+        "showInstalledOnly": "Pokaż tylko zainstalowane"
+    },
+    "buttons": {
+        "reload": "Przeładuj listę wydań"
+    },
+    "errors": {
+        "fetchError": "Wystąpił błąd podczas pobierania wydań.",
+        "retryInline": "Proszę spróbuj ponownie. <Button>Spróbuj ponownie</Button>",
+        "noPlatformAsset": "Nie znaleziono zasobu dla platformy",
+        "invalidEditorVersion": "Nieprawidłowa wersja edytora",
+        "unsupportedPlatform": "Nieobsługiwana platforma",
+        "unsupportedFileExtension": "Nieobsługiwane rozszerzenie pliku",
+        "downloadInterrupted": "Pobieranie zostało przerwane. Serwer pobierania Godot może być zajęty albo połączenie zostało zamknięte. Spróbuj ponownie za kilka minut.",
+        "downloadFailed": "Pobieranie nie powiodło się: {{error}}",
+        "downloadFailedUnknown": "Pobieranie nie powiodło się. Spróbuj ponownie za kilka minut.",
+        "downloadHttpError": "Nie udało się pobrać zasobu: {{status}}",
+        "downloadEmptyResponse": "Pobieranie nie powiodło się: pusta odpowiedź z serwera"
+    },
+    "messages": {
+        "installError": "Coś poszło nie tak podczas instalacji wydania",
+        "reinstallError": "Coś poszło nie tak podczas ponownej instalacji wydania"
+    },
+    "table": {
+        "headers": {
+            "version": "Wersja",
+            "released": "Wydano",
+            "download": "Pobierz",
+            "installed": "Zainstalowano"
+        },
+        "gdscript": "(GDScript)",
+        "dotnet": "(.NET)",
+        "installing": "Instalowanie...",
+        "downloading": "pobieranie...",
+        "tooltips": {
+            "installed": "Zainstalowano - {{version}}",
+            "installedGDScript": "Zainstalowano - {{version}} (GDScript)",
+            "installedDotNet": "Zainstalowano - {{version}} .NET",
+            "downloadGDScript": "Pobierz {{version}} (GDScript)",
+            "downloadDotNet": "Pobierz {{version}} .NET",
+            "reinstallGDScript": "Zainstaluj ponownie {{version}} (GDScript)",
+            "reinstallDotNet": "Zainstaluj ponownie {{version}} .NET"
+        },
+        "status": {
+            "unavailable": "Niedostępne"
+        }
     }
-  }
 }

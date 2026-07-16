@@ -1,57 +1,57 @@
 {
-  "title": "安裝 Godot 編輯器",
-  "search": {
-    "placeholder": "搜尋"
-  },
-  "tabs": {
-    "released": "正式釋出",
-    "prerelease": "預先釋出"
-  },
-  "filters": {
-    "showInstalledOnly": "僅顯示已安裝"
-  },
-  "buttons": {
-    "reload": "重新載入發行清單"
-  },
-  "errors": {
-    "fetchError": "擷取發行版本時發生錯誤。",
-    "retryInline": "請再試一次。<Button>重試</Button>",
-    "noPlatformAsset": "找不到此平台的資產",
-    "invalidEditorVersion": "無效的編輯器版本",
-    "unsupportedPlatform": "不支援的平台",
-    "unsupportedFileExtension": "不支援的檔案副檔名",
-    "downloadInterrupted": "下載已中斷。Godot 下載伺服器可能正忙，或連線已關閉。請幾分鐘後再試。",
-    "downloadFailed": "下載失敗：{{error}}",
-    "downloadFailedUnknown": "下載失敗。請幾分鐘後再試。",
-    "downloadHttpError": "無法下載資產：{{status}}",
-    "downloadEmptyResponse": "下載失敗：伺服器傳回空白回應"
-  },
-  "messages": {
-    "installError": "安裝發行版本時發生問題",
-    "reinstallError": "重新安裝版本時發生問題"
-  },
-  "table": {
-    "headers": {
-      "version": "版本",
-      "released": "發佈日期",
-      "download": "下載",
-      "installed": "已安裝"
+    "title": "安裝 Godot 編輯器",
+    "search": {
+        "placeholder": "搜尋"
     },
-    "gdscript": "（GDScript）",
-    "dotnet": "（.NET）",
-    "installing": "安裝中…",
-    "downloading": "下載中…",
-    "tooltips": {
-      "installed": "已安裝 - {{version}}",
-      "installedGDScript": "已安裝 - {{version}}（GDScript）",
-      "installedDotNet": "已安裝 - {{version}} .NET",
-      "downloadGDScript": "下載 {{version}}（GDScript）",
-      "downloadDotNet": "下載 {{version}} .NET",
-      "reinstallGDScript": "重新安裝 {{version}} (GDScript)",
-      "reinstallDotNet": "重新安裝 {{version}} .NET"
+    "tabs": {
+        "released": "正式釋出",
+        "prerelease": "預先釋出"
     },
-    "status": {
-      "unavailable": "無法使用"
+    "filters": {
+        "showInstalledOnly": "僅顯示已安裝"
+    },
+    "buttons": {
+        "reload": "重新載入發行清單"
+    },
+    "errors": {
+        "fetchError": "擷取發行版本時發生錯誤。",
+        "retryInline": "請再試一次。<Button>重試</Button>",
+        "noPlatformAsset": "找不到此平台的資產",
+        "invalidEditorVersion": "無效的編輯器版本",
+        "unsupportedPlatform": "不支援的平台",
+        "unsupportedFileExtension": "不支援的檔案副檔名",
+        "downloadInterrupted": "下載已中斷。Godot 下載伺服器可能正忙，或連線已關閉。請幾分鐘後再試。",
+        "downloadFailed": "下載失敗：{{error}}",
+        "downloadFailedUnknown": "下載失敗。請幾分鐘後再試。",
+        "downloadHttpError": "無法下載資產：{{status}}",
+        "downloadEmptyResponse": "下載失敗：伺服器傳回空白回應"
+    },
+    "messages": {
+        "installError": "安裝發行版本時發生問題",
+        "reinstallError": "重新安裝版本時發生問題"
+    },
+    "table": {
+        "headers": {
+            "version": "版本",
+            "released": "發佈日期",
+            "download": "下載",
+            "installed": "已安裝"
+        },
+        "gdscript": "（GDScript）",
+        "dotnet": "（.NET）",
+        "installing": "安裝中…",
+        "downloading": "下載中…",
+        "tooltips": {
+            "installed": "已安裝 - {{version}}",
+            "installedGDScript": "已安裝 - {{version}}（GDScript）",
+            "installedDotNet": "已安裝 - {{version}} .NET",
+            "downloadGDScript": "下載 {{version}}（GDScript）",
+            "downloadDotNet": "下載 {{version}} .NET",
+            "reinstallGDScript": "重新安裝 {{version}} (GDScript)",
+            "reinstallDotNet": "重新安裝 {{version}} .NET"
+        },
+        "status": {
+            "unavailable": "無法使用"
+        }
     }
-  }
 }

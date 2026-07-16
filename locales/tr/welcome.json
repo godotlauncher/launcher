@@ -1,94 +1,94 @@
 {
-  "title": "Godot Launcher",
-  "steps": {
-    "welcome": "Hoş Geldiniz",
-    "macos": "MacOS",
-    "windows": "Windows",
-    "linux": "Linux",
-    "currentSettings": "Mevcut Ayarlar",
-    "setLocations": "Konumları Ayarla",
-    "customizeBehavior": "Davranışı Özelleştir",
-    "windowsSymlink": "Windows Sembolik Bağlantı",
-    "ready": "Hazır"
-  },
-  "navigation": {
-    "start": "Başlat",
-    "nextMacOS": "İleri: MacOS",
-    "nextWindows": "İleri: Windows",
-    "nextLinux": "İleri: Linux",
-    "nextCurrentSettings": "İleri: Mevcut Ayarlar",
-    "nextSetLocations": "İleri: Konumları Ayarla",
-    "nextCustomizeBehavior": "İleri: Davranışı Özelleştir",
-    "nextReady": "İleri: Hazır",
-    "backWelcome": "Geri: Hoş Geldiniz",
-    "backMacOS": "Geri: MacOS",
-    "backWindows": "Geri: Windows",
-    "backCurrentSettings": "Geri: Mevcut Ayarlar",
-    "backSetLocations": "Geri: Konumları Ayarla",
-    "backCustomizeBehavior": "Geri: Davranışı Özelleştir"
-  },
-  "welcomeStep": {
-    "title": "Godot Launcher'ı kullandığınız için teşekkürler!",
-    "description": "Godot Launcher, <strong>Godot Motor'un birden fazla sürümünü yönetmeyi</strong> kolaylaştırır ve <strong>her proje için editör ayarlarını ayrı tutar.</strong>",
-    "feedback": "Kullanarak projeyi desteklemeye yardımcı oluyorsunuz! Herhangi bir geri bildiriminiz veya bulduğunuz bir hata varsa, bize bildirin, sizin için daha da iyi hale getirmeyi çok isteriz.",
-    "enjoy": "Keyifli kodlamalar!"
-  },
-  "startStep": {
-    "title": "Her Şey Hazır! 🚀",
-    "subtitle": "Godot Launcher hazır! Artık projelerinizi yönetebilir ve tüm özellikleri keşfedebilirsiniz.",
-    "whatsNext": "Sırada Ne Var?",
-    "installTab": "<strong>Kurulum</strong> sekmesinde en son ön sürümleri yükleyin ve deneyin.",
-    "projectsTab": "<strong>Projeler</strong> sekmesinde hızlıca proje ekleyin veya oluşturun.",
-    "settingsTab": "<strong>Ayarlar</strong> sekmesinde deneyiminizi tam olarak istediğiniz gibi özelleştirin."
-  },
-  "customizeBehavior": {
-    "afterLaunching": "Bir Proje Başlattıktan Sonra",
-    "nothing": "Hiçbir şey",
-    "minimize": "Simge durumuna küçült",
-    "closeToTray": "Sistem tepsisine küçült",
-    "autoCheckUpdates": "Güncellemeleri otomatik kontrol et",
-    "autoStart": "Bilgisayar başladığında başlat.",
-    "startInTray": "Sistem tepsisinde başlat."
-  },
-  "currentSettings": {
-    "title": "Varsayılan Ayarlar:",
-    "projectsLocation": "Projeler Konumu:",
-    "installLocation": "Godot Kurulum Konumu:",
-    "postLaunchAction": "Bir Proje Başlattıktan Sonraki Eylem:",
-    "autoCheckUpdates": "Güncellemeleri Otomatik Kontrol Et:",
-    "autoStart": "Bilgisayar Başladığında Otomatik Başlat:",
-    "autoStartType": "Otomatik Başlatma Türü:",
-    "systemTray": "Sistem Tepsisi",
-    "normalWindow": "Normal Pencere",
-    "yes": "Evet",
-    "no": "Hayır",
-    "skipButton": "Atla, Varsayılanları Kullan",
-    "postLaunchActions": {
-      "nothing": "Hiçbir şey",
-      "minimize": "Simge durumuna küçült",
-      "closeToTray": "Sistem tepsisine küçült"
+    "title": "Godot Launcher",
+    "steps": {
+        "welcome": "Hoş Geldiniz",
+        "macos": "MacOS",
+        "windows": "Windows",
+        "linux": "Linux",
+        "currentSettings": "Mevcut Ayarlar",
+        "setLocations": "Konumları Ayarla",
+        "customizeBehavior": "Davranışı Özelleştir",
+        "windowsSymlink": "Windows Sembolik Bağlantı",
+        "ready": "Hazır"
+    },
+    "navigation": {
+        "start": "Başlat",
+        "nextMacOS": "İleri: MacOS",
+        "nextWindows": "İleri: Windows",
+        "nextLinux": "İleri: Linux",
+        "nextCurrentSettings": "İleri: Mevcut Ayarlar",
+        "nextSetLocations": "İleri: Konumları Ayarla",
+        "nextCustomizeBehavior": "İleri: Davranışı Özelleştir",
+        "nextReady": "İleri: Hazır",
+        "backWelcome": "Geri: Hoş Geldiniz",
+        "backMacOS": "Geri: MacOS",
+        "backWindows": "Geri: Windows",
+        "backCurrentSettings": "Geri: Mevcut Ayarlar",
+        "backSetLocations": "Geri: Konumları Ayarla",
+        "backCustomizeBehavior": "Geri: Davranışı Özelleştir"
+    },
+    "welcomeStep": {
+        "title": "Godot Launcher'ı kullandığınız için teşekkürler!",
+        "description": "Godot Launcher, <strong>Godot Motor'un birden fazla sürümünü yönetmeyi</strong> kolaylaştırır ve <strong>her proje için editör ayarlarını ayrı tutar.</strong>",
+        "feedback": "Kullanarak projeyi desteklemeye yardımcı oluyorsunuz! Herhangi bir geri bildiriminiz veya bulduğunuz bir hata varsa, bize bildirin, sizin için daha da iyi hale getirmeyi çok isteriz.",
+        "enjoy": "Keyifli kodlamalar!"
+    },
+    "startStep": {
+        "title": "Her Şey Hazır! 🚀",
+        "subtitle": "Godot Launcher hazır! Artık projelerinizi yönetebilir ve tüm özellikleri keşfedebilirsiniz.",
+        "whatsNext": "Sırada Ne Var?",
+        "installTab": "<strong>Kurulum</strong> sekmesinde en son ön sürümleri yükleyin ve deneyin.",
+        "projectsTab": "<strong>Projeler</strong> sekmesinde hızlıca proje ekleyin veya oluşturun.",
+        "settingsTab": "<strong>Ayarlar</strong> sekmesinde deneyiminizi tam olarak istediğiniz gibi özelleştirin."
+    },
+    "customizeBehavior": {
+        "afterLaunching": "Bir Proje Başlattıktan Sonra",
+        "nothing": "Hiçbir şey",
+        "minimize": "Simge durumuna küçült",
+        "closeToTray": "Sistem tepsisine küçült",
+        "autoCheckUpdates": "Güncellemeleri otomatik kontrol et",
+        "autoStart": "Bilgisayar başladığında başlat.",
+        "startInTray": "Sistem tepsisinde başlat."
+    },
+    "currentSettings": {
+        "title": "Varsayılan Ayarlar:",
+        "projectsLocation": "Projeler Konumu:",
+        "installLocation": "Godot Kurulum Konumu:",
+        "postLaunchAction": "Bir Proje Başlattıktan Sonraki Eylem:",
+        "autoCheckUpdates": "Güncellemeleri Otomatik Kontrol Et:",
+        "autoStart": "Bilgisayar Başladığında Otomatik Başlat:",
+        "autoStartType": "Otomatik Başlatma Türü:",
+        "systemTray": "Sistem Tepsisi",
+        "normalWindow": "Normal Pencere",
+        "yes": "Evet",
+        "no": "Hayır",
+        "skipButton": "Atla, Varsayılanları Kullan",
+        "postLaunchActions": {
+            "nothing": "Hiçbir şey",
+            "minimize": "Simge durumuna küçült",
+            "closeToTray": "Sistem tepsisine küçült"
+        }
+    },
+    "macosStep": {
+        "title": "macOS Notu",
+        "intro": "Godot Launcher her proje için editörün bir kopyasını oluşturur.",
+        "whyTitle": "Neden?",
+        "reason": "macOS'ta sembolik bağlantı oluşturmak izinlerle kısıtlanmamıştır, ancak bir sembolik bağlantı aracılığıyla editörü açmak güvenilir olmadığı kanıtlanmıştır. Sorunsuz bir deneyim sağlamak için, bunun yerine her proje için motorun özel bir kopyasını sağlıyoruz. Godot yalnızca yaklaşık 200MB olsa da (ve bu genellikle bir sorun değildir), birden fazla projenin disk kullanımını artırabileceğini unutmayın.",
+        "dotnetNote": "NOT: .NET Editörlerle çalışıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
+    },
+    "windowsStep": {
+        "title": "Windows Notu",
+        "intro": "1.4.0 sürümünden başlayarak, Godot Launcher her proje için editöre <code>sembolik bağlantılar</code> oluşturabilir. Kurulumu basit tutmak için artık varsayılan olarak yerel kopyalar kullanıyoruz. Daha düşük disk kullanımı istediğinizde <strong>Ayarlar → Davranış → Editör sembolik bağlantıları</strong> bölümünden sembolik bağlantıları istediğiniz zaman etkinleştirebilirsiniz.",
+        "change1": "Windows'ta sembolik bağlantı oluşturmak yönetici ayrıcalıkları ve yükseltilmiş komut yürütme gerektirir. Launcher artık yalnızca sembolik bağlantılar oluşturulurken izinleri yükseltir.",
+        "change2": "Yalnızca PC'nizde <code>Yönetici</code> değilseniz ve <code>Geliştirici Modu</code> etkin değilse UAC istemi göreceksiniz.",
+        "change3": "Sembolik bağlantıları denemek için hazır mısınız? Ara sıra yetki yükseltme istemi için hazır olduğunuzda Ayarlar'da <strong>Editör sembolik bağlantılarını</strong> açın.",
+        "dotnetNote": "NOT: .NET tabanlı editörler kullanıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
+    },
+    "linuxStep": {
+        "title": "Linux Notu",
+        "intro": "Godot Launcher her proje için sembolik bağlantılar kullanır",
+        "whyTitle": "Neden?",
+        "reason": "Windows ve MacOS sürümlerinin aksine, Linux projeleri başlatmak için editöre sembolik bağlantılar kullanır. Bu disk alanından tasarruf sağlar ve proje başına ayarlara izin verir.",
+        "dotnetNote": "NOT: .NET Editörlerle çalışıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
     }
-  },
-  "macosStep": {
-    "title": "macOS Notu",
-    "intro": "Godot Launcher her proje için editörün bir kopyasını oluşturur.",
-    "whyTitle": "Neden?",
-    "reason": "macOS'ta sembolik bağlantı oluşturmak izinlerle kısıtlanmamıştır, ancak bir sembolik bağlantı aracılığıyla editörü açmak güvenilir olmadığı kanıtlanmıştır. Sorunsuz bir deneyim sağlamak için, bunun yerine her proje için motorun özel bir kopyasını sağlıyoruz. Godot yalnızca yaklaşık 200MB olsa da (ve bu genellikle bir sorun değildir), birden fazla projenin disk kullanımını artırabileceğini unutmayın.",
-    "dotnetNote": "NOT: .NET Editörlerle çalışıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
-  },
-  "windowsStep": {
-    "title": "Windows Notu",
-    "intro": "1.4.0 sürümünden başlayarak, Godot Launcher her proje için editöre <code>sembolik bağlantılar</code> oluşturabilir. Kurulumu basit tutmak için artık varsayılan olarak yerel kopyalar kullanıyoruz. Daha düşük disk kullanımı istediğinizde <strong>Ayarlar → Davranış → Editör sembolik bağlantıları</strong> bölümünden sembolik bağlantıları istediğiniz zaman etkinleştirebilirsiniz.",
-    "change1": "Windows'ta sembolik bağlantı oluşturmak yönetici ayrıcalıkları ve yükseltilmiş komut yürütme gerektirir. Launcher artık yalnızca sembolik bağlantılar oluşturulurken izinleri yükseltir.",
-    "change2": "Yalnızca PC'nizde <code>Yönetici</code> değilseniz ve <code>Geliştirici Modu</code> etkin değilse UAC istemi göreceksiniz.",
-    "change3": "Sembolik bağlantıları denemek için hazır mısınız? Ara sıra yetki yükseltme istemi için hazır olduğunuzda Ayarlar'da <strong>Editör sembolik bağlantılarını</strong> açın.",
-    "dotnetNote": "NOT: .NET tabanlı editörler kullanıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
-  },
-  "linuxStep": {
-    "title": "Linux Notu",
-    "intro": "Godot Launcher her proje için sembolik bağlantılar kullanır",
-    "whyTitle": "Neden?",
-    "reason": "Windows ve MacOS sürümlerinin aksine, Linux projeleri başlatmak için editöre sembolik bağlantılar kullanır. Bu disk alanından tasarruf sağlar ve proje başına ayarlara izin verir.",
-    "dotnetNote": "NOT: .NET Editörlerle çalışıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
-  }
 }

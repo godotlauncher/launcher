@@ -1,132 +1,132 @@
 {
-  "title": "Proġetti",
-  "buttons": {
-    "add": "Żid",
-    "newProject": "Proġett Ġdid"
-  },
-  "search": {
-    "placeholder": "Fittex"
-  },
-  "table": {
-    "name": "Isem",
-    "modified": "Modifikat",
-    "editor": "Editur",
-    "invalidProject": "Dan il-proġett mhuwiex validu, iċċekkja l-indirizz tal-proġett u tal-editur!",
-    "dotNetProject": "Dan huwa Proġett .Net",
-    "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
-    "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
-    "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
-    "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
-    "invalidReasons": {
-      "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
-      "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
-    }
-  },
-  "addProject": {
-    "selectFile": "Agħżel Fajl tal-Proġett",
-    "godotProject": "Proġett Godot",
-    "editorResolution": {
-      "title": "Verżjoni tal-editur meħtieġa",
-      "message": "Dan il-proġett jeħtieġ editur li mhuwiex installat.",
-      "version": "Verżjoni",
-      "channel": "Kanal",
-      "flavor": "Varjant",
-      "baseVersion": "Bażi",
-      "fallbackMessage": "Editur kompatibbli installat jistaʼ jintuża bħala alternattiva.",
-      "editorActions": "Għażliet",
-      "download": "Niżżel {{version}}",
-      "useFallback": "Uża {{version}}",
-      "addMissing": "Żid b’editur nieqes"
+    "title": "Proġetti",
+    "buttons": {
+        "add": "Żid",
+        "newProject": "Proġett Ġdid"
     },
-    "errors": {
-      "projectExists": "Proġett '{{path}}' diġà jeżisti",
-      "invalidPath": "Indirizz tal-proġett invalidu",
-      "invalidProjectFile": "Fajl project.godot invalidu",
-      "nameExists": "Proġett bl-isem '{{name}}' diġà jeżisti\nJekk jogħġbok ibdel l-isem tal-proġett fi 'project.godot' jew neħħi dak li jeżisti.",
-      "invalidRenderer": "Fajl tal-proġett invalidu",
-      "invalidConfigVersion": "Verżjoni ta' config_version f'project.godot invalida.\nBiss config version 5 hija supportata",
-      "noStableReleases": "Ebda releases Stabbli installati ma nstabu għal Godot {{version}}.x\nJekk jogħġbok installa stable release għal Godot {{version}}.x, u mbagħad erġa' ipprova żid il-proġett.",
-      "noDotNetRelease": "Il-proġett jidher li huwa proġett .NET iżda ebda Editur b'release .NET ma nstab",
-      "noCompatibleRelease": "Ebda releases installati ma nstabu għal Godot {{version}}.x li jappoġġjaw config_version {{configVersion}}."
-    }
-  },
-  "messages": {
-    "noReleasesCta": "Ebda releases installati għadha. <Link>Mur għall-installazzjonijiet</Link>",
-    "waitingForDialog": "Qed nistennew id-djalogu biex żżid il-proġett...",
-    "needReleaseInstalled": "Għandek bżonn mill-inqas release installata biex żżid proġett",
-    "addProjectError": "Xi ħaġa marret ħażin meta żdiedt il-proġett",
-    "setEditorError": "Xi ħaġa marret ħażin meta ssettjajt l-editur tal-proġett",
-    "projectNotValid": "Il-proġett mhuwiex validu, jekk jogħġbok kun żgur li l-proġett u r-release huma validi fuq il-kompjuter tiegħek.",
-    "invalidReleaseEditor": "L-editur maghzul mhux disponibbli. Qabbad id-drajv jew erga' installa r-release.",
-    "dropGodotFileOnly": "Jekk jogħġbok waqqa' fajl project.godot biex iżżid proġett",
-    "dropProjectHere": "Waqqa' l-fajl project.godot hawn biex iżżid proġett",
-    "addingProjects": "Qed iżżid proġetti: {{current}}/{{total}}",
-    "failedAddProject": "Ma setax jiżdied il-proġett: {{error}}",
-    "dropProjectFilesHere": "Waqqa’ l-fajls tal-proġett Godot hawn",
-    "dropProjectFilesHelpPrefix": "Waqqa’ wieħed jew aktar",
-    "dropProjectFilesHelpSuffix": "fajls biex iżżidhom mal-launcher.",
-    "invalidReasons": {
-      "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
-      "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
+    "search": {
+        "placeholder": "Fittex"
     },
-    "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
-  },
-  "changeEditor": {
-    "errors": {
-      "projectNotFound": "Proġett ma nstabx",
-      "invalidEditorVersion": "Verżjoni tal-editur invalida",
-      "differentMajorVersion": "Ma tistax tuża verżjoni maġġuri differenti tal-editur\nBiex tipproteġi l-proġett tiegħek ara l-gwida uffiċjali tal-migrazzjoni fuq https://godotengine.org"
-    }
-  },
-  "toggleVSCode": {
-    "errors": {
-      "projectNotFound": "Il-proġett ma nstabx",
-      "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter.",
-      "missingLaunchPath": "Il-perkors tat-tnedija ta' Godot għal dan il-proġett mhux magħruf.",
-      "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
-    }
-  },
-  "editProject": {
-    "title": "Settings tal-Proġett",
-    "description": "Aġġorna s-settings tal-isem tal-proġett.",
-    "fields": {
-      "name": {
-        "label": "Isem tal-proġett",
-        "help": "Isem muri f'Godot Launcher.",
-        "placeholder": "Il-Proġett Tiegħi"
-      },
-      "path": {
-        "label": "Folder tal-proġett"
-      }
+    "table": {
+        "name": "Isem",
+        "modified": "Modifikat",
+        "editor": "Editur",
+        "invalidProject": "Dan il-proġett mhuwiex validu, iċċekkja l-indirizz tal-proġett u tal-editur!",
+        "dotNetProject": "Dan huwa Proġett .Net",
+        "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
+        "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
+        "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
+        "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
+        "invalidReasons": {
+            "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
+            "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
+        }
     },
-    "godot": {
-      "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",
-      "loading": "Qed jiġi ċċekkjat il-proġett Godot...",
-      "currentName": "Isem attwali tal-proġett Godot: {{name}}",
-      "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem fil-launcher."
+    "addProject": {
+        "selectFile": "Agħżel Fajl tal-Proġett",
+        "godotProject": "Proġett Godot",
+        "editorResolution": {
+            "title": "Verżjoni tal-editur meħtieġa",
+            "message": "Dan il-proġett jeħtieġ editur li mhuwiex installat.",
+            "version": "Verżjoni",
+            "channel": "Kanal",
+            "flavor": "Varjant",
+            "baseVersion": "Bażi",
+            "fallbackMessage": "Editur kompatibbli installat jistaʼ jintuża bħala alternattiva.",
+            "editorActions": "Għażliet",
+            "download": "Niżżel {{version}}",
+            "useFallback": "Uża {{version}}",
+            "addMissing": "Żid b’editur nieqes"
+        },
+        "errors": {
+            "projectExists": "Proġett '{{path}}' diġà jeżisti",
+            "invalidPath": "Indirizz tal-proġett invalidu",
+            "invalidProjectFile": "Fajl project.godot invalidu",
+            "nameExists": "Proġett bl-isem '{{name}}' diġà jeżisti\nJekk jogħġbok ibdel l-isem tal-proġett fi 'project.godot' jew neħħi dak li jeżisti.",
+            "invalidRenderer": "Fajl tal-proġett invalidu",
+            "invalidConfigVersion": "Verżjoni ta' config_version f'project.godot invalida.\nBiss config version 5 hija supportata",
+            "noStableReleases": "Ebda releases Stabbli installati ma nstabu għal Godot {{version}}.x\nJekk jogħġbok installa stable release għal Godot {{version}}.x, u mbagħad erġa' ipprova żid il-proġett.",
+            "noDotNetRelease": "Il-proġett jidher li huwa proġett .NET iżda ebda Editur b'release .NET ma nstab",
+            "noCompatibleRelease": "Ebda releases installati ma nstabu għal Godot {{version}}.x li jappoġġjaw config_version {{configVersion}}."
+        }
     },
-    "actions": {
-      "update": "Aġġorna",
-      "updating": "Qed jiġi aġġornat..."
+    "messages": {
+        "noReleasesCta": "Ebda releases installati għadha. <Link>Mur għall-installazzjonijiet</Link>",
+        "waitingForDialog": "Qed nistennew id-djalogu biex żżid il-proġett...",
+        "needReleaseInstalled": "Għandek bżonn mill-inqas release installata biex żżid proġett",
+        "addProjectError": "Xi ħaġa marret ħażin meta żdiedt il-proġett",
+        "setEditorError": "Xi ħaġa marret ħażin meta ssettjajt l-editur tal-proġett",
+        "projectNotValid": "Il-proġett mhuwiex validu, jekk jogħġbok kun żgur li l-proġett u r-release huma validi fuq il-kompjuter tiegħek.",
+        "invalidReleaseEditor": "L-editur maghzul mhux disponibbli. Qabbad id-drajv jew erga' installa r-release.",
+        "dropGodotFileOnly": "Jekk jogħġbok waqqa' fajl project.godot biex iżżid proġett",
+        "dropProjectHere": "Waqqa' l-fajl project.godot hawn biex iżżid proġett",
+        "addingProjects": "Qed iżżid proġetti: {{current}}/{{total}}",
+        "failedAddProject": "Ma setax jiżdied il-proġett: {{error}}",
+        "dropProjectFilesHere": "Waqqa’ l-fajls tal-proġett Godot hawn",
+        "dropProjectFilesHelpPrefix": "Waqqa’ wieħed jew aktar",
+        "dropProjectFilesHelpSuffix": "fajls biex iżżidhom mal-launcher.",
+        "invalidReasons": {
+            "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
+            "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
+        },
+        "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
     },
-    "validation": {
-      "required": "L-isem tal-proġett huwa meħtieġ.",
-      "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters."
+    "changeEditor": {
+        "errors": {
+            "projectNotFound": "Proġett ma nstabx",
+            "invalidEditorVersion": "Verżjoni tal-editur invalida",
+            "differentMajorVersion": "Ma tistax tuża verżjoni maġġuri differenti tal-editur\nBiex tipproteġi l-proġett tiegħek ara l-gwida uffiċjali tal-migrazzjoni fuq https://godotengine.org"
+        }
     },
-    "updateFailed": "Ma setax jiġi aġġornat il-proġett."
-  },
-  "renameProject": {
-    "errors": {
-      "projectNotFound": "Proġett ma nstabx",
-      "nameRequired": "L-isem tal-proġett huwa meħtieġ.",
-      "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters.",
-      "nameExists": "Diġà jeżisti proġett bl-isem '{{name}}'."
+    "toggleVSCode": {
+        "errors": {
+            "projectNotFound": "Il-proġett ma nstabx",
+            "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter.",
+            "missingLaunchPath": "Il-perkors tat-tnedija ta' Godot għal dan il-proġett mhux magħruf.",
+            "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
+        }
+    },
+    "editProject": {
+        "title": "Settings tal-Proġett",
+        "description": "Aġġorna s-settings tal-isem tal-proġett.",
+        "fields": {
+            "name": {
+                "label": "Isem tal-proġett",
+                "help": "Isem muri f'Godot Launcher.",
+                "placeholder": "Il-Proġett Tiegħi"
+            },
+            "path": {
+                "label": "Folder tal-proġett"
+            }
+        },
+        "godot": {
+            "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",
+            "loading": "Qed jiġi ċċekkjat il-proġett Godot...",
+            "currentName": "Isem attwali tal-proġett Godot: {{name}}",
+            "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem fil-launcher."
+        },
+        "actions": {
+            "update": "Aġġorna",
+            "updating": "Qed jiġi aġġornat..."
+        },
+        "validation": {
+            "required": "L-isem tal-proġett huwa meħtieġ.",
+            "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters."
+        },
+        "updateFailed": "Ma setax jiġi aġġornat il-proġett."
+    },
+    "renameProject": {
+        "errors": {
+            "projectNotFound": "Proġett ma nstabx",
+            "nameRequired": "L-isem tal-proġett huwa meħtieġ.",
+            "invalidName": "L-isem tal-proġett ma jistax ikollu line breaks jew control characters.",
+            "nameExists": "Diġà jeżisti proġett bl-isem '{{name}}'."
+        }
+    },
+    "initGit": {
+        "errors": {
+            "projectNotFound": "Il-proġett ma nstabx",
+            "initFailed": "Il-bidu tar-repositorju Git falla."
+        }
     }
-  },
-  "initGit": {
-    "errors": {
-      "projectNotFound": "Il-proġett ma nstabx",
-      "initFailed": "Il-bidu tar-repositorju Git falla."
-    }
-  }
 }

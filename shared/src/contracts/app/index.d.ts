@@ -24,3 +24,5 @@ export type AppUpdateMessage = {
 export type CheckForUpdatesOptions = {
     ignoreSkippedVersion?: boolean;
 };
+
+export type * from './app.bridge.js';

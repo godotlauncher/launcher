@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "OK",
-    "cancel": "キャンセル",
-    "continue": "続ける",
-    "select": "選択",
-    "retry": "再試行",
-    "remove": "削除",
-    "copyPath": "パスをコピー",
-    "openPath": "パスを開く",
-    "reinstall": "再インストール"
-  },
-  "error": "エラー",
-  "success": "成功",
-  "warning": "警告",
-  "info": "情報",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "パスには空ではない文字列を指定してください。",
-      "pathMustBeAbsolute": "パスは絶対パスである必要があります。",
-      "targetNotDirectory": "指定したパスは存在しますが、フォルダーではありません。"
+    "buttons": {
+        "ok": "OK",
+        "cancel": "キャンセル",
+        "continue": "続ける",
+        "select": "選択",
+        "retry": "再試行",
+        "remove": "削除",
+        "copyPath": "パスをコピー",
+        "openPath": "パスを開く",
+        "reinstall": "再インストール"
+    },
+    "error": "エラー",
+    "success": "成功",
+    "warning": "警告",
+    "info": "情報",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "パスには空ではない文字列を指定してください。",
+            "pathMustBeAbsolute": "パスは絶対パスである必要があります。",
+            "targetNotDirectory": "指定したパスは存在しますが、フォルダーではありません。"
+        }
+    },
+    "app": {
+        "loadingMessage": "準備中...",
+        "navigation": {
+            "projects": "プロジェクト",
+            "installs": "インストール",
+            "help": "ヘルプ",
+            "settings": "設定",
+            "joinCommunity": "コミュニティに参加"
+        },
+        "update": {
+            "availableWithVersion": "バージョン {{version}} が利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton> または <SkipButton>このバージョンをスキップ</SkipButton>",
+            "availableNoVersion": "新しいバージョンが利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton>",
+            "readyWithVersion": "バージョン {{version}} のアップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
+            "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
+            "manualWithVersion": "バージョン {{version}} が利用可能ですが、この rpm-ostree システムでは自動インストールはサポートされていません。<ReleaseLink>手動でダウンロード</ReleaseLink>または<SkipButton>このバージョンをスキップ</SkipButton>",
+            "manualNoVersion": "新しいバージョンが利用可能ですが、この rpm-ostree システムでは自動インストールはサポートされていません。<ReleaseLink>手動でダウンロード</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "エディタバージョンを選択",
+        "tableHeaders": {
+            "name": "名前"
+        },
+        "noReleases": "リリースが見つかりません。エディタバージョン {{version}}.x が必要です",
+        "installReleases": "リリースをインストール",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "プレリリース"
+        },
+        "unavailable": "利用不可能なバージョン",
+        "unavailableHint": "続行する前にドライブをマウントするか、別のエディタを選択してください。"
     }
-  },
-  "app": {
-    "loadingMessage": "準備中...",
-    "navigation": {
-      "projects": "プロジェクト",
-      "installs": "インストール",
-      "help": "ヘルプ",
-      "settings": "設定",
-      "joinCommunity": "コミュニティに参加"
-    },
-    "update": {
-      "availableWithVersion": "バージョン {{version}} が利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton> または <SkipButton>このバージョンをスキップ</SkipButton>",
-      "availableNoVersion": "新しいバージョンが利用可能です。<DownloadButton>アップデートをダウンロード</DownloadButton>",
-      "readyWithVersion": "バージョン {{version}} のアップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
-      "readyNoVersion": "アップデートの準備ができました。インストールするには Godot Launcher を再起動してください。<RestartButton>今すぐ再起動</RestartButton>",
-      "manualWithVersion": "バージョン {{version}} が利用可能ですが、この rpm-ostree システムでは自動インストールはサポートされていません。<ReleaseLink>手動でダウンロード</ReleaseLink>または<SkipButton>このバージョンをスキップ</SkipButton>",
-      "manualNoVersion": "新しいバージョンが利用可能ですが、この rpm-ostree システムでは自動インストールはサポートされていません。<ReleaseLink>手動でダウンロード</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "エディタバージョンを選択",
-    "tableHeaders": {
-      "name": "名前"
-    },
-    "noReleases": "リリースが見つかりません。エディタバージョン {{version}}.x が必要です",
-    "installReleases": "リリースをインストール",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "プレリリース"
-    },
-    "unavailable": "利用不可能なバージョン",
-    "unavailableHint": "続行する前にドライブをマウントするか、別のエディタを選択してください。"
-  }
 }

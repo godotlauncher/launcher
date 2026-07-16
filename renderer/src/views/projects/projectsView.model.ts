@@ -1,4 +1,4 @@
-import type { ProjectDetails } from '@shared';
+import type { ProjectDetails } from '@shared/contracts';
 
 export type ProjectSortData = {
     field: string;

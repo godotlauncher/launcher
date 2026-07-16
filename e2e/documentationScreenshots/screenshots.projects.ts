@@ -1,18 +1,4 @@
-import { expect, type ElectronApplication } from '@playwright/test';
-import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
-import {
-    DEFAULT_TOOLS,
-    SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
-    SAMPLE_CUSTOM_RELEASE,
-    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
-    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
-    SAMPLE_PROJECT_PROTOTYPE,
-    SAMPLE_PROJECTS,
-    SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
-    TOOLS_NONE,
-    TOOLS_NO_GIT,
-    TOOLS_NO_VSCODE,
-} from './sampleData';
+import { type ElectronApplication, expect } from '@playwright/test';
 import {
     applyTheme,
     closeActionMenu,
@@ -25,6 +11,20 @@ import {
     stubAddProjectRecoveredVSCodeConfig,
     stubInstalledTools,
 } from './runtime';
+import {
+    DEFAULT_TOOLS,
+    SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
+    SAMPLE_CUSTOM_RELEASE,
+    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+    SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM_AND_UNAVAILABLE,
+    SAMPLE_PROJECT_PROTOTYPE,
+    SAMPLE_PROJECTS,
+    SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
+    TOOLS_NO_GIT,
+    TOOLS_NO_VSCODE,
+    TOOLS_NONE,
+} from './sampleData';
+import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import {
     APP_UPDATE_MESSAGE,
     APP_UPDATE_RELEASE_URL,

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createProject } from './createProject.js';
 

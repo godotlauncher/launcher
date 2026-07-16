@@ -1,7 +1,8 @@
-import type { CachedTool, RendererType } from '@shared';
+import type { CachedTool, RendererType } from '@shared/contracts';
 import { CircleHelp, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appBridge } from '../../bridge.ts';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useFileSystem } from '../../hooks/useFileSystem';
@@ -240,7 +241,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         if (inputNameRef.current) {
             inputNameRef.current.focus();
         }
-        window.electron
+        appBridge
             .getCachedTools({ refreshIfStale: false })
             .then(setTools)
             .catch(() => {
@@ -272,12 +273,11 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         try {
             const browsePath =
                 overwriteBasePath || preferences?.projects_location || '';
-            const selectFolderResult =
-                await window.electron.openDirectoryDialog(
-                    browsePath,
-                    t('project.selectFolderDialogTitle'),
-                    [],
-                );
+            const selectFolderResult = await appBridge.openDirectoryDialog(
+                browsePath,
+                t('project.selectFolderDialogTitle'),
+                [],
+            );
 
             if (
                 selectFolderResult &&

@@ -1,6 +1,7 @@
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { appBridge } from '../bridge.ts';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { usePreferences } from '../hooks/usePreferences';
@@ -182,12 +183,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 onClose={() => setReleaseActionsMenu(null)}
                 onOpenInstalledFolder={(release) =>
                     runReleaseAction(() =>
-                        window.electron.openShellFolder(release.install_path),
+                        appBridge.openShellFolder(release.install_path),
                     )
                 }
                 onStartProjectManager={(release) =>
                     runReleaseAction(() =>
-                        window.electron.openEditorProjectManager(release),
+                        appBridge.openEditorProjectManager(release),
                     )
                 }
                 onRemoveRelease={handleRemoveReleaseFromMenu}

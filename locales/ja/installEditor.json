@@ -1,57 +1,57 @@
 {
-  "title": "Godotエディタをインストール",
-  "search": {
-    "placeholder": "検索"
-  },
-  "tabs": {
-    "released": "リリース済み",
-    "prerelease": "プレリリース"
-  },
-  "filters": {
-    "showInstalledOnly": "インストール済みのみ表示"
-  },
-  "buttons": {
-    "reload": "リリースリストを再読み込み"
-  },
-  "errors": {
-    "fetchError": "リリースの取得中にエラーが発生しました。",
-    "retryInline": "もう一度お試しください。<Button>再試行</Button>",
-    "noPlatformAsset": "プラットフォーム用のアセットが見つかりません",
-    "invalidEditorVersion": "無効なエディタバージョン",
-    "unsupportedPlatform": "サポートされていないプラットフォーム",
-    "unsupportedFileExtension": "サポートされていないファイル拡張子",
-    "downloadInterrupted": "ダウンロードが中断されました。Godot のダウンロードサーバーが混雑しているか、接続が閉じられた可能性があります。数分後にもう一度お試しください。",
-    "downloadFailed": "ダウンロードに失敗しました: {{error}}",
-    "downloadFailedUnknown": "ダウンロードに失敗しました。数分後にもう一度お試しください。",
-    "downloadHttpError": "アセットのダウンロードに失敗しました: {{status}}",
-    "downloadEmptyResponse": "ダウンロードに失敗しました: サーバーから空の応答が返されました"
-  },
-  "messages": {
-    "installError": "リリースのインストール中に問題が発生しました",
-    "reinstallError": "リリースの再インストール中に問題が発生しました"
-  },
-  "table": {
-    "headers": {
-      "version": "バージョン",
-      "released": "リリース日",
-      "download": "ダウンロード",
-      "installed": "インストール済み"
+    "title": "Godotエディタをインストール",
+    "search": {
+        "placeholder": "検索"
     },
-    "gdscript": "（GDScript）",
-    "dotnet": "（.NET）",
-    "installing": "インストール中...",
-    "downloading": "ダウンロード中...",
-    "tooltips": {
-      "installed": "インストール済み - {{version}}",
-      "installedGDScript": "インストール済み - {{version}}（GDScript）",
-      "installedDotNet": "インストール済み - {{version}} .NET",
-      "downloadGDScript": "{{version}}（GDScript）をダウンロード",
-      "downloadDotNet": "{{version}} .NETをダウンロード",
-      "reinstallGDScript": "{{version}} を再インストール (GDScript)",
-      "reinstallDotNet": "{{version}} .NET を再インストール"
+    "tabs": {
+        "released": "リリース済み",
+        "prerelease": "プレリリース"
     },
-    "status": {
-      "unavailable": "利用不可"
+    "filters": {
+        "showInstalledOnly": "インストール済みのみ表示"
+    },
+    "buttons": {
+        "reload": "リリースリストを再読み込み"
+    },
+    "errors": {
+        "fetchError": "リリースの取得中にエラーが発生しました。",
+        "retryInline": "もう一度お試しください。<Button>再試行</Button>",
+        "noPlatformAsset": "プラットフォーム用のアセットが見つかりません",
+        "invalidEditorVersion": "無効なエディタバージョン",
+        "unsupportedPlatform": "サポートされていないプラットフォーム",
+        "unsupportedFileExtension": "サポートされていないファイル拡張子",
+        "downloadInterrupted": "ダウンロードが中断されました。Godot のダウンロードサーバーが混雑しているか、接続が閉じられた可能性があります。数分後にもう一度お試しください。",
+        "downloadFailed": "ダウンロードに失敗しました: {{error}}",
+        "downloadFailedUnknown": "ダウンロードに失敗しました。数分後にもう一度お試しください。",
+        "downloadHttpError": "アセットのダウンロードに失敗しました: {{status}}",
+        "downloadEmptyResponse": "ダウンロードに失敗しました: サーバーから空の応答が返されました"
+    },
+    "messages": {
+        "installError": "リリースのインストール中に問題が発生しました",
+        "reinstallError": "リリースの再インストール中に問題が発生しました"
+    },
+    "table": {
+        "headers": {
+            "version": "バージョン",
+            "released": "リリース日",
+            "download": "ダウンロード",
+            "installed": "インストール済み"
+        },
+        "gdscript": "（GDScript）",
+        "dotnet": "（.NET）",
+        "installing": "インストール中...",
+        "downloading": "ダウンロード中...",
+        "tooltips": {
+            "installed": "インストール済み - {{version}}",
+            "installedGDScript": "インストール済み - {{version}}（GDScript）",
+            "installedDotNet": "インストール済み - {{version}} .NET",
+            "downloadGDScript": "{{version}}（GDScript）をダウンロード",
+            "downloadDotNet": "{{version}} .NETをダウンロード",
+            "reinstallGDScript": "{{version}} を再インストール (GDScript)",
+            "reinstallDotNet": "{{version}} .NET を再インストール"
+        },
+        "status": {
+            "unavailable": "利用不可"
+        }
     }
-  }
 }

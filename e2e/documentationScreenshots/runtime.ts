@@ -1,11 +1,18 @@
-import { expect, type ElectronApplication } from '@playwright/test';
-import type { AppUpdateMessage, InstalledRelease, ProjectDetails, ReleaseInstallProgress, ReleaseSummary, UserPreferences } from '@shared';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { type ElectronApplication, expect } from '@playwright/test';
+import type {
+    AppUpdateMessage,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseInstallProgress,
+    ReleaseSummary,
+    UserPreferences,
+} from '@shared/contracts';
 import sharp from 'sharp';
-import type { CachedTool, ElectronPage, StubbedAppDataOptions, ThemeConfig, UpdateScreenshotState } from './types';
 import {
+    createPreferences,
     DEFAULT_TOOLS,
     SAMPLE_AVAILABLE_PRERELEASES,
     SAMPLE_AVAILABLE_RELEASES,
@@ -17,8 +24,14 @@ import {
     SAMPLE_PROJECT_ICON_PATH,
     SAMPLE_PROJECTS,
     SAMPLE_RELEASES_CACHE_FILE,
-    createPreferences,
 } from './sampleData';
+import type {
+    CachedTool,
+    ElectronPage,
+    StubbedAppDataOptions,
+    ThemeConfig,
+    UpdateScreenshotState,
+} from './types';
 
 const SCREENSHOT_MIN_WIDTH = 1024;
 const SCREENSHOT_MIN_HEIGHT = 600;
@@ -274,16 +287,14 @@ export async function stubAppData(
             );
 
             ipcMain.removeHandler('get-available-releases');
-            ipcMain.handle(
-                'get-available-releases',
-                async () => ({ releases: injectedAvailableReleases }),
-            );
+            ipcMain.handle('get-available-releases', async () => ({
+                releases: injectedAvailableReleases,
+            }));
 
             ipcMain.removeHandler('get-available-prereleases');
-            ipcMain.handle(
-                'get-available-prereleases',
-                async () => ({ releases: injectedAvailablePrereleases }),
-            );
+            ipcMain.handle('get-available-prereleases', async () => ({
+                releases: injectedAvailablePrereleases,
+            }));
 
             for (const win of BrowserWindow.getAllWindows()) {
                 const webContents = win.webContents as any;
@@ -461,7 +472,6 @@ export async function ensureMainNavigationReady(
     }
 }
 
-
 export async function setScreenshotViewport(
     page: ElectronPage,
     height = SCREENSHOT_MIN_HEIGHT,
@@ -499,7 +509,10 @@ export async function captureScreenshot(
     });
 }
 
-export async function openProjectActionsMenu(page: ElectronPage, projectName: string) {
+export async function openProjectActionsMenu(
+    page: ElectronPage,
+    projectName: string,
+) {
     const projectRow = page
         .locator('tr')
         .filter({ has: page.getByRole('button', { name: projectName }) });

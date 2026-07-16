@@ -2,7 +2,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import path from 'node:path';
-import type { InstalledRelease, ProjectDetails } from '@shared';
+import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const releaseUtilsMocks = vi.hoisted(() => ({

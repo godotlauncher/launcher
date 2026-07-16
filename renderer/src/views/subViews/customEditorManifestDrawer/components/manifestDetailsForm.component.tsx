@@ -1,4 +1,4 @@
-import type { CustomEngineManifestPlatformName } from '@shared';
+import type { CustomEngineManifestPlatformName } from '@shared/contracts';
 import { CircleX } from 'lucide-react';
 import type React from 'react';
 import { HelpTooltip } from '../../../../components/ui/helpTooltip.component';

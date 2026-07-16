@@ -1,94 +1,94 @@
 {
-  "title": "Godot Launcher",
-  "steps": {
-    "welcome": "Bienvenida",
-    "macos": "MacOS",
-    "windows": "Windows",
-    "linux": "Linux",
-    "currentSettings": "Configuración actual",
-    "setLocations": "Establecer ubicaciones",
-    "customizeBehavior": "Personalizar comportamiento",
-    "windowsSymlink": "Enlaces simbólicos de Windows",
-    "ready": "Listo"
-  },
-  "navigation": {
-    "start": "Comenzar",
-    "nextMacOS": "Siguiente: MacOS",
-    "nextWindows": "Siguiente: Windows",
-    "nextLinux": "Siguiente: Linux",
-    "nextCurrentSettings": "Siguiente: Configuración actual",
-    "nextSetLocations": "Siguiente: Establecer ubicaciones",
-    "nextCustomizeBehavior": "Siguiente: Personalizar comportamiento",
-    "nextReady": "Siguiente: Listo",
-    "backWelcome": "Atrás: Bienvenida",
-    "backMacOS": "Atrás: MacOS",
-    "backWindows": "Atrás: Windows",
-    "backCurrentSettings": "Atrás: Configuración actual",
-    "backSetLocations": "Atrás: Establecer ubicaciones",
-    "backCustomizeBehavior": "Atrás: Personalizar comportamiento"
-  },
-  "welcomeStep": {
-    "title": "¡Gracias por usar Godot Launcher!",
-    "description": "Godot Launcher facilita <strong>gestionar múltiples versiones del motor Godot</strong> y mantiene <strong>la configuración del editor separada para cada proyecto.</strong>",
-    "feedback": "¡Al usarlo, estás ayudando a apoyar el proyecto! Si alguna vez tienes comentarios o encuentras un error, háznoslo saber, nos encantaría mejorarlo aún más para ti.",
-    "enjoy": "¡Disfrútalo y feliz codificación!"
-  },
-  "startStep": {
-    "title": "¡Todo listo! 🚀",
-    "subtitle": "¡Godot Launcher está listo para usar! Ahora puedes gestionar tus proyectos y explorar todas las funciones.",
-    "whatsNext": "¿Qué sigue?",
-    "installTab": "Instala y experimenta con los últimos prelanzamientos en la pestaña <strong>Instalar</strong>.",
-    "projectsTab": "Añade o crea proyectos rápidamente en la pestaña <strong>Proyectos</strong>.",
-    "settingsTab": "Personaliza tu experiencia como más te guste en la pestaña <strong>Configuración</strong>."
-  },
-  "customizeBehavior": {
-    "afterLaunching": "Después de iniciar un proyecto",
-    "nothing": "Nada",
-    "minimize": "Minimizar",
-    "closeToTray": "Cerrar a la bandeja del sistema",
-    "autoCheckUpdates": "Buscar actualizaciones automáticamente",
-    "autoStart": "Iniciar cuando el ordenador se inicia.",
-    "startInTray": "Iniciar en la bandeja."
-  },
-  "currentSettings": {
-    "title": "Configuración predeterminada:",
-    "projectsLocation": "Ubicación de proyectos:",
-    "installLocation": "Ubicación de instalación de Godot:",
-    "postLaunchAction": "Acción después de iniciar un proyecto:",
-    "autoCheckUpdates": "Buscar actualizaciones automáticamente:",
-    "autoStart": "Inicio automático cuando el ordenador se inicia:",
-    "autoStartType": "Tipo de inicio automático:",
-    "systemTray": "Bandeja del sistema",
-    "normalWindow": "Ventana normal",
-    "yes": "Sí",
-    "no": "No",
-    "skipButton": "Omitir, usar valores predeterminados",
-    "postLaunchActions": {
-      "nothing": "Nada",
-      "minimize": "Minimizar",
-      "closeToTray": "Cerrar a la bandeja del sistema"
+    "title": "Godot Launcher",
+    "steps": {
+        "welcome": "Bienvenida",
+        "macos": "MacOS",
+        "windows": "Windows",
+        "linux": "Linux",
+        "currentSettings": "Configuración actual",
+        "setLocations": "Establecer ubicaciones",
+        "customizeBehavior": "Personalizar comportamiento",
+        "windowsSymlink": "Enlaces simbólicos de Windows",
+        "ready": "Listo"
+    },
+    "navigation": {
+        "start": "Comenzar",
+        "nextMacOS": "Siguiente: MacOS",
+        "nextWindows": "Siguiente: Windows",
+        "nextLinux": "Siguiente: Linux",
+        "nextCurrentSettings": "Siguiente: Configuración actual",
+        "nextSetLocations": "Siguiente: Establecer ubicaciones",
+        "nextCustomizeBehavior": "Siguiente: Personalizar comportamiento",
+        "nextReady": "Siguiente: Listo",
+        "backWelcome": "Atrás: Bienvenida",
+        "backMacOS": "Atrás: MacOS",
+        "backWindows": "Atrás: Windows",
+        "backCurrentSettings": "Atrás: Configuración actual",
+        "backSetLocations": "Atrás: Establecer ubicaciones",
+        "backCustomizeBehavior": "Atrás: Personalizar comportamiento"
+    },
+    "welcomeStep": {
+        "title": "¡Gracias por usar Godot Launcher!",
+        "description": "Godot Launcher facilita <strong>gestionar múltiples versiones del motor Godot</strong> y mantiene <strong>la configuración del editor separada para cada proyecto.</strong>",
+        "feedback": "¡Al usarlo, estás ayudando a apoyar el proyecto! Si alguna vez tienes comentarios o encuentras un error, háznoslo saber, nos encantaría mejorarlo aún más para ti.",
+        "enjoy": "¡Disfrútalo y feliz codificación!"
+    },
+    "startStep": {
+        "title": "¡Todo listo! 🚀",
+        "subtitle": "¡Godot Launcher está listo para usar! Ahora puedes gestionar tus proyectos y explorar todas las funciones.",
+        "whatsNext": "¿Qué sigue?",
+        "installTab": "Instala y experimenta con los últimos prelanzamientos en la pestaña <strong>Instalar</strong>.",
+        "projectsTab": "Añade o crea proyectos rápidamente en la pestaña <strong>Proyectos</strong>.",
+        "settingsTab": "Personaliza tu experiencia como más te guste en la pestaña <strong>Configuración</strong>."
+    },
+    "customizeBehavior": {
+        "afterLaunching": "Después de iniciar un proyecto",
+        "nothing": "Nada",
+        "minimize": "Minimizar",
+        "closeToTray": "Cerrar a la bandeja del sistema",
+        "autoCheckUpdates": "Buscar actualizaciones automáticamente",
+        "autoStart": "Iniciar cuando el ordenador se inicia.",
+        "startInTray": "Iniciar en la bandeja."
+    },
+    "currentSettings": {
+        "title": "Configuración predeterminada:",
+        "projectsLocation": "Ubicación de proyectos:",
+        "installLocation": "Ubicación de instalación de Godot:",
+        "postLaunchAction": "Acción después de iniciar un proyecto:",
+        "autoCheckUpdates": "Buscar actualizaciones automáticamente:",
+        "autoStart": "Inicio automático cuando el ordenador se inicia:",
+        "autoStartType": "Tipo de inicio automático:",
+        "systemTray": "Bandeja del sistema",
+        "normalWindow": "Ventana normal",
+        "yes": "Sí",
+        "no": "No",
+        "skipButton": "Omitir, usar valores predeterminados",
+        "postLaunchActions": {
+            "nothing": "Nada",
+            "minimize": "Minimizar",
+            "closeToTray": "Cerrar a la bandeja del sistema"
+        }
+    },
+    "macosStep": {
+        "title": "Nota para macOS",
+        "intro": "Godot Launcher crea una copia del editor para cada proyecto.",
+        "whyTitle": "¿Por qué?",
+        "reason": "Crear enlaces simbólicos en macOS no está restringido por permisos, pero abrir el editor a través de un enlace simbólico ha demostrado ser poco confiable. Para garantizar una experiencia fluida, proporcionamos una copia dedicada del motor para cada proyecto. Aunque Godot solo ocupa alrededor de 200MB (y esto generalmente no es un problema), ten en cuenta que múltiples proyectos pueden llevar a un mayor uso del disco.",
+        "dotnetNote": "NOTA: Si estás trabajando con editores .NET, necesitarás instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
+    },
+    "windowsStep": {
+        "title": "Nota para Windows",
+        "intro": "A partir de la versión 1.4.0, Godot Launcher puede crear <code>enlaces simbólicos</code> al editor para cada proyecto. Para mantener la configuración simple, ahora usamos copias locales por defecto. Puedes habilitar los enlaces simbólicos en cualquier momento desde <strong>Configuración → Comportamiento → Enlaces simbólicos del editor</strong> cuando quieras un menor uso del disco.",
+        "change1": "Crear enlaces simbólicos en Windows requiere privilegios de administrador y ejecución de comandos elevados. El lanzador ahora eleva los permisos solo al crear enlaces simbólicos.",
+        "change2": "Solo verás un aviso de UAC si no eres <code>Administrador</code> en tu PC y si el <code>Modo de desarrollador</code> no está habilitado.",
+        "change3": "¿Listo para probar los enlaces simbólicos? Activa <strong>Enlaces simbólicos del editor</strong> en Configuración cuando estés preparado para el aviso de elevación ocasional.",
+        "dotnetNote": "NOTA: Si estás usando editores basados en .NET, necesitas instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
+    },
+    "linuxStep": {
+        "title": "Nota para Linux",
+        "intro": "Godot Launcher usa enlaces simbólicos para cada proyecto",
+        "whyTitle": "¿Por qué?",
+        "reason": "A diferencia de las versiones de Windows y MacOS, Linux usa enlaces simbólicos al editor para lanzar proyectos. Esto ahorra espacio en disco y permite configuraciones por proyecto.",
+        "dotnetNote": "NOTA: Si estás trabajando con editores .NET, necesitarás instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
     }
-  },
-  "macosStep": {
-    "title": "Nota para macOS",
-    "intro": "Godot Launcher crea una copia del editor para cada proyecto.",
-    "whyTitle": "¿Por qué?",
-    "reason": "Crear enlaces simbólicos en macOS no está restringido por permisos, pero abrir el editor a través de un enlace simbólico ha demostrado ser poco confiable. Para garantizar una experiencia fluida, proporcionamos una copia dedicada del motor para cada proyecto. Aunque Godot solo ocupa alrededor de 200MB (y esto generalmente no es un problema), ten en cuenta que múltiples proyectos pueden llevar a un mayor uso del disco.",
-    "dotnetNote": "NOTA: Si estás trabajando con editores .NET, necesitarás instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
-  },
-  "windowsStep": {
-    "title": "Nota para Windows",
-    "intro": "A partir de la versión 1.4.0, Godot Launcher puede crear <code>enlaces simbólicos</code> al editor para cada proyecto. Para mantener la configuración simple, ahora usamos copias locales por defecto. Puedes habilitar los enlaces simbólicos en cualquier momento desde <strong>Configuración → Comportamiento → Enlaces simbólicos del editor</strong> cuando quieras un menor uso del disco.",
-    "change1": "Crear enlaces simbólicos en Windows requiere privilegios de administrador y ejecución de comandos elevados. El lanzador ahora eleva los permisos solo al crear enlaces simbólicos.",
-    "change2": "Solo verás un aviso de UAC si no eres <code>Administrador</code> en tu PC y si el <code>Modo de desarrollador</code> no está habilitado.",
-    "change3": "¿Listo para probar los enlaces simbólicos? Activa <strong>Enlaces simbólicos del editor</strong> en Configuración cuando estés preparado para el aviso de elevación ocasional.",
-    "dotnetNote": "NOTA: Si estás usando editores basados en .NET, necesitas instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
-  },
-  "linuxStep": {
-    "title": "Nota para Linux",
-    "intro": "Godot Launcher usa enlaces simbólicos para cada proyecto",
-    "whyTitle": "¿Por qué?",
-    "reason": "A diferencia de las versiones de Windows y MacOS, Linux usa enlaces simbólicos al editor para lanzar proyectos. Esto ahorra espacio en disco y permite configuraciones por proyecto.",
-    "dotnetNote": "NOTA: Si estás trabajando con editores .NET, necesitarás instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
-  }
 }

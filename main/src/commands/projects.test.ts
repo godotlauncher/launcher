@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { ProjectDetails } from '@shared';
+import type { ProjectDetails } from '@shared/contracts';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';

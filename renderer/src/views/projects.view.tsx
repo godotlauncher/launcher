@@ -1,4 +1,4 @@
-import type { InstalledRelease, ProjectDetails } from '@shared';
+import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';

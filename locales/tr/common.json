@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "Tamam",
-    "cancel": "İptal",
-    "continue": "Devam",
-    "select": "Seç",
-    "retry": "Tekrar dene",
-    "remove": "Kaldır",
-    "copyPath": "Yolu kopyala",
-    "openPath": "Yolu aç",
-    "reinstall": "Yeniden yükle"
-  },
-  "error": "Hata",
-  "success": "Başarılı",
-  "warning": "Uyarı",
-  "info": "Bilgi",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "Yol boş olmayan bir metin olmalıdır.",
-      "pathMustBeAbsolute": "Yol mutlak olmalıdır.",
-      "targetNotDirectory": "Hedef yol zaten mevcut, ancak bir klasör değil."
+    "buttons": {
+        "ok": "Tamam",
+        "cancel": "İptal",
+        "continue": "Devam",
+        "select": "Seç",
+        "retry": "Tekrar dene",
+        "remove": "Kaldır",
+        "copyPath": "Yolu kopyala",
+        "openPath": "Yolu aç",
+        "reinstall": "Yeniden yükle"
+    },
+    "error": "Hata",
+    "success": "Başarılı",
+    "warning": "Uyarı",
+    "info": "Bilgi",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "Yol boş olmayan bir metin olmalıdır.",
+            "pathMustBeAbsolute": "Yol mutlak olmalıdır.",
+            "targetNotDirectory": "Hedef yol zaten mevcut, ancak bir klasör değil."
+        }
+    },
+    "app": {
+        "loadingMessage": "Her şey hazırlanıyor...",
+        "navigation": {
+            "projects": "Projeler",
+            "installs": "Kurulumlar",
+            "help": "Yardım",
+            "settings": "Ayarlar",
+            "joinCommunity": "Topluluğa Katıl"
+        },
+        "update": {
+            "availableWithVersion": "Sürüm {{version}} mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton> veya <SkipButton>Bu sürümü atla</SkipButton>",
+            "availableNoVersion": "Yeni bir sürüm mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton>",
+            "readyWithVersion": "{{version}} sürümü hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
+            "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
+            "manualWithVersion": "Sürüm {{version}} kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink> veya <SkipButton>Bu sürümü atla</SkipButton>",
+            "manualNoVersion": "Yeni bir sürüm kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Editör sürümünü seçin",
+        "tableHeaders": {
+            "name": "İsim"
+        },
+        "noReleases": "Sürüm bulunamadı, gerekli editör sürümü {{version}}.x",
+        "installReleases": "Sürümleri yükle",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "ön sürüm"
+        },
+        "unavailable": "Sürüm kullanılamıyor",
+        "unavailableHint": "Devam etmeden önce sürücüyü bağlayın veya farklı bir editör seçin."
     }
-  },
-  "app": {
-    "loadingMessage": "Her şey hazırlanıyor...",
-    "navigation": {
-      "projects": "Projeler",
-      "installs": "Kurulumlar",
-      "help": "Yardım",
-      "settings": "Ayarlar",
-      "joinCommunity": "Topluluğa Katıl"
-    },
-    "update": {
-      "availableWithVersion": "Sürüm {{version}} mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton> veya <SkipButton>Bu sürümü atla</SkipButton>",
-      "availableNoVersion": "Yeni bir sürüm mevcut. <DownloadButton>Güncellemeyi indir</DownloadButton>",
-      "readyWithVersion": "{{version}} sürümü hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
-      "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
-      "manualWithVersion": "Sürüm {{version}} kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink> veya <SkipButton>Bu sürümü atla</SkipButton>",
-      "manualNoVersion": "Yeni bir sürüm kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Editör sürümünü seçin",
-    "tableHeaders": {
-      "name": "İsim"
-    },
-    "noReleases": "Sürüm bulunamadı, gerekli editör sürümü {{version}}.x",
-    "installReleases": "Sürümleri yükle",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "ön sürüm"
-    },
-    "unavailable": "Sürüm kullanılamıyor",
-    "unavailableHint": "Devam etmeden önce sürücüyü bağlayın veya farklı bir editör seçin."
-  }
 }

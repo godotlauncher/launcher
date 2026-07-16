@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "Ok",
-    "cancel": "Anuluj",
-    "continue": "Kontynuuj",
-    "select": "Wybierz",
-    "retry": "Ponów",
-    "remove": "Usuń",
-    "copyPath": "Kopiuj ścieżkę",
-    "openPath": "Otwórz ścieżkę",
-    "reinstall": "Zainstaluj ponownie"
-  },
-  "error": "Błąd",
-  "success": "Sukces",
-  "warning": "Ostrzeżenie",
-  "info": "Informacja",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "Ścieżka musi być niepustym ciągiem znaków.",
-      "pathMustBeAbsolute": "Ścieżka musi być bezwzględna.",
-      "targetNotDirectory": "Ścieżka docelowa już istnieje, ale nie jest katalogiem."
+    "buttons": {
+        "ok": "Ok",
+        "cancel": "Anuluj",
+        "continue": "Kontynuuj",
+        "select": "Wybierz",
+        "retry": "Ponów",
+        "remove": "Usuń",
+        "copyPath": "Kopiuj ścieżkę",
+        "openPath": "Otwórz ścieżkę",
+        "reinstall": "Zainstaluj ponownie"
+    },
+    "error": "Błąd",
+    "success": "Sukces",
+    "warning": "Ostrzeżenie",
+    "info": "Informacja",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "Ścieżka musi być niepustym ciągiem znaków.",
+            "pathMustBeAbsolute": "Ścieżka musi być bezwzględna.",
+            "targetNotDirectory": "Ścieżka docelowa już istnieje, ale nie jest katalogiem."
+        }
+    },
+    "app": {
+        "loadingMessage": "Przygotowywanie...",
+        "navigation": {
+            "projects": "Projekty",
+            "installs": "Instalacje",
+            "help": "Pomoc",
+            "settings": "Ustawienia",
+            "joinCommunity": "Dołącz do społeczności"
+        },
+        "update": {
+            "availableWithVersion": "Wersja {{version}} jest dostępna. <DownloadButton>Pobierz aktualizację</DownloadButton> lub <SkipButton>Pomiń tę wersję</SkipButton>",
+            "availableNoVersion": "Nowa wersja jest dostępna. <DownloadButton>Pobierz aktualizację</DownloadButton>",
+            "readyWithVersion": "Wersja {{version}} jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
+            "readyNoVersion": "Aktualizacja jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
+            "manualWithVersion": "Wersja {{version}} jest dostępna, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink> albo <SkipButton>Pomiń tę wersję</SkipButton>",
+            "manualNoVersion": "Dostępna jest nowa wersja, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Wybierz wersję edytora",
+        "tableHeaders": {
+            "name": "Nazwa"
+        },
+        "noReleases": "Nie znaleziono wydań, wymagana wersja edytora {{version}}.x",
+        "installReleases": "Zainstaluj wydania",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "wersja testowa"
+        },
+        "unavailable": "Wersja niedostępna",
+        "unavailableHint": "Zamontuj dysk lub wybierz inny edytor przed kontynuowaniem."
     }
-  },
-  "app": {
-    "loadingMessage": "Przygotowywanie...",
-    "navigation": {
-      "projects": "Projekty",
-      "installs": "Instalacje",
-      "help": "Pomoc",
-      "settings": "Ustawienia",
-      "joinCommunity": "Dołącz do społeczności"
-    },
-    "update": {
-      "availableWithVersion": "Wersja {{version}} jest dostępna. <DownloadButton>Pobierz aktualizację</DownloadButton> lub <SkipButton>Pomiń tę wersję</SkipButton>",
-      "availableNoVersion": "Nowa wersja jest dostępna. <DownloadButton>Pobierz aktualizację</DownloadButton>",
-      "readyWithVersion": "Wersja {{version}} jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
-      "readyNoVersion": "Aktualizacja jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
-      "manualWithVersion": "Wersja {{version}} jest dostępna, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink> albo <SkipButton>Pomiń tę wersję</SkipButton>",
-      "manualNoVersion": "Dostępna jest nowa wersja, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Wybierz wersję edytora",
-    "tableHeaders": {
-      "name": "Nazwa"
-    },
-    "noReleases": "Nie znaleziono wydań, wymagana wersja edytora {{version}}.x",
-    "installReleases": "Zainstaluj wydania",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "wersja testowa"
-    },
-    "unavailable": "Wersja niedostępna",
-    "unavailableHint": "Zamontuj dysk lub wybierz inny edytor przed kontynuowaniem."
-  }
 }

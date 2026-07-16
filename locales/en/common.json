@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "Ok",
-    "cancel": "Cancel",
-    "continue": "Continue",
-    "select": "Select",
-    "retry": "Retry",
-    "remove": "Remove",
-    "copyPath": "Copy path",
-    "openPath": "Open path",
-    "reinstall": "Reinstall"
-  },
-  "error": "Error",
-  "success": "Success",
-  "warning": "Warning",
-  "info": "Information",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "Path must be a non-empty string.",
-      "pathMustBeAbsolute": "Path must be absolute.",
-      "targetNotDirectory": "Target path exists but is not a directory."
+    "buttons": {
+        "ok": "Ok",
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "select": "Select",
+        "retry": "Retry",
+        "remove": "Remove",
+        "copyPath": "Copy path",
+        "openPath": "Open path",
+        "reinstall": "Reinstall"
+    },
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "Path must be a non-empty string.",
+            "pathMustBeAbsolute": "Path must be absolute.",
+            "targetNotDirectory": "Target path exists but is not a directory."
+        }
+    },
+    "app": {
+        "loadingMessage": "Getting things ready...",
+        "navigation": {
+            "projects": "Projects",
+            "installs": "Installs",
+            "help": "Help",
+            "settings": "Settings",
+            "joinCommunity": "Join Community"
+        },
+        "update": {
+            "availableWithVersion": "Version {{version}} is available. <DownloadButton>Download now</DownloadButton> or <SkipButton>Skip this version</SkipButton>",
+            "availableNoVersion": "A new version is available. <DownloadButton>Download now</DownloadButton>",
+            "readyWithVersion": "Version {{version}} is ready, restart Godot Launcher to install it. <RestartButton>Restart now</RestartButton>",
+            "readyNoVersion": "The update is ready, restart Godot Launcher to install it. <RestartButton>Restart now</RestartButton>",
+            "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
+            "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Select editor version",
+        "tableHeaders": {
+            "name": "Name"
+        },
+        "noReleases": "No releases found, required editor version {{version}}.x",
+        "installReleases": "Install releases",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "prerelease"
+        },
+        "unavailable": "Unavailable release",
+        "unavailableHint": "Mount the drive or choose a different editor before proceeding."
     }
-  },
-  "app": {
-    "loadingMessage": "Getting things ready...",
-    "navigation": {
-      "projects": "Projects",
-      "installs": "Installs",
-      "help": "Help",
-      "settings": "Settings",
-      "joinCommunity": "Join Community"
-    },
-    "update": {
-      "availableWithVersion": "Version {{version}} is available. <DownloadButton>Download now</DownloadButton> or <SkipButton>Skip this version</SkipButton>",
-      "availableNoVersion": "A new version is available. <DownloadButton>Download now</DownloadButton>",
-      "readyWithVersion": "Version {{version}} is ready, restart Godot Launcher to install it. <RestartButton>Restart now</RestartButton>",
-      "readyNoVersion": "The update is ready, restart Godot Launcher to install it. <RestartButton>Restart now</RestartButton>",
-      "manualWithVersion": "Version {{version}} is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink> or <SkipButton>Skip this version</SkipButton>",
-      "manualNoVersion": "A new version is available, but automatic installation is not supported on this rpm-ostree system. <ReleaseLink>Download manually</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Select editor version",
-    "tableHeaders": {
-      "name": "Name"
-    },
-    "noReleases": "No releases found, required editor version {{version}}.x",
-    "installReleases": "Install releases",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "prerelease"
-    },
-    "unavailable": "Unavailable release",
-    "unavailableHint": "Mount the drive or choose a different editor before proceeding."
-  }
 }

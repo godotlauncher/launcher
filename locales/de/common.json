@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "Ok",
-    "cancel": "Abbrechen",
-    "continue": "Weiter",
-    "select": "Auswählen",
-    "retry": "Erneut versuchen",
-    "remove": "Entfernen",
-    "copyPath": "Pfad kopieren",
-    "openPath": "Pfad öffnen",
-    "reinstall": "Neu installieren"
-  },
-  "error": "Fehler",
-  "success": "Erfolg",
-  "warning": "Warnung",
-  "info": "Informationen",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "Der Pfad muss eine nicht-leere Zeichenfolge sein.",
-      "pathMustBeAbsolute": "Der Pfad muss absolut sein.",
-      "targetNotDirectory": "Der Zielpfad existiert bereits, ist aber kein Ordner."
+    "buttons": {
+        "ok": "Ok",
+        "cancel": "Abbrechen",
+        "continue": "Weiter",
+        "select": "Auswählen",
+        "retry": "Erneut versuchen",
+        "remove": "Entfernen",
+        "copyPath": "Pfad kopieren",
+        "openPath": "Pfad öffnen",
+        "reinstall": "Neu installieren"
+    },
+    "error": "Fehler",
+    "success": "Erfolg",
+    "warning": "Warnung",
+    "info": "Informationen",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "Der Pfad muss eine nicht-leere Zeichenfolge sein.",
+            "pathMustBeAbsolute": "Der Pfad muss absolut sein.",
+            "targetNotDirectory": "Der Zielpfad existiert bereits, ist aber kein Ordner."
+        }
+    },
+    "app": {
+        "loadingMessage": "Bereite alles vor...",
+        "navigation": {
+            "projects": "Projekte",
+            "installs": "Installationen",
+            "help": "Hilfe",
+            "settings": "Einstellungen",
+            "joinCommunity": "Community beitreten"
+        },
+        "update": {
+            "availableWithVersion": "Version {{version}} ist verfügbar. <DownloadButton>Jetzt herunterladen</DownloadButton> oder <SkipButton>Diese Version überspringen</SkipButton>",
+            "availableNoVersion": "Eine neue Version ist verfügbar. <DownloadButton>Jetzt herunterladen</DownloadButton>",
+            "readyWithVersion": "Version {{version}} ist bereit, starte Godot Launcher neu, um sie zu installieren. <RestartButton>Jetzt neu starten</RestartButton>",
+            "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <RestartButton>Jetzt neu starten</RestartButton>",
+            "manualWithVersion": "Version {{version}} ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink> oder <SkipButton>Diese Version überspringen</SkipButton>",
+            "manualNoVersion": "Eine neue Version ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Editor-Version auswählen",
+        "tableHeaders": {
+            "name": "Name"
+        },
+        "noReleases": "Keine Releases gefunden, benötigte Editor-Version {{version}}.x",
+        "installReleases": "Releases installieren",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "Vorabversion"
+        },
+        "unavailable": "Nicht verfügbare Version",
+        "unavailableHint": "Binden Sie das Laufwerk ein oder wählen Sie einen anderen Editor, bevor Sie fortfahren."
     }
-  },
-  "app": {
-    "loadingMessage": "Bereite alles vor...",
-    "navigation": {
-      "projects": "Projekte",
-      "installs": "Installationen",
-      "help": "Hilfe",
-      "settings": "Einstellungen",
-      "joinCommunity": "Community beitreten"
-    },
-    "update": {
-      "availableWithVersion": "Version {{version}} ist verfügbar. <DownloadButton>Jetzt herunterladen</DownloadButton> oder <SkipButton>Diese Version überspringen</SkipButton>",
-      "availableNoVersion": "Eine neue Version ist verfügbar. <DownloadButton>Jetzt herunterladen</DownloadButton>",
-      "readyWithVersion": "Version {{version}} ist bereit, starte Godot Launcher neu, um sie zu installieren. <RestartButton>Jetzt neu starten</RestartButton>",
-      "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <RestartButton>Jetzt neu starten</RestartButton>",
-      "manualWithVersion": "Version {{version}} ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink> oder <SkipButton>Diese Version überspringen</SkipButton>",
-      "manualNoVersion": "Eine neue Version ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Editor-Version auswählen",
-    "tableHeaders": {
-      "name": "Name"
-    },
-    "noReleases": "Keine Releases gefunden, benötigte Editor-Version {{version}}.x",
-    "installReleases": "Releases installieren",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "Vorabversion"
-    },
-    "unavailable": "Nicht verfügbare Version",
-    "unavailableHint": "Binden Sie das Laufwerk ein oder wählen Sie einen anderen Editor, bevor Sie fortfahren."
-  }
 }

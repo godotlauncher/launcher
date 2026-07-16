@@ -1,4 +1,4 @@
-import type { AppUpdateMessage } from '@shared';
+import type { AppUpdateMessage } from '@shared/contracts';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { LAUNCHER_DOWNLOAD_URL } from '../constants';

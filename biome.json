@@ -5,6 +5,11 @@
         "clientKind": "git",
         "useIgnoreFile": true
     },
+    "css": {
+        "parser": {
+            "tailwindDirectives": true
+        }
+    },
     "files": {
         "ignoreUnknown": false,
         "includes": [
@@ -13,7 +18,10 @@
             "main/src/**/*.cts",
             "renderer/src/**/*.ts",
             "renderer/src/**/*.tsx",
-            "shared/src/**/*.d.ts",
+            "renderer/src/**/*.css",
+            "locales/**/*.json",
+            "shared/src/**/*.ts",
+            "vitest.setup.ts",
             "!**/node_modules",
             "!build",
             "!dist",

@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useRef, useState } from 'react';
+import { getPathForFile } from '../../../bridge.ts';
 import { isSupportedCustomEngineManifestName } from '../installsView.model';
 
 type UseCustomEditorManifestDropArgs = {
@@ -71,7 +72,7 @@ export function useCustomEditorManifestDrop({
             return;
         }
 
-        await registerManifest(window.electron.getPathForFile(manifestFile));
+        await registerManifest(getPathForFile(manifestFile));
     };
 
     return {

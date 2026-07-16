@@ -2,7 +2,7 @@ import type {
     InstalledRelease,
     ReleaseInstallProgress,
     ReleaseSummary,
-} from '@shared';
+} from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { InstallReleaseTable } from './installReleaseTable';

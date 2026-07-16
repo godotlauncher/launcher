@@ -2,7 +2,7 @@ import type {
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
-} from '@shared';
+} from '@shared/contracts';
 import clsx from 'clsx';
 import type React from 'react';
 import { useEffect, useState } from 'react';

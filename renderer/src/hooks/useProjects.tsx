@@ -9,7 +9,7 @@ import type {
     RenameProjectResult,
     RendererType,
     SetProjectVSCodeResult,
-} from '@shared';
+} from '@shared/contracts';
 import {
     createContext,
     type FC,
@@ -18,6 +18,7 @@ import {
     useEffect,
     useState,
 } from 'react';
+import { appBridge, subscribeAppEvent } from '../bridge.ts';
 
 interface ProjectsContext {
     projects: ProjectDetails[];
@@ -84,7 +85,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     const getProjects = async () => {
         setLoading(true);
-        const projects = await window.electron.getProjectsDetails();
+        const projects = await appBridge.getProjectsDetails();
         setProjects(projects);
         setLoading(false);
     };
@@ -97,7 +98,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         withGit: boolean,
         overwriteProjectPath?: string,
     ) => {
-        const result = await window.electron.createProject(
+        const result = await appBridge.createProject(
             projectName,
             release,
             renderer,
@@ -117,10 +118,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         projectPath: string,
         options?: AddProjectOptions,
     ) => {
-        const addResult = await window.electron.addProject(
-            projectPath,
-            options,
-        );
+        const addResult = await appBridge.addProject(projectPath, options);
         if (addResult.success && addResult.projects) {
             setProjects(addResult.projects);
         }
@@ -131,7 +129,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => {
-        const result = await window.electron.setProjectEditor(project, release);
+        const result = await appBridge.setProjectEditor(project, release);
         if (result.success && result.projects) {
             setProjects(result.projects);
         }
@@ -151,7 +149,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         openWindowed: boolean,
     ) => {
-        const updatedProject = await window.electron.setProjectWindowed(
+        const updatedProject = await appBridge.setProjectWindowed(
             project,
             openWindowed,
         );
@@ -163,7 +161,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         enable: boolean,
     ) => {
-        const updatedProject = await window.electron.setProjectVSCode(
+        const updatedProject = await appBridge.setProjectVSCode(
             project,
             enable,
         );
@@ -172,33 +170,32 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const initializeProjectGit = async (project: ProjectDetails) => {
-        const updatedProject =
-            await window.electron.initializeProjectGit(project);
+        const updatedProject = await appBridge.initializeProjectGit(project);
         updateProjectState(updatedProject);
         return updatedProject;
     };
 
     const exportProjectEditorSettings = async (project: ProjectDetails) => {
-        await window.electron.exportProjectEditorSettings(project);
+        await appBridge.exportProjectEditorSettings(project);
     };
 
     const importProjectEditorSettings = async (project: ProjectDetails) => {
-        await window.electron.importProjectEditorSettings(project);
+        await appBridge.importProjectEditorSettings(project);
     };
 
     const openProjectFolder = async (project: ProjectDetails) => {
-        await window.electron.openShellFolder(project.path);
+        await appBridge.openShellFolder(project.path);
     };
 
     const openProjectEditorFolder = async (project: ProjectDetails) => {
-        await window.electron.openShellFolder(project.editor_settings_path);
+        await appBridge.openShellFolder(project.editor_settings_path);
     };
 
     const renameProject = async (
         project: ProjectDetails,
         options: RenameProjectOptions,
     ) => {
-        const result = await window.electron.renameProject(project, options);
+        const result = await appBridge.renameProject(project, options);
         if (result.success && result.projects) {
             setProjects(result.projects);
         }
@@ -206,22 +203,22 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const getProjectGodotName = async (project: ProjectDetails) => {
-        return await window.electron.getProjectGodotName(project);
+        return await appBridge.getProjectGodotName(project);
     };
 
     const removeProject = async (project: ProjectDetails) => {
-        const result = await window.electron.removeProject(project);
+        const result = await appBridge.removeProject(project);
         setProjects(result);
     };
 
     const launchProject = async (project: ProjectDetails) => {
-        const all = await window.electron.checkAllProjectsValid();
+        const all = await appBridge.checkAllProjectsValid();
         setProjects(all);
 
         const p = all.find((p) => p.path === project.path);
 
         if (p?.valid) {
-            await window.electron.launchProject(project);
+            await appBridge.launchProject(project);
         }
 
         return p;
@@ -232,13 +229,13 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const checkProjectValid = (project: ProjectDetails) => {
-        const result = window.electron.checkProjectValid(project);
+        const result = appBridge.checkProjectValid(project);
         return result;
     };
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
-        const off = window.electron.subscribeProjects(setProjects);
+        const off = subscribeAppEvent('projects-updated', setProjects);
         // Initial data fetching on mount
         getProjects();
 

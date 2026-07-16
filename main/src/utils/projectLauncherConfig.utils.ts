@@ -1,6 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { EditorChannel, EditorFlavor, InstalledRelease } from '@shared';
+import type {
+    EditorChannel,
+    EditorFlavor,
+    InstalledRelease,
+} from '@shared/contracts';
 import { PROJECT_LAUNCHER_CONFIG_FILENAME } from '../constants.js';
 
 export type ProjectLauncherConfig = {

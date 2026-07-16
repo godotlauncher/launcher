@@ -12,52 +12,52 @@
     will-change: transform;
 }
 
-.drawer-backdrop[data-state='open'] {
+.drawer-backdrop[data-state="open"] {
     animation-name: drawer-backdrop-in;
     animation-timing-function: ease-out;
 }
 
-.drawer-backdrop[data-state='closed'] {
+.drawer-backdrop[data-state="closed"] {
     animation-name: drawer-backdrop-out;
     animation-timing-function: ease-in;
 }
 
-.drawer-panel[data-state='open'][data-side='right'] {
+.drawer-panel[data-state="open"][data-side="right"] {
     animation-name: drawer-slide-in-from-right;
     animation-timing-function: ease-out;
 }
 
-.drawer-panel[data-state='closed'][data-side='right'] {
+.drawer-panel[data-state="closed"][data-side="right"] {
     animation-name: drawer-slide-out-to-right;
     animation-timing-function: ease-in;
 }
 
-.drawer-panel[data-state='open'][data-side='left'] {
+.drawer-panel[data-state="open"][data-side="left"] {
     animation-name: drawer-slide-in-from-left;
     animation-timing-function: ease-out;
 }
 
-.drawer-panel[data-state='closed'][data-side='left'] {
+.drawer-panel[data-state="closed"][data-side="left"] {
     animation-name: drawer-slide-out-to-left;
     animation-timing-function: ease-in;
 }
 
-.drawer-panel[data-state='open'][data-side='top'] {
+.drawer-panel[data-state="open"][data-side="top"] {
     animation-name: drawer-slide-in-from-top;
     animation-timing-function: ease-out;
 }
 
-.drawer-panel[data-state='closed'][data-side='top'] {
+.drawer-panel[data-state="closed"][data-side="top"] {
     animation-name: drawer-slide-out-to-top;
     animation-timing-function: ease-in;
 }
 
-.drawer-panel[data-state='open'][data-side='bottom'] {
+.drawer-panel[data-state="open"][data-side="bottom"] {
     animation-name: drawer-slide-in-from-bottom;
     animation-timing-function: ease-out;
 }
 
-.drawer-panel[data-state='closed'][data-side='bottom'] {
+.drawer-panel[data-state="closed"][data-side="bottom"] {
     animation-name: drawer-slide-out-to-bottom;
     animation-timing-function: ease-in;
 }
@@ -159,11 +159,11 @@
         animation-timing-function: linear;
     }
 
-    .drawer-panel[data-state='open'] {
+    .drawer-panel[data-state="open"] {
         animation-name: drawer-reduced-in;
     }
 
-    .drawer-panel[data-state='closed'] {
+    .drawer-panel[data-state="closed"] {
         animation-name: drawer-reduced-out;
     }
 }

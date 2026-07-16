@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { ProjectDetails } from '@shared';
+import type { ProjectDetails } from '@shared/contracts';
 import { dialog } from 'electron';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';

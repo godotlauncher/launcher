@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { EllipsisVertical, TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { ReleaseInstallProgressIndicator } from '../../../components/releaseInstallProgress.component';

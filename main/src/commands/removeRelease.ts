@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import type { InstalledRelease, RemovedReleaseResult } from '@shared';
+import type { InstalledRelease, RemovedReleaseResult } from '@shared/contracts';
 import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';
 import {

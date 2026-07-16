@@ -7,7 +7,7 @@ import type {
     ProjectDefinition,
     ProjectDetails,
     RendererType,
-} from '@shared';
+} from '@shared/contracts';
 import logger from 'electron-log';
 import mst from 'mustache';
 import {

@@ -1,4 +1,4 @@
-import type { InstalledRelease, ReleaseSummary } from '@shared';
+import type { InstalledRelease, ReleaseSummary } from '@shared/contracts';
 import type React from 'react';
 import { InstalledReleaseTable } from '../../../../components/installedReleasesTable';
 import { InstallReleaseTable } from '../../../../components/installReleaseTable';

@@ -1,7 +1,8 @@
-import type { CustomEngineManifestPlatformName } from '@shared';
+import type { CustomEngineManifestPlatformName } from '@shared/contracts';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appBridge } from '../../bridge.ts';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { GeneratedManifestPreview } from './customEditorManifestDrawer/components/generatedManifestPreview.component';
 import { ManifestDetailsForm } from './customEditorManifestDrawer/components/manifestDetailsForm.component';
@@ -76,7 +77,7 @@ export const CustomEditorManifestDrawer: React.FC<
         setFormError(undefined);
         setIsSubmitting(false);
 
-        void window.electron.getPlatform().then((platform) => {
+        void appBridge.getPlatform().then((platform) => {
             if (disposed) {
                 return;
             }
@@ -213,7 +214,7 @@ export const CustomEditorManifestDrawer: React.FC<
     };
 
     const selectOutputDirectory = async () => {
-        const result = await window.electron.openDirectoryDialog(
+        const result = await appBridge.openDirectoryDialog(
             form.outputDirectory,
             t('customEditor.creator.actions.selectOutputDirectory'),
         );
@@ -231,12 +232,9 @@ export const CustomEditorManifestDrawer: React.FC<
         const defaultPath = await resolveExistingDialogDefaultPath(
             form.platforms[platform][field],
             form.outputDirectory,
-            window.electron.pathExists,
+            appBridge.pathExists,
         );
-        const result = await window.electron.openFileDialog(
-            defaultPath,
-            t(titleKey),
-        );
+        const result = await appBridge.openFileDialog(defaultPath, t(titleKey));
 
         if (!result.canceled && result.filePaths.length > 0) {
             updatePlatformField(platform, field, result.filePaths[0]);
@@ -265,15 +263,13 @@ export const CustomEditorManifestDrawer: React.FC<
         setFormError(undefined);
 
         try {
-            if (!(await window.electron.pathExists(form.outputDirectory))) {
+            if (!(await appBridge.pathExists(form.outputDirectory))) {
                 setPathMissingError('outputDirectory');
                 return;
             }
 
             for (const platformForm of getIncludedPlatforms(form)) {
-                if (
-                    !(await window.electron.pathExists(platformForm.editorPath))
-                ) {
+                if (!(await appBridge.pathExists(platformForm.editorPath))) {
                     setPathMissingError(
                         `platforms.${platformForm.platform}.editorPath`,
                     );
@@ -282,9 +278,7 @@ export const CustomEditorManifestDrawer: React.FC<
 
                 if (
                     platformForm.consolePath.trim().length > 0 &&
-                    !(await window.electron.pathExists(
-                        platformForm.consolePath,
-                    ))
+                    !(await appBridge.pathExists(platformForm.consolePath))
                 ) {
                     setPathMissingError(
                         `platforms.${platformForm.platform}.consolePath`,
@@ -293,7 +287,7 @@ export const CustomEditorManifestDrawer: React.FC<
                 }
             }
 
-            const result = await window.electron.createCustomEngineManifest(
+            const result = await appBridge.createCustomEngineManifest(
                 form.outputDirectory.trim(),
                 buildCustomEngineManifest(form),
             );

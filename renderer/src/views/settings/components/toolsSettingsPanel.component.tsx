@@ -1,4 +1,4 @@
-import type { CachedTool } from '@shared';
+import type { CachedTool } from '@shared/contracts';
 import type React from 'react';
 import { GitToolSettings } from '../../../components/settings/gitToolSettings.component';
 import { VSCodeToolSettings } from '../../../components/settings/vsCodeToolSettings.component';

@@ -1,6 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { InstalledRelease, LaunchPath, ProjectDetails } from '@shared';
+import type {
+    InstalledRelease,
+    LaunchPath,
+    ProjectDetails,
+} from '@shared/contracts';
 import logger from 'electron-log';
 
 async function removeExistingEditorTarget(targetPath: string): Promise<void> {

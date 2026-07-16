@@ -1,14 +1,13 @@
-import {
-    expect,
-    test,
-    _electron,
-    type ElectronApplication,
-    type TestInfo,
-} from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {
+    _electron,
+    type ElectronApplication,
+    expect,
+    type TestInfo,
+    test,
+} from '@playwright/test';
 import { SCREENSHOT_GROUPS } from './documentationScreenshots';
-import { THEMES } from './documentationScreenshots/themes';
 import {
     applyTheme,
     captureScreenshot,
@@ -17,6 +16,7 @@ import {
     setScreenshotViewport,
     waitForPreloadScript,
 } from './documentationScreenshots/runtime';
+import { THEMES } from './documentationScreenshots/themes';
 import type {
     ElectronPage,
     ScreenshotConfig,
@@ -29,7 +29,7 @@ test.describe.configure({ mode: 'serial' });
 
 for (const theme of THEMES) {
     for (const group of SCREENSHOT_GROUPS) {
-        test(`captures ${group.name} documentation screenshots in ${theme.description}`, async ({}, testInfo) => {
+        test(`captures ${group.name} documentation screenshots in ${theme.description}`, async ({ }, testInfo) => {
             testInfo.setTimeout(group.timeout);
 
             await withDocumentationApp(async (mainPage, electronApp) => {

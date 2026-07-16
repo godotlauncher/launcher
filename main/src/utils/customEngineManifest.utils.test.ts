@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { CustomEngineManifest } from '@shared';
+import type { CustomEngineManifest } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fsMocks = vi.hoisted(() => ({

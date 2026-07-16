@@ -1,4 +1,4 @@
-import type { CachedTool } from '@shared';
+import type { CachedTool } from '@shared/contracts';
 import { useTranslation } from 'react-i18next';
 
 type GitToolSettingsProps = {

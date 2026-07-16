@@ -1,152 +1,152 @@
 {
-  "title": "Installazzjonijiet tal-Editur",
-  "tabs": {},
-  "buttons": {
-    "install": "Installa Editur",
-    "addCustomEditor": "Editur personalizzat",
-    "selectCustomEditorManifest": "Agħżel fajl tal-manifest",
-    "createCustomEditorManifest": "Oħloq manifest tal-editur personalizzat"
-  },
-  "search": {
-    "placeholder": "Fittex"
-  },
-  "table": {
-    "name": "Isem"
-  },
-  "badges": {
-    "dotNet": ".NET",
-    "prerelease": "pre-rilaxx",
-    "custom": "Personalizzat"
-  },
-  "status": {
-    "installing": "Qed jinstalla..."
-  },
-  "messages": {
-    "noReleasesCta": "Ebda releases installati għadha. <Link>Installa</Link>",
-    "revalidating": "Validazzjoni tar-rilaxxi installati...",
-    "revalidatedRelease": "{{version}} issa hija disponibbli mill-ġdid.",
-    "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova.",
-    "revalidationStillMissing": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Iċċekkja li {{path}} hu aċċessibbli qabel terġa' tipprova.",
-    "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova.",
-    "unavailableHintWithReinstall": "Il-mogħdija tal-editur mhix aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, erġa’ installa l-editur, jew neħħi din l-entrata.",
-    "reinstallFailed": "L-installazzjoni mill-ġdid falliet. Iċċekkja l-konnessjoni tiegħek u erġa’ pprova.",
-    "registeredCustomEditor": "Editur personalizzat {{name}} ġie rreġistrat.",
-    "registerCustomEditorFailed": "Ma rnexxilniex nirreġistraw l-editur personalizzat.",
-    "unavailableCustomEditorHint": "Il-passaġġ tal-editur personalizzat mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, jew neħħi din l-entrata."
-  },
-  "customEditor": {
-    "selectManifestTitle": "Żid manifest tal-editur personalizzat",
-    "manifestFilterName": "Manifest tal-editur ta’ Godot Launcher",
-    "waitingForDialog": "Qed nistennew id-djalogu...",
-    "replace": {
-      "title": "Tissostitwixxi l-editur personalizzat?",
-      "message": "Editur personalizzat b’din il-verżjoni diġà huwa rreġistrat.",
-      "versionLabel": "Verżjoni",
-      "detail": "Is-sostituzzjoni taġġorna r-rekord fil-launcher biex juża l-manifest magħżul. Il-fajls tal-editur tiegħek ma jitħassrux."
+    "title": "Installazzjonijiet tal-Editur",
+    "tabs": {},
+    "buttons": {
+        "install": "Installa Editur",
+        "addCustomEditor": "Editur personalizzat",
+        "selectCustomEditorManifest": "Agħżel fajl tal-manifest",
+        "createCustomEditorManifest": "Oħloq manifest tal-editur personalizzat"
     },
-    "drop": {
-      "title": "Waqqa’ l-manifest biex iżżid editur personalizzat",
-      "unsupportedTitle": "Fajl tal-manifest mhux appoġġjat",
-      "helperPrefix": "Waqqa’",
-      "helperSuffix": "hawn."
+    "search": {
+        "placeholder": "Fittex"
     },
-    "creator": {
-      "title": "Oħloq manifest tal-editur personalizzat",
-      "description": "Oħloq fajl tal-manifest għal editur Godot personalizzat u rreġistrah immedjatament.",
-      "fields": {
-        "outputDirectory": {
-          "label": "Folder tal-output",
-          "help": "Folder fejn jinkiteb godotlauncher-editor-manifest.json."
+    "table": {
+        "name": "Isem"
+    },
+    "badges": {
+        "dotNet": ".NET",
+        "prerelease": "pre-rilaxx",
+        "custom": "Personalizzat"
+    },
+    "status": {
+        "installing": "Qed jinstalla..."
+    },
+    "messages": {
+        "noReleasesCta": "Ebda releases installati għadha. <Link>Installa</Link>",
+        "revalidating": "Validazzjoni tar-rilaxxi installati...",
+        "revalidatedRelease": "{{version}} issa hija disponibbli mill-ġdid.",
+        "revalidationFailed": "Il-validazzjoni falliet. Iċċekkja l-apparat tal-ħażna u erġa' pprova.",
+        "revalidationStillMissing": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Iċċekkja li {{path}} hu aċċessibbli qabel terġa' tipprova.",
+        "revalidationStillMissingNoPath": "Il-validazzjoni spiċċat iżda {{version}} għadha mhux disponibbli. Kun żgur li l-apparat tal-ħażna hu mmuntat qabel terġa' tipprova.",
+        "unavailableHintWithReinstall": "Il-mogħdija tal-editur mhix aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, erġa’ installa l-editur, jew neħħi din l-entrata.",
+        "reinstallFailed": "L-installazzjoni mill-ġdid falliet. Iċċekkja l-konnessjoni tiegħek u erġa’ pprova.",
+        "registeredCustomEditor": "Editur personalizzat {{name}} ġie rreġistrat.",
+        "registerCustomEditorFailed": "Ma rnexxilniex nirreġistraw l-editur personalizzat.",
+        "unavailableCustomEditorHint": "Il-passaġġ tal-editur personalizzat mhuwiex aċċessibbli. Immonta l-apparat tal-ħażna u erġa’ pprova, jew neħħi din l-entrata."
+    },
+    "customEditor": {
+        "selectManifestTitle": "Żid manifest tal-editur personalizzat",
+        "manifestFilterName": "Manifest tal-editur ta’ Godot Launcher",
+        "waitingForDialog": "Qed nistennew id-djalogu...",
+        "replace": {
+            "title": "Tissostitwixxi l-editur personalizzat?",
+            "message": "Editur personalizzat b’din il-verżjoni diġà huwa rreġistrat.",
+            "versionLabel": "Verżjoni",
+            "detail": "Is-sostituzzjoni taġġorna r-rekord fil-launcher biex juża l-manifest magħżul. Il-fajls tal-editur tiegħek ma jitħassrux."
         },
-        "name": {
-          "label": "Isem għall-wiri",
-          "help": "Isem muri f’Godot Launcher għal dan l-editur personalizzat.",
-          "placeholder": "Editur personalizzat Acme Godot 4.4"
+        "drop": {
+            "title": "Waqqa’ l-manifest biex iżżid editur personalizzat",
+            "unsupportedTitle": "Fajl tal-manifest mhux appoġġjat",
+            "helperPrefix": "Waqqa’",
+            "helperSuffix": "hawn."
         },
-        "version": {
-          "label": "Verżjoni tal-manifest",
-          "help": "Identifikatur uniku tal-verżjoni għal dan l-editur personalizzat.",
-          "placeholder": "4.4-custom.1"
-        },
-        "baseVersion": {
-          "label": "Verżjoni bażi",
-          "help": "Verżjoni ta’ kompatibbiltà ta’ Godot fil-format major.minor.",
-          "placeholder": "4.4"
-        },
-        "flavor": {
-          "label": "Varjant",
-          "help": "Uża gdscript għal builds standard jew dotnet għal builds .NET. Valuri personalizzati huma permessi."
-        },
-        "prerelease": {
-          "label": "Pre-rilaxx",
-          "help": "Immarka dan l-editur bħala build ta’ pre-rilaxx."
-        },
-        "platform": {
-          "label": "Pjattaforma",
-          "help": "Sistema operattiva appoġġjata minn din l-entrata tal-manifest."
-        },
-        "arch": {
-          "label": "Arkitettura",
-          "help": "Arkitettura tas-CPU appoġġjata minn dan l-editur. Universal jaħdem fuq kwalunkwe arkitettura għall-pjattaforma magħżula."
-        },
-        "editorPath": {
-          "label": "Passaġġ tal-editur",
-          "help": "Passaġġ għall-eżekutibbli jew app bundle tal-editur Godot personalizzat."
-        },
-        "consolePath": {
-          "label": "Passaġġ tal-console",
-          "help": "Passaġġ fakultattiv għal eżekutibbli tal-console għal dan l-editur."
+        "creator": {
+            "title": "Oħloq manifest tal-editur personalizzat",
+            "description": "Oħloq fajl tal-manifest għal editur Godot personalizzat u rreġistrah immedjatament.",
+            "fields": {
+                "outputDirectory": {
+                    "label": "Folder tal-output",
+                    "help": "Folder fejn jinkiteb godotlauncher-editor-manifest.json."
+                },
+                "name": {
+                    "label": "Isem għall-wiri",
+                    "help": "Isem muri f’Godot Launcher għal dan l-editur personalizzat.",
+                    "placeholder": "Editur personalizzat Acme Godot 4.4"
+                },
+                "version": {
+                    "label": "Verżjoni tal-manifest",
+                    "help": "Identifikatur uniku tal-verżjoni għal dan l-editur personalizzat.",
+                    "placeholder": "4.4-custom.1"
+                },
+                "baseVersion": {
+                    "label": "Verżjoni bażi",
+                    "help": "Verżjoni ta’ kompatibbiltà ta’ Godot fil-format major.minor.",
+                    "placeholder": "4.4"
+                },
+                "flavor": {
+                    "label": "Varjant",
+                    "help": "Uża gdscript għal builds standard jew dotnet għal builds .NET. Valuri personalizzati huma permessi."
+                },
+                "prerelease": {
+                    "label": "Pre-rilaxx",
+                    "help": "Immarka dan l-editur bħala build ta’ pre-rilaxx."
+                },
+                "platform": {
+                    "label": "Pjattaforma",
+                    "help": "Sistema operattiva appoġġjata minn din l-entrata tal-manifest."
+                },
+                "arch": {
+                    "label": "Arkitettura",
+                    "help": "Arkitettura tas-CPU appoġġjata minn dan l-editur. Universal jaħdem fuq kwalunkwe arkitettura għall-pjattaforma magħżula."
+                },
+                "editorPath": {
+                    "label": "Passaġġ tal-editur",
+                    "help": "Passaġġ għall-eżekutibbli jew app bundle tal-editur Godot personalizzat."
+                },
+                "consolePath": {
+                    "label": "Passaġġ tal-console",
+                    "help": "Passaġġ fakultattiv għal eżekutibbli tal-console għal dan l-editur."
+                }
+            },
+            "platforms": {
+                "windows": "Windows",
+                "linux": "Linux",
+                "macos": "macOS"
+            },
+            "architectures": {
+                "universal": "Universal",
+                "x64": "x64",
+                "arm64": "ARM64"
+            },
+            "constants": {
+                "title": "Valuri ġġenerati:",
+                "description": "schema_version huwa 1 u config_version huwa 5."
+            },
+            "actions": {
+                "selectOutputDirectory": "Agħżel folder tal-output",
+                "selectEditorPath": "Agħżel passaġġ tal-editur",
+                "selectConsolePath": "Agħżel passaġġ tal-console",
+                "createAndRegister": "Oħloq u rreġistra",
+                "creating": "Qed jinħoloq...",
+                "clearPlatform": "Neħħi l-pjattaforma"
+            },
+            "validation": {
+                "outputDirectory": {
+                    "required": "Il-folder tal-output huwa meħtieġ.",
+                    "pathMissing": "Il-folder tal-output ma jeżistix."
+                },
+                "name": {
+                    "required": "L-isem għall-wiri huwa meħtieġ."
+                },
+                "version": {
+                    "required": "Il-verżjoni tal-manifest hija meħtieġa."
+                },
+                "baseVersion": {
+                    "required": "Il-verżjoni bażi hija meħtieġa.",
+                    "baseVersion": "Il-verżjoni bażi trid tuża l-format major.minor, pereżempju 4.4."
+                },
+                "flavor": {
+                    "required": "Il-varjant huwa meħtieġ."
+                },
+                "editorPath": {
+                    "required": "Il-passaġġ tal-editur huwa meħtieġ.",
+                    "pathMissing": "Il-passaġġ tal-editur ma jeżistix."
+                },
+                "consolePath": {
+                    "pathMissing": "Il-passaġġ tal-console ma jeżistix."
+                },
+                "createFailed": "Ma rnexxilniex noħolqu l-manifest tal-editur personalizzat."
+            }
         }
-      },
-      "platforms": {
-        "windows": "Windows",
-        "linux": "Linux",
-        "macos": "macOS"
-      },
-      "architectures": {
-        "universal": "Universal",
-        "x64": "x64",
-        "arm64": "ARM64"
-      },
-      "constants": {
-        "title": "Valuri ġġenerati:",
-        "description": "schema_version huwa 1 u config_version huwa 5."
-      },
-      "actions": {
-        "selectOutputDirectory": "Agħżel folder tal-output",
-        "selectEditorPath": "Agħżel passaġġ tal-editur",
-        "selectConsolePath": "Agħżel passaġġ tal-console",
-        "createAndRegister": "Oħloq u rreġistra",
-        "creating": "Qed jinħoloq...",
-        "clearPlatform": "Neħħi l-pjattaforma"
-      },
-      "validation": {
-        "outputDirectory": {
-          "required": "Il-folder tal-output huwa meħtieġ.",
-          "pathMissing": "Il-folder tal-output ma jeżistix."
-        },
-        "name": {
-          "required": "L-isem għall-wiri huwa meħtieġ."
-        },
-        "version": {
-          "required": "Il-verżjoni tal-manifest hija meħtieġa."
-        },
-        "baseVersion": {
-          "required": "Il-verżjoni bażi hija meħtieġa.",
-          "baseVersion": "Il-verżjoni bażi trid tuża l-format major.minor, pereżempju 4.4."
-        },
-        "flavor": {
-          "required": "Il-varjant huwa meħtieġ."
-        },
-        "editorPath": {
-          "required": "Il-passaġġ tal-editur huwa meħtieġ.",
-          "pathMissing": "Il-passaġġ tal-editur ma jeżistix."
-        },
-        "consolePath": {
-          "pathMissing": "Il-passaġġ tal-console ma jeżistix."
-        },
-        "createFailed": "Ma rnexxilniex noħolqu l-manifest tal-editur personalizzat."
-      }
     }
-  }
 }

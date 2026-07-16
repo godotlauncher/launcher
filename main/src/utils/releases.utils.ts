@@ -3,7 +3,11 @@ import * as path from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
-import type { AssetSummary, InstalledRelease, ReleaseSummary } from '@shared';
+import type {
+    AssetSummary,
+    InstalledRelease,
+    ReleaseSummary,
+} from '@shared/contracts';
 import logger from 'electron-log';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';

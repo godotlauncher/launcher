@@ -1,45 +1,45 @@
 {
-  "importSettings": {
-    "title": "匯入編輯器設定",
-    "message": "確定要從檔案匯入編輯器設定嗎？",
-    "detail": "這將取代目前的編輯器設定，並會建立備份。",
-    "continue": "繼續",
-    "cancel": "取消",
-    "selectFile": "選擇編輯器設定檔",
-    "textResource": "文字資源"
-  },
-  "exportSettings": {
-    "title": "將編輯器設定匯出到檔案",
-    "allFiles": "所有檔案"
-  },
-  "removeProject": {
-    "title": "從清單移除專案",
-    "message": "確定要從清單中移除專案 \"{{projectName}}\" 嗎？",
-    "detail": "這不會刪除您裝置上的專案。",
-    "ok": "確定",
-    "cancel": "取消",
-    "doNotAskAgain": "不要再詢問我"
-  },
-  "removeRelease": {
-    "title": "移除發行版本",
-    "message": "確定要刪除發行版本 \"{{version}}\" 嗎？",
-    "detail": "這會從您的裝置中刪除該發行版本，之後仍可再次安裝。",
-    "ok": "確定",
-    "cancel": "取消",
-    "error": "錯誤",
-    "errorMessage": "移除發行版本時發生錯誤。"
-  },
-  "error": {
-    "title": "錯誤"
-  },
-  "preferencesError": {
-    "title": "讀取偏好設定時發生錯誤",
-    "message": "無法解析使用者偏好設定。將使用預設偏好設定。"
-  },
-  "removeCustomEditor": {
-    "menuLabel": "移除自訂編輯器",
-    "title": "移除自訂編輯器",
-    "message": "要從啟動器中移除自訂編輯器「{{name}}」嗎？",
-    "detail": "這會取消註冊自訂編輯器，但不會刪除裝置上的編輯器檔案。"
-  }
+    "importSettings": {
+        "title": "匯入編輯器設定",
+        "message": "確定要從檔案匯入編輯器設定嗎？",
+        "detail": "這將取代目前的編輯器設定，並會建立備份。",
+        "continue": "繼續",
+        "cancel": "取消",
+        "selectFile": "選擇編輯器設定檔",
+        "textResource": "文字資源"
+    },
+    "exportSettings": {
+        "title": "將編輯器設定匯出到檔案",
+        "allFiles": "所有檔案"
+    },
+    "removeProject": {
+        "title": "從清單移除專案",
+        "message": "確定要從清單中移除專案 \"{{projectName}}\" 嗎？",
+        "detail": "這不會刪除您裝置上的專案。",
+        "ok": "確定",
+        "cancel": "取消",
+        "doNotAskAgain": "不要再詢問我"
+    },
+    "removeRelease": {
+        "title": "移除發行版本",
+        "message": "確定要刪除發行版本 \"{{version}}\" 嗎？",
+        "detail": "這會從您的裝置中刪除該發行版本，之後仍可再次安裝。",
+        "ok": "確定",
+        "cancel": "取消",
+        "error": "錯誤",
+        "errorMessage": "移除發行版本時發生錯誤。"
+    },
+    "error": {
+        "title": "錯誤"
+    },
+    "preferencesError": {
+        "title": "讀取偏好設定時發生錯誤",
+        "message": "無法解析使用者偏好設定。將使用預設偏好設定。"
+    },
+    "removeCustomEditor": {
+        "menuLabel": "移除自訂編輯器",
+        "title": "移除自訂編輯器",
+        "message": "要從啟動器中移除自訂編輯器「{{name}}」嗎？",
+        "detail": "這會取消註冊自訂編輯器，但不會刪除裝置上的編輯器檔案。"
+    }
 }

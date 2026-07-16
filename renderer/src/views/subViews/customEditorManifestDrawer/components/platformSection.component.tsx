@@ -1,7 +1,7 @@
 import type {
     CustomEngineManifestArch,
     CustomEngineManifestPlatformName,
-} from '@shared';
+} from '@shared/contracts';
 import clsx from 'clsx';
 import { ChevronDown, RotateCcw } from 'lucide-react';
 import type React from 'react';

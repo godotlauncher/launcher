@@ -1,6 +1,7 @@
 import { Folder } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appBridge } from '../../bridge.ts';
 import { usePreferences } from '../../hooks/usePreferences';
 import { WaitingForDialogOverlay } from '../waitingForDialogOverlay.component';
 
@@ -11,7 +12,7 @@ export const ProjectsLocation: React.FC = () => {
 
     const selectProjectDir = async (currentPath: string) => {
         setDialogOpen(true);
-        const result = await window.electron.openDirectoryDialog(
+        const result = await appBridge.openDirectoryDialog(
             currentPath,
             'Select Project Directory',
         );

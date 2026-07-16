@@ -1,4 +1,4 @@
-import type { ReleaseInstallProgress } from '@shared';
+import type { ReleaseInstallProgress } from '@shared/contracts';
 
 type ReleaseInstallProgressProps = {
     progress: ReleaseInstallProgress;
