@@ -1,23 +1,9 @@
 import { _electron, expect, test } from '@playwright/test';
 import fs from 'fs/promises';
+import { waitForDiElectronPreload } from './support/waitForDiElectronPreload';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
-
-async function waitForPreloadScript() {
-    return new Promise((resolve) => {
-        const interval = setInterval(async () => {
-            const electronBridge = await mainPage.evaluate(() => {
-                return (window as Window & { electron?: any }).electron;
-            });
-
-            if (electronBridge) {
-                clearInterval(interval);
-                resolve(true);
-            }
-        }, 100);
-    });
-}
 
 test.beforeEach(async () => {
     electronApp = await _electron.launch({
@@ -25,7 +11,7 @@ test.beforeEach(async () => {
         env: { NODE_ENV: 'development' },
     });
     mainPage = await electronApp.firstWindow();
-    await waitForPreloadScript();
+    await waitForDiElectronPreload(mainPage);
 
     await mainPage.getByTestId('btnSettings').click();
     const settingsView = await mainPage.getByTestId('settingsTitle');

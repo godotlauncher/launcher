@@ -14,7 +14,6 @@ import {
     createFixtureHome,
     ensureMainNavigationReady,
     setScreenshotViewport,
-    waitForPreloadScript,
 } from './documentationScreenshots/runtime';
 import { THEMES } from './documentationScreenshots/themes';
 import type {
@@ -22,6 +21,7 @@ import type {
     ScreenshotConfig,
     ThemeConfig,
 } from './documentationScreenshots/types';
+import { waitForDiElectronPreload } from './support/waitForDiElectronPreload';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
 
@@ -98,7 +98,7 @@ async function primeDocumentationApp(
     mainPage: ElectronPage,
     electronApp: ElectronApplication,
 ) {
-    await waitForPreloadScript(mainPage);
+    await waitForDiElectronPreload(mainPage);
     await ensureMainNavigationReady(mainPage, electronApp);
     await mainPage.getByTestId('btnProjects').click();
     await expect(

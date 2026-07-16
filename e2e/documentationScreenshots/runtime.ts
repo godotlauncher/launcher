@@ -11,6 +11,7 @@ import type {
     UserPreferences,
 } from '@shared/contracts';
 import sharp from 'sharp';
+import { waitForDiElectronPreload } from '../support/waitForDiElectronPreload';
 import {
     createPreferences,
     DEFAULT_TOOLS,
@@ -66,14 +67,6 @@ export async function createFixtureHome() {
     );
     await seedLauncherData(tempHome);
     return tempHome;
-}
-
-export async function waitForPreloadScript(appWindow: ElectronPage) {
-    await appWindow.waitForFunction(
-        () => Boolean((window as Window & { electron?: unknown }).electron),
-        null,
-        { timeout: 10000 },
-    );
 }
 
 export async function showProjectsDropOverlay(page: ElectronPage) {
@@ -356,7 +349,7 @@ export async function prepareAppWithStubbedData(
     );
     await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
     await reloadScreenshotPage(page);
-    await waitForPreloadScript(page);
+    await waitForDiElectronPreload(page);
     await setScreenshotViewport(page);
 }
 
