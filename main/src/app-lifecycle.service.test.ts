@@ -178,7 +178,10 @@ describe('AppLifecycleService', () => {
         await service.afterWindowReady();
         return {
             appBeforeQuit: getRegisteredListener(mocks.appOn, 'before-quit'),
-            updaterBeforeQuit: getRegisteredListener(mocks.autoUpdaterOn, 'before-quit-for-update'),
+            updaterBeforeQuit: getRegisteredListener(
+                mocks.autoUpdaterOn,
+                'before-quit-for-update',
+            ),
             windowClosed: getRegisteredListener(mainWindow.on, 'closed'),
         };
     }
@@ -224,47 +227,44 @@ describe('AppLifecycleService', () => {
         expect(i18nService.setLocale).toHaveBeenCalledWith('pt-BR');
     });
 
-    it(
-        'requests a framework quit when the updater event precedes app.before-quit',
-        async () => {
-            const service = createService();
-            const { appBeforeQuit, updaterBeforeQuit, windowClosed } =
-                await initializeLifecycle(service);
+    it('requests a framework quit when the updater event precedes app.before-quit', async () => {
+        const service = createService();
+        const { appBeforeQuit, updaterBeforeQuit, windowClosed } =
+            await initializeLifecycle(service);
 
-            electronAppService.quit.mockImplementationOnce(() => {
-                expect(mocks.stopAutoUpdateChecks).toHaveBeenCalledOnce();
-                expect(mocks.disposeFocusRevalidation).toHaveBeenCalledOnce();
-            });
-
-            updaterBeforeQuit();
-            updaterBeforeQuit();
-
+        electronAppService.quit.mockImplementationOnce(() => {
             expect(mocks.stopAutoUpdateChecks).toHaveBeenCalledOnce();
             expect(mocks.disposeFocusRevalidation).toHaveBeenCalledOnce();
-            expect(electronAppService.quit).toHaveBeenCalledOnce();
-            expect(mocks.appQuit).not.toHaveBeenCalled();
+        });
 
-            await service.onMainWindowClose();
-            expect(mocks.getUserPreferences).toHaveBeenCalledOnce();
-            expect(mocks.appQuit).not.toHaveBeenCalled();
+        updaterBeforeQuit();
+        updaterBeforeQuit();
 
-            appBeforeQuit();
-            windowClosed();
-            service.onAppQuit();
+        expect(mocks.stopAutoUpdateChecks).toHaveBeenCalledOnce();
+        expect(mocks.disposeFocusRevalidation).toHaveBeenCalledOnce();
+        expect(electronAppService.quit).toHaveBeenCalledOnce();
+        expect(mocks.appQuit).not.toHaveBeenCalled();
 
-            expect(mocks.stopAutoUpdateChecks).toHaveBeenCalledOnce();
-            expect(mocks.disposeFocusRevalidation).toHaveBeenCalledOnce();
-            expect(electronAppService.quit).toHaveBeenCalledOnce();
-            expect(mocks.autoUpdaterRemoveListener).toHaveBeenCalledWith(
-                'before-quit-for-update',
-                updaterBeforeQuit,
-            );
-            expect(mocks.appRemoveListener).toHaveBeenCalledWith(
-                'before-quit',
-                appBeforeQuit,
-            );
-        },
-    );
+        await service.onMainWindowClose();
+        expect(mocks.getUserPreferences).toHaveBeenCalledOnce();
+        expect(mocks.appQuit).not.toHaveBeenCalled();
+
+        appBeforeQuit();
+        windowClosed();
+        service.onAppQuit();
+
+        expect(mocks.stopAutoUpdateChecks).toHaveBeenCalledOnce();
+        expect(mocks.disposeFocusRevalidation).toHaveBeenCalledOnce();
+        expect(electronAppService.quit).toHaveBeenCalledOnce();
+        expect(mocks.autoUpdaterRemoveListener).toHaveBeenCalledWith(
+            'before-quit-for-update',
+            updaterBeforeQuit,
+        );
+        expect(mocks.appRemoveListener).toHaveBeenCalledWith(
+            'before-quit',
+            appBeforeQuit,
+        );
+    });
 
     it('cleans up once during a regular quit', async () => {
         const service = createService();
