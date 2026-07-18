@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import path from 'node:path';
 import type { Application } from '@mariodebono/di';
 import { createElectronApplication } from '@mariodebono/di-electron';
 import { app, Menu } from 'electron';
@@ -7,13 +8,24 @@ import { AppModule } from './app.module.js';
 import { configuration, setCurrentAppConfig } from './config/index.js';
 import { getAppIconPath, getUIPath } from './pathResolver.js';
 
-logger.debug('Raw process argv before CLI parsing:', process.argv);
-
 const appConfig = configuration({
     args: process.argv,
     env: process.env,
 });
 setCurrentAppConfig(appConfig);
+
+if (appConfig.isDev) {
+    const devLogPath = path.join(
+        app.getAppPath(),
+        '.debug',
+        'logs',
+        'main.log',
+    );
+    logger.transports.file.resolvePathFn = () => devLogPath;
+}
+
+logger.initialize();
+logger.debug('Raw process argv before CLI parsing:', process.argv);
 
 logger.info('Starting Godot Launcher');
 logger.info(`Version: ${app.getVersion()}`);
@@ -60,7 +72,10 @@ async function bootstrap(): Promise<void> {
     const result = await createElectronApplication(AppModule, {
         instanceMode: appConfig.isDev ? 'multi' : 'single',
         hideOnClose: true,
-        logger: false,
+        logger: ['error', 'warn'],
+        loggerOptions: {
+            loggerInstance: logger,
+        },
         mainWindowOptions: {
             url: appConfig.isDev ? 'http://localhost:5123' : getUIPath(),
             startMode: 'hidden',
