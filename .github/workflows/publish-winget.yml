@@ -147,7 +147,7 @@ jobs:
           Repair-WinGetPackageManager -Force -Latest
           winget --version
 
-      - name: Validate, install, and uninstall
+      - name: Validate and install
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -192,16 +192,6 @@ jobs:
           $installedPackages | Write-Output
           if (($installedPackages -join [Environment]::NewLine) -notmatch [regex]::Escape($version)) {
             throw "WinGet did not report Godot Launcher $version as installed."
-          }
-
-          winget uninstall `
-            --id $env:PACKAGE_IDENTIFIER `
-            --exact `
-            --silent `
-            --accept-source-agreements `
-            --disable-interactivity
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
           }
 
       - name: Collect WinGet logs
