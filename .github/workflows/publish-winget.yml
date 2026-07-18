@@ -183,6 +183,7 @@ jobs:
           $installedPackages = winget list `
             --id $env:PACKAGE_IDENTIFIER `
             --exact `
+            --accept-source-agreements `
             --disable-interactivity
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
@@ -197,6 +198,7 @@ jobs:
             --id $env:PACKAGE_IDENTIFIER `
             --exact `
             --silent `
+            --accept-source-agreements `
             --disable-interactivity
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
