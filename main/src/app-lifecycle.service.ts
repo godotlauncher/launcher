@@ -200,7 +200,9 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
     };
 
     private readonly handleBeforeQuitForUpdate = (): void => {
-        this.prepareForQuit('Quitting app to install update');
+        if (this.prepareForQuit('Quitting app to install update')) {
+            this.electronAppService.quit();
+        }
     };
 
     private readonly disposeWindowResources = (): void => {
@@ -247,15 +249,16 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         this.showMainWindow();
     }
 
-    private prepareForQuit(message: string): void {
+    private prepareForQuit(message: string): boolean {
         if (this.willClose) {
-            return;
+            return false;
         }
 
         logger.info(message);
         stopAutoUpdateChecks();
         this.disposeWindowResources();
         this.willClose = true;
+        return true;
     }
 
     private hideMainWindow(): void {
