@@ -1,7 +1,7 @@
 {
     "name": "godot-launcher",
     "private": true,
-    "version": "1.10.0",
+    "version": "1.10.1",
     "packageManager": "npm@11.16.0",
     "description": "Godot Launcher is the companion app for managing Godot projects with per-project editor settings.",
     "keywords": [
