@@ -33,7 +33,8 @@
         "enabled": true,
         "indentStyle": "space",
         "indentWidth": 4,
-        "lineEnding": "lf"
+        "lineEnding": "lf",
+        "trailingNewline": true
     },
     "linter": {
         "enabled": true,
