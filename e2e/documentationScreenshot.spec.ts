@@ -21,7 +21,6 @@ import type {
     ScreenshotConfig,
     ThemeConfig,
 } from './documentationScreenshots/types';
-import { waitForDiElectronPreload } from './support/waitForDiElectronPreload';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
 
@@ -29,20 +28,24 @@ test.describe.configure({ mode: 'serial' });
 
 for (const theme of THEMES) {
     for (const group of SCREENSHOT_GROUPS) {
-        test(`captures ${group.name} documentation screenshots in ${theme.description}`, async ({ }, testInfo) => {
-            testInfo.setTimeout(group.timeout);
+        test(
+            `captures ${group.name} documentation screenshots in ${theme.description}`,
+            { tag: '@screenshots' },
+            async ({}, testInfo) => {
+                testInfo.setTimeout(group.timeout);
 
-            await withDocumentationApp(async (mainPage, electronApp) => {
-                await applyTheme(mainPage, theme);
-                await captureScreenshotsForGroup(
-                    mainPage,
-                    electronApp,
-                    testInfo,
-                    theme,
-                    group.screenshots,
-                );
-            });
-        });
+                await withDocumentationApp(async (mainPage, electronApp) => {
+                    await applyTheme(mainPage, theme);
+                    await captureScreenshotsForGroup(
+                        mainPage,
+                        electronApp,
+                        testInfo,
+                        theme,
+                        group.screenshots,
+                    );
+                });
+            },
+        );
     }
 }
 
@@ -98,7 +101,6 @@ async function primeDocumentationApp(
     mainPage: ElectronPage,
     electronApp: ElectronApplication,
 ) {
-    await waitForDiElectronPreload(mainPage);
     await ensureMainNavigationReady(mainPage, electronApp);
     await mainPage.getByTestId('btnProjects').click();
     await expect(

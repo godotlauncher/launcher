@@ -13,7 +13,6 @@ import type {
     UserPreferences,
 } from '@shared/contracts';
 import sharp from 'sharp';
-import { waitForDiElectronPreload } from '../support/waitForDiElectronPreload';
 import {
     createPreferences,
     DEFAULT_TOOLS,
@@ -396,7 +395,9 @@ export async function prepareAppWithStubbedData(
     );
     await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
     await reloadScreenshotPage(page);
-    await waitForDiElectronPreload(page);
+    await expect(page.getByTestId('btnProjects')).toBeVisible({
+        timeout: 15000,
+    });
     await setScreenshotViewport(page);
 }
 

@@ -50,7 +50,7 @@
         "dist:win": "npm run build:sources && electron-builder --config electron-builder-config.ts --win ",
         "dist:win:publish": "npm run build:sources && electron-builder --config electron-builder-config.ts --win --publish always",
         "dist": "npm run build:sources && electron-builder --config electron-builder-config.ts --mac --win --linux",
-        "test:e2e": "playwright test",
+        "test:e2e": "playwright test --grep-invert @screenshots",
         "test:unit": "vitest main/src renderer/src",
         "app:dir": "electron-builder --dir --config electron-builder-config.ts",
         "app:dist": "electron-builder --config electron-builder-config.ts",

@@ -1,50 +1,55 @@
 import { _electron, expect, test } from '@playwright/test';
 import fs from 'fs/promises';
-import { waitForDiElectronPreload } from './support/waitForDiElectronPreload';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
 
-test.beforeEach(async () => {
+test.beforeAll(async () => {
     electronApp = await _electron.launch({
         args: ['.'],
         env: { NODE_ENV: 'development' },
     });
     mainPage = await electronApp.firstWindow();
-    await waitForDiElectronPreload(mainPage);
 });
 
-test.afterEach(async () => {
+test.afterAll(async () => {
     await electronApp.close();
 });
 
-test('Has the correct title', async () => {
+test('Can navigate the main window', async () => {
     const { version } = JSON.parse(
         await fs.readFile('./package.json', 'utf-8'),
     );
 
-    await expect
-        .poll(async () => await mainPage.title(), {
-            message: 'Waiting for window title to include full version',
-            timeout: 15000,
-        })
-        .toBe(`Godot Launcher ${version}`);
-});
+    await test.step('Loads the main window', async () => {
+        await expect
+            .poll(async () => await mainPage.title(), {
+                message: 'Waiting for window title to include full version',
+                timeout: 15_000,
+            })
+            .toBe(`Godot Launcher ${version}`);
+        await expect(mainPage.getByTestId('btnProjects')).toBeVisible({
+            timeout: 15_000,
+        });
+    });
 
-test('Can view projects', async () => {
-    await mainPage.getByTestId('btnProjects').click();
-    const projectsView = await mainPage.getByTestId('projectsTitle');
-    await expect(projectsView).toHaveCount(1);
-});
+    await test.step('Opens projects', async () => {
+        await mainPage.getByTestId('btnProjects').click();
+        await expect(mainPage.getByTestId('projectsTitle')).toBeVisible();
+    });
 
-test('Can view installs', async () => {
-    await mainPage.getByTestId('btnInstalls').click();
-    const installsView = await mainPage.getByTestId('installsTitle');
-    await expect(installsView).toHaveCount(1);
-});
+    await test.step('Opens installs', async () => {
+        await mainPage.getByTestId('btnInstalls').click();
+        await expect(mainPage.getByTestId('installsTitle')).toBeVisible();
+    });
 
-test('Can view settings', async () => {
-    await mainPage.getByTestId('btnSettings').click();
-    const settingsView = await mainPage.getByTestId('settingsTitle');
-    await expect(settingsView).toHaveCount(1);
+    await test.step('Opens settings', async () => {
+        await mainPage.getByTestId('btnSettings').click();
+        await expect(mainPage.getByTestId('settingsTitle')).toBeVisible();
+    });
+
+    await test.step('Opens help', async () => {
+        await mainPage.getByTestId('btnHelp').click();
+        await expect(mainPage.getByTestId('helpTitle')).toBeVisible();
+    });
 });

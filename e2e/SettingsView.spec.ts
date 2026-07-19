@@ -1,6 +1,5 @@
 import { _electron, expect, test } from '@playwright/test';
 import fs from 'fs/promises';
-import { waitForDiElectronPreload } from './support/waitForDiElectronPreload';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
@@ -11,8 +10,6 @@ test.beforeEach(async () => {
         env: { NODE_ENV: 'development' },
     });
     mainPage = await electronApp.firstWindow();
-    await waitForDiElectronPreload(mainPage);
-
     await mainPage.getByTestId('btnSettings').click();
     const settingsView = await mainPage.getByTestId('settingsTitle');
     await expect(settingsView).toHaveCount(1);
