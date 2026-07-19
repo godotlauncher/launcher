@@ -1,7 +1,272 @@
 {
-    "lastPublishDate": "2026-06-18T12:06:17.000Z",
-    "lastUpdated": 1782597314676,
+    "lastPublishDate": "2026-07-14T18:03:10.000Z",
+    "lastUpdated": 1784489792685,
     "releases": [
+        {
+            "tag": "4.7.1-stable",
+            "version": "4.7.1-stable",
+            "version_number": 4.7,
+            "name": "4.7.1-stable",
+            "published_at": "2026-07-14T18:03:10Z",
+            "draft": false,
+            "prerelease": false,
+            "assets": [
+                {
+                    "name": "godot-4.7.1-stable.tar.xz",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/godot-4.7.1-stable.tar.xz",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "godot-4.7.1-stable.tar.xz.sha256",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/godot-4.7.1-stable.tar.xz.sha256",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "godot-lib.4.7.1.stable.mono.template_release.aar",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/godot-lib.4.7.1.stable.mono.template_release.aar",
+                    "platform_tags": [],
+                    "mono": true
+                },
+                {
+                    "name": "godot-lib.4.7.1.stable.template_release.aar",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/godot-lib.4.7.1.stable.template_release.aar",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "godot-lib.4.7.1.stable.template_release.perfetto.aar",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/godot-lib.4.7.1.stable.template_release.perfetto.aar",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_native_debug_symbols.4.7.1.stable.editor.android.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_native_debug_symbols.4.7.1.stable.editor.android.zip",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_native_debug_symbols.4.7.1.stable.template_release.android.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_native_debug_symbols.4.7.1.stable.template_release.android.zip",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_debug.perfetto.apk",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_debug.perfetto.apk",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_editor.aab",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_editor.aab",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_editor.apk",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_editor.apk",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_editor_horizonos.apk",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_editor_horizonos.apk",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_editor_picoos.apk",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_editor_picoos.apk",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_release.perfetto.apk",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_release.perfetto.apk",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_android_source.perfetto.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_android_source.perfetto.zip",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_export_templates.tpz",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_export_templates.tpz",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_linux.arm32.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_linux.arm32.zip",
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_linux.arm64.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_linux.arm64.zip",
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_linux.x86_32.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_linux.x86_32.zip",
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_linux.x86_64.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_linux.x86_64.zip",
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_macos.universal.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_macos.universal.zip",
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_export_templates.tpz",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_export_templates.tpz",
+                    "platform_tags": [],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_linux_arm32.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_linux_arm32.zip",
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_linux_arm64.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_linux_arm64.zip",
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_linux_x86_32.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_linux_x86_32.zip",
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_linux_x86_64.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_linux_x86_64.zip",
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_macos.universal.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_macos.universal.zip",
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_win32.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_win32.zip",
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_win64.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_win64.zip",
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_mono_windows_arm64.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_mono_windows_arm64.zip",
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
+                    "mono": true
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_web_editor.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_web_editor.zip",
+                    "platform_tags": [],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_win32.exe.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_win32.exe.zip",
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_win64.exe.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_win64.exe.zip",
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "Godot_v4.7.1-stable_windows_arm64.exe.zip",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/Godot_v4.7.1-stable_windows_arm64.exe.zip",
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
+                    "mono": false
+                },
+                {
+                    "name": "SHA512-SUMS.txt",
+                    "download_url": "https://github.com/godotengine/godot/releases/download/4.7.1-stable/SHA512-SUMS.txt",
+                    "platform_tags": [],
+                    "mono": false
+                }
+            ]
+        },
         {
             "tag": "4.7-stable",
             "version": "4.7-stable",
@@ -104,31 +369,47 @@
                 {
                     "name": "Godot_v4.7-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.7-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.7-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.7-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.7-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -140,49 +421,74 @@
                 {
                     "name": "Godot_v4.7-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.7-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -194,19 +500,28 @@
                 {
                     "name": "Godot_v4.7-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.7-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.7-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -295,31 +610,47 @@
                 {
                     "name": "Godot_v4.6.3-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.3-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.3-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.3-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.3-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -331,49 +662,74 @@
                 {
                     "name": "Godot_v4.6.3-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.3-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -385,19 +741,28 @@
                 {
                     "name": "Godot_v4.6.3-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.3-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.3-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -486,31 +851,47 @@
                 {
                     "name": "Godot_v4.6.2-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.2-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.2-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.2-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.2-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -522,49 +903,74 @@
                 {
                     "name": "Godot_v4.6.2-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.2-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -576,19 +982,28 @@
                 {
                     "name": "Godot_v4.6.2-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.2-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.2-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -677,31 +1092,47 @@
                 {
                     "name": "Godot_v4.5.2-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.2-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.2-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.2-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.2-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -713,49 +1144,74 @@
                 {
                     "name": "Godot_v4.5.2-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.2-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -767,19 +1223,28 @@
                 {
                     "name": "Godot_v4.5.2-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.2-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.2-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.2-stable/Godot_v4.5.2-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -868,31 +1333,47 @@
                 {
                     "name": "Godot_v4.6.1-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.1-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -904,49 +1385,74 @@
                 {
                     "name": "Godot_v4.6.1-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6.1-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -958,19 +1464,28 @@
                 {
                     "name": "Godot_v4.6.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6.1-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1059,31 +1574,47 @@
                 {
                     "name": "Godot_v4.6-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1095,49 +1626,74 @@
                 {
                     "name": "Godot_v4.6-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.6-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -1149,19 +1705,28 @@
                 {
                     "name": "Godot_v4.6-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.6-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1250,31 +1815,47 @@
                 {
                     "name": "Godot_v4.5.1-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.1-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1286,49 +1867,74 @@
                 {
                     "name": "Godot_v4.5.1-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5.1-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -1340,19 +1946,28 @@
                 {
                     "name": "Godot_v4.5.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5.1-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1441,31 +2056,47 @@
                 {
                     "name": "Godot_v4.5-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1477,49 +2108,74 @@
                 {
                     "name": "Godot_v4.5-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.5-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -1531,19 +2187,28 @@
                 {
                     "name": "Godot_v4.5-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.5-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1620,31 +2285,47 @@
                 {
                     "name": "Godot_v4.4.1-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4.1-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1656,49 +2337,74 @@
                 {
                     "name": "Godot_v4.4.1-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4.1-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -1710,19 +2416,28 @@
                 {
                     "name": "Godot_v4.4.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4.1-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1799,31 +2514,47 @@
                 {
                     "name": "Godot_v4.4-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1835,49 +2566,74 @@
                 {
                     "name": "Godot_v4.4-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.4-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -1889,19 +2645,28 @@
                 {
                     "name": "Godot_v4.4-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.4-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -1966,31 +2731,47 @@
                 {
                     "name": "Godot_v4.3-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.3-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.3-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.3-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.3-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2002,49 +2783,74 @@
                 {
                     "name": "Godot_v4.3-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.3-stable_mono_windows_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_mono_windows_arm64.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2056,19 +2862,28 @@
                 {
                     "name": "Godot_v4.3-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.3-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.3-stable_windows_arm64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_windows_arm64.exe.zip",
-                    "platform_tags": ["win32", "arm64"],
+                    "platform_tags": [
+                        "win32",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2133,31 +2948,47 @@
                 {
                     "name": "Godot_v4.2.2-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.2-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.2-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.2-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.2-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2169,43 +3000,65 @@
                 {
                     "name": "Godot_v4.2.2-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.2-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.2-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.2-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.2-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.2-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.2-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2217,13 +3070,19 @@
                 {
                     "name": "Godot_v4.2.2-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.2-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.2-stable/Godot_v4.2.2-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2282,19 +3141,29 @@
                 {
                     "name": "Godot_v4.1.4-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.4-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.4-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2306,31 +3175,47 @@
                 {
                     "name": "Godot_v4.1.4-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.4-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.4-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.4-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.4-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2342,13 +3227,19 @@
                 {
                     "name": "Godot_v4.1.4-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.4-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.4-stable/Godot_v4.1.4-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2413,31 +3304,47 @@
                 {
                     "name": "Godot_v4.2.1-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.1-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2449,43 +3356,65 @@
                 {
                     "name": "Godot_v4.2.1-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.1-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2497,13 +3426,19 @@
                 {
                     "name": "Godot_v4.2.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2568,31 +3503,47 @@
                 {
                     "name": "Godot_v4.2-stable_linux.arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_linux.arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2-stable_linux.arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_linux.arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2604,43 +3555,65 @@
                 {
                     "name": "Godot_v4.2-stable_mono_linux_arm32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_linux_arm32.zip",
-                    "platform_tags": ["linux", "arm"],
+                    "platform_tags": [
+                        "linux",
+                        "arm"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2-stable_mono_linux_arm64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_linux_arm64.zip",
-                    "platform_tags": ["linux", "arm64"],
+                    "platform_tags": [
+                        "linux",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.2-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2652,13 +3625,19 @@
                 {
                     "name": "Godot_v4.2-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.2-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.2-stable/Godot_v4.2-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2717,19 +3696,29 @@
                 {
                     "name": "Godot_v4.1.3-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.3-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.3-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2741,31 +3730,47 @@
                 {
                     "name": "Godot_v4.1.3-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.3-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.3-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.3-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.3-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2777,13 +3782,19 @@
                 {
                     "name": "Godot_v4.1.3-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.3-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.3-stable/Godot_v4.1.3-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2842,19 +3853,29 @@
                 {
                     "name": "Godot_v4.1.2-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.2-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.2-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2866,31 +3887,47 @@
                 {
                     "name": "Godot_v4.1.2-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.2-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.2-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.2-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.2-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -2902,13 +3939,19 @@
                 {
                     "name": "Godot_v4.1.2-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.2-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.2-stable/Godot_v4.1.2-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2967,19 +4010,29 @@
                 {
                     "name": "Godot_v4.0.4-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.4-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.4-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -2991,31 +4044,47 @@
                 {
                     "name": "Godot_v4.0.4-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.4-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.4-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.4-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.4-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3027,13 +4096,19 @@
                 {
                     "name": "Godot_v4.0.4-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.4-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.4-stable/Godot_v4.0.4-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3092,19 +4167,29 @@
                 {
                     "name": "Godot_v4.1.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3116,31 +4201,47 @@
                 {
                     "name": "Godot_v4.1.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3152,13 +4253,19 @@
                 {
                     "name": "Godot_v4.1.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1.1-stable/Godot_v4.1.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3217,19 +4324,29 @@
                 {
                     "name": "Godot_v4.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3241,31 +4358,47 @@
                 {
                     "name": "Godot_v4.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3277,13 +4410,19 @@
                 {
                     "name": "Godot_v4.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3336,19 +4475,29 @@
                 {
                     "name": "Godot_v4.0.3-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.3-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.3-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3360,31 +4509,47 @@
                 {
                     "name": "Godot_v4.0.3-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.3-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.3-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.3-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.3-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3396,13 +4561,19 @@
                 {
                     "name": "Godot_v4.0.3-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.3-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.3-stable/Godot_v4.0.3-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3455,19 +4626,29 @@
                 {
                     "name": "Godot_v4.0.2-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.2-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.2-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3479,31 +4660,47 @@
                 {
                     "name": "Godot_v4.0.2-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.2-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.2-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.2-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.2-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3515,13 +4712,19 @@
                 {
                     "name": "Godot_v4.0.2-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.2-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.2-stable/Godot_v4.0.2-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3574,19 +4777,29 @@
                 {
                     "name": "Godot_v4.0.1-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.1-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.1-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3598,31 +4811,47 @@
                 {
                     "name": "Godot_v4.0.1-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.1-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.1-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.1-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0.1-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3634,13 +4863,19 @@
                 {
                     "name": "Godot_v4.0.1-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0.1-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0.1-stable/Godot_v4.0.1-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3693,19 +4928,29 @@
                 {
                     "name": "Godot_v4.0-stable_linux.x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_linux.x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0-stable_linux.x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_linux.x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0-stable_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": false
                 },
                 {
@@ -3717,31 +4962,47 @@
                 {
                     "name": "Godot_v4.0-stable_mono_linux_x86_32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_mono_linux_x86_32.zip",
-                    "platform_tags": ["linux", "ia32"],
+                    "platform_tags": [
+                        "linux",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0-stable_mono_linux_x86_64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_mono_linux_x86_64.zip",
-                    "platform_tags": ["linux", "x64"],
+                    "platform_tags": [
+                        "linux",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0-stable_mono_macos.universal.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_mono_macos.universal.zip",
-                    "platform_tags": ["darwin", "x64", "arm64"],
+                    "platform_tags": [
+                        "darwin",
+                        "x64",
+                        "arm64"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0-stable_mono_win32.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_mono_win32.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": true
                 },
                 {
                     "name": "Godot_v4.0-stable_mono_win64.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_mono_win64.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": true
                 },
                 {
@@ -3753,13 +5014,19 @@
                 {
                     "name": "Godot_v4.0-stable_win32.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_win32.exe.zip",
-                    "platform_tags": ["win32", "ia32"],
+                    "platform_tags": [
+                        "win32",
+                        "ia32"
+                    ],
                     "mono": false
                 },
                 {
                     "name": "Godot_v4.0-stable_win64.exe.zip",
                     "download_url": "https://github.com/godotengine/godot/releases/download/4.0-stable/Godot_v4.0-stable_win64.exe.zip",
-                    "platform_tags": ["win32", "x64"],
+                    "platform_tags": [
+                        "win32",
+                        "x64"
+                    ],
                     "mono": false
                 },
                 {
