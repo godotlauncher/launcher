@@ -9,10 +9,18 @@ on:
         description: 'Release tag to publish to Winget, for example v1.10.0'
         required: true
         type: string
+      submit:
+        description: 'Submit to winget-pkgs after validation'
+        required: true
+        default: true
+        type: boolean
 
 concurrency:
   group: winget-${{ inputs.tag }}
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 env:
   MANIFEST_DIR: winget-manifests
@@ -21,30 +29,23 @@ env:
   WINGETCREATE_SHA256: 8bd738851b524885410112678e3771b341c5c716de60fbbecb88ab0a363ed85d
 
 jobs:
-  publish-winget:
-    name: Submit to winget-pkgs
-    runs-on: windows-latest
-    permissions:
-      contents: read
+  generate-manifest:
+    name: Generate manifest
+    runs-on: windows-2025
     env:
       GH_TOKEN: ${{ github.token }}
       INPUT_TAG: ${{ inputs.tag }}
-      WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
     steps:
       - name: Setup .NET for WingetCreate
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           dotnet-version: '6.0.x'
 
-      - name: Generate, validate, and submit to WinGet
+      - name: Generate WinGet manifest
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $ProgressPreference = 'SilentlyContinue'
-
-          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
-            throw 'The WINGET_CREATE_GITHUB_TOKEN repository secret is not configured.'
-          }
 
           $tag = $env:INPUT_TAG.Trim()
           if ($tag -notmatch '^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
@@ -105,18 +106,158 @@ jobs:
             throw "WingetCreate did not generate the expected manifest directory '$manifestPath'."
           }
 
+      - name: Upload generated WinGet manifest
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: winget-manifests-${{ inputs.tag }}
+          path: ${{ env.MANIFEST_DIR }}
+          if-no-files-found: error
+          retention-days: 7
+
+  validate-installers:
+    name: Validate ${{ matrix.architecture }} installer
+    needs: generate-manifest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+            runner: windows-2025
+          - architecture: arm64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      INPUT_TAG: ${{ inputs.tag }}
+      TARGET_ARCHITECTURE: ${{ matrix.architecture }}
+    steps:
+      - name: Download generated WinGet manifest
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: winget-manifests-${{ inputs.tag }}
+          path: ${{ env.MANIFEST_DIR }}
+
+      - name: Setup WinGet
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
           Import-Module Microsoft.PowerShell.PSResourceGet
           Install-PSResource -Name Microsoft.WinGet.Client -Repository PSGallery -TrustRepository -Reinstall -Quiet
           Import-Module Microsoft.WinGet.Client
           Repair-WinGetPackageManager -Force -Latest
           winget --version
 
-          winget validate --manifest $manifestPath --disable-interactivity
+      - name: Validate and install
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
 
+          $version = $env:INPUT_TAG.Trim().Substring(1)
+          $manifestPath = Join-Path $PWD "$env:MANIFEST_DIR\manifests\g\GodotLauncher\Launcher\$version"
+          if (-not (Test-Path -LiteralPath $manifestPath -PathType Container)) {
+            throw "The generated manifest directory '$manifestPath' was not found."
+          }
+
+          winget validate --manifest $manifestPath --disable-interactivity
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
 
+          winget settings --enable LocalManifestFiles
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          winget install `
+            --manifest $manifestPath `
+            --architecture $env:TARGET_ARCHITECTURE `
+            --scope user `
+            --silent `
+            --accept-package-agreements `
+            --accept-source-agreements `
+            --disable-interactivity
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          $installedPackages = winget list `
+            --id $env:PACKAGE_IDENTIFIER `
+            --exact `
+            --accept-source-agreements `
+            --disable-interactivity
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          $installedPackages | Write-Output
+          if (($installedPackages -join [Environment]::NewLine) -notmatch [regex]::Escape($version)) {
+            throw "WinGet did not report Godot Launcher $version as installed."
+          }
+
+      - name: Collect WinGet logs
+        if: always()
+        shell: pwsh
+        run: |
+          $logSource = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\DiagOutputDir'
+          if (Test-Path -LiteralPath $logSource -PathType Container) {
+            New-Item -ItemType Directory -Path winget-logs -Force | Out-Null
+            Copy-Item -Path (Join-Path $logSource '*') -Destination winget-logs -Recurse -Force
+          }
+
+      - name: Upload WinGet logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: winget-logs-${{ inputs.tag }}-${{ matrix.architecture }}
+          path: winget-logs
+          if-no-files-found: ignore
+          retention-days: 7
+
+  submit-winget:
+    name: Submit to winget-pkgs
+    if: ${{ inputs.submit }}
+    needs:
+      - generate-manifest
+      - validate-installers
+    runs-on: windows-2025
+    env:
+      INPUT_TAG: ${{ inputs.tag }}
+      WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+    steps:
+      - name: Download generated WinGet manifest
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: winget-manifests-${{ inputs.tag }}
+          path: ${{ env.MANIFEST_DIR }}
+
+      - name: Setup .NET for WingetCreate
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Submit WinGet manifest
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            throw 'The WINGET_CREATE_GITHUB_TOKEN repository secret is not configured.'
+          }
+
+          $version = $env:INPUT_TAG.Trim().Substring(1)
+          $manifestPath = Join-Path $PWD "$env:MANIFEST_DIR\manifests\g\GodotLauncher\Launcher\$version"
+          if (-not (Test-Path -LiteralPath $manifestPath -PathType Container)) {
+            throw "The generated manifest directory '$manifestPath' was not found."
+          }
+
+          $wingetCreateUrl = "https://github.com/microsoft/winget-create/releases/download/v$env:WINGETCREATE_VERSION/wingetcreate.exe"
+          Invoke-WebRequest -Uri $wingetCreateUrl -OutFile wingetcreate.exe
+
+          $wingetCreateHash = (Get-FileHash -Path wingetcreate.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($wingetCreateHash -ne $env:WINGETCREATE_SHA256) {
+            throw "WingetCreate checksum mismatch. Expected '$env:WINGETCREATE_SHA256', got '$wingetCreateHash'."
+          }
 
           .\wingetcreate.exe submit `
             --prtitle "Submitting Godot Launcher $version" `
@@ -126,11 +267,3 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
-
-      - name: Upload generated WinGet manifests
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: winget-manifests-${{ inputs.tag }}
-          path: ${{ env.MANIFEST_DIR }}
-          if-no-files-found: warn
