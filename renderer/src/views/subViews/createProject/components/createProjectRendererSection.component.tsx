@@ -1,4 +1,4 @@
-import type { RendererType } from '@shared';
+import type { RendererType } from '@shared/contracts';
 import type React from 'react';
 
 type Translate = (key: string) => string;

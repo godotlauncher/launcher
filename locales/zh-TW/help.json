@@ -1,26 +1,26 @@
 {
-  "title": "說明",
-  "thirdPartyNotices": "第三方公告",
-  "launcher": {
-    "title": "Godot 啟動器",
-    "changelog": "變更記錄",
-    "homePage": "首頁",
-    "docs": "啟動器文件"
-  },
-  "godot": {
-    "title": "Godot 引擎",
-    "engine": "Godot 引擎",
-    "docs": "Godot 文件"
-  },
-  "community": {
-    "title": "社群與支援",
-    "learnMore": "瞭解更多"
-  },
-  "contribute": {
-    "title": "如何貢獻",
-    "learnMore": "瞭解更多",
-    "description": "在官方 GitHub 儲存庫提交議題以回報錯誤或提供建議",
-    "reportBug": "我覺得我找到了一個錯誤",
-    "suggestion": "我有個建議！"
-  }
+    "title": "說明",
+    "thirdPartyNotices": "第三方公告",
+    "launcher": {
+        "title": "Godot 啟動器",
+        "changelog": "變更記錄",
+        "homePage": "首頁",
+        "docs": "啟動器文件"
+    },
+    "godot": {
+        "title": "Godot 引擎",
+        "engine": "Godot 引擎",
+        "docs": "Godot 文件"
+    },
+    "community": {
+        "title": "社群與支援",
+        "learnMore": "瞭解更多"
+    },
+    "contribute": {
+        "title": "如何貢獻",
+        "learnMore": "瞭解更多",
+        "description": "在官方 GitHub 儲存庫提交議題以回報錯誤或提供建議",
+        "reportBug": "我覺得我找到了一個錯誤",
+        "suggestion": "我有個建議！"
+    }
 }

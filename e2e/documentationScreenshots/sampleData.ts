@@ -1,7 +1,14 @@
-import type { InstalledRelease, ProjectDetails, ReleaseSummary, UserPreferences } from '@shared';
-import type { CachedTool } from './types';
+import type {
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+    UserPreferences,
+} from '@shared/contracts';
+import prereleasesCache from '../fixtures/prereleases.json' with {
+    type: 'json',
+};
 import releasesCache from '../fixtures/releases.json' with { type: 'json' };
-import prereleasesCache from '../fixtures/prereleases.json' with { type: 'json' };
+import type { CachedTool } from './types';
 
 export const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
     {
@@ -242,10 +249,8 @@ export const SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE: ReleaseSummary = {
     assets: [],
 };
 
-export const SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION: ReleaseSummary[] = [
-    SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE,
-    ...SAMPLE_AVAILABLE_RELEASES,
-];
+export const SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION: ReleaseSummary[] =
+    [SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE, ...SAMPLE_AVAILABLE_RELEASES];
 
 export const SAMPLE_PREFS: UserPreferences = {
     prefs_version: 3,

@@ -1,132 +1,132 @@
 {
-  "title": "Projeler",
-  "buttons": {
-    "add": "Ekle",
-    "newProject": "Yeni Proje"
-  },
-  "search": {
-    "placeholder": "Ara"
-  },
-  "table": {
-    "name": "İsim",
-    "modified": "Değiştirilme",
-    "editor": "Editör",
-    "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
-    "dotNetProject": "Bu bir .Net Projesidir",
-    "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
-    "windowedMode": "Bu proje pencere modunda açık",
-    "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
-    "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
-    "invalidReasons": {
-      "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
-      "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."
-    }
-  },
-  "addProject": {
-    "selectFile": "Proje Dosyasını Seç",
-    "godotProject": "Godot Projesi",
-    "editorResolution": {
-      "title": "Editör sürümü gerekli",
-      "message": "Bu proje yüklü olmayan bir editör istiyor.",
-      "version": "Sürüm",
-      "channel": "Kanal",
-      "flavor": "Varyant",
-      "baseVersion": "Temel",
-      "fallbackMessage": "Uyumlu yüklü bir editör yedek seçenek olarak kullanılabilir.",
-      "editorActions": "Seçenekler",
-      "download": "{{version}} indir",
-      "useFallback": "{{version}} kullan",
-      "addMissing": "Eksik editörle ekle"
+    "title": "Projeler",
+    "buttons": {
+        "add": "Ekle",
+        "newProject": "Yeni Proje"
     },
-    "errors": {
-      "projectExists": "'{{path}}' projesi zaten mevcut",
-      "invalidPath": "Geçersiz proje yolu",
-      "invalidProjectFile": "Geçersiz project.godot dosyası",
-      "nameExists": "'{{name}}' isimli proje zaten mevcut\nLütfen projeyi 'project.godot' içinde yeniden adlandırın veya mevcut olanı kaldırın.",
-      "invalidRenderer": "Geçersiz proje dosyası",
-      "invalidConfigVersion": "Geçersiz project.godot config_version.\nSadece config version 5 destekleniyor",
-      "noStableReleases": "Godot {{version}}.x için kurulu Kararlı sürüm bulunamadı\nLütfen Godot {{version}}.x için kararlı bir sürüm yükleyin, ardından projeyi tekrar eklemeyi deneyin.",
-      "noDotNetRelease": "Proje bir .NET projesi gibi görünüyor ancak .NET sürümüne sahip Editör bulunamadı",
-      "noCompatibleRelease": "config_version {{configVersion}} destekleyen Godot {{version}}.x için kurulu sürüm bulunamadı."
-    }
-  },
-  "messages": {
-    "noReleasesCta": "Henüz kurulu sürüm yok. <Link>Kurulumlara git</Link>",
-    "waitingForDialog": "Proje eklemek için iletişim kutusu bekleniyor...",
-    "needReleaseInstalled": "Proje eklemek için en az bir sürüm yüklü olmalıdır",
-    "addProjectError": "Proje eklenirken bir şeyler ters gitti",
-    "setEditorError": "Proje editörü ayarlanırken bir şeyler ters gitti",
-    "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun.",
-    "invalidReleaseEditor": "Seçilen editör kullanılamıyor. Sürücüyü bağlayın veya sürümü yeniden yükleyin.",
-    "dropGodotFileOnly": "Proje eklemek için lütfen bir project.godot dosyasını sürükleyin",
-    "dropProjectHere": "Proje eklemek için project.godot dosyasını buraya bırakın",
-    "addingProjects": "Projeler ekleniyor: {{current}}/{{total}}",
-    "failedAddProject": "Proje eklenemedi: {{error}}",
-    "dropProjectFilesHere": "Godot proje dosyalarını buraya bırakın",
-    "dropProjectFilesHelpPrefix": "Bir veya daha fazla",
-    "dropProjectFilesHelpSuffix": "dosyayı başlatıcıya eklemek için bırakın.",
-    "invalidReasons": {
-      "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
-      "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
+    "search": {
+        "placeholder": "Ara"
     },
-    "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
-  },
-  "changeEditor": {
-    "errors": {
-      "projectNotFound": "Proje bulunamadı",
-      "invalidEditorVersion": "Geçersiz editör sürümü",
-      "differentMajorVersion": "Editörün farklı bir ana sürümü kullanılamaz\nProjenizi korumak için https://godotengine.org adresindeki resmi geçiş kılavuzuna bakın"
-    }
-  },
-  "toggleVSCode": {
-    "errors": {
-      "projectNotFound": "Proje bulunamadı",
-      "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
-      "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
-      "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
-    }
-  },
-  "editProject": {
-    "title": "Proje ayarları",
-    "description": "Proje adı ayarlarını güncelle.",
-    "fields": {
-      "name": {
-        "label": "Proje adı",
-        "help": "Godot Launcher'da gösterilen ad.",
-        "placeholder": "Projem"
-      },
-      "path": {
-        "label": "Proje klasörü"
-      }
+    "table": {
+        "name": "İsim",
+        "modified": "Değiştirilme",
+        "editor": "Editör",
+        "invalidProject": "Bu proje geçersiz, proje ve editör konumlarını kontrol edin!",
+        "dotNetProject": "Bu bir .Net Projesidir",
+        "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
+        "windowedMode": "Bu proje pencere modunda açık",
+        "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
+        "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
+        "invalidReasons": {
+            "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
+            "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."
+        }
     },
-    "godot": {
-      "renameLabel": "Godot projesini de yeniden adlandır",
-      "loading": "Godot projesi denetleniyor...",
-      "currentName": "Geçerli Godot proje adı: {{name}}",
-      "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
+    "addProject": {
+        "selectFile": "Proje Dosyasını Seç",
+        "godotProject": "Godot Projesi",
+        "editorResolution": {
+            "title": "Editör sürümü gerekli",
+            "message": "Bu proje yüklü olmayan bir editör istiyor.",
+            "version": "Sürüm",
+            "channel": "Kanal",
+            "flavor": "Varyant",
+            "baseVersion": "Temel",
+            "fallbackMessage": "Uyumlu yüklü bir editör yedek seçenek olarak kullanılabilir.",
+            "editorActions": "Seçenekler",
+            "download": "{{version}} indir",
+            "useFallback": "{{version}} kullan",
+            "addMissing": "Eksik editörle ekle"
+        },
+        "errors": {
+            "projectExists": "'{{path}}' projesi zaten mevcut",
+            "invalidPath": "Geçersiz proje yolu",
+            "invalidProjectFile": "Geçersiz project.godot dosyası",
+            "nameExists": "'{{name}}' isimli proje zaten mevcut\nLütfen projeyi 'project.godot' içinde yeniden adlandırın veya mevcut olanı kaldırın.",
+            "invalidRenderer": "Geçersiz proje dosyası",
+            "invalidConfigVersion": "Geçersiz project.godot config_version.\nSadece config version 5 destekleniyor",
+            "noStableReleases": "Godot {{version}}.x için kurulu Kararlı sürüm bulunamadı\nLütfen Godot {{version}}.x için kararlı bir sürüm yükleyin, ardından projeyi tekrar eklemeyi deneyin.",
+            "noDotNetRelease": "Proje bir .NET projesi gibi görünüyor ancak .NET sürümüne sahip Editör bulunamadı",
+            "noCompatibleRelease": "config_version {{configVersion}} destekleyen Godot {{version}}.x için kurulu sürüm bulunamadı."
+        }
     },
-    "actions": {
-      "update": "Güncelle",
-      "updating": "Güncelleniyor..."
+    "messages": {
+        "noReleasesCta": "Henüz kurulu sürüm yok. <Link>Kurulumlara git</Link>",
+        "waitingForDialog": "Proje eklemek için iletişim kutusu bekleniyor...",
+        "needReleaseInstalled": "Proje eklemek için en az bir sürüm yüklü olmalıdır",
+        "addProjectError": "Proje eklenirken bir şeyler ters gitti",
+        "setEditorError": "Proje editörü ayarlanırken bir şeyler ters gitti",
+        "projectNotValid": "Proje geçerli değil, lütfen proje ve sürümün bilgisayarınızda geçerli olduğundan emin olun.",
+        "invalidReleaseEditor": "Seçilen editör kullanılamıyor. Sürücüyü bağlayın veya sürümü yeniden yükleyin.",
+        "dropGodotFileOnly": "Proje eklemek için lütfen bir project.godot dosyasını sürükleyin",
+        "dropProjectHere": "Proje eklemek için project.godot dosyasını buraya bırakın",
+        "addingProjects": "Projeler ekleniyor: {{current}}/{{total}}",
+        "failedAddProject": "Proje eklenemedi: {{error}}",
+        "dropProjectFilesHere": "Godot proje dosyalarını buraya bırakın",
+        "dropProjectFilesHelpPrefix": "Bir veya daha fazla",
+        "dropProjectFilesHelpSuffix": "dosyayı başlatıcıya eklemek için bırakın.",
+        "invalidReasons": {
+            "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
+            "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
+        },
+        "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
     },
-    "validation": {
-      "required": "Proje adı gereklidir.",
-      "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez."
+    "changeEditor": {
+        "errors": {
+            "projectNotFound": "Proje bulunamadı",
+            "invalidEditorVersion": "Geçersiz editör sürümü",
+            "differentMajorVersion": "Editörün farklı bir ana sürümü kullanılamaz\nProjenizi korumak için https://godotengine.org adresindeki resmi geçiş kılavuzuna bakın"
+        }
     },
-    "updateFailed": "Proje güncellenemedi."
-  },
-  "renameProject": {
-    "errors": {
-      "projectNotFound": "Proje bulunamadı",
-      "nameRequired": "Proje adı gereklidir.",
-      "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez.",
-      "nameExists": "'{{name}}' adlı proje zaten var."
+    "toggleVSCode": {
+        "errors": {
+            "projectNotFound": "Proje bulunamadı",
+            "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
+            "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
+            "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
+        }
+    },
+    "editProject": {
+        "title": "Proje ayarları",
+        "description": "Proje adı ayarlarını güncelle.",
+        "fields": {
+            "name": {
+                "label": "Proje adı",
+                "help": "Godot Launcher'da gösterilen ad.",
+                "placeholder": "Projem"
+            },
+            "path": {
+                "label": "Proje klasörü"
+            }
+        },
+        "godot": {
+            "renameLabel": "Godot projesini de yeniden adlandır",
+            "loading": "Godot projesi denetleniyor...",
+            "currentName": "Geçerli Godot proje adı: {{name}}",
+            "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
+        },
+        "actions": {
+            "update": "Güncelle",
+            "updating": "Güncelleniyor..."
+        },
+        "validation": {
+            "required": "Proje adı gereklidir.",
+            "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez."
+        },
+        "updateFailed": "Proje güncellenemedi."
+    },
+    "renameProject": {
+        "errors": {
+            "projectNotFound": "Proje bulunamadı",
+            "nameRequired": "Proje adı gereklidir.",
+            "invalidName": "Proje adı satır sonları veya kontrol karakterleri içeremez.",
+            "nameExists": "'{{name}}' adlı proje zaten var."
+        }
+    },
+    "initGit": {
+        "errors": {
+            "projectNotFound": "Proje bulunamadı",
+            "initFailed": "Git deposu başlatılamadı."
+        }
     }
-  },
-  "initGit": {
-    "errors": {
-      "projectNotFound": "Proje bulunamadı",
-      "initFailed": "Git deposu başlatılamadı."
-    }
-  }
 }

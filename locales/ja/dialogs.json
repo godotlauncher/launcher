@@ -1,45 +1,45 @@
 {
-  "importSettings": {
-    "title": "エディタ設定のインポート",
-    "message": "ファイルからエディタ設定をインポートしますか？",
-    "detail": "現在のエディタ設定が置き換えられます。バックアップが作成されます。",
-    "continue": "続ける",
-    "cancel": "キャンセル",
-    "selectFile": "エディタ設定ファイルのインポート",
-    "textResource": "テキストリソース"
-  },
-  "exportSettings": {
-    "title": "エディタ設定をファイルにエクスポート",
-    "allFiles": "すべてのファイル"
-  },
-  "removeProject": {
-    "title": "リストからプロジェクトを削除",
-    "message": "プロジェクト「{{projectName}}」をリストから削除しますか？",
-    "detail": "デバイスからプロジェクトは削除されません。",
-    "ok": "OK",
-    "cancel": "キャンセル",
-    "doNotAskAgain": "今後確認しない"
-  },
-  "removeRelease": {
-    "title": "リリースの削除",
-    "message": "リリース「{{version}}」を削除しますか？",
-    "detail": "デバイスからリリースが削除されます。後で再インストールできます。",
-    "ok": "OK",
-    "cancel": "キャンセル",
-    "error": "エラー",
-    "errorMessage": "リリースの削除中にエラーが発生しました。"
-  },
-  "error": {
-    "title": "エラー"
-  },
-  "preferencesError": {
-    "title": "設定の読み取りエラー",
-    "message": "ユーザー設定を解析できませんでした。デフォルト設定を使用します。"
-  },
-  "removeCustomEditor": {
-    "menuLabel": "カスタムエディターを削除",
-    "title": "カスタムエディターを削除",
-    "message": "ランチャーからカスタムエディター「{{name}}」を削除しますか？",
-    "detail": "これによりカスタムエディターの登録が解除されます。デバイス上のエディターファイルは削除されません。"
-  }
+    "importSettings": {
+        "title": "エディタ設定のインポート",
+        "message": "ファイルからエディタ設定をインポートしますか？",
+        "detail": "現在のエディタ設定が置き換えられます。バックアップが作成されます。",
+        "continue": "続ける",
+        "cancel": "キャンセル",
+        "selectFile": "エディタ設定ファイルのインポート",
+        "textResource": "テキストリソース"
+    },
+    "exportSettings": {
+        "title": "エディタ設定をファイルにエクスポート",
+        "allFiles": "すべてのファイル"
+    },
+    "removeProject": {
+        "title": "リストからプロジェクトを削除",
+        "message": "プロジェクト「{{projectName}}」をリストから削除しますか？",
+        "detail": "デバイスからプロジェクトは削除されません。",
+        "ok": "OK",
+        "cancel": "キャンセル",
+        "doNotAskAgain": "今後確認しない"
+    },
+    "removeRelease": {
+        "title": "リリースの削除",
+        "message": "リリース「{{version}}」を削除しますか？",
+        "detail": "デバイスからリリースが削除されます。後で再インストールできます。",
+        "ok": "OK",
+        "cancel": "キャンセル",
+        "error": "エラー",
+        "errorMessage": "リリースの削除中にエラーが発生しました。"
+    },
+    "error": {
+        "title": "エラー"
+    },
+    "preferencesError": {
+        "title": "設定の読み取りエラー",
+        "message": "ユーザー設定を解析できませんでした。デフォルト設定を使用します。"
+    },
+    "removeCustomEditor": {
+        "menuLabel": "カスタムエディターを削除",
+        "title": "カスタムエディターを削除",
+        "message": "ランチャーからカスタムエディター「{{name}}」を削除しますか？",
+        "detail": "これによりカスタムエディターの登録が解除されます。デバイス上のエディターファイルは削除されません。"
+    }
 }

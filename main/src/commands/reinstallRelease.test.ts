@@ -1,4 +1,8 @@
-import type { InstalledRelease, ProjectDetails, ReleaseSummary } from '@shared';
+import type {
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+} from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const checksMocks = vi.hoisted(() => ({

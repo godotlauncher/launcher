@@ -6,10 +6,11 @@ import type {
     InstallReleaseResult,
     ProjectDetails,
     ReleaseSummary,
-} from '@shared';
+} from '@shared/contracts';
 import logger from 'electron-log';
 import { ChevronDown, TriangleAlert } from 'lucide-react';
 import type React from 'react';
+import { appBridge } from '../../../bridge.ts';
 import type { ConfirmButton } from '../../../components/confirm.component';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -304,7 +305,7 @@ export function useAddProjectWorkflow({
     const onAddProject = async () => {
         if (addingProject) return;
         setAddingProject(true);
-        const result = await window.electron.openFileDialog(
+        const result = await appBridge.openFileDialog(
             projectsLocation ?? '',
             t('addProject.selectFile'),
             [{ name: t('addProject.godotProject'), extensions: ['godot'] }],

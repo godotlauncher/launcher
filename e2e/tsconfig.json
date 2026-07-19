@@ -8,17 +8,13 @@
         "types": ["node", "@playwright/test"],
         "resolveJsonModule": true,
         "paths": {
-            "@shared": ["../shared/src/index.d.ts"],
-            "@shared/*": [
-                "../shared/src/*/index.d.ts",
-                "../shared/src/*"
-            ]
+            "@shared/contracts": ["../shared/src/contracts/index.d.ts"]
         }
     },
     "include": [
         "./**/*.ts",
         "../playwright.config.ts",
-        "../shared/src/**/*.d.ts"
+        "../shared/src/contracts/**/*.d.ts"
     ],
     "exclude": ["../node_modules"]
 }

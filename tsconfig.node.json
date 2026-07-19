@@ -1,17 +1,15 @@
 {
-  "compilerOptions": {
-    "composite": true,
-    "skipLibCheck": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "compilerOptions": {
+        "composite": true,
+        "skipLibCheck": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
 
-    // Decorators
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
-  },
-  "include": [
-    "vite.config.ts",
-  ]
+        // Decorators
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
+    },
+    "include": ["vite.config.ts"]
 }

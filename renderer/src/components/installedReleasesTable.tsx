@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { HardDrive, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';

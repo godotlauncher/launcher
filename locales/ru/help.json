@@ -1,26 +1,26 @@
 {
-  "title": "Помощь",
-  "thirdPartyNotices": "Уведомления о сторонних компонентах",
-  "launcher": {
-    "title": "Godot Launcher",
-    "changelog": "Журнал изменений",
-    "homePage": "Главная страница",
-    "docs": "Документация лаунчера"
-  },
-  "godot": {
-    "title": "Движок Godot",
-    "engine": "Движок Godot",
-    "docs": "Документация Godot"
-  },
-  "community": {
-    "title": "Сообщество и поддержка",
-    "learnMore": "Узнать больше"
-  },
-  "contribute": {
-    "title": "Как внести вклад",
-    "learnMore": "Узнать больше",
-    "description": "Сообщайте об ошибках или предложениях, создав issue в официальном репозитории GitHub",
-    "reportBug": "Я думаю, что нашёл ошибку",
-    "suggestion": "У меня есть предложение!"
-  }
+    "title": "Помощь",
+    "thirdPartyNotices": "Уведомления о сторонних компонентах",
+    "launcher": {
+        "title": "Godot Launcher",
+        "changelog": "Журнал изменений",
+        "homePage": "Главная страница",
+        "docs": "Документация лаунчера"
+    },
+    "godot": {
+        "title": "Движок Godot",
+        "engine": "Движок Godot",
+        "docs": "Документация Godot"
+    },
+    "community": {
+        "title": "Сообщество и поддержка",
+        "learnMore": "Узнать больше"
+    },
+    "contribute": {
+        "title": "Как внести вклад",
+        "learnMore": "Узнать больше",
+        "description": "Сообщайте об ошибках или предложениях, создав issue в официальном репозитории GitHub",
+        "reportBug": "Я думаю, что нашёл ошибку",
+        "suggestion": "У меня есть предложение!"
+    }
 }

@@ -4,22 +4,6 @@ import { app } from 'electron';
 import { isDev } from './utils.js';
 
 /**
- * Retrieves the path to the preload script.
- *
- * This function constructs the path to the preload script based on the application's
- * current path and whether the application is running in development mode or production mode.
- *
- * @returns {string} The full path to the preload script.
- */
-export function getPreloadPath() {
-    return path.join(
-        app.getAppPath(),
-        isDev() ? '.' : '..',
-        'dist-electron/preload.cjs',
-    );
-}
-
-/**
  * Retrieves the file path to the UI's index.html file.
  *
  * This function constructs the path by joining the application's root path

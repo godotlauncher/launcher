@@ -6,7 +6,7 @@ import type {
     CustomEngineManifest,
     EditorFlavor,
     InstalledRelease,
-} from '@shared';
+} from '@shared/contracts';
 import { z } from 'zod';
 
 export const CUSTOM_ENGINE_MANIFEST_FILE_NAME =

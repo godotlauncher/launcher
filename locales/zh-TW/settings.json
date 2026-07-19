@@ -1,138 +1,138 @@
 {
-  "title": "設定",
-  "tabs": {
-    "projects": "專案",
-    "installs": "安裝",
-    "appearance": "外觀",
-    "behavior": "行為",
-    "tools": "工具",
-    "updates": "更新"
-  },
-  "appearance": {
-    "theme": {
-      "title": "主題",
-      "description": "自訂 Godot 啟動器的外觀",
-      "light": "淺色",
-      "dark": "深色",
-      "system": "系統（自動）"
+    "title": "設定",
+    "tabs": {
+        "projects": "專案",
+        "installs": "安裝",
+        "appearance": "外觀",
+        "behavior": "行為",
+        "tools": "工具",
+        "updates": "更新"
+    },
+    "appearance": {
+        "theme": {
+            "title": "主題",
+            "description": "自訂 Godot 啟動器的外觀",
+            "light": "淺色",
+            "dark": "深色",
+            "system": "系統（自動）"
+        }
+    },
+    "behavior": {
+        "projects": {
+            "title": "專案",
+            "description": "選擇 Godot 啟動器在專案中的行為。",
+            "confirmRemove": "移除專案時要求確認。"
+        },
+        "autoStart": {
+            "title": "啟動偏好",
+            "description": "選擇電腦啟動時 GD Launcher 的行為",
+            "linuxWarning": "目前在 Linux 不支援自動啟動",
+            "startOnBoot": "電腦開機時啟動。",
+            "startInTray": "在系統匣中啟動。"
+        },
+        "projectLaunch": {
+            "title": "專案啟動動作",
+            "description": "選擇啟動專案後 GD Launcher 的行為",
+            "none": "無",
+            "minimize": "最小化",
+            "closeToTray": "關閉到系統匣"
+        },
+        "projectsLocation": {
+            "title": "專案位置",
+            "description": "選擇新專案的位置。現有專案不受影響。",
+            "defaultLocation": "預設位置",
+            "waitingForDialog": "等待對話框…"
+        },
+        "editorsLocation": {
+            "title": "編輯器安裝位置",
+            "description": "選擇編輯器安裝的位置。現有安裝不受影響。",
+            "installLocation": "安裝位置",
+            "waitingForDialog": "等待對話框…"
+        },
+        "clearReleaseCache": {
+            "title": "重新整理發行快取",
+            "description": "移除儲存的 Godot 發行版中繼資料，並從 GitHub 取得最新建置。",
+            "cta": "重新整理快取",
+            "clearing": "重新整理中...",
+            "cooldownNotice": "為避免觸發 GitHub 速率限制，快取重新整理已暫時停用。",
+            "successTitle": "快取重新整理成功",
+            "successMessage": "發行清單已更新為最新建置。",
+            "errorTitle": "無法重新整理快取",
+            "errorMessage": "重新整理發行快取時發生問題，請稍後再試。"
+        }
+    },
+    "general": {
+        "language": {
+            "label": "語言",
+            "description": "選擇 Godot 啟動器的語言（不會更改 Godot 的語言）",
+            "system": "系統（自動偵測）"
+        }
+    },
+    "tools": {
+        "overview": "當此索引標籤獲得焦點時，啟動器會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
+        "actions": {
+            "refresh": "重新掃描工具",
+            "scanning": "正在重新掃描..."
+        },
+        "status": {
+            "available": "可用",
+            "missing": "未找到",
+            "invalid": "找不到路徑",
+            "unknown": "未知"
+        },
+        "git": {
+            "title": "Git",
+            "description": "Git 是分散式版本控制系統，用於管理程式碼變更與協作。",
+            "installed": "已安裝：",
+            "version": "版本："
+        },
+        "vscode": {
+            "title": "Visual Studio Code",
+            "description": "一款快速且可擴充的程式碼編輯器，支援 Godot 的 GDScript 與 .NET。",
+            "notDetectedTitle": "未偵測到 Visual Studio Code！",
+            "notDetectedMessage": "若 VS Code 未加入 PATH，Godot 啟動器只能透過 PATH 自動偵測。您也可以在下方指定 VS Code 可執行檔路徑",
+            "pathLabel": "Visual Studio Code 可執行檔路徑",
+            "selectExecutable": "選擇 Visual Studio Code 可執行檔",
+            "autodetected": "（自動偵測）",
+            "noPathSet": "未設定路徑",
+            "clearCustomPath": "清除自訂路徑",
+            "waitingForDialog": "等待對話框…",
+            "installed": "已安裝："
+        }
+    },
+    "updates": {
+        "title": "更新",
+        "description": "設定 GD Launcher 如何檢查更新",
+        "autoCheck": "自動檢查更新",
+        "betaChannel": "接收 Beta 更新",
+        "betaChannelDescription": "從 GitHub 下載預發布版本；這些版本可能不如正式發布穩定。",
+        "checkNow": "立即檢查更新",
+        "downloadNow": "下載更新",
+        "skipVersion": "跳過此版本",
+        "unskipVersion": "恢復已跳過的更新",
+        "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
+        "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
+        "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>",
+        "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>"
+    },
+    "windowsSymlinks": {
+        "title": "編輯器符號連結",
+        "windowsOnly": "僅限 Windows",
+        "description": "選擇專案編輯器使用可選的符號連結或保留本機副本。",
+        "checkbox": "對 Windows 專案編輯器使用符號連結。此選項預設為關閉，讓您在準備好於編輯器更新時可能出現提升提示時再選擇啟用。",
+        "note": "變更此設定不會轉換現有的專案連結；它只會影響未來的編輯器重新整理行為。",
+        "enableTitle": "啟用編輯器符號連結",
+        "disableTitle": "停用編輯器符號連結",
+        "enableAction": "啟用符號連結",
+        "disableAction": "停用符號連結",
+        "enableDescription": {
+            "line1": "啟用後，Godot 啟動器會將每個專案連結到已安裝的編輯器，而非複製。",
+            "line2": "這可降低磁碟用量，但在建立新符號連結時，Windows 可能會要求系統管理員同意。",
+            "line3": "現有專案會保留目前的本機副本，直到其編輯器版本變更或重新安裝。"
+        },
+        "disableDescription": {
+            "line1": "切回本機副本以避免提升提示。Godot 啟動器會將編輯器檔案複製到各專案中。",
+            "line2": "現有符號連結會維持不變，直到其編輯器版本變更或重新安裝。"
+        }
     }
-  },
-  "behavior": {
-    "projects": {
-      "title": "專案",
-      "description": "選擇 Godot 啟動器在專案中的行為。",
-      "confirmRemove": "移除專案時要求確認。"
-    },
-    "autoStart": {
-      "title": "啟動偏好",
-      "description": "選擇電腦啟動時 GD Launcher 的行為",
-      "linuxWarning": "目前在 Linux 不支援自動啟動",
-      "startOnBoot": "電腦開機時啟動。",
-      "startInTray": "在系統匣中啟動。"
-    },
-    "projectLaunch": {
-      "title": "專案啟動動作",
-      "description": "選擇啟動專案後 GD Launcher 的行為",
-      "none": "無",
-      "minimize": "最小化",
-      "closeToTray": "關閉到系統匣"
-    },
-    "projectsLocation": {
-      "title": "專案位置",
-      "description": "選擇新專案的位置。現有專案不受影響。",
-      "defaultLocation": "預設位置",
-      "waitingForDialog": "等待對話框…"
-    },
-    "editorsLocation": {
-      "title": "編輯器安裝位置",
-      "description": "選擇編輯器安裝的位置。現有安裝不受影響。",
-      "installLocation": "安裝位置",
-      "waitingForDialog": "等待對話框…"
-    },
-    "clearReleaseCache": {
-      "title": "重新整理發行快取",
-      "description": "移除儲存的 Godot 發行版中繼資料，並從 GitHub 取得最新建置。",
-      "cta": "重新整理快取",
-      "clearing": "重新整理中...",
-      "cooldownNotice": "為避免觸發 GitHub 速率限制，快取重新整理已暫時停用。",
-      "successTitle": "快取重新整理成功",
-      "successMessage": "發行清單已更新為最新建置。",
-      "errorTitle": "無法重新整理快取",
-      "errorMessage": "重新整理發行快取時發生問題，請稍後再試。"
-    }
-  },
-  "general": {
-    "language": {
-      "label": "語言",
-      "description": "選擇 Godot 啟動器的語言（不會更改 Godot 的語言）",
-      "system": "系統（自動偵測）"
-    }
-  },
-  "tools": {
-    "overview": "當此索引標籤獲得焦點時，啟動器會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
-    "actions": {
-      "refresh": "重新掃描工具",
-      "scanning": "正在重新掃描..."
-    },
-    "status": {
-      "available": "可用",
-      "missing": "未找到",
-      "invalid": "找不到路徑",
-      "unknown": "未知"
-    },
-    "git": {
-      "title": "Git",
-      "description": "Git 是分散式版本控制系統，用於管理程式碼變更與協作。",
-      "installed": "已安裝：",
-      "version": "版本："
-    },
-    "vscode": {
-      "title": "Visual Studio Code",
-      "description": "一款快速且可擴充的程式碼編輯器，支援 Godot 的 GDScript 與 .NET。",
-      "notDetectedTitle": "未偵測到 Visual Studio Code！",
-      "notDetectedMessage": "若 VS Code 未加入 PATH，Godot 啟動器只能透過 PATH 自動偵測。您也可以在下方指定 VS Code 可執行檔路徑",
-      "pathLabel": "Visual Studio Code 可執行檔路徑",
-      "selectExecutable": "選擇 Visual Studio Code 可執行檔",
-      "autodetected": "（自動偵測）",
-      "noPathSet": "未設定路徑",
-      "clearCustomPath": "清除自訂路徑",
-      "waitingForDialog": "等待對話框…",
-      "installed": "已安裝："
-    }
-  },
-  "updates": {
-    "title": "更新",
-    "description": "設定 GD Launcher 如何檢查更新",
-    "autoCheck": "自動檢查更新",
-    "betaChannel": "接收 Beta 更新",
-    "betaChannelDescription": "從 GitHub 下載預發布版本；這些版本可能不如正式發布穩定。",
-    "checkNow": "立即檢查更新",
-    "downloadNow": "下載更新",
-    "skipVersion": "跳過此版本",
-    "unskipVersion": "恢復已跳過的更新",
-    "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
-    "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
-    "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>",
-    "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>"
-  },
-  "windowsSymlinks": {
-    "title": "編輯器符號連結",
-    "windowsOnly": "僅限 Windows",
-    "description": "選擇專案編輯器使用可選的符號連結或保留本機副本。",
-    "checkbox": "對 Windows 專案編輯器使用符號連結。此選項預設為關閉，讓您在準備好於編輯器更新時可能出現提升提示時再選擇啟用。",
-    "note": "變更此設定不會轉換現有的專案連結；它只會影響未來的編輯器重新整理行為。",
-    "enableTitle": "啟用編輯器符號連結",
-    "disableTitle": "停用編輯器符號連結",
-    "enableAction": "啟用符號連結",
-    "disableAction": "停用符號連結",
-    "enableDescription": {
-      "line1": "啟用後，Godot 啟動器會將每個專案連結到已安裝的編輯器，而非複製。",
-      "line2": "這可降低磁碟用量，但在建立新符號連結時，Windows 可能會要求系統管理員同意。",
-      "line3": "現有專案會保留目前的本機副本，直到其編輯器版本變更或重新安裝。"
-    },
-    "disableDescription": {
-      "line1": "切回本機副本以避免提升提示。Godot 啟動器會將編輯器檔案複製到各專案中。",
-      "line2": "現有符號連結會維持不變，直到其編輯器版本變更或重新安裝。"
-    }
-  }
 }

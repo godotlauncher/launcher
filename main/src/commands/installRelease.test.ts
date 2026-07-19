@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { AssetSummary, ReleaseSummary } from '@shared';
+import type { AssetSummary, ReleaseSummary } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { installRelease } from './installRelease.js';
 
@@ -35,10 +35,10 @@ vi.mock('os', () => ({
 }));
 
 const extractZipMocks = vi.hoisted(() => ({
-    extractZipArchive: vi.fn(),
+    extractZip: vi.fn(),
 }));
 
-vi.mock('../utils/extractZip.utils.js', () => extractZipMocks);
+vi.mock('extract-zip', () => ({ default: extractZipMocks.extractZip }));
 
 const ipcMocks = vi.hoisted(() => ({
     ipcSendToMainWindowSync: vi.fn(),
@@ -151,7 +151,7 @@ describe('installRelease', () => {
             configVersion: 5,
         });
 
-        extractZipMocks.extractZipArchive.mockResolvedValue(undefined);
+        extractZipMocks.extractZip.mockResolvedValue(undefined);
         checksMocks.checkAndUpdateProjects.mockResolvedValue(undefined);
 
         osMocks.platform.mockReturnValue('win32');
@@ -198,7 +198,7 @@ describe('installRelease', () => {
             path.resolve(expectedDownloadPath, arm64Asset.name),
             expect.any(Object),
         );
-        expect(extractZipMocks.extractZipArchive).toHaveBeenCalledWith(
+        expect(extractZipMocks.extractZip).toHaveBeenCalledWith(
             path.resolve(expectedDownloadPath, arm64Asset.name),
             expect.objectContaining({
                 dir: expectedInstallPath,

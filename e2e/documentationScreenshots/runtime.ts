@@ -1,11 +1,20 @@
-import { expect, type ElectronApplication } from '@playwright/test';
-import type { AppUpdateMessage, InstalledRelease, ProjectDetails, ReleaseInstallProgress, ReleaseSummary, UserPreferences } from '@shared';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { type ElectronApplication, expect } from '@playwright/test';
+import type {
+    AddProjectOptions,
+    AppBridge,
+    AppUpdateMessage,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseInstallProgress,
+    ReleaseSummary,
+    UserPreferences,
+} from '@shared/contracts';
 import sharp from 'sharp';
-import type { CachedTool, ElectronPage, StubbedAppDataOptions, ThemeConfig, UpdateScreenshotState } from './types';
 import {
+    createPreferences,
     DEFAULT_TOOLS,
     SAMPLE_AVAILABLE_PRERELEASES,
     SAMPLE_AVAILABLE_RELEASES,
@@ -17,11 +26,26 @@ import {
     SAMPLE_PROJECT_ICON_PATH,
     SAMPLE_PROJECTS,
     SAMPLE_RELEASES_CACHE_FILE,
-    createPreferences,
 } from './sampleData';
+import type {
+    CachedTool,
+    ElectronPage,
+    StubbedAppDataOptions,
+    ThemeConfig,
+    UpdateScreenshotState,
+} from './types';
 
 const SCREENSHOT_MIN_WIDTH = 1024;
 const SCREENSHOT_MIN_HEIGHT = 600;
+
+type AppMethod = keyof AppBridge;
+type AppResult<Method extends AppMethod> = Awaited<
+    ReturnType<AppBridge[Method]>
+>;
+type IpcSuccess<Data> = {
+    success: true;
+    data: Data;
+};
 
 export async function writeJson(file: string, data: unknown) {
     await fs.mkdir(path.dirname(file), { recursive: true });
@@ -53,14 +77,6 @@ export async function createFixtureHome() {
     );
     await seedLauncherData(tempHome);
     return tempHome;
-}
-
-export async function waitForPreloadScript(appWindow: ElectronPage) {
-    await appWindow.waitForFunction(
-        () => Boolean((window as Window & { electron?: unknown }).electron),
-        null,
-        { timeout: 10000 },
-    );
 }
 
 export async function showProjectsDropOverlay(page: ElectronPage) {
@@ -219,70 +235,104 @@ export async function stubAppData(
                 valid: project.valid ?? true,
             }));
 
-            ipcMain.removeHandler('get-user-preferences');
-            ipcMain.handle(
-                'get-user-preferences',
-                async () => injectedPreferences,
-            );
-
-            ipcMain.removeHandler('set-user-preferences');
-            ipcMain.handle(
-                'set-user-preferences',
-                async (_, nextPrefs: UserPreferences) => nextPrefs,
-            );
-
-            ipcMain.removeHandler('get-projects-details');
-            ipcMain.handle(
-                'get-projects-details',
-                async () => normalizedProjects,
-            );
-
-            ipcMain.removeHandler('check-all-projects-valid');
-            ipcMain.handle(
-                'check-all-projects-valid',
-                async () => normalizedProjects,
-            );
-
-            ipcMain.removeHandler('check-project-valid');
-            ipcMain.handle('check-project-valid', async (_, project) => ({
-                ...project,
-                release: {
-                    ...project.release,
-                    valid: project.release.valid ?? true,
-                },
-                valid: project.valid ?? true,
-            }));
-
-            ipcMain.removeHandler('get-project-godot-name');
-            ipcMain.handle('get-project-godot-name', async (_, project) => {
-                const matchingProject = normalizedProjects.find(
-                    (candidate) => candidate.path === project.path,
-                );
-                return matchingProject?.name ?? null;
+            const appChannel = <Method extends AppMethod>(method: Method) =>
+                `app.${method}` as `app.${Method}`;
+            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
+                success: true,
+                data,
             });
 
-            ipcMain.removeHandler('get-installed-releases');
+            ipcMain.removeHandler(appChannel('getUserPreferences'));
             ipcMain.handle(
-                'get-installed-releases',
-                async () => normalizedInstalledReleases,
+                appChannel('getUserPreferences'),
+                async () =>
+                    ipcSuccess<AppResult<'getUserPreferences'>>(
+                        injectedPreferences,
+                    ),
             );
 
-            ipcMain.removeHandler('check-all-releases-valid');
+            ipcMain.removeHandler(appChannel('setUserPreferences'));
             ipcMain.handle(
-                'check-all-releases-valid',
-                async () => normalizedInstalledReleases,
+                appChannel('setUserPreferences'),
+                async (_, nextPrefs: UserPreferences) =>
+                    ipcSuccess<AppResult<'setUserPreferences'>>(nextPrefs),
             );
 
-            ipcMain.removeHandler('get-available-releases');
+            ipcMain.removeHandler(appChannel('getProjectsDetails'));
             ipcMain.handle(
-                'get-available-releases',
-                async () => ({ releases: injectedAvailableReleases }),
+                appChannel('getProjectsDetails'),
+                async () =>
+                    ipcSuccess<AppResult<'getProjectsDetails'>>(
+                        normalizedProjects,
+                    ),
             );
 
-            ipcMain.removeHandler('get-available-prereleases');
+            ipcMain.removeHandler(appChannel('checkAllProjectsValid'));
             ipcMain.handle(
-                'get-available-prereleases',
-                async () => ({ releases: injectedAvailablePrereleases }),
+                appChannel('checkAllProjectsValid'),
+                async () =>
+                    ipcSuccess<AppResult<'checkAllProjectsValid'>>(
+                        normalizedProjects,
+                    ),
+            );
+
+            ipcMain.removeHandler(appChannel('checkProjectValid'));
+            ipcMain.handle(
+                appChannel('checkProjectValid'),
+                async (_, project: ProjectDetails) =>
+                    ipcSuccess<AppResult<'checkProjectValid'>>({
+                        ...project,
+                        release: {
+                            ...project.release,
+                            valid: project.release.valid ?? true,
+                        },
+                        valid: project.valid ?? true,
+                    }),
+            );
+
+            ipcMain.removeHandler(appChannel('getProjectGodotName'));
+            ipcMain.handle(
+                appChannel('getProjectGodotName'),
+                async (_, project: ProjectDetails) => {
+                    const matchingProject = normalizedProjects.find(
+                        (candidate) => candidate.path === project.path,
+                    );
+                    return ipcSuccess<AppResult<'getProjectGodotName'>>(
+                        matchingProject?.name ?? null,
+                    );
+                },
+            );
+
+            ipcMain.removeHandler(appChannel('getInstalledReleases'));
+            ipcMain.handle(
+                appChannel('getInstalledReleases'),
+                async () =>
+                    ipcSuccess<AppResult<'getInstalledReleases'>>(
+                        normalizedInstalledReleases,
+                    ),
+            );
+
+            ipcMain.removeHandler(appChannel('checkAllReleasesValid'));
+            ipcMain.handle(
+                appChannel('checkAllReleasesValid'),
+                async () =>
+                    ipcSuccess<AppResult<'checkAllReleasesValid'>>(
+                        normalizedInstalledReleases,
+                    ),
+            );
+
+            ipcMain.removeHandler(appChannel('getAvailableReleases'));
+            ipcMain.handle(appChannel('getAvailableReleases'), async () =>
+                ipcSuccess<AppResult<'getAvailableReleases'>>({
+                    releases: injectedAvailableReleases,
+                }),
+            );
+
+            ipcMain.removeHandler(appChannel('getAvailablePrereleases'));
+            ipcMain.handle(appChannel('getAvailablePrereleases'), async () =>
+                ipcSuccess<AppResult<'getAvailablePrereleases'>>({
+                    releases: injectedAvailablePrereleases,
+                }),
             );
 
             for (const win of BrowserWindow.getAllWindows()) {
@@ -345,7 +395,9 @@ export async function prepareAppWithStubbedData(
     );
     await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
     await reloadScreenshotPage(page);
-    await waitForPreloadScript(page);
+    await expect(page.getByTestId('btnProjects')).toBeVisible({
+        timeout: 15000,
+    });
     await setScreenshotViewport(page);
 }
 
@@ -461,7 +513,6 @@ export async function ensureMainNavigationReady(
     }
 }
 
-
 export async function setScreenshotViewport(
     page: ElectronPage,
     height = SCREENSHOT_MIN_HEIGHT,
@@ -499,7 +550,10 @@ export async function captureScreenshot(
     });
 }
 
-export async function openProjectActionsMenu(page: ElectronPage, projectName: string) {
+export async function openProjectActionsMenu(
+    page: ElectronPage,
+    projectName: string,
+) {
     const projectRow = page
         .locator('tr')
         .filter({ has: page.getByRole('button', { name: projectName }) });
@@ -558,12 +612,22 @@ export async function stubInstallReleaseFailure(
     error: string,
 ) {
     await electronApp.evaluate(({ ipcMain }, message: string) => {
-        ipcMain.removeHandler('install-release');
-        ipcMain.handle('install-release', async (_, release) => ({
-            success: false,
-            error: message,
-            version: release.version,
-        }));
+        const appChannel = <Method extends AppMethod>(method: Method) =>
+            `app.${method}` as `app.${Method}`;
+        const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
+            success: true,
+            data,
+        });
+
+        const channel = appChannel('installRelease');
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, async (_, release: ReleaseSummary) =>
+            ipcSuccess<AppResult<'installRelease'>>({
+                success: false,
+                error: message,
+                version: release.version,
+            }),
+        );
     }, error);
 }
 
@@ -583,15 +647,26 @@ export async function stubAddProjectEditorResolution(
                 projectIconPath: string;
             },
         ) => {
-            ipcMain.removeHandler('open-file-dialog');
-            ipcMain.handle('open-file-dialog', async () => ({
-                canceled: false,
-                filePaths: [projectPath],
-                bookmarks: [],
-            }));
+            const appChannel = <Method extends AppMethod>(method: Method) =>
+                `app.${method}` as `app.${Method}`;
+            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
+                success: true,
+                data,
+            });
 
-            ipcMain.removeHandler('add-project');
-            ipcMain.handle('add-project', async (_, path: string, options) => {
+            const openFileDialogChannel = appChannel('openFileDialog');
+            ipcMain.removeHandler(openFileDialogChannel);
+            ipcMain.handle(openFileDialogChannel, async () =>
+                ipcSuccess<AppResult<'openFileDialog'>>({
+                    canceled: false,
+                    filePaths: [projectPath],
+                    bookmarks: [],
+                }),
+            );
+
+            const addProjectChannel = appChannel('addProject');
+            ipcMain.removeHandler(addProjectChannel);
+            ipcMain.handle(addProjectChannel, async (_, path: string, options?: AddProjectOptions) => {
                 if (options?.resolution === 'add_missing') {
                     const projectDirectory = path.replace(
                         /\/project\.godot$/i,
@@ -623,14 +698,14 @@ export async function stubAddProjectEditorResolution(
                         invalid_reason: 'missing_editor',
                     };
 
-                    return {
+                    return ipcSuccess<AppResult<'addProject'>>({
                         success: true,
                         projects: [newProject],
                         newProject,
-                    };
+                    });
                 }
 
-                return {
+                return ipcSuccess<AppResult<'addProject'>>({
                     success: false,
                     editorResolution: {
                         requested: {
@@ -646,7 +721,7 @@ export async function stubAddProjectEditorResolution(
                             prerelease: false,
                         },
                     },
-                };
+                });
             });
         },
         {
@@ -669,15 +744,26 @@ export async function stubAddProjectRecoveredVSCodeConfig(
                 projectIconPath,
             }: { projectPath: string; projectIconPath: string },
         ) => {
-            ipcMain.removeHandler('open-file-dialog');
-            ipcMain.handle('open-file-dialog', async () => ({
-                canceled: false,
-                filePaths: [projectPath],
-                bookmarks: [],
-            }));
+            const appChannel = <Method extends AppMethod>(method: Method) =>
+                `app.${method}` as `app.${Method}`;
+            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
+                success: true,
+                data,
+            });
 
-            ipcMain.removeHandler('add-project');
-            ipcMain.handle('add-project', async () => {
+            const openFileDialogChannel = appChannel('openFileDialog');
+            ipcMain.removeHandler(openFileDialogChannel);
+            ipcMain.handle(openFileDialogChannel, async () =>
+                ipcSuccess<AppResult<'openFileDialog'>>({
+                    canceled: false,
+                    filePaths: [projectPath],
+                    bookmarks: [],
+                }),
+            );
+
+            const addProjectChannel = appChannel('addProject');
+            ipcMain.removeHandler(addProjectChannel);
+            ipcMain.handle(addProjectChannel, async () => {
                 const projectDirectory = projectPath.replace(
                     /\/project\.godot$/i,
                     '',
@@ -722,7 +808,7 @@ export async function stubAddProjectRecoveredVSCodeConfig(
                     win.webContents.send('projects-updated', projects);
                 }
 
-                return {
+                return ipcSuccess<AppResult<'addProject'>>({
                     success: true,
                     projects,
                     newProject,
@@ -730,7 +816,7 @@ export async function stubAddProjectRecoveredVSCodeConfig(
                         '.vscode/settings.json.1712345678901.bad',
                         '.vscode/extensions.json.1712345678902.bad',
                     ],
-                };
+                });
             });
         },
         {
@@ -746,35 +832,46 @@ export async function stubCustomEditorDuplicateRegistration(
 ) {
     await electronApp.evaluate(
         ({ ipcMain }, duplicateRelease: InstalledRelease) => {
-            ipcMain.removeHandler('open-file-dialog');
-            ipcMain.handle('open-file-dialog', async () => ({
-                canceled: false,
-                filePaths: [
-                    '/Users/docs/Godot/Editors/StudioCustom47/godotlauncher-editor-manifest.json',
-                ],
-                bookmarks: [],
-            }));
+            const appChannel = <Method extends AppMethod>(method: Method) =>
+                `app.${method}` as `app.${Method}`;
+            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
+                success: true,
+                data,
+            });
 
-            ipcMain.removeHandler('register-custom-engine');
+            const openFileDialogChannel = appChannel('openFileDialog');
+            ipcMain.removeHandler(openFileDialogChannel);
+            ipcMain.handle(openFileDialogChannel, async () =>
+                ipcSuccess<AppResult<'openFileDialog'>>({
+                    canceled: false,
+                    filePaths: [
+                        '/Users/docs/Godot/Editors/StudioCustom47/godotlauncher-editor-manifest.json',
+                    ],
+                    bookmarks: [],
+                }),
+            );
+
+            const registerChannel = appChannel('registerCustomEngine');
+            ipcMain.removeHandler(registerChannel);
             ipcMain.handle(
-                'register-custom-engine',
+                registerChannel,
                 async (
                     _,
                     _manifestPath: string,
                     options?: { replaceExisting?: boolean },
                 ) => {
                     if (options?.replaceExisting) {
-                        return {
+                        return ipcSuccess<AppResult<'registerCustomEngine'>>({
                             success: true,
                             release: duplicateRelease,
                             releases: [duplicateRelease],
-                        };
+                        });
                     }
 
-                    return {
+                    return ipcSuccess<AppResult<'registerCustomEngine'>>({
                         success: false,
                         duplicate: duplicateRelease,
-                    };
+                    });
                 },
             );
         },
@@ -787,22 +884,35 @@ export async function stubInstalledTools(
     tools: CachedTool[],
 ) {
     await electronApp.evaluate(({ ipcMain }, injectedTools: CachedTool[]) => {
-        ipcMain.removeHandler('get-installed-tools');
-        ipcMain.handle('get-installed-tools', async () =>
-            injectedTools.map((tool) => ({
-                name: tool.name,
-                path: tool.path,
-                version: tool.version ?? null,
-            })),
+        const appChannel = <Method extends AppMethod>(method: Method) =>
+            `app.${method}` as `app.${Method}`;
+        const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
+            success: true,
+            data,
+        });
+
+        const getInstalledToolsChannel = appChannel('getInstalledTools');
+        ipcMain.removeHandler(getInstalledToolsChannel);
+        ipcMain.handle(getInstalledToolsChannel, async () =>
+            ipcSuccess<AppResult<'getInstalledTools'>>(
+                injectedTools.map((tool) => ({
+                    name: tool.name,
+                    path: tool.path,
+                    version: tool.version ?? null,
+                })),
+            ),
         );
 
-        ipcMain.removeHandler('get-cached-tools');
-        ipcMain.handle('get-cached-tools', async () =>
-            injectedTools.map((tool) => ({
-                ...tool,
-                version: tool.version ?? null,
-                verified: true,
-            })),
+        const getCachedToolsChannel = appChannel('getCachedTools');
+        ipcMain.removeHandler(getCachedToolsChannel);
+        ipcMain.handle(getCachedToolsChannel, async () =>
+            ipcSuccess<AppResult<'getCachedTools'>>(
+                injectedTools.map((tool) => ({
+                    ...tool,
+                    version: tool.version ?? null,
+                    verified: true,
+                })),
+            ),
         );
     }, tools);
 }

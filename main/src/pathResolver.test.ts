@@ -2,7 +2,7 @@ import * as path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { __resetCurrentAppConfigForTesting } from './config/index.js';
-import { getAssetPath, getPreloadPath, getUIPath } from './pathResolver';
+import { getAssetPath, getUIPath } from './pathResolver';
 
 vi.mock('electron-updater', () => ({
     default: {
@@ -78,23 +78,5 @@ describe('Path Resolver', () => {
 
         const assetPath = getAssetPath();
         expect(assetPath).toBe(path.join('/app', 'assets'));
-    });
-
-    it('should get preload path for dev', () => {
-        vi.stubEnv('NODE_ENV', 'development');
-
-        const preloadPath = getPreloadPath();
-        expect(preloadPath).toBe(
-            path.join('/app/path', 'dist-electron/preload.cjs'),
-        );
-    });
-
-    it('should get preload path for prod', () => {
-        vi.stubEnv('NODE_ENV', 'production');
-
-        const preloadPath = getPreloadPath();
-        expect(preloadPath).toBe(
-            path.join('/app', 'dist-electron/preload.cjs'),
-        );
     });
 });

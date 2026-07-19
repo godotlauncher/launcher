@@ -3,18 +3,16 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-const sharedRoot = fileURLToPath(new URL('./shared/src', import.meta.url));
+const contractsRoot = fileURLToPath(
+    new URL('./shared/src/contracts', import.meta.url),
+);
 
 export default defineConfig({
     resolve: {
         alias: [
             {
-                find: '@shared',
-                replacement: `${sharedRoot}/index.d.ts`,
-            },
-            {
-                find: /^@shared\/(.+)$/,
-                replacement: `${sharedRoot}/$1`,
+                find: '@shared/contracts',
+                replacement: `${contractsRoot}/index.d.ts`,
             },
         ],
     },

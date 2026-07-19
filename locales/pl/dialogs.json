@@ -1,45 +1,45 @@
 {
-  "importSettings": {
-    "title": "Importuj ustawienia edytora",
-    "message": "Czy na pewno chcesz zaimportować ustawienia edytora z pliku?",
-    "detail": "Spowoduje to zastąpienie bieżących ustawień edytora. Zostanie utworzona kopia zapasowa.",
-    "continue": "Kontynuuj",
-    "cancel": "Anuluj",
-    "selectFile": "Importuj plik ustawień edytora",
-    "textResource": "Zasób tekstowy"
-  },
-  "exportSettings": {
-    "title": "Eksportuj ustawienia edytora do pliku",
-    "allFiles": "Wszystkie pliki"
-  },
-  "removeProject": {
-    "title": "Usuń projekt z listy",
-    "message": "Czy na pewno chcesz usunąć projekt \"{{projectName}}\" z listy?",
-    "detail": "Nie spowoduje to usunięcia projektu z Twojego urządzenia.",
-    "ok": "Ok",
-    "cancel": "Anuluj",
-    "doNotAskAgain": "Nie pytaj ponownie"
-  },
-  "removeRelease": {
-    "title": "Usuń wydanie",
-    "message": "Czy na pewno chcesz usunąć wydanie \"{{version}}\"?",
-    "detail": "Spowoduje to usunięcie wydania z Twojego urządzenia. Możesz zainstalować je ponownie później.",
-    "ok": "Ok",
-    "cancel": "Anuluj",
-    "error": "Błąd",
-    "errorMessage": "Wystąpił błąd podczas usuwania wydania."
-  },
-  "error": {
-    "title": "Błąd"
-  },
-  "preferencesError": {
-    "title": "Błąd odczytu preferencji",
-    "message": "Nie można przeanalizować preferencji użytkownika. Zostają użyte domyślne preferencje."
-  },
-  "removeCustomEditor": {
-    "menuLabel": "Usuń niestandardowy edytor",
-    "title": "Usuń niestandardowy edytor",
-    "message": "Usunąć niestandardowy edytor „{{name}}” z launchera?",
-    "detail": "Spowoduje to wyrejestrowanie niestandardowego edytora. Pliki edytora na urządzeniu nie zostaną usunięte."
-  }
+    "importSettings": {
+        "title": "Importuj ustawienia edytora",
+        "message": "Czy na pewno chcesz zaimportować ustawienia edytora z pliku?",
+        "detail": "Spowoduje to zastąpienie bieżących ustawień edytora. Zostanie utworzona kopia zapasowa.",
+        "continue": "Kontynuuj",
+        "cancel": "Anuluj",
+        "selectFile": "Importuj plik ustawień edytora",
+        "textResource": "Zasób tekstowy"
+    },
+    "exportSettings": {
+        "title": "Eksportuj ustawienia edytora do pliku",
+        "allFiles": "Wszystkie pliki"
+    },
+    "removeProject": {
+        "title": "Usuń projekt z listy",
+        "message": "Czy na pewno chcesz usunąć projekt \"{{projectName}}\" z listy?",
+        "detail": "Nie spowoduje to usunięcia projektu z Twojego urządzenia.",
+        "ok": "Ok",
+        "cancel": "Anuluj",
+        "doNotAskAgain": "Nie pytaj ponownie"
+    },
+    "removeRelease": {
+        "title": "Usuń wydanie",
+        "message": "Czy na pewno chcesz usunąć wydanie \"{{version}}\"?",
+        "detail": "Spowoduje to usunięcie wydania z Twojego urządzenia. Możesz zainstalować je ponownie później.",
+        "ok": "Ok",
+        "cancel": "Anuluj",
+        "error": "Błąd",
+        "errorMessage": "Wystąpił błąd podczas usuwania wydania."
+    },
+    "error": {
+        "title": "Błąd"
+    },
+    "preferencesError": {
+        "title": "Błąd odczytu preferencji",
+        "message": "Nie można przeanalizować preferencji użytkownika. Zostają użyte domyślne preferencje."
+    },
+    "removeCustomEditor": {
+        "menuLabel": "Usuń niestandardowy edytor",
+        "title": "Usuń niestandardowy edytor",
+        "message": "Usunąć niestandardowy edytor „{{name}}” z launchera?",
+        "detail": "Spowoduje to wyrejestrowanie niestandardowego edytora. Pliki edytora na urządzeniu nie zostaną usunięte."
+    }
 }

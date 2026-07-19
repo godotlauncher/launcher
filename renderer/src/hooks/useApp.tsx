@@ -1,4 +1,4 @@
-import type { AppUpdateMessage } from '@shared';
+import type { AppUpdateMessage } from '@shared/contracts';
 import {
     createContext,
     type FC,
@@ -7,6 +7,7 @@ import {
     useEffect,
     useState,
 } from 'react';
+import { appBridge, subscribeAppEvent } from '../bridge.ts';
 
 type AppContext = {
     appVersion: string | undefined;
@@ -27,19 +28,19 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     const [appVersion, setAppVersion] = useState<string>();
 
     const installAndRelaunch = async () => {
-        await window.electron.installUpdateAndRestart();
+        await appBridge.installUpdateAndRestart();
     };
 
     const checkForAppUpdates = async () => {
-        await window.electron.checkForUpdates({ ignoreSkippedVersion: true });
+        await appBridge.checkForUpdates({ ignoreSkippedVersion: true });
     };
 
     const downloadAppUpdate = async () => {
-        await window.electron.downloadAppUpdate();
+        await appBridge.downloadAppUpdate();
     };
 
     const skipAppUpdate = async (version: string) => {
-        await window.electron.skipAppUpdate(version);
+        await appBridge.skipAppUpdate(version);
         setUpdateAvailable({
             available: false,
             downloaded: false,
@@ -49,15 +50,17 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     };
 
     const unskipAppUpdate = async () => {
-        await window.electron.unskipAppUpdate();
+        await appBridge.unskipAppUpdate();
     };
 
     useEffect(() => {
         // get app version
-        window.electron.getAppVersion().then(setAppVersion);
+        appBridge.getAppVersion().then(setAppVersion);
 
-        const unsubscribeUpdates =
-            window.electron.subscribeAppUpdates(setUpdateAvailable);
+        const unsubscribeUpdates = subscribeAppEvent(
+            'app-updates',
+            setUpdateAvailable,
+        );
         return () => {
             unsubscribeUpdates();
         };

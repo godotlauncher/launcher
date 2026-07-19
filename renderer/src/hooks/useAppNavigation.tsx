@@ -7,6 +7,7 @@ import {
     useMemo,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { appBridge } from '../bridge.ts';
 import { appViewRoutes, getViewFromPathname, type View } from '../routes';
 
 export type { View };
@@ -52,7 +53,7 @@ export const AppNavigationProvider: FC<AppNavigationProviderProps> = ({
     );
 
     const openExternalLink = useCallback(async (url: string) => {
-        await window.electron.openExternal(url);
+        await appBridge.openExternal(url);
     }, []);
 
     return (

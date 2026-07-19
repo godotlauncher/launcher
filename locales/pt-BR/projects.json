@@ -1,132 +1,132 @@
 {
-  "title": "Projetos",
-  "buttons": {
-    "add": "Adicionar",
-    "newProject": "Novo projeto"
-  },
-  "search": {
-    "placeholder": "Pesquisar"
-  },
-  "table": {
-    "name": "Nome",
-    "modified": "Modificado",
-    "editor": "Editor",
-    "invalidProject": "Este projeto é inválido; verifique as localizações do projeto e do editor!",
-    "dotNetProject": "Este é um projeto .NET",
-    "prerelease": "Usando uma versão de pré-lançamento do editor Godot",
-    "windowedMode": "Este projeto é aberto no modo janela",
-    "vsCodeProject": "Visual Studio Code está habilitado como editor externo para este projeto",
-    "gitProject": "O projeto usa Git para controle de versão",
-    "invalidReasons": {
-      "missingProjectFile": "Arquivo do projeto não encontrado. Verifique o local do projeto.",
-      "missingEditor": "Editor não encontrado. Verifique o local do editor."
-    }
-  },
-  "addProject": {
-    "selectFile": "Selecionar arquivo do projeto",
-    "godotProject": "Projeto Godot",
-    "editorResolution": {
-      "title": "Versão do editor necessária",
-      "message": "Este projeto requer um editor que não está instalado.",
-      "version": "Versão",
-      "channel": "Canal",
-      "flavor": "Variante",
-      "baseVersion": "Base",
-      "fallbackMessage": "Um editor compatível instalado pode ser usado como alternativa.",
-      "editorActions": "Opções",
-      "download": "Baixar {{version}}",
-      "useFallback": "Usar {{version}}",
-      "addMissing": "Adicionar com editor ausente"
+    "title": "Projetos",
+    "buttons": {
+        "add": "Adicionar",
+        "newProject": "Novo projeto"
     },
-    "errors": {
-      "projectExists": "O projeto '{{path}}' já existe",
-      "invalidPath": "Caminho do projeto inválido",
-      "invalidProjectFile": "Arquivo project.godot inválido",
-      "nameExists": "Já existe um projeto com o nome '{{name}}'\nRenomeie o projeto em 'project.godot' ou remova o existente.",
-      "invalidRenderer": "Arquivo de projeto inválido",
-      "invalidConfigVersion": "config_version do project.godot inválido.\nApenas a versão 5 é suportada",
-      "noStableReleases": "Não foram encontradas versões estáveis instaladas do Godot {{version}}.x\nInstale uma versão estável do Godot {{version}}.x e tente adicionar o projeto novamente.",
-      "noDotNetRelease": "O projeto parece ser um projeto .NET, mas nenhuma versão do editor .NET foi encontrada",
-      "noCompatibleRelease": "Não foram encontradas versões instaladas do Godot {{version}}.x que suportem config_version {{configVersion}}."
-    }
-  },
-  "messages": {
-    "noReleasesCta": "Ainda não há versões instaladas. <Link>Ir para instalações</Link>",
-    "waitingForDialog": "Aguardando a caixa de diálogo para adicionar projeto...",
-    "needReleaseInstalled": "Você precisa de pelo menos uma versão instalada para adicionar um projeto",
-    "addProjectError": "Algo deu errado ao adicionar o projeto",
-    "setEditorError": "Algo deu errado ao definir o editor do projeto",
-    "projectNotValid": "O projeto não é válido; certifique-se de que o projeto e a versão sejam válidos no seu computador.",
-    "invalidReleaseEditor": "O editor selecionado está indisponível. Monte a unidade ou instale a versão novamente.",
-    "dropGodotFileOnly": "Por favor, solte um arquivo project.godot para adicionar um projeto",
-    "dropProjectHere": "Solte o arquivo project.godot aqui para adicionar o projeto",
-    "addingProjects": "Adicionando projetos: {{current}}/{{total}}",
-    "failedAddProject": "Falha ao adicionar projeto: {{error}}",
-    "dropProjectFilesHere": "Solte aqui os arquivos de projeto do Godot",
-    "dropProjectFilesHelpPrefix": "Solte um ou mais",
-    "dropProjectFilesHelpSuffix": "arquivos para adicioná-los ao launcher.",
-    "invalidReasons": {
-      "missingProjectFile": "Arquivo do projeto não encontrado. Verifique o local do projeto ou remova-o e adicione-o novamente.",
-      "missingEditor": "O editor selecionado não está disponível. Monte a unidade ou escolha outro editor."
+    "search": {
+        "placeholder": "Pesquisar"
     },
-    "recoveredVSCodeConfig": "Alguns arquivos de configuração do VS Code eram inválidos. O Godot Launcher os recriou e preservou os originais como cópias .bad."
-  },
-  "changeEditor": {
-    "errors": {
-      "projectNotFound": "Projeto não encontrado",
-      "invalidEditorVersion": "Versão do editor inválida",
-      "differentMajorVersion": "Não é possível usar uma versão principal diferente do editor\nPara proteger seu projeto, consulte o guia de migração em https://godotengine.org"
-    }
-  },
-  "toggleVSCode": {
-    "errors": {
-      "projectNotFound": "Projeto não encontrado",
-      "vscodeNotInstalled": "Visual Studio Code não está instalado neste computador.",
-      "missingLaunchPath": "O caminho de inicialização do Godot para este projeto está ausente.",
-      "invalidProjectDefinition": "Não foi possível determinar o modelo de configurações do editor para esta versão do Godot."
-    }
-  },
-  "editProject": {
-    "title": "Configurações do projeto",
-    "description": "Atualize as configurações de nome do projeto.",
-    "fields": {
-      "name": {
-        "label": "Nome do projeto",
-        "help": "Nome exibido no Godot Launcher.",
-        "placeholder": "Meu projeto"
-      },
-      "path": {
-        "label": "Pasta do projeto"
-      }
+    "table": {
+        "name": "Nome",
+        "modified": "Modificado",
+        "editor": "Editor",
+        "invalidProject": "Este projeto é inválido; verifique as localizações do projeto e do editor!",
+        "dotNetProject": "Este é um projeto .NET",
+        "prerelease": "Usando uma versão de pré-lançamento do editor Godot",
+        "windowedMode": "Este projeto é aberto no modo janela",
+        "vsCodeProject": "Visual Studio Code está habilitado como editor externo para este projeto",
+        "gitProject": "O projeto usa Git para controle de versão",
+        "invalidReasons": {
+            "missingProjectFile": "Arquivo do projeto não encontrado. Verifique o local do projeto.",
+            "missingEditor": "Editor não encontrado. Verifique o local do editor."
+        }
     },
-    "godot": {
-      "renameLabel": "Também renomear o projeto Godot",
-      "loading": "Verificando projeto Godot...",
-      "currentName": "Nome atual do projeto Godot: {{name}}",
-      "unavailable": "project.godot está indisponível. Apenas o nome no launcher pode ser alterado."
+    "addProject": {
+        "selectFile": "Selecionar arquivo do projeto",
+        "godotProject": "Projeto Godot",
+        "editorResolution": {
+            "title": "Versão do editor necessária",
+            "message": "Este projeto requer um editor que não está instalado.",
+            "version": "Versão",
+            "channel": "Canal",
+            "flavor": "Variante",
+            "baseVersion": "Base",
+            "fallbackMessage": "Um editor compatível instalado pode ser usado como alternativa.",
+            "editorActions": "Opções",
+            "download": "Baixar {{version}}",
+            "useFallback": "Usar {{version}}",
+            "addMissing": "Adicionar com editor ausente"
+        },
+        "errors": {
+            "projectExists": "O projeto '{{path}}' já existe",
+            "invalidPath": "Caminho do projeto inválido",
+            "invalidProjectFile": "Arquivo project.godot inválido",
+            "nameExists": "Já existe um projeto com o nome '{{name}}'\nRenomeie o projeto em 'project.godot' ou remova o existente.",
+            "invalidRenderer": "Arquivo de projeto inválido",
+            "invalidConfigVersion": "config_version do project.godot inválido.\nApenas a versão 5 é suportada",
+            "noStableReleases": "Não foram encontradas versões estáveis instaladas do Godot {{version}}.x\nInstale uma versão estável do Godot {{version}}.x e tente adicionar o projeto novamente.",
+            "noDotNetRelease": "O projeto parece ser um projeto .NET, mas nenhuma versão do editor .NET foi encontrada",
+            "noCompatibleRelease": "Não foram encontradas versões instaladas do Godot {{version}}.x que suportem config_version {{configVersion}}."
+        }
     },
-    "actions": {
-      "update": "Atualizar",
-      "updating": "Atualizando..."
+    "messages": {
+        "noReleasesCta": "Ainda não há versões instaladas. <Link>Ir para instalações</Link>",
+        "waitingForDialog": "Aguardando a caixa de diálogo para adicionar projeto...",
+        "needReleaseInstalled": "Você precisa de pelo menos uma versão instalada para adicionar um projeto",
+        "addProjectError": "Algo deu errado ao adicionar o projeto",
+        "setEditorError": "Algo deu errado ao definir o editor do projeto",
+        "projectNotValid": "O projeto não é válido; certifique-se de que o projeto e a versão sejam válidos no seu computador.",
+        "invalidReleaseEditor": "O editor selecionado está indisponível. Monte a unidade ou instale a versão novamente.",
+        "dropGodotFileOnly": "Por favor, solte um arquivo project.godot para adicionar um projeto",
+        "dropProjectHere": "Solte o arquivo project.godot aqui para adicionar o projeto",
+        "addingProjects": "Adicionando projetos: {{current}}/{{total}}",
+        "failedAddProject": "Falha ao adicionar projeto: {{error}}",
+        "dropProjectFilesHere": "Solte aqui os arquivos de projeto do Godot",
+        "dropProjectFilesHelpPrefix": "Solte um ou mais",
+        "dropProjectFilesHelpSuffix": "arquivos para adicioná-los ao launcher.",
+        "invalidReasons": {
+            "missingProjectFile": "Arquivo do projeto não encontrado. Verifique o local do projeto ou remova-o e adicione-o novamente.",
+            "missingEditor": "O editor selecionado não está disponível. Monte a unidade ou escolha outro editor."
+        },
+        "recoveredVSCodeConfig": "Alguns arquivos de configuração do VS Code eram inválidos. O Godot Launcher os recriou e preservou os originais como cópias .bad."
     },
-    "validation": {
-      "required": "O nome do projeto é obrigatório.",
-      "invalidName": "O nome do projeto não pode conter quebras de linha nem caracteres de controle."
+    "changeEditor": {
+        "errors": {
+            "projectNotFound": "Projeto não encontrado",
+            "invalidEditorVersion": "Versão do editor inválida",
+            "differentMajorVersion": "Não é possível usar uma versão principal diferente do editor\nPara proteger seu projeto, consulte o guia de migração em https://godotengine.org"
+        }
     },
-    "updateFailed": "Não foi possível atualizar o projeto."
-  },
-  "renameProject": {
-    "errors": {
-      "projectNotFound": "Projeto não encontrado",
-      "nameRequired": "O nome do projeto é obrigatório.",
-      "invalidName": "O nome do projeto não pode conter quebras de linha nem caracteres de controle.",
-      "nameExists": "Já existe um projeto com o nome '{{name}}'."
+    "toggleVSCode": {
+        "errors": {
+            "projectNotFound": "Projeto não encontrado",
+            "vscodeNotInstalled": "Visual Studio Code não está instalado neste computador.",
+            "missingLaunchPath": "O caminho de inicialização do Godot para este projeto está ausente.",
+            "invalidProjectDefinition": "Não foi possível determinar o modelo de configurações do editor para esta versão do Godot."
+        }
+    },
+    "editProject": {
+        "title": "Configurações do projeto",
+        "description": "Atualize as configurações de nome do projeto.",
+        "fields": {
+            "name": {
+                "label": "Nome do projeto",
+                "help": "Nome exibido no Godot Launcher.",
+                "placeholder": "Meu projeto"
+            },
+            "path": {
+                "label": "Pasta do projeto"
+            }
+        },
+        "godot": {
+            "renameLabel": "Também renomear o projeto Godot",
+            "loading": "Verificando projeto Godot...",
+            "currentName": "Nome atual do projeto Godot: {{name}}",
+            "unavailable": "project.godot está indisponível. Apenas o nome no launcher pode ser alterado."
+        },
+        "actions": {
+            "update": "Atualizar",
+            "updating": "Atualizando..."
+        },
+        "validation": {
+            "required": "O nome do projeto é obrigatório.",
+            "invalidName": "O nome do projeto não pode conter quebras de linha nem caracteres de controle."
+        },
+        "updateFailed": "Não foi possível atualizar o projeto."
+    },
+    "renameProject": {
+        "errors": {
+            "projectNotFound": "Projeto não encontrado",
+            "nameRequired": "O nome do projeto é obrigatório.",
+            "invalidName": "O nome do projeto não pode conter quebras de linha nem caracteres de controle.",
+            "nameExists": "Já existe um projeto com o nome '{{name}}'."
+        }
+    },
+    "initGit": {
+        "errors": {
+            "projectNotFound": "Projeto não encontrado",
+            "initFailed": "Falha ao inicializar o repositório Git."
+        }
     }
-  },
-  "initGit": {
-    "errors": {
-      "projectNotFound": "Projeto não encontrado",
-      "initFailed": "Falha ao inicializar o repositório Git."
-    }
-  }
 }

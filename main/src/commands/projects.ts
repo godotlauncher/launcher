@@ -10,7 +10,7 @@ import type {
     RenameProjectOptions,
     RenameProjectResult,
     SetProjectVSCodeResult,
-} from '@shared';
+} from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';

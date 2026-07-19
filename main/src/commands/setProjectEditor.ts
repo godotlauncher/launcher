@@ -4,7 +4,7 @@ import type {
     ChangeProjectEditorResult,
     InstalledRelease,
     ProjectDetails,
-} from '@shared';
+} from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
 import {

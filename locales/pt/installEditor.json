@@ -1,57 +1,57 @@
 {
-  "title": "Instalar editor Godot",
-  "search": {
-    "placeholder": "Pesquisar"
-  },
-  "tabs": {
-    "released": "Lançadas",
-    "prerelease": "Pré-lançamento"
-  },
-  "filters": {
-    "showInstalledOnly": "Mostrar apenas instaladas"
-  },
-  "buttons": {
-    "reload": "Atualizar lista de versões"
-  },
-  "errors": {
-    "fetchError": "Ocorreu um erro ao obter as versões.",
-    "retryInline": "Tente novamente. <Button>Tentar novamente</Button>",
-    "noPlatformAsset": "Nenhum recurso encontrado para a plataforma",
-    "invalidEditorVersion": "Versão do editor inválida",
-    "unsupportedPlatform": "Plataforma não suportada",
-    "unsupportedFileExtension": "Extensão de ficheiro não suportada",
-    "downloadInterrupted": "Transferência interrompida. O servidor de transferências do Godot pode estar ocupado ou a ligação foi fechada. Tente novamente dentro de alguns minutos.",
-    "downloadFailed": "A transferência falhou: {{error}}",
-    "downloadFailedUnknown": "A transferência falhou. Tente novamente dentro de alguns minutos.",
-    "downloadHttpError": "Não foi possível transferir o recurso: {{status}}",
-    "downloadEmptyResponse": "A transferência falhou: resposta vazia do servidor"
-  },
-  "messages": {
-    "installError": "Ocorreu um problema ao instalar a versão",
-    "reinstallError": "Ocorreu um erro ao reinstalar a versão"
-  },
-  "table": {
-    "headers": {
-      "version": "Versão",
-      "released": "Lançada",
-      "download": "Transferir",
-      "installed": "Instalada"
+    "title": "Instalar editor Godot",
+    "search": {
+        "placeholder": "Pesquisar"
     },
-    "gdscript": "(GDScript)",
-    "dotnet": "(.NET)",
-    "installing": "A instalar...",
-    "downloading": "a transferir...",
-    "tooltips": {
-      "installed": "Instalada - {{version}}",
-      "installedGDScript": "Instalada - {{version}} (GDScript)",
-      "installedDotNet": "Instalada - {{version}} .NET",
-      "downloadGDScript": "Transferir {{version}} (GDScript)",
-      "downloadDotNet": "Transferir {{version}} .NET",
-      "reinstallGDScript": "Reinstalar {{version}} (GDScript)",
-      "reinstallDotNet": "Reinstalar {{version}} .NET"
+    "tabs": {
+        "released": "Lançadas",
+        "prerelease": "Pré-lançamento"
     },
-    "status": {
-      "unavailable": "Indisponível"
+    "filters": {
+        "showInstalledOnly": "Mostrar apenas instaladas"
+    },
+    "buttons": {
+        "reload": "Atualizar lista de versões"
+    },
+    "errors": {
+        "fetchError": "Ocorreu um erro ao obter as versões.",
+        "retryInline": "Tente novamente. <Button>Tentar novamente</Button>",
+        "noPlatformAsset": "Nenhum recurso encontrado para a plataforma",
+        "invalidEditorVersion": "Versão do editor inválida",
+        "unsupportedPlatform": "Plataforma não suportada",
+        "unsupportedFileExtension": "Extensão de ficheiro não suportada",
+        "downloadInterrupted": "Transferência interrompida. O servidor de transferências do Godot pode estar ocupado ou a ligação foi fechada. Tente novamente dentro de alguns minutos.",
+        "downloadFailed": "A transferência falhou: {{error}}",
+        "downloadFailedUnknown": "A transferência falhou. Tente novamente dentro de alguns minutos.",
+        "downloadHttpError": "Não foi possível transferir o recurso: {{status}}",
+        "downloadEmptyResponse": "A transferência falhou: resposta vazia do servidor"
+    },
+    "messages": {
+        "installError": "Ocorreu um problema ao instalar a versão",
+        "reinstallError": "Ocorreu um erro ao reinstalar a versão"
+    },
+    "table": {
+        "headers": {
+            "version": "Versão",
+            "released": "Lançada",
+            "download": "Transferir",
+            "installed": "Instalada"
+        },
+        "gdscript": "(GDScript)",
+        "dotnet": "(.NET)",
+        "installing": "A instalar...",
+        "downloading": "a transferir...",
+        "tooltips": {
+            "installed": "Instalada - {{version}}",
+            "installedGDScript": "Instalada - {{version}} (GDScript)",
+            "installedDotNet": "Instalada - {{version}} .NET",
+            "downloadGDScript": "Transferir {{version}} (GDScript)",
+            "downloadDotNet": "Transferir {{version}} .NET",
+            "reinstallGDScript": "Reinstalar {{version}} (GDScript)",
+            "reinstallDotNet": "Reinstalar {{version}} .NET"
+        },
+        "status": {
+            "unavailable": "Indisponível"
+        }
     }
-  }
 }

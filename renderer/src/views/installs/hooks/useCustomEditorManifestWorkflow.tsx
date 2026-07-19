@@ -1,6 +1,7 @@
-import type { RegisterCustomEngineResult } from '@shared';
+import type { RegisterCustomEngineResult } from '@shared/contracts';
 import { CheckCircle2, TriangleAlertIcon } from 'lucide-react';
 import type React from 'react';
+import { appBridge } from '../../../bridge.ts';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -107,7 +108,7 @@ export function useCustomEditorManifestWorkflow({
 
         setSelectingCustomEditorManifest(true);
         try {
-            const result = await window.electron.openFileDialog(
+            const result = await appBridge.openFileDialog(
                 '',
                 t('customEditor.selectManifestTitle'),
                 [

@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fsMocks = vi.hoisted(() => ({

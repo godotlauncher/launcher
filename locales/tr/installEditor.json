@@ -1,57 +1,57 @@
 {
-  "title": "Godot Editör Yükle",
-  "search": {
-    "placeholder": "Ara"
-  },
-  "tabs": {
-    "released": "Yayınlanmış",
-    "prerelease": "Ön Sürüm"
-  },
-  "filters": {
-    "showInstalledOnly": "Yalnızca kurulu olanları göster"
-  },
-  "buttons": {
-    "reload": "Sürüm Listesini Yeniden Yükle"
-  },
-  "errors": {
-    "fetchError": "Sürümler alınırken bir hata oluştu.",
-    "retryInline": "Lütfen tekrar deneyin. <Button>Tekrar dene</Button>",
-    "noPlatformAsset": "Platform için Varlık bulunamadı",
-    "invalidEditorVersion": "Geçersiz editör sürümü",
-    "unsupportedPlatform": "Desteklenmeyen platform",
-    "unsupportedFileExtension": "Desteklenmeyen dosya uzantısı",
-    "downloadInterrupted": "İndirme kesildi. Godot indirme sunucusu meşgul olabilir veya bağlantı kapatılmış olabilir. Lütfen birkaç dakika sonra tekrar deneyin.",
-    "downloadFailed": "İndirme başarısız oldu: {{error}}",
-    "downloadFailedUnknown": "İndirme başarısız oldu. Lütfen birkaç dakika sonra tekrar deneyin.",
-    "downloadHttpError": "Varlık indirilemedi: {{status}}",
-    "downloadEmptyResponse": "İndirme başarısız oldu: sunucudan boş yanıt geldi"
-  },
-  "messages": {
-    "installError": "Sürüm yüklenirken bir şeyler ters gitti",
-    "reinstallError": "Sürüm yeniden yüklenirken bir şeyler ters gitti"
-  },
-  "table": {
-    "headers": {
-      "version": "Sürüm",
-      "released": "Yayınlanma",
-      "download": "İndir",
-      "installed": "Kurulu"
+    "title": "Godot Editör Yükle",
+    "search": {
+        "placeholder": "Ara"
     },
-    "gdscript": "(GDScript)",
-    "dotnet": "(.NET)",
-    "installing": "Yükleniyor...",
-    "downloading": "indiriliyor...",
-    "tooltips": {
-      "installed": "Kuruldu - {{version}}",
-      "installedGDScript": "Kuruldu - {{version}} (GDScript)",
-      "installedDotNet": "Kuruldu - {{version}} .NET",
-      "downloadGDScript": "{{version}} İndir (GDScript)",
-      "downloadDotNet": "{{version}} .NET İndir",
-      "reinstallGDScript": "{{version}} sürümünü yeniden yükle (GDScript)",
-      "reinstallDotNet": "{{version}} .NET sürümünü yeniden yükle"
+    "tabs": {
+        "released": "Yayınlanmış",
+        "prerelease": "Ön Sürüm"
     },
-    "status": {
-      "unavailable": "Kullanılamıyor"
+    "filters": {
+        "showInstalledOnly": "Yalnızca kurulu olanları göster"
+    },
+    "buttons": {
+        "reload": "Sürüm Listesini Yeniden Yükle"
+    },
+    "errors": {
+        "fetchError": "Sürümler alınırken bir hata oluştu.",
+        "retryInline": "Lütfen tekrar deneyin. <Button>Tekrar dene</Button>",
+        "noPlatformAsset": "Platform için Varlık bulunamadı",
+        "invalidEditorVersion": "Geçersiz editör sürümü",
+        "unsupportedPlatform": "Desteklenmeyen platform",
+        "unsupportedFileExtension": "Desteklenmeyen dosya uzantısı",
+        "downloadInterrupted": "İndirme kesildi. Godot indirme sunucusu meşgul olabilir veya bağlantı kapatılmış olabilir. Lütfen birkaç dakika sonra tekrar deneyin.",
+        "downloadFailed": "İndirme başarısız oldu: {{error}}",
+        "downloadFailedUnknown": "İndirme başarısız oldu. Lütfen birkaç dakika sonra tekrar deneyin.",
+        "downloadHttpError": "Varlık indirilemedi: {{status}}",
+        "downloadEmptyResponse": "İndirme başarısız oldu: sunucudan boş yanıt geldi"
+    },
+    "messages": {
+        "installError": "Sürüm yüklenirken bir şeyler ters gitti",
+        "reinstallError": "Sürüm yeniden yüklenirken bir şeyler ters gitti"
+    },
+    "table": {
+        "headers": {
+            "version": "Sürüm",
+            "released": "Yayınlanma",
+            "download": "İndir",
+            "installed": "Kurulu"
+        },
+        "gdscript": "(GDScript)",
+        "dotnet": "(.NET)",
+        "installing": "Yükleniyor...",
+        "downloading": "indiriliyor...",
+        "tooltips": {
+            "installed": "Kuruldu - {{version}}",
+            "installedGDScript": "Kuruldu - {{version}} (GDScript)",
+            "installedDotNet": "Kuruldu - {{version}} .NET",
+            "downloadGDScript": "{{version}} İndir (GDScript)",
+            "downloadDotNet": "{{version}} .NET İndir",
+            "reinstallGDScript": "{{version}} sürümünü yeniden yükle (GDScript)",
+            "reinstallDotNet": "{{version}} .NET sürümünü yeniden yükle"
+        },
+        "status": {
+            "unavailable": "Kullanılamıyor"
+        }
     }
-  }
 }

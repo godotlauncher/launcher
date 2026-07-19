@@ -1,4 +1,4 @@
-import type { UserPreferences } from '@shared';
+import type { UserPreferences } from '@shared/contracts';
 import clsx from 'clsx';
 import log from 'electron-log/renderer';
 import type React from 'react';

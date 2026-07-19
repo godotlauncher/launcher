@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import type { ReleaseSummary } from '@shared';
+import type { ReleaseSummary } from '@shared/contracts';
 import logger from 'electron-log';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MIN_VERSION } from '../constants.js';

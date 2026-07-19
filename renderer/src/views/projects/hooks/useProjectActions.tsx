@@ -1,7 +1,8 @@
-import type { ProjectDetails, SetProjectVSCodeResult } from '@shared';
+import type { ProjectDetails, SetProjectVSCodeResult } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useRef, useState } from 'react';
+import { appBridge } from '../../../bridge.ts';
 import type { ConfirmButton } from '../../../components/confirm.component';
 import {
     type ActionMenuAnchorRect,
@@ -67,7 +68,7 @@ export function useProjectActions({
         hasVSCode: boolean;
         hasGit: boolean;
     }> => {
-        const tools = await window.electron.getCachedTools();
+        const tools = await appBridge.getCachedTools();
         return {
             hasVSCode: tools.some(
                 (tool) => tool.name === 'VSCode' && tool.verified,

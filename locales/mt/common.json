@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "Ok",
-    "cancel": "Ikkanċella",
-    "continue": "Kompli",
-    "select": "Agħżel",
-    "retry": "Erġa' pprova",
-    "remove": "Neħħi",
-    "copyPath": "Ikopja l-perkors",
-    "openPath": "Iftaħ il-perkors",
-    "reinstall": "Erġa’ installa"
-  },
-  "error": "Żball",
-  "success": "Suċċess",
-  "warning": "Twissija",
-  "info": "Informazzjoni",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "Il-perkors irid ikun stringa mhux vojta.",
-      "pathMustBeAbsolute": "Il-perkors irid ikun assolut.",
-      "targetNotDirectory": "Il-perkors fil-mira jeżisti diġà, iżda mhuwiex direttorju."
+    "buttons": {
+        "ok": "Ok",
+        "cancel": "Ikkanċella",
+        "continue": "Kompli",
+        "select": "Agħżel",
+        "retry": "Erġa' pprova",
+        "remove": "Neħħi",
+        "copyPath": "Ikopja l-perkors",
+        "openPath": "Iftaħ il-perkors",
+        "reinstall": "Erġa’ installa"
+    },
+    "error": "Żball",
+    "success": "Suċċess",
+    "warning": "Twissija",
+    "info": "Informazzjoni",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "Il-perkors irid ikun stringa mhux vojta.",
+            "pathMustBeAbsolute": "Il-perkors irid ikun assolut.",
+            "targetNotDirectory": "Il-perkors fil-mira jeżisti diġà, iżda mhuwiex direttorju."
+        }
+    },
+    "app": {
+        "loadingMessage": "Qed nippreparaw kollox...",
+        "navigation": {
+            "projects": "Proġetti",
+            "installs": "Installazzjonijiet",
+            "help": "Għajnuna",
+            "settings": "Issettjar",
+            "joinCommunity": "Ingħaqad mal-Komunità"
+        },
+        "update": {
+            "availableWithVersion": "Il-verżjoni {{version}} hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
+            "availableNoVersion": "Verżjoni ġdida hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton>",
+            "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
+            "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
+            "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
+            "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Agħżel verżjoni tal-editur",
+        "tableHeaders": {
+            "name": "Isem"
+        },
+        "noReleases": "Ebda releases ma nstabu, verżjoni tal-editur meħtieġa {{version}}.x",
+        "installReleases": "Installa releases",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "pre-rilaxx"
+        },
+        "unavailable": "Verżjoni mhux disponibbli",
+        "unavailableHint": "Immonta d-drajv jew agħżel editur differenti qabel tkompli."
     }
-  },
-  "app": {
-    "loadingMessage": "Qed nippreparaw kollox...",
-    "navigation": {
-      "projects": "Proġetti",
-      "installs": "Installazzjonijiet",
-      "help": "Għajnuna",
-      "settings": "Issettjar",
-      "joinCommunity": "Ingħaqad mal-Komunità"
-    },
-    "update": {
-      "availableWithVersion": "Il-verżjoni {{version}} hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
-      "availableNoVersion": "Verżjoni ġdida hija disponibbli. <DownloadButton>Niżżel l-aġġornament</DownloadButton>",
-      "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
-      "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
-      "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
-      "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Agħżel verżjoni tal-editur",
-    "tableHeaders": {
-      "name": "Isem"
-    },
-    "noReleases": "Ebda releases ma nstabu, verżjoni tal-editur meħtieġa {{version}}.x",
-    "installReleases": "Installa releases",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "pre-rilaxx"
-    },
-    "unavailable": "Verżjoni mhux disponibbli",
-    "unavailableHint": "Immonta d-drajv jew agħżel editur differenti qabel tkompli."
-  }
 }

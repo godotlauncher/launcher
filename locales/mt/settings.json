@@ -1,138 +1,138 @@
 {
-  "title": "Issettjar",
-  "tabs": {
-    "projects": "Proġetti",
-    "installs": "Installazzjonijiet",
-    "appearance": "Dehra",
-    "behavior": "Imġiba",
-    "tools": "Għodod",
-    "updates": "Aġġornamenti"
-  },
-  "appearance": {
-    "theme": {
-      "title": "Tema",
-      "description": "Ippersonalizza d-dehra għal Godot Launcher",
-      "light": "Ċar",
-      "dark": "Mudlam",
-      "system": "Sistema (awtomatiku)"
+    "title": "Issettjar",
+    "tabs": {
+        "projects": "Proġetti",
+        "installs": "Installazzjonijiet",
+        "appearance": "Dehra",
+        "behavior": "Imġiba",
+        "tools": "Għodod",
+        "updates": "Aġġornamenti"
+    },
+    "appearance": {
+        "theme": {
+            "title": "Tema",
+            "description": "Ippersonalizza d-dehra għal Godot Launcher",
+            "light": "Ċar",
+            "dark": "Mudlam",
+            "system": "Sistema (awtomatiku)"
+        }
+    },
+    "behavior": {
+        "projects": {
+            "title": "Proġetti",
+            "description": "Agħżel l-imġiba ta' Godot Launcher għall-proġetti.",
+            "confirmRemove": "Staqsi għal konferma meta tneħħi proġetti."
+        },
+        "autoStart": {
+            "title": "Preferenza tal-Bidu",
+            "description": "Agħżel x'jagħmel GD Launcher meta l-kompjuter tiegħek jibda",
+            "linuxWarning": "Bidu awtomatiku bħalissa mhuwiex supportat fuq Linux",
+            "startOnBoot": "Ibda meta l-kompjuter jibda.",
+            "startInTray": "Ibda fit-tray."
+        },
+        "projectLaunch": {
+            "title": "Azzjoni wara li Tibda Proġett",
+            "description": "Agħżel x'jagħmel GD Launcher wara li jibda proġett",
+            "none": "Xejn",
+            "minimize": "Imminimizza",
+            "closeToTray": "Agħlaq għas-system tray"
+        },
+        "projectsLocation": {
+            "title": "Indirizz tal-Proġetti",
+            "description": "Agħżel indirizz għal proġetti ġodda. Proġetti eżistenti mhux se jiġu affettwati.",
+            "defaultLocation": "Indirizz Default",
+            "waitingForDialog": "Qed nistennew id-djalogu..."
+        },
+        "editorsLocation": {
+            "title": "Indirizz tal-Installazzjonijiet tal-Editur",
+            "description": "Agħżel indirizz għall-installazzjonijiet tal-Editur. Installazzjonijiet eżistenti mhux se jiġu affettwati.",
+            "installLocation": "Indirizz tal-Installazzjoni",
+            "waitingForDialog": "Qed nistennew id-djalogu..."
+        },
+        "clearReleaseCache": {
+            "title": "Aġġorna L-Cache Tar-Release",
+            "description": "Neħħi l-metadata tal-release ta’ Godot miżmuma fil-cache u iġbor l-aħħar builds minn GitHub.",
+            "cta": "Aġġorna l-cache",
+            "clearing": "Qed naġġorna...",
+            "cooldownNotice": "L-aġġornament tal-cache huwa diżattivat temporanjament biex nevitaw li nilħqu l-limiti ta’ GitHub.",
+            "successTitle": "Cache Aġġornata B’Suċċess",
+            "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
+            "errorTitle": "Ma Stajniex Naġġornaw Il-Cache",
+            "errorMessage": "Seħħ żball waqt l-aġġornament tal-cache tar-release. Erġa’ pprova aktar tard."
+        }
+    },
+    "general": {
+        "language": {
+            "label": "Lingwa",
+            "description": "Agħżel lingwa għal Godot Launcher (ma tibdilx il-lingwa ta' Godot)",
+            "system": "Sistema (Awtomatiku)"
+        }
+    },
+    "tools": {
+        "overview": "Il-launcher jivvalida malajr il-paths tal-għodda fil-cache meta din it-tab tkun fil-fokus. Esegwix skannatura sħiħa jekk biddilt l-installazzjonijiet fuq dan is-sistema.",
+        "actions": {
+            "refresh": "Skannja mill-ġdid l-għodod",
+            "scanning": "Qed jerskanna..."
+        },
+        "status": {
+            "available": "Disponibbli",
+            "missing": "Ma nstabx",
+            "invalid": "Path mhux misjub",
+            "unknown": "Mhux magħruf"
+        },
+        "git": {
+            "title": "Git",
+            "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",
+            "installed": "Installat:",
+            "version": "Verżjoni:"
+        },
+        "vscode": {
+            "title": "Visual Studio Code",
+            "description": "Editur ta' kodiċi mgħaġġel u estensibbli b'appoġġ għal GDScript u .NET għal Godot.",
+            "notDetectedTitle": "Visual Studio Code ma nstabx!",
+            "notDetectedMessage": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code hawn taħt",
+            "pathLabel": "Indirizz ta' Visual Studio Code għall-Eżekutibbli",
+            "selectExecutable": "Agħżel Eżekutibbli ta' Visual Studio Code",
+            "autodetected": "(awtomatikament skopert)",
+            "noPathSet": "ebda indirizz issettjat",
+            "clearCustomPath": "Neħħi Indirizz Custom",
+            "waitingForDialog": "Qed nistennew id-djalogu...",
+            "installed": "Installat:"
+        }
+    },
+    "updates": {
+        "title": "Aġġornamenti",
+        "description": "Ikkonfigura kif GD Launcher jiċċekkja għal aġġornamenti",
+        "autoCheck": "Awtomatikament iċċekkja għal aġġornamenti",
+        "betaChannel": "Irċievi aġġornamenti beta",
+        "betaChannelDescription": "Niżżel build ta’ qabel rilaxx minn GitHub; dawn jistgħu jkunu inqas stabbli mill-verżjonijiet uffiċjali.",
+        "checkNow": "Iċċekkja għal aġġornamenti",
+        "downloadNow": "Niżżel l-aġġornament",
+        "skipVersion": "Aqbeż din il-verżjoni",
+        "unskipVersion": "Erġa’ attiva l-aġġornament maqbuż",
+        "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
+        "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <Button>Ibda mill-ġdid issa</Button>",
+        "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <Button>Iftaħ il-paġna tat-tniżżil</Button>",
+        "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <Button>Iftaħ il-paġna tat-tniżżil</Button>"
+    },
+    "windowsSymlinks": {
+        "title": "Symlinks tal-editur",
+        "windowsOnly": "Windows Biss",
+        "description": "Agħżel jekk edituri tal-proġetti jużawx symbolic links opzjonali jew jibqgħu b'kopji lokali.",
+        "checkbox": "Uża symbolic links għal edituri tal-proġetti Windows. Dan jibqa' mitfi awtomatikament sabiex tkun tista' tagħżel meta tkun lest għal prompts ta' elevazzjoni potenzjali waqt aġġornamenti tal-editur.",
+        "note": "Meta tibdel dan is-setting ma jkunvertix links tal-proġetti eżistenti; biss jaffettwa kif il-futuri refreshes tal-editur jaħdmu.",
+        "enableTitle": "Ippermetti symlinks tal-editur",
+        "disableTitle": "Iddiżattiva symlinks tal-editur",
+        "enableAction": "Ippermetti symlinks",
+        "disableAction": "Iddiżattiva symlinks",
+        "enableDescription": {
+            "line1": "Meta attivat, Godot Launcher jagħqad kull proġett mal-editur installat minflok ma jikkopjah.",
+            "line2": "Dan iżomm l-użu tad-disk baxx, iżda Windows jista' jitlob approvazzjoni ta' amministratur meta jinħolqu symlinks ġodda.",
+            "line3": "Proġetti eżistenti jżommu l-kopji lokali kurrenti tagħhom sakemm il-verżjoni tal-editur tagħhom tinbidel jew tiġi installata mill-ġdid."
+        },
+        "disableDescription": {
+            "line1": "Ibdel lura għal kopji lokali biex tevita prompts ta' elevazzjoni. Godot Launcher se jikkopja l-fajls tal-editur f'kull proġett minflok.",
+            "line2": "Symlinks eżistenti jibqgħu fis-sitt sakemm il-verżjoni tal-editur tagħhom tinbidel jew tiġi installata mill-ġdid."
+        }
     }
-  },
-  "behavior": {
-    "projects": {
-      "title": "Proġetti",
-      "description": "Agħżel l-imġiba ta' Godot Launcher għall-proġetti.",
-      "confirmRemove": "Staqsi għal konferma meta tneħħi proġetti."
-    },
-    "autoStart": {
-      "title": "Preferenza tal-Bidu",
-      "description": "Agħżel x'jagħmel GD Launcher meta l-kompjuter tiegħek jibda",
-      "linuxWarning": "Bidu awtomatiku bħalissa mhuwiex supportat fuq Linux",
-      "startOnBoot": "Ibda meta l-kompjuter jibda.",
-      "startInTray": "Ibda fit-tray."
-    },
-    "projectLaunch": {
-      "title": "Azzjoni wara li Tibda Proġett",
-      "description": "Agħżel x'jagħmel GD Launcher wara li jibda proġett",
-      "none": "Xejn",
-      "minimize": "Imminimizza",
-      "closeToTray": "Agħlaq għas-system tray"
-    },
-    "projectsLocation": {
-      "title": "Indirizz tal-Proġetti",
-      "description": "Agħżel indirizz għal proġetti ġodda. Proġetti eżistenti mhux se jiġu affettwati.",
-      "defaultLocation": "Indirizz Default",
-      "waitingForDialog": "Qed nistennew id-djalogu..."
-    },
-    "editorsLocation": {
-      "title": "Indirizz tal-Installazzjonijiet tal-Editur",
-      "description": "Agħżel indirizz għall-installazzjonijiet tal-Editur. Installazzjonijiet eżistenti mhux se jiġu affettwati.",
-      "installLocation": "Indirizz tal-Installazzjoni",
-      "waitingForDialog": "Qed nistennew id-djalogu..."
-    },
-    "clearReleaseCache": {
-      "title": "Aġġorna L-Cache Tar-Release",
-      "description": "Neħħi l-metadata tal-release ta’ Godot miżmuma fil-cache u iġbor l-aħħar builds minn GitHub.",
-      "cta": "Aġġorna l-cache",
-      "clearing": "Qed naġġorna...",
-      "cooldownNotice": "L-aġġornament tal-cache huwa diżattivat temporanjament biex nevitaw li nilħqu l-limiti ta’ GitHub.",
-      "successTitle": "Cache Aġġornata B’Suċċess",
-      "successMessage": "Il-listi tar-release ġew aġġornati bl-aħħar builds.",
-      "errorTitle": "Ma Stajniex Naġġornaw Il-Cache",
-      "errorMessage": "Seħħ żball waqt l-aġġornament tal-cache tar-release. Erġa’ pprova aktar tard."
-    }
-  },
-  "general": {
-    "language": {
-      "label": "Lingwa",
-      "description": "Agħżel lingwa għal Godot Launcher (ma tibdilx il-lingwa ta' Godot)",
-      "system": "Sistema (Awtomatiku)"
-    }
-  },
-  "tools": {
-    "overview": "Il-launcher jivvalida malajr il-paths tal-għodda fil-cache meta din it-tab tkun fil-fokus. Esegwix skannatura sħiħa jekk biddilt l-installazzjonijiet fuq dan is-sistema.",
-    "actions": {
-      "refresh": "Skannja mill-ġdid l-għodod",
-      "scanning": "Qed jerskanna..."
-    },
-    "status": {
-      "available": "Disponibbli",
-      "missing": "Ma nstabx",
-      "invalid": "Path mhux misjub",
-      "unknown": "Mhux magħruf"
-    },
-    "git": {
-      "title": "Git",
-      "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",
-      "installed": "Installat:",
-      "version": "Verżjoni:"
-    },
-    "vscode": {
-      "title": "Visual Studio Code",
-      "description": "Editur ta' kodiċi mgħaġġel u estensibbli b'appoġġ għal GDScript u .NET għal Godot.",
-      "notDetectedTitle": "Visual Studio Code ma nstabx!",
-      "notDetectedMessage": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code hawn taħt",
-      "pathLabel": "Indirizz ta' Visual Studio Code għall-Eżekutibbli",
-      "selectExecutable": "Agħżel Eżekutibbli ta' Visual Studio Code",
-      "autodetected": "(awtomatikament skopert)",
-      "noPathSet": "ebda indirizz issettjat",
-      "clearCustomPath": "Neħħi Indirizz Custom",
-      "waitingForDialog": "Qed nistennew id-djalogu...",
-      "installed": "Installat:"
-    }
-  },
-  "updates": {
-    "title": "Aġġornamenti",
-    "description": "Ikkonfigura kif GD Launcher jiċċekkja għal aġġornamenti",
-    "autoCheck": "Awtomatikament iċċekkja għal aġġornamenti",
-    "betaChannel": "Irċievi aġġornamenti beta",
-    "betaChannelDescription": "Niżżel build ta’ qabel rilaxx minn GitHub; dawn jistgħu jkunu inqas stabbli mill-verżjonijiet uffiċjali.",
-    "checkNow": "Iċċekkja għal aġġornamenti",
-    "downloadNow": "Niżżel l-aġġornament",
-    "skipVersion": "Aqbeż din il-verżjoni",
-    "unskipVersion": "Erġa’ attiva l-aġġornament maqbuż",
-    "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <Button>Ibda mill-ġdid issa</Button>",
-    "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <Button>Ibda mill-ġdid issa</Button>",
-    "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <Button>Iftaħ il-paġna tat-tniżżil</Button>",
-    "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <Button>Iftaħ il-paġna tat-tniżżil</Button>"
-  },
-  "windowsSymlinks": {
-    "title": "Symlinks tal-editur",
-    "windowsOnly": "Windows Biss",
-    "description": "Agħżel jekk edituri tal-proġetti jużawx symbolic links opzjonali jew jibqgħu b'kopji lokali.",
-    "checkbox": "Uża symbolic links għal edituri tal-proġetti Windows. Dan jibqa' mitfi awtomatikament sabiex tkun tista' tagħżel meta tkun lest għal prompts ta' elevazzjoni potenzjali waqt aġġornamenti tal-editur.",
-    "note": "Meta tibdel dan is-setting ma jkunvertix links tal-proġetti eżistenti; biss jaffettwa kif il-futuri refreshes tal-editur jaħdmu.",
-    "enableTitle": "Ippermetti symlinks tal-editur",
-    "disableTitle": "Iddiżattiva symlinks tal-editur",
-    "enableAction": "Ippermetti symlinks",
-    "disableAction": "Iddiżattiva symlinks",
-    "enableDescription": {
-      "line1": "Meta attivat, Godot Launcher jagħqad kull proġett mal-editur installat minflok ma jikkopjah.",
-      "line2": "Dan iżomm l-użu tad-disk baxx, iżda Windows jista' jitlob approvazzjoni ta' amministratur meta jinħolqu symlinks ġodda.",
-      "line3": "Proġetti eżistenti jżommu l-kopji lokali kurrenti tagħhom sakemm il-verżjoni tal-editur tagħhom tinbidel jew tiġi installata mill-ġdid."
-    },
-    "disableDescription": {
-      "line1": "Ibdel lura għal kopji lokali biex tevita prompts ta' elevazzjoni. Godot Launcher se jikkopja l-fajls tal-editur f'kull proġett minflok.",
-      "line2": "Symlinks eżistenti jibqgħu fis-sitt sakemm il-verżjoni tal-editur tagħhom tinbidel jew tiġi installata mill-ġdid."
-    }
-  }
 }

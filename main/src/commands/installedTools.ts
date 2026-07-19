@@ -1,4 +1,4 @@
-import type { InstalledTool } from '@shared';
+import type { InstalledTool } from '@shared/contracts';
 import { findExecutable, getCommandVersion } from '../utils/platform.utils.js';
 import { getVSCodeInstallPath } from '../utils/vscode.utils.js';
 import { getUserPreferences } from './userPreferences.js';

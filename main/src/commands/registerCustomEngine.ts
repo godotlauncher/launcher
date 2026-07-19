@@ -1,4 +1,4 @@
-import type { RegisterCustomEngineResult } from '@shared';
+import type { RegisterCustomEngineResult } from '@shared/contracts';
 import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';
 import { parseCustomEngineManifest } from '../utils/customEngineManifest.utils.js';

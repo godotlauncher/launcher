@@ -2,7 +2,10 @@ import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { setInterval } from 'node:timers';
 import { promisify } from 'node:util';
-import type { AppUpdateMessage, CheckForUpdatesOptions } from '@shared';
+import type {
+    AppUpdateMessage,
+    CheckForUpdatesOptions,
+} from '@shared/contracts';
 import { app, type BrowserWindow, type WebContents } from 'electron';
 import logger from 'electron-log';
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';

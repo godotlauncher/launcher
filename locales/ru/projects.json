@@ -1,132 +1,132 @@
 {
-  "title": "Проекты",
-  "buttons": {
-    "add": "Добавить",
-    "newProject": "Новый проект"
-  },
-  "search": {
-    "placeholder": "Поиск"
-  },
-  "table": {
-    "name": "Название",
-    "modified": "Изменён",
-    "editor": "Редактор",
-    "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
-    "dotNetProject": "Это .Net проект",
-    "prerelease": "Используется пререлизная версия редактора Godot",
-    "windowedMode": "Этот проект открыт в оконном режиме",
-    "vsCodeProject": "Для этого проекта Visual Studio Code включен как внешний редактор",
-    "gitProject": "Проект использует Git для контроля версий",
-    "invalidReasons": {
-      "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта.",
-      "missingEditor": "Редактор не найден. Проверьте расположение редактора."
-    }
-  },
-  "addProject": {
-    "selectFile": "Выбрать файл проекта",
-    "godotProject": "Проект Godot",
-    "editorResolution": {
-      "title": "Требуется версия редактора",
-      "message": "Этому проекту требуется редактор, который не установлен.",
-      "version": "Версия",
-      "channel": "Канал",
-      "flavor": "Вариант",
-      "baseVersion": "База",
-      "fallbackMessage": "Можно использовать совместимый установленный редактор как запасной вариант.",
-      "editorActions": "Параметры",
-      "download": "Скачать {{version}}",
-      "useFallback": "Использовать {{version}}",
-      "addMissing": "Добавить с отсутствующим редактором"
+    "title": "Проекты",
+    "buttons": {
+        "add": "Добавить",
+        "newProject": "Новый проект"
     },
-    "errors": {
-      "projectExists": "Проект '{{path}}' уже существует",
-      "invalidPath": "Неверный путь проекта",
-      "invalidProjectFile": "Неверный файл project.godot",
-      "nameExists": "Проект с именем '{{name}}' уже существует\nПожалуйста, переименуйте проект в 'project.godot' или удалите существующий.",
-      "invalidRenderer": "Неверный файл проекта",
-      "invalidConfigVersion": "Неверная версия config_version в project.godot.\nПоддерживается только версия конфигурации 5",
-      "noStableReleases": "Не найдены установленные стабильные версии для Godot {{version}}.x\nПожалуйста, установите стабильную версию для Godot {{version}}.x, затем попробуйте добавить проект снова.",
-      "noDotNetRelease": "Проект похож на .NET проект, но не найдена версия редактора с .NET",
-      "noCompatibleRelease": "Не найдены установленные версии для Godot {{version}}.x, которые поддерживают config_version {{configVersion}}."
-    }
-  },
-  "messages": {
-    "noReleasesCta": "Версии ещё не установлены. <Link>Перейти к установкам</Link>",
-    "waitingForDialog": "Ожидание диалога для добавления проекта...",
-    "needReleaseInstalled": "Для добавления проекта необходимо иметь хотя бы одну установленную версию",
-    "addProjectError": "Что-то пошло не так при добавлении проекта",
-    "setEditorError": "Что-то пошло не так при установке редактора проекта",
-    "projectNotValid": "Проект недействителен, убедитесь, что проект и версия действительны на вашем компьютере.",
-    "invalidReleaseEditor": "Выбранный редактор недоступен. Подключите диск или переустановите релиз.",
-    "dropGodotFileOnly": "Пожалуйста, перетащите файл project.godot, чтобы добавить проект",
-    "dropProjectHere": "Перетащите файл project.godot сюда, чтобы добавить проект",
-    "addingProjects": "Добавление проектов: {{current}}/{{total}}",
-    "failedAddProject": "Не удалось добавить проект: {{error}}",
-    "dropProjectFilesHere": "Перетащите файлы проекта Godot сюда",
-    "dropProjectFilesHelpPrefix": "Перетащите один или несколько",
-    "dropProjectFilesHelpSuffix": "файлов, чтобы добавить их в лаунчер.",
-    "invalidReasons": {
-      "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта или удалите проект и добавьте его снова.",
-      "missingEditor": "Выбранный редактор недоступен. Подключите диск или выберите другой редактор."
+    "search": {
+        "placeholder": "Поиск"
     },
-    "recoveredVSCodeConfig": "Некоторые файлы конфигурации VS Code были некорректны. Godot Launcher создал их заново и сохранил оригиналы как копии .bad."
-  },
-  "changeEditor": {
-    "errors": {
-      "projectNotFound": "Проект не найден",
-      "invalidEditorVersion": "Неверная версия редактора",
-      "differentMajorVersion": "Нельзя использовать другую основную версию редактора\nДля защиты вашего проекта см. официальное руководство по миграции на https://godotengine.org"
-    }
-  },
-  "toggleVSCode": {
-    "errors": {
-      "projectNotFound": "Проект не найден",
-      "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере.",
-      "missingLaunchPath": "Не найден путь запуска Godot для этого проекта.",
-      "invalidProjectDefinition": "Не удалось определить шаблон настроек редактора для этой версии Godot."
-    }
-  },
-  "editProject": {
-    "title": "Настройки проекта",
-    "description": "Обновите настройки имени проекта.",
-    "fields": {
-      "name": {
-        "label": "Имя проекта",
-        "help": "Имя, отображаемое в Godot Launcher.",
-        "placeholder": "Мой проект"
-      },
-      "path": {
-        "label": "Папка проекта"
-      }
+    "table": {
+        "name": "Название",
+        "modified": "Изменён",
+        "editor": "Редактор",
+        "invalidProject": "Этот проект неверен, проверьте расположение проекта и редактора!",
+        "dotNetProject": "Это .Net проект",
+        "prerelease": "Используется пререлизная версия редактора Godot",
+        "windowedMode": "Этот проект открыт в оконном режиме",
+        "vsCodeProject": "Для этого проекта Visual Studio Code включен как внешний редактор",
+        "gitProject": "Проект использует Git для контроля версий",
+        "invalidReasons": {
+            "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта.",
+            "missingEditor": "Редактор не найден. Проверьте расположение редактора."
+        }
     },
-    "godot": {
-      "renameLabel": "Также переименовать проект Godot",
-      "loading": "Проверка проекта Godot...",
-      "currentName": "Текущее имя проекта Godot: {{name}}",
-      "unavailable": "project.godot недоступен. Можно изменить только имя в лаунчере."
+    "addProject": {
+        "selectFile": "Выбрать файл проекта",
+        "godotProject": "Проект Godot",
+        "editorResolution": {
+            "title": "Требуется версия редактора",
+            "message": "Этому проекту требуется редактор, который не установлен.",
+            "version": "Версия",
+            "channel": "Канал",
+            "flavor": "Вариант",
+            "baseVersion": "База",
+            "fallbackMessage": "Можно использовать совместимый установленный редактор как запасной вариант.",
+            "editorActions": "Параметры",
+            "download": "Скачать {{version}}",
+            "useFallback": "Использовать {{version}}",
+            "addMissing": "Добавить с отсутствующим редактором"
+        },
+        "errors": {
+            "projectExists": "Проект '{{path}}' уже существует",
+            "invalidPath": "Неверный путь проекта",
+            "invalidProjectFile": "Неверный файл project.godot",
+            "nameExists": "Проект с именем '{{name}}' уже существует\nПожалуйста, переименуйте проект в 'project.godot' или удалите существующий.",
+            "invalidRenderer": "Неверный файл проекта",
+            "invalidConfigVersion": "Неверная версия config_version в project.godot.\nПоддерживается только версия конфигурации 5",
+            "noStableReleases": "Не найдены установленные стабильные версии для Godot {{version}}.x\nПожалуйста, установите стабильную версию для Godot {{version}}.x, затем попробуйте добавить проект снова.",
+            "noDotNetRelease": "Проект похож на .NET проект, но не найдена версия редактора с .NET",
+            "noCompatibleRelease": "Не найдены установленные версии для Godot {{version}}.x, которые поддерживают config_version {{configVersion}}."
+        }
     },
-    "actions": {
-      "update": "Обновить",
-      "updating": "Обновление..."
+    "messages": {
+        "noReleasesCta": "Версии ещё не установлены. <Link>Перейти к установкам</Link>",
+        "waitingForDialog": "Ожидание диалога для добавления проекта...",
+        "needReleaseInstalled": "Для добавления проекта необходимо иметь хотя бы одну установленную версию",
+        "addProjectError": "Что-то пошло не так при добавлении проекта",
+        "setEditorError": "Что-то пошло не так при установке редактора проекта",
+        "projectNotValid": "Проект недействителен, убедитесь, что проект и версия действительны на вашем компьютере.",
+        "invalidReleaseEditor": "Выбранный редактор недоступен. Подключите диск или переустановите релиз.",
+        "dropGodotFileOnly": "Пожалуйста, перетащите файл project.godot, чтобы добавить проект",
+        "dropProjectHere": "Перетащите файл project.godot сюда, чтобы добавить проект",
+        "addingProjects": "Добавление проектов: {{current}}/{{total}}",
+        "failedAddProject": "Не удалось добавить проект: {{error}}",
+        "dropProjectFilesHere": "Перетащите файлы проекта Godot сюда",
+        "dropProjectFilesHelpPrefix": "Перетащите один или несколько",
+        "dropProjectFilesHelpSuffix": "файлов, чтобы добавить их в лаунчер.",
+        "invalidReasons": {
+            "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта или удалите проект и добавьте его снова.",
+            "missingEditor": "Выбранный редактор недоступен. Подключите диск или выберите другой редактор."
+        },
+        "recoveredVSCodeConfig": "Некоторые файлы конфигурации VS Code были некорректны. Godot Launcher создал их заново и сохранил оригиналы как копии .bad."
     },
-    "validation": {
-      "required": "Имя проекта обязательно.",
-      "invalidName": "Имя проекта не может содержать переносы строк или управляющие символы."
+    "changeEditor": {
+        "errors": {
+            "projectNotFound": "Проект не найден",
+            "invalidEditorVersion": "Неверная версия редактора",
+            "differentMajorVersion": "Нельзя использовать другую основную версию редактора\nДля защиты вашего проекта см. официальное руководство по миграции на https://godotengine.org"
+        }
     },
-    "updateFailed": "Не удалось обновить проект."
-  },
-  "renameProject": {
-    "errors": {
-      "projectNotFound": "Проект не найден",
-      "nameRequired": "Имя проекта обязательно.",
-      "invalidName": "Имя проекта не может содержать переносы строк или управляющие символы.",
-      "nameExists": "Проект с именем '{{name}}' уже существует."
+    "toggleVSCode": {
+        "errors": {
+            "projectNotFound": "Проект не найден",
+            "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере.",
+            "missingLaunchPath": "Не найден путь запуска Godot для этого проекта.",
+            "invalidProjectDefinition": "Не удалось определить шаблон настроек редактора для этой версии Godot."
+        }
+    },
+    "editProject": {
+        "title": "Настройки проекта",
+        "description": "Обновите настройки имени проекта.",
+        "fields": {
+            "name": {
+                "label": "Имя проекта",
+                "help": "Имя, отображаемое в Godot Launcher.",
+                "placeholder": "Мой проект"
+            },
+            "path": {
+                "label": "Папка проекта"
+            }
+        },
+        "godot": {
+            "renameLabel": "Также переименовать проект Godot",
+            "loading": "Проверка проекта Godot...",
+            "currentName": "Текущее имя проекта Godot: {{name}}",
+            "unavailable": "project.godot недоступен. Можно изменить только имя в лаунчере."
+        },
+        "actions": {
+            "update": "Обновить",
+            "updating": "Обновление..."
+        },
+        "validation": {
+            "required": "Имя проекта обязательно.",
+            "invalidName": "Имя проекта не может содержать переносы строк или управляющие символы."
+        },
+        "updateFailed": "Не удалось обновить проект."
+    },
+    "renameProject": {
+        "errors": {
+            "projectNotFound": "Проект не найден",
+            "nameRequired": "Имя проекта обязательно.",
+            "invalidName": "Имя проекта не может содержать переносы строк или управляющие символы.",
+            "nameExists": "Проект с именем '{{name}}' уже существует."
+        }
+    },
+    "initGit": {
+        "errors": {
+            "projectNotFound": "Проект не найден",
+            "initFailed": "Не удалось инициализировать репозиторий Git."
+        }
     }
-  },
-  "initGit": {
-    "errors": {
-      "projectNotFound": "Проект не найден",
-      "initFailed": "Не удалось инициализировать репозиторий Git."
-    }
-  }
 }

@@ -7,7 +7,7 @@ import type {
     InstalledRelease,
     ProjectConfig,
     ProjectDetails,
-} from '@shared';
+} from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
 

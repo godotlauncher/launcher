@@ -1,26 +1,26 @@
 {
-  "title": "Pomoc",
-  "thirdPartyNotices": "Informacje o oprogramowaniu firm trzecich",
-  "launcher": {
-    "title": "Godot Launcher",
-    "changelog": "Dziennik zmian",
-    "homePage": "Strona główna",
-    "docs": "Dokumentacja Launchera"
-  },
-  "godot": {
-    "title": "Silnik Godot",
-    "engine": "Silnik Godot",
-    "docs": "Dokumentacja Godot"
-  },
-  "community": {
-    "title": "Społeczność i wsparcie",
-    "learnMore": "Dowiedz się więcej"
-  },
-  "contribute": {
-    "title": "Jak pomóc",
-    "learnMore": "Dowiedz się więcej",
-    "description": "Zgłaszaj błędy lub sugestie, przesyłając zgłoszenie w oficjalnym repozytorium GitHub",
-    "reportBug": "Myślę, że znalazłem błąd",
-    "suggestion": "Mam sugestię!"
-  }
+    "title": "Pomoc",
+    "thirdPartyNotices": "Informacje o oprogramowaniu firm trzecich",
+    "launcher": {
+        "title": "Godot Launcher",
+        "changelog": "Dziennik zmian",
+        "homePage": "Strona główna",
+        "docs": "Dokumentacja Launchera"
+    },
+    "godot": {
+        "title": "Silnik Godot",
+        "engine": "Silnik Godot",
+        "docs": "Dokumentacja Godot"
+    },
+    "community": {
+        "title": "Społeczność i wsparcie",
+        "learnMore": "Dowiedz się więcej"
+    },
+    "contribute": {
+        "title": "Jak pomóc",
+        "learnMore": "Dowiedz się więcej",
+        "description": "Zgłaszaj błędy lub sugestie, przesyłając zgłoszenie w oficjalnym repozytorium GitHub",
+        "reportBug": "Myślę, że znalazłem błąd",
+        "suggestion": "Mam sugestię!"
+    }
 }

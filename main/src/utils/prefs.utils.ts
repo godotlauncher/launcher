@@ -1,6 +1,7 @@
+import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { UserPreferences } from '@shared';
+import type { UserPreferences } from '@shared/contracts';
 import { dialog } from 'electron';
 import logger from 'electron-log';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
@@ -126,6 +127,23 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         vs_code_path: '',
         language: 'system', // Default to system language detection
     };
+}
+
+export async function ensurePreferencesStorage(): Promise<void> {
+    const configDir = await getConfigDir();
+    const prefsPath = await getPrefsPath();
+
+    if (!fs.existsSync(configDir)) {
+        await fs.promises.mkdir(configDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(prefsPath)) {
+        const defaultPrefs = await getDefaultPrefs();
+        await fs.promises.writeFile(
+            prefsPath,
+            JSON.stringify(defaultPrefs, null, 4),
+        );
+    }
 }
 
 export async function readPrefsFromDisk(

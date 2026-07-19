@@ -2,6 +2,7 @@ import logger from 'electron-log';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appBridge } from '../../bridge.ts';
 import { changeLanguage } from '../../i18n';
 
 interface LanguageOption {
@@ -38,7 +39,7 @@ export const LanguageSelector: React.FC = () => {
     useEffect(() => {
         const loadCurrentLanguage = async () => {
             try {
-                const prefs = await window.electron.getUserPreferences();
+                const prefs = await appBridge.getUserPreferences();
                 setSelectedLanguage(prefs.language || 'system');
             } catch (error) {
                 logger.error(

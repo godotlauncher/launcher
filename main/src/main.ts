@@ -1,18 +1,31 @@
 import 'reflect-metadata';
-import { type Application, createApplication } from '@mariodebono/di';
+import path from 'node:path';
+import type { Application } from '@mariodebono/di';
+import { createElectronApplication } from '@mariodebono/di-electron';
 import { app, Menu } from 'electron';
 import logger from 'electron-log/main.js';
 import { AppModule } from './app.module.js';
 import { configuration, setCurrentAppConfig } from './config/index.js';
-
-logger.initialize();
-logger.debug('Raw process argv before CLI parsing:', process.argv);
+import { getAppIconPath, getUIPath } from './pathResolver.js';
 
 const appConfig = configuration({
     args: process.argv,
     env: process.env,
 });
 setCurrentAppConfig(appConfig);
+
+if (appConfig.isDev) {
+    const devLogPath = path.join(
+        app.getAppPath(),
+        '.debug',
+        'logs',
+        'main.log',
+    );
+    logger.transports.file.resolvePathFn = () => devLogPath;
+}
+
+logger.initialize();
+logger.debug('Raw process argv before CLI parsing:', process.argv);
 
 logger.info('Starting Godot Launcher');
 logger.info(`Version: ${app.getVersion()}`);
@@ -56,10 +69,33 @@ Menu.setApplicationMenu(null);
 let diApp: Application | undefined;
 
 async function bootstrap(): Promise<void> {
-    diApp = await createApplication(AppModule.forRoot(appConfig), {
-        logger: false,
+    const result = await createElectronApplication(AppModule, {
+        instanceMode: appConfig.isDev ? 'multi' : 'single',
+        hideOnClose: true,
+        logger: ['error', 'warn'],
+        loggerOptions: {
+            loggerInstance: logger,
+        },
+        mainWindowOptions: {
+            url: appConfig.isDev ? 'http://localhost:5123' : getUIPath(),
+            startMode: 'hidden',
+            width: 1024,
+            height: 600,
+            minWidth: 1024,
+            minHeight: 600,
+            icon: getAppIconPath(),
+            webPreferences: {
+                contextIsolation: true,
+                nodeIntegration: false,
+            },
+        },
     });
 
+    if (result.status === 'redirected') {
+        return;
+    }
+
+    diApp = result.application;
     app.on('will-quit', () => {
         void diApp?.destroyAsync().catch((error) => {
             logger.error('Failed to destroy application', error);

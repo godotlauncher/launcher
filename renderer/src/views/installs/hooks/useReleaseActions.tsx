@@ -2,11 +2,12 @@ import type {
     InstalledRelease,
     InstallReleaseResult,
     RemovedReleaseResult,
-} from '@shared';
+} from '@shared/contracts';
 import logger from 'electron-log';
 import { TriangleAlertIcon } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
+import { appBridge } from '../../../bridge.ts';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
@@ -226,9 +227,7 @@ export function useReleaseActions({
                                 type="button"
                                 className="btn btn-xs btn-outline"
                                 onClick={() =>
-                                    window.electron.openShellFolder(
-                                        candidatePath,
-                                    )
+                                    appBridge.openShellFolder(candidatePath)
                                 }
                             >
                                 {t('buttons.openPath', { ns: 'common' })}

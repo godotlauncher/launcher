@@ -1,152 +1,152 @@
 {
-  "title": "編輯器安裝",
-  "tabs": {},
-  "buttons": {
-    "install": "安裝編輯器",
-    "addCustomEditor": "自訂編輯器",
-    "selectCustomEditorManifest": "選擇清單檔案",
-    "createCustomEditorManifest": "建立自訂編輯器清單"
-  },
-  "search": {
-    "placeholder": "搜尋"
-  },
-  "table": {
-    "name": "名稱"
-  },
-  "badges": {
-    "dotNet": ".NET",
-    "prerelease": "預先釋出",
-    "custom": "自訂"
-  },
-  "status": {
-    "installing": "安裝中…"
-  },
-  "messages": {
-    "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
-    "revalidating": "正在驗證已安裝的版本...",
-    "revalidatedRelease": "{{version}} 已再次可用。",
-    "revalidationFailed": "驗證失敗。請檢查儲存裝置並再試一次。",
-    "revalidationStillMissing": "驗證已完成，但 {{version}} 仍無法使用。請確認 {{path}} 可存取後再試一次。",
-    "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。",
-    "unavailableHintWithReinstall": "無法存取編輯器路徑。請掛載儲存裝置後重試、重新安裝編輯器，或移除此項目。",
-    "reinstallFailed": "重新安裝失敗。請檢查連線後再試一次。",
-    "registeredCustomEditor": "已註冊自訂編輯器 {{name}}。",
-    "registerCustomEditorFailed": "無法註冊自訂編輯器。",
-    "unavailableCustomEditorHint": "無法存取自訂編輯器路徑。請掛載儲存裝置後重試，或移除此項目。"
-  },
-  "customEditor": {
-    "selectManifestTitle": "新增自訂編輯器清單",
-    "manifestFilterName": "Godot Launcher 編輯器清單",
-    "waitingForDialog": "正在等待對話框...",
-    "replace": {
-      "title": "取代自訂編輯器？",
-      "message": "已註冊此版本的自訂編輯器。",
-      "versionLabel": "版本",
-      "detail": "取代後，啟動器記錄會更新為使用選取的清單。不會刪除你的編輯器檔案。"
+    "title": "編輯器安裝",
+    "tabs": {},
+    "buttons": {
+        "install": "安裝編輯器",
+        "addCustomEditor": "自訂編輯器",
+        "selectCustomEditorManifest": "選擇清單檔案",
+        "createCustomEditorManifest": "建立自訂編輯器清單"
     },
-    "drop": {
-      "title": "拖放清單以新增自訂編輯器",
-      "unsupportedTitle": "不支援的清單檔案",
-      "helperPrefix": "拖放",
-      "helperSuffix": "到這裡。"
+    "search": {
+        "placeholder": "搜尋"
     },
-    "creator": {
-      "title": "建立自訂編輯器清單",
-      "description": "建立自訂 Godot 編輯器的清單檔案並立即註冊。",
-      "fields": {
-        "outputDirectory": {
-          "label": "輸出資料夾",
-          "help": "寫入 godotlauncher-editor-manifest.json 的資料夾。"
+    "table": {
+        "name": "名稱"
+    },
+    "badges": {
+        "dotNet": ".NET",
+        "prerelease": "預先釋出",
+        "custom": "自訂"
+    },
+    "status": {
+        "installing": "安裝中…"
+    },
+    "messages": {
+        "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
+        "revalidating": "正在驗證已安裝的版本...",
+        "revalidatedRelease": "{{version}} 已再次可用。",
+        "revalidationFailed": "驗證失敗。請檢查儲存裝置並再試一次。",
+        "revalidationStillMissing": "驗證已完成，但 {{version}} 仍無法使用。請確認 {{path}} 可存取後再試一次。",
+        "revalidationStillMissingNoPath": "驗證已完成，但 {{version}} 仍無法使用。請確認儲存裝置已掛載後再試一次。",
+        "unavailableHintWithReinstall": "無法存取編輯器路徑。請掛載儲存裝置後重試、重新安裝編輯器，或移除此項目。",
+        "reinstallFailed": "重新安裝失敗。請檢查連線後再試一次。",
+        "registeredCustomEditor": "已註冊自訂編輯器 {{name}}。",
+        "registerCustomEditorFailed": "無法註冊自訂編輯器。",
+        "unavailableCustomEditorHint": "無法存取自訂編輯器路徑。請掛載儲存裝置後重試，或移除此項目。"
+    },
+    "customEditor": {
+        "selectManifestTitle": "新增自訂編輯器清單",
+        "manifestFilterName": "Godot Launcher 編輯器清單",
+        "waitingForDialog": "正在等待對話框...",
+        "replace": {
+            "title": "取代自訂編輯器？",
+            "message": "已註冊此版本的自訂編輯器。",
+            "versionLabel": "版本",
+            "detail": "取代後，啟動器記錄會更新為使用選取的清單。不會刪除你的編輯器檔案。"
         },
-        "name": {
-          "label": "顯示名稱",
-          "help": "此自訂編輯器在 Godot Launcher 中顯示的名稱。",
-          "placeholder": "Acme Godot 4.4 自訂編輯器"
+        "drop": {
+            "title": "拖放清單以新增自訂編輯器",
+            "unsupportedTitle": "不支援的清單檔案",
+            "helperPrefix": "拖放",
+            "helperSuffix": "到這裡。"
         },
-        "version": {
-          "label": "清單版本",
-          "help": "此自訂編輯器的唯一版本識別碼。",
-          "placeholder": "4.4-custom.1"
-        },
-        "baseVersion": {
-          "label": "基礎版本",
-          "help": "major.minor 格式的 Godot 相容版本。",
-          "placeholder": "4.4"
-        },
-        "flavor": {
-          "label": "類型",
-          "help": "標準建置使用 gdscript，.NET 建置使用 dotnet。允許自訂值。"
-        },
-        "prerelease": {
-          "label": "預發布",
-          "help": "將此編輯器標記為預發布建置。"
-        },
-        "platform": {
-          "label": "平台",
-          "help": "此清單項目支援的作業系統。"
-        },
-        "arch": {
-          "label": "架構",
-          "help": "此編輯器支援的 CPU 架構。通用適用於所選平台的任何架構。"
-        },
-        "editorPath": {
-          "label": "編輯器路徑",
-          "help": "自訂 Godot 編輯器可執行檔或應用程式套件的路徑。"
-        },
-        "consolePath": {
-          "label": "主控台路徑",
-          "help": "此編輯器的選用主控台可執行檔路徑。"
+        "creator": {
+            "title": "建立自訂編輯器清單",
+            "description": "建立自訂 Godot 編輯器的清單檔案並立即註冊。",
+            "fields": {
+                "outputDirectory": {
+                    "label": "輸出資料夾",
+                    "help": "寫入 godotlauncher-editor-manifest.json 的資料夾。"
+                },
+                "name": {
+                    "label": "顯示名稱",
+                    "help": "此自訂編輯器在 Godot Launcher 中顯示的名稱。",
+                    "placeholder": "Acme Godot 4.4 自訂編輯器"
+                },
+                "version": {
+                    "label": "清單版本",
+                    "help": "此自訂編輯器的唯一版本識別碼。",
+                    "placeholder": "4.4-custom.1"
+                },
+                "baseVersion": {
+                    "label": "基礎版本",
+                    "help": "major.minor 格式的 Godot 相容版本。",
+                    "placeholder": "4.4"
+                },
+                "flavor": {
+                    "label": "類型",
+                    "help": "標準建置使用 gdscript，.NET 建置使用 dotnet。允許自訂值。"
+                },
+                "prerelease": {
+                    "label": "預發布",
+                    "help": "將此編輯器標記為預發布建置。"
+                },
+                "platform": {
+                    "label": "平台",
+                    "help": "此清單項目支援的作業系統。"
+                },
+                "arch": {
+                    "label": "架構",
+                    "help": "此編輯器支援的 CPU 架構。通用適用於所選平台的任何架構。"
+                },
+                "editorPath": {
+                    "label": "編輯器路徑",
+                    "help": "自訂 Godot 編輯器可執行檔或應用程式套件的路徑。"
+                },
+                "consolePath": {
+                    "label": "主控台路徑",
+                    "help": "此編輯器的選用主控台可執行檔路徑。"
+                }
+            },
+            "platforms": {
+                "windows": "Windows",
+                "linux": "Linux",
+                "macos": "macOS"
+            },
+            "architectures": {
+                "universal": "通用",
+                "x64": "x64",
+                "arm64": "ARM64"
+            },
+            "constants": {
+                "title": "產生的值：",
+                "description": "schema_version 為 1，config_version 為 5。"
+            },
+            "actions": {
+                "selectOutputDirectory": "選擇輸出資料夾",
+                "selectEditorPath": "選擇編輯器路徑",
+                "selectConsolePath": "選擇主控台路徑",
+                "createAndRegister": "建立並註冊",
+                "creating": "正在建立...",
+                "clearPlatform": "清除平台"
+            },
+            "validation": {
+                "outputDirectory": {
+                    "required": "輸出資料夾為必填項目。",
+                    "pathMissing": "輸出資料夾不存在。"
+                },
+                "name": {
+                    "required": "顯示名稱為必填項目。"
+                },
+                "version": {
+                    "required": "清單版本為必填項目。"
+                },
+                "baseVersion": {
+                    "required": "基礎版本為必填項目。",
+                    "baseVersion": "基礎版本必須使用 major.minor 格式，例如 4.4。"
+                },
+                "flavor": {
+                    "required": "類型為必填項目。"
+                },
+                "editorPath": {
+                    "required": "編輯器路徑為必填項目。",
+                    "pathMissing": "編輯器路徑不存在。"
+                },
+                "consolePath": {
+                    "pathMissing": "主控台路徑不存在。"
+                },
+                "createFailed": "無法建立自訂編輯器清單。"
+            }
         }
-      },
-      "platforms": {
-        "windows": "Windows",
-        "linux": "Linux",
-        "macos": "macOS"
-      },
-      "architectures": {
-        "universal": "通用",
-        "x64": "x64",
-        "arm64": "ARM64"
-      },
-      "constants": {
-        "title": "產生的值：",
-        "description": "schema_version 為 1，config_version 為 5。"
-      },
-      "actions": {
-        "selectOutputDirectory": "選擇輸出資料夾",
-        "selectEditorPath": "選擇編輯器路徑",
-        "selectConsolePath": "選擇主控台路徑",
-        "createAndRegister": "建立並註冊",
-        "creating": "正在建立...",
-        "clearPlatform": "清除平台"
-      },
-      "validation": {
-        "outputDirectory": {
-          "required": "輸出資料夾為必填項目。",
-          "pathMissing": "輸出資料夾不存在。"
-        },
-        "name": {
-          "required": "顯示名稱為必填項目。"
-        },
-        "version": {
-          "required": "清單版本為必填項目。"
-        },
-        "baseVersion": {
-          "required": "基礎版本為必填項目。",
-          "baseVersion": "基礎版本必須使用 major.minor 格式，例如 4.4。"
-        },
-        "flavor": {
-          "required": "類型為必填項目。"
-        },
-        "editorPath": {
-          "required": "編輯器路徑為必填項目。",
-          "pathMissing": "編輯器路徑不存在。"
-        },
-        "consolePath": {
-          "pathMissing": "主控台路徑不存在。"
-        },
-        "createFailed": "無法建立自訂編輯器清單。"
-      }
     }
-  }
 }

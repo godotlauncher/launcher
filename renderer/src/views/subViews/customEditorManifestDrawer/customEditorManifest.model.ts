@@ -2,7 +2,7 @@ import type {
     CustomEngineManifest,
     CustomEngineManifestArch,
     CustomEngineManifestPlatformName,
-} from '@shared';
+} from '@shared/contracts';
 
 export type CustomEditorManifestFormState = {
     outputDirectory: string;

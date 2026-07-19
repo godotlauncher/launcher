@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import type { RendererType } from '@shared';
+import type { RendererType } from '@shared/contracts';
 
 export type GodotProjectFile = Map<string, Map<string, string>>;
 

@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { FolderOpen, Trash2 } from 'lucide-react';
 import type React from 'react';
 import godotIcon from '../../../assets/icons/godot_icon_color.svg';

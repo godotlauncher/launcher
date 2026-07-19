@@ -1,6 +1,6 @@
 import type { ElectronApplication } from '@playwright/test';
-import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import { prepareUpdatesScreenshot } from './runtime';
+import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import {
     APP_UPDATE_MESSAGE,
     APP_UPDATE_RELEASE_URL,

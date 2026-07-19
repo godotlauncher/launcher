@@ -1,26 +1,26 @@
 {
-  "title": "ヘルプ",
-  "thirdPartyNotices": "サードパーティ通知",
-  "launcher": {
-    "title": "Godot Launcher",
-    "changelog": "変更履歴",
-    "homePage": "ホームページ",
-    "docs": "ランチャードキュメント"
-  },
-  "godot": {
-    "title": "Godotエンジン",
-    "engine": "Godotエンジン",
-    "docs": "Godotドキュメント"
-  },
-  "community": {
-    "title": "コミュニティとサポート",
-    "learnMore": "詳細を見る"
-  },
-  "contribute": {
-    "title": "貢献する方法",
-    "learnMore": "詳細を見る",
-    "description": "公式GitHubリポジトリにissueを送信してバグや提案を報告してください",
-    "reportBug": "バグを見つけたと思います",
-    "suggestion": "提案があります！"
-  }
+    "title": "ヘルプ",
+    "thirdPartyNotices": "サードパーティ通知",
+    "launcher": {
+        "title": "Godot Launcher",
+        "changelog": "変更履歴",
+        "homePage": "ホームページ",
+        "docs": "ランチャードキュメント"
+    },
+    "godot": {
+        "title": "Godotエンジン",
+        "engine": "Godotエンジン",
+        "docs": "Godotドキュメント"
+    },
+    "community": {
+        "title": "コミュニティとサポート",
+        "learnMore": "詳細を見る"
+    },
+    "contribute": {
+        "title": "貢献する方法",
+        "learnMore": "詳細を見る",
+        "description": "公式GitHubリポジトリにissueを送信してバグや提案を報告してください",
+        "reportBug": "バグを見つけたと思います",
+        "suggestion": "提案があります！"
+    }
 }

@@ -1,8 +1,9 @@
-import type { CachedTool } from '@shared';
+import type { CachedTool } from '@shared/contracts';
 import clsx from 'clsx';
 import logger from 'electron-log';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appBridge } from '../bridge.ts';
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
 import type { SettingsTab } from '../routes';
@@ -43,13 +44,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const isRescanningTools = rescanCount > 0;
 
     const quickCheckTools = useCallback(async () => {
-        return await window.electron.getCachedTools({ refreshIfStale: false });
+        return await appBridge.getCachedTools({ refreshIfStale: false });
     }, []);
 
     const rescanTools = useCallback(async () => {
         setRescanCount((count) => count + 1);
         try {
-            const tools = await window.electron.refreshToolCache();
+            const tools = await appBridge.refreshToolCache();
             setCachedTools(tools);
         } catch (error) {
             logger.error('Failed to refresh tool cache', error);

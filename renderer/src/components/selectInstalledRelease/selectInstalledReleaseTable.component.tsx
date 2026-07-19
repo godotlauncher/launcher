@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useRelease } from '../../hooks/useRelease';

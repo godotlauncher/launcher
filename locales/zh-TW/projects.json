@@ -1,132 +1,132 @@
 {
-  "title": "專案",
-  "buttons": {
-    "add": "新增",
-    "newProject": "新專案"
-  },
-  "search": {
-    "placeholder": "搜尋"
-  },
-  "table": {
-    "name": "名稱",
-    "modified": "修改時間",
-    "editor": "編輯器",
-    "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
-    "dotNetProject": "這是一個 .NET 專案",
-    "prerelease": "使用預先釋出的 Godot 編輯器版本",
-    "windowedMode": "此專案以視窗模式開啟",
-    "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
-    "gitProject": "此專案使用 Git 進行版本控制",
-    "invalidReasons": {
-      "missingProjectFile": "找不到專案檔案。請檢查專案位置。",
-      "missingEditor": "找不到編輯器。請檢查編輯器位置。"
-    }
-  },
-  "addProject": {
-    "selectFile": "選擇專案檔",
-    "godotProject": "Godot 專案",
-    "editorResolution": {
-      "title": "需要編輯器版本",
-      "message": "此專案要求的編輯器尚未安裝。",
-      "version": "版本",
-      "channel": "管道",
-      "flavor": "類型",
-      "baseVersion": "基礎版本",
-      "fallbackMessage": "可以使用已安裝的相容編輯器作為備用。",
-      "editorActions": "選項",
-      "download": "下載 {{version}}",
-      "useFallback": "使用 {{version}}",
-      "addMissing": "使用缺失的編輯器新增"
+    "title": "專案",
+    "buttons": {
+        "add": "新增",
+        "newProject": "新專案"
     },
-    "errors": {
-      "projectExists": "專案 '{{path}}' 已存在",
-      "invalidPath": "無效的專案路徑",
-      "invalidProjectFile": "無效的 project.godot 檔案",
-      "nameExists": "名稱為 '{{name}}' 的專案已存在\n請在 'project.godot' 中重新命名專案，或移除現有專案。",
-      "invalidRenderer": "無效的專案檔",
-      "invalidConfigVersion": "無效的 project.godot config_version。\n僅支援設定版本 5",
-      "noStableReleases": "找不到 Godot {{version}}.x 的已安裝穩定版\n請先為 Godot {{version}}.x 安裝穩定版，再嘗試新增專案。",
-      "noDotNetRelease": "此專案似乎為 .NET 專案，但未找到含 .NET 的編輯器發行版",
-      "noCompatibleRelease": "找不到支援 config_version {{configVersion}} 的 Godot {{version}}.x 已安裝發行版。"
-    }
-  },
-  "messages": {
-    "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
-    "waitingForDialog": "等待對話方塊以新增專案...",
-    "needReleaseInstalled": "您需要至少安裝一個發行版本才能新增專案",
-    "addProjectError": "新增專案時發生錯誤",
-    "setEditorError": "設定專案編輯器時發生錯誤",
-    "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。",
-    "invalidReleaseEditor": "所選的編輯器不可用。請掛載磁碟機或重新安裝此版本。",
-    "dropGodotFileOnly": "請拖放 project.godot 檔案以新增專案",
-    "dropProjectHere": "將 project.godot 檔案拖放到此處以新增專案",
-    "addingProjects": "正在新增專案：{{current}}/{{total}}",
-    "failedAddProject": "新增專案失敗：{{error}}",
-    "dropProjectFilesHere": "將 Godot 專案檔案拖放到這裡",
-    "dropProjectFilesHelpPrefix": "拖放一個或多個",
-    "dropProjectFilesHelpSuffix": "檔案以將其新增至啟動器。",
-    "invalidReasons": {
-      "missingProjectFile": "找不到專案檔案。請檢查專案位置，或移除後重新新增專案。",
-      "missingEditor": "所選編輯器無法使用。請掛載磁碟機或選擇其他編輯器。"
+    "search": {
+        "placeholder": "搜尋"
     },
-    "recoveredVSCodeConfig": "部分 VS Code 設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。"
-  },
-  "changeEditor": {
-    "errors": {
-      "projectNotFound": "找不到專案",
-      "invalidEditorVersion": "無效的編輯器版本",
-      "differentMajorVersion": "無法使用不同主版本的編輯器\n為保護您的專案，請參考官方遷移指南：https://godotengine.org"
-    }
-  },
-  "toggleVSCode": {
-    "errors": {
-      "projectNotFound": "找不到專案",
-      "vscodeNotInstalled": "此電腦上未安裝 Visual Studio Code。",
-      "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
-      "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
-    }
-  },
-  "editProject": {
-    "title": "專案設定",
-    "description": "更新專案命名設定。",
-    "fields": {
-      "name": {
-        "label": "專案名稱",
-        "help": "顯示在 Godot Launcher 中的名稱。",
-        "placeholder": "我的專案"
-      },
-      "path": {
-        "label": "專案資料夾"
-      }
+    "table": {
+        "name": "名稱",
+        "modified": "修改時間",
+        "editor": "編輯器",
+        "invalidProject": "此專案無效，請檢查專案與編輯器位置！",
+        "dotNetProject": "這是一個 .NET 專案",
+        "prerelease": "使用預先釋出的 Godot 編輯器版本",
+        "windowedMode": "此專案以視窗模式開啟",
+        "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
+        "gitProject": "此專案使用 Git 進行版本控制",
+        "invalidReasons": {
+            "missingProjectFile": "找不到專案檔案。請檢查專案位置。",
+            "missingEditor": "找不到編輯器。請檢查編輯器位置。"
+        }
     },
-    "godot": {
-      "renameLabel": "同時重新命名 Godot 專案",
-      "loading": "正在檢查 Godot 專案...",
-      "currentName": "目前的 Godot 專案名稱：{{name}}",
-      "unavailable": "project.godot 無法使用。只能變更啟動器中的名稱。"
+    "addProject": {
+        "selectFile": "選擇專案檔",
+        "godotProject": "Godot 專案",
+        "editorResolution": {
+            "title": "需要編輯器版本",
+            "message": "此專案要求的編輯器尚未安裝。",
+            "version": "版本",
+            "channel": "管道",
+            "flavor": "類型",
+            "baseVersion": "基礎版本",
+            "fallbackMessage": "可以使用已安裝的相容編輯器作為備用。",
+            "editorActions": "選項",
+            "download": "下載 {{version}}",
+            "useFallback": "使用 {{version}}",
+            "addMissing": "使用缺失的編輯器新增"
+        },
+        "errors": {
+            "projectExists": "專案 '{{path}}' 已存在",
+            "invalidPath": "無效的專案路徑",
+            "invalidProjectFile": "無效的 project.godot 檔案",
+            "nameExists": "名稱為 '{{name}}' 的專案已存在\n請在 'project.godot' 中重新命名專案，或移除現有專案。",
+            "invalidRenderer": "無效的專案檔",
+            "invalidConfigVersion": "無效的 project.godot config_version。\n僅支援設定版本 5",
+            "noStableReleases": "找不到 Godot {{version}}.x 的已安裝穩定版\n請先為 Godot {{version}}.x 安裝穩定版，再嘗試新增專案。",
+            "noDotNetRelease": "此專案似乎為 .NET 專案，但未找到含 .NET 的編輯器發行版",
+            "noCompatibleRelease": "找不到支援 config_version {{configVersion}} 的 Godot {{version}}.x 已安裝發行版。"
+        }
     },
-    "actions": {
-      "update": "更新",
-      "updating": "正在更新..."
+    "messages": {
+        "noReleasesCta": "尚未安裝任何發行版本。<Link>前往安裝</Link>",
+        "waitingForDialog": "等待對話方塊以新增專案...",
+        "needReleaseInstalled": "您需要至少安裝一個發行版本才能新增專案",
+        "addProjectError": "新增專案時發生錯誤",
+        "setEditorError": "設定專案編輯器時發生錯誤",
+        "projectNotValid": "專案無效，請確保專案與發行版本在您的電腦上有效。",
+        "invalidReleaseEditor": "所選的編輯器不可用。請掛載磁碟機或重新安裝此版本。",
+        "dropGodotFileOnly": "請拖放 project.godot 檔案以新增專案",
+        "dropProjectHere": "將 project.godot 檔案拖放到此處以新增專案",
+        "addingProjects": "正在新增專案：{{current}}/{{total}}",
+        "failedAddProject": "新增專案失敗：{{error}}",
+        "dropProjectFilesHere": "將 Godot 專案檔案拖放到這裡",
+        "dropProjectFilesHelpPrefix": "拖放一個或多個",
+        "dropProjectFilesHelpSuffix": "檔案以將其新增至啟動器。",
+        "invalidReasons": {
+            "missingProjectFile": "找不到專案檔案。請檢查專案位置，或移除後重新新增專案。",
+            "missingEditor": "所選編輯器無法使用。請掛載磁碟機或選擇其他編輯器。"
+        },
+        "recoveredVSCodeConfig": "部分 VS Code 設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。"
     },
-    "validation": {
-      "required": "專案名稱為必填。",
-      "invalidName": "專案名稱不能包含換行或控制字元。"
+    "changeEditor": {
+        "errors": {
+            "projectNotFound": "找不到專案",
+            "invalidEditorVersion": "無效的編輯器版本",
+            "differentMajorVersion": "無法使用不同主版本的編輯器\n為保護您的專案，請參考官方遷移指南：https://godotengine.org"
+        }
     },
-    "updateFailed": "無法更新專案。"
-  },
-  "renameProject": {
-    "errors": {
-      "projectNotFound": "找不到專案",
-      "nameRequired": "專案名稱為必填。",
-      "invalidName": "專案名稱不能包含換行或控制字元。",
-      "nameExists": "名為 '{{name}}' 的專案已存在。"
+    "toggleVSCode": {
+        "errors": {
+            "projectNotFound": "找不到專案",
+            "vscodeNotInstalled": "此電腦上未安裝 Visual Studio Code。",
+            "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
+            "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
+        }
+    },
+    "editProject": {
+        "title": "專案設定",
+        "description": "更新專案命名設定。",
+        "fields": {
+            "name": {
+                "label": "專案名稱",
+                "help": "顯示在 Godot Launcher 中的名稱。",
+                "placeholder": "我的專案"
+            },
+            "path": {
+                "label": "專案資料夾"
+            }
+        },
+        "godot": {
+            "renameLabel": "同時重新命名 Godot 專案",
+            "loading": "正在檢查 Godot 專案...",
+            "currentName": "目前的 Godot 專案名稱：{{name}}",
+            "unavailable": "project.godot 無法使用。只能變更啟動器中的名稱。"
+        },
+        "actions": {
+            "update": "更新",
+            "updating": "正在更新..."
+        },
+        "validation": {
+            "required": "專案名稱為必填。",
+            "invalidName": "專案名稱不能包含換行或控制字元。"
+        },
+        "updateFailed": "無法更新專案。"
+    },
+    "renameProject": {
+        "errors": {
+            "projectNotFound": "找不到專案",
+            "nameRequired": "專案名稱為必填。",
+            "invalidName": "專案名稱不能包含換行或控制字元。",
+            "nameExists": "名為 '{{name}}' 的專案已存在。"
+        }
+    },
+    "initGit": {
+        "errors": {
+            "projectNotFound": "找不到專案",
+            "initFailed": "初始化 Git 儲存庫失敗。"
+        }
     }
-  },
-  "initGit": {
-    "errors": {
-      "projectNotFound": "找不到專案",
-      "initFailed": "初始化 Git 儲存庫失敗。"
-    }
-  }
 }

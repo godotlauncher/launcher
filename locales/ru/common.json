@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "Ок",
-    "cancel": "Отмена",
-    "continue": "Продолжить",
-    "select": "Выбрать",
-    "retry": "Повторить",
-    "remove": "Удалить",
-    "copyPath": "Копировать путь",
-    "openPath": "Открыть путь",
-    "reinstall": "Переустановить"
-  },
-  "error": "Ошибка",
-  "success": "Успешно",
-  "warning": "Предупреждение",
-  "info": "Информация",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "Путь должен быть непустой строкой.",
-      "pathMustBeAbsolute": "Путь должен быть абсолютным.",
-      "targetNotDirectory": "Целевой путь уже существует, но не является папкой."
+    "buttons": {
+        "ok": "Ок",
+        "cancel": "Отмена",
+        "continue": "Продолжить",
+        "select": "Выбрать",
+        "retry": "Повторить",
+        "remove": "Удалить",
+        "copyPath": "Копировать путь",
+        "openPath": "Открыть путь",
+        "reinstall": "Переустановить"
+    },
+    "error": "Ошибка",
+    "success": "Успешно",
+    "warning": "Предупреждение",
+    "info": "Информация",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "Путь должен быть непустой строкой.",
+            "pathMustBeAbsolute": "Путь должен быть абсолютным.",
+            "targetNotDirectory": "Целевой путь уже существует, но не является папкой."
+        }
+    },
+    "app": {
+        "loadingMessage": "Подготовка...",
+        "navigation": {
+            "projects": "Проекты",
+            "installs": "Установки",
+            "help": "Помощь",
+            "settings": "Настройки",
+            "joinCommunity": "Присоединиться к сообществу"
+        },
+        "update": {
+            "availableWithVersion": "Версия {{version}} доступна. <DownloadButton>Скачать обновление</DownloadButton> или <SkipButton>Пропустить эту версию</SkipButton>",
+            "availableNoVersion": "Доступна новая версия. <DownloadButton>Скачать обновление</DownloadButton>",
+            "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
+            "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
+            "manualWithVersion": "Версия {{version}} доступна, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink> или <SkipButton>Пропустить эту версию</SkipButton>",
+            "manualNoVersion": "Доступна новая версия, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Выберите версию редактора",
+        "tableHeaders": {
+            "name": "Название"
+        },
+        "noReleases": "Не найдены версии, требуется версия редактора {{version}}.x",
+        "installReleases": "Установить версии",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "пререлиз"
+        },
+        "unavailable": "Версия недоступна",
+        "unavailableHint": "Подключите диск или выберите другой редактор перед продолжением."
     }
-  },
-  "app": {
-    "loadingMessage": "Подготовка...",
-    "navigation": {
-      "projects": "Проекты",
-      "installs": "Установки",
-      "help": "Помощь",
-      "settings": "Настройки",
-      "joinCommunity": "Присоединиться к сообществу"
-    },
-    "update": {
-      "availableWithVersion": "Версия {{version}} доступна. <DownloadButton>Скачать обновление</DownloadButton> или <SkipButton>Пропустить эту версию</SkipButton>",
-      "availableNoVersion": "Доступна новая версия. <DownloadButton>Скачать обновление</DownloadButton>",
-      "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
-      "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
-      "manualWithVersion": "Версия {{version}} доступна, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink> или <SkipButton>Пропустить эту версию</SkipButton>",
-      "manualNoVersion": "Доступна новая версия, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Выберите версию редактора",
-    "tableHeaders": {
-      "name": "Название"
-    },
-    "noReleases": "Не найдены версии, требуется версия редактора {{version}}.x",
-    "installReleases": "Установить версии",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "пререлиз"
-    },
-    "unavailable": "Версия недоступна",
-    "unavailableHint": "Подключите диск или выберите другой редактор перед продолжением."
-  }
 }

@@ -1,4 +1,4 @@
-import type { UserPreferences } from '@shared';
+import type { UserPreferences } from '@shared/contracts';
 import type React from 'react';
 import { AutoStartSetting } from '../../../components/settings/AutoStartSetting.component';
 import { ProjectLaunchAction } from '../../../components/settings/projectLaunchAction.component';

@@ -7,11 +7,11 @@ import type {
     ReleaseInstallProgress,
     ReleaseInstallProgressStage,
     ReleaseSummary,
-} from '@shared';
+} from '@shared/contracts';
 import logger from 'electron-log';
+import extractZip from 'extract-zip';
 import { checkAndUpdateProjects } from '../checks.js';
 import { t } from '../i18n/index.js';
-import { extractZipArchive } from '../utils/extractZip.utils.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
@@ -169,7 +169,7 @@ async function extractReleaseArchive(
     let processedEntries = 0;
     publishInstallProgress(job, 'extracting', { percent: 0 });
 
-    await extractZipArchive(archivePath, {
+    await extractZip(archivePath, {
         dir: releasePath,
         onEntry: (_entry, zipFile) => {
             processedEntries += 1;

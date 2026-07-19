@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared';
+import type { InstalledRelease } from '@shared/contracts';
 import { Folder, FolderPlus } from 'lucide-react';
 import type React from 'react';
 import { Tooltip } from '../../../../components/ui/tooltip.component';

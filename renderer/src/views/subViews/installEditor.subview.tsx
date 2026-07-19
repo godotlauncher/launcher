@@ -1,4 +1,4 @@
-import type { InstalledRelease, ReleaseSummary } from '@shared';
+import type { InstalledRelease, ReleaseSummary } from '@shared/contracts';
 import { TriangleAlertIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';

@@ -1,26 +1,26 @@
 {
-  "title": "Help",
-  "thirdPartyNotices": "Third-party Notices",
-  "launcher": {
-    "title": "Godot Launcher",
-    "changelog": "Change Log",
-    "homePage": "Home Page",
-    "docs": "Launcher Docs"
-  },
-  "godot": {
-    "title": "Godot Engine",
-    "engine": "Godot Engine",
-    "docs": "Godot Docs"
-  },
-  "community": {
-    "title": "Community and Support",
-    "learnMore": "Learn More"
-  },
-  "contribute": {
-    "title": "How to Contribute",
-    "learnMore": "Learn More",
-    "description": "Report bugs or suggestions by submitting and issue on the official GitHub repository",
-    "reportBug": "I think I found a bug",
-    "suggestion": "I have a suggestion!"
-  }
+    "title": "Help",
+    "thirdPartyNotices": "Third-party Notices",
+    "launcher": {
+        "title": "Godot Launcher",
+        "changelog": "Change Log",
+        "homePage": "Home Page",
+        "docs": "Launcher Docs"
+    },
+    "godot": {
+        "title": "Godot Engine",
+        "engine": "Godot Engine",
+        "docs": "Godot Docs"
+    },
+    "community": {
+        "title": "Community and Support",
+        "learnMore": "Learn More"
+    },
+    "contribute": {
+        "title": "How to Contribute",
+        "learnMore": "Learn More",
+        "description": "Report bugs or suggestions by submitting and issue on the official GitHub repository",
+        "reportBug": "I think I found a bug",
+        "suggestion": "I have a suggestion!"
+    }
 }

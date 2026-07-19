@@ -1,66 +1,66 @@
 {
-  "title": "Proġett Ġdid",
-  "project": {
-    "title": "Proġett",
-    "dotNetBadge": ".NET",
-    "prereleaseBadge": "pre-rilaxx",
-    "noVersionsInstalled": "Ebda verżjonijiet ta' Godot installati",
-    "nameplaceholder": "Isem tal-Proġett",
-    "downloading": "Qed jinżel...",
-    "nameRequired": "Isem tal-proġett huwa meħtieġ",
-    "overwritePath": "Ikteb fuq il-mogħdija tal-proġett",
-    "selectFolderDialogTitle": "Agħżel il-folder tal-proġett",
-    "selectFolderTooltip": "Iftaħ djalogu biex tagħżel il-folder tal-proġett",
-    "useDefaultPath": "Uża l-mogħdija awtomatika",
-    "overwritePathRequired": "Il-mogħdija hija meħtieġa meta tkun attivata l-għażla li tissostitwixxi l-mogħdija tal-proġett."
-  },
-  "renderer": {
-    "title": "Renderer",
-    "forwardPlus": "Forward Plus",
-    "mobile": "Mobbli",
-    "compatible": "Kompatibbli",
-    "forwardPlusFeatures": {
-      "desktop": "Jappoġġja pjattaformi desktop biss.",
-      "advanced3d": "Grafika 3D avvanzata disponibbli.",
-      "scalable": "Jista' jiskala għal xeni kbar u kumplessi.",
-      "renderingDevice": "Juża backend RenderingDevice.",
-      "slowerSimple": "Rendering aktar bil-mod ta' xeni sempliċi."
+    "title": "Proġett Ġdid",
+    "project": {
+        "title": "Proġett",
+        "dotNetBadge": ".NET",
+        "prereleaseBadge": "pre-rilaxx",
+        "noVersionsInstalled": "Ebda verżjonijiet ta' Godot installati",
+        "nameplaceholder": "Isem tal-Proġett",
+        "downloading": "Qed jinżel...",
+        "nameRequired": "Isem tal-proġett huwa meħtieġ",
+        "overwritePath": "Ikteb fuq il-mogħdija tal-proġett",
+        "selectFolderDialogTitle": "Agħżel il-folder tal-proġett",
+        "selectFolderTooltip": "Iftaħ djalogu biex tagħżel il-folder tal-proġett",
+        "useDefaultPath": "Uża l-mogħdija awtomatika",
+        "overwritePathRequired": "Il-mogħdija hija meħtieġa meta tkun attivata l-għażla li tissostitwixxi l-mogħdija tal-proġett."
     },
-    "mobileFeatures": {
-      "platforms": "Jappoġġja desktop + pjattaformi mobile.",
-      "less3d": "Grafika 3D inqas avvanzata.",
-      "lessScalable": "Inqas skalabbli għal xeni kumplessi.",
-      "renderingDevice": "Juża backend RenderingDevice.",
-      "fastSimple": "Rendering mgħaġġel ta' xeni sempliċi."
+    "renderer": {
+        "title": "Renderer",
+        "forwardPlus": "Forward Plus",
+        "mobile": "Mobbli",
+        "compatible": "Kompatibbli",
+        "forwardPlusFeatures": {
+            "desktop": "Jappoġġja pjattaformi desktop biss.",
+            "advanced3d": "Grafika 3D avvanzata disponibbli.",
+            "scalable": "Jista' jiskala għal xeni kbar u kumplessi.",
+            "renderingDevice": "Juża backend RenderingDevice.",
+            "slowerSimple": "Rendering aktar bil-mod ta' xeni sempliċi."
+        },
+        "mobileFeatures": {
+            "platforms": "Jappoġġja desktop + pjattaformi mobile.",
+            "less3d": "Grafika 3D inqas avvanzata.",
+            "lessScalable": "Inqas skalabbli għal xeni kumplessi.",
+            "renderingDevice": "Juża backend RenderingDevice.",
+            "fastSimple": "Rendering mgħaġġel ta' xeni sempliċi."
+        },
+        "compatibleFeatures": {
+            "platforms": "Jappoġġja desktop, mobile + pjattaformi web.",
+            "least3d": "Grafika 3D l-inqas avvanzata (bħalissa work-in-progress).",
+            "lowEnd": "Maħsub għal tagħmir antik/low-end.",
+            "opengl": "Juża backend OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
+            "fastest": "L-aktar rendering mgħaġġel ta' xeni sempliċi."
+        }
     },
-    "compatibleFeatures": {
-      "platforms": "Jappoġġja desktop, mobile + pjattaformi web.",
-      "least3d": "Grafika 3D l-inqas avvanzata (bħalissa work-in-progress).",
-      "lowEnd": "Maħsub għal tagħmir antik/low-end.",
-      "opengl": "Juża backend OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
-      "fastest": "L-aktar rendering mgħaġġel ta' xeni sempliċi."
+    "otherSettings": {
+        "title": "Settings Oħra",
+        "initGit": "Ibda Git Repository",
+        "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",
+        "setupVSCode": "Issettja Visual Studio Code bħala Text Editur",
+        "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter",
+        "vscodeHelp": {
+            "title": "Għaliex Visual Studio Code ma jinstabx?",
+            "message": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code fis-settings."
+        }
+    },
+    "buttons": {
+        "editNow": "Editja issa",
+        "create": "Oħloq Proġett"
+    },
+    "errors": {
+        "invalidEditorVersion": "Verżjoni tal-editur invalida: {{version}}",
+        "failedProjectDefinition": "Naqas milli jinkiseb id-definizzjoni tal-proġett għal verżjoni: {{version}}",
+        "folderNotEmpty": "Folder tal-proġett '{{name}}' diġà jeżisti u mhuwiex vojt, ridt tgħid li żżid proġett eżistenti?",
+        "failedCreateFile": "Naqas milli jinħoloq il-fajl tal-proġett: {{error}}",
+        "pathNotDirectory": "Il-perkors magħżul diġà jeżisti u mhux folder"
     }
-  },
-  "otherSettings": {
-    "title": "Settings Oħra",
-    "initGit": "Ibda Git Repository",
-    "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",
-    "setupVSCode": "Issettja Visual Studio Code bħala Text Editur",
-    "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter",
-    "vscodeHelp": {
-      "title": "Għaliex Visual Studio Code ma jinstabx?",
-      "message": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code fis-settings."
-    }
-  },
-  "buttons": {
-    "editNow": "Editja issa",
-    "create": "Oħloq Proġett"
-  },
-  "errors": {
-    "invalidEditorVersion": "Verżjoni tal-editur invalida: {{version}}",
-    "failedProjectDefinition": "Naqas milli jinkiseb id-definizzjoni tal-proġett għal verżjoni: {{version}}",
-    "folderNotEmpty": "Folder tal-proġett '{{name}}' diġà jeżisti u mhuwiex vojt, ridt tgħid li żżid proġett eżistenti?",
-    "failedCreateFile": "Naqas milli jinħoloq il-fajl tal-proġett: {{error}}",
-    "pathNotDirectory": "Il-perkors magħżul diġà jeżisti u mhux folder"
-  }
 }

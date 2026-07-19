@@ -1,5 +1,6 @@
 import { ExternalLinkIcon } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
+import { appBridge } from '../../bridge.ts';
 
 export const WelcomeStep: React.FC = () => {
     const { t } = useTranslation('welcome');
@@ -23,9 +24,7 @@ export const WelcomeStep: React.FC = () => {
                     type="button"
                     className="btn btn-link p-0 flex gap-1"
                     onClick={() =>
-                        window.electron.openExternal(
-                            'https://godotlauncher.com',
-                        )
+                        appBridge.openExternal('https://godotlauncher.com')
                     }
                 >
                     https://godotlauncher.com

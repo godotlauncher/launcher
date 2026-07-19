@@ -4,7 +4,7 @@ import type {
     InstallReleaseResult,
     ProjectDetails,
     ReleaseSummary,
-} from '@shared';
+} from '@shared/contracts';
 import logger from 'electron-log';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from '../checks.js';
 import { PROJECTS_FILENAME } from '../constants.js';

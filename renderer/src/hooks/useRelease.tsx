@@ -5,8 +5,9 @@ import type {
     ReleaseInstallProgress,
     ReleaseSummary,
     RemovedReleaseResult,
-} from '@shared';
+} from '@shared/contracts';
 import React from 'react';
+import { appBridge, subscribeAppEvent } from '../bridge.ts';
 
 type ReleaseContext = {
     availableReleases: ReleaseSummary[];
@@ -93,9 +94,9 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         setLoading(true);
         setHasError(undefined);
         Promise.all([
-            window.electron.getAvailableReleases(),
-            window.electron.getAvailablePrereleases(),
-            window.electron.getInstalledReleases(),
+            appBridge.getAvailableReleases(),
+            appBridge.getAvailablePrereleases(),
+            appBridge.getInstalledReleases(),
         ])
             .then(([releasesResult, prereleasesResult, installed]) => {
                 setAvailableReleases(releasesResult.releases);
@@ -127,9 +128,10 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: Only want to run on mount
     React.useEffect(() => {
-        const off = window.electron.subscribeReleases(setInstalledReleases);
-        const offInstallProgress =
-            window.electron.subscribeReleaseInstallProgress((progress) => {
+        const off = subscribeAppEvent('releases-updated', setInstalledReleases);
+        const offInstallProgress = subscribeAppEvent(
+            'release-install-progress',
+            (progress) => {
                 setReleaseInstallProgress((prevProgress) => {
                     const nextProgress = prevProgress.filter(
                         (candidate) =>
@@ -150,7 +152,8 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 if (progress.stage === 'complete' && progress.release) {
                     upsertInstalledRelease(progress.release);
                 }
-            });
+            },
+        );
         updateAllReleases();
 
         return () => {
@@ -166,7 +169,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const clearReleaseCache = async () => {
         setLoading(true);
         try {
-            await window.electron.clearReleaseCache();
+            await appBridge.clearReleaseCache();
             updateAllReleases();
         } finally {
             setLoading(false);
@@ -215,7 +218,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const removeRelease = async (
         release: InstalledRelease,
     ): Promise<RemovedReleaseResult> => {
-        const result = await window.electron.removeRelease(release);
+        const result = await appBridge.removeRelease(release);
 
         if (result.success) {
             updateAllReleases();
@@ -230,7 +233,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     ): Promise<InstallReleaseResult> => {
         let result: InstallReleaseResult;
         try {
-            result = await window.electron.installRelease(release, mono);
+            result = await appBridge.installRelease(release, mono);
         } catch (error) {
             return {
                 success: false,
@@ -243,15 +246,13 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             setLoading(true);
 
             Promise.all([
-                window.electron.getAvailableReleases().then((result) => {
+                appBridge.getAvailableReleases().then((result) => {
                     setAvailableReleases(result.releases);
                     if (result.refreshError) {
                         setHasError(result.refreshError);
                     }
                 }),
-                window.electron
-                    .getInstalledReleases()
-                    .then(setInstalledReleases),
+                appBridge.getInstalledReleases().then(setInstalledReleases),
             ]).finally(() => setLoading(false));
         }
 
@@ -262,21 +263,19 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         release: InstalledRelease,
     ): Promise<InstallReleaseResult> => {
         try {
-            const result = await window.electron.reinstallRelease(release);
+            const result = await appBridge.reinstallRelease(release);
 
             if (result.success) {
                 setLoading(true);
 
                 Promise.all([
-                    window.electron.getAvailableReleases().then((result) => {
+                    appBridge.getAvailableReleases().then((result) => {
                         setAvailableReleases(result.releases);
                         if (result.refreshError) {
                             setHasError(result.refreshError);
                         }
                     }),
-                    window.electron
-                        .getInstalledReleases()
-                        .then(setInstalledReleases),
+                    appBridge.getInstalledReleases().then(setInstalledReleases),
                 ]).finally(() => setLoading(false));
             }
 
@@ -294,15 +293,14 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         manifestPath: string,
         options?: { replaceExisting?: boolean },
     ) => {
-        const result = await window.electron.registerCustomEngine(
+        const result = await appBridge.registerCustomEngine(
             manifestPath,
             options,
         );
 
         if (result.success) {
             setInstalledReleases(
-                result.releases ??
-                    (await window.electron.getInstalledReleases()),
+                result.releases ?? (await appBridge.getInstalledReleases()),
             );
         }
 
@@ -312,7 +310,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const checkAllReleasesValid = async (): Promise<InstalledRelease[]> => {
         setLoading(true);
         try {
-            const releases = await window.electron.checkAllReleasesValid();
+            const releases = await appBridge.checkAllReleasesValid();
             setInstalledReleases(releases);
             return releases;
         } finally {

@@ -1,8 +1,9 @@
-import type { CachedTool } from '@shared';
+import type { CachedTool } from '@shared/contracts';
 import logger from 'electron-log';
 import { Folder, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appBridge } from '../../bridge.ts';
 import { usePreferences } from '../../hooks/usePreferences';
 import { WaitingForDialogOverlay } from '../waitingForDialogOverlay.component';
 
@@ -62,7 +63,7 @@ export const VSCodeToolSettings: React.FC<VSCodeToolSettingsProps> = ({
         setDialogOpen(true);
 
         try {
-            const result = await window.electron.openFileDialog(
+            const result = await appBridge.openFileDialog(
                 currentPath,
                 t('tools.vscode.selectExecutable'),
                 [{ name: 'All Files', extensions: ['*'] }],

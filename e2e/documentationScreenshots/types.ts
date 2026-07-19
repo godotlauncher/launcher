@@ -1,7 +1,15 @@
 import type { ElectronApplication } from '@playwright/test';
-import type { AppUpdateMessage, InstalledRelease, ProjectDetails, ReleaseSummary, UserPreferences } from '@shared';
+import type {
+    AppUpdateMessage,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+    UserPreferences,
+} from '@shared/contracts';
 
-export type ElectronPage = Awaited<ReturnType<ElectronApplication['firstWindow']>>;
+export type ElectronPage = Awaited<
+    ReturnType<ElectronApplication['firstWindow']>
+>;
 
 export type CachedTool = {
     name: string;

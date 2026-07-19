@@ -1,4 +1,4 @@
-import type { UserPreferences } from '@shared';
+import type { UserPreferences } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {

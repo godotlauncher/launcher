@@ -1,22 +1,21 @@
-import {
-    expect,
-    test,
-    _electron,
-    type ElectronApplication,
-    type TestInfo,
-} from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {
+    _electron,
+    type ElectronApplication,
+    expect,
+    type TestInfo,
+    test,
+} from '@playwright/test';
 import { SCREENSHOT_GROUPS } from './documentationScreenshots';
-import { THEMES } from './documentationScreenshots/themes';
 import {
     applyTheme,
     captureScreenshot,
     createFixtureHome,
     ensureMainNavigationReady,
     setScreenshotViewport,
-    waitForPreloadScript,
 } from './documentationScreenshots/runtime';
+import { THEMES } from './documentationScreenshots/themes';
 import type {
     ElectronPage,
     ScreenshotConfig,
@@ -29,20 +28,24 @@ test.describe.configure({ mode: 'serial' });
 
 for (const theme of THEMES) {
     for (const group of SCREENSHOT_GROUPS) {
-        test(`captures ${group.name} documentation screenshots in ${theme.description}`, async ({}, testInfo) => {
-            testInfo.setTimeout(group.timeout);
+        test(
+            `captures ${group.name} documentation screenshots in ${theme.description}`,
+            { tag: '@screenshots' },
+            async ({}, testInfo) => {
+                testInfo.setTimeout(group.timeout);
 
-            await withDocumentationApp(async (mainPage, electronApp) => {
-                await applyTheme(mainPage, theme);
-                await captureScreenshotsForGroup(
-                    mainPage,
-                    electronApp,
-                    testInfo,
-                    theme,
-                    group.screenshots,
-                );
-            });
-        });
+                await withDocumentationApp(async (mainPage, electronApp) => {
+                    await applyTheme(mainPage, theme);
+                    await captureScreenshotsForGroup(
+                        mainPage,
+                        electronApp,
+                        testInfo,
+                        theme,
+                        group.screenshots,
+                    );
+                });
+            },
+        );
     }
 }
 
@@ -98,7 +101,6 @@ async function primeDocumentationApp(
     mainPage: ElectronPage,
     electronApp: ElectronApplication,
 ) {
-    await waitForPreloadScript(mainPage);
     await ensureMainNavigationReady(mainPage, electronApp);
     await mainPage.getByTestId('btnProjects').click();
     await expect(

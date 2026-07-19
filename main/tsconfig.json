@@ -8,13 +8,8 @@
         "target": "ESNext",
         "module": "NodeNext",
         "paths": {
-            "@shared": [
-                "../shared/src/index.d.ts"
-            ],
-            "@shared/*": [
-                "../shared/src/*/index.d.ts",
-                "../shared/src/*"
-            ]
+            "@shared/contracts": ["../shared/src/contracts/index.d.ts"]
+            // Add runtime @shared paths when needed.
         },
         "rootDir": "./src",
         "outDir": "../dist-electron",
@@ -23,6 +18,6 @@
     "include": [
         "src/**/*.ts",
         "src/**/*.cts",
-        "../shared/src/**/*.d.ts"
+        "../shared/src/contracts/**/*.d.ts"
     ]
 }

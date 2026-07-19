@@ -1,4 +1,4 @@
-import type { ReleaseSummary } from '@shared';
+import type { ReleaseSummary } from '@shared/contracts';
 
 // Map release type to a sort priority (lower is "higher" in final sort).
 // stable -> 0 (highest), beta -> 1, dev -> 2 (lowest)

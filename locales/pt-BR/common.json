@@ -1,56 +1,56 @@
 {
-  "buttons": {
-    "ok": "OK",
-    "cancel": "Cancelar",
-    "continue": "Continuar",
-    "select": "Selecionar",
-    "retry": "Tentar novamente",
-    "remove": "Remover",
-    "copyPath": "Copiar caminho",
-    "openPath": "Abrir caminho",
-    "reinstall": "Reinstalar"
-  },
-  "error": "Erro",
-  "success": "Sucesso",
-  "warning": "Aviso",
-  "info": "Informação",
-  "filesystem": {
-    "errors": {
-      "pathRequired": "O caminho deve ser uma string não vazia.",
-      "pathMustBeAbsolute": "O caminho deve ser absoluto.",
-      "targetNotDirectory": "O caminho de destino já existe, mas não é uma pasta."
+    "buttons": {
+        "ok": "OK",
+        "cancel": "Cancelar",
+        "continue": "Continuar",
+        "select": "Selecionar",
+        "retry": "Tentar novamente",
+        "remove": "Remover",
+        "copyPath": "Copiar caminho",
+        "openPath": "Abrir caminho",
+        "reinstall": "Reinstalar"
+    },
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "info": "Informação",
+    "filesystem": {
+        "errors": {
+            "pathRequired": "O caminho deve ser uma string não vazia.",
+            "pathMustBeAbsolute": "O caminho deve ser absoluto.",
+            "targetNotDirectory": "O caminho de destino já existe, mas não é uma pasta."
+        }
+    },
+    "app": {
+        "loadingMessage": "Preparando tudo...",
+        "navigation": {
+            "projects": "Projetos",
+            "installs": "Instalações",
+            "help": "Ajuda",
+            "settings": "Configurações",
+            "joinCommunity": "Participe da comunidade"
+        },
+        "update": {
+            "availableWithVersion": "A versão {{version}} está disponível. <DownloadButton>Baixar atualização</DownloadButton> ou <SkipButton>Ignorar esta versão</SkipButton>",
+            "availableNoVersion": "Uma nova versão está disponível. <DownloadButton>Baixar atualização</DownloadButton>",
+            "readyWithVersion": "A versão {{version}} está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>",
+            "readyNoVersion": "A atualização está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>",
+            "manualWithVersion": "A versão {{version}} está disponível, mas a instalação automática não é compatível com este sistema rpm-ostree. <ReleaseLink>Baixar manualmente</ReleaseLink> ou <SkipButton>Pular esta versão</SkipButton>",
+            "manualNoVersion": "Há uma nova versão disponível, mas a instalação automática não é compatível com este sistema rpm-ostree. <ReleaseLink>Baixar manualmente</ReleaseLink>"
+        }
+    },
+    "selectRelease": {
+        "description": "Selecionar versão do editor",
+        "tableHeaders": {
+            "name": "Nome"
+        },
+        "noReleases": "Nenhuma versão encontrada; a versão do editor {{version}}.x é necessária",
+        "installReleases": "Instalar versões",
+        "badges": {
+            "dotnet": ".NET",
+            "prerelease": "pré-lançamento"
+        },
+        "unavailable": "Versão indisponível",
+        "unavailableHint": "Monte a unidade ou escolha um editor diferente antes de prosseguir."
     }
-  },
-  "app": {
-    "loadingMessage": "Preparando tudo...",
-    "navigation": {
-      "projects": "Projetos",
-      "installs": "Instalações",
-      "help": "Ajuda",
-      "settings": "Configurações",
-      "joinCommunity": "Participe da comunidade"
-    },
-    "update": {
-      "availableWithVersion": "A versão {{version}} está disponível. <DownloadButton>Baixar atualização</DownloadButton> ou <SkipButton>Ignorar esta versão</SkipButton>",
-      "availableNoVersion": "Uma nova versão está disponível. <DownloadButton>Baixar atualização</DownloadButton>",
-      "readyWithVersion": "A versão {{version}} está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>",
-      "readyNoVersion": "A atualização está pronta, reinicie o Godot Launcher para instalar. <RestartButton>Reiniciar agora</RestartButton>",
-      "manualWithVersion": "A versão {{version}} está disponível, mas a instalação automática não é compatível com este sistema rpm-ostree. <ReleaseLink>Baixar manualmente</ReleaseLink> ou <SkipButton>Pular esta versão</SkipButton>",
-      "manualNoVersion": "Há uma nova versão disponível, mas a instalação automática não é compatível com este sistema rpm-ostree. <ReleaseLink>Baixar manualmente</ReleaseLink>"
-    }
-  },
-  "selectRelease": {
-    "description": "Selecionar versão do editor",
-    "tableHeaders": {
-      "name": "Nome"
-    },
-    "noReleases": "Nenhuma versão encontrada; a versão do editor {{version}}.x é necessária",
-    "installReleases": "Instalar versões",
-    "badges": {
-      "dotnet": ".NET",
-      "prerelease": "pré-lançamento"
-    },
-    "unavailable": "Versão indisponível",
-    "unavailableHint": "Monte a unidade ou escolha um editor diferente antes de prosseguir."
-  }
 }
