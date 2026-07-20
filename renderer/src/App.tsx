@@ -27,6 +27,7 @@ import { usePreferences } from './hooks/usePreferences';
 import { useRelease } from './hooks/useRelease';
 import { useTheme } from './hooks/useTheme';
 import { appRoutePaths, defaultSettingsTab, isSettingsTab } from './routes';
+import { useSplashscreenHandoff } from './splashscreen/useSplashscreenHandoff';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
 import { ProjectsView } from './views/projects.view';
@@ -45,12 +46,14 @@ function App() {
         document.title = `Godot Launcher ${version}`;
     }, []);
 
-    if (
-        shouldShowAppLoading({
-            prefsLoading,
-            releasesInitialized,
-        })
-    ) {
+    const loading = shouldShowAppLoading({
+        prefsLoading,
+        releasesInitialized,
+    });
+
+    useSplashscreenHandoff(!loading);
+
+    if (loading) {
         return <LoadingView />;
     }
 

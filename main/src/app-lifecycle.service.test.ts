@@ -141,6 +141,7 @@ describe('AppLifecycleService', () => {
         quit: vi.fn(),
     };
     const mainWindow = {
+        hide: vi.fn(),
         on: vi.fn(),
         setIcon: vi.fn(),
     };
@@ -188,6 +189,10 @@ describe('AppLifecycleService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        configService.getAll.mockReturnValue({
+            isDev: false,
+            startHidden: false,
+        });
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
         mocks.isCacheStale.mockResolvedValue(false);
         mocks.setupFocusRevalidation.mockReturnValue(
@@ -225,6 +230,33 @@ describe('AppLifecycleService', () => {
         await service.beforeWindowReady();
 
         expect(i18nService.setLocale).toHaveBeenCalledWith('pt-BR');
+    });
+
+    it('reveals a regular launch only after the renderer is ready', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+
+        expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
+
+        service.revealInitialWindow();
+        service.revealInitialWindow();
+
+        expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+    });
+
+    it('keeps a hidden launch hidden after the renderer is ready', async () => {
+        configService.getAll.mockReturnValue({
+            isDev: false,
+            startHidden: true,
+        });
+        const service = createService();
+
+        await initializeLifecycle(service);
+        service.revealInitialWindow();
+
+        expect(mainWindow.hide).toHaveBeenCalledOnce();
+        expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
     });
 
     it('requests a framework quit when the updater event precedes app.before-quit', async () => {

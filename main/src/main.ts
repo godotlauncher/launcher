@@ -7,6 +7,10 @@ import logger from 'electron-log/main.js';
 import { AppModule } from './app.module.js';
 import { configuration, setCurrentAppConfig } from './config/index.js';
 import { getAppIconPath, getUIPath } from './pathResolver.js';
+import {
+    closeSplashscreen,
+    showSplashscreen,
+} from './splashscreen/splashscreen.js';
 
 const appConfig = configuration({
     args: process.argv,
@@ -69,7 +73,11 @@ Menu.setApplicationMenu(null);
 let diApp: Application | undefined;
 
 async function bootstrap(): Promise<void> {
-    const result = await createElectronApplication(AppModule, {
+    if (!appConfig.startHidden) {
+        showSplashscreen();
+    }
+
+    const applicationPromise = createElectronApplication(AppModule, {
         instanceMode: appConfig.isDev ? 'multi' : 'single',
         hideOnClose: true,
         logger: ['error', 'warn'],
@@ -91,16 +99,25 @@ async function bootstrap(): Promise<void> {
         },
     });
 
-    if (result.status === 'redirected') {
-        return;
-    }
+    try {
+        const result = await applicationPromise;
 
-    diApp = result.application;
-    app.on('will-quit', () => {
-        void diApp?.destroyAsync().catch((error) => {
-            logger.error('Failed to destroy application', error);
+        if (result.status === 'redirected') {
+            closeSplashscreen();
+            return;
+        }
+
+        diApp = result.application;
+        app.on('will-quit', () => {
+            closeSplashscreen();
+            void diApp?.destroyAsync().catch((error) => {
+                logger.error('Failed to destroy application', error);
+            });
         });
-    });
+    } catch (error) {
+        closeSplashscreen();
+        throw error;
+    }
 }
 
 void bootstrap().catch((error) => {

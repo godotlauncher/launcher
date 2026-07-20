@@ -20,6 +20,7 @@ import type {
 } from '@shared/contracts';
 import { app, shell } from 'electron';
 import semver from 'semver';
+import { AppLifecycleService } from './app-lifecycle.service.js';
 import {
     checkForUpdates,
     downloadAppUpdate,
@@ -74,6 +75,7 @@ import {
 import { getCurrentAppConfig } from './config/index.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 import { getCachedTools, refreshToolCache } from './services/toolCache.js';
+import { closeSplashscreen } from './splashscreen/splashscreen.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { setAutoCheckUpdates } from './utils/prefs.utils.js';
@@ -85,7 +87,10 @@ const AppHandler = createIpcHandleTyped<AppBridge>();
 export class AppController implements AppBridge {
     private clearReleaseCachePromise: Promise<void> | null = null;
 
-    constructor(private readonly i18nService: I18nService) {}
+    constructor(
+        private readonly i18nService: I18nService,
+        private readonly appLifecycleService: AppLifecycleService,
+    ) {}
 
     @AppHandler('getUserPreferences')
     getUserPreferences() {
@@ -418,6 +423,12 @@ export class AppController implements AppBridge {
         const prefs = await getUserPreferences();
         await setUserPreferences({ ...prefs, language: preference });
         return this.i18nService.getLocale();
+    }
+
+    @AppHandler('rendererReady')
+    async rendererReady(): Promise<void> {
+        this.appLifecycleService.revealInitialWindow();
+        closeSplashscreen();
     }
 }
 

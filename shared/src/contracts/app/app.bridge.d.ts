@@ -147,6 +147,7 @@ export type AppBridge = {
         options?: CheckForUpdatesOptions,
     ): Promise<AppUpdateMessage>;
     changeLanguage(lang: string): Promise<string>;
+    rendererReady(): Promise<void>;
 };
 
 export type AppBridgeNamespaces = {
