@@ -20,6 +20,7 @@ import type {
 } from '@shared/contracts';
 import { app, shell } from 'electron';
 import semver from 'semver';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppLifecycleService } from './app-lifecycle.service.js';
 import {
     checkForUpdates,
