@@ -73,7 +73,7 @@ Menu.setApplicationMenu(null);
 let diApp: Application | undefined;
 
 async function bootstrap(): Promise<void> {
-    if (!appConfig.startHidden) {
+    if (!appConfig.startHidden && !appConfig.docsScreenshots) {
         showSplashscreen();
     }
 

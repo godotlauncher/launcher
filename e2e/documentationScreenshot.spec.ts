@@ -21,7 +21,6 @@ import type {
     ScreenshotConfig,
     ThemeConfig,
 } from './documentationScreenshots/types';
-import { getMainWindow } from './splashscreen/getMainWindow';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
 
@@ -89,7 +88,10 @@ async function withDocumentationApp(
     });
 
     try {
-        const mainPage = await getMainWindow(electronApp);
+        const mainPage = await electronApp.firstWindow();
+        await expect(mainPage.getByTestId('btnProjects')).toBeVisible({
+            timeout: 15_000,
+        });
         await primeDocumentationApp(mainPage, electronApp);
         await runScreenshots(mainPage, electronApp);
     } finally {

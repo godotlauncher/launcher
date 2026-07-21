@@ -410,7 +410,12 @@ export async function reloadScreenshotPage(page: ElectronPage) {
             return;
         } catch (error) {
             lastError = error;
-            await page.waitForTimeout(500 * attempt);
+            if (page.isClosed()) {
+                throw error;
+            }
+            await new Promise((resolve) => {
+                setTimeout(resolve, 500 * attempt);
+            });
         }
     }
 
