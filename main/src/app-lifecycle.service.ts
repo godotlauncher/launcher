@@ -37,6 +37,7 @@ import { ensurePreferencesStorage } from './utils/prefs.utils.js';
 @Injectable()
 export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
     private disposeFocusRevalidation: (() => void) | undefined;
+    private revealMainWindowOnRendererReady = false;
     private willClose = false;
 
     constructor(
@@ -134,6 +135,15 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         mainWindow.on('closed', this.disposeWindowResources);
 
         this.applyInitialVisibility(prefs.start_in_tray);
+    }
+
+    revealInitialWindow(): void {
+        if (!this.revealMainWindowOnRendererReady) {
+            return;
+        }
+
+        this.revealMainWindowOnRendererReady = false;
+        this.showMainWindow();
     }
 
     @OnAppLaunch()
@@ -246,7 +256,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
-        this.showMainWindow();
+        this.revealMainWindowOnRendererReady = true;
     }
 
     private prepareForQuit(message: string): boolean {

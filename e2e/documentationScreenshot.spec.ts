@@ -89,6 +89,9 @@ async function withDocumentationApp(
 
     try {
         const mainPage = await electronApp.firstWindow();
+        await expect(mainPage.getByTestId('btnProjects')).toBeVisible({
+            timeout: 15_000,
+        });
         await primeDocumentationApp(mainPage, electronApp);
         await runScreenshots(mainPage, electronApp);
     } finally {

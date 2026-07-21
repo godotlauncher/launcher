@@ -1,15 +1,18 @@
 import { _electron, expect, test } from '@playwright/test';
 import fs from 'fs/promises';
+import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
+let splashscreenPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
 
 test.beforeAll(async () => {
     electronApp = await _electron.launch({
         args: ['.'],
         env: { NODE_ENV: 'development' },
     });
-    mainPage = await electronApp.firstWindow();
+    splashscreenPage = await electronApp.firstWindow();
+    mainPage = await getMainWindow(electronApp);
 });
 
 test.afterAll(async () => {
@@ -22,6 +25,14 @@ test('Can navigate the main window', async () => {
     );
 
     await test.step('Loads the main window', async () => {
+        expect(splashscreenPage.url()).toContain(
+            '/assets/splashscreen/index.html',
+        );
+        await expect
+            .poll(() => splashscreenPage.isClosed(), {
+                timeout: 15_000,
+            })
+            .toBe(true);
         await expect
             .poll(async () => await mainPage.title(), {
                 message: 'Waiting for window title to include full version',

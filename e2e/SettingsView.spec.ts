@@ -1,5 +1,6 @@
 import { _electron, expect, test } from '@playwright/test';
 import fs from 'fs/promises';
+import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
@@ -9,7 +10,7 @@ test.beforeEach(async () => {
         args: ['.'],
         env: { NODE_ENV: 'development' },
     });
-    mainPage = await electronApp.firstWindow();
+    mainPage = await getMainWindow(electronApp);
     await mainPage.getByTestId('btnSettings').click();
     const settingsView = await mainPage.getByTestId('settingsTitle');
     await expect(settingsView).toHaveCount(1);
