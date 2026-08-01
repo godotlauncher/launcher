@@ -113,6 +113,22 @@ describe('VSCodeIntegration', () => {
         ).toHaveBeenCalledWith(context.projectPath, context.mono);
     });
 
+    it.each([
+        true,
+        false,
+    ])('reports project configuration as %s from the .vscode directory', async (configured) => {
+        const integration = new VSCodeIntegration();
+        const projectPath = path.resolve('project');
+        fsMocks.existsSync.mockReturnValue(configured);
+
+        await expect(
+            integration.isConfiguredForProject(projectPath),
+        ).resolves.toBe(configured);
+        expect(fsMocks.existsSync).toHaveBeenCalledWith(
+            path.resolve(projectPath, '.vscode'),
+        );
+    });
+
     it('normalizes macOS app bundles for Godot', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         const integration = new VSCodeIntegration();
