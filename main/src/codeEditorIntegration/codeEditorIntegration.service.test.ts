@@ -209,4 +209,34 @@ describe('CodeEditorIntegrationService', () => {
         expect(integration.configureProject).not.toHaveBeenCalled();
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
     });
+
+    it('disables the external editor in existing Godot settings', async () => {
+        const service = createService(createIntegration());
+        const editorSettingsFile = path.resolve('editor_settings.tres');
+        fsMocks.existsSync.mockReturnValue(true);
+
+        await expect(
+            service.disableForProject(editorSettingsFile),
+        ).resolves.toBeUndefined();
+
+        expect(fsMocks.existsSync).toHaveBeenCalledWith(editorSettingsFile);
+        expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
+            editorSettingsFile,
+            {
+                useExternalEditor: false,
+            },
+        );
+    });
+
+    it('does nothing when the Godot settings file is missing', async () => {
+        const service = createService(createIntegration());
+        const editorSettingsFile = path.resolve('missing-editor_settings.tres');
+
+        await expect(
+            service.disableForProject(editorSettingsFile),
+        ).resolves.toBeUndefined();
+
+        expect(fsMocks.existsSync).toHaveBeenCalledWith(editorSettingsFile);
+        expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
+    });
 });
