@@ -2,8 +2,6 @@ import { Module } from '@mariodebono/di';
 import { CodeEditorIntegrationController } from './codeEditorIntegration.controller.js';
 import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
-import { CODE_EDITOR_INTEGRATIONS } from './codeEditorIntegration.tokens.js';
-import type { CodeEditorIntegration } from './codeEditorIntegration.types.js';
 import { VSCodeIntegration } from './integrations/vscode/vscodeIntegration.js';
 import { VSCodeIntegrationModule } from './integrations/vscode/vscodeIntegration.module.js';
 
@@ -11,19 +9,12 @@ import { VSCodeIntegrationModule } from './integrations/vscode/vscodeIntegration
     imports: [VSCodeIntegrationModule],
     providers: [
         {
-            provide: CODE_EDITOR_INTEGRATIONS,
+            provide: CodeEditorIntegrationRegistry,
             inject: [VSCodeIntegration],
             useFactory: (
                 vscode: VSCodeIntegration,
-            ): CodeEditorIntegration[] => [vscode],
-        },
-        {
-            provide: CodeEditorIntegrationRegistry,
-            inject: [CODE_EDITOR_INTEGRATIONS],
-            useFactory: (
-                integrations: CodeEditorIntegration[],
             ): CodeEditorIntegrationRegistry =>
-                new CodeEditorIntegrationRegistry(integrations),
+                new CodeEditorIntegrationRegistry([vscode]),
         },
         CodeEditorIntegrationService,
         CodeEditorIntegrationController,
