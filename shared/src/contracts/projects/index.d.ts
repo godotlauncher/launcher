@@ -1,4 +1,5 @@
 import type { BackendResult } from '../app/index.js';
+import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 import type {
     EditorChannel,
     EditorFlavor,
@@ -24,6 +25,7 @@ export type ProjectDetails = {
     launch_path: string;
     config_version: 4 | 5;
     withVSCode: boolean;
+    codeEditorId?: CodeEditorId | null;
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;
