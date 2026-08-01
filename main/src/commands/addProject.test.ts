@@ -317,7 +317,7 @@ describe('addProject', () => {
         ).not.toHaveBeenCalled();
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
-            expect.objectContaining({ configurationMode: 'update' }),
+            expect.objectContaining({ projectPath: '/fake/project' }),
         );
     });
 
@@ -887,7 +887,7 @@ describe('addProject', () => {
         expect(result.success).toBe(true);
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
-            expect.objectContaining({ configurationMode: 'update' }),
+            expect.objectContaining({ projectPath: '/fake/project' }),
         );
     });
 

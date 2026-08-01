@@ -12,7 +12,6 @@ import type {
 } from '../../codeEditorIntegration.types.js';
 import {
     addOrUpdateVSCodeRecommendedExtensions,
-    addVSCodeSettings,
     getVSCodeInstallPath,
     updateVSCodeSettings,
 } from './vscodeIntegration.utils.js';
@@ -117,20 +116,12 @@ export class VSCodeIntegration implements CodeEditorIntegration {
     async configureProject(
         context: CodeEditorProjectContext,
     ): Promise<CodeEditorProjectConfigurationResult> {
-        const recoveredConfigFiles =
-            context.configurationMode === 'create'
-                ? await addVSCodeSettings(
-                      context.projectPath,
-                      context.godotLaunchPath,
-                      context.godotVersion,
-                      context.mono,
-                  )
-                : await updateVSCodeSettings(
-                      context.projectPath,
-                      context.godotLaunchPath,
-                      context.godotVersion,
-                      context.mono,
-                  );
+        const recoveredConfigFiles = await updateVSCodeSettings(
+            context.projectPath,
+            context.godotLaunchPath,
+            context.godotVersion,
+            context.mono,
+        );
 
         recoveredConfigFiles.push(
             ...(await addOrUpdateVSCodeRecommendedExtensions(
@@ -140,7 +131,7 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         );
 
         return {
-            recoveredConfigFiles: [...new Set(recoveredConfigFiles)],
+            recoveredConfigFiles,
         };
     }
 

@@ -145,7 +145,6 @@ export async function setProjectEditor(
                             editorSettingsFile: newEditorSettingsFile,
                             editorSettingsFilename,
                             editorSettingsFormat: config.editorConfigFormat,
-                            configurationMode: 'update',
                         },
                     );
                 newEditorSettingsFile = applied.editorSettingsFile;

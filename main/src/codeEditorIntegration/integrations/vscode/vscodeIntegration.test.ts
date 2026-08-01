@@ -14,7 +14,6 @@ vi.mock('node:fs', () => ({
 
 const vscodeMocks = vi.hoisted(() => ({
     addOrUpdateVSCodeRecommendedExtensions: vi.fn(),
-    addVSCodeSettings: vi.fn(),
     getVSCodeInstallPath: vi.fn(),
     updateVSCodeSettings: vi.fn(),
 }));
@@ -32,7 +31,6 @@ function createContext(
         editorSettingsFile: path.resolve('editor_settings.tres'),
         editorSettingsFilename: 'editor_settings.tres',
         editorSettingsFormat: 3,
-        configurationMode: 'create',
         ...overrides,
     };
 }
@@ -41,7 +39,6 @@ describe('VSCodeIntegration', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         fsMocks.existsSync.mockReturnValue(false);
-        vscodeMocks.addVSCodeSettings.mockResolvedValue([]);
         vscodeMocks.updateVSCodeSettings.mockResolvedValue([]);
         vscodeMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(
             [],
@@ -94,38 +91,7 @@ describe('VSCodeIntegration', () => {
 
     it('configures VS Code-owned project files through existing utilities', async () => {
         const integration = new VSCodeIntegration();
-        const context = createContext();
-        vscodeMocks.addVSCodeSettings.mockResolvedValue([
-            path.resolve('settings.bad'),
-        ]);
-        vscodeMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
-            path.resolve('extensions.bad'),
-        ]);
-
-        await expect(integration.configureProject(context)).resolves.toEqual({
-            recoveredConfigFiles: [
-                path.resolve('settings.bad'),
-                path.resolve('extensions.bad'),
-            ],
-        });
-        expect(vscodeMocks.addVSCodeSettings).toHaveBeenCalledWith(
-            context.projectPath,
-            context.godotLaunchPath,
-            context.godotVersion,
-            context.mono,
-        );
-        expect(vscodeMocks.updateVSCodeSettings).not.toHaveBeenCalled();
-        expect(
-            vscodeMocks.addOrUpdateVSCodeRecommendedExtensions,
-        ).toHaveBeenCalledWith(context.projectPath, context.mono);
-    });
-
-    it('updates VS Code-owned project files in update mode', async () => {
-        const integration = new VSCodeIntegration();
-        const context = createContext({
-            configurationMode: 'update',
-            mono: true,
-        });
+        const context = createContext({ mono: true });
         vscodeMocks.updateVSCodeSettings.mockResolvedValue([
             path.resolve('settings.bad'),
         ]);
@@ -145,7 +111,6 @@ describe('VSCodeIntegration', () => {
             context.godotVersion,
             context.mono,
         );
-        expect(vscodeMocks.addVSCodeSettings).not.toHaveBeenCalled();
         expect(
             vscodeMocks.addOrUpdateVSCodeRecommendedExtensions,
         ).toHaveBeenCalledWith(context.projectPath, context.mono);

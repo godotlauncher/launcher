@@ -510,7 +510,6 @@ export async function addProject(
                     editorSettingsFile,
                     editorSettingsFilename: editorConfigFileName,
                     editorSettingsFormat: activeConfig.editorConfigFormat,
-                    configurationMode: 'update',
                 },
             );
             editorSettingsFile = applied.editorSettingsFile;

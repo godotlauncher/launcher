@@ -2,10 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import {
-    addVSCodeSettings,
-    updateVSCodeSettings,
-} from './vscodeIntegration.utils.js';
+import { updateVSCodeSettings } from './vscodeIntegration.utils.js';
 
 type LaunchConfiguration = {
     program: unknown;
@@ -43,100 +40,6 @@ vi.mock('node:fs', () => ({
         writeFile: vi.fn(),
     },
 }));
-
-// Mock addVSCodeNETLaunchConfig
-vi.mock('./vscodeIntegration.utils.js', async () => {
-    const actual = await vi.importActual<
-        typeof import('./vscodeIntegration.utils.js')
-    >('./vscodeIntegration.utils.js');
-    return {
-        ...actual,
-        addVSCodeNETLaunchConfig: vi.fn(),
-    };
-});
-
-describe('addVSCodeSettings', () => {
-    const projectDir = '/some/project';
-    const launchPath = '/path/to/godot';
-
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
-        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
-        vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
-        vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
-        // default to no existing files
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-    });
-
-    test('creates .vscode and settings.json when none exist', async () => {
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await addVSCodeSettings(projectDir, launchPath, 4, false);
-
-        // Ensure .vscode dir created
-        expect(fs.promises.mkdir).toHaveBeenCalledWith(
-            expect.stringContaining('.vscode'),
-            { recursive: true },
-        );
-
-        // Find written settings.json call
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
-        expect(settings['files.exclude']['**/*.gd.uid']).toBe(true);
-    });
-
-    test('merges with existing settings.json', async () => {
-        const existing = { 'editor.fontSize': 12, 'some.key': 'value' };
-        vi.mocked(fs.existsSync).mockImplementation((p) =>
-            p.toString().endsWith('settings.json'),
-        );
-        vi.mocked(fs.promises.readFile).mockResolvedValue(
-            JSON.stringify(existing),
-        );
-
-        await addVSCodeSettings(projectDir, launchPath, 4, false);
-
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['editor.fontSize']).toBe(12);
-        expect(settings['some.key']).toBe('value');
-        expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
-    });
-
-    test('uses godot3 key for Godot 3.x', async () => {
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await addVSCodeSettings(projectDir, launchPath, 3.5, false);
-
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['godotTools.editorPath.godot3']).toBe(launchPath);
-    });
-
-    test('when isMono is true, settings.json is still written (launch config handled separately)', async () => {
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await addVSCodeSettings(projectDir, launchPath, 4, true);
-
-        // ensure settings.json was written
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
-    });
-});
 
 describe('addOrUpdateVSCodeRecommendedExtensions', () => {
     const projectDir = '/some/ext-project';
@@ -877,6 +780,28 @@ describe('updateVSCodeSettings', () => {
         expect(writtenSettings['godotTools.editorPath.godot5']).toBe(
             '/path/to/godot5',
         );
+    });
+
+    test('should replace a null files.exclude value', async () => {
+        const existingSettings = {
+            'editor.fontSize': 14,
+            'files.exclude': null,
+        };
+
+        vi.mocked(fs.existsSync).mockImplementation((p) =>
+            p.toString().endsWith('settings.json'),
+        );
+        vi.mocked(fs.promises.readFile).mockResolvedValue(
+            JSON.stringify(existingSettings),
+        );
+
+        await updateVSCodeSettings(testProjectDir, '/path/to/godot', 4, false);
+
+        const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
+        const writtenSettings = JSON.parse(writeCall[1] as string);
+
+        expect(writtenSettings['editor.fontSize']).toBe(14);
+        expect(writtenSettings['files.exclude']['**/*.gd.uid']).toBe(true);
     });
 
     test('should preserve user file excludes when merging', async () => {

@@ -317,7 +317,7 @@ describe('setProjectEditor', () => {
         );
     });
 
-    it('uses update mode when applying the selected integration', async () => {
+    it('applies the selected integration', async () => {
         existsSync.mockReturnValue(true);
 
         const result = await setProjectEditor(
@@ -329,7 +329,7 @@ describe('setProjectEditor', () => {
         expect(result.success).toBe(true);
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
-            expect.objectContaining({ configurationMode: 'update' }),
+            expect.objectContaining({ projectPath: '/fake/project' }),
         );
     });
 
@@ -439,7 +439,7 @@ describe('setProjectEditor', () => {
         expect(integrationMocks.scanIntegration).toHaveBeenCalledWith('vscode');
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
-            expect.objectContaining({ configurationMode: 'update' }),
+            expect.objectContaining({ projectPath: '/fake/project' }),
         );
     });
 

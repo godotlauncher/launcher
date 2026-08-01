@@ -30,8 +30,6 @@ export type GodotCodeEditorConfiguration = {
     dotnet?: GodotDotNetEditorConfiguration;
 };
 
-export type CodeEditorProjectConfigurationMode = 'create' | 'update';
-
 export type CodeEditorProjectContext = {
     projectPath: string;
     godotLaunchPath: string;
@@ -40,7 +38,6 @@ export type CodeEditorProjectContext = {
     editorSettingsFile: string;
     editorSettingsFilename: string;
     editorSettingsFormat: number;
-    configurationMode: CodeEditorProjectConfigurationMode;
 };
 
 export type CodeEditorPathValidation = {

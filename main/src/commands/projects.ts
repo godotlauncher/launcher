@@ -501,7 +501,6 @@ export async function setProjectCodeEditor(
                     editorSettingsFile,
                     editorSettingsFilename,
                     editorSettingsFormat: projectDefinition.editorConfigFormat,
-                    configurationMode: 'update',
                 },
             );
 

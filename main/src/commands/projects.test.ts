@@ -810,7 +810,6 @@ describe('setProjectCodeEditor', () => {
                 godotLaunchPath: '/godot/godot.exe',
                 godotVersion: 4.2,
                 mono: true,
-                configurationMode: 'update',
             }),
         );
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(

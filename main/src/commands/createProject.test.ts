@@ -213,7 +213,6 @@ describe('createProject', () => {
             'vscode',
             expect.objectContaining({
                 projectPath: path.resolve('/projects/Integrated-Project'),
-                configurationMode: 'create',
                 mono: false,
             }),
         );

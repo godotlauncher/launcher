@@ -216,7 +216,6 @@ export async function createProject(
                         release.version_number,
                     ),
                     editorSettingsFormat: config.editorConfigFormat,
-                    configurationMode: 'create',
                 },
             );
             editorSettingsPath = applied.editorSettingsFile;

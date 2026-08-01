@@ -55,7 +55,6 @@ function createContext(
         editorSettingsFile: path.resolve('editor_settings.tres'),
         editorSettingsFilename: 'editor_settings.tres',
         editorSettingsFormat: 3,
-        configurationMode: 'update',
         ...overrides,
     };
 }
@@ -418,7 +417,6 @@ describe('CodeEditorIntegrationService', () => {
         const service = createService(integration);
         const context = createContext({
             editorSettingsFile: '',
-            configurationMode: 'create',
         });
 
         await expect(
