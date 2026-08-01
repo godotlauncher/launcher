@@ -160,6 +160,22 @@ describe('VSCodeIntegration', () => {
         );
     });
 
+    it('passes non-macOS executables through with Godot command flags', () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
+        const integration = new VSCodeIntegration();
+        const executablePath = path.resolve('tools', 'code.exe');
+
+        expect(
+            integration.getGodotLaunchConfiguration({
+                path: executablePath,
+                version: null,
+            }),
+        ).toEqual({
+            execPath: executablePath,
+            execFlags: '{project} --goto {file}:{line}:{col}',
+        });
+    });
+
     it('normalizes macOS app bundles for Godot', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         const integration = new VSCodeIntegration();
