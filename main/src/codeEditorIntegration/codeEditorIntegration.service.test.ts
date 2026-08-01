@@ -110,6 +110,16 @@ describe('CodeEditorIntegrationService', () => {
         ]);
     });
 
+    it('forwards a custom path when scanning an integration', async () => {
+        const integration = createIntegration();
+        const service = createService(integration);
+        const customPath = path.resolve('custom', 'code');
+
+        await service.scanIntegration(CODE_EDITOR_ID, customPath);
+
+        expect(integration.detectInstallation).toHaveBeenCalledWith(customPath);
+    });
+
     it('validates paths through the selected integration', async () => {
         const integration = createIntegration();
         const service = createService(integration);

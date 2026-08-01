@@ -31,9 +31,10 @@ export class CodeEditorIntegrationService {
 
     async scanIntegration(
         integrationId: CodeEditorId,
+        customPath?: string,
     ): Promise<CodeEditorInstallationSummary | null> {
         const integration = this.registry.get(integrationId);
-        const installation = await integration.detectInstallation();
+        const installation = await integration.detectInstallation(customPath);
         return installation
             ? this.toInstallationSummary(integrationId, installation)
             : null;
