@@ -173,6 +173,7 @@ describe('VSCodeIntegration', () => {
                 },
                 settings: { execFlagsOverride: null },
                 godotFlavor: 'standard',
+                godotVersion: 4.3,
             }),
         ).toEqual({
             textEditor: {
@@ -196,6 +197,7 @@ describe('VSCodeIntegration', () => {
                 },
                 settings: { execFlagsOverride: null },
                 godotFlavor: 'standard',
+                godotVersion: 4.3,
             }),
         ).toEqual({
             textEditor: {
@@ -219,6 +221,7 @@ describe('VSCodeIntegration', () => {
                 },
                 settings: { execFlagsOverride: '--custom {file}' },
                 godotFlavor: 'dotnet',
+                godotVersion: 4.3,
             }),
         ).toEqual({
             textEditor: {
@@ -231,8 +234,7 @@ describe('VSCodeIntegration', () => {
                 execFlags: '--custom {file}',
             },
             dotnet: {
-                externalEditor: 4,
-                customExecPathArgs: '{file}',
+                externalEditorId: 4,
             },
         });
     });

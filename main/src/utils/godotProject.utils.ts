@@ -1,3 +1,7 @@
+export type {
+    CreateNewEditorSettingsOptions,
+    GodotCodeEditorSettingsUpdate,
+} from './godotProject/editorSettings.utils.js';
 export {
     createNewEditorSettings,
     updateEditorSettings,

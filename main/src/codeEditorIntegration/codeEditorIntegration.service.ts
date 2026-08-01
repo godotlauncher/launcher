@@ -23,6 +23,7 @@ import type {
     CodeEditorApplyResult,
     CodeEditorInstallation,
     CodeEditorProjectContext,
+    GodotEditorFlavor,
 } from './codeEditorIntegration.types.js';
 
 @Injectable()
@@ -189,33 +190,38 @@ export class CodeEditorIntegrationService {
         }
 
         const integrationResult = await integration.configureProject(context);
-        const launchConfiguration = integration.resolveGodotConfiguration({
+        const godotFlavor: GodotEditorFlavor = context.mono
+            ? 'dotnet'
+            : 'standard';
+        const godotConfiguration = integration.resolveGodotConfiguration({
             installation,
             settings: {
                 execFlagsOverride: storedSettings.execFlagsOverride,
             },
-            godotFlavor: context.mono ? 'dotnet' : 'standard',
-        }).textEditor;
+            godotFlavor,
+            godotVersion: context.godotVersion,
+        });
+        const codeEditorSettings = {
+            textEditor: {
+                enabled: true,
+                ...godotConfiguration.textEditor,
+            },
+            ...(godotFlavor === 'dotnet'
+                ? { dotnet: godotConfiguration.dotnet ?? null }
+                : {}),
+        };
 
         let editorSettingsFile = context.editorSettingsFile;
         if (editorSettingsFile && fs.existsSync(editorSettingsFile)) {
-            await updateEditorSettings(editorSettingsFile, {
-                execPath: launchConfiguration.execPath,
-                execFlags: launchConfiguration.execFlags,
-                useExternalEditor: true,
-                isMono: context.mono,
-            });
+            await updateEditorSettings(editorSettingsFile, codeEditorSettings);
         } else {
-            editorSettingsFile = await createNewEditorSettings(
-                path.resolve(getAssetPath(), TEMPLATE_DIR_NAME),
-                context.godotLaunchPath,
-                context.editorSettingsFilename,
-                context.editorSettingsFormat,
-                true,
-                launchConfiguration.execPath,
-                launchConfiguration.execFlags,
-                context.mono,
-            );
+            editorSettingsFile = await createNewEditorSettings({
+                templatePath: path.resolve(getAssetPath(), TEMPLATE_DIR_NAME),
+                launchPath: context.godotLaunchPath,
+                editorConfigFilename: context.editorSettingsFilename,
+                editorConfigFormat: context.editorSettingsFormat,
+                codeEditorSettings,
+            });
         }
 
         return {
@@ -227,13 +233,17 @@ export class CodeEditorIntegrationService {
         };
     }
 
-    async disableForProject(editorSettingsFile: string): Promise<void> {
+    async disableForProject(
+        editorSettingsFile: string,
+        godotFlavor: GodotEditorFlavor,
+    ): Promise<void> {
         if (!editorSettingsFile || !fs.existsSync(editorSettingsFile)) {
             return;
         }
 
         await updateEditorSettings(editorSettingsFile, {
-            useExternalEditor: false,
+            textEditor: { enabled: false },
+            ...(godotFlavor === 'dotnet' ? { dotnet: null } : {}),
         });
     }
 
@@ -253,6 +263,7 @@ export class CodeEditorIntegrationService {
                       execFlagsOverride: storedSettings.execFlagsOverride,
                   },
                   godotFlavor: 'standard',
+                  godotVersion: 4,
               })
             : null;
 

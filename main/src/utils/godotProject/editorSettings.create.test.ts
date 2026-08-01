@@ -22,6 +22,18 @@ vi.mock('mustache', () => ({
 }));
 
 describe('createNewEditorSettings', () => {
+    const templatePath = path.resolve('templates');
+    const launchPath = path.resolve('editor', 'godot');
+    const editorConfigFilename = 'editor_settings-4.7.tres';
+    const editorDataPath = path.resolve(
+        path.dirname(launchPath),
+        'editor_data',
+    );
+    const editorSettingsPath = path.resolve(
+        editorDataPath,
+        editorConfigFilename,
+    );
+
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -31,35 +43,24 @@ describe('createNewEditorSettings', () => {
         vi.mocked(mustache.render).mockReturnValue('rendered settings');
     });
 
-    test('renders and writes a new editor settings file', async () => {
-        const templatePath = path.resolve('templates');
-        const launchPath = path.resolve('editor', 'godot');
-        const editorConfigFilename = 'editor_settings-4.7.tres';
-        const execPath = path.resolve('tools', 'code');
-        const editorDataPath = path.resolve(
-            path.dirname(launchPath),
-            'editor_data',
-        );
-        const editorSettingsPath = path.resolve(
-            editorDataPath,
-            editorConfigFilename,
-        );
-        const expectedExecPath =
-            process.platform === 'win32'
-                ? execPath.replaceAll('\\', '\\\\')
-                : execPath;
+    test('renders standard editor settings with Godot-safe strings', async () => {
+        const execPath = path.resolve('tools', 'Code "Preview"');
+        const execFlags = '{project} --goto "{file}"\\tail';
 
         await expect(
-            createNewEditorSettings(
+            createNewEditorSettings({
                 templatePath,
                 launchPath,
                 editorConfigFilename,
-                5,
-                true,
-                execPath,
-                '{project} --goto {file}:{line}:{col}',
-                true,
-            ),
+                editorConfigFormat: 5,
+                codeEditorSettings: {
+                    textEditor: {
+                        enabled: true,
+                        execPath,
+                        execFlags,
+                    },
+                },
+            }),
         ).resolves.toBe(editorSettingsPath);
 
         expect(fs.promises.readFile).toHaveBeenCalledWith(
@@ -68,10 +69,12 @@ describe('createNewEditorSettings', () => {
         );
         expect(mustache.render).toHaveBeenCalledWith('template', {
             editorConfigFormat: 5,
-            useExternalEditor: true,
-            execPath: expectedExecPath,
-            execFlags: '{project} --goto {file}:{line}:{col}',
-            isMono: true,
+            textEditor: {
+                enabled: true,
+                execPath: JSON.stringify(execPath),
+                execFlags: JSON.stringify(execFlags),
+            },
+            dotnet: undefined,
         });
         expect(fs.promises.mkdir).toHaveBeenCalledWith(editorDataPath, {
             recursive: true,
@@ -83,21 +86,70 @@ describe('createNewEditorSettings', () => {
         );
     });
 
-    test('uses an existing editor_data directory', async () => {
+    test('renders an integration-owned custom .NET launch configuration atomically', async () => {
+        const customExecPath = path.resolve('tools', 'custom "editor"');
+        const customExecFlags = '--line "{line}"\\tail';
+
+        await createNewEditorSettings({
+            templatePath,
+            launchPath,
+            editorConfigFilename,
+            editorConfigFormat: 5,
+            codeEditorSettings: {
+                textEditor: {
+                    enabled: true,
+                    execPath: path.resolve('tools', 'editor'),
+                    execFlags: '{file}',
+                },
+                dotnet: {
+                    externalEditorId: 9,
+                    customLaunchConfiguration: {
+                        execPath: customExecPath,
+                        execFlags: customExecFlags,
+                    },
+                },
+            },
+        });
+
+        expect(mustache.render).toHaveBeenCalledWith(
+            'template',
+            expect.objectContaining({
+                dotnet: {
+                    externalEditorId: 9,
+                    customLaunchConfiguration: {
+                        execPath: JSON.stringify(customExecPath),
+                        execFlags: JSON.stringify(customExecFlags),
+                    },
+                },
+            }),
+        );
+    });
+
+    test('renders the generic disabled .NET editor and reuses editor_data', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
 
-        await createNewEditorSettings(
-            path.resolve('templates'),
-            path.resolve('editor', 'godot'),
-            'editor_settings-4.7.tres',
-            5,
-            false,
-            '',
-            '',
-            false,
-        );
+        await createNewEditorSettings({
+            templatePath,
+            launchPath,
+            editorConfigFilename,
+            editorConfigFormat: 5,
+            codeEditorSettings: {
+                textEditor: { enabled: false },
+                dotnet: null,
+            },
+        });
 
+        expect(mustache.render).toHaveBeenCalledWith(
+            'template',
+            expect.objectContaining({
+                textEditor: {
+                    enabled: false,
+                    execPath: '""',
+                    execFlags: '""',
+                },
+                dotnet: { externalEditorId: 0 },
+            }),
+        );
         expect(fs.promises.mkdir).not.toHaveBeenCalled();
-        expect(fs.promises.writeFile).toHaveBeenCalledOnce();
     });
 });

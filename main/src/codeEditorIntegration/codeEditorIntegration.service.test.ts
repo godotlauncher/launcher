@@ -181,6 +181,7 @@ describe('CodeEditorIntegrationService', () => {
             },
             settings: { execFlagsOverride: '--goto {file}' },
             godotFlavor: 'standard',
+            godotVersion: 4,
         });
         expect(integration.configureProject).not.toHaveBeenCalled();
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
@@ -304,15 +305,17 @@ describe('CodeEditorIntegrationService', () => {
             },
             settings: { execFlagsOverride },
             godotFlavor: 'standard',
+            godotVersion: context.godotVersion,
         });
         expect(integration.configureProject).toHaveBeenCalledWith(context);
         expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
             context.editorSettingsFile,
             {
-                execPath: customPath,
-                execFlags: execFlagsOverride,
-                useExternalEditor: true,
-                isMono: false,
+                textEditor: {
+                    enabled: true,
+                    execPath: customPath,
+                    execFlags: execFlagsOverride,
+                },
             },
         );
     });
@@ -335,16 +338,22 @@ describe('CodeEditorIntegrationService', () => {
             ),
             recoveredConfigFiles: [],
         });
-        expect(godotProjectMocks.createNewEditorSettings).toHaveBeenCalledWith(
-            path.resolve(path.resolve('assets'), TEMPLATE_DIR_NAME),
-            context.godotLaunchPath,
-            context.editorSettingsFilename,
-            context.editorSettingsFormat,
-            true,
-            path.resolve('tools', 'code'),
-            '{project} --goto {file}:{line}:{col}',
-            false,
-        );
+        expect(godotProjectMocks.createNewEditorSettings).toHaveBeenCalledWith({
+            templatePath: path.resolve(
+                path.resolve('assets'),
+                TEMPLATE_DIR_NAME,
+            ),
+            launchPath: context.godotLaunchPath,
+            editorConfigFilename: context.editorSettingsFilename,
+            editorConfigFormat: context.editorSettingsFormat,
+            codeEditorSettings: {
+                textEditor: {
+                    enabled: true,
+                    execPath: path.resolve('tools', 'code'),
+                    execFlags: '{project} --goto {file}:{line}:{col}',
+                },
+            },
+        });
         expect(integration.detectInstallation).toHaveBeenCalledWith(undefined);
         expect(integration.resolveGodotConfiguration).toHaveBeenCalledWith({
             installation: {
@@ -353,7 +362,73 @@ describe('CodeEditorIntegrationService', () => {
             },
             settings: { execFlagsOverride: null },
             godotFlavor: 'standard',
+            godotVersion: context.godotVersion,
         });
+    });
+
+    it('applies integration-owned .NET settings without assuming VS Code values', async () => {
+        const integration = createIntegration();
+        const dotnet = {
+            externalEditorId: 7,
+            customLaunchConfiguration: {
+                execPath: path.resolve('tools', 'custom-editor'),
+                execFlags: '--open "{file}"',
+            },
+        };
+        vi.mocked(integration.resolveGodotConfiguration).mockReturnValue({
+            textEditor: {
+                execPath: path.resolve('tools', 'editor'),
+                execFlags: '{file}',
+            },
+            dotnet,
+        });
+        const service = createService(integration);
+        const context = createContext({ mono: true });
+        fsMocks.existsSync.mockReturnValue(true);
+
+        await service.applyToProject(CODE_EDITOR_ID, context);
+
+        expect(integration.resolveGodotConfiguration).toHaveBeenCalledWith({
+            installation: {
+                path: path.resolve('tools', 'code'),
+                version: null,
+            },
+            settings: { execFlagsOverride: null },
+            godotFlavor: 'dotnet',
+            godotVersion: context.godotVersion,
+        });
+        expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
+            context.editorSettingsFile,
+            {
+                textEditor: {
+                    enabled: true,
+                    execPath: path.resolve('tools', 'editor'),
+                    execFlags: '{file}',
+                },
+                dotnet,
+            },
+        );
+    });
+
+    it('selects generic Disabled when a .NET integration has no dedicated configuration', async () => {
+        const integration = createIntegration();
+        const service = createService(integration);
+        const context = createContext({ mono: true });
+        fsMocks.existsSync.mockReturnValue(true);
+
+        await service.applyToProject(CODE_EDITOR_ID, context);
+
+        expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
+            context.editorSettingsFile,
+            {
+                textEditor: {
+                    enabled: true,
+                    execPath: path.resolve('tools', 'code'),
+                    execFlags: '{project} --goto {file}:{line}:{col}',
+                },
+                dotnet: null,
+            },
+        );
     });
 
     it('does not configure a project when the integration is unavailable', async () => {
@@ -383,14 +458,30 @@ describe('CodeEditorIntegrationService', () => {
         fsMocks.existsSync.mockReturnValue(true);
 
         await expect(
-            service.disableForProject(editorSettingsFile),
+            service.disableForProject(editorSettingsFile, 'standard'),
         ).resolves.toBeUndefined();
 
         expect(fsMocks.existsSync).toHaveBeenCalledWith(editorSettingsFile);
         expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
             editorSettingsFile,
             {
-                useExternalEditor: false,
+                textEditor: { enabled: false },
+            },
+        );
+    });
+
+    it('also selects generic Disabled when disabling a .NET project', async () => {
+        const service = createService(createIntegration());
+        const editorSettingsFile = path.resolve('editor_settings.tres');
+        fsMocks.existsSync.mockReturnValue(true);
+
+        await service.disableForProject(editorSettingsFile, 'dotnet');
+
+        expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
+            editorSettingsFile,
+            {
+                textEditor: { enabled: false },
+                dotnet: null,
             },
         );
     });
@@ -400,7 +491,7 @@ describe('CodeEditorIntegrationService', () => {
         const editorSettingsFile = path.resolve('missing-editor_settings.tres');
 
         await expect(
-            service.disableForProject(editorSettingsFile),
+            service.disableForProject(editorSettingsFile, 'standard'),
         ).resolves.toBeUndefined();
 
         expect(fsMocks.existsSync).toHaveBeenCalledWith(editorSettingsFile);

@@ -76,6 +76,7 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         installation: CodeEditorInstallation;
         settings: { execFlagsOverride: string | null };
         godotFlavor: 'standard' | 'dotnet';
+        godotVersion: number;
     }): GodotCodeEditorConfiguration {
         const platformExecPath =
             process.platform === 'darwin'
@@ -97,8 +98,7 @@ export class VSCodeIntegration implements CodeEditorIntegration {
             ...(input.godotFlavor === 'dotnet'
                 ? {
                       dotnet: {
-                          externalEditor: 4,
-                          customExecPathArgs: '{file}',
+                          externalEditorId: 4,
                       },
                   }
                 : {}),

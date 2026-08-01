@@ -4,33 +4,97 @@ import mustache from 'mustache';
 
 import { EDITOR_SETTINGS_TEMPLATE_FILENAME } from '../../constants.js';
 
-export async function createNewEditorSettings(
-    templatePath: string,
-    launchPath: string,
-    editorConfigFilename: string,
-    editorConfigFormat: number,
-    useExternalEditor: boolean,
-    execPath: string,
-    execFlags: string,
-    isMono: boolean,
-): Promise<string> {
+type GodotEditorLaunchConfiguration = {
+    execPath: string;
+    execFlags: string;
+};
+
+type GodotDotNetEditorSettings = {
+    externalEditorId: number;
+    customLaunchConfiguration?: GodotEditorLaunchConfiguration;
+};
+
+export type GodotCodeEditorSettingsUpdate = {
+    textEditor: {
+        enabled: boolean;
+        execPath?: string;
+        execFlags?: string;
+    };
+    dotnet?: GodotDotNetEditorSettings | null;
+};
+
+export type CreateNewEditorSettingsOptions = {
+    templatePath: string;
+    launchPath: string;
+    editorConfigFilename: string;
+    editorConfigFormat: number;
+    codeEditorSettings: GodotCodeEditorSettingsUpdate;
+};
+
+const GODOT_DOTNET_DISABLED_EDITOR_ID = 0;
+
+function serializeGodotString(value: string): string {
+    return JSON.stringify(value);
+}
+
+function toTemplateDotNetSettings(
+    dotnet: GodotCodeEditorSettingsUpdate['dotnet'],
+):
+    | {
+          externalEditorId: number;
+          customLaunchConfiguration?: GodotEditorLaunchConfiguration;
+      }
+    | undefined {
+    if (dotnet === undefined) {
+        return undefined;
+    }
+
+    const resolvedDotNet = dotnet ?? {
+        externalEditorId: GODOT_DOTNET_DISABLED_EDITOR_ID,
+    };
+
+    return {
+        externalEditorId: resolvedDotNet.externalEditorId,
+        ...(resolvedDotNet.customLaunchConfiguration
+            ? {
+                  customLaunchConfiguration: {
+                      execPath: serializeGodotString(
+                          resolvedDotNet.customLaunchConfiguration.execPath,
+                      ),
+                      execFlags: serializeGodotString(
+                          resolvedDotNet.customLaunchConfiguration.execFlags,
+                      ),
+                  },
+              }
+            : {}),
+    };
+}
+
+export async function createNewEditorSettings({
+    templatePath,
+    launchPath,
+    editorConfigFilename,
+    editorConfigFormat,
+    codeEditorSettings,
+}: CreateNewEditorSettingsOptions): Promise<string> {
     const settingsTemplatePath = path.resolve(
         templatePath,
         EDITOR_SETTINGS_TEMPLATE_FILENAME,
     );
     const template = await fs.promises.readFile(settingsTemplatePath, 'utf-8');
 
-    const platformExecPath =
-        process.platform === 'win32'
-            ? execPath.replaceAll('\\', '\\\\')
-            : execPath;
-
     const editorSettings = mustache.render(template, {
         editorConfigFormat,
-        useExternalEditor,
-        execPath: platformExecPath,
-        execFlags,
-        isMono,
+        textEditor: {
+            enabled: codeEditorSettings.textEditor.enabled,
+            execPath: serializeGodotString(
+                codeEditorSettings.textEditor.execPath ?? '',
+            ),
+            execFlags: serializeGodotString(
+                codeEditorSettings.textEditor.execFlags ?? '',
+            ),
+        },
+        dotnet: toTemplateDotNetSettings(codeEditorSettings.dotnet),
     });
 
     const editorDataPath = path.resolve(
@@ -52,12 +116,7 @@ export async function createNewEditorSettings(
 
 export async function updateEditorSettings(
     editorSettingsPath: string,
-    updates: {
-        execPath?: string;
-        execFlags?: string;
-        useExternalEditor?: boolean;
-        isMono?: boolean;
-    },
+    updates: GodotCodeEditorSettingsUpdate,
 ): Promise<void> {
     if (!fs.existsSync(editorSettingsPath)) {
         throw new Error(
@@ -66,27 +125,36 @@ export async function updateEditorSettings(
     }
 
     let content = await fs.promises.readFile(editorSettingsPath, 'utf-8');
-    const normalizedExecPath =
-        updates.execPath && process.platform === 'win32'
-            ? updates.execPath.replace(/\\/g, '\\\\')
-            : updates.execPath;
     const settingsMap: Record<string, string> = {};
 
-    if (normalizedExecPath !== undefined) {
-        settingsMap['text_editor/external/exec_path'] =
-            `"${normalizedExecPath}"`;
+    if (updates.textEditor.execPath !== undefined) {
+        settingsMap['text_editor/external/exec_path'] = serializeGodotString(
+            updates.textEditor.execPath,
+        );
     }
-    if (updates.execFlags !== undefined) {
-        settingsMap['text_editor/external/exec_flags'] =
-            `"${updates.execFlags}"`;
+    if (updates.textEditor.execFlags !== undefined) {
+        settingsMap['text_editor/external/exec_flags'] = serializeGodotString(
+            updates.textEditor.execFlags,
+        );
     }
-    if (updates.useExternalEditor !== undefined) {
-        settingsMap['text_editor/external/use_external_editor'] =
-            updates.useExternalEditor.toString();
-    }
-    if (updates.isMono === true) {
-        settingsMap['dotnet/editor/external_editor'] = '4';
-        settingsMap['dotnet/editor/custom_exec_path_args'] = '"{file}"';
+    settingsMap['text_editor/external/use_external_editor'] =
+        updates.textEditor.enabled.toString();
+
+    if (updates.dotnet !== undefined) {
+        const dotnet = updates.dotnet ?? {
+            externalEditorId: GODOT_DOTNET_DISABLED_EDITOR_ID,
+        };
+        settingsMap['dotnet/editor/external_editor'] =
+            dotnet.externalEditorId.toString();
+
+        if (dotnet.customLaunchConfiguration) {
+            settingsMap['dotnet/editor/custom_exec_path'] =
+                serializeGodotString(dotnet.customLaunchConfiguration.execPath);
+            settingsMap['dotnet/editor/custom_exec_path_args'] =
+                serializeGodotString(
+                    dotnet.customLaunchConfiguration.execFlags,
+                );
+        }
     }
 
     const escapeRegExp = (value: string) =>

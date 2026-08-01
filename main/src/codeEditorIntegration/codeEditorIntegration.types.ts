@@ -20,12 +20,14 @@ export type CodeEditorResolvedSettings = {
     execFlagsOverride: string | null;
 };
 
+export type GodotDotNetEditorConfiguration = {
+    externalEditorId: number;
+    customLaunchConfiguration?: CodeEditorLaunchConfiguration;
+};
+
 export type GodotCodeEditorConfiguration = {
     textEditor: CodeEditorLaunchConfiguration;
-    dotnet?: {
-        externalEditor: number;
-        customExecPathArgs?: string;
-    };
+    dotnet?: GodotDotNetEditorConfiguration;
 };
 
 export type CodeEditorProjectConfigurationMode = 'create' | 'update';
@@ -72,6 +74,7 @@ export interface CodeEditorIntegration {
         installation: CodeEditorInstallation;
         settings: CodeEditorResolvedSettings;
         godotFlavor: GodotEditorFlavor;
+        godotVersion: number;
     }): GodotCodeEditorConfiguration;
 
     configureProject(
