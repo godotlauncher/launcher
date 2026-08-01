@@ -16,6 +16,7 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
@@ -67,12 +68,13 @@ export async function removeProject(
 
     if (project.last_opened) {
         try {
-            await writeProjectLauncherConfig(
-                project.path,
-                project.release,
-                app.getVersion(),
-                project.last_opened,
-            );
+            await writeProjectLauncherConfig(project.path, {
+                release: project.release,
+                launcherVersion: app.getVersion(),
+                lastOpened: project.last_opened,
+                codeEditorId:
+                    resolveCodeEditorProjectMode(project).codeEditorId,
+            });
         } catch (error) {
             logger.warn(
                 `Failed to write project launcher config for '${project.name}' before removing it`,
@@ -140,12 +142,13 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     if (storedProject) {
         project = storedProject;
         try {
-            await writeProjectLauncherConfig(
-                storedProject.path,
-                storedProject.release,
-                app.getVersion(),
-                storedProject.last_opened,
-            );
+            await writeProjectLauncherConfig(storedProject.path, {
+                release: storedProject.release,
+                launcherVersion: app.getVersion(),
+                lastOpened: storedProject.last_opened,
+                codeEditorId:
+                    resolveCodeEditorProjectMode(storedProject).codeEditorId,
+            });
         } catch (error) {
             logger.warn(
                 `Failed to write project launcher config for '${storedProject.name}'`,
@@ -500,6 +503,13 @@ export async function setProjectCodeEditor(
         updatedProjects[projectIndex] = targetProject;
 
         try {
+            await writeProjectLauncherConfig(targetProject.path, {
+                release: targetProject.release,
+                launcherVersion: app.getVersion(),
+                lastOpened: targetProject.last_opened,
+                codeEditorId,
+            });
+
             const storedProjects = await storeProjectsList(
                 projectListPath,
                 updatedProjects,

@@ -182,8 +182,11 @@ describe('createProject', () => {
             projectLauncherConfigMocks.writeProjectLauncherConfig,
         ).toHaveBeenCalledWith(
             path.resolve('/projects/Test-Project'),
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                codeEditorId: null,
+            }),
         );
         expect(result.projectDetails?.icon_path).toBe(
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
@@ -212,6 +215,16 @@ describe('createProject', () => {
         );
         expect(result.projectDetails?.codeEditorId).toBe('vscode');
         expect(result.projectDetails?.withVSCode).toBe(true);
+        expect(
+            projectLauncherConfigMocks.writeProjectLauncherConfig,
+        ).toHaveBeenCalledWith(
+            path.resolve('/projects/Integrated-Project'),
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                codeEditorId: 'vscode',
+            }),
+        );
         expect(result.projectDetails?.editor_settings_file).toBe(
             '/configured/editor_settings.tres',
         );

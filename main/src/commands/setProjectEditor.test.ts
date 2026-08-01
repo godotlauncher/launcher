@@ -289,8 +289,12 @@ describe('setProjectEditor', () => {
         expect(result.projects?.[0].release.version).toBe('4.3-stable');
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/fake/project',
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                lastOpened: null,
+                codeEditorId: 'vscode',
+            }),
         );
     });
 

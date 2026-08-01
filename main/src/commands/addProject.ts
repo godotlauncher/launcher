@@ -4,6 +4,7 @@ import type {
     AddProjectEditorResolution,
     AddProjectOptions,
     AddProjectToListResult,
+    CodeEditorId,
     InstalledRelease,
     ProjectConfig,
     ProjectDetails,
@@ -439,9 +440,35 @@ export async function addProject(
     }
 
     const withGit = fs.existsSync(path.resolve(dirname, '.git'));
-    const codeEditorId = addAsMissingEditor
-        ? null
-        : await codeEditorIntegrationService.findConfiguredIntegration(dirname);
+    const configuredCodeEditor = projectLauncherConfig?.code_editor;
+    let codeEditorId: CodeEditorId | null;
+    let projectLauncherCodeEditorId: string | null;
+
+    if (configuredCodeEditor) {
+        const requestedId = configuredCodeEditor.id;
+        projectLauncherCodeEditorId = requestedId;
+
+        if (
+            requestedId &&
+            codeEditorIntegrationService.isRegisteredIntegration(requestedId)
+        ) {
+            codeEditorId = requestedId;
+        } else {
+            codeEditorId = null;
+            if (requestedId) {
+                logger.warn(
+                    `Unknown code editor integration '${requestedId}' in ${projectLauncherConfigPath}; preserving the selection without configuring it`,
+                );
+            }
+        }
+    } else {
+        codeEditorId =
+            await codeEditorIntegrationService.findConfiguredIntegration(
+                dirname,
+            );
+        projectLauncherCodeEditorId = codeEditorId;
+    }
+
     const recoveredCodeEditorConfigFiles = new Set<string>();
 
     if (release && !addAsMissingEditor && codeEditorId) {
@@ -522,20 +549,12 @@ export async function addProject(
     };
 
     if (shouldWriteProjectLauncherConfig) {
-        if (project.last_opened) {
-            await writeProjectLauncherConfig(
-                dirname,
-                project.release,
-                app.getVersion(),
-                project.last_opened,
-            );
-        } else {
-            await writeProjectLauncherConfig(
-                dirname,
-                project.release,
-                app.getVersion(),
-            );
-        }
+        await writeProjectLauncherConfig(dirname, {
+            release: project.release,
+            launcherVersion: app.getVersion(),
+            lastOpened: project.last_opened,
+            codeEditorId: projectLauncherCodeEditorId,
+        });
     }
 
     const allProjects = await addProjectToList(projectListPath, project);

@@ -276,7 +276,8 @@ describe('launchProject', () => {
             },
             launch_path: '/project/editor/Godot.app',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: 'vscode',
+            withVSCode: true,
             withGit: false,
             valid: true,
         };
@@ -290,9 +291,12 @@ describe('launchProject', () => {
 
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/projects/demo',
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
-            expect.any(Date),
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                lastOpened: expect.any(Date),
+                codeEditorId: 'vscode',
+            }),
         );
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
@@ -343,7 +347,8 @@ describe('removeProject', () => {
             },
             launch_path: '/project/editor/Godot.app',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: 'vscode',
+            withVSCode: true,
             withGit: false,
             valid: true,
         };
@@ -352,9 +357,12 @@ describe('removeProject', () => {
 
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/projects/demo',
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
-            lastOpened,
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                lastOpened,
+                codeEditorId: 'vscode',
+            }),
         );
         expect(removeProjectFromList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
@@ -576,6 +584,7 @@ describe('setProjectCodeEditor', () => {
             }),
         );
         integrationMocks.disableForProject.mockResolvedValue(undefined);
+        writeProjectLauncherConfig.mockResolvedValue(undefined);
     });
     it('enables VS Code integration using existing editor settings', async () => {
         const project: ProjectDetails = {
@@ -658,6 +667,18 @@ describe('setProjectCodeEditor', () => {
                 configurationMode: 'update',
             }),
         );
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.2' }),
+                launcherVersion: '1.0.0',
+                lastOpened: null,
+                codeEditorId: 'vscode',
+            }),
+        );
+        expect(
+            writeProjectLauncherConfig.mock.invocationCallOrder[0],
+        ).toBeLessThan(storeProjectsList.mock.invocationCallOrder[0]);
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             expect.any(Array),
@@ -672,6 +693,67 @@ describe('setProjectCodeEditor', () => {
         expect(result.codeEditorId).toBe('vscode');
     });
 
+    it('does not persist the local selection when the sidecar write fails', async () => {
+        const project: ProjectDetails = {
+            name: 'Demo',
+            path: '/projects/demo',
+            version: '4.2',
+            version_number: 4.2,
+            renderer: 'FORWARD_PLUS',
+            editor_settings_path: '/projects/demo/editor_data',
+            editor_settings_file:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
+            last_opened: null,
+            open_windowed: false,
+            release: {
+                version: '4.2',
+                version_number: 4.2,
+                install_path: '/godot',
+                editor_path: '/godot/godot.exe',
+                platform: 'win32',
+                arch: 'x86_64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            launch_path: '/godot/godot.exe',
+            config_version: 5,
+            withVSCode: false,
+            withGit: false,
+            valid: true,
+        };
+
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [JSON.parse(JSON.stringify(project)) as ProjectDetails],
+            version: 'v1',
+        });
+        getProjectDefinition.mockReturnValue({
+            editorConfigFilename: () => 'editor_settings-4.2.tres',
+            editorConfigFormat: 3,
+            resources: [],
+            projectFilename: 'project.godot',
+            configVersion: 5,
+            defaultRenderer: 'FORWARD_PLUS',
+        });
+        writeProjectLauncherConfig.mockRejectedValueOnce(
+            new Error('Cannot write .godotlauncher'),
+        );
+
+        await expect(
+            setProjectCodeEditor(
+                project,
+                'vscode',
+                codeEditorIntegrationService,
+            ),
+        ).rejects.toThrow('Cannot write .godotlauncher');
+
+        expect(integrationMocks.applyToProject).toHaveBeenCalledOnce();
+        expect(storeProjectsList).not.toHaveBeenCalled();
+        expect(project.codeEditorId).toBeUndefined();
+        expect(project.withVSCode).toBe(false);
+    });
     it('returns recovered VS Code config files when enabling integration', async () => {
         const project: ProjectDetails = {
             name: 'Demo',
@@ -987,6 +1069,15 @@ describe('setProjectCodeEditor', () => {
 
         expect(integrationMocks.disableForProject).toHaveBeenCalledWith(
             '/projects/demo/editor_data/editor_settings-4.2.tres',
+        );
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.2' }),
+                launcherVersion: '1.0.0',
+                lastOpened: null,
+                codeEditorId: null,
+            }),
         );
         expect(result.codeEditorId).toBeNull();
         expect(result.withVSCode).toBe(false);

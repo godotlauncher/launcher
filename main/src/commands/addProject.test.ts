@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import type { ProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProject } from './addProject.js';
 
 const fsMocks = vi.hoisted(() => ({
@@ -178,6 +179,7 @@ const { getInstalledReleases } = releasesMocks;
 const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsDetails } = projectsMocks;
 const codeEditorIntegrationService = {
+    isRegisteredIntegration: vi.fn(),
     findConfiguredIntegration: vi.fn(),
     scanIntegration: vi.fn(),
     applyToProject: vi.fn(),
@@ -185,6 +187,7 @@ const codeEditorIntegrationService = {
 } as unknown as CodeEditorIntegrationService;
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
+    isRegisteredIntegration: ReturnType<typeof vi.fn>;
     findConfiguredIntegration: ReturnType<typeof vi.fn>;
     scanIntegration: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
@@ -196,6 +199,22 @@ const {
 } = godotUtilsMocks;
 const { readProjectLauncherConfig, writeProjectLauncherConfig } =
     projectLauncherConfigMocks;
+
+function createStableProjectLauncherConfig(
+    codeEditor?: ProjectLauncherConfig['code_editor'],
+): ProjectLauncherConfig {
+    return {
+        config: { version: 1 },
+        launcher: { version: '1.9.0' },
+        editor: {
+            channel: 'official',
+            flavor: 'dotnet',
+            base_version: '4.3',
+            version: '4.3-stable',
+        },
+        ...(codeEditor ? { code_editor: codeEditor } : {}),
+    };
+}
 
 describe('addProject', () => {
     beforeEach(() => {
@@ -265,6 +284,9 @@ describe('addProject', () => {
 
         // Mock VSCode utilities
         updateVSCodeSettings.mockResolvedValue([]);
+        integrationMocks.isRegisteredIntegration.mockImplementation(
+            (id: string) => id === 'vscode',
+        );
         integrationMocks.findConfiguredIntegration.mockImplementation(
             async (projectDir: string) =>
                 existsSync(path.resolve(projectDir, '.vscode'))
@@ -305,11 +327,98 @@ describe('addProject', () => {
         );
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/fake/project',
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                codeEditorId: null,
+            }),
         );
     });
 
+    it('uses an explicit code editor without project-file detection', async () => {
+        readProjectLauncherConfig.mockResolvedValue(
+            createStableProjectLauncherConfig({ id: 'vscode' }),
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBe('vscode');
+        expect(
+            integrationMocks.findConfiguredIntegration,
+        ).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({ configurationMode: 'update' }),
+        );
+    });
+
+    it('treats an explicit None as authoritative', async () => {
+        readProjectLauncherConfig.mockResolvedValue(
+            createStableProjectLauncherConfig({ id: null }),
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBeNull();
+        expect(
+            integrationMocks.findConfiguredIntegration,
+        ).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+    });
+
+    it('preserves an unknown code editor without selecting another integration', async () => {
+        readProjectLauncherConfig.mockResolvedValue(
+            createStableProjectLauncherConfig({ id: 'future-editor' }),
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBeNull();
+        expect(
+            integrationMocks.findConfiguredIntegration,
+        ).not.toHaveBeenCalled();
+        expect(integrationMocks.scanIntegration).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ codeEditorId: 'future-editor' }),
+        );
+    });
+
+    it('keeps a known code editor selected when its installation is unavailable', async () => {
+        readProjectLauncherConfig.mockResolvedValue(
+            createStableProjectLauncherConfig({ id: 'vscode' }),
+        );
+        integrationMocks.scanIntegration.mockResolvedValue(null);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBe('vscode');
+        expect(
+            integrationMocks.findConfiguredIntegration,
+        ).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            expect.objectContaining({ codeEditorId: 'vscode' }),
+        );
+    });
     it('prefers an exact .godotlauncher editor match when importing', async () => {
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },
@@ -400,9 +509,12 @@ describe('addProject', () => {
         expect(result.newProject?.last_opened).toBe(lastOpened);
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/fake/project',
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
-            lastOpened,
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                lastOpened,
+                codeEditorId: null,
+            }),
         );
     });
 
@@ -528,6 +640,7 @@ describe('addProject', () => {
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },
             launcher: { version: '1.9.0' },
+            code_editor: { id: 'vscode' },
             editor: {
                 channel: 'custom',
                 flavor: 'gdscript',
@@ -546,6 +659,7 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(result.newProject).toMatchObject({
+            codeEditorId: 'vscode',
             valid: false,
             invalid_reason: 'missing_editor',
             launch_path: '',
@@ -558,6 +672,7 @@ describe('addProject', () => {
             },
         });
         expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
         expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 
@@ -600,8 +715,11 @@ describe('addProject', () => {
         expect(result.newProject?.release.version).toBe('4.3-stable');
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/fake/project',
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+                codeEditorId: null,
+            }),
         );
     });
 

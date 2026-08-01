@@ -17,6 +17,10 @@ export class CodeEditorIntegrationRegistry {
         }
     }
 
+    has(id: string): id is CodeEditorId {
+        return this.integrations.has(id as CodeEditorId);
+    }
+
     get(id: CodeEditorId): CodeEditorIntegration {
         const integration = this.integrations.get(id);
         if (!integration) {

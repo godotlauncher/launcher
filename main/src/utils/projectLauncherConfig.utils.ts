@@ -23,6 +23,16 @@ export type ProjectLauncherConfig = {
         base_version: string;
         version: string;
     };
+    code_editor?: {
+        id: string | null;
+    };
+};
+
+export type ProjectLauncherConfigInput = {
+    release: InstalledRelease;
+    launcherVersion: string;
+    lastOpened?: Date | null;
+    codeEditorId: string | null;
 };
 
 type IniDocument = Record<string, Record<string, string>>;
@@ -76,6 +86,18 @@ function parseOptionalDate(value: string | undefined): Date | null {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function parseCodeEditor(
+    section: Record<string, string> | undefined,
+): ProjectLauncherConfig['code_editor'] {
+    if (!section) {
+        return undefined;
+    }
+
+    const id = section.id?.trim();
+    return {
+        id: !id || id === 'none' ? null : id,
+    };
+}
 export function getReleaseChannel(
     release: Pick<InstalledRelease, 'source'>,
 ): EditorChannel {
@@ -111,10 +133,10 @@ export function getReleaseBaseVersion(
 }
 
 export function createProjectLauncherConfig(
-    release: InstalledRelease,
-    launcherVersion: string,
-    lastOpened?: Date | null,
+    input: ProjectLauncherConfigInput,
 ): ProjectLauncherConfig {
+    const { release, launcherVersion, lastOpened, codeEditorId } = input;
+
     return {
         config: {
             version: 1,
@@ -128,6 +150,9 @@ export function createProjectLauncherConfig(
             flavor: getReleaseFlavor(release),
             base_version: getReleaseBaseVersion(release),
             version: release.version,
+        },
+        code_editor: {
+            id: codeEditorId,
         },
     };
 }
@@ -161,6 +186,14 @@ export function serializeProjectLauncherConfig(
         '',
     );
 
+    if (config.code_editor) {
+        lines.push(
+            '[code_editor]',
+            `id=${config.code_editor.id ?? 'none'}`,
+            '',
+        );
+    }
+
     return lines.join('\n');
 }
 
@@ -179,6 +212,7 @@ export function parseProjectLauncherConfig(
     const editorVersion = ini.editor?.version;
     const launcherVersion = ini.launcher?.version;
     const lastOpened = parseOptionalDate(ini.project?.last_opened);
+    const codeEditor = parseCodeEditor(ini.code_editor);
 
     if (
         !isEditorChannel(channel) ||
@@ -204,6 +238,7 @@ export function parseProjectLauncherConfig(
             base_version: baseVersion,
             version: editorVersion,
         },
+        ...(codeEditor ? { code_editor: codeEditor } : {}),
     };
 }
 
@@ -230,15 +265,9 @@ export async function readProjectLauncherConfig(
 
 export async function writeProjectLauncherConfig(
     projectDir: string,
-    release: InstalledRelease,
-    launcherVersion: string,
-    lastOpened?: Date | null,
+    input: ProjectLauncherConfigInput,
 ): Promise<void> {
-    const config = createProjectLauncherConfig(
-        release,
-        launcherVersion,
-        lastOpened,
-    );
+    const config = createProjectLauncherConfig(input);
     await fs.promises.writeFile(
         path.resolve(projectDir, PROJECT_LAUNCHER_CONFIG_FILENAME),
         serializeProjectLauncherConfig(config),

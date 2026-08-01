@@ -242,11 +242,11 @@ export async function createProject(
         if (!projectDetails) {
             throw new Error('Missing project details after creation');
         }
-        await writeProjectLauncherConfig(
-            projectPath,
-            projectDetails.release,
-            app.getVersion(),
-        );
+        await writeProjectLauncherConfig(projectPath, {
+            release: projectDetails.release,
+            launcherVersion: app.getVersion(),
+            codeEditorId: projectDetails.codeEditorId ?? null,
+        });
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),
             projectDetails,

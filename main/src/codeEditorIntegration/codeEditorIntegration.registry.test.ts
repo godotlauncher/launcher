@@ -24,6 +24,8 @@ describe('CodeEditorIntegrationRegistry', () => {
         const registry = new CodeEditorIntegrationRegistry([integration]);
 
         expect(registry.get(CODE_EDITOR_ID)).toBe(integration);
+        expect(registry.has(CODE_EDITOR_ID)).toBe(true);
+        expect(registry.has('unknown')).toBe(false);
         expect(registry.list()).toEqual([integration]);
     });
 

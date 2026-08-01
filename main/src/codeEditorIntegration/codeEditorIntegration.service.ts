@@ -36,6 +36,10 @@ export class CodeEditorIntegrationService {
         return this.registry.list().map((integration) => integration.metadata);
     }
 
+    isRegisteredIntegration(id: string): id is CodeEditorId {
+        return this.registry.has(id);
+    }
+
     async listIntegrationSettings(): Promise<CodeEditorIntegrationSettings[]> {
         const defaultIntegrationId =
             await this.settingsStore.getDefaultIntegrationId();
