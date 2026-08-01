@@ -9,11 +9,13 @@ function createIntegration(): CodeEditorIntegration {
         metadata: {
             id: CODE_EDITOR_ID,
             displayName: 'Visual Studio Code',
+            capabilities: { dotnet: true },
         },
+        defaultSettings: { execFlags: '' },
         detectInstallation: vi.fn(),
         validatePath: vi.fn(),
         isConfiguredForProject: vi.fn(),
-        getGodotLaunchConfiguration: vi.fn(),
+        resolveGodotConfiguration: vi.fn(),
         configureProject: vi.fn(),
     };
 }

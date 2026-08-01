@@ -709,7 +709,7 @@ describe('addProject', () => {
             arch: process.arch,
             mono: false,
             prerelease: false,
-            config_version: 5,
+            config_version: 5 as const,
             published_at: null,
             valid: true,
         };
