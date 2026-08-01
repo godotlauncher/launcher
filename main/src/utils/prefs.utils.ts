@@ -19,7 +19,12 @@ import {
 } from './jsonStoreFactory.js';
 import { getDefaultDirs } from './platform.utils.js';
 
-type StoredUserPreferences = Partial<UserPreferences>;
+export type StoredUserPreferences = Partial<UserPreferences>;
+
+export type UserPreferencesSnapshot = {
+    stored: StoredUserPreferences;
+    merged: UserPreferences;
+};
 
 let prefsPathCache: string | null = null;
 let prefsStore: TypedJsonStore<StoredUserPreferences> | null = null;
@@ -150,10 +155,21 @@ export async function readPrefsFromDisk(
     prefsPath: string,
     defaultPrefs: UserPreferences,
 ): Promise<UserPreferences> {
+    const snapshot = await readPrefsSnapshotFromDisk(prefsPath, defaultPrefs);
+    return snapshot.merged;
+}
+
+export async function readPrefsSnapshotFromDisk(
+    prefsPath: string,
+    defaultPrefs: UserPreferences,
+): Promise<UserPreferencesSnapshot> {
     const store = ensurePrefsStore(prefsPath);
     const storedPrefs = await store.read();
     const merged = mergeWithDefaults(defaultPrefs, storedPrefs);
-    return clonePrefs(merged);
+    return {
+        stored: clonePrefs(storedPrefs),
+        merged: clonePrefs(merged),
+    };
 }
 
 export async function writePrefsToDisk(

@@ -3,19 +3,22 @@ import type { UserPreferences } from '@shared/contracts';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import {
     getDefaultPrefs,
-    readPrefsFromDisk,
+    readPrefsSnapshotFromDisk,
+    type StoredUserPreferences,
     writePrefsToDisk,
 } from '../utils/prefs.utils.js';
 
 function migrateUserPreferences(
     prefs: UserPreferences,
+    storedPrefs: StoredUserPreferences,
     defaultPrefs: UserPreferences,
 ): { updated: boolean; value: UserPreferences } {
     let updated = false;
     const nextPrefs: UserPreferences = { ...prefs };
     const platform = os.platform();
+    const storedPrefsVersion = storedPrefs.prefs_version ?? 0;
 
-    if (nextPrefs.prefs_version < 4) {
+    if (storedPrefsVersion < 4) {
         nextPrefs.prefs_version = 4;
         updated = true;
     }
@@ -28,7 +31,7 @@ function migrateUserPreferences(
 
     if (typeof nextPrefs.windows_symlink_win_notify === 'undefined') {
         const receivedWindowsPrefsUpgrade =
-            platform === 'win32' && prefs.prefs_version < 3;
+            platform === 'win32' && storedPrefsVersion < 3;
         nextPrefs.windows_symlink_win_notify = receivedWindowsPrefsUpgrade
             ? false
             : defaultPrefs.windows_symlink_win_notify;
@@ -50,22 +53,19 @@ function migrateUserPreferences(
 
     const legacyVSCodePath = nextPrefs.vs_code_path?.trim();
     const vscodeIntegration = nextPrefs.code_editor_integrations?.vscode;
-    if (legacyVSCodePath && !vscodeIntegration?.executable_path?.trim()) {
+    if (
+        storedPrefsVersion < 4 &&
+        legacyVSCodePath &&
+        !vscodeIntegration?.executable_path?.trim()
+    ) {
         nextPrefs.code_editor_integrations = {
             ...nextPrefs.code_editor_integrations,
             vscode: {
                 ...vscodeIntegration,
+                enabled: vscodeIntegration?.enabled ?? true,
                 executable_path: legacyVSCodePath,
             },
         };
-        updated = true;
-    }
-
-    if (
-        nextPrefs.code_editor_integrations?.vscode?.executable_path &&
-        nextPrefs.code_editor_integrations.vscode.enabled === undefined
-    ) {
-        nextPrefs.code_editor_integrations.vscode.enabled = true;
         updated = true;
     }
 
@@ -76,8 +76,12 @@ export async function getUserPreferences(): Promise<UserPreferences> {
     const { prefsPath } = getDefaultDirs();
 
     const defaultPrefs = await getDefaultPrefs();
-    const prefs = await readPrefsFromDisk(prefsPath, defaultPrefs);
-    const migrated = migrateUserPreferences(prefs, defaultPrefs);
+    const prefs = await readPrefsSnapshotFromDisk(prefsPath, defaultPrefs);
+    const migrated = migrateUserPreferences(
+        prefs.merged,
+        prefs.stored,
+        defaultPrefs,
+    );
 
     if (migrated.updated) {
         await writePrefsToDisk(prefsPath, migrated.value);

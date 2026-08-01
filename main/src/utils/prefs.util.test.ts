@@ -20,6 +20,7 @@ import {
     getDefaultPrefs,
     getPrefsPath,
     readPrefsFromDisk,
+    readPrefsSnapshotFromDisk,
     writePrefsToDisk,
 } from './prefs.utils';
 
@@ -280,6 +281,29 @@ suite('prefs.util', (_test) => {
         const prefsPath = '/home/user/.godot/prefs.json';
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
         expect(prefs).toEqual({ a: 1 });
+    });
+
+    it('should expose stored prefs separately from default-merged prefs', async () => {
+        const storedPrefs = {
+            prefs_version: 3,
+            vs_code_path: '/legacy/code',
+        };
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify(storedPrefs),
+        );
+        const defaultPrefs = await getDefaultPrefs();
+
+        const snapshot = await readPrefsSnapshotFromDisk(
+            '/home/user/.godot/prefs.json',
+            defaultPrefs,
+        );
+
+        expect(snapshot.stored).toEqual(storedPrefs);
+        expect(snapshot.merged).toEqual({
+            ...defaultPrefs,
+            ...storedPrefs,
+        });
     });
 
     it('should read default prefs when prefs file does not exist', async () => {

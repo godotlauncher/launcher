@@ -4,14 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => {
     const getDefaultDirs = vi.fn(() => ({ prefsPath: '/tmp/prefs.json' }));
     const getDefaultPrefs = vi.fn();
-    const readPrefsFromDisk = vi.fn();
+    const readPrefsSnapshotFromDisk = vi.fn();
     const writePrefsToDisk = vi.fn();
     const platform = vi.fn(() => 'darwin');
 
     return {
         getDefaultDirs,
         getDefaultPrefs,
-        readPrefsFromDisk,
+        readPrefsSnapshotFromDisk,
         writePrefsToDisk,
         platform,
     };
@@ -27,7 +27,7 @@ vi.mock('../utils/platform.utils.js', () => ({
 
 vi.mock('../utils/prefs.utils.js', () => ({
     getDefaultPrefs: mocks.getDefaultPrefs,
-    readPrefsFromDisk: mocks.readPrefsFromDisk,
+    readPrefsSnapshotFromDisk: mocks.readPrefsSnapshotFromDisk,
     writePrefsToDisk: mocks.writePrefsToDisk,
 }));
 
@@ -57,6 +57,13 @@ function createPrefs(
     };
 }
 
+function mockStoredPrefs(stored: Partial<UserPreferences>): void {
+    mocks.readPrefsSnapshotFromDisk.mockResolvedValue({
+        stored,
+        merged: createPrefs(stored),
+    });
+}
+
 describe('userPreferences migration', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -65,12 +72,10 @@ describe('userPreferences migration', () => {
     });
 
     it('keeps missing skipped update preference as undefined', async () => {
-        mocks.readPrefsFromDisk.mockResolvedValue(
-            createPrefs({
-                receive_beta_updates: false,
-                skipped_app_update_version: undefined,
-            }),
-        );
+        mockStoredPrefs({
+            prefs_version: 4,
+            receive_beta_updates: false,
+        });
 
         const prefs = await getUserPreferences();
 
@@ -80,12 +85,10 @@ describe('userPreferences migration', () => {
     });
 
     it('copies the legacy VS Code path into integration settings without removing it', async () => {
-        mocks.readPrefsFromDisk.mockResolvedValue(
-            createPrefs({
-                prefs_version: 3,
-                vs_code_path: '/opt/code',
-            }),
-        );
+        mockStoredPrefs({
+            prefs_version: 3,
+            vs_code_path: '/opt/code',
+        });
 
         const prefs = await getUserPreferences();
 
@@ -105,12 +108,207 @@ describe('userPreferences migration', () => {
         );
     });
 
-    it('clears invalid skipped update preference values', async () => {
-        mocks.readPrefsFromDisk.mockResolvedValue(
-            createPrefs({
-                skipped_app_update_version: 42 as unknown as string,
-            }),
+    it('uses a missing stored version as a legacy migration source', async () => {
+        mockStoredPrefs({
+            vs_code_path: '/opt/code',
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs).toMatchObject({
+            prefs_version: 4,
+            vs_code_path: '/opt/code',
+            code_editor_integrations: {
+                vscode: {
+                    enabled: true,
+                    executable_path: '/opt/code',
+                },
+            },
+        });
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+            '/tmp/prefs.json',
+            prefs,
         );
+    });
+
+    it('persists version 4 when the stored version is missing', async () => {
+        mockStoredPrefs({
+            language: 'de',
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs.prefs_version).toBe(4);
+        expect(prefs.code_editor_integrations).toBeUndefined();
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+            '/tmp/prefs.json',
+            prefs,
+        );
+    });
+
+    it('does not copy the legacy path from version 4 preferences', async () => {
+        mockStoredPrefs({
+            prefs_version: 4,
+            vs_code_path: '/opt/code',
+        });
+
+        const firstRead = await getUserPreferences();
+        const secondRead = await getUserPreferences();
+
+        expect(firstRead.code_editor_integrations).toBeUndefined();
+        expect(secondRead.code_editor_integrations).toBeUndefined();
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+    });
+
+    it('does not create integration settings for an empty legacy path', async () => {
+        mockStoredPrefs({
+            prefs_version: 3,
+            vs_code_path: '   ',
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs.prefs_version).toBe(4);
+        expect(prefs.code_editor_integrations).toBeUndefined();
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+            '/tmp/prefs.json',
+            prefs,
+        );
+    });
+
+    it('preserves an existing generic VS Code configuration', async () => {
+        mockStoredPrefs({
+            prefs_version: 3,
+            vs_code_path: '/legacy/code',
+            code_editor_integrations: {
+                vscode: {
+                    enabled: false,
+                    executable_path: '/generic/code',
+                    executable_args: '--reuse-window',
+                    is_default: true,
+                },
+            },
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs.code_editor_integrations?.vscode).toEqual({
+            enabled: false,
+            executable_path: '/generic/code',
+            executable_args: '--reuse-window',
+            is_default: true,
+        });
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+            '/tmp/prefs.json',
+            prefs,
+        );
+    });
+
+    it('adds only the migrated path and default enabled state to partial settings', async () => {
+        mockStoredPrefs({
+            prefs_version: 3,
+            vs_code_path: '/legacy/code',
+            code_editor_integrations: {
+                vscode: {
+                    executable_args: '--reuse-window',
+                    is_default: true,
+                },
+            },
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs.code_editor_integrations?.vscode).toEqual({
+            enabled: true,
+            executable_path: '/legacy/code',
+            executable_args: '--reuse-window',
+            is_default: true,
+        });
+    });
+
+    it('preserves an explicit disabled state while copying the legacy path', async () => {
+        mockStoredPrefs({
+            prefs_version: 3,
+            vs_code_path: '/legacy/code',
+            code_editor_integrations: {
+                vscode: {
+                    enabled: false,
+                    executable_args: '--reuse-window',
+                    is_default: true,
+                },
+            },
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs.code_editor_integrations?.vscode).toEqual({
+            enabled: false,
+            executable_path: '/legacy/code',
+            executable_args: '--reuse-window',
+            is_default: true,
+        });
+    });
+
+    it('does not add enabled to generic version 4 settings', async () => {
+        mockStoredPrefs({
+            prefs_version: 4,
+            code_editor_integrations: {
+                vscode: {
+                    executable_path: '/generic/code',
+                    executable_args: '--reuse-window',
+                    is_default: true,
+                },
+            },
+        });
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs.code_editor_integrations?.vscode).toEqual({
+            executable_path: '/generic/code',
+            executable_args: '--reuse-window',
+            is_default: true,
+        });
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+    });
+
+    it('does not restore the legacy path after reset and reload', async () => {
+        let stored: Partial<UserPreferences> = {
+            prefs_version: 3,
+            vs_code_path: '/legacy/code',
+        };
+        mocks.readPrefsSnapshotFromDisk.mockImplementation(async () => ({
+            stored,
+            merged: createPrefs(stored),
+        }));
+        mocks.writePrefsToDisk.mockImplementation(async (_path, value) => {
+            stored = JSON.parse(JSON.stringify(value)) as UserPreferences;
+        });
+
+        const migrated = await getUserPreferences();
+        await setUserPreferences({
+            ...migrated,
+            code_editor_integrations: {
+                ...migrated.code_editor_integrations,
+                vscode: {
+                    ...migrated.code_editor_integrations?.vscode,
+                    executable_path: undefined,
+                },
+            },
+        });
+        const reloaded = await getUserPreferences();
+
+        expect(reloaded.vs_code_path).toBe('/legacy/code');
+        expect(
+            reloaded.code_editor_integrations?.vscode?.executable_path,
+        ).toBeUndefined();
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledTimes(2);
+    });
+
+    it('clears invalid skipped update preference values', async () => {
+        mockStoredPrefs({
+            prefs_version: 4,
+            skipped_app_update_version: 42 as unknown as string,
+        });
 
         const prefs = await getUserPreferences();
 
