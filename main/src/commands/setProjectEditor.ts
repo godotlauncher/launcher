@@ -7,8 +7,10 @@ import type {
 import { app } from 'electron';
 import logger from 'electron-log';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
-import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProjectSidecar.js';
+import {
+    resolveCodeEditorProjectMode,
+    resolvePortableCodeEditorIdForWrite,
+} from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { EDITOR_CONFIG_DIRNAME, PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
 import {

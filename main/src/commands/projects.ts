@@ -16,8 +16,10 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
-import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProjectSidecar.js';
+import {
+    resolveCodeEditorProjectMode,
+    resolvePortableCodeEditorIdForWrite,
+} from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';

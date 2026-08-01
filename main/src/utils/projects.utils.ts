@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
-import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
+import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
