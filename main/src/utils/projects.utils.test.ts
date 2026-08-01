@@ -223,4 +223,60 @@ describe('projects.utils', () => {
         expect(updated).toHaveLength(1);
         expect(updated[0].path).toBe('/projects/keep');
     });
+
+    it('keeps legacy projects without a code editor ID', async () => {
+        const legacyProject = {
+            path: '/projects/legacy',
+            last_opened: null,
+            withVSCode: true,
+        } as ProjectDetails;
+
+        fs.writeFileSync(
+            projectsFile,
+            JSON.stringify([legacyProject], null, 4),
+            'utf-8',
+        );
+
+        const [storedProject] = await getStoredProjectsList(projectsFile);
+        expect(storedProject).not.toHaveProperty('codeEditorId');
+        expect(storedProject.withVSCode).toBe(true);
+
+        await storeProjectsList(projectsFile, [storedProject]);
+
+        const [persistedProject] = JSON.parse(
+            fs.readFileSync(projectsFile, 'utf-8'),
+        ) as ProjectDetails[];
+        expect(persistedProject).not.toHaveProperty('codeEditorId');
+        expect(persistedProject.withVSCode).toBe(true);
+    });
+
+    it('mirrors the legacy VS Code flag for opted-in projects', async () => {
+        await storeProjectsList(projectsFile, [
+            {
+                path: '/projects/none',
+                last_opened: null,
+                codeEditorId: null,
+                withVSCode: true,
+            } as ProjectDetails,
+            {
+                path: '/projects/vscode',
+                last_opened: null,
+                codeEditorId: 'vscode',
+                withVSCode: false,
+            } as ProjectDetails,
+        ]);
+
+        const persistedProjects = JSON.parse(
+            fs.readFileSync(projectsFile, 'utf-8'),
+        ) as ProjectDetails[];
+        const noCodeEditor = persistedProjects.find(
+            (project) => project.codeEditorId === null,
+        );
+        const withVSCode = persistedProjects.find(
+            (project) => project.codeEditorId === 'vscode',
+        );
+
+        expect(noCodeEditor?.withVSCode).toBe(false);
+        expect(withVSCode?.withVSCode).toBe(true);
+    });
 });

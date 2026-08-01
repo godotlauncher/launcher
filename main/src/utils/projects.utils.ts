@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
+import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
@@ -33,12 +34,19 @@ function resolveProjectsPath(pathOverride?: string): string {
 
 function normalizeProjects(projects: ProjectDetails[]): ProjectDetails[] {
     return projects
-        .map((project) => ({
-            ...project,
-            last_opened: project.last_opened
-                ? new Date(project.last_opened)
-                : null,
-        }))
+        .map((project) => {
+            const codeEditorMode = resolveCodeEditorProjectMode(project);
+
+            return {
+                ...project,
+                ...(codeEditorMode.kind === 'integration'
+                    ? { withVSCode: codeEditorMode.withVSCode }
+                    : {}),
+                last_opened: project.last_opened
+                    ? new Date(project.last_opened)
+                    : null,
+            };
+        })
         .sort(
             (a, b) =>
                 (a.last_opened ?? new Date(0)).getTime() -
