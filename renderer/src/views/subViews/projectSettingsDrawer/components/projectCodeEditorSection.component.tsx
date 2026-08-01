@@ -4,8 +4,31 @@ import type {
 } from '@shared/contracts';
 import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
+import {
+    SelectField,
+    type SelectFieldOption,
+} from '../../../../components/ui/selectField.component';
 
 type Translate = (key: string) => string;
+const getCodeEditorOptions = (
+    t: Translate,
+    settings: CodeEditorIntegrationSettings[],
+): SelectFieldOption[] => [
+    { value: '', label: t('editProject.codeEditor.none') },
+    ...settings.map((integrationSettings) => {
+        const unavailableReason = !integrationSettings.enabled
+            ? t('editProject.codeEditor.disabled')
+            : integrationSettings.installation
+              ? null
+              : t('editProject.codeEditor.notFound');
+
+        return {
+            value: integrationSettings.integration.id,
+            label: `${integrationSettings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`,
+            disabled: unavailableReason !== null,
+        };
+    }),
+];
 
 type ProjectCodeEditorSectionProps = {
     t: Translate;
@@ -46,39 +69,18 @@ export const ProjectCodeEditorSection: React.FC<
             )}
         </div>
 
-        <select
-            data-testid="selectProjectCodeEditor"
-            className="select select-bordered w-full"
-            aria-label={t('editProject.codeEditor.title')}
+        <SelectField
+            id="selectProjectCodeEditor"
+            testId="selectProjectCodeEditor"
+            ariaLabel={t('editProject.codeEditor.title')}
             disabled={disabled || loading || loadFailed}
+            showSelectedCheck
             value={loading || loadFailed ? '' : (codeEditorId ?? '')}
-            onChange={(event) =>
-                onChange(
-                    event.currentTarget.value === ''
-                        ? null
-                        : (event.currentTarget.value as CodeEditorId),
-                )
+            onChange={(value) =>
+                onChange(value === '' ? null : (value as CodeEditorId))
             }
-        >
-            <option value="">{t('editProject.codeEditor.none')}</option>
-            {settings.map((integrationSettings) => {
-                const unavailableReason = !integrationSettings.enabled
-                    ? t('editProject.codeEditor.disabled')
-                    : integrationSettings.installation
-                      ? null
-                      : t('editProject.codeEditor.notFound');
-
-                return (
-                    <option
-                        key={integrationSettings.integration.id}
-                        value={integrationSettings.integration.id}
-                        disabled={unavailableReason !== null}
-                    >
-                        {`${integrationSettings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`}
-                    </option>
-                );
-            })}
-        </select>
+            options={getCodeEditorOptions(t, settings)}
+        />
 
         {loadFailed && (
             <p className="text-sm text-error">

@@ -56,7 +56,7 @@ describe('ProjectCodeEditorSection', () => {
         expect(html).toContain('Code Editor');
         expect(html).toContain('Choose the code editor used for this project.');
         expect(html).toContain('Visual Studio Code');
-        expect(html).toContain('selected=""');
+        expect(html).toContain('aria-selected="true"');
         expect(html).not.toContain('Visual Studio Code (Disabled)');
         expect(html).not.toContain('Visual Studio Code (Not found)');
     });

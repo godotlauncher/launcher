@@ -68,10 +68,8 @@ describe('CreateProjectToolOptionsSection', () => {
         const html = renderSection([availableVSCodeSettings], 'vscode');
 
         expect(html).toContain('data-testid="selectCreateProjectCodeEditor"');
-        expect(html).toContain('<option value="">None</option>');
-        expect(html).toContain(
-            '<option value="vscode" selected="">Visual Studio Code</option>',
-        );
+        expect(html).toContain('Visual Studio Code');
+        expect(html).toContain('aria-selected="true"');
         expect(html).toContain('Setup Visual Studio Code as Text Editor');
     });
 
@@ -86,9 +84,8 @@ describe('CreateProjectToolOptionsSection', () => {
             null,
         );
 
-        expect(html).toContain(
-            '<option value="vscode" disabled="">Visual Studio Code (Disabled)</option>',
-        );
+        expect(html).toContain('Visual Studio Code (Disabled)');
+        expect(html).toContain('disabled=""');
     });
 
     it('keeps missing integrations visible but unavailable to select', () => {
@@ -103,8 +100,7 @@ describe('CreateProjectToolOptionsSection', () => {
             null,
         );
 
-        expect(html).toContain(
-            '<option value="vscode" disabled="">Visual Studio Code (Not found)</option>',
-        );
+        expect(html).toContain('Visual Studio Code (Not found)');
+        expect(html).toContain('disabled=""');
     });
 });

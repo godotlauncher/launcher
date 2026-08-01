@@ -5,8 +5,31 @@ import type {
 import clsx from 'clsx';
 import { CircleHelp } from 'lucide-react';
 import type React from 'react';
+import {
+    SelectField,
+    type SelectFieldOption,
+} from '../../../../components/ui/selectField.component';
 
 type Translate = (key: string) => string;
+const getCodeEditorOptions = (
+    t: Translate,
+    settings: CodeEditorIntegrationSettings[],
+): SelectFieldOption[] => [
+    { value: '', label: t('otherSettings.codeEditor.none') },
+    ...settings.map((integrationSettings) => {
+        const unavailableReason = !integrationSettings.enabled
+            ? t('otherSettings.codeEditor.disabled')
+            : integrationSettings.installation
+              ? null
+              : t('otherSettings.codeEditor.notFound');
+
+        return {
+            value: integrationSettings.integration.id,
+            label: `${integrationSettings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`,
+            disabled: unavailableReason !== null,
+        };
+    }),
+];
 
 type CreateProjectToolOptionsSectionProps = {
     t: Translate;
@@ -75,43 +98,20 @@ export const CreateProjectToolOptionsSection: React.FC<
 
                 <div className="divider m-0"></div>
 
-                <label className="flex flex-col gap-2">
-                    <span>{t('otherSettings.codeEditor.label')}</span>
-                    <select
-                        data-testid="selectCreateProjectCodeEditor"
-                        className="select select-bordered w-full"
-                        disabled={loadingCodeEditors}
-                        value={codeEditorId ?? ''}
-                        onChange={(event) =>
-                            onCodeEditorIdChange(
-                                event.target.value === ''
-                                    ? null
-                                    : (event.target.value as CodeEditorId),
-                            )
-                        }
-                    >
-                        <option value="">
-                            {t('otherSettings.codeEditor.none')}
-                        </option>
-                        {codeEditorSettings.map((settings) => {
-                            const unavailableReason = !settings.enabled
-                                ? t('otherSettings.codeEditor.disabled')
-                                : settings.installation
-                                  ? null
-                                  : t('otherSettings.codeEditor.notFound');
-
-                            return (
-                                <option
-                                    key={settings.integration.id}
-                                    value={settings.integration.id}
-                                    disabled={unavailableReason !== null}
-                                >
-                                    {`${settings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`}
-                                </option>
-                            );
-                        })}
-                    </select>
-                </label>
+                <SelectField
+                    id="selectCreateProjectCodeEditor"
+                    testId="selectCreateProjectCodeEditor"
+                    label={t('otherSettings.codeEditor.label')}
+                    disabled={loadingCodeEditors}
+                    showSelectedCheck
+                    value={codeEditorId ?? ''}
+                    onChange={(value) =>
+                        onCodeEditorIdChange(
+                            value === '' ? null : (value as CodeEditorId),
+                        )
+                    }
+                    options={getCodeEditorOptions(t, codeEditorSettings)}
+                />
 
                 <div className="divider m-0"></div>
                 <label className="flex cursor-pointer gap-2 items-center">

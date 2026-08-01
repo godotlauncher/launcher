@@ -159,9 +159,9 @@ describe('UI form primitives', () => {
                 value="x64"
                 onChange={vi.fn()}
                 options={[
-                    ['universal', 'Universal'],
-                    ['x64', 'x64'],
-                    ['arm64', 'ARM64'],
+                    { value: 'universal', label: 'Universal' },
+                    { value: 'x64', label: 'x64' },
+                    { value: 'arm64', label: 'ARM64' },
                 ]}
             />,
         );
@@ -171,7 +171,52 @@ describe('UI form primitives', () => {
         expect(html).toContain('role="listbox"');
         expect(html).toContain('role="option"');
         expect(html).toContain('aria-selected="true"');
+        expect(html).not.toContain('lucide-check');
         expect(html).not.toContain('<select');
         expect(html).not.toContain('<option');
+    });
+
+    it('renders an optional check only for the selected option', () => {
+        const html = renderToStaticMarkup(
+            <SelectField
+                id="codeEditorWithCheck"
+                ariaLabel="Code editor"
+                value="vscode"
+                showSelectedCheck
+                onChange={vi.fn()}
+                options={[
+                    { value: '', label: 'None' },
+                    { value: 'vscode', label: 'Visual Studio Code' },
+                ]}
+            />,
+        );
+
+        expect(html.match(/lucide-check/g)).toHaveLength(1);
+    });
+
+    it('supports label-free disabled fields and disabled options', () => {
+        const html = renderToStaticMarkup(
+            <SelectField
+                id="codeEditor"
+                testId="selectCodeEditor"
+                ariaLabel="Code editor"
+                value=""
+                disabled
+                onChange={vi.fn()}
+                options={[
+                    { value: '', label: 'None' },
+                    {
+                        value: 'vscode',
+                        label: 'Visual Studio Code',
+                        disabled: true,
+                    },
+                ]}
+            />,
+        );
+
+        expect(html).toContain('aria-label="Code editor"');
+        expect(html).toContain('data-testid="selectCodeEditor"');
+        expect(html.match(/disabled=""/g)).toHaveLength(2);
+        expect(html).toContain('Visual Studio Code');
     });
 });

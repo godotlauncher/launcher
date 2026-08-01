@@ -116,20 +116,24 @@ export const PlatformSection: React.FC<PlatformSectionProps> = ({
                             )
                         }
                         options={[
-                            [
-                                'universal',
-                                t(
+                            {
+                                value: 'universal',
+                                label: t(
                                     'customEditor.creator.architectures.universal',
                                 ),
-                            ],
-                            [
-                                'x64',
-                                t('customEditor.creator.architectures.x64'),
-                            ],
-                            [
-                                'arm64',
-                                t('customEditor.creator.architectures.arm64'),
-                            ],
+                            },
+                            {
+                                value: 'x64',
+                                label: t(
+                                    'customEditor.creator.architectures.x64',
+                                ),
+                            },
+                            {
+                                value: 'arm64',
+                                label: t(
+                                    'customEditor.creator.architectures.arm64',
+                                ),
+                            },
                         ]}
                     />
                     <PathField
