@@ -8,29 +8,13 @@ const platformMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/platform.utils.js', () => platformMocks);
 
-const vscodeMocks = vi.hoisted(() => ({
-    getVSCodeInstallPath: vi.fn(),
-}));
-
-vi.mock('../utils/vscode.utils.js', () => vscodeMocks);
-
-const userPreferencesMocks = vi.hoisted(() => ({
-    getUserPreferences: vi.fn(),
-}));
-
-vi.mock('./userPreferences.js', () => userPreferencesMocks);
-
 const { findExecutable, getCommandVersion } = platformMocks;
-const { getVSCodeInstallPath } = vscodeMocks;
-const { getUserPreferences } = userPreferencesMocks;
 
 describe('getInstalledTools', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         findExecutable.mockResolvedValue(null);
         getCommandVersion.mockResolvedValue('');
-        getUserPreferences.mockResolvedValue({ vs_code_path: '' });
-        getVSCodeInstallPath.mockResolvedValue(null);
     });
 
     it('reads the git version from the resolved executable path', async () => {

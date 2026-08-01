@@ -3,7 +3,7 @@
 import * as fs from 'node:fs';
 import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { updateVSCodeSettings } from './vscode.utils.js';
+import { updateVSCodeSettings } from './vscodeIntegration.utils.js';
 
 // Mock electron-log to suppress expected warnings in tests
 vi.mock('electron-log', () => ({

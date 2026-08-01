@@ -26,7 +26,6 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         id: VS_CODE_INTEGRATION_ID,
         displayName: 'Visual Studio Code',
         capabilities: {
-            textEditor: true as const,
             dotnet: true,
         },
     };

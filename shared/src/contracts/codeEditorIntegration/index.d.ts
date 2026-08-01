@@ -1,7 +1,6 @@
 export type CodeEditorId = 'vscode';
 
 export type CodeEditorIntegrationCapabilities = {
-    textEditor: true;
     dotnet: boolean;
 };
 

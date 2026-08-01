@@ -24,7 +24,7 @@ const CODE_EDITOR_ID = 'vscode' as const;
 const integration: CodeEditorIntegrationSummary = {
     id: CODE_EDITOR_ID,
     displayName: 'Visual Studio Code',
-    capabilities: { textEditor: true, dotnet: true },
+    capabilities: { dotnet: true },
 };
 
 const installation: CodeEditorInstallationSummary = {

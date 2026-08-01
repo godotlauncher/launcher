@@ -2,7 +2,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { addVSCodeSettings, updateVSCodeSettings } from './vscode.utils.js';
+import {
+    addVSCodeSettings,
+    updateVSCodeSettings,
+} from './vscodeIntegration.utils.js';
 
 type LaunchConfiguration = {
     program: unknown;
@@ -40,11 +43,10 @@ vi.mock('node:fs', () => ({
 }));
 
 // Mock addVSCodeNETLaunchConfig
-vi.mock('./vscode.utils.js', async () => {
-    const actual =
-        await vi.importActual<typeof import('./vscode.utils.js')>(
-            './vscode.utils.js',
-        );
+vi.mock('./vscodeIntegration.utils.js', async () => {
+    const actual = await vi.importActual<
+        typeof import('./vscodeIntegration.utils.js')
+    >('./vscodeIntegration.utils.js');
     return {
         ...actual,
         addVSCodeNETLaunchConfig: vi.fn(),
@@ -152,7 +154,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         const writeCall = vi
@@ -174,7 +176,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         const writeCall = vi
@@ -196,7 +198,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         );
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         const writeCall = vi
@@ -231,7 +233,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         const backupFile = `${extensionsFile}.1712345678901.bad`;
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         expect(recoveredFiles).toEqual([backupFile]);
@@ -258,7 +260,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
 }`);
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         expect(recoveredFiles).toEqual([]);
@@ -289,7 +291,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
 }`);
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         expect(recoveredFiles).toEqual([]);
@@ -307,7 +309,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
 }`);
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         expect(recoveredFiles).toEqual([]);
@@ -344,7 +346,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         const backupFile = `${extensionsFile}.1712345678902.bad`;
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         expect(recoveredFiles).toEqual([backupFile]);
@@ -366,7 +368,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         );
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeIntegration.utils.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         const writeCall = vi
@@ -398,10 +400,9 @@ describe('addVSCodeNETLaunchConfig', () => {
     test('creates launch.json and tasks.json when none exist', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
 
         expect(fs.promises.mkdir).toHaveBeenCalledWith(
@@ -438,10 +439,9 @@ describe('addVSCodeNETLaunchConfig', () => {
         });
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         await mod.addVSCodeNETLaunchConfig(
             projectDir,
             '/Applications/Godot.app',
@@ -479,10 +479,9 @@ describe('addVSCodeNETLaunchConfig', () => {
             JSON.stringify(existing),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
 
         const launchCall = vi
@@ -508,10 +507,9 @@ describe('addVSCodeNETLaunchConfig', () => {
         const launchFile = path.resolve(projectDir, '.vscode', 'launch.json');
         const backupFile = `${launchFile}.1712345678903.bad`;
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         const recoveredFiles = await mod.addVSCodeNETLaunchConfig(
             projectDir,
             launchPath,
@@ -538,10 +536,9 @@ describe('addVSCodeNETLaunchConfig', () => {
             JSON.stringify({ version: '2.0.0', tasks: [{ label: 'custom' }] }),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
 
         const tasksCall = vi
@@ -563,10 +560,9 @@ describe('getVSCodeInstallPath', () => {
             configurable: true,
         });
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath();
         expect(res).toBeNull();
 
@@ -580,10 +576,9 @@ describe('getVSCodeInstallPath', () => {
         vi.mocked(fs.existsSync).mockImplementation(
             (p) => p === '/custom/code',
         );
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath('/custom/code');
         expect(res).toBe('/custom/code');
     });
@@ -598,10 +593,9 @@ describe('getVSCodeInstallPath', () => {
             String(p).includes('Visual Studio Code.app'),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath();
         expect(res).toContain('Visual Studio Code.app');
 
@@ -626,10 +620,9 @@ describe('getVSCodeInstallPath', () => {
                 String(p).includes('Local'),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath();
         expect(res).toBeTruthy();
         expect(String(res)).toMatch(/Code\.exe$/i);
@@ -653,10 +646,9 @@ describe('getVSCodeInstallPath', () => {
                 String(p).includes('/snap/bin'),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath();
         expect(res).toBeTruthy();
         expect(String(res)).toMatch(/code$/i);
