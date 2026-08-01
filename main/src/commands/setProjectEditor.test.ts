@@ -115,6 +115,7 @@ const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsSnapshot, storeProjectsList } = projectUtilsMocks;
 const { getProjectDefinition, SetProjectEditorRelease } = godotUtilsMocks;
 const codeEditorIntegrationService = {
+    getSelectionEligibility: vi.fn(),
     scanIntegration: vi.fn(),
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
@@ -122,6 +123,7 @@ const codeEditorIntegrationService = {
 } as unknown as CodeEditorIntegrationService;
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
+    getSelectionEligibility: ReturnType<typeof vi.fn>;
     scanIntegration: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
     disableForProject: ReturnType<typeof vi.fn>;
@@ -421,6 +423,24 @@ describe('setProjectEditor', () => {
         expect(result.success).toBe(true);
         expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
         expect(result.projects?.[0].codeEditorId).toBe('vscode');
+    });
+
+    it('reapplies an already selected integration when globally disabled but installed', async () => {
+        integrationMocks.getSelectionEligibility.mockResolvedValue('disabled');
+
+        const result = await setProjectEditor(
+            mockProject,
+            mockNewRelease,
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(integrationMocks.getSelectionEligibility).not.toHaveBeenCalled();
+        expect(integrationMocks.scanIntegration).toHaveBeenCalledWith('vscode');
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({ configurationMode: 'update' }),
+        );
     });
 
     it('preserves an unknown portable integration during a Godot editor change', async () => {

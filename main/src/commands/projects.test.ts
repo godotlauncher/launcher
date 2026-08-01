@@ -349,6 +349,33 @@ describe('launchProject', () => {
         );
     });
 
+    it('preserves explicit None while updating launch metadata', async () => {
+        const project = createProjectDetails({
+            codeEditorId: null,
+            withVSCode: false,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        readProjectLauncherConfig.mockResolvedValue({
+            code_editor: { id: null },
+        });
+
+        await launchProject(project, codeEditorIntegrationService);
+
+        expect(
+            integrationMocks.resolvePortableSelectionId,
+        ).toHaveBeenCalledWith(null, null);
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({
+                lastOpened: expect.any(Date),
+                codeEditorId: null,
+            }),
+        );
+    });
+
     it('still launches when the best-effort sidecar write fails', async () => {
         const project = createProjectDetails();
         getProjectsSnapshot.mockResolvedValue({
@@ -453,6 +480,30 @@ describe('removeProject', () => {
         expect(removeProjectFromList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             '/projects/demo',
+        );
+    });
+
+    it('preserves explicit None in the final removal sidecar', async () => {
+        const project = createProjectDetails({
+            codeEditorId: null,
+            withVSCode: false,
+            last_opened: null,
+        });
+        readProjectLauncherConfig.mockResolvedValue({
+            code_editor: { id: null },
+        });
+
+        await removeProject(project, codeEditorIntegrationService);
+
+        expect(
+            integrationMocks.resolvePortableSelectionId,
+        ).toHaveBeenCalledWith(null, null);
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({
+                lastOpened: null,
+                codeEditorId: null,
+            }),
         );
     });
 
@@ -1185,6 +1236,60 @@ describe('setProjectCodeEditor', () => {
             integrationMocks.assertIntegrationSelectable,
         ).not.toHaveBeenCalled();
         expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            selection: 'known integration',
+            project: {
+                codeEditorId: null,
+                withVSCode: false,
+            },
+            requestedId: 'vscode' as const,
+        },
+        {
+            selection: 'None',
+            project: {
+                codeEditorId: 'vscode' as const,
+                withVSCode: true,
+            },
+            requestedId: null,
+        },
+    ])('replaces an unknown portable ID with explicit $selection', async ({
+        project: projectOverrides,
+        requestedId,
+    }) => {
+        const project = createProjectDetails(projectOverrides);
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getProjectDefinition.mockReturnValue({
+            editorConfigFilename: () => 'editor_settings-4.3.tres',
+            editorConfigFormat: 3,
+            resources: [],
+            projectFilename: 'project.godot',
+            configVersion: 5,
+            defaultRenderer: 'FORWARD_PLUS',
+        });
+        readProjectLauncherConfig.mockResolvedValue({
+            code_editor: { id: 'future-editor' },
+        });
+
+        await setProjectCodeEditor(
+            project,
+            requestedId,
+            codeEditorIntegrationService,
+        );
+
+        expect(readProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(
+            integrationMocks.resolvePortableSelectionId,
+        ).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/projects/demo',
+            expect.objectContaining({ codeEditorId: requestedId }),
+        );
     });
 
     it('throws when VS Code is not installed', async () => {
