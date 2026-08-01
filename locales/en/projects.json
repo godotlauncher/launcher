@@ -82,7 +82,7 @@
             "actionFailed": "The code editor action failed.",
             "launchAnyway": "Launch anyway",
             "openSettings": "Open settings",
-            "useGodotEditor": "Use Godot Script Editor"
+            "disableAndLaunch": "Disable & Launch"
         }
     },
     "changeEditor": {

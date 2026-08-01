@@ -82,7 +82,7 @@
             "actionFailed": "Kod düzenleyici eylemi başarısız oldu.",
             "launchAnyway": "Yine de başlat",
             "openSettings": "Ayarları aç",
-            "useGodotEditor": "Godot betik düzenleyicisini kullan"
+            "disableAndLaunch": "Devre dışı bırak ve başlat"
         }
     },
     "changeEditor": {

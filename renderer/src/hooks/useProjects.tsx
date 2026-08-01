@@ -296,15 +296,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 },
                 {
                     typeClass: 'btn-neutral',
-                    text: t('messages.codeEditorLaunch.openSettings'),
-                    onClick: () => {
-                        navigate(appRoutePaths.settingsTab('codeEditors'));
-                        return true;
-                    },
-                },
-                {
-                    typeClass: 'btn-ghost',
-                    text: t('messages.codeEditorLaunch.useGodotEditor'),
+                    text: t('messages.codeEditorLaunch.disableAndLaunch'),
                     onClick: async () => {
                         try {
                             const updatedProject = await setProjectCodeEditor(
@@ -317,6 +309,14 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                             handleError(error);
                             return false;
                         }
+                    },
+                },
+                {
+                    typeClass: 'btn-ghost',
+                    text: t('messages.codeEditorLaunch.openSettings'),
+                    onClick: () => {
+                        navigate(appRoutePaths.settingsTab('codeEditors'));
+                        return true;
                     },
                 },
                 {

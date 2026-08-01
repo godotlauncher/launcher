@@ -74,6 +74,20 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+@keyframes reveal-after-delay {
+    from {
+        visibility: hidden;
+    }
+
+    to {
+        visibility: visible;
+    }
+}
+
+.reveal-after-one-second {
+    animation: reveal-after-delay 0s linear 1s both;
+}
+
 @font-face {
     font-family: "Nunito Sans";
     src: url("/assets/Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.ttf")

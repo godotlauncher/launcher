@@ -82,7 +82,7 @@
             "actionFailed": "Operacja edytora kodu nie powiodła się.",
             "launchAnyway": "Uruchom mimo to",
             "openSettings": "Otwórz ustawienia",
-            "useGodotEditor": "Użyj edytora skryptów Godot"
+            "disableAndLaunch": "Wyłącz i uruchom"
         }
     },
     "changeEditor": {

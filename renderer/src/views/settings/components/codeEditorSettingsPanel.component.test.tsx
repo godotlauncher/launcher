@@ -191,6 +191,7 @@ describe('CodeEditorSettingsPanel', () => {
         });
 
         expect(html).toContain('role="status"');
+        expect(html).not.toContain('reveal-after-one-second');
         expect(html).toContain(
             'aria-label="codeEditors.actions.saving: Visual Studio Code"',
         );
@@ -211,6 +212,7 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain(
             'aria-label="codeEditors.actions.scanning: Visual Studio Code"',
         );
+        expect(html).toContain('reveal-after-one-second');
         expect(html).toContain('disabled=""');
     });
 });

@@ -82,7 +82,7 @@
             "actionFailed": "L-azzjoni tal-editur tal-kodiċi falliet.",
             "launchAnyway": "Iftaħ xorta waħda",
             "openSettings": "Iftaħ is-settings",
-            "useGodotEditor": "Uża l-editur tal-iskripts ta’ Godot"
+            "disableAndLaunch": "Iddiżattiva u niedi"
         }
     },
     "changeEditor": {

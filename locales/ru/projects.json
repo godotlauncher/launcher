@@ -82,7 +82,7 @@
             "actionFailed": "Не удалось выполнить действие редактора кода.",
             "launchAnyway": "Всё равно запустить",
             "openSettings": "Открыть настройки",
-            "useGodotEditor": "Использовать редактор скриптов Godot"
+            "disableAndLaunch": "Отключить и запустить"
         }
     },
     "changeEditor": {

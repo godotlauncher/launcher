@@ -8,6 +8,7 @@ import type {
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
     InstalledRelease,
+    LaunchProjectResult,
     ProjectDetails,
     ReleaseInstallProgress,
     ReleaseSummary,
@@ -27,6 +28,7 @@ import {
     SAMPLE_PROJECT_ICON_PATH,
     SAMPLE_PROJECTS,
     SAMPLE_RELEASES_CACHE_FILE,
+    SAMPLE_VSCODE_SETTINGS_AVAILABLE,
 } from './sampleData';
 import type {
     CachedTool,
@@ -400,12 +402,90 @@ export async function stubCodeEditorIntegrationSettings(
         settings,
     );
 }
+export async function stubProjectLaunchResult(
+    electronApp: ElectronApplication,
+    result: LaunchProjectResult,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResult: LaunchProjectResult) => {
+            const channel = 'app.launchProject';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+export async function stubCodeEditorIntegrationRescan(
+    electronApp: ElectronApplication,
+    settings: CodeEditorIntegrationSettings,
+    pending = false,
+) {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injected: {
+                settings: CodeEditorIntegrationSettings;
+                pending: boolean;
+            },
+        ) => {
+            const state = globalThis as typeof globalThis & {
+                __docsCodeEditorRescanRelease?: () => void;
+            };
+            state.__docsCodeEditorRescanRelease = undefined;
+
+            const channel = 'codeEditorIntegration.rescanIntegration';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => {
+                if (injected.pending) {
+                    await new Promise<void>((resolve) => {
+                        state.__docsCodeEditorRescanRelease = resolve;
+                    });
+                }
+
+                return {
+                    success: true,
+                    data: injected.settings,
+                };
+            });
+        },
+        { settings, pending },
+    );
+}
+
+export async function releasePendingCodeEditorIntegrationRescan(
+    electronApp: ElectronApplication,
+) {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __docsCodeEditorRescanRelease?: () => void;
+        };
+        const release = state.__docsCodeEditorRescanRelease;
+        if (!release) {
+            throw new Error('No pending code editor rescan was found.');
+        }
+
+        state.__docsCodeEditorRescanRelease = undefined;
+        release();
+    });
+}
 
 export async function prepareAppWithStubbedData(
     page: ElectronPage,
     electronApp: ElectronApplication,
     options: StubbedAppDataOptions = {},
 ) {
+    await stubCodeEditorIntegrationSettings(
+        electronApp,
+        options.codeEditorSettings ?? [SAMPLE_VSCODE_SETTINGS_AVAILABLE],
+    );
+    await stubProjectLaunchResult(
+        electronApp,
+        options.projectLaunchResult ?? { launched: true },
+    );
     await stubAppData(
         electronApp,
         options.preferences ?? SAMPLE_PREFS,

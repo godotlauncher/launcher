@@ -2,6 +2,8 @@ import { type ElectronApplication, expect } from '@playwright/test';
 import type { CodeEditorIntegrationSettings } from '@shared/contracts';
 import {
     prepareUpdatesScreenshot,
+    releasePendingCodeEditorIntegrationRescan,
+    stubCodeEditorIntegrationRescan,
     stubCodeEditorIntegrationSettings,
 } from './runtime';
 import {
@@ -144,6 +146,100 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
                 electronApp,
                 SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
             );
+        },
+    },
+    {
+        fileBase: 'screen_settings_code_editor_disable_in_use',
+        description: 'Disable code editor used by projects confirmation',
+        viewportHeight: 800,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            );
+
+            const integration = page.getByTestId(
+                'code-editor-integration-vscode',
+            );
+            await integration
+                .getByRole('checkbox', {
+                    name: 'Enabled: Visual Studio Code',
+                })
+                .click();
+
+            const disableDialog = page.getByRole('dialog', {
+                name: 'Disable Visual Studio Code?',
+            });
+            await expect(disableDialog).toBeVisible({ timeout: 10000 });
+            await expect(disableDialog).toContainText(
+                'Configured projects: 3. .NET projects: 1.',
+            );
+            await expect(disableDialog).toContainText(
+                'Existing projects will keep this editor selection',
+            );
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            const cancelButton = page.getByRole('button', {
+                name: 'Cancel',
+                exact: true,
+            });
+            if (await cancelButton.isVisible().catch(() => false)) {
+                await cancelButton.click();
+            }
+            await page.waitForTimeout(200);
+        },
+    },
+    {
+        fileBase: 'screen_settings_code_editor_rescanning',
+        description: 'Code editor rescan in progress',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await stubCodeEditorIntegrationRescan(
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+                true,
+            );
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+            );
+
+            const integration = page.getByTestId(
+                'code-editor-integration-vscode',
+            );
+            await integration
+                .getByTestId('btn-rescan-code-editor-vscode')
+                .click();
+            await expect(integration.getByRole('status')).toBeHidden();
+            await expect(integration.getByRole('status')).toBeVisible({
+                timeout: 10000,
+            });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            const integration = page.getByTestId(
+                'code-editor-integration-vscode',
+            );
+            await releasePendingCodeEditorIntegrationRescan(electronApp);
+            await expect(integration.getByRole('status')).not.toBeVisible({
+                timeout: 10000,
+            });
+            await stubCodeEditorIntegrationRescan(
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            );
+            await page.waitForTimeout(200);
         },
     },
     {

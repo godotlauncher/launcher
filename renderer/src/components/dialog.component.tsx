@@ -35,7 +35,7 @@ export const Dialog: React.FC<DialogProps> = ({
                     {children}
                 </div>
                 {footer && (
-                    <footer className="px-5 py-4 border-t border-base-300 bg-base-200/40 flex justify-end gap-2">
+                    <footer className="px-5 py-4 border-t border-base-300 bg-base-200/40 flex flex-wrap justify-end gap-2">
                         {footer}
                     </footer>
                 )}

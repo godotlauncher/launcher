@@ -89,7 +89,7 @@
             "actionFailed": "Die Code-Editor-Aktion ist fehlgeschlagen.",
             "launchAnyway": "Trotzdem starten",
             "openSettings": "Einstellungen öffnen",
-            "useGodotEditor": "Godot-Skripteditor verwenden"
+            "disableAndLaunch": "Deaktivieren & starten"
         }
     },
     "changeEditor": {

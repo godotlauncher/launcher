@@ -6,6 +6,7 @@ import {
     openProjectActionsMenu,
     prepareAppUpdateBannerScreenshot,
     prepareAppWithStubbedData,
+    setScreenshotViewport,
     showProjectsDropOverlay,
     stubAddProjectEditorResolution,
     stubAddProjectRecoveredCodeEditorConfig,
@@ -41,6 +42,107 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnProjects').click();
             await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_projects_code_editor_unavailable',
+        description: 'Projects view with unavailable code editor',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                codeEditorSettings: [SAMPLE_VSCODE_SETTINGS_NOT_FOUND],
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+
+            const warning = page
+                .locator('.alert-warning')
+                .filter({ hasText: 'Visual Studio Code was not detected.' });
+            await expect(warning).toBeVisible({ timeout: 10000 });
+            await expect(warning).toContainText(
+                'Configured projects: 3. .NET projects: 1.',
+            );
+            await expect(
+                page
+                    .getByRole('img', {
+                        name: 'Visual Studio Code was not detected.',
+                    })
+                    .first(),
+            ).toBeVisible();
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_code_editor_launch_warning',
+        description: 'Project launch warning for unavailable code editor',
+        viewportHeight: 800,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                codeEditorSettings: [SAMPLE_VSCODE_SETTINGS_NOT_FOUND],
+                projectLaunchResult: {
+                    launched: false,
+                    reason: 'code_editor_unavailable',
+                    integration: {
+                        id: 'vscode',
+                        displayName: 'Visual Studio Code',
+                        capabilities: { dotnet: true },
+                    },
+                },
+            });
+            await setScreenshotViewport(page, 800);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await page
+                .getByRole('button', {
+                    name: 'My-Other-Game',
+                    exact: true,
+                })
+                .click();
+
+            const warningDialog = page.getByRole('dialog', {
+                name: 'Visual Studio Code was not found',
+            });
+            await expect(warningDialog).toBeVisible({ timeout: 10000 });
+            await expect(warningDialog).toContainText(
+                'C# editor integration may also be unavailable for this .NET project.',
+            );
+            await expect(warningDialog.getByRole('button')).toHaveText([
+                'Launch anyway',
+                'Disable & Launch',
+                'Open settings',
+                'Cancel',
+            ]);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const cancelButton = page.getByRole('button', {
+                name: 'Cancel',
+                exact: true,
+            });
+            if (await cancelButton.isVisible().catch(() => false)) {
+                await cancelButton.click();
+            }
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
         },
     },
     {

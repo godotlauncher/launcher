@@ -239,6 +239,12 @@ test('Project launch warns when its selected code editor is unavailable', async 
         'Godot can still launch, but opening scripts in this editor may fail.',
     );
 
+    await expect(warningDialog.getByRole('button')).toHaveText([
+        'Launch anyway',
+        'Disable & Launch',
+        'Open settings',
+        'Cancel',
+    ]);
     await warningDialog
         .getByRole('button', { name: 'Launch anyway', exact: true })
         .click();

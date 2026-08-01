@@ -82,7 +82,7 @@
             "actionFailed": "代码编辑器操作失败。",
             "launchAnyway": "仍然启动",
             "openSettings": "打开设置",
-            "useGodotEditor": "使用 Godot 脚本编辑器"
+            "disableAndLaunch": "禁用并启动"
         }
     },
     "changeEditor": {

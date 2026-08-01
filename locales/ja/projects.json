@@ -82,7 +82,7 @@
             "actionFailed": "コードエディターの操作に失敗しました。",
             "launchAnyway": "そのまま起動",
             "openSettings": "設定を開く",
-            "useGodotEditor": "Godot スクリプトエディターを使用"
+            "disableAndLaunch": "無効にして起動"
         }
     },
     "changeEditor": {

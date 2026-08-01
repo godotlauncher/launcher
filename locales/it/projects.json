@@ -82,7 +82,7 @@
             "actionFailed": "L’azione dell’editor di codice non è riuscita.",
             "launchAnyway": "Avvia comunque",
             "openSettings": "Apri impostazioni",
-            "useGodotEditor": "Usa l’editor di script di Godot"
+            "disableAndLaunch": "Disabilita e avvia"
         }
     },
     "changeEditor": {

@@ -148,7 +148,12 @@ export const CodeEditorSettingsPanel: React.FC<
                                 {pendingIntegrationId ===
                                     integrationSettings.integration.id && (
                                     <span
-                                        className="loading loading-spinner loading-sm"
+                                        className={
+                                            rescanningIntegrationId ===
+                                            integrationSettings.integration.id
+                                                ? 'reveal-after-one-second'
+                                                : undefined
+                                        }
                                         role="status"
                                         aria-label={getQualifiedLabel(
                                             t,
@@ -162,7 +167,12 @@ export const CodeEditorSettingsPanel: React.FC<
                                             integrationSettings.integration
                                                 .displayName,
                                         )}
-                                    />
+                                    >
+                                        <span
+                                            className="loading loading-spinner loading-sm"
+                                            aria-hidden="true"
+                                        />
+                                    </span>
                                 )}
                                 <Tooltip
                                     tip={getQualifiedLabel(
