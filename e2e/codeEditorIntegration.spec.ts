@@ -16,6 +16,7 @@ import {
 import {
     SAMPLE_PROJECT_PROTOTYPE,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    SAMPLE_VSCODE_SETTINGS_DISABLED,
     SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
     SAMPLE_VSCODE_SETTINGS_OVERRIDDEN,
 } from './documentationScreenshots/sampleData';
@@ -306,6 +307,21 @@ test('Code Editor settings lock overlapping actions and recover from a failed up
         name: 'Disable Visual Studio Code?',
     });
     await expect(disableDialog).toBeVisible();
+    const disableDialogLayer = await disableDialog.evaluate((element) =>
+        Number.parseInt(
+            window.getComputedStyle(element.parentElement as HTMLElement)
+                .zIndex,
+            10,
+        ),
+    );
+    const drawerLayer = await drawer.evaluate((element) =>
+        Number.parseInt(
+            window.getComputedStyle(element.parentElement as HTMLElement)
+                .zIndex,
+            10,
+        ),
+    );
+    expect(disableDialogLayer).toBeGreaterThan(drawerLayer);
     await expect(disableDialog).toContainText(
         'Configured projects: 3. .NET projects: 1.',
     );
@@ -428,6 +444,84 @@ test('Code Editor drawer resets overrides and stays locked while saving', async 
                 integrationId: 'vscode',
                 settings: {
                     enabled: true,
+                    customPath: null,
+                    execFlagsOverride: null,
+                },
+            },
+        ]);
+});
+
+test('Code Editor drawer confirms disabling when settings are saved', async () => {
+    await stubCodeEditorIntegrationSettings(electronApp, [
+        SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    ]);
+    await stubRecordedIpcHandler(electronApp, {
+        key: 'integrationUpdate',
+        channel: 'codeEditorIntegration.updateIntegrationSettings',
+        data: SAMPLE_VSCODE_SETTINGS_DISABLED,
+    });
+    const integrationRow = await openCodeEditorSettings();
+
+    await integrationRow
+        .getByRole('button', { name: 'Edit: Visual Studio Code' })
+        .click();
+
+    const drawer = mainPage.getByRole('dialog', {
+        name: 'Visual Studio Code settings',
+    });
+    const enabledSwitch = drawer.getByRole('checkbox', {
+        name: 'Enabled',
+        exact: true,
+    });
+    await enabledSwitch.uncheck();
+    await drawer
+        .getByRole('button', { name: 'Save', exact: true })
+        .click();
+
+    const disableDialog = mainPage.getByRole('dialog', {
+        name: 'Disable Visual Studio Code?',
+    });
+    await expect(disableDialog).toBeVisible();
+    await expect(disableDialog).toContainText(
+        'Configured projects: 3. .NET projects: 1.',
+    );
+    await expect(
+        readRecordedIpcCalls(electronApp, 'integrationUpdate'),
+    ).resolves.toHaveLength(0);
+
+    await disableDialog
+        .getByRole('button', { name: 'Cancel', exact: true })
+        .click();
+    await expect(disableDialog).not.toBeVisible();
+    await expect(drawer).toBeVisible();
+    await expect(enabledSwitch).not.toBeChecked();
+
+    await drawer
+        .getByRole('button', { name: 'Save', exact: true })
+        .click();
+    await mainPage
+        .getByRole('dialog', { name: 'Disable Visual Studio Code?' })
+        .getByRole('button', { name: 'Disable', exact: true })
+        .click();
+
+    await expect(drawer).not.toBeVisible();
+    await expect
+        .poll(async () =>
+            (
+                await readRecordedIpcCalls(
+                    electronApp,
+                    'integrationUpdate',
+                )
+            ).map((args) => ({
+                integrationId: String(args[0]),
+                settings: args[1],
+            })),
+        )
+        .toEqual([
+            {
+                integrationId: 'vscode',
+                settings: {
+                    enabled: false,
                     customPath: null,
                     execFlagsOverride: null,
                 },

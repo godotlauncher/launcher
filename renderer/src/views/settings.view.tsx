@@ -247,13 +247,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             return;
         }
 
+        if (
+            confirmCodeEditorDisable(currentSettings, () =>
+                applyCodeEditorEnabled(currentSettings, false),
+            )
+        ) {
+            return;
+        }
+
+        await applyCodeEditorEnabled(currentSettings, false);
+    };
+
+    const confirmCodeEditorDisable = (
+        currentSettings: CodeEditorIntegrationSettings,
+        onConfirm: () => Promise<boolean>,
+    ): boolean => {
         const usage = getCodeEditorProjectUsage(
             projects,
             currentSettings.integration.id,
         );
         if (usage.count === 0) {
-            await applyCodeEditorEnabled(currentSettings, false);
-            return;
+            return false;
         }
 
         addCustomConfirm(
@@ -274,10 +288,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {
                     typeClass: 'btn-warning',
                     text: t('codeEditors.disableConfirm.disable'),
-                    onClick: async () => {
-                        await applyCodeEditorEnabled(currentSettings, false);
-                        return true;
-                    },
+                    onClick: onConfirm,
                 },
                 {
                     isCancel: true,
@@ -287,6 +298,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             ],
             <TriangleAlert className="stroke-warning" />,
         );
+
+        return true;
     };
 
     const rescanCodeEditor = async (
@@ -452,6 +465,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 onValidatePath={validateIntegrationPath}
                 onSave={updateIntegrationSettings}
+                onConfirmDisable={confirmCodeEditorDisable}
                 onSaved={replaceCodeEditorSettings}
             />
         </div>

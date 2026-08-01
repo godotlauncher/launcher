@@ -33,12 +33,24 @@ type CodeEditorSettingsDrawerProps = {
         integrationId: CodeEditorId,
         settings: UpdateCodeEditorIntegrationSettings,
     ) => Promise<CodeEditorIntegrationSettings>;
+    onConfirmDisable: (
+        settings: CodeEditorIntegrationSettings,
+        onConfirm: () => Promise<boolean>,
+    ) => boolean;
     onSaved: (settings: CodeEditorIntegrationSettings) => void;
 };
 
 export const CodeEditorSettingsDrawer: React.FC<
     CodeEditorSettingsDrawerProps
-> = ({ settings, open, onOpenChange, onValidatePath, onSave, onSaved }) => {
+> = ({
+    settings,
+    open,
+    onOpenChange,
+    onValidatePath,
+    onSave,
+    onConfirmDisable,
+    onSaved,
+}) => {
     const { t } = useTranslation('settings');
     const [form, setForm] = useState<CodeEditorSettingsForm | null>(null);
     const [pathError, setPathError] = useState<string>();
@@ -99,6 +111,29 @@ export const CodeEditorSettingsDrawer: React.FC<
         }
     };
 
+    const saveUpdate = async (
+        integrationId: CodeEditorId,
+        update: UpdateCodeEditorIntegrationSettings,
+    ): Promise<boolean> => {
+        setIsSubmitting(true);
+
+        try {
+            const updatedSettings = await onSave(integrationId, update);
+            onSaved(updatedSettings);
+            onOpenChange(false);
+            return true;
+        } catch (error) {
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : t('codeEditors.drawer.errors.save'),
+            );
+            return false;
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!settings || !form) {
@@ -108,10 +143,10 @@ export const CodeEditorSettingsDrawer: React.FC<
         const update = toCodeEditorSettingsUpdate(settings, form);
         setPathError(undefined);
         setFormError(undefined);
-        setIsSubmitting(true);
 
-        try {
-            if (update.customPath) {
+        if (update.customPath) {
+            setIsSubmitting(true);
+            try {
                 const validation = await onValidatePath(
                     settings.integration.id,
                     update.customPath,
@@ -123,23 +158,28 @@ export const CodeEditorSettingsDrawer: React.FC<
                     );
                     return;
                 }
+            } catch (error) {
+                setFormError(
+                    error instanceof Error
+                        ? error.message
+                        : t('codeEditors.drawer.errors.save'),
+                );
+                return;
+            } finally {
+                setIsSubmitting(false);
             }
-
-            const updatedSettings = await onSave(
-                settings.integration.id,
-                update,
-            );
-            onSaved(updatedSettings);
-            onOpenChange(false);
-        } catch (error) {
-            setFormError(
-                error instanceof Error
-                    ? error.message
-                    : t('codeEditors.drawer.errors.save'),
-            );
-        } finally {
-            setIsSubmitting(false);
         }
+
+        const integrationId = settings.integration.id;
+        const isDisabling = settings.enabled && !update.enabled;
+        if (
+            isDisabling &&
+            onConfirmDisable(settings, () => saveUpdate(integrationId, update))
+        ) {
+            return;
+        }
+
+        await saveUpdate(integrationId, update);
     };
 
     const hasChanges =

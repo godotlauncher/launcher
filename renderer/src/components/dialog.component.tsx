@@ -14,7 +14,7 @@ export const Dialog: React.FC<DialogProps> = ({
     footer,
 }) => {
     return (
-        <div className="absolute z-50 inset-0 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed z-60 inset-0 bg-black/80 flex items-center justify-center p-4">
             <section
                 className="bg-base-100 border border-base-300 rounded-lg shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden"
                 role="dialog"
