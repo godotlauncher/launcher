@@ -458,10 +458,23 @@ export async function getVSCodeInstallPath(
             process.env.LOCALAPPDATA +
                 '\\Programs\\Microsoft VS Code\\Code.exe',
         ],
-        linux: ['/usr/share/code/code', '/usr/bin/code', '/snap/bin/code'],
+        linux: ['/usr/bin/code', '/snap/bin/code'],
     };
 
     const locations: string[] | undefined = defaultLocations[platform];
+
+    if (platform === 'linux') {
+        const pathCandidate = await findExecutable('code');
+        if (pathCandidate) {
+            const resolvedPathCandidate = await resolveVSCodeInstallCandidate(
+                pathCandidate,
+                platform,
+            );
+            if (resolvedPathCandidate) {
+                return resolvedPathCandidate;
+            }
+        }
+    }
 
     // check default locations for file exist and return first one found
     if (locations) {
@@ -476,6 +489,10 @@ export async function getVSCodeInstallPath(
         }
     }
 
+    if (platform === 'linux') {
+        return null;
+    }
+
     const pathCandidate = await findExecutable('code');
     return pathCandidate
         ? await resolveVSCodeInstallCandidate(pathCandidate, platform)
@@ -487,6 +504,19 @@ function isExistingFile(candidatePath: string): boolean {
         return (
             fs.existsSync(candidatePath) && fs.statSync(candidatePath).isFile()
         );
+    } catch {
+        return false;
+    }
+}
+
+function isExistingExecutable(candidatePath: string): boolean {
+    try {
+        if (!isExistingFile(candidatePath)) {
+            return false;
+        }
+
+        fs.accessSync(candidatePath, fs.constants.X_OK);
+        return true;
     } catch {
         return false;
     }
@@ -585,7 +615,7 @@ async function resolveVSCodeInstallCandidate(
     }
 
     if (platform === 'linux') {
-        return basename === 'code' && isExistingFile(normalizedPath)
+        return basename === 'code' && isExistingExecutable(normalizedPath)
             ? normalizedPath
             : null;
     }

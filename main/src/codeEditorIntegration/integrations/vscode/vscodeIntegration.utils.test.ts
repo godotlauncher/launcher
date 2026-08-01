@@ -36,6 +36,10 @@ vi.mock('../../../utils/platform.utils.js', () => ({
 // Mock the fs module
 vi.mock('node:fs', () => ({
     default: {
+        accessSync: vi.fn(),
+        constants: {
+            X_OK: 1,
+        },
         existsSync: vi.fn(),
         statSync: vi.fn(),
         promises: {
@@ -44,6 +48,10 @@ vi.mock('node:fs', () => ({
             readFile: vi.fn(),
             writeFile: vi.fn(),
         },
+    },
+    accessSync: vi.fn(),
+    constants: {
+        X_OK: 1,
     },
     existsSync: vi.fn(),
     statSync: vi.fn(),
@@ -492,6 +500,7 @@ describe('getVSCodeInstallPath', () => {
             },
         );
         vi.mocked(findExecutable).mockResolvedValue(null);
+        vi.mocked(fs.accessSync).mockReturnValue(undefined);
         vi.mocked(fs.statSync).mockReturnValue({
             isFile: () => true,
         } as fs.Stats);
@@ -774,24 +783,96 @@ describe('getVSCodeInstallPath', () => {
         process.env.LOCALAPPDATA = originalLocal;
     });
 
-    test('finds default linux location', async () => {
+    test('prefers the Linux VS Code executable found on PATH', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(findExecutable).mockResolvedValue('/opt/vscode/bin/code');
+        vi.mocked(fs.existsSync).mockImplementation((candidate) =>
+            ['/opt/vscode/bin/code', '/usr/bin/code'].includes(
+                String(candidate),
+            ),
+        );
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBe(
+            '/opt/vscode/bin/code',
+        );
+        expect(findExecutable).toHaveBeenCalledWith('code');
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test.each([
+        '/usr/bin/code',
+        '/snap/bin/code',
+    ])('finds the Linux VS Code executable at %s when PATH lookup fails', async (executablePath) => {
         const original = process.platform;
         Object.defineProperty(process, 'platform', {
             value: 'linux',
             configurable: true,
         });
         vi.mocked(fs.existsSync).mockImplementation(
-            (p) =>
-                String(p).includes('/usr/bin') ||
-                String(p).includes('/snap/bin'),
+            (candidate) => candidate === executablePath,
         );
 
         const mod = await vi.importActual<
             typeof import('./vscodeIntegration.utils.js')
         >('./vscodeIntegration.utils.js');
-        const res = await mod.getVSCodeInstallPath();
-        expect(res).toBeTruthy();
-        expect(String(res)).toMatch(/code$/i);
+        await expect(mod.getVSCodeInstallPath()).resolves.toBe(executablePath);
+        expect(findExecutable).toHaveBeenCalledWith('code');
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('does not detect the internal Linux VS Code Electron binary', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockImplementation(
+            (candidate) => candidate === '/usr/share/code/code',
+        );
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBeNull();
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('rejects a Linux VS Code launcher without execute permission', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockImplementation(
+            (candidate) => candidate === '/usr/bin/code',
+        );
+        vi.mocked(fs.accessSync).mockImplementation(() => {
+            throw new Error('permission denied');
+        });
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBeNull();
 
         Object.defineProperty(process, 'platform', {
             value: original,
