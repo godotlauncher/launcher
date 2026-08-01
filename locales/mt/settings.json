@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
         "actions": {
             "scanning": "Qed jerskanna...",
             "setDefault": "Issettja bħala predefinit",
@@ -81,7 +84,7 @@
         "status": {
             "available": "Disponibbli",
             "missing": "Ma nstabx",
-            "unknown": "Mhux magħruf",
+            "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi.",
             "default": "Editur tal-kodiċi predefinit",
             "enabled": "Attivat",
             "disabled": "Diżattivat"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "Editur estern tat-test",
-                "help": "Dawn l-argumenti se jintużaw għall-kmand tal-editur estern tat-test ta' Godot meta l-migrazzjoni tal-proġett tkun attivata.",
+                "help": "Dawn l-argumenti jintużaw meta Godot jiftaħ fajls f'dan l-editur tal-kodiċi.",
                 "flagsLabel": "Argumenti tat-tnedija",
                 "flagsHelp": "Il-placeholders ta' Godot jinkludu {project}, {file}, {line}, u {col}. Valur vojt huwa sostituzzjoni valida.",
                 "reset": "Irrisettja għall-valur predefinit"
@@ -119,6 +122,9 @@
                 "dialog": "Ma setax jinfetaħ is-selettur tal-fajls.",
                 "save": "Ma setax jiġi ssejvjat l-issettjar tal-editur tal-kodiċi."
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",
             "installed": "Installat:",
             "version": "Verżjoni:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Editur ta' kodiċi mgħaġġel u estensibbli b'appoġġ għal GDScript u .NET għal Godot.",
-            "notDetectedTitle": "Visual Studio Code ma nstabx!",
-            "notDetectedMessage": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code hawn taħt",
-            "pathLabel": "Indirizz ta' Visual Studio Code għall-Eżekutibbli",
-            "selectExecutable": "Agħżel Eżekutibbli ta' Visual Studio Code",
-            "autodetected": "(awtomatikament skopert)",
-            "noPathSet": "ebda indirizz issettjat",
-            "clearCustomPath": "Neħħi Indirizz Custom",
-            "waitingForDialog": "Qed nistennew id-djalogu...",
-            "installed": "Installat:"
         }
     },
     "updates": {

@@ -4,7 +4,12 @@ import { FormField } from './formField.component';
 import { HelpTooltip } from './helpTooltip.component';
 import { PathField } from './pathField.component';
 import { SearchField } from './searchField.component';
-import { SelectField } from './selectField.component';
+import {
+    getEnabledOptionEdgeIndex,
+    getEnabledOptionIndex,
+    SelectField,
+} from './selectField.component';
+import { TextField } from './textField.component';
 import { Tooltip } from './tooltip.component';
 
 describe('UI form primitives', () => {
@@ -166,7 +171,9 @@ describe('UI form primitives', () => {
             />,
         );
 
-        expect(html).toContain('popoverTarget=');
+        expect(html).toContain('aria-expanded="false"');
+        expect(html).toContain('aria-label="Architecture: x64"');
+        expect(html).toContain('aria-controls=');
         expect(html).toContain('popover="auto"');
         expect(html).toContain('role="listbox"');
         expect(html).toContain('role="option"');
@@ -214,9 +221,39 @@ describe('UI form primitives', () => {
             />,
         );
 
-        expect(html).toContain('aria-label="Code editor"');
+        expect(html).toContain('aria-label="Code editor: None"');
         expect(html).toContain('data-testid="selectCodeEditor"');
         expect(html.match(/disabled=""/g)).toHaveLength(2);
         expect(html).toContain('Visual Studio Code');
+    });
+
+    it('navigates only enabled select options and preserves normal Tab flow', () => {
+        const options = [
+            { value: '', label: 'None' },
+            { value: 'disabled', label: 'Disabled', disabled: true },
+            { value: 'vscode', label: 'Visual Studio Code' },
+            { value: 'other', label: 'Other editor' },
+        ];
+
+        expect(getEnabledOptionEdgeIndex(options, 'first')).toBe(0);
+        expect(getEnabledOptionEdgeIndex(options, 'last')).toBe(3);
+        expect(getEnabledOptionIndex(options, 0, 1)).toBe(2);
+        expect(getEnabledOptionIndex(options, 3, 1)).toBe(0);
+        expect(getEnabledOptionIndex(options, 0, -1)).toBe(3);
+    });
+
+    it('disables text fields through the reusable primitive', () => {
+        const html = renderToStaticMarkup(
+            <TextField
+                id="disabledText"
+                label="Launch arguments"
+                help="Arguments passed to the editor."
+                value=""
+                onChange={vi.fn()}
+                disabled
+            />,
+        );
+
+        expect(html).toContain('disabled=""');
     });
 });

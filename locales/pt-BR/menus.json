@@ -21,8 +21,6 @@
         "exportEditorSettings": "Exportar configurações do editor para arquivo",
         "importEditorSettings": "Importar configurações do editor de arquivo",
         "removeFromList": "Remover projeto da lista",
-        "useVSCode": "Usar o Visual Studio Code como editor de texto",
-        "useVSCodeTooltip": "Ative ou desative o Visual Studio Code como editor externo deste projeto.",
         "initGit": "Inicializar repositório Git",
         "initGitTooltip": "Cria um novo repositório Git nesta pasta do projeto."
     },

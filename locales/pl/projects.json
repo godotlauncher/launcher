@@ -15,7 +15,7 @@
         "dotNetProject": "To jest projekt .Net",
         "prerelease": "Używa wersji testowej edytora Godot",
         "windowedMode": "Ten projekt otwiera się w trybie okienkowym",
-        "vsCodeProject": "Visual Studio Code jest włączony jako zewnętrzny edytor dla tego projektu",
+        "codeEditorProject": "Dla tego projektu wybrano integrację z edytorem kodu.",
         "gitProject": "Projekt używa systemu kontroli wersji Git",
         "invalidReasons": {
             "missingProjectFile": "Nie znaleziono pliku projektu. Sprawdź lokalizację projektu.",
@@ -69,7 +69,6 @@
             "missingProjectFile": "Nie znaleziono pliku projektu. Sprawdź lokalizację projektu albo usuń projekt i dodaj go ponownie.",
             "missingEditor": "Wybrany edytor jest niedostępny. Zamontuj dysk albo wybierz inny edytor."
         },
-        "recoveredVSCodeConfig": "Niektóre pliki konfiguracji VS Code były nieprawidłowe. Godot Launcher utworzył je ponownie i zachował oryginały jako kopie .bad.",
         "recoveredCodeEditorConfig": "Niektóre pliki konfiguracyjne edytora kodu były nieprawidłowe. Godot Launcher utworzył je ponownie i zachował oryginały jako kopie .bad."
     },
     "changeEditor": {
@@ -82,7 +81,6 @@
     "setCodeEditor": {
         "errors": {
             "projectNotFound": "Nie znaleziono projektu",
-            "vscodeNotInstalled": "Visual Studio Code nie jest zainstalowany na tym komputerze.",
             "missingLaunchPath": "Brakuje ścieżki uruchamiania Godot dla tego projektu.",
             "invalidProjectDefinition": "Nie można ustalić szablonu ustawień edytora dla tej wersji Godot."
         }

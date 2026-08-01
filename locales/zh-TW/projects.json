@@ -15,7 +15,7 @@
         "dotNetProject": "這是一個 .NET 專案",
         "prerelease": "使用預先釋出的 Godot 編輯器版本",
         "windowedMode": "此專案以視窗模式開啟",
-        "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
+        "codeEditorProject": "此專案已選取程式碼編輯器整合。",
         "gitProject": "此專案使用 Git 進行版本控制",
         "invalidReasons": {
             "missingProjectFile": "找不到專案檔案。請檢查專案位置。",
@@ -69,7 +69,6 @@
             "missingProjectFile": "找不到專案檔案。請檢查專案位置，或移除後重新新增專案。",
             "missingEditor": "所選編輯器無法使用。請掛載磁碟機或選擇其他編輯器。"
         },
-        "recoveredVSCodeConfig": "部分 VS Code 設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。",
         "recoveredCodeEditorConfig": "部分程式碼編輯器設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。"
     },
     "changeEditor": {
@@ -82,7 +81,6 @@
     "setCodeEditor": {
         "errors": {
             "projectNotFound": "找不到專案",
-            "vscodeNotInstalled": "此電腦上未安裝 Visual Studio Code。",
             "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
             "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
         }

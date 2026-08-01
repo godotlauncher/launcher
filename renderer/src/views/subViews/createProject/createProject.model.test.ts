@@ -37,7 +37,7 @@ const codeEditorSettings = (
     integration: {
         id: 'vscode',
         displayName: 'Visual Studio Code',
-        capabilities: { textEditor: true, dotnet: true },
+        capabilities: { dotnet: true },
     },
     isDefault: true,
     enabled: true,
@@ -137,7 +137,7 @@ describe('create project model helpers', () => {
         ).toBe(false);
     });
 
-    it('uses an explicit available default and falls back to the first available integration', () => {
+    it('uses only an eligible explicit default or one unambiguous eligible integration', () => {
         const availableDefault = codeEditorSettings();
 
         expect(resolveCreateProjectCodeEditorId([availableDefault])).toBe(
@@ -159,5 +159,17 @@ describe('create project model helpers', () => {
             ]),
         ).toBe('vscode');
         expect(resolveCreateProjectCodeEditorId([])).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, isDefault: false },
+                { ...availableDefault, isDefault: false },
+            ]),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, enabled: false },
+                { ...availableDefault, isDefault: false },
+            ]),
+        ).toBeNull();
     });
 });

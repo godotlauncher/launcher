@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{editor}}: {{action}}"
+        },
         "actions": {
             "scanning": "再スキャン中...",
             "setDefault": "デフォルトに設定",
@@ -81,7 +84,7 @@
         "status": {
             "available": "利用可能",
             "missing": "見つかりません",
-            "unknown": "不明",
+            "loadFailed": "コードエディターを読み込めませんでした。",
             "default": "デフォルトのコードエディター",
             "enabled": "有効",
             "disabled": "無効"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "外部テキストエディター",
-                "help": "プロジェクト移行が有効になると、これらの引数が Godot の外部テキストエディターコマンドに使用されます。",
+                "help": "Godot がこのコードエディターでファイルを開くときに、これらの引数が使用されます。",
                 "flagsLabel": "起動引数",
                 "flagsHelp": "Godot のプレースホルダーには {project}、{file}、{line}、{col} が含まれます。空の値も有効な上書き設定です。",
                 "reset": "デフォルトに戻す"
@@ -119,6 +122,9 @@
                 "dialog": "ファイル選択ダイアログを開けません。",
                 "save": "コードエディターの設定を保存できません。"
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Gitは、コードの変更管理とコラボレーションのための分散型バージョン管理システムです。",
             "installed": "インストール済み：",
             "version": "バージョン："
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "GDScriptと.NETをサポートする高速で拡張可能なコードエディタです。",
-            "notDetectedTitle": "Visual Studio Codeが検出されませんでした！",
-            "notDetectedMessage": "Godot LauncherはPATHにインストールされている場合のみVS Codeを自動検出できます。代わりに以下でVS Codeの実行ファイルへのパスを指定できます",
-            "pathLabel": "Visual Studio Code実行ファイルへのパス",
-            "selectExecutable": "Visual Studio Code実行ファイルを選択",
-            "autodetected": "（自動検出）",
-            "noPathSet": "パスが設定されていません",
-            "clearCustomPath": "カスタムパスをクリア",
-            "waitingForDialog": "ダイアログを待機中...",
-            "installed": "インストール済み："
         }
     },
     "updates": {

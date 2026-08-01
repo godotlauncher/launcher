@@ -148,6 +148,13 @@ export const CodeEditorSettingsDrawer: React.FC<
         settings && form
             ? resolveCodeEditorPathFieldState(settings, form.customPath)
             : { value: '', autodetected: false };
+    const handleDrawerOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen && isSubmitting) {
+            return;
+        }
+
+        onOpenChange(nextOpen);
+    };
 
     return (
         <>
@@ -159,7 +166,9 @@ export const CodeEditorSettingsDrawer: React.FC<
             )}
             <Drawer
                 open={open && Boolean(settings && form)}
-                onOpenChange={onOpenChange}
+                onOpenChange={handleDrawerOpenChange}
+                closeOnBackdrop={!isSubmitting}
+                closeOnEscape={!isSubmitting}
                 side="right"
                 ariaLabel={
                     settings
@@ -186,7 +195,7 @@ export const CodeEditorSettingsDrawer: React.FC<
                             </span>
                         )}
                     </Drawer.Title>
-                    <Drawer.CloseButton />
+                    <Drawer.CloseButton disabled={isSubmitting} />
                 </Drawer.Header>
 
                 {settings && form && (
@@ -318,6 +327,7 @@ export const CodeEditorSettingsDrawer: React.FC<
                                         'codeEditors.drawer.textEditor.flagsHelp',
                                     )}
                                     value={form.execFlags}
+                                    disabled={isSubmitting}
                                     onChange={(execFlags) =>
                                         updateForm({ execFlags })
                                     }
@@ -329,7 +339,7 @@ export const CodeEditorSettingsDrawer: React.FC<
                             <button
                                 type="button"
                                 className="btn btn-ghost"
-                                onClick={() => onOpenChange(false)}
+                                onClick={() => handleDrawerOpenChange(false)}
                                 disabled={isSubmitting}
                             >
                                 {t('codeEditors.actions.cancel')}

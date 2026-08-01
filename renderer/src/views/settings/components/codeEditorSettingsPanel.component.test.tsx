@@ -7,7 +7,7 @@ const settings: CodeEditorIntegrationSettings = {
     integration: {
         id: 'vscode',
         displayName: 'Visual Studio Code',
-        capabilities: { textEditor: true, dotnet: true },
+        capabilities: { dotnet: true },
     },
     isDefault: false,
     enabled: true,
@@ -31,13 +31,19 @@ function renderPanel(
     return renderToStaticMarkup(
         <CodeEditorSettingsPanel
             active
-            t={(key) => key}
+            t={(key, options) =>
+                key === 'codeEditors.accessibility.integrationAction'
+                    ? `${String(options?.action)}: ${String(options?.editor)}`
+                    : key
+            }
             settings={[settings]}
             onEdit={vi.fn()}
             onSetDefault={vi.fn(async () => {})}
             onEnabledChange={vi.fn(async () => {})}
             loading={false}
             loadError={false}
+            pendingIntegrationId={null}
+            actionErrors={{}}
             {...overrides}
         />,
     );
@@ -61,8 +67,12 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain('codeEditors.actions.setDefault');
         expect(html).toContain('aria-pressed="false"');
         expect(html).toContain('lucide-star');
-        expect(html).toContain('data-tip="codeEditors.actions.setDefault"');
-        expect(html).toContain('data-tip="codeEditors.actions.edit"');
+        expect(html).toContain(
+            'data-tip="codeEditors.actions.setDefault: Visual Studio Code"',
+        );
+        expect(html).toContain(
+            'data-tip="codeEditors.actions.edit: Visual Studio Code"',
+        );
         expect(html).not.toContain('title="codeEditors.actions.setDefault"');
         expect(html).not.toContain('title="codeEditors.actions.edit"');
         expect(html).not.toContain(
@@ -101,8 +111,12 @@ describe('CodeEditorSettingsPanel', () => {
         });
 
         expect(html).toContain('lucide-star');
-        expect(html).toContain('data-tip="codeEditors.status.missing"');
-        expect(html).toContain('aria-label="codeEditors.status.missing"');
+        expect(html).toContain(
+            'data-tip="codeEditors.status.missing: Visual Studio Code"',
+        );
+        expect(html).toContain(
+            'aria-label="codeEditors.status.missing: Visual Studio Code"',
+        );
         expect(html).toContain('disabled=""');
         expect(html).toContain('lucide-pencil');
     });
@@ -144,7 +158,27 @@ describe('CodeEditorSettingsPanel', () => {
             'codeEditors.actions.scanning',
         );
         expect(renderPanel({ loadError: true })).toContain(
-            'codeEditors.status.unknown',
+            'codeEditors.status.loadFailed',
         );
+    });
+
+    it('disables integration actions and exposes row errors while a mutation is pending', () => {
+        const html = renderPanel({
+            pendingIntegrationId: 'vscode',
+            actionErrors: {
+                vscode: 'Visual Studio Code: Unable to save settings.',
+            },
+        });
+
+        expect(html).toContain('role="status"');
+        expect(html).toContain(
+            'aria-label="codeEditors.actions.saving: Visual Studio Code"',
+        );
+        expect(html).toContain(
+            'aria-label="codeEditors.actions.edit: Visual Studio Code"',
+        );
+        expect(html.match(/disabled=""/g)?.length).toBeGreaterThanOrEqual(3);
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('Visual Studio Code: Unable to save settings.');
     });
 });

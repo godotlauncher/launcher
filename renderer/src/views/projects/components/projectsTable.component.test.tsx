@@ -74,4 +74,15 @@ describe('ProjectsTable', () => {
         expect(html).toContain('lucide-image-off');
         expect(html).toContain('aria-label="Launch Sample Project"');
     });
+
+    it('renders a neutral marker for any selected code editor', () => {
+        const html = renderProjectsTable([
+            { ...baseProject, codeEditorId: 'vscode' },
+        ]);
+
+        expect(html).toContain('lucide-code-xml');
+        expect(html).toContain('table.codeEditorProject');
+        expect(html).toContain('role="img"');
+        expect(html).not.toContain('alt="VSCode"');
+    });
 });

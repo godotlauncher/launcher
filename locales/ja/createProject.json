@@ -50,13 +50,7 @@
             "notFound": "見つかりません"
         },
         "initGit": "Gitリポジトリを初期化",
-        "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
-        "setupVSCode": "Visual Studio Codeをテキストエディタとして設定",
-        "vscodeNotInstalled": "Visual Studio Codeがこのコンピュータにインストールされていません",
-        "vscodeHelp": {
-            "title": "Visual Studio Codeが検出されないのはなぜですか？",
-            "message": "Godot LauncherはPATHにインストールされている場合のみVS Codeを自動検出できます。代わりに設定でVS Code実行ファイルへのパスを指定できます。"
-        }
+        "gitNotInstalled": "Gitがこのコンピュータにインストールされていません"
     },
     "buttons": {
         "editNow": "今すぐ編集",

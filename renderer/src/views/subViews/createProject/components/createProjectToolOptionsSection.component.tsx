@@ -34,6 +34,7 @@ type CreateProjectToolOptionsSectionProps = {
     t: Translate;
     loadingTools: boolean;
     loadingCodeEditors: boolean;
+    codeEditorLoadFailed: boolean;
     gitAvailable: boolean;
     codeEditorSettings: CodeEditorIntegrationSettings[];
     codeEditorId: CodeEditorId | null;
@@ -48,6 +49,7 @@ export const CreateProjectToolOptionsSection: React.FC<
     t,
     loadingTools,
     loadingCodeEditors,
+    codeEditorLoadFailed,
     gitAvailable,
     codeEditorSettings,
     codeEditorId,
@@ -93,7 +95,7 @@ export const CreateProjectToolOptionsSection: React.FC<
                     id="selectCreateProjectCodeEditor"
                     testId="selectCreateProjectCodeEditor"
                     label={t('otherSettings.codeEditor.label')}
-                    disabled={loadingCodeEditors}
+                    disabled={loadingCodeEditors || codeEditorLoadFailed}
                     showSelectedCheck
                     value={codeEditorId ?? ''}
                     onChange={(value) =>
@@ -103,6 +105,11 @@ export const CreateProjectToolOptionsSection: React.FC<
                     }
                     options={getCodeEditorOptions(t, codeEditorSettings)}
                 />
+                {codeEditorLoadFailed && (
+                    <p className="text-sm text-error" role="alert">
+                        {t('projects:editProject.codeEditor.loadFailed')}
+                    </p>
+                )}
             </div>
         </div>
     </div>

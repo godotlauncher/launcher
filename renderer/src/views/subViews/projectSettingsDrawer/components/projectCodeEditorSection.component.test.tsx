@@ -8,7 +8,6 @@ const availableSettings: CodeEditorIntegrationSettings = {
         id: 'vscode',
         displayName: 'Visual Studio Code',
         capabilities: {
-            textEditor: true,
             dotnet: true,
         },
     },
@@ -97,11 +96,11 @@ describe('ProjectCodeEditorSection', () => {
         expect(missingHtml).toContain('disabled=""');
     });
 
-    it('disables selection while loading or after loading fails', () => {
+    it('preserves the stored selection while loading and leaves None available after failure', () => {
         const loadingHtml = renderToStaticMarkup(
             <ProjectCodeEditorSection
                 t={t}
-                codeEditorId={null}
+                codeEditorId="vscode"
                 settings={[]}
                 loading
                 loadFailed={false}
@@ -112,7 +111,7 @@ describe('ProjectCodeEditorSection', () => {
         const failedHtml = renderToStaticMarkup(
             <ProjectCodeEditorSection
                 t={t}
-                codeEditorId={null}
+                codeEditorId="vscode"
                 settings={[]}
                 loading={false}
                 loadFailed
@@ -122,8 +121,11 @@ describe('ProjectCodeEditorSection', () => {
         );
 
         expect(loadingHtml).toContain('Loading code editors...');
-        expect(loadingHtml).toContain('disabled=""');
+        expect(loadingHtml).toContain('>vscode</span>');
+        expect(loadingHtml.match(/disabled=""/g)).toHaveLength(2);
         expect(failedHtml).toContain('Could not load code editors.');
-        expect(failedHtml).toContain('disabled=""');
+        expect(failedHtml).toContain('role="alert"');
+        expect(failedHtml).toContain('>vscode</span>');
+        expect(failedHtml.match(/disabled=""/g)).toHaveLength(1);
     });
 });

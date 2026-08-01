@@ -15,7 +15,7 @@
         "dotNetProject": "Bu bir .Net Projesidir",
         "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
         "windowedMode": "Bu proje pencere modunda açık",
-        "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
+        "codeEditorProject": "Bu proje için bir kod düzenleyici entegrasyonu seçildi.",
         "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
         "invalidReasons": {
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
@@ -69,7 +69,6 @@
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
             "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
         },
-        "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu.",
         "recoveredCodeEditorConfig": "Bazı kod düzenleyici yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
     },
     "changeEditor": {
@@ -82,7 +81,6 @@
     "setCodeEditor": {
         "errors": {
             "projectNotFound": "Proje bulunamadı",
-            "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
             "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
             "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
         }

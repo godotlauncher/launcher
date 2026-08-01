@@ -50,13 +50,7 @@
             "notFound": "未找到"
         },
         "initGit": "初始化 Git 仓库",
-        "gitNotInstalled": "此电脑未安装 Git",
-        "setupVSCode": "将 Visual Studio Code 设置为文本编辑器",
-        "vscodeNotInstalled": "此电脑未安装 Visual Studio Code",
-        "vscodeHelp": {
-            "title": "为什么未检测到 Visual Studio Code？",
-            "message": "Godot Launcher 只有在 VS Code 已安装到 PATH 时才能自动检测。您可以在设置中指定 VS Code 可执行文件的路径。"
-        }
+        "gitNotInstalled": "此电脑未安装 Git"
     },
     "buttons": {
         "editNow": "立即编辑",

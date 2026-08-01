@@ -11,8 +11,8 @@ const labels: Record<string, string> = {
     'otherSettings.codeEditor.none': 'None',
     'otherSettings.codeEditor.disabled': 'Disabled',
     'otherSettings.codeEditor.notFound': 'Not found',
-    'otherSettings.setupVSCode': 'Setup Visual Studio Code as Text Editor',
-    'otherSettings.vscodeNotInstalled': 'Visual Studio Code is not installed',
+    'projects:editProject.codeEditor.loadFailed':
+        'Could not load code editors.',
 };
 
 const availableVSCodeSettings: CodeEditorIntegrationSettings = {
@@ -20,7 +20,6 @@ const availableVSCodeSettings: CodeEditorIntegrationSettings = {
         id: 'vscode',
         displayName: 'Visual Studio Code',
         capabilities: {
-            textEditor: true,
             dotnet: true,
         },
     },
@@ -43,12 +42,14 @@ const t = (key: string) => labels[key] ?? key;
 function renderSection(
     codeEditorSettings: CodeEditorIntegrationSettings[],
     codeEditorId: 'vscode' | null,
+    codeEditorLoadFailed = false,
 ) {
     return renderToStaticMarkup(
         <CreateProjectToolOptionsSection
             t={t}
             loadingTools={false}
             loadingCodeEditors={false}
+            codeEditorLoadFailed={codeEditorLoadFailed}
             gitAvailable
             codeEditorSettings={codeEditorSettings}
             codeEditorId={codeEditorId}
@@ -97,6 +98,16 @@ describe('CreateProjectToolOptionsSection', () => {
         );
 
         expect(html).toContain('Visual Studio Code (Not found)');
+        expect(html).toContain('disabled=""');
+    });
+
+    it('shows a non-blocking alert and forces None when code editors fail to load', () => {
+        const html = renderSection([], null, true);
+
+        expect(html).toContain('Could not load code editors.');
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('aria-selected="true"');
+        expect(html).toContain('data-testid="selectCreateProjectCodeEditor"');
         expect(html).toContain('disabled=""');
     });
 });

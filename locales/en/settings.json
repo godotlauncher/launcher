@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
         "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
         "actions": {
             "scanning": "Rescanning...",
@@ -82,7 +85,7 @@
         "status": {
             "available": "Available",
             "missing": "Not found",
-            "unknown": "Unknown",
+            "loadFailed": "Could not load code editors.",
             "default": "Default code editor",
             "enabled": "Enabled",
             "disabled": "Disabled"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
+                "help": "These arguments are used when Godot opens files in this code editor.",
                 "flagsLabel": "Launch arguments",
                 "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
                 "reset": "Reset to default"
@@ -119,6 +122,9 @@
                 "dialog": "Unable to open the file selector.",
                 "save": "Unable to save code editor settings."
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Git is a distributed version control system for managing code changes and collaboration.",
             "installed": "Installed:",
             "version": "Version:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "A fast, extensible code editor with GDScript and .NET support for Godot.",
-            "notDetectedTitle": "Visual Studio Code not Detected!",
-            "notDetectedMessage": "Godot Launcher is only able to automatically detect VS Code if it was installed in the PATH. You can instead specify the path to the vs code executable below",
-            "pathLabel": "Visual Studio Code Path to Executable",
-            "selectExecutable": "Select Visual Studio Code Executable",
-            "autodetected": "(autodetected)",
-            "noPathSet": "no path set",
-            "clearCustomPath": "Clear Custom Path",
-            "waitingForDialog": "Waiting for dialog...",
-            "installed": "Installed:"
         }
     },
     "updates": {

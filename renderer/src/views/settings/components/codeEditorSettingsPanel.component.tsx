@@ -5,7 +5,13 @@ import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { SettingsPanelSection } from './settingsPanelSection.component';
 
-type Translate = (key: string) => string;
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+const getQualifiedLabel = (
+    t: Translate,
+    action: string,
+    editor: string,
+): string =>
+    t('codeEditors.accessibility.integrationAction', { action, editor });
 
 type CodeEditorSettingsPanelProps = {
     active: boolean;
@@ -19,6 +25,8 @@ type CodeEditorSettingsPanelProps = {
     ) => Promise<void>;
     loading: boolean;
     loadError: boolean;
+    pendingIntegrationId: string | null;
+    actionErrors: Record<string, string | undefined>;
 };
 
 export const CodeEditorSettingsPanel: React.FC<
@@ -32,6 +40,8 @@ export const CodeEditorSettingsPanel: React.FC<
     onEnabledChange,
     loading,
     loadError,
+    pendingIntegrationId,
+    actionErrors,
 }) => (
     <SettingsPanelSection active={active}>
         <p className="text-sm text-base-content/70">
@@ -49,7 +59,7 @@ export const CodeEditorSettingsPanel: React.FC<
 
         {!loading && loadError && (
             <p className="text-error" role="alert">
-                {t('codeEditors.status.unknown')}
+                {t('codeEditors.status.loadFailed')}
             </p>
         )}
 
@@ -103,14 +113,32 @@ export const CodeEditorSettingsPanel: React.FC<
                                 )}
                             </div>
                             <div className="flex min-h-8 shrink-0 items-center gap-2">
+                                {pendingIntegrationId ===
+                                    integrationSettings.integration.id && (
+                                    <span
+                                        className="loading loading-spinner loading-sm"
+                                        role="status"
+                                        aria-label={getQualifiedLabel(
+                                            t,
+                                            t('codeEditors.actions.saving'),
+                                            integrationSettings.integration
+                                                .displayName,
+                                        )}
+                                    />
+                                )}
                                 {integrationSettings.enabled && (
                                     <Tooltip
-                                        tip={t(
-                                            integrationSettings.isDefault
-                                                ? 'codeEditors.status.default'
-                                                : integrationSettings.installation
-                                                  ? 'codeEditors.actions.setDefault'
-                                                  : 'codeEditors.status.missing',
+                                        tip={getQualifiedLabel(
+                                            t,
+                                            t(
+                                                integrationSettings.isDefault
+                                                    ? 'codeEditors.status.default'
+                                                    : integrationSettings.installation
+                                                      ? 'codeEditors.actions.setDefault'
+                                                      : 'codeEditors.status.missing',
+                                            ),
+                                            integrationSettings.integration
+                                                .displayName,
                                         )}
                                         placement="top"
                                     >
@@ -118,17 +146,23 @@ export const CodeEditorSettingsPanel: React.FC<
                                             type="button"
                                             data-testid={`btn-set-default-code-editor-${integrationSettings.integration.id}`}
                                             className="btn btn-square btn-ghost btn-sm"
-                                            aria-label={t(
-                                                integrationSettings.isDefault
-                                                    ? 'codeEditors.status.default'
-                                                    : integrationSettings.installation
-                                                      ? 'codeEditors.actions.setDefault'
-                                                      : 'codeEditors.status.missing',
+                                            aria-label={getQualifiedLabel(
+                                                t,
+                                                t(
+                                                    integrationSettings.isDefault
+                                                        ? 'codeEditors.status.default'
+                                                        : integrationSettings.installation
+                                                          ? 'codeEditors.actions.setDefault'
+                                                          : 'codeEditors.status.missing',
+                                                ),
+                                                integrationSettings.integration
+                                                    .displayName,
                                             )}
                                             aria-pressed={
                                                 integrationSettings.isDefault
                                             }
                                             disabled={
+                                                Boolean(pendingIntegrationId) ||
                                                 integrationSettings.isDefault ||
                                                 !integrationSettings.installation
                                             }
@@ -152,14 +186,25 @@ export const CodeEditorSettingsPanel: React.FC<
                                 )}
                                 {integrationSettings.enabled && (
                                     <Tooltip
-                                        tip={t('codeEditors.actions.edit')}
+                                        tip={getQualifiedLabel(
+                                            t,
+                                            t('codeEditors.actions.edit'),
+                                            integrationSettings.integration
+                                                .displayName,
+                                        )}
                                         placement="top"
                                     >
                                         <button
                                             type="button"
                                             className="btn btn-square btn-ghost btn-sm"
-                                            aria-label={t(
-                                                'codeEditors.actions.edit',
+                                            aria-label={getQualifiedLabel(
+                                                t,
+                                                t('codeEditors.actions.edit'),
+                                                integrationSettings.integration
+                                                    .displayName,
+                                            )}
+                                            disabled={Boolean(
+                                                pendingIntegrationId,
                                             )}
                                             onClick={() =>
                                                 onEdit(integrationSettings)
@@ -176,11 +221,15 @@ export const CodeEditorSettingsPanel: React.FC<
                                     type="checkbox"
                                     className="toggle toggle-primary"
                                     checked={integrationSettings.enabled}
-                                    aria-label={
+                                    aria-label={getQualifiedLabel(
+                                        t,
                                         integrationSettings.enabled
                                             ? t('codeEditors.status.enabled')
-                                            : t('codeEditors.status.disabled')
-                                    }
+                                            : t('codeEditors.status.disabled'),
+                                        integrationSettings.integration
+                                            .displayName,
+                                    )}
+                                    disabled={Boolean(pendingIntegrationId)}
                                     onChange={(event) =>
                                         void onEnabledChange(
                                             integrationSettings,
@@ -190,6 +239,15 @@ export const CodeEditorSettingsPanel: React.FC<
                                 />
                             </div>
                         </div>
+                        {actionErrors[integrationSettings.integration.id] && (
+                            <p className="text-sm text-error" role="alert">
+                                {
+                                    actionErrors[
+                                        integrationSettings.integration.id
+                                    ]
+                                }
+                            </p>
+                        )}
                     </section>
                 ))}
             </div>

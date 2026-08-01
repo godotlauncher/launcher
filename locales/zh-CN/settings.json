@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{editor}}：{{action}}"
+        },
         "actions": {
             "scanning": "正在重新扫描...",
             "setDefault": "设为默认",
@@ -81,7 +84,7 @@
         "status": {
             "available": "可用",
             "missing": "未找到",
-            "unknown": "未知",
+            "loadFailed": "无法加载代码编辑器。",
             "default": "默认代码编辑器",
             "enabled": "已启用",
             "disabled": "已禁用"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "外部文本编辑器",
-                "help": "启用项目迁移后，这些参数将用于 Godot 的外部文本编辑器命令。",
+                "help": "Godot 在此代码编辑器中打开文件时会使用这些参数。",
                 "flagsLabel": "启动参数",
                 "flagsHelp": "Godot 占位符包括 {project}、{file}、{line} 和 {col}。空值也是有效的覆盖设置。",
                 "reset": "重置为默认值"
@@ -119,6 +122,9 @@
                 "dialog": "无法打开文件选择器。",
                 "save": "无法保存代码编辑器设置。"
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",
             "installed": "已安装：",
             "version": "版本："
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "一个快速、可扩展的代码编辑器，支持 Godot 的 GDScript 和 .NET。",
-            "notDetectedTitle": "未检测到 Visual Studio Code！",
-            "notDetectedMessage": "如果 VS Code 未添加到 PATH，Godot 启动器 只能通过 PATH 自动检测到它。您也可以在下面手动指定 VS Code 可执行文件的路径",
-            "pathLabel": "Visual Studio Code 可执行文件路径",
-            "selectExecutable": "选择 Visual Studio Code 可执行文件",
-            "autodetected": "（自动检测）",
-            "noPathSet": "未设置路径",
-            "clearCustomPath": "清除自定义路径",
-            "waitingForDialog": "等待对话框...",
-            "installed": "已安装："
         }
     },
     "updates": {

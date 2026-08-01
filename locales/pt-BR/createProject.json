@@ -50,13 +50,7 @@
             "notFound": "Não encontrado"
         },
         "initGit": "Inicializar repositório Git",
-        "gitNotInstalled": "O Git não está instalado neste computador",
-        "setupVSCode": "Configurar o Visual Studio Code como editor de texto",
-        "vscodeNotInstalled": "O Visual Studio Code não está instalado neste computador",
-        "vscodeHelp": {
-            "title": "Por que o Visual Studio Code não foi detectado?",
-            "message": "O Godot Launcher só consegue detectar automaticamente o VS Code se ele estiver no PATH. Como alternativa, você pode informar o caminho para o executável do VS Code nas configurações."
-        }
+        "gitNotInstalled": "O Git não está instalado neste computador"
     },
     "buttons": {
         "editNow": "Editar agora",

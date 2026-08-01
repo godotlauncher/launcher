@@ -54,3 +54,11 @@ export function canRenameGodotProject(
         trimmedName !== godotProjectName
     );
 }
+
+export function hasProjectCodeEditorChanges(
+    initialCodeEditorId: string | null,
+    codeEditorId: string | null,
+    codeEditorTouched: boolean,
+): boolean {
+    return codeEditorTouched || initialCodeEditorId !== codeEditorId;
+}

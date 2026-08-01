@@ -12,7 +12,7 @@ const settings: CodeEditorIntegrationSettings = {
     integration: {
         id: 'vscode',
         displayName: 'Visual Studio Code',
-        capabilities: { textEditor: true, dotnet: true },
+        capabilities: { dotnet: true },
     },
     isDefault: false,
     enabled: true,

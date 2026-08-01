@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import {
     canRenameGodotProject,
+    hasProjectCodeEditorChanges,
     hasProjectRenameChanges,
     validateProjectRenameName,
 } from './projectSettingsDrawer/projectSettings.model';
@@ -131,5 +132,11 @@ describe('ProjectSettingsDrawer', () => {
         expect(hasProjectRenameChanges('Demo', 'Demo', 'Demo', true)).toBe(
             false,
         );
+    });
+
+    it('treats an explicit None selection as a change when IDs are both null', () => {
+        expect(hasProjectCodeEditorChanges(null, null, true)).toBe(true);
+        expect(hasProjectCodeEditorChanges(null, null, false)).toBe(false);
+        expect(hasProjectCodeEditorChanges('vscode', null, false)).toBe(true);
     });
 });

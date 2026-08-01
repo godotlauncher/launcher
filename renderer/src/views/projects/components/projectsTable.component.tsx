@@ -5,13 +5,13 @@ import {
     ChevronDown,
     ChevronsUpDown,
     ChevronUp,
+    Code2,
     EllipsisVertical,
     ImageOff,
     TriangleAlert,
 } from 'lucide-react';
 import type React from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
-import vscodeIcon from '../../../assets/icons/vscode.svg';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import {
@@ -199,22 +199,22 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                         {row.name}
                                                     </span>
                                                 </button>
-                                                {row.codeEditorId ===
-                                                    'vscode' && (
+                                                {row.codeEditorId && (
                                                     <Tooltip
                                                         tip={t(
-                                                            'table.vsCodeProject',
+                                                            'table.codeEditorProject',
                                                         )}
                                                         tone="primary"
                                                         className="flex items-center"
+                                                        role="img"
+                                                        ariaLabel={t(
+                                                            'table.codeEditorProject',
+                                                        )}
                                                     >
-                                                        <span className="text-xs text-base-content/50 ">
-                                                            <img
-                                                                src={vscodeIcon}
-                                                                className="w-4 h-4"
-                                                                alt="VSCode"
-                                                            />
-                                                        </span>
+                                                        <Code2
+                                                            className="size-4 text-base-content/50"
+                                                            aria-hidden="true"
+                                                        />
                                                     </Tooltip>
                                                 )}
                                                 {row.withGit && (

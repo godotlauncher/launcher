@@ -132,14 +132,18 @@ export const resolveCreateProjectCodeEditorId = (
         (integrationSettings) => integrationSettings.isDefault,
     );
 
-    if (!defaultSettings) {
-        return (
-            settings.find((item) => item.enabled && item.installation)
-                ?.integration.id ?? null
-        );
+    if (defaultSettings) {
+        return defaultSettings.enabled && defaultSettings.installation
+            ? defaultSettings.integration.id
+            : null;
     }
 
-    return defaultSettings.enabled && defaultSettings.installation
-        ? defaultSettings.integration.id
+    const eligibleSettings = settings.filter(
+        (integrationSettings) =>
+            integrationSettings.enabled && integrationSettings.installation,
+    );
+
+    return eligibleSettings.length === 1
+        ? eligibleSettings[0].integration.id
         : null;
 };

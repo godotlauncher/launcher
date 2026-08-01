@@ -11,7 +11,7 @@ import { useCodeEditorIntegrations } from './useCodeEditorIntegrations.ts';
 const integration: CodeEditorIntegrationSummary = {
     id: 'vscode',
     displayName: 'Visual Studio Code',
-    capabilities: { textEditor: true, dotnet: true },
+    capabilities: { dotnet: true },
 };
 const installation: CodeEditorInstallationSummary = {
     integrationId: 'vscode',

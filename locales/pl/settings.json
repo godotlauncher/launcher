@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
         "actions": {
             "scanning": "Ponowne skanowanie...",
             "setDefault": "Ustaw jako domyślny",
@@ -81,7 +84,7 @@
         "status": {
             "available": "Dostępne",
             "missing": "Nie znaleziono",
-            "unknown": "Nieznane",
+            "loadFailed": "Nie można wczytać edytorów kodu.",
             "default": "Domyślny edytor kodu",
             "enabled": "Włączony",
             "disabled": "Wyłączony"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "Zewnętrzny edytor tekstu",
-                "help": "Te argumenty zostaną użyte w poleceniu zewnętrznego edytora tekstu Godot po włączeniu migracji projektów.",
+                "help": "Te argumenty są używane, gdy Godot otwiera pliki w tym edytorze kodu.",
                 "flagsLabel": "Argumenty uruchamiania",
                 "flagsHelp": "Symbole zastępcze Godot obejmują {project}, {file}, {line} i {col}. Pusta wartość jest prawidłowym nadpisaniem.",
                 "reset": "Przywróć domyślne"
@@ -119,6 +122,9 @@
                 "dialog": "Nie można otworzyć selektora plików.",
                 "save": "Nie można zapisać ustawień edytora kodu."
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Git to rozproszony system kontroli wersji do zarządzania zmianami w kodzie i współpracy.",
             "installed": "Zainstalowany:",
             "version": "Wersja:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Szybki, rozszerzalny edytor kodu z obsługą GDScript i .NET dla Godot.",
-            "notDetectedTitle": "Nie wykryto Visual Studio Code!",
-            "notDetectedMessage": "Godot Launcher może automatycznie wykryć VS Code tylko wtedy, gdy został zainstalowany w PATH. Zamiast tego możesz określić ścieżkę do pliku wykonywalnego VS Code poniżej",
-            "pathLabel": "Ścieżka do pliku wykonywalnego Visual Studio Code",
-            "selectExecutable": "Wybierz plik wykonywalny Visual Studio Code",
-            "autodetected": "(wykryty automatycznie)",
-            "noPathSet": "nie ustawiono ścieżki",
-            "clearCustomPath": "Wyczyść niestandardową ścieżkę",
-            "waitingForDialog": "Oczekiwanie na okno dialogowe...",
-            "installed": "Zainstalowany:"
         }
     },
     "updates": {

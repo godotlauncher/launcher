@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
         "actions": {
             "scanning": "Yeniden taranıyor...",
             "setDefault": "Varsayılan olarak ayarla",
@@ -81,7 +84,7 @@
         "status": {
             "available": "Mevcut",
             "missing": "Bulunamadı",
-            "unknown": "Bilinmiyor",
+            "loadFailed": "Kod düzenleyicileri yüklenemedi.",
             "default": "Varsayılan kod düzenleyici",
             "enabled": "Etkin",
             "disabled": "Devre dışı"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "Harici metin düzenleyici",
-                "help": "Proje geçişi etkinleştirildiğinde bu bağımsız değişkenler Godot'un harici metin düzenleyici komutunda kullanılacaktır.",
+                "help": "Godot dosyaları bu kod düzenleyicide açtığında bu bağımsız değişkenler kullanılır.",
                 "flagsLabel": "Başlatma bağımsız değişkenleri",
                 "flagsHelp": "Godot yer tutucuları {project}, {file}, {line} ve {col} değerlerini içerir. Boş bir değer geçerli bir geçersiz kılmadır.",
                 "reset": "Varsayılana sıfırla"
@@ -119,6 +122,9 @@
                 "dialog": "Dosya seçici açılamıyor.",
                 "save": "Kod düzenleyici ayarları kaydedilemiyor."
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Git, kod değişikliklerini yönetmek ve işbirliği yapmak için dağıtık bir sürüm kontrol sistemidir.",
             "installed": "Kurulu:",
             "version": "Sürüm:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Godot için GDScript ve .NET desteğine sahip hızlı, genişletilebilir bir kod editörü.",
-            "notDetectedTitle": "Visual Studio Code Algılanamadı!",
-            "notDetectedMessage": "Godot Launcher, VS Code'u yalnızca PATH'te yüklüyse otomatik olarak algılayabilir. Bunun yerine aşağıdan VS Code çalıştırılabilir dosyasının yolunu belirtebilirsiniz",
-            "pathLabel": "Visual Studio Code Çalıştırılabilir Dosya Yolu",
-            "selectExecutable": "Visual Studio Code Çalıştırılabilir Dosyasını Seç",
-            "autodetected": "(otomatik algılandı)",
-            "noPathSet": "yol ayarlanmadı",
-            "clearCustomPath": "Özel Yolu Temizle",
-            "waitingForDialog": "İletişim kutusu bekleniyor...",
-            "installed": "Kurulu:"
         }
     },
     "updates": {

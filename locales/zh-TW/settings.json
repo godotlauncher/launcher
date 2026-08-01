@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{editor}}：{{action}}"
+        },
         "actions": {
             "scanning": "正在重新掃描...",
             "setDefault": "設為預設",
@@ -81,7 +84,7 @@
         "status": {
             "available": "可用",
             "missing": "未找到",
-            "unknown": "未知",
+            "loadFailed": "無法載入程式碼編輯器。",
             "default": "預設程式碼編輯器",
             "enabled": "已啟用",
             "disabled": "已停用"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "外部文字編輯器",
-                "help": "啟用專案遷移後，這些參數將用於 Godot 的外部文字編輯器命令。",
+                "help": "Godot 在此程式碼編輯器中開啟檔案時會使用這些參數。",
                 "flagsLabel": "啟動參數",
                 "flagsHelp": "Godot 預留位置包括 {project}、{file}、{line} 和 {col}。空值也是有效的覆寫設定。",
                 "reset": "重設為預設值"
@@ -119,6 +122,9 @@
                 "dialog": "無法開啟檔案選擇器。",
                 "save": "無法儲存程式碼編輯器設定。"
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "Git 是分散式版本控制系統，用於管理程式碼變更與協作。",
             "installed": "已安裝：",
             "version": "版本："
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "一款快速且可擴充的程式碼編輯器，支援 Godot 的 GDScript 與 .NET。",
-            "notDetectedTitle": "未偵測到 Visual Studio Code！",
-            "notDetectedMessage": "若 VS Code 未加入 PATH，Godot 啟動器只能透過 PATH 自動偵測。您也可以在下方指定 VS Code 可執行檔路徑",
-            "pathLabel": "Visual Studio Code 可執行檔路徑",
-            "selectExecutable": "選擇 Visual Studio Code 可執行檔",
-            "autodetected": "（自動偵測）",
-            "noPathSet": "未設定路徑",
-            "clearCustomPath": "清除自訂路徑",
-            "waitingForDialog": "等待對話框…",
-            "installed": "已安裝："
         }
     },
     "updates": {

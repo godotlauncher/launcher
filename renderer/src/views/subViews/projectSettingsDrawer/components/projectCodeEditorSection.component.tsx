@@ -13,22 +13,38 @@ type Translate = (key: string) => string;
 const getCodeEditorOptions = (
     t: Translate,
     settings: CodeEditorIntegrationSettings[],
-): SelectFieldOption[] => [
-    { value: '', label: t('editProject.codeEditor.none') },
-    ...settings.map((integrationSettings) => {
-        const unavailableReason = !integrationSettings.enabled
-            ? t('editProject.codeEditor.disabled')
-            : integrationSettings.installation
-              ? null
-              : t('editProject.codeEditor.notFound');
+    selectedCodeEditorId: CodeEditorId | null,
+): SelectFieldOption[] => {
+    const options: SelectFieldOption[] = [
+        { value: '', label: t('editProject.codeEditor.none') },
+        ...settings.map((integrationSettings) => {
+            const unavailableReason = !integrationSettings.enabled
+                ? t('editProject.codeEditor.disabled')
+                : integrationSettings.installation
+                  ? null
+                  : t('editProject.codeEditor.notFound');
 
-        return {
-            value: integrationSettings.integration.id,
-            label: `${integrationSettings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`,
-            disabled: unavailableReason !== null,
-        };
-    }),
-];
+            return {
+                value: integrationSettings.integration.id,
+                label: `${integrationSettings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`,
+                disabled: unavailableReason !== null,
+            };
+        }),
+    ];
+
+    if (
+        selectedCodeEditorId &&
+        !settings.some((item) => item.integration.id === selectedCodeEditorId)
+    ) {
+        options.push({
+            value: selectedCodeEditorId,
+            label: selectedCodeEditorId,
+            disabled: true,
+        });
+    }
+
+    return options;
+};
 
 type ProjectCodeEditorSectionProps = {
     t: Translate;
@@ -73,17 +89,17 @@ export const ProjectCodeEditorSection: React.FC<
             id="selectProjectCodeEditor"
             testId="selectProjectCodeEditor"
             ariaLabel={t('editProject.codeEditor.title')}
-            disabled={disabled || loading || loadFailed}
+            disabled={disabled || loading}
             showSelectedCheck
-            value={loading || loadFailed ? '' : (codeEditorId ?? '')}
+            value={codeEditorId ?? ''}
             onChange={(value) =>
                 onChange(value === '' ? null : (value as CodeEditorId))
             }
-            options={getCodeEditorOptions(t, settings)}
+            options={getCodeEditorOptions(t, settings, codeEditorId)}
         />
 
         {loadFailed && (
-            <p className="text-sm text-error">
+            <p className="text-sm text-error" role="alert">
                 {t('editProject.codeEditor.loadFailed')}
             </p>
         )}

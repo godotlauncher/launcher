@@ -70,6 +70,9 @@
         }
     },
     "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
         "actions": {
             "scanning": "Reescanear...",
             "setDefault": "Definir como predefinido",
@@ -81,7 +84,7 @@
         "status": {
             "available": "Disponível",
             "missing": "Não encontrado",
-            "unknown": "Desconhecido",
+            "loadFailed": "Não foi possível carregar os editores de código.",
             "default": "Editor de código predefinido",
             "enabled": "Ativado",
             "disabled": "Desativado"
@@ -106,7 +109,7 @@
             },
             "textEditor": {
                 "title": "Editor de texto externo",
-                "help": "Estes argumentos serão utilizados no comando do editor de texto externo do Godot quando a migração de projetos estiver ativada.",
+                "help": "Estes argumentos são utilizados quando o Godot abre ficheiros neste editor de código.",
                 "flagsLabel": "Argumentos de arranque",
                 "flagsHelp": "Os marcadores de posição do Godot incluem {project}, {file}, {line} e {col}. Um valor vazio é uma substituição válida.",
                 "reset": "Repor predefinição"
@@ -119,6 +122,9 @@
                 "dialog": "Não foi possível abrir o seletor de ficheiros.",
                 "save": "Não foi possível guardar as definições do editor de código."
             }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
         }
     },
     "tools": {
@@ -138,19 +144,6 @@
             "description": "O Git é um sistema de controlo de versões distribuído para gerir alterações de código e colaboração.",
             "installed": "Instalado:",
             "version": "Versão:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Um editor de código rápido e extensível com suporte GDScript e .NET para o Godot.",
-            "notDetectedTitle": "Visual Studio Code não detetado!",
-            "notDetectedMessage": "O Godot Launcher só consegue detetar automaticamente o VS Code se este estiver no PATH. Em alternativa, pode indicar abaixo o caminho para o executável.",
-            "pathLabel": "Caminho para o executável do Visual Studio Code",
-            "selectExecutable": "Selecionar executável do Visual Studio Code",
-            "autodetected": "(detetado automaticamente)",
-            "noPathSet": "sem caminho definido",
-            "clearCustomPath": "Limpar caminho personalizado",
-            "waitingForDialog": "A aguardar diálogo...",
-            "installed": "Instalado:"
         }
     },
     "updates": {

@@ -1,5 +1,6 @@
 import type {
     CachedTool,
+    CodeEditorId,
     CodeEditorIntegrationSettings,
 } from '@shared/contracts';
 import clsx from 'clsx';
@@ -58,6 +59,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         useState<CodeEditorIntegrationSettings | null>(null);
     const [codeEditorsLoading, setCodeEditorsLoading] = useState(false);
     const [codeEditorsLoadError, setCodeEditorsLoadError] = useState(false);
+    const [pendingCodeEditorId, setPendingCodeEditorId] =
+        useState<CodeEditorId | null>(null);
+    const [codeEditorActionErrors, setCodeEditorActionErrors] = useState<
+        Partial<Record<CodeEditorId, string>>
+    >({});
 
     const [cachedTools, setCachedTools] = useState<CachedTool[]>([]);
     const [rescanCount, setRescanCount] = useState(0);
@@ -127,6 +133,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
                 if (!disposed) {
                     setCodeEditorSettings(settings);
+                    setCodeEditorActionErrors({});
                 }
             } catch (error) {
                 logger.error('Failed to load code editor integrations', error);
@@ -162,6 +169,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     : current,
             ),
         );
+        setCodeEditorActionErrors((current) => ({
+            ...current,
+            [updatedSettings.integration.id]: undefined,
+        }));
         void loadPreferences();
     };
 
@@ -169,9 +180,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         currentSettings: CodeEditorIntegrationSettings,
         enabled: boolean,
     ) => {
+        if (pendingCodeEditorId) {
+            return;
+        }
+
+        const integrationId = currentSettings.integration.id;
+        setPendingCodeEditorId(integrationId);
+        setCodeEditorActionErrors((current) => ({
+            ...current,
+            [integrationId]: undefined,
+        }));
+
         try {
             const updatedSettings = await updateIntegrationSettings(
-                currentSettings.integration.id,
+                integrationId,
                 {
                     enabled,
                     customPath: currentSettings.customPath,
@@ -184,21 +206,58 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 `Failed to ${enabled ? 'enable' : 'disable'} code editor integration`,
                 error,
             );
+            setCodeEditorActionErrors((current) => ({
+                ...current,
+                [integrationId]: t(
+                    'codeEditors.messages.integrationError',
+                    {
+                        editor: currentSettings.integration.displayName,
+                        error: t('codeEditors.drawer.errors.save'),
+                    },
+                ),
+            }));
+        } finally {
+            setPendingCodeEditorId((current) =>
+                current === integrationId ? null : current,
+            );
         }
     };
 
     const setDefaultCodeEditor = async (
         currentSettings: CodeEditorIntegrationSettings,
     ) => {
+        if (pendingCodeEditorId) {
+            return;
+        }
+
+        const integrationId = currentSettings.integration.id;
+        setPendingCodeEditorId(integrationId);
+        setCodeEditorActionErrors((current) => ({
+            ...current,
+            [integrationId]: undefined,
+        }));
+
         try {
-            const updatedSettings = await setDefaultIntegration(
-                currentSettings.integration.id,
-            );
+            const updatedSettings = await setDefaultIntegration(integrationId);
             setCodeEditorSettings(updatedSettings);
         } catch (error) {
             logger.error(
                 'Failed to set default code editor integration',
                 error,
+            );
+            setCodeEditorActionErrors((current) => ({
+                ...current,
+                [integrationId]: t(
+                    'codeEditors.messages.integrationError',
+                    {
+                        editor: currentSettings.integration.displayName,
+                        error: t('codeEditors.drawer.errors.save'),
+                    },
+                ),
+            }));
+        } finally {
+            setPendingCodeEditorId((current) =>
+                current === integrationId ? null : current,
             );
         }
     };
@@ -256,6 +315,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             onSetDefault={setDefaultCodeEditor}
                             loading={codeEditorsLoading}
                             loadError={codeEditorsLoadError}
+                            pendingIntegrationId={pendingCodeEditorId}
+                            actionErrors={codeEditorActionErrors}
                         />
                         <ToolsSettingsPanel
                             active={activeTab === 'tools'}

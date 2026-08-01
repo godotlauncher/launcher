@@ -15,7 +15,7 @@
         "dotNetProject": "Это .Net проект",
         "prerelease": "Используется пререлизная версия редактора Godot",
         "windowedMode": "Этот проект открыт в оконном режиме",
-        "vsCodeProject": "Для этого проекта Visual Studio Code включен как внешний редактор",
+        "codeEditorProject": "Для этого проекта выбрана интеграция с редактором кода.",
         "gitProject": "Проект использует Git для контроля версий",
         "invalidReasons": {
             "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта.",
@@ -69,7 +69,6 @@
             "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта или удалите проект и добавьте его снова.",
             "missingEditor": "Выбранный редактор недоступен. Подключите диск или выберите другой редактор."
         },
-        "recoveredVSCodeConfig": "Некоторые файлы конфигурации VS Code были некорректны. Godot Launcher создал их заново и сохранил оригиналы как копии .bad.",
         "recoveredCodeEditorConfig": "Некоторые файлы конфигурации редактора кода были некорректны. Godot Launcher создал их заново и сохранил оригиналы как копии .bad."
     },
     "changeEditor": {
@@ -82,7 +81,6 @@
     "setCodeEditor": {
         "errors": {
             "projectNotFound": "Проект не найден",
-            "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере.",
             "missingLaunchPath": "Не найден путь запуска Godot для этого проекта.",
             "invalidProjectDefinition": "Не удалось определить шаблон настроек редактора для этой версии Godot."
         }

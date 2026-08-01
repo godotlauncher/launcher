@@ -57,6 +57,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         CodeEditorIntegrationSettings[]
     >([]);
     const [loadingCodeEditors, setLoadingCodeEditors] = useState<boolean>(true);
+    const [codeEditorLoadFailed, setCodeEditorLoadFailed] = useState(false);
     const inputNameRef = useRef<HTMLInputElement>(null);
     const overwritePathCheckRequestRef = useRef<number>(0);
     const overwriteBasePathInitializedRef = useRef<boolean>(false);
@@ -274,6 +275,8 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             .catch(() => {
                 if (active) {
                     setCodeEditorSettings([]);
+                    setCodeEditorId(null);
+                    setCodeEditorLoadFailed(true);
                 }
             })
             .finally(() => {
@@ -388,6 +391,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             gitAvailable={gitAvailable}
                             withGit={withGit}
                             loadingCodeEditors={loadingCodeEditors}
+                            codeEditorLoadFailed={codeEditorLoadFailed}
                             onWithGitChange={setWithGit}
                             codeEditorSettings={codeEditorSettings}
                             codeEditorId={codeEditorId}

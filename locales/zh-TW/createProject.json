@@ -50,13 +50,7 @@
             "notFound": "未找到"
         },
         "initGit": "初始化 Git 儲存庫",
-        "gitNotInstalled": "此電腦未安裝 Git",
-        "setupVSCode": "將 Visual Studio Code 設為文字編輯器",
-        "vscodeNotInstalled": "此電腦未安裝 Visual Studio Code",
-        "vscodeHelp": {
-            "title": "為什麼偵測不到 Visual Studio Code？",
-            "message": "只有在 VS Code 已加入 PATH 時，Godot 啟動器 才能自動偵測。您也可以在設定中指定 VS Code 可執行檔的路徑。"
-        }
+        "gitNotInstalled": "此電腦未安裝 Git"
     },
     "buttons": {
         "editNow": "立即編輯",

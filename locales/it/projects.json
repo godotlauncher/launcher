@@ -13,7 +13,7 @@
         "editor": "Editor",
         "invalidProject": "Questo progetto non è valido, controlla percorso del progetto ed editor!",
         "dotNetProject": "Questo è un progetto .NET",
-        "vsCodeProject": "Visual Studio Code è abilitato come editor esterno per questo progetto",
+        "codeEditorProject": "Per questo progetto è selezionata un'integrazione con un editor di codice.",
         "prerelease": "Utilizza una versione pre-release dell'editor Godot",
         "windowedMode": "Questo progetto si apre in modalità finestra",
         "gitProject": "Il progetto usa Git per il controllo di versione",
@@ -69,7 +69,6 @@
             "missingProjectFile": "File di progetto non trovato. Controlla il percorso del progetto oppure rimuovilo e aggiungilo di nuovo.",
             "missingEditor": "L’editor selezionato non è disponibile. Monta l’unità o scegli un altro editor."
         },
-        "recoveredVSCodeConfig": "Alcuni file di configurazione di VS Code non erano validi. Godot Launcher li ha ricreati e ha conservato gli originali come copie .bad.",
         "recoveredCodeEditorConfig": "Alcuni file di configurazione dell'editor di codice non erano validi. Godot Launcher li ha ricreati e ha conservato gli originali come copie .bad."
     },
     "changeEditor": {
@@ -82,7 +81,6 @@
     "setCodeEditor": {
         "errors": {
             "projectNotFound": "Progetto non trovato",
-            "vscodeNotInstalled": "Visual Studio Code non è installato su questo computer.",
             "missingLaunchPath": "Percorso di avvio di Godot mancante per questo progetto.",
             "invalidProjectDefinition": "Impossibile determinare il modello di impostazioni dell'editor per questa versione di Godot."
         }

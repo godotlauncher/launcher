@@ -16,6 +16,7 @@ import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations
 import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
     canRenameGodotProject,
+    hasProjectCodeEditorChanges,
     hasProjectRenameChanges,
     validateProjectRenameName,
 } from './projectSettingsDrawer/projectSettings.model';
@@ -59,6 +60,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const [initialCodeEditorId, setInitialCodeEditorId] =
         useState<CodeEditorId | null>(null);
     const [codeEditorId, setCodeEditorId] = useState<CodeEditorId | null>(null);
+    const [codeEditorTouched, setCodeEditorTouched] = useState(false);
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
     >([]);
@@ -113,11 +115,11 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         }
 
         let disposed = false;
-        const currentCodeEditorId =
-            project.codeEditorId ?? (project.withVSCode ? 'vscode' : null);
+        const currentCodeEditorId = project.codeEditorId ?? null;
 
         setInitialCodeEditorId(currentCodeEditorId);
         setCodeEditorId(currentCodeEditorId);
+        setCodeEditorTouched(false);
         setCodeEditorSettings([]);
         setCodeEditorLoadFailed(false);
         setLoadingCodeEditors(true);
@@ -181,6 +183,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
 
     const handleCodeEditorChange = (nextCodeEditorId: CodeEditorId | null) => {
         setCodeEditorId(nextCodeEditorId);
+        setCodeEditorTouched(true);
         setFormError(undefined);
     };
 
@@ -203,7 +206,11 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                 name,
                 renameGodotProject,
             );
-            const codeEditorChanged = initialCodeEditorId !== codeEditorId;
+            const codeEditorChanged = hasProjectCodeEditorChanges(
+                initialCodeEditorId,
+                codeEditorId,
+                codeEditorTouched,
+            );
 
             if (renameChanged) {
                 const result = await onRenameProject(project, {
@@ -241,6 +248,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             if (codeEditorChanged) {
                 await onSetProjectCodeEditor(currentProject, codeEditorId);
                 setInitialCodeEditorId(codeEditorId);
+                setCodeEditorTouched(false);
             }
 
             onOpenChange(false);
@@ -267,7 +275,12 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             renameGodotProject,
         );
     const hasCodeEditorChanges =
-        project && initialCodeEditorId !== codeEditorId;
+        project &&
+        hasProjectCodeEditorChanges(
+            initialCodeEditorId,
+            codeEditorId,
+            codeEditorTouched,
+        );
     const hasChanges = hasRenameChanges || hasCodeEditorChanges;
     const saveDisabled =
         !project ||

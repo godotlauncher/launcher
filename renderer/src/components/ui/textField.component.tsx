@@ -12,6 +12,7 @@ export type TextFieldProps = {
     onBlur?: () => void;
     placeholder?: string;
     error?: string;
+    disabled?: boolean;
     compact?: boolean;
 };
 
@@ -25,6 +26,7 @@ export const TextField: React.FC<TextFieldProps> = ({
     onBlur,
     placeholder,
     error,
+    disabled = false,
     compact = false,
 }) => (
     <FormField
@@ -46,6 +48,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
             placeholder={placeholder}
+            disabled={disabled}
         />
     </FormField>
 );
