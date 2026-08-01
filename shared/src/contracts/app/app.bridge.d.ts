@@ -1,3 +1,4 @@
+import type { CodeEditorIntegrationBridge } from '../codeEditorIntegration/index.js';
 import type { UserPreferences } from '../preferences/index.js';
 import type {
     AddProjectOptions,
@@ -152,4 +153,5 @@ export type AppBridge = {
 
 export type AppBridgeNamespaces = {
     app: AppBridge;
+    codeEditorIntegration: CodeEditorIntegrationBridge;
 };

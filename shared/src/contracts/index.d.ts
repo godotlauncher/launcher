@@ -1,4 +1,5 @@
 export type * from './app/index.js';
+export type * from './codeEditorIntegration/index.js';
 export type * from './ipc/index.js';
 export type * from './preferences/index.js';
 export type * from './projects/index.js';

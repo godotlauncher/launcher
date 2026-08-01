@@ -1,0 +1,53 @@
+import {
+    BridgeController,
+    createIpcHandleTyped,
+} from '@mariodebono/di-electron';
+import type {
+    CodeEditorId,
+    CodeEditorInstallationSummary,
+    CodeEditorIntegrationBridge,
+    CodeEditorIntegrationSummary,
+    CodeEditorPathValidationResult,
+} from '@shared/contracts';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
+
+const CodeEditorIntegrationHandler =
+    createIpcHandleTyped<CodeEditorIntegrationBridge>();
+
+@BridgeController({ namespace: 'codeEditorIntegration' })
+export class CodeEditorIntegrationController
+    implements CodeEditorIntegrationBridge
+{
+    constructor(
+        private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+    ) {}
+
+    @CodeEditorIntegrationHandler('listIntegrations')
+    async listIntegrations(): Promise<CodeEditorIntegrationSummary[]> {
+        return this.codeEditorIntegrationService.listIntegrations();
+    }
+
+    @CodeEditorIntegrationHandler('scanIntegration')
+    scanIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorInstallationSummary | null> {
+        return this.codeEditorIntegrationService.scanIntegration(integrationId);
+    }
+
+    @CodeEditorIntegrationHandler('scanIntegrations')
+    scanIntegrations(): Promise<CodeEditorInstallationSummary[]> {
+        return this.codeEditorIntegrationService.scanIntegrations();
+    }
+
+    @CodeEditorIntegrationHandler('validateIntegrationPath')
+    validateIntegrationPath(
+        integrationId: CodeEditorId,
+        pathToValidate: string,
+    ): Promise<CodeEditorPathValidationResult> {
+        return this.codeEditorIntegrationService.validateIntegrationPath(
+            integrationId,
+            pathToValidate,
+        );
+    }
+}
