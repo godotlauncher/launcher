@@ -295,11 +295,11 @@ export const SAMPLE_VSCODE_SETTINGS_AVAILABLE: CodeEditorIntegrationSettings = {
     resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
     installation: {
         integrationId: 'vscode',
-        path: '/Applications/Visual Studio Code.app',
+        path: '/Applications/Visual Studio Code.app/Contents/MacOS/Code',
         version: '1.95.0',
     },
     resolvedGodotExecPath:
-        '/Applications/Visual Studio Code.app/Contents/MacOS/Electron',
+        '/Applications/Visual Studio Code.app/Contents/MacOS/Code',
 };
 
 export const SAMPLE_VSCODE_SETTINGS_DISABLED: CodeEditorIntegrationSettings = {
@@ -321,11 +321,11 @@ export const SAMPLE_VSCODE_SETTINGS_OVERRIDDEN: CodeEditorIntegrationSettings = 
     resolvedExecFlags: '{project} --reuse-window --goto {file}:{line}:{col}',
     installation: {
         integrationId: 'vscode',
-        path: '/Users/docs/Applications/Visual Studio Code.app',
+        path: '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Code',
         version: '1.95.0',
     },
     resolvedGodotExecPath:
-        '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Electron',
+        '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Code',
 };
 
 export const DEFAULT_TOOLS: CachedTool[] = [

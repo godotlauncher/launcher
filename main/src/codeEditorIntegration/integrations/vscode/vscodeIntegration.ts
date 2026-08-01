@@ -84,21 +84,11 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         godotFlavor: 'standard' | 'dotnet';
         godotVersion: number;
     }): GodotCodeEditorConfiguration {
-        const isMacOSAppBundle =
-            process.platform === 'darwin' &&
-            path.extname(input.installation.path).toLowerCase() === '.app';
-        const platformExecPath = isMacOSAppBundle
-            ? path.resolve(
-                  input.installation.path,
-                  'Contents',
-                  'MacOS',
-                  'Electron',
-              )
-            : input.installation.path;
-
         return {
             textEditor: {
-                execPath: this.resolveWindowsGodotExecPath(platformExecPath),
+                execPath: this.resolveWindowsGodotExecPath(
+                    input.installation.path,
+                ),
                 execFlags:
                     input.settings.execFlagsOverride ??
                     this.defaultSettings.execFlags,

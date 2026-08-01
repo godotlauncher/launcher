@@ -181,14 +181,16 @@ describe('VSCodeIntegration', () => {
             path.resolve('tools', 'bin', 'code.cmd'),
         );
     });
-    it('normalizes macOS app bundles for Godot', () => {
+    it('passes the resolved macOS executable to Godot', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         const integration = new VSCodeIntegration();
+        const executablePath =
+            '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
 
         expect(
             integration.resolveGodotConfiguration({
                 installation: {
-                    path: '/Applications/Visual Studio Code.app',
+                    path: executablePath,
                     version: null,
                 },
                 settings: { execFlagsOverride: '--custom {file}' },
@@ -197,12 +199,7 @@ describe('VSCodeIntegration', () => {
             }),
         ).toEqual({
             textEditor: {
-                execPath: path.resolve(
-                    '/Applications/Visual Studio Code.app',
-                    'Contents',
-                    'MacOS',
-                    'Electron',
-                ),
+                execPath: executablePath,
                 execFlags: '--custom {file}',
             },
             dotnet: {
@@ -215,7 +212,7 @@ describe('VSCodeIntegration', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         const integration = new VSCodeIntegration();
         const executablePath =
-            '/Applications/Visual Studio Code.app/Contents/MacOS/Electron';
+            '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
 
         expect(
             integration.resolveGodotConfiguration({

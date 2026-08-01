@@ -1,3 +1,4 @@
+import { execFile } from 'node:child_process';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import logger from 'electron-log';
@@ -5,6 +6,9 @@ import { applyEdits, modify, type ParseError, parse } from 'jsonc-parser';
 import { findExecutable } from '../../../utils/platform.utils.js';
 
 type JSONObject = Record<string, unknown>;
+
+const MACOS_PLIST_READ_TIMEOUT_MS = 3000;
+const VS_CODE_MACOS_BUNDLE_ID = 'com.microsoft.VSCode';
 
 type VSCodeConfigReadResult<T extends JSONObject> = {
     parsed: T | null;
@@ -442,7 +446,7 @@ export async function getVSCodeInstallPath(
 
     const platform = process.platform as 'win32' | 'darwin' | 'linux';
     if (customPath !== undefined) {
-        return resolveVSCodeInstallCandidate(customPath, platform);
+        return await resolveVSCodeInstallCandidate(customPath, platform);
     }
 
     // default locations for vscode for each platform
@@ -462,7 +466,10 @@ export async function getVSCodeInstallPath(
     // check default locations for file exist and return first one found
     if (locations) {
         for (const location of locations) {
-            const candidate = resolveVSCodeInstallCandidate(location, platform);
+            const candidate = await resolveVSCodeInstallCandidate(
+                location,
+                platform,
+            );
             if (candidate) {
                 return candidate;
             }
@@ -471,7 +478,7 @@ export async function getVSCodeInstallPath(
 
     const pathCandidate = await findExecutable('code');
     return pathCandidate
-        ? resolveVSCodeInstallCandidate(pathCandidate, platform)
+        ? await resolveVSCodeInstallCandidate(pathCandidate, platform)
         : null;
 }
 
@@ -485,10 +492,83 @@ function isExistingFile(candidatePath: string): boolean {
     }
 }
 
-function resolveVSCodeInstallCandidate(
+async function readMacOSBundleInfo(
+    bundlePath: string,
+): Promise<JSONObject | null> {
+    const infoPlistPath = path.posix.resolve(
+        bundlePath,
+        'Contents',
+        'Info.plist',
+    );
+
+    return await new Promise((resolve) => {
+        execFile(
+            '/usr/bin/plutil',
+            ['-convert', 'json', '-o', '-', infoPlistPath],
+            { encoding: 'utf8', timeout: MACOS_PLIST_READ_TIMEOUT_MS },
+            (error, stdout) => {
+                if (error) {
+                    logger.debug('Failed to read macOS application metadata', {
+                        bundlePath,
+                        error,
+                    });
+                    resolve(null);
+                    return;
+                }
+
+                try {
+                    const bundleInfo: unknown = JSON.parse(stdout);
+                    resolve(isJSONObject(bundleInfo) ? bundleInfo : null);
+                } catch (error) {
+                    logger.debug('Failed to parse macOS application metadata', {
+                        bundlePath,
+                        error,
+                    });
+                    resolve(null);
+                }
+            },
+        );
+    });
+}
+
+async function resolveMacOSVSCodeBundleExecutable(
+    bundlePath: string,
+): Promise<string | null> {
+    if (!fs.existsSync(bundlePath)) {
+        return null;
+    }
+
+    const bundleInfo = await readMacOSBundleInfo(bundlePath);
+    if (bundleInfo?.CFBundleIdentifier !== VS_CODE_MACOS_BUNDLE_ID) {
+        return null;
+    }
+
+    const executableName = bundleInfo.CFBundleExecutable;
+    if (
+        typeof executableName !== 'string' ||
+        !executableName.trim() ||
+        executableName !== executableName.trim() ||
+        executableName === '.' ||
+        executableName === '..' ||
+        executableName.includes('/') ||
+        executableName.includes('\\')
+    ) {
+        return null;
+    }
+
+    const executablePath = path.posix.resolve(
+        bundlePath,
+        'Contents',
+        'MacOS',
+        executableName,
+    );
+    return isExistingFile(executablePath) ? executablePath : null;
+}
+
+async function resolveVSCodeInstallCandidate(
     candidatePath: string,
     platform: 'win32' | 'darwin' | 'linux',
-): string | null {
+): Promise<string | null> {
     const normalizedPath = candidatePath.trim();
     if (!normalizedPath) {
         return null;
@@ -511,15 +591,7 @@ function resolveVSCodeInstallCandidate(
     }
 
     if (basename === 'visual studio code.app') {
-        const executablePath = pathModule.resolve(
-            normalizedPath,
-            'Contents',
-            'MacOS',
-            'Electron',
-        );
-        return fs.existsSync(normalizedPath) && isExistingFile(executablePath)
-            ? normalizedPath
-            : null;
+        return await resolveMacOSVSCodeBundleExecutable(normalizedPath);
     }
 
     if (basename === 'code') {
@@ -530,13 +602,16 @@ function resolveVSCodeInstallCandidate(
     const contentsDir = pathModule.dirname(macosDir);
     const bundlePath = pathModule.dirname(contentsDir);
     const isBundleExecutable =
-        basename === 'electron' &&
         pathModule.basename(macosDir).toLowerCase() === 'macos' &&
         pathModule.basename(contentsDir).toLowerCase() === 'contents' &&
         pathModule.basename(bundlePath).toLowerCase() ===
             'visual studio code.app';
 
-    return isBundleExecutable && isExistingFile(normalizedPath)
-        ? normalizedPath
-        : null;
+    if (!isBundleExecutable) {
+        return null;
+    }
+
+    const resolvedExecutable =
+        await resolveMacOSVSCodeBundleExecutable(bundlePath);
+    return resolvedExecutable === normalizedPath ? normalizedPath : null;
 }

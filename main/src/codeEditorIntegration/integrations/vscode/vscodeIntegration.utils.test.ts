@@ -11,9 +11,18 @@ type LaunchConfiguration = {
     [key: string]: unknown;
 };
 
+const childProcessMocks = vi.hoisted(() => ({
+    execFile: vi.fn(),
+}));
+
+vi.mock('node:child_process', () => ({
+    execFile: childProcessMocks.execFile,
+}));
+
 // Mock electron-log to suppress expected warnings in tests
 vi.mock('electron-log', () => ({
     default: {
+        debug: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
         error: vi.fn(),
@@ -461,6 +470,27 @@ describe('addVSCodeNETLaunchConfig', () => {
 describe('getVSCodeInstallPath', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        childProcessMocks.execFile.mockImplementation(
+            (
+                _file: string,
+                _args: string[],
+                _options: object,
+                callback: (
+                    error: Error | null,
+                    stdout: string,
+                    stderr: string,
+                ) => void,
+            ) => {
+                callback(
+                    null,
+                    JSON.stringify({
+                        CFBundleIdentifier: 'com.microsoft.VSCode',
+                        CFBundleExecutable: 'Code',
+                    }),
+                    '',
+                );
+            },
+        );
         vi.mocked(findExecutable).mockResolvedValue(null);
         vi.mocked(fs.statSync).mockReturnValue({
             isFile: () => true,
@@ -567,7 +597,146 @@ describe('getVSCodeInstallPath', () => {
             typeof import('./vscodeIntegration.utils.js')
         >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath();
-        expect(res).toContain('Visual Studio Code.app');
+        expect(res).toBe(
+            '/Applications/Visual Studio Code.app/Contents/MacOS/Code',
+        );
+        expect(childProcessMocks.execFile).toHaveBeenCalledWith(
+            '/usr/bin/plutil',
+            [
+                '-convert',
+                'json',
+                '-o',
+                '-',
+                '/Applications/Visual Studio Code.app/Contents/Info.plist',
+            ],
+            { encoding: 'utf8', timeout: 3000 },
+            expect.any(Function),
+        );
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('supports the legacy macOS executable declared by the bundle', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'darwin',
+            configurable: true,
+        });
+        childProcessMocks.execFile.mockImplementation(
+            (
+                _file: string,
+                _args: string[],
+                _options: object,
+                callback: (
+                    error: Error | null,
+                    stdout: string,
+                    stderr: string,
+                ) => void,
+            ) => {
+                callback(
+                    null,
+                    JSON.stringify({
+                        CFBundleIdentifier: 'com.microsoft.VSCode',
+                        CFBundleExecutable: 'Electron',
+                    }),
+                    '',
+                );
+            },
+        );
+        vi.mocked(fs.existsSync).mockImplementation((candidate) =>
+            String(candidate).includes('Visual Studio Code.app'),
+        );
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBe(
+            '/Applications/Visual Studio Code.app/Contents/MacOS/Electron',
+        );
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test.each([
+        [
+            'an unexpected bundle identifier',
+            {
+                CFBundleIdentifier: 'com.example.NotVSCode',
+                CFBundleExecutable: 'Code',
+            },
+        ],
+        [
+            'an unsafe executable name',
+            {
+                CFBundleIdentifier: 'com.microsoft.VSCode',
+                CFBundleExecutable: '../Code',
+            },
+        ],
+    ])('rejects a macOS bundle with %s', async (_description, bundleInfo) => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'darwin',
+            configurable: true,
+        });
+        childProcessMocks.execFile.mockImplementation(
+            (
+                _file: string,
+                _args: string[],
+                _options: object,
+                callback: (
+                    error: Error | null,
+                    stdout: string,
+                    stderr: string,
+                ) => void,
+            ) => {
+                callback(null, JSON.stringify(bundleInfo), '');
+            },
+        );
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBeNull();
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('rejects a macOS bundle when its metadata cannot be read', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'darwin',
+            configurable: true,
+        });
+        childProcessMocks.execFile.mockImplementation(
+            (
+                _file: string,
+                _args: string[],
+                _options: object,
+                callback: (
+                    error: Error | null,
+                    stdout: string,
+                    stderr: string,
+                ) => void,
+            ) => {
+                callback(new Error('plist unavailable'), '', '');
+            },
+        );
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBeNull();
 
         Object.defineProperty(process, 'platform', {
             value: original,
