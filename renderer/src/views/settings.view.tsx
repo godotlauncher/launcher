@@ -208,13 +208,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             );
             setCodeEditorActionErrors((current) => ({
                 ...current,
-                [integrationId]: t(
-                    'codeEditors.messages.integrationError',
-                    {
-                        editor: currentSettings.integration.displayName,
-                        error: t('codeEditors.drawer.errors.save'),
-                    },
-                ),
+                [integrationId]: t('codeEditors.messages.integrationError', {
+                    editor: currentSettings.integration.displayName,
+                    error: t('codeEditors.drawer.errors.save'),
+                }),
             }));
         } finally {
             setPendingCodeEditorId((current) =>
@@ -247,13 +244,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             );
             setCodeEditorActionErrors((current) => ({
                 ...current,
-                [integrationId]: t(
-                    'codeEditors.messages.integrationError',
-                    {
-                        editor: currentSettings.integration.displayName,
-                        error: t('codeEditors.drawer.errors.save'),
-                    },
-                ),
+                [integrationId]: t('codeEditors.messages.integrationError', {
+                    editor: currentSettings.integration.displayName,
+                    error: t('codeEditors.drawer.errors.save'),
+                }),
             }));
         } finally {
             setPendingCodeEditorId((current) =>

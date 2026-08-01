@@ -188,30 +188,28 @@ describe('CodeEditorIntegrationService', () => {
     it.each([
         { enabled: false, available: true },
         { enabled: true, available: false },
-    ])(
-        'preserves the stored default marker when eligibility is $enabled/$available',
-        async ({ enabled, available }) => {
-            const integration = createIntegration();
-            const settingsStore = createSettingsStore({
-                enabled,
-                customPath: null,
-                execFlagsOverride: null,
-            });
-            vi.mocked(
-                settingsStore.getDefaultIntegrationId,
-            ).mockResolvedValue(CODE_EDITOR_ID);
-            if (!available) {
-                vi.mocked(integration.detectInstallation).mockResolvedValue(
-                    null,
-                );
-            }
-            const service = createService(integration, settingsStore);
+    ])('preserves the stored default marker when eligibility is $enabled/$available', async ({
+        enabled,
+        available,
+    }) => {
+        const integration = createIntegration();
+        const settingsStore = createSettingsStore({
+            enabled,
+            customPath: null,
+            execFlagsOverride: null,
+        });
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            CODE_EDITOR_ID,
+        );
+        if (!available) {
+            vi.mocked(integration.detectInstallation).mockResolvedValue(null);
+        }
+        const service = createService(integration, settingsStore);
 
-            await expect(
-                service.listIntegrationSettings(),
-            ).resolves.toMatchObject([{ isDefault: true }]);
-        },
-    );
+        await expect(service.listIntegrationSettings()).resolves.toMatchObject([
+            { isDefault: true },
+        ]);
+    });
 
     it('persists a default integration and returns refreshed settings', async () => {
         const integration = createIntegration();
