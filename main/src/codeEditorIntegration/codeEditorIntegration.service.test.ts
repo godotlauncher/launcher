@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+import type { CodeEditorId } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TEMPLATE_DIR_NAME } from '../constants.js';
 
@@ -19,6 +20,7 @@ import type {
 } from './codeEditorIntegration.types.js';
 
 const CODE_EDITOR_ID = 'vscode' as const;
+const OTHER_CODE_EDITOR_ID = 'other-editor' as CodeEditorId;
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -58,13 +60,17 @@ function createContext(
     };
 }
 
-function createIntegration(): CodeEditorIntegration {
+function createIntegration(
+    integrationId: CodeEditorId = CODE_EDITOR_ID,
+): CodeEditorIntegration {
     return {
         metadata: {
-            id: CODE_EDITOR_ID,
-            displayName: 'Visual Studio Code',
+            id: integrationId,
+            displayName:
+                integrationId === CODE_EDITOR_ID
+                    ? 'Visual Studio Code'
+                    : 'Other Editor',
             capabilities: {
-                textEditor: true,
                 dotnet: true,
             },
         },
@@ -127,23 +133,15 @@ describe('CodeEditorIntegrationService', () => {
         );
     });
 
-    it('returns serializable integration and installation summaries', async () => {
+    it('returns a serializable installation summary when scanning', async () => {
         const integration = createIntegration();
         const service = createService(integration);
 
-        expect(service.listIntegrations()).toEqual([integration.metadata]);
         await expect(service.scanIntegration(CODE_EDITOR_ID)).resolves.toEqual({
             integrationId: CODE_EDITOR_ID,
             path: path.resolve('tools', 'code'),
             version: null,
         });
-        await expect(service.scanIntegrations()).resolves.toEqual([
-            {
-                integrationId: CODE_EDITOR_ID,
-                path: path.resolve('tools', 'code'),
-                version: null,
-            },
-        ]);
     });
 
     it('returns stored settings and detected state without configuring a project', async () => {
@@ -203,6 +201,40 @@ describe('CodeEditorIntegrationService', () => {
         );
     });
 
+    it('rejects disabled and unavailable integrations as defaults', async () => {
+        const disabledIntegration = createIntegration();
+        const disabledStore = createSettingsStore({
+            enabled: false,
+            customPath: null,
+            execFlagsOverride: null,
+        });
+        const disabledService = createService(
+            disabledIntegration,
+            disabledStore,
+        );
+
+        await expect(
+            disabledService.setDefaultIntegration(CODE_EDITOR_ID),
+        ).rejects.toThrow('Visual Studio Code is disabled.');
+        expect(disabledIntegration.detectInstallation).not.toHaveBeenCalled();
+        expect(disabledStore.setDefaultIntegrationId).not.toHaveBeenCalled();
+
+        const unavailableIntegration = createIntegration();
+        vi.mocked(unavailableIntegration.detectInstallation).mockResolvedValue(
+            null,
+        );
+        const unavailableStore = createSettingsStore();
+        const unavailableService = createService(
+            unavailableIntegration,
+            unavailableStore,
+        );
+
+        await expect(
+            unavailableService.setDefaultIntegration(CODE_EDITOR_ID),
+        ).rejects.toThrow('Visual Studio Code installation was not found.');
+        expect(unavailableStore.setDefaultIntegrationId).not.toHaveBeenCalled();
+    });
+
     it('validates and normalizes settings before storing them', async () => {
         const customPath = path.resolve('custom', 'code');
         const integration = createIntegration();
@@ -234,6 +266,41 @@ describe('CodeEditorIntegrationService', () => {
         expect(integration.configureProject).not.toHaveBeenCalled();
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
     });
+
+    it('reports selection eligibility without detecting disabled integrations', async () => {
+        const integration = createIntegration();
+        const disabledService = createService(
+            integration,
+            createSettingsStore({
+                enabled: false,
+                customPath: path.resolve('custom', 'code'),
+                execFlagsOverride: null,
+            }),
+        );
+
+        await expect(
+            disabledService.getSelectionEligibility(CODE_EDITOR_ID),
+        ).resolves.toBe('disabled');
+        expect(integration.detectInstallation).not.toHaveBeenCalled();
+
+        const unavailableIntegration = createIntegration();
+        vi.mocked(unavailableIntegration.detectInstallation).mockResolvedValue(
+            null,
+        );
+        const unavailableService = createService(unavailableIntegration);
+
+        await expect(
+            unavailableService.getSelectionEligibility(CODE_EDITOR_ID),
+        ).resolves.toBe('unavailable');
+
+        const eligibleIntegration = createIntegration();
+        const eligibleService = createService(eligibleIntegration);
+
+        await expect(
+            eligibleService.getSelectionEligibility(CODE_EDITOR_ID),
+        ).resolves.toBe('eligible');
+    });
+
     it('forwards a custom path when scanning an integration', async () => {
         const integration = createIntegration();
         const service = createService(integration);
@@ -498,24 +565,69 @@ describe('CodeEditorIntegrationService', () => {
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
     });
 
-    it('finds the integration already configured for a project', async () => {
+    it('finds every enabled integration already configured for a project', async () => {
         const integration = createIntegration();
-        const service = createService(integration);
+        const otherIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([integration, otherIntegration]),
+            createSettingsStore(),
+        );
 
         await expect(
-            service.findConfiguredIntegration(path.resolve('project')),
-        ).resolves.toBe(CODE_EDITOR_ID);
+            service.findConfiguredIntegrations(path.resolve('project')),
+        ).resolves.toEqual([CODE_EDITOR_ID, OTHER_CODE_EDITOR_ID]);
         expect(integration.isConfiguredForProject).toHaveBeenCalledOnce();
+        expect(otherIntegration.isConfiguredForProject).toHaveBeenCalledOnce();
     });
 
-    it('returns null when no integration is configured for a project', async () => {
+    it('ignores disabled integrations during project inference', async () => {
+        const integration = createIntegration();
+        const otherIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.get).mockImplementation(
+            async (integrationId) => ({
+                enabled: integrationId === OTHER_CODE_EDITOR_ID,
+                customPath: null,
+                execFlagsOverride: null,
+            }),
+        );
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([integration, otherIntegration]),
+            settingsStore,
+        );
+
+        await expect(
+            service.findConfiguredIntegrations(path.resolve('project')),
+        ).resolves.toEqual([OTHER_CODE_EDITOR_ID]);
+        expect(integration.isConfiguredForProject).not.toHaveBeenCalled();
+        expect(otherIntegration.isConfiguredForProject).toHaveBeenCalledOnce();
+    });
+
+    it('returns no inference matches when no integration is configured', async () => {
         const integration = createIntegration();
         vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
         const service = createService(integration);
 
         await expect(
-            service.findConfiguredIntegration(path.resolve('project')),
-        ).resolves.toBeNull();
+            service.findConfiguredIntegrations(path.resolve('project')),
+        ).resolves.toEqual([]);
         expect(integration.isConfiguredForProject).toHaveBeenCalledOnce();
+    });
+
+    it('preserves only unregistered portable selection IDs on unrelated writes', () => {
+        const service = createService(createIntegration());
+
+        expect(service.resolvePortableSelectionId(null, 'future-editor')).toBe(
+            'future-editor',
+        );
+        expect(
+            service.resolvePortableSelectionId(null, CODE_EDITOR_ID),
+        ).toBeNull();
+        expect(service.resolvePortableSelectionId(CODE_EDITOR_ID, null)).toBe(
+            CODE_EDITOR_ID,
+        );
+        expect(service.resolvePortableSelectionId(CODE_EDITOR_ID, '  ')).toBe(
+            CODE_EDITOR_ID,
+        );
     });
 });

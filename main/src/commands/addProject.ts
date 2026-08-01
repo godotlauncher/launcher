@@ -462,10 +462,19 @@ export async function addProject(
             }
         }
     } else {
-        codeEditorId =
-            await codeEditorIntegrationService.findConfiguredIntegration(
+        const configuredIntegrationIds =
+            await codeEditorIntegrationService.findConfiguredIntegrations(
                 dirname,
             );
+        codeEditorId =
+            configuredIntegrationIds.length === 1
+                ? configuredIntegrationIds[0]
+                : null;
+        if (configuredIntegrationIds.length > 1) {
+            logger.warn(
+                `Multiple code editor integrations are configured for '${projectName}'; importing with no code editor selected`,
+            );
+        }
         projectLauncherCodeEditorId = codeEditorId;
     }
 
@@ -486,7 +495,11 @@ export async function addProject(
             editorConfigFileName,
         );
 
-        if (await codeEditorIntegrationService.scanIntegration(codeEditorId)) {
+        if (
+            (await codeEditorIntegrationService.getSelectionEligibility(
+                codeEditorId,
+            )) === 'eligible'
+        ) {
             const applied = await codeEditorIntegrationService.applyToProject(
                 codeEditorId,
                 {

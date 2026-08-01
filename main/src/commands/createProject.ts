@@ -44,6 +44,19 @@ export async function createProject(
     codeEditorIntegrationService: CodeEditorIntegrationService,
     overwriteProjectPath?: string,
 ): Promise<CreateProjectResult> {
+    if (codeEditorId) {
+        try {
+            await codeEditorIntegrationService.assertIntegrationSelectable(
+                codeEditorId,
+            );
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
     const tools = await getInstalledTools();
 
     const gitTool = tools.find((t) => t.name === 'Git');

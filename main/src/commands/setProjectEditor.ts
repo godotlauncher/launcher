@@ -8,6 +8,7 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
+import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProjectSidecar.js';
 import { EDITOR_CONFIG_DIRNAME, PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
 import {
@@ -153,6 +154,7 @@ export async function setProjectEditor(
         } else {
             await codeEditorIntegrationService.disableForProject(
                 newEditorSettingsFile,
+                newRelease.mono ? 'dotnet' : 'standard',
             );
         }
 
@@ -176,12 +178,16 @@ export async function setProjectEditor(
         updatedProjects[projectIndex] = updatedProject;
 
         try {
+            const codeEditorId = await resolvePortableCodeEditorIdForWrite(
+                updatedProject.path,
+                resolveCodeEditorProjectMode(updatedProject).codeEditorId,
+                codeEditorIntegrationService,
+            );
             await writeProjectLauncherConfig(updatedProject.path, {
                 release: updatedProject.release,
                 launcherVersion: app.getVersion(),
                 lastOpened: updatedProject.last_opened,
-                codeEditorId:
-                    resolveCodeEditorProjectMode(updatedProject).codeEditorId,
+                codeEditorId,
             });
             const storedProjects = await storeProjectsList(
                 projectListPath,

@@ -101,6 +101,7 @@ vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
 }));
 
 const codeEditorIntegrationServiceMocks = {
+    assertIntegrationSelectable: vi.fn(),
     applyToProject: vi.fn(),
 };
 const codeEditorIntegrationService =
@@ -159,6 +160,9 @@ describe('createProject', () => {
         });
         projectUtilsMocks.addProjectToList.mockResolvedValue([]);
         projectLauncherConfigMocks.writeProjectLauncherConfig.mockResolvedValue(
+            undefined,
+        );
+        codeEditorIntegrationServiceMocks.assertIntegrationSelectable.mockResolvedValue(
             undefined,
         );
         codeEditorIntegrationServiceMocks.applyToProject.mockResolvedValue({
@@ -228,5 +232,36 @@ describe('createProject', () => {
         expect(result.projectDetails?.editor_settings_file).toBe(
             '/configured/editor_settings.tres',
         );
+    });
+
+    it.each([
+        'disabled',
+        'unavailable',
+    ])('rejects a directly requested %s integration before writing project files', async (state) => {
+        codeEditorIntegrationServiceMocks.assertIntegrationSelectable.mockRejectedValue(
+            new Error(`Visual Studio Code is ${state}.`),
+        );
+
+        const result = await createProject(
+            'Rejected Project',
+            release,
+            'FORWARD_PLUS',
+            'vscode',
+            false,
+            codeEditorIntegrationService,
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: `Visual Studio Code is ${state}.`,
+        });
+        expect(
+            codeEditorIntegrationServiceMocks.assertIntegrationSelectable,
+        ).toHaveBeenCalledWith('vscode');
+        expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+        expect(fsMocks.promises.writeFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
     });
 });

@@ -5,7 +5,6 @@ import type {
     CodeEditorId,
     CodeEditorInstallationSummary,
     CodeEditorIntegrationSettings,
-    CodeEditorIntegrationSummary,
     CodeEditorPathValidationResult,
     UpdateCodeEditorIntegrationSettings,
 } from '@shared/contracts';
@@ -26,16 +25,17 @@ import type {
     GodotEditorFlavor,
 } from './codeEditorIntegration.types.js';
 
+export type CodeEditorSelectionEligibility =
+    | 'eligible'
+    | 'disabled'
+    | 'unavailable';
+
 @Injectable()
 export class CodeEditorIntegrationService {
     constructor(
         private readonly registry: CodeEditorIntegrationRegistry,
         private readonly settingsStore: CodeEditorIntegrationSettingsStore,
     ) {}
-
-    listIntegrations(): CodeEditorIntegrationSummary[] {
-        return this.registry.list().map((integration) => integration.metadata);
-    }
 
     isRegisteredIntegration(id: string): id is CodeEditorId {
         return this.registry.has(id);
@@ -59,8 +59,9 @@ export class CodeEditorIntegrationService {
     async setDefaultIntegration(
         integrationId: CodeEditorId,
     ): Promise<CodeEditorIntegrationSettings[]> {
-        this.registry.get(integrationId);
+        await this.assertIntegrationSelectable(integrationId);
         await this.settingsStore.setDefaultIntegrationId(integrationId);
+
         return this.listIntegrationSettings();
     }
 
@@ -99,6 +100,39 @@ export class CodeEditorIntegrationService {
         return this.toIntegrationSettings(integrationId, defaultIntegrationId);
     }
 
+    async getSelectionEligibility(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorSelectionEligibility> {
+        const integration = this.registry.get(integrationId);
+        const storedSettings = await this.settingsStore.get(integrationId);
+
+        if (!storedSettings.enabled) {
+            return 'disabled';
+        }
+
+        const installation = await integration.detectInstallation(
+            storedSettings.customPath ?? undefined,
+        );
+        return installation ? 'eligible' : 'unavailable';
+    }
+
+    async assertIntegrationSelectable(
+        integrationId: CodeEditorId,
+    ): Promise<void> {
+        const integration = this.registry.get(integrationId);
+        const eligibility = await this.getSelectionEligibility(integrationId);
+
+        if (eligibility === 'disabled') {
+            throw new Error(`${integration.metadata.displayName} is disabled.`);
+        }
+
+        if (eligibility === 'unavailable') {
+            throw new Error(
+                `${integration.metadata.displayName} installation was not found.`,
+            );
+        }
+    }
+
     async scanIntegration(
         integrationId: CodeEditorId,
         customPath?: string,
@@ -116,31 +150,41 @@ export class CodeEditorIntegrationService {
             : null;
     }
 
-    async scanIntegrations(): Promise<CodeEditorInstallationSummary[]> {
-        const detected = await Promise.all(
-            this.registry
-                .list()
-                .map((integration) =>
-                    this.scanIntegration(integration.metadata.id),
-                ),
-        );
-
-        return detected.filter(
-            (installation): installation is CodeEditorInstallationSummary =>
-                installation !== null,
-        );
-    }
-
-    async findConfiguredIntegration(
+    async findConfiguredIntegrations(
         projectPath: string,
-    ): Promise<CodeEditorId | null> {
+    ): Promise<CodeEditorId[]> {
+        const configuredIntegrationIds: CodeEditorId[] = [];
+
         for (const integration of this.registry.list()) {
+            const integrationId = integration.metadata.id;
+            const storedSettings = await this.settingsStore.get(integrationId);
+
+            if (!storedSettings.enabled) {
+                continue;
+            }
+
             if (await integration.isConfiguredForProject(projectPath)) {
-                return integration.metadata.id;
+                configuredIntegrationIds.push(integrationId);
             }
         }
 
-        return null;
+        return configuredIntegrationIds;
+    }
+
+    resolvePortableSelectionId(
+        canonicalId: CodeEditorId | null,
+        portableId: string | null | undefined,
+    ): string | null {
+        const normalizedPortableId = portableId?.trim();
+
+        if (
+            normalizedPortableId &&
+            !this.isRegisteredIntegration(normalizedPortableId)
+        ) {
+            return normalizedPortableId;
+        }
+
+        return canonicalId;
     }
 
     async validateIntegrationPath(
@@ -163,15 +207,6 @@ export class CodeEditorIntegrationService {
                 : {}),
             ...(validation.reason ? { reason: validation.reason } : {}),
         };
-    }
-
-    isConfiguredForProject(
-        integrationId: CodeEditorId,
-        projectPath: string,
-    ): Promise<boolean> {
-        return this.registry
-            .get(integrationId)
-            .isConfiguredForProject(projectPath);
     }
 
     async applyToProject(
@@ -270,7 +305,10 @@ export class CodeEditorIntegrationService {
         return {
             integration: integration.metadata,
             enabled: storedSettings.enabled,
-            isDefault: integrationId === defaultIntegrationId,
+            isDefault:
+                storedSettings.enabled &&
+                installation !== null &&
+                integrationId === defaultIntegrationId,
             customPath: storedSettings.customPath,
             defaultExecFlags: integration.defaultSettings.execFlags,
             execFlagsOverride: storedSettings.execFlagsOverride,

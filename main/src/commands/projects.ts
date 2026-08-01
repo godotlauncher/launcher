@@ -17,6 +17,7 @@ import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProjectMode.js';
+import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProjectSidecar.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
@@ -57,31 +58,34 @@ export async function getProjectsDetails(): Promise<ProjectDetails[]> {
 
 export async function removeProject(
     project: ProjectDetails,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
 ): Promise<ProjectDetails[]> {
     const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
 
+    try {
+        const codeEditorId = await resolvePortableCodeEditorIdForWrite(
+            project.path,
+            resolveCodeEditorProjectMode(project).codeEditorId,
+            codeEditorIntegrationService,
+        );
+        await writeProjectLauncherConfig(project.path, {
+            release: project.release,
+            launcherVersion: app.getVersion(),
+            lastOpened: project.last_opened,
+            codeEditorId,
+        });
+    } catch (error) {
+        logger.warn(
+            `Failed to write project launcher config for '${project.name}' before removing it`,
+            error,
+        );
+    }
+
     // remove .editor_settings link to godot
     // await removeEditorSymlink(project.launch_path);
     await removeProjectEditor(project);
-
-    if (project.last_opened) {
-        try {
-            await writeProjectLauncherConfig(project.path, {
-                release: project.release,
-                launcherVersion: app.getVersion(),
-                lastOpened: project.last_opened,
-                codeEditorId:
-                    resolveCodeEditorProjectMode(project).codeEditorId,
-            });
-        } catch (error) {
-            logger.warn(
-                `Failed to write project launcher config for '${project.name}' before removing it`,
-                error,
-            );
-        }
-    }
 
     const projects = await removeProjectFromList(projectListPath, project.path);
     if (process.platform === 'linux') {
@@ -91,7 +95,10 @@ export async function removeProject(
     return projects;
 }
 
-export async function launchProject(project: ProjectDetails): Promise<void> {
+export async function launchProject(
+    project: ProjectDetails,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
+): Promise<void> {
     const projectListPath = resolveProjectListPath();
 
     const prefs = await getUserPreferences();
@@ -142,12 +149,16 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     if (storedProject) {
         project = storedProject;
         try {
+            const codeEditorId = await resolvePortableCodeEditorIdForWrite(
+                storedProject.path,
+                resolveCodeEditorProjectMode(storedProject).codeEditorId,
+                codeEditorIntegrationService,
+            );
             await writeProjectLauncherConfig(storedProject.path, {
                 release: storedProject.release,
                 launcherVersion: app.getVersion(),
                 lastOpened: storedProject.last_opened,
-                codeEditorId:
-                    resolveCodeEditorProjectMode(storedProject).codeEditorId,
+                codeEditorId,
             });
         } catch (error) {
             logger.warn(
@@ -435,11 +446,18 @@ export async function setProjectCodeEditor(
             release: { ...updatedProjects[projectIndex].release },
         };
 
-        if (targetProject.codeEditorId === codeEditorId) {
+        const currentCodeEditorId =
+            resolveCodeEditorProjectMode(targetProject).codeEditorId;
+
+        if (codeEditorId && currentCodeEditorId === codeEditorId) {
             return targetProject;
         }
 
         if (codeEditorId) {
+            await codeEditorIntegrationService.assertIntegrationSelectable(
+                codeEditorId,
+            );
+
             if (!targetProject.launch_path) {
                 throw new Error(
                     t('projects:setCodeEditor.errors.missingLaunchPath'),
@@ -495,6 +513,7 @@ export async function setProjectCodeEditor(
         } else {
             await codeEditorIntegrationService.disableForProject(
                 targetProject.editor_settings_file,
+                targetProject.release.mono ? 'dotnet' : 'standard',
             );
         }
 

@@ -21,6 +21,9 @@ import { app, dialog, autoUpdater as electronAutoUpdater } from 'electron';
 import logger from 'electron-log/main.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
+import { launchProject } from './commands/projects.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 import { createMenu } from './helpers/menu.helper.js';
@@ -45,6 +48,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly electronAppService: ElectronAppService,
         private readonly windowManager: WindowManagerService,
         private readonly i18nService: I18nService,
+        private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
     ) {}
 
     onModuleInit(): void {
@@ -102,7 +106,9 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         mainWindow.setIcon(iconPath);
         setMainWindow(mainWindow);
 
-        await createTray(mainWindow);
+        await createTray(mainWindow, (project) =>
+            launchProject(project, this.codeEditorIntegrationService),
+        );
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         } else {

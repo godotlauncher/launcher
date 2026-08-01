@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
+import type { ProjectDetails } from '@shared/contracts';
 import { app, type BrowserWindow, Menu, Tray } from 'electron';
-import { launchProject } from '../commands/projects.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
@@ -10,9 +10,14 @@ import { getStoredProjectsList } from '../utils/projects.utils.js';
 
 let tray: Tray;
 let mainWindow: BrowserWindow;
+let launchProjectFromTray: (project: ProjectDetails) => Promise<void>;
 
-export async function createTray(window: BrowserWindow): Promise<Tray> {
+export async function createTray(
+    window: BrowserWindow,
+    launchProjectHandler: (project: ProjectDetails) => Promise<void>,
+): Promise<Tray> {
     mainWindow = window;
+    launchProjectFromTray = launchProjectHandler;
 
     tray = new Tray(
         path.resolve(
@@ -95,7 +100,7 @@ export async function updateMenu(
             quickLaunchMenu.push({
                 label: p.name,
                 click: async () => {
-                    await launchProject(p);
+                    await launchProjectFromTray(p);
                 },
             });
         });

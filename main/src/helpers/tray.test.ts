@@ -36,10 +36,6 @@ vi.mock('../constants.js', () => ({
     PROJECTS_FILENAME: 'projects.json',
 }));
 
-vi.mock('../commands/projects.js', () => ({
-    launchProject: vi.fn(),
-}));
-
 vi.mock('../i18n/index.js', () => {
     const translations = {
         'menus:tray.recentProjects': 'Recent Projects',
@@ -168,7 +164,10 @@ test('Should have tray menu with show and quit', async () => {
         return mockMenu as unknown as ElectronMenuType;
     });
 
-    await createTray(browserWindow);
+    await createTray(
+        browserWindow,
+        vi.fn(async () => undefined),
+    );
 
     // Mac platform will not show menu on load but Linux would
     // Force call updateMenu to test template creation
@@ -211,7 +210,10 @@ test('Should have tray menu with show and quit', async () => {
 });
 
 test('Should show window on tray click', async () => {
-    await createTray(browserWindow);
+    await createTray(
+        browserWindow,
+        vi.fn(async () => undefined),
+    );
 
     // Check that the event handler was registered
     expect(mockTrayInstance.on).toHaveBeenCalledWith(

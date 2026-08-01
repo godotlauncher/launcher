@@ -262,7 +262,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('removeProject')
     removeProject(project: ProjectDetails) {
-        return removeProject(project);
+        return removeProject(project, this.codeEditorIntegrationService);
     }
 
     @AppHandler('renameProject')
@@ -327,7 +327,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('launchProject')
     launchProject(project: ProjectDetails) {
-        return launchProject(project);
+        return launchProject(project, this.codeEditorIntegrationService);
     }
 
     @AppHandler('checkProjectValid')
