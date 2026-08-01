@@ -46,24 +46,33 @@ vi.mock('@mariodebono/di-electron/renderer', () => {
         return electron;
     }
 
+    function createBridgeNamespace(prefix?: string) {
+        return new Proxy(
+            {},
+            {
+                get: (_target, property) => {
+                    return (...args: unknown[]) => {
+                        const methodName = prefix
+                            ? `${prefix}.${String(property)}`
+                            : String(property);
+                        const method = getLegacyElectronApi()[methodName];
+                        if (typeof method !== 'function') {
+                            throw new Error(
+                                `Renderer bridge method ${methodName} is not mocked`,
+                            );
+                        }
+                        return method(...args);
+                    };
+                },
+            },
+        );
+    }
+
     return {
         createRendererBridge: () => ({
-            app: new Proxy(
-                {},
-                {
-                    get: (_target, property) => {
-                        return (...args: unknown[]) => {
-                            const method =
-                                getLegacyElectronApi()[String(property)];
-                            if (typeof method !== 'function') {
-                                throw new Error(
-                                    `Renderer bridge method ${String(property)} is not mocked`,
-                                );
-                            }
-                            return method(...args);
-                        };
-                    },
-                },
+            app: createBridgeNamespace(),
+            codeEditorIntegration: createBridgeNamespace(
+                'codeEditorIntegration',
             ),
         }),
         createRendererEvents: () => ({
