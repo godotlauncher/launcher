@@ -1,19 +1,25 @@
-import type { CachedTool } from '@shared/contracts';
+import type {
+    CachedTool,
+    CodeEditorIntegrationSettings,
+} from '@shared/contracts';
 import clsx from 'clsx';
 import logger from 'electron-log';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../bridge.ts';
+import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
 import { useTheme } from '../hooks/useTheme';
 import type { SettingsTab } from '../routes';
 import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
 import { BehaviorSettingsPanel } from './settings/components/behaviorSettingsPanel.component';
+import { CodeEditorSettingsPanel } from './settings/components/codeEditorSettingsPanel.component';
 import { InstallsSettingsPanel } from './settings/components/installsSettingsPanel.component';
 import { ProjectsSettingsPanel } from './settings/components/projectsSettingsPanel.component';
 import { SettingsTabs } from './settings/components/settingsTabs.component';
 import { ToolsSettingsPanel } from './settings/components/toolsSettingsPanel.component';
 import { UpdatesSettingsPanel } from './settings/components/updatesSettingsPanel.component';
+import { CodeEditorSettingsDrawer } from './subViews/codeEditorSettingsDrawer.subview';
 
 type SettingsViewProps = {
     activeTab?: SettingsTab;
@@ -36,8 +42,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         setLocalActiveTab(tab);
     };
-    const { preferences, savePreferences } = usePreferences();
+    const { preferences, savePreferences, loadPreferences } = usePreferences();
     const { theme, setTheme } = useTheme();
+    const {
+        listIntegrationSettings,
+        updateIntegrationSettings,
+        validateIntegrationPath,
+    } = useCodeEditorIntegrations();
+
+    const [codeEditorSettings, setCodeEditorSettings] = useState<
+        CodeEditorIntegrationSettings[]
+    >([]);
+    const [selectedCodeEditor, setSelectedCodeEditor] =
+        useState<CodeEditorIntegrationSettings | null>(null);
+    const [codeEditorsLoading, setCodeEditorsLoading] = useState(false);
+    const [codeEditorsLoadError, setCodeEditorsLoadError] = useState(false);
 
     const [cachedTools, setCachedTools] = useState<CachedTool[]>([]);
     const [rescanCount, setRescanCount] = useState(0);
@@ -91,6 +110,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         };
     }, [activeTab, quickCheckTools]);
 
+    useEffect(() => {
+        if (activeTab !== 'codeEditors') {
+            return;
+        }
+
+        let disposed = false;
+
+        const syncCodeEditors = async () => {
+            setCodeEditorsLoading(true);
+            setCodeEditorsLoadError(false);
+
+            try {
+                const settings = await listIntegrationSettings();
+
+                if (!disposed) {
+                    setCodeEditorSettings(settings);
+                }
+            } catch (error) {
+                logger.error('Failed to load code editor integrations', error);
+                if (!disposed) {
+                    setCodeEditorsLoadError(true);
+                }
+            } finally {
+                if (!disposed) {
+                    setCodeEditorsLoading(false);
+                }
+            }
+        };
+
+        void syncCodeEditors();
+
+        return () => {
+            disposed = true;
+        };
+    }, [activeTab, listIntegrationSettings]);
+
     const gitTool = useMemo(
         () => cachedTools.find((tool) => tool.name === 'Git'),
         [cachedTools],
@@ -100,6 +155,41 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         () => cachedTools.find((tool) => tool.name === 'VSCode'),
         [cachedTools],
     );
+
+    const replaceCodeEditorSettings = (
+        updatedSettings: CodeEditorIntegrationSettings,
+    ) => {
+        setCodeEditorSettings((currentSettings) =>
+            currentSettings.map((current) =>
+                current.integration.id === updatedSettings.integration.id
+                    ? updatedSettings
+                    : current,
+            ),
+        );
+        void loadPreferences();
+    };
+
+    const setCodeEditorEnabled = async (
+        currentSettings: CodeEditorIntegrationSettings,
+        enabled: boolean,
+    ) => {
+        try {
+            const updatedSettings = await updateIntegrationSettings(
+                currentSettings.integration.id,
+                {
+                    enabled,
+                    customPath: currentSettings.customPath,
+                    execFlagsOverride: currentSettings.execFlagsOverride,
+                },
+            );
+            replaceCodeEditorSettings(updatedSettings);
+        } catch (error) {
+            logger.error(
+                `Failed to ${enabled ? 'enable' : 'disable'} code editor integration`,
+                error,
+            );
+        }
+    };
 
     return (
         <div className="flex flex-col h-full w-full p-1">
@@ -145,6 +235,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             preferences={preferences}
                             onPreferencesChange={savePreferences}
                         />
+                        <CodeEditorSettingsPanel
+                            active={activeTab === 'codeEditors'}
+                            t={t}
+                            settings={codeEditorSettings}
+                            onEdit={setSelectedCodeEditor}
+                            onEnabledChange={setCodeEditorEnabled}
+                            loading={codeEditorsLoading}
+                            loadError={codeEditorsLoadError}
+                        />
                         <ToolsSettingsPanel
                             active={activeTab === 'tools'}
                             t={t}
@@ -159,6 +258,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     </div>
                 </div>
             </div>
+            <CodeEditorSettingsDrawer
+                settings={selectedCodeEditor}
+                open={Boolean(selectedCodeEditor)}
+                onOpenChange={(drawerOpen) => {
+                    if (!drawerOpen) {
+                        setSelectedCodeEditor(null);
+                    }
+                }}
+                onValidatePath={validateIntegrationPath}
+                onSave={updateIntegrationSettings}
+                onSaved={replaceCodeEditorSettings}
+            />
         </div>
     );
 };

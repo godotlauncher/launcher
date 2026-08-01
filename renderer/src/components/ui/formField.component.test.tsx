@@ -35,6 +35,7 @@ describe('UI form primitives', () => {
             <FormField
                 id="engineName"
                 label="Engine name"
+                labelAction={<button type="button">Reset</button>}
                 help="Shown in launcher."
                 error="Engine name is required."
                 compact
@@ -45,6 +46,7 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('for="engineName"');
         expect(html).toContain('Engine name');
+        expect(html).toContain('>Reset</button>');
         expect(html).toContain('data-tip="Shown in launcher."');
         expect(html).toContain('data-tip="Engine name is required."');
         expect(html).toContain('lucide-circle-x');
@@ -99,6 +101,22 @@ describe('UI form primitives', () => {
         expect(html).toContain('lucide-folder');
         expect(html).toContain('relative join-item min-w-0 flex-1');
         expect(html).toContain('absolute right-2 top-1/2');
+    });
+
+    it('disables both path input and browse action', () => {
+        const html = renderToStaticMarkup(
+            <PathField
+                id="disabledPath"
+                label="Editor path"
+                help="Path to the editor executable."
+                value=""
+                onChange={vi.fn()}
+                onSelect={vi.fn()}
+                disabled
+            />,
+        );
+
+        expect(html.match(/disabled=""/g)).toHaveLength(2);
     });
 
     it('renders search field with an internal clear action', () => {

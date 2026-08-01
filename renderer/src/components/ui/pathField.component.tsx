@@ -8,6 +8,7 @@ export type PathFieldBrowseKind = 'file' | 'directory';
 export type PathFieldProps = {
     id: string;
     label: string;
+    labelAction?: React.ReactNode;
     help: string;
     value: string;
     onChange: (value: string) => void;
@@ -15,6 +16,7 @@ export type PathFieldProps = {
     onBlur?: () => void;
     placeholder?: string;
     error?: string;
+    disabled?: boolean;
     compact?: boolean;
     browseKind?: PathFieldBrowseKind;
     browseLabel?: string;
@@ -23,6 +25,7 @@ export type PathFieldProps = {
 export const PathField: React.FC<PathFieldProps> = ({
     id,
     label,
+    labelAction,
     help,
     value,
     onChange,
@@ -30,6 +33,7 @@ export const PathField: React.FC<PathFieldProps> = ({
     onBlur,
     placeholder,
     error,
+    disabled = false,
     compact = false,
     browseKind = 'file',
     browseLabel = `${label} browse`,
@@ -37,7 +41,13 @@ export const PathField: React.FC<PathFieldProps> = ({
     const BrowseIcon = browseKind === 'directory' ? Folder : File;
 
     return (
-        <FormField id={id} label={label} help={help} compact={compact}>
+        <FormField
+            id={id}
+            label={label}
+            labelAction={labelAction}
+            help={help}
+            compact={compact}
+        >
             <div className="join w-full">
                 <div className="relative join-item min-w-0 flex-1">
                     <input
@@ -55,6 +65,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         onChange={(event) => onChange(event.target.value)}
                         onBlur={onBlur}
                         placeholder={placeholder}
+                        disabled={disabled}
                     />
                     {error && (
                         <span
@@ -76,6 +87,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         },
                     )}
                     onClick={onSelect}
+                    disabled={disabled}
                     aria-label={browseLabel}
                 >
                     <BrowseIcon size={18} aria-hidden="true" />

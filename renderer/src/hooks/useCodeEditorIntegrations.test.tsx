@@ -1,5 +1,6 @@
 import type {
     CodeEditorInstallationSummary,
+    CodeEditorIntegrationSettings,
     CodeEditorIntegrationSummary,
     CodeEditorPathValidationResult,
 } from '@shared/contracts';
@@ -10,16 +11,29 @@ import { useCodeEditorIntegrations } from './useCodeEditorIntegrations.ts';
 const integration: CodeEditorIntegrationSummary = {
     id: 'vscode',
     displayName: 'Visual Studio Code',
+    capabilities: { textEditor: true, dotnet: true },
 };
 const installation: CodeEditorInstallationSummary = {
     integrationId: 'vscode',
     path: 'detected-code-editor-path',
     version: null,
 };
+const settings: CodeEditorIntegrationSettings = {
+    integration,
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+    installation,
+    resolvedGodotExecPath: installation.path,
+};
 
 describe('useCodeEditorIntegrations', () => {
     const listIntegrations = vi.fn(async () => [integration]);
     const scanIntegration = vi.fn(async () => installation);
+    const listIntegrationSettings = vi.fn(async () => [settings]);
+    const updateIntegrationSettings = vi.fn(async () => settings);
     const scanIntegrations = vi.fn(async () => [installation]);
     const validateIntegrationPath = vi.fn(
         async (): Promise<CodeEditorPathValidationResult> => ({
@@ -39,6 +53,10 @@ describe('useCodeEditorIntegrations', () => {
                 'codeEditorIntegration.listIntegrations': listIntegrations,
                 'codeEditorIntegration.scanIntegration': scanIntegration,
                 'codeEditorIntegration.scanIntegrations': scanIntegrations,
+                'codeEditorIntegration.listIntegrationSettings':
+                    listIntegrationSettings,
+                'codeEditorIntegration.updateIntegrationSettings':
+                    updateIntegrationSettings,
                 'codeEditorIntegration.validateIntegrationPath':
                     validateIntegrationPath,
             },
@@ -73,6 +91,27 @@ describe('useCodeEditorIntegrations', () => {
         expect(listIntegrations).toHaveBeenCalledOnce();
         expect(scanIntegration).toHaveBeenCalledWith('vscode');
         expect(scanIntegrations).toHaveBeenCalledOnce();
+    });
+
+    it('delegates settings operations to the integration bridge', async () => {
+        const hook = renderHook();
+        const update = {
+            enabled: false,
+            customPath: null,
+            execFlagsOverride: '',
+        };
+
+        await expect(hook.listIntegrationSettings()).resolves.toEqual([
+            settings,
+        ]);
+        await expect(
+            hook.updateIntegrationSettings('vscode', update),
+        ).resolves.toEqual(settings);
+        expect(listIntegrationSettings).toHaveBeenCalledOnce();
+        expect(updateIntegrationSettings).toHaveBeenCalledWith(
+            'vscode',
+            update,
+        );
     });
 
     it('delegates path validation to the integration bridge', async () => {

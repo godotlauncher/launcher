@@ -1,14 +1,21 @@
 import type {
     CodeEditorId,
     CodeEditorInstallationSummary,
+    CodeEditorIntegrationSettings,
     CodeEditorIntegrationSummary,
     CodeEditorPathValidationResult,
+    UpdateCodeEditorIntegrationSettings,
 } from '@shared/contracts';
 import { useCallback } from 'react';
 import { codeEditorIntegrationBridge } from '../bridge.ts';
 
 export type CodeEditorIntegrationsHook = {
     listIntegrations: () => Promise<CodeEditorIntegrationSummary[]>;
+    listIntegrationSettings: () => Promise<CodeEditorIntegrationSettings[]>;
+    updateIntegrationSettings: (
+        integrationId: CodeEditorId,
+        settings: UpdateCodeEditorIntegrationSettings,
+    ) => Promise<CodeEditorIntegrationSettings>;
     scanIntegration: (
         integrationId: CodeEditorId,
     ) => Promise<CodeEditorInstallationSummary | null>;
@@ -22,6 +29,21 @@ export type CodeEditorIntegrationsHook = {
 export function useCodeEditorIntegrations(): CodeEditorIntegrationsHook {
     const listIntegrations = useCallback(
         () => codeEditorIntegrationBridge.listIntegrations(),
+        [],
+    );
+    const listIntegrationSettings = useCallback(
+        () => codeEditorIntegrationBridge.listIntegrationSettings(),
+        [],
+    );
+    const updateIntegrationSettings = useCallback(
+        (
+            integrationId: CodeEditorId,
+            settings: UpdateCodeEditorIntegrationSettings,
+        ) =>
+            codeEditorIntegrationBridge.updateIntegrationSettings(
+                integrationId,
+                settings,
+            ),
         [],
     );
     const scanIntegration = useCallback(
@@ -44,6 +66,8 @@ export function useCodeEditorIntegrations(): CodeEditorIntegrationsHook {
 
     return {
         listIntegrations,
+        listIntegrationSettings,
+        updateIntegrationSettings,
         scanIntegration,
         scanIntegrations,
         validateIntegrationPath,

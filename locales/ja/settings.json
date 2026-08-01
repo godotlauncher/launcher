@@ -6,6 +6,7 @@
         "appearance": "外観",
         "behavior": "動作",
         "tools": "ツール",
+        "codeEditors": "Code Editors",
         "updates": "アップデート"
     },
     "appearance": {
@@ -66,6 +67,56 @@
             "label": "言語",
             "description": "Godot Launcherの言語を選択（Godotの言語は変更されません）",
             "system": "システム（自動検出）"
+        }
+    },
+    "codeEditors": {
+        "actions": {
+            "scanning": "再スキャン中...",
+            "edit": "Edit",
+            "save": "Save",
+            "saving": "Saving...",
+            "cancel": "Cancel"
+        },
+        "status": {
+            "available": "利用可能",
+            "missing": "見つかりません",
+            "unknown": "不明",
+            "enabled": "Enabled",
+            "disabled": "Disabled"
+        },
+        "overview": "Manage code editor detection and defaults here. These settings are not applied to projects yet.",
+        "drawer": {
+            "title": "{{editor}} settings",
+            "fallbackTitle": "Code editor settings",
+            "integration": {
+                "enabled": "Enabled"
+            },
+            "path": {
+                "label": "Executable path",
+                "autodetectedLabel": "Executable path (Autodetected)",
+                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
+                "automatic": "Automatic detection",
+                "browse": "Browse",
+                "reset": "Use automatic detection",
+                "select": "Select code editor executable",
+                "allFiles": "All files",
+                "waiting": "Waiting for file selection..."
+            },
+            "textEditor": {
+                "title": "External Text Editor",
+                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
+                "flagsLabel": "Launch arguments",
+                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
+                "reset": "Reset to default"
+            },
+            "dotnet": {
+                "supported": "Supported"
+            },
+            "errors": {
+                "invalidPath": "Select a valid code editor executable.",
+                "dialog": "Unable to open the file selector.",
+                "save": "Unable to save code editor settings."
+            }
         }
     },
     "tools": {

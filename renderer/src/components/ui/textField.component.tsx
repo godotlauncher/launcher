@@ -5,6 +5,7 @@ import { FormField } from './formField.component';
 export type TextFieldProps = {
     id: string;
     label: string;
+    labelAction?: React.ReactNode;
     help: string;
     value: string;
     onChange: (value: string) => void;
@@ -17,6 +18,7 @@ export type TextFieldProps = {
 export const TextField: React.FC<TextFieldProps> = ({
     id,
     label,
+    labelAction,
     help,
     value,
     onChange,
@@ -28,6 +30,7 @@ export const TextField: React.FC<TextFieldProps> = ({
     <FormField
         id={id}
         label={label}
+        labelAction={labelAction}
         help={help}
         error={error}
         compact={compact}

@@ -5,6 +5,7 @@ export const settingsTabs = [
     'installs',
     'appearance',
     'behavior',
+    'codeEditors',
     'tools',
     'updates',
 ] as const;

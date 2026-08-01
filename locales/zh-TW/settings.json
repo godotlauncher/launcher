@@ -6,6 +6,7 @@
         "appearance": "外觀",
         "behavior": "行為",
         "tools": "工具",
+        "codeEditors": "Code Editors",
         "updates": "更新"
     },
     "appearance": {
@@ -66,6 +67,56 @@
             "label": "語言",
             "description": "選擇 Godot 啟動器的語言（不會更改 Godot 的語言）",
             "system": "系統（自動偵測）"
+        }
+    },
+    "codeEditors": {
+        "actions": {
+            "scanning": "正在重新掃描...",
+            "edit": "Edit",
+            "save": "Save",
+            "saving": "Saving...",
+            "cancel": "Cancel"
+        },
+        "status": {
+            "available": "可用",
+            "missing": "未找到",
+            "unknown": "未知",
+            "enabled": "Enabled",
+            "disabled": "Disabled"
+        },
+        "overview": "Manage code editor detection and defaults here. These settings are not applied to projects yet.",
+        "drawer": {
+            "title": "{{editor}} settings",
+            "fallbackTitle": "Code editor settings",
+            "integration": {
+                "enabled": "Enabled"
+            },
+            "path": {
+                "label": "Executable path",
+                "autodetectedLabel": "Executable path (Autodetected)",
+                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
+                "automatic": "Automatic detection",
+                "browse": "Browse",
+                "reset": "Use automatic detection",
+                "select": "Select code editor executable",
+                "allFiles": "All files",
+                "waiting": "Waiting for file selection..."
+            },
+            "textEditor": {
+                "title": "External Text Editor",
+                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
+                "flagsLabel": "Launch arguments",
+                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
+                "reset": "Reset to default"
+            },
+            "dotnet": {
+                "supported": "Supported"
+            },
+            "errors": {
+                "invalidPath": "Select a valid code editor executable.",
+                "dialog": "Unable to open the file selector.",
+                "save": "Unable to save code editor settings."
+            }
         }
     },
     "tools": {

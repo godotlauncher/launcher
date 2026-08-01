@@ -166,33 +166,74 @@ describe('VSCodeIntegration', () => {
         const executablePath = path.resolve('tools', 'code.exe');
 
         expect(
-            integration.getGodotLaunchConfiguration({
-                path: executablePath,
-                version: null,
+            integration.resolveGodotConfiguration({
+                installation: {
+                    path: executablePath,
+                    version: null,
+                },
+                settings: { execFlagsOverride: null },
+                godotFlavor: 'standard',
             }),
         ).toEqual({
-            execPath: executablePath,
-            execFlags: '{project} --goto {file}:{line}:{col}',
+            textEditor: {
+                execPath: executablePath,
+                execFlags: '{project} --goto {file}:{line}:{col}',
+            },
         });
     });
 
+    it('uses the VS Code command script for Godot on Windows when available', () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
+        fsMocks.existsSync.mockReturnValue(true);
+        const integration = new VSCodeIntegration();
+        const executablePath = path.resolve('tools', 'Code.exe');
+
+        expect(
+            integration.resolveGodotConfiguration({
+                installation: {
+                    path: executablePath,
+                    version: null,
+                },
+                settings: { execFlagsOverride: null },
+                godotFlavor: 'standard',
+            }),
+        ).toEqual({
+            textEditor: {
+                execPath: path.resolve('tools', 'bin', 'code.cmd'),
+                execFlags: '{project} --goto {file}:{line}:{col}',
+            },
+        });
+        expect(fsMocks.existsSync).toHaveBeenCalledWith(
+            path.resolve('tools', 'bin', 'code.cmd'),
+        );
+    });
     it('normalizes macOS app bundles for Godot', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         const integration = new VSCodeIntegration();
 
         expect(
-            integration.getGodotLaunchConfiguration({
-                path: '/Applications/Visual Studio Code.app',
-                version: null,
+            integration.resolveGodotConfiguration({
+                installation: {
+                    path: '/Applications/Visual Studio Code.app',
+                    version: null,
+                },
+                settings: { execFlagsOverride: '--custom {file}' },
+                godotFlavor: 'dotnet',
             }),
         ).toEqual({
-            execPath: path.resolve(
-                '/Applications/Visual Studio Code.app',
-                'Contents',
-                'MacOS',
-                'Electron',
-            ),
-            execFlags: '{project} --goto {file}:{line}:{col}',
+            textEditor: {
+                execPath: path.resolve(
+                    '/Applications/Visual Studio Code.app',
+                    'Contents',
+                    'MacOS',
+                    'Electron',
+                ),
+                execFlags: '--custom {file}',
+            },
+            dotnet: {
+                externalEditor: 4,
+                customExecPathArgs: '{file}',
+            },
         });
     });
 });

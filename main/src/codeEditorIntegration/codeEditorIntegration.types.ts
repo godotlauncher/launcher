@@ -10,6 +10,24 @@ export type CodeEditorLaunchConfiguration = {
     execFlags: string;
 };
 
+export type GodotEditorFlavor = 'standard' | 'dotnet';
+
+export type CodeEditorIntegrationDefaults = {
+    execFlags: string;
+};
+
+export type CodeEditorResolvedSettings = {
+    execFlagsOverride: string | null;
+};
+
+export type GodotCodeEditorConfiguration = {
+    textEditor: CodeEditorLaunchConfiguration;
+    dotnet?: {
+        externalEditor: number;
+        customExecPathArgs?: string;
+    };
+};
+
 export type CodeEditorProjectConfigurationMode = 'create' | 'update';
 
 export type CodeEditorProjectContext = {
@@ -40,6 +58,7 @@ export type CodeEditorApplyResult = {
 
 export interface CodeEditorIntegration {
     readonly metadata: CodeEditorIntegrationSummary;
+    readonly defaultSettings: CodeEditorIntegrationDefaults;
 
     detectInstallation(
         customPath?: string,
@@ -49,9 +68,11 @@ export interface CodeEditorIntegration {
 
     isConfiguredForProject(projectPath: string): Promise<boolean>;
 
-    getGodotLaunchConfiguration(
-        installation: CodeEditorInstallation,
-    ): CodeEditorLaunchConfiguration;
+    resolveGodotConfiguration(input: {
+        installation: CodeEditorInstallation;
+        settings: CodeEditorResolvedSettings;
+        godotFlavor: GodotEditorFlavor;
+    }): GodotCodeEditorConfiguration;
 
     configureProject(
         context: CodeEditorProjectContext,

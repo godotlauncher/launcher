@@ -5,10 +5,10 @@ import type { CodeEditorId } from '@shared/contracts';
 import type {
     CodeEditorInstallation,
     CodeEditorIntegration,
-    CodeEditorLaunchConfiguration,
     CodeEditorPathValidation,
     CodeEditorProjectConfigurationResult,
     CodeEditorProjectContext,
+    GodotCodeEditorConfiguration,
 } from '../../codeEditorIntegration.types.js';
 import {
     addOrUpdateVSCodeRecommendedExtensions,
@@ -18,14 +18,20 @@ import {
 } from './vscodeIntegration.utils.js';
 
 export const VS_CODE_INTEGRATION_ID = 'vscode' as const satisfies CodeEditorId;
+const VS_CODE_DEFAULT_EXEC_FLAGS = '{project} --goto {file}:{line}:{col}';
 
 @Injectable()
 export class VSCodeIntegration implements CodeEditorIntegration {
     readonly metadata = {
         id: VS_CODE_INTEGRATION_ID,
         displayName: 'Visual Studio Code',
+        capabilities: {
+            textEditor: true as const,
+            dotnet: true,
+        },
     };
 
+    readonly defaultSettings = { execFlags: VS_CODE_DEFAULT_EXEC_FLAGS };
     async detectInstallation(
         customPath?: string,
     ): Promise<CodeEditorInstallation | null> {
@@ -66,22 +72,36 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         return fs.existsSync(path.resolve(projectPath, '.vscode'));
     }
 
-    getGodotLaunchConfiguration(
-        installation: CodeEditorInstallation,
-    ): CodeEditorLaunchConfiguration {
-        const execPath =
+    resolveGodotConfiguration(input: {
+        installation: CodeEditorInstallation;
+        settings: { execFlagsOverride: string | null };
+        godotFlavor: 'standard' | 'dotnet';
+    }): GodotCodeEditorConfiguration {
+        const platformExecPath =
             process.platform === 'darwin'
                 ? path.resolve(
-                      installation.path,
+                      input.installation.path,
                       'Contents',
                       'MacOS',
                       'Electron',
                   )
-                : installation.path;
+                : input.installation.path;
 
         return {
-            execPath,
-            execFlags: '{project} --goto {file}:{line}:{col}',
+            textEditor: {
+                execPath: this.resolveWindowsGodotExecPath(platformExecPath),
+                execFlags:
+                    input.settings.execFlagsOverride ??
+                    this.defaultSettings.execFlags,
+            },
+            ...(input.godotFlavor === 'dotnet'
+                ? {
+                      dotnet: {
+                          externalEditor: 4,
+                          customExecPathArgs: '{file}',
+                      },
+                  }
+                : {}),
         };
     }
 
@@ -113,5 +133,25 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         return {
             recoveredConfigFiles: [...new Set(recoveredConfigFiles)],
         };
+    }
+
+    private resolveWindowsGodotExecPath(installationPath: string): string {
+        if (process.platform !== 'win32') {
+            return installationPath;
+        }
+
+        if (path.basename(installationPath).toLowerCase() === 'code.cmd') {
+            return installationPath;
+        }
+
+        const codeCommandPath = path.resolve(
+            path.dirname(installationPath),
+            'bin',
+            'code.cmd',
+        );
+
+        return fs.existsSync(codeCommandPath)
+            ? codeCommandPath
+            : installationPath;
     }
 }

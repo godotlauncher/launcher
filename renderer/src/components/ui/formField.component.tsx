@@ -5,6 +5,7 @@ import { HelpTooltip } from './helpTooltip.component';
 
 export type FormFieldProps = {
     id: string;
+    labelAction?: React.ReactNode;
     label: string;
     help?: string;
     error?: string;
@@ -15,6 +16,7 @@ export type FormFieldProps = {
 
 export const FormField: React.FC<FormFieldProps> = ({
     id,
+    labelAction,
     label,
     help,
     error,
@@ -23,16 +25,19 @@ export const FormField: React.FC<FormFieldProps> = ({
     errorIconClassName = 'right-2',
 }) => (
     <div className={clsx('flex flex-col', compact ? 'gap-0.5' : 'gap-1')}>
-        <label
-            htmlFor={id}
-            className={clsx(
-                'flex items-center gap-1.5 font-semibold',
-                compact ? 'text-xs' : 'gap-2',
-            )}
-        >
-            {label}
-            {help && <HelpTooltip help={help} />}
-        </label>
+        <div className="flex items-start justify-between gap-3">
+            <label
+                htmlFor={id}
+                className={clsx(
+                    'flex items-center gap-1.5 font-semibold',
+                    compact ? 'text-xs' : 'gap-2',
+                )}
+            >
+                {label}
+                {help && <HelpTooltip help={help} />}
+            </label>
+            {labelAction && <div className="shrink-0">{labelAction}</div>}
+        </div>
         <div className="relative">
             {children}
             {error && (

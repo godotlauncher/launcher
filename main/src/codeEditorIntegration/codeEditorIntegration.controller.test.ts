@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import type {
     CodeEditorInstallationSummary,
+    CodeEditorIntegrationSettings,
     CodeEditorIntegrationSummary,
     CodeEditorPathValidationResult,
 } from '@shared/contracts';
@@ -11,6 +12,10 @@ vi.mock('@mariodebono/di-electron', () => ({
     createIpcHandleTyped: () => () => () => undefined,
 }));
 
+vi.mock('./codeEditorIntegration.service.js', () => ({
+    CodeEditorIntegrationService: class {},
+}));
+
 import { CodeEditorIntegrationController } from './codeEditorIntegration.controller.js';
 import type { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
 
@@ -19,6 +24,7 @@ const CODE_EDITOR_ID = 'vscode' as const;
 const integration: CodeEditorIntegrationSummary = {
     id: CODE_EDITOR_ID,
     displayName: 'Visual Studio Code',
+    capabilities: { textEditor: true, dotnet: true },
 };
 
 const installation: CodeEditorInstallationSummary = {
@@ -26,10 +32,22 @@ const installation: CodeEditorInstallationSummary = {
     path: path.resolve('tools', 'code'),
     version: null,
 };
+const settings: CodeEditorIntegrationSettings = {
+    integration,
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+    installation,
+    resolvedGodotExecPath: installation.path,
+};
 
 function createServiceMock() {
     return {
         listIntegrations: vi.fn().mockReturnValue([integration]),
+        listIntegrationSettings: vi.fn().mockResolvedValue([settings]),
+        updateIntegrationSettings: vi.fn().mockResolvedValue(settings),
         scanIntegration: vi.fn().mockResolvedValue(installation),
         scanIntegrations: vi.fn().mockResolvedValue([installation]),
         validateIntegrationPath: vi.fn().mockResolvedValue({
@@ -56,6 +74,28 @@ describe('CodeEditorIntegrationController', () => {
         expect(service.listIntegrations).toHaveBeenCalledWith();
         expect(service.scanIntegration).toHaveBeenCalledWith(CODE_EDITOR_ID);
         expect(service.scanIntegrations).toHaveBeenCalledWith();
+    });
+
+    it('delegates integration settings to the service', async () => {
+        const service = createServiceMock();
+        const controller = new CodeEditorIntegrationController(service);
+        const update = {
+            enabled: false,
+            customPath: null,
+            execFlagsOverride: '',
+        };
+
+        await expect(controller.listIntegrationSettings()).resolves.toEqual([
+            settings,
+        ]);
+        await expect(
+            controller.updateIntegrationSettings(CODE_EDITOR_ID, update),
+        ).resolves.toEqual(settings);
+        expect(service.listIntegrationSettings).toHaveBeenCalledOnce();
+        expect(service.updateIntegrationSettings).toHaveBeenCalledWith(
+            CODE_EDITOR_ID,
+            update,
+        );
     });
 
     it('delegates path validation to the service', async () => {

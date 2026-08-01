@@ -1,8 +1,18 @@
 import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TEMPLATE_DIR_NAME } from '../constants.js';
+
+vi.mock('../commands/userPreferences.js', () => ({
+    getUserPreferences: vi.fn(),
+    setUserPreferences: vi.fn(),
+}));
+
 import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
+import type {
+    CodeEditorIntegrationSettingsStore,
+    StoredCodeEditorIntegrationSettings,
+} from './codeEditorIntegration.settingsStore.js';
 import type {
     CodeEditorIntegration,
     CodeEditorProjectContext,
@@ -53,7 +63,12 @@ function createIntegration(): CodeEditorIntegration {
         metadata: {
             id: CODE_EDITOR_ID,
             displayName: 'Visual Studio Code',
+            capabilities: {
+                textEditor: true,
+                dotnet: true,
+            },
         },
+        defaultSettings: { execFlags: '{project} --goto {file}:{line}:{col}' },
         detectInstallation: vi.fn().mockResolvedValue({
             path: path.resolve('tools', 'code'),
             version: null,
@@ -66,9 +81,11 @@ function createIntegration(): CodeEditorIntegration {
             },
         }),
         isConfiguredForProject: vi.fn().mockResolvedValue(true),
-        getGodotLaunchConfiguration: vi.fn().mockReturnValue({
-            execPath: path.resolve('tools', 'code'),
-            execFlags: '{project} --goto {file}:{line}:{col}',
+        resolveGodotConfiguration: vi.fn().mockReturnValue({
+            textEditor: {
+                execPath: path.resolve('tools', 'code'),
+                execFlags: '{project} --goto {file}:{line}:{col}',
+            },
         }),
         configureProject: vi.fn().mockResolvedValue({
             recoveredConfigFiles: [],
@@ -76,9 +93,26 @@ function createIntegration(): CodeEditorIntegration {
     };
 }
 
-function createService(integration: CodeEditorIntegration) {
+function createSettingsStore(
+    settings: StoredCodeEditorIntegrationSettings = {
+        enabled: true,
+        customPath: null,
+        execFlagsOverride: null,
+    },
+): CodeEditorIntegrationSettingsStore {
+    return {
+        get: vi.fn().mockResolvedValue(settings),
+        update: vi.fn().mockResolvedValue(undefined),
+    } as unknown as CodeEditorIntegrationSettingsStore;
+}
+
+function createService(
+    integration: CodeEditorIntegration,
+    settingsStore = createSettingsStore(),
+) {
     return new CodeEditorIntegrationService(
         new CodeEditorIntegrationRegistry([integration]),
+        settingsStore,
     );
 }
 
@@ -110,6 +144,76 @@ describe('CodeEditorIntegrationService', () => {
         ]);
     });
 
+    it('returns stored settings and detected state without configuring a project', async () => {
+        const customPath = path.resolve('custom', 'code');
+        const integration = createIntegration();
+        const settingsStore = createSettingsStore({
+            enabled: false,
+            customPath,
+            execFlagsOverride: '--goto {file}',
+        });
+        const service = createService(integration, settingsStore);
+
+        await expect(service.listIntegrationSettings()).resolves.toEqual([
+            {
+                integration: integration.metadata,
+                enabled: false,
+                customPath,
+                defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+                execFlagsOverride: '--goto {file}',
+                resolvedExecFlags: '--goto {file}',
+                installation: {
+                    integrationId: CODE_EDITOR_ID,
+                    path: path.resolve('tools', 'code'),
+                    version: null,
+                },
+                resolvedGodotExecPath: path.resolve('tools', 'code'),
+            },
+        ]);
+        expect(integration.detectInstallation).toHaveBeenCalledWith(customPath);
+        expect(integration.resolveGodotConfiguration).toHaveBeenCalledWith({
+            installation: {
+                path: path.resolve('tools', 'code'),
+                version: null,
+            },
+            settings: { execFlagsOverride: '--goto {file}' },
+            godotFlavor: 'standard',
+        });
+        expect(integration.configureProject).not.toHaveBeenCalled();
+        expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
+    });
+
+    it('validates and normalizes settings before storing them', async () => {
+        const customPath = path.resolve('custom', 'code');
+        const integration = createIntegration();
+        const settingsStore = createSettingsStore({
+            enabled: false,
+            customPath,
+            execFlagsOverride: '',
+        });
+        const service = createService(integration, settingsStore);
+
+        await expect(
+            service.updateIntegrationSettings(CODE_EDITOR_ID, {
+                enabled: false,
+                customPath: ` ${customPath} `,
+                execFlagsOverride: '   ',
+            }),
+        ).resolves.toMatchObject({
+            enabled: false,
+            customPath,
+            execFlagsOverride: '',
+            resolvedExecFlags: '',
+        });
+        expect(integration.validatePath).toHaveBeenCalledWith(customPath);
+        expect(settingsStore.update).toHaveBeenCalledWith(CODE_EDITOR_ID, {
+            enabled: false,
+            customPath,
+            execFlagsOverride: '',
+        });
+        expect(integration.configureProject).not.toHaveBeenCalled();
+        expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
+    });
     it('forwards a custom path when scanning an integration', async () => {
         const integration = createIntegration();
         const service = createService(integration);

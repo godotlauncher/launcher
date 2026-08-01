@@ -7,6 +7,11 @@ vi.mock('@mariodebono/di-electron', () => ({
     createIpcHandleTyped: () => () => () => undefined,
 }));
 
+vi.mock('../commands/userPreferences.js', () => ({
+    getUserPreferences: vi.fn(),
+    setUserPreferences: vi.fn(),
+}));
+
 import { CodeEditorIntegrationModule } from './codeEditorIntegration.module.js';
 import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
