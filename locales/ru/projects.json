@@ -15,13 +15,13 @@
         "dotNetProject": "Это .Net проект",
         "prerelease": "Используется пререлизная версия редактора Godot",
         "windowedMode": "Этот проект открыт в оконном режиме",
-        "codeEditorProject": "Для этого проекта выбрана интеграция с редактором кода.",
+        "codeEditorProject": "Используется {{editor}}",
         "gitProject": "Проект использует Git для контроля версий",
         "invalidReasons": {
             "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта.",
             "missingEditor": "Редактор не найден. Проверьте расположение редактора."
         },
-        "codeEditorUnavailable": "Выбранный редактор кода не обнаружен."
+        "codeEditorUnavailable": "{{editor}} не обнаружен."
     },
     "addProject": {
         "selectFile": "Выбрать файл проекта",

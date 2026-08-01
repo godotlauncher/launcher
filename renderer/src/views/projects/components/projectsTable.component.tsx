@@ -1,17 +1,20 @@
-import type { CodeEditorId, ProjectDetails } from '@shared/contracts';
+import type {
+    CodeEditorIntegrationSettings,
+    ProjectDetails,
+} from '@shared/contracts';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import {
     ChevronDown,
     ChevronsUpDown,
     ChevronUp,
-    Code2,
     EllipsisVertical,
     ImageOff,
     TriangleAlert,
 } from 'lucide-react';
 import type React from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
+import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import {
@@ -26,7 +29,7 @@ type ProjectsTableProps = {
     rows: ProjectDetails[];
     loading: boolean;
     busyProjects: string[];
-    unavailableCodeEditorIds: CodeEditorId[];
+    codeEditorSettings: CodeEditorIntegrationSettings[];
     sortData: ProjectSortData;
     onSortChange: (sortData: ProjectSortData) => void;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
@@ -37,7 +40,7 @@ type ProjectsTableProps = {
         event: React.MouseEvent,
         project: ProjectDetails,
     ) => void;
-    t: (key: string) => string;
+    t: (key: string, options?: Record<string, unknown>) => string;
 };
 
 function getProjectVersionLabel(project: ProjectDetails): React.ReactNode {
@@ -52,7 +55,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     rows,
     loading,
     busyProjects,
-    unavailableCodeEditorIds,
+    codeEditorSettings,
     sortData,
     onSortChange,
     isInstalledRelease,
@@ -147,6 +150,29 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                     {rows.map((row) => {
                         const editorDownloading =
                             isProjectEditorDownloading(row);
+                        const selectedCodeEditor = row.codeEditorId
+                            ? codeEditorSettings.find(
+                                  (settings) =>
+                                      settings.integration.id ===
+                                      row.codeEditorId,
+                              )
+                            : undefined;
+                        const codeEditorUnavailable = Boolean(
+                            selectedCodeEditor &&
+                                !selectedCodeEditor.installation,
+                        );
+                        const codeEditorTooltip = row.codeEditorId
+                            ? t(
+                                  codeEditorUnavailable
+                                      ? 'table.codeEditorUnavailable'
+                                      : 'table.codeEditorProject',
+                                  {
+                                      editor:
+                                          selectedCodeEditor?.integration
+                                              .displayName ?? row.codeEditorId,
+                                  },
+                              )
+                            : '';
 
                         return (
                             <tr
@@ -203,39 +229,27 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 </button>
                                                 {row.codeEditorId && (
                                                     <Tooltip
-                                                        tip={t(
-                                                            unavailableCodeEditorIds.includes(
-                                                                row.codeEditorId,
-                                                            )
-                                                                ? 'table.codeEditorUnavailable'
-                                                                : 'table.codeEditorProject',
-                                                        )}
+                                                        tip={codeEditorTooltip}
                                                         tone={
-                                                            unavailableCodeEditorIds.includes(
-                                                                row.codeEditorId,
-                                                            )
+                                                            codeEditorUnavailable
                                                                 ? 'warning'
                                                                 : 'primary'
                                                         }
                                                         className="flex items-center"
                                                         role="img"
-                                                        ariaLabel={t(
-                                                            unavailableCodeEditorIds.includes(
-                                                                row.codeEditorId,
-                                                            )
-                                                                ? 'table.codeEditorUnavailable'
-                                                                : 'table.codeEditorProject',
-                                                        )}
+                                                        ariaLabel={
+                                                            codeEditorTooltip
+                                                        }
                                                     >
-                                                        <Code2
-                                                            className={
-                                                                unavailableCodeEditorIds.includes(
-                                                                    row.codeEditorId,
-                                                                )
-                                                                    ? 'size-4 text-warning'
-                                                                    : 'size-4 text-base-content/50'
+                                                        <CodeEditorIntegrationIcon
+                                                            integrationId={
+                                                                row.codeEditorId
                                                             }
-                                                            aria-hidden="true"
+                                                            className={`size-4 ${
+                                                                codeEditorUnavailable
+                                                                    ? 'grayscale opacity-60'
+                                                                    : ''
+                                                            }`}
                                                         />
                                                     </Tooltip>
                                                 )}

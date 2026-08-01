@@ -57,6 +57,7 @@ describe('CodeEditorSettingsPanel', () => {
         const html = renderPanel();
 
         expect(html).toContain('Visual Studio Code');
+        expect(html).toContain('vscode.svg');
         expect(html).toContain('codeEditors.status.available');
         expect(html).toContain('codeEditors.status.enabled');
         expect(html).toContain('detected-code-editor-path');

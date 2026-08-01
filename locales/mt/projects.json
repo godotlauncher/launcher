@@ -15,13 +15,13 @@
         "dotNetProject": "Dan huwa Proġett .Net",
         "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
         "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
-        "codeEditorProject": "Intgħażlet integrazzjoni ta' editur tal-kodiċi għal dan il-proġett.",
+        "codeEditorProject": "Qed jintuża {{editor}}",
         "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
         "invalidReasons": {
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
             "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
         },
-        "codeEditorUnavailable": "L-editur tal-kodiċi magħżul ma nstabx."
+        "codeEditorUnavailable": "{{editor}} ma ġiex identifikat."
     },
     "addProject": {
         "selectFile": "Agħżel Fajl tal-Proġett",

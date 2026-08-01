@@ -13,7 +13,7 @@
         "editor": "Editor",
         "invalidProject": "Questo progetto non è valido, controlla percorso del progetto ed editor!",
         "dotNetProject": "Questo è un progetto .NET",
-        "codeEditorProject": "Per questo progetto è selezionata un'integrazione con un editor di codice.",
+        "codeEditorProject": "In uso: {{editor}}",
         "prerelease": "Utilizza una versione pre-release dell'editor Godot",
         "windowedMode": "Questo progetto si apre in modalità finestra",
         "gitProject": "Il progetto usa Git per il controllo di versione",
@@ -21,7 +21,7 @@
             "missingProjectFile": "File di progetto non trovato. Controlla il percorso del progetto.",
             "missingEditor": "Editor non trovato. Controlla il percorso dell’editor."
         },
-        "codeEditorUnavailable": "L’editor di codice selezionato non è stato rilevato."
+        "codeEditorUnavailable": "{{editor}} non è stato rilevato."
     },
     "addProject": {
         "selectFile": "Seleziona file del progetto",

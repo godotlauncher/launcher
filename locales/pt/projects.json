@@ -15,13 +15,13 @@
         "dotNetProject": "Este é um projeto .NET",
         "prerelease": "A utilizar uma versão de pré-lançamento do editor Godot",
         "windowedMode": "Este projeto abre em modo janela",
-        "codeEditorProject": "Foi selecionada uma integração de editor de código para este projeto.",
+        "codeEditorProject": "A usar {{editor}}",
         "gitProject": "O projeto usa Git para controlo de versões",
         "invalidReasons": {
             "missingProjectFile": "Ficheiro do projeto não encontrado. Verifique a localização do projeto.",
             "missingEditor": "Editor não encontrado. Verifique a localização do editor."
         },
-        "codeEditorUnavailable": "O editor de código selecionado não foi detetado."
+        "codeEditorUnavailable": "O {{editor}} não foi detetado."
     },
     "addProject": {
         "selectFile": "Selecionar ficheiro do projeto",

@@ -15,13 +15,13 @@
         "dotNetProject": "這是一個 .NET 專案",
         "prerelease": "使用預先釋出的 Godot 編輯器版本",
         "windowedMode": "此專案以視窗模式開啟",
-        "codeEditorProject": "此專案已選取程式碼編輯器整合。",
+        "codeEditorProject": "正在使用 {{editor}}",
         "gitProject": "此專案使用 Git 進行版本控制",
         "invalidReasons": {
             "missingProjectFile": "找不到專案檔案。請檢查專案位置。",
             "missingEditor": "找不到編輯器。請檢查編輯器位置。"
         },
-        "codeEditorUnavailable": "未偵測到所選程式碼編輯器。"
+        "codeEditorUnavailable": "未偵測到 {{editor}}。"
     },
     "addProject": {
         "selectFile": "選擇專案檔",

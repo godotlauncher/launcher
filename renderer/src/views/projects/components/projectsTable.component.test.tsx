@@ -1,4 +1,7 @@
-import type { ProjectDetails } from '@shared/contracts';
+import type {
+    CodeEditorIntegrationSettings,
+    ProjectDetails,
+} from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { ProjectsTable } from './projectsTable.component';
@@ -32,16 +35,38 @@ const baseProject: ProjectDetails = {
     valid: true,
 };
 
+const availableVSCodeSettings: CodeEditorIntegrationSettings = {
+    integration: {
+        id: 'vscode',
+        displayName: 'Visual Studio Code',
+        capabilities: { dotnet: true },
+    },
+    isDefault: true,
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/applications/code',
+        version: null,
+    },
+    resolvedGodotExecPath: '/applications/code',
+};
+
 function renderProjectsTable(
     rows: ProjectDetails[],
-    unavailableCodeEditorIds: Array<'vscode'> = [],
+    codeEditorSettings: CodeEditorIntegrationSettings[] = [
+        availableVSCodeSettings,
+    ],
 ): string {
     return renderToStaticMarkup(
         <ProjectsTable
             rows={rows}
             loading={false}
             busyProjects={[]}
-            unavailableCodeEditorIds={unavailableCodeEditorIds}
+            codeEditorSettings={codeEditorSettings}
             sortData={{ field: 'name', order: 'asc' }}
             onSortChange={vi.fn()}
             isInstalledRelease={vi.fn(() => true)}
@@ -49,7 +74,9 @@ function renderProjectsTable(
             onLaunchProject={vi.fn()}
             onChangeEditor={vi.fn()}
             onProjectMoreOptions={vi.fn()}
-            t={(key) => key}
+            t={(key, options) =>
+                options?.editor ? `${key}: ${options.editor}` : key
+            }
         />,
     );
 }
@@ -84,21 +111,23 @@ describe('ProjectsTable', () => {
             { ...baseProject, codeEditorId: 'vscode' },
         ]);
 
-        expect(html).toContain('lucide-code-xml');
-        expect(html).toContain('table.codeEditorProject');
+        expect(html).toContain('vscode.svg');
+        expect(html).toContain('table.codeEditorProject: Visual Studio Code');
         expect(html).toContain('role="img"');
-        expect(html).not.toContain('alt="VSCode"');
+        expect(html).toContain('alt=""');
     });
 
     it('renders a warning marker when the selected code editor is unavailable', () => {
         const html = renderProjectsTable(
             [{ ...baseProject, codeEditorId: 'vscode' }],
-            ['vscode'],
+            [{ ...availableVSCodeSettings, installation: null }],
         );
 
-        expect(html).toContain('table.codeEditorUnavailable');
+        expect(html).toContain(
+            'table.codeEditorUnavailable: Visual Studio Code',
+        );
         expect(html).toContain('tooltip-warning');
-        expect(html).toContain('text-warning');
+        expect(html).toContain('grayscale opacity-60');
         expect(html).not.toContain('table.codeEditorProject');
     });
 });

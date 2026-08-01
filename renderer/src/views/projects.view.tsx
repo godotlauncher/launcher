@@ -314,9 +314,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     rows={filteredRows}
                     loading={loading}
                     busyProjects={busyProjects}
-                    unavailableCodeEditorIds={unavailableCodeEditorUsage.map(
-                        ({ settings }) => settings.integration.id,
-                    )}
+                    codeEditorSettings={codeEditorSettings}
                     sortData={sortData}
                     onSortChange={setSortData}
                     isInstalledRelease={isInstalledRelease}

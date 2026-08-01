@@ -15,13 +15,13 @@
         "dotNetProject": "これは.Netプロジェクトです",
         "prerelease": "プレリリース版のGodotエディタを使用しています",
         "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
-        "codeEditorProject": "このプロジェクトにはコードエディター連携が選択されています。",
+        "codeEditorProject": "{{editor}} を使用中",
         "gitProject": "このプロジェクトはバージョン管理に Git を使用しています",
         "invalidReasons": {
             "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認してください。",
             "missingEditor": "エディターが見つかりません。エディターの場所を確認してください。"
         },
-        "codeEditorUnavailable": "選択したコードエディターが検出されませんでした。"
+        "codeEditorUnavailable": "{{editor}} が検出されませんでした。"
     },
     "addProject": {
         "selectFile": "プロジェクトファイルを選択",

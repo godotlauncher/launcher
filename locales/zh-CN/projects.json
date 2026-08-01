@@ -15,13 +15,13 @@
         "dotNetProject": "这是一个 .NET 项目",
         "prerelease": "使用预发行版 Godot 编辑器",
         "windowedMode": "此项目以窗口模式打开",
-        "codeEditorProject": "此项目已选择代码编辑器集成。",
+        "codeEditorProject": "正在使用 {{editor}}",
         "gitProject": "该项目使用 Git 进行版本控制",
         "invalidReasons": {
             "missingProjectFile": "未找到项目文件。请检查项目位置。",
             "missingEditor": "未找到编辑器。请检查编辑器位置。"
         },
-        "codeEditorUnavailable": "未检测到所选代码编辑器。"
+        "codeEditorUnavailable": "未检测到 {{editor}}。"
     },
     "addProject": {
         "selectFile": "选择项目文件",

@@ -15,13 +15,13 @@
         "dotNetProject": "Bu bir .Net Projesidir",
         "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
         "windowedMode": "Bu proje pencere modunda açık",
-        "codeEditorProject": "Bu proje için bir kod düzenleyici entegrasyonu seçildi.",
+        "codeEditorProject": "{{editor}} kullanılıyor",
         "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
         "invalidReasons": {
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
             "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."
         },
-        "codeEditorUnavailable": "Seçili kod düzenleyici algılanmadı."
+        "codeEditorUnavailable": "{{editor}} algılanmadı."
     },
     "addProject": {
         "selectFile": "Proje Dosyasını Seç",

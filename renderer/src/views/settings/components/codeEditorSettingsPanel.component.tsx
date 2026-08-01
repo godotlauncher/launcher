@@ -4,6 +4,7 @@ import type {
 } from '@shared/contracts';
 import { Pencil, RotateCw, Star } from 'lucide-react';
 import type React from 'react';
+import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { SettingsPanelSection } from './settingsPanelSection.component';
@@ -85,6 +86,12 @@ export const CodeEditorSettingsPanel: React.FC<
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex min-w-0 flex-1 flex-col gap-1">
                                 <div className="flex min-w-0 items-center gap-2">
+                                    <CodeEditorIntegrationIcon
+                                        integrationId={
+                                            integrationSettings.integration.id
+                                        }
+                                        className="size-5 shrink-0"
+                                    />
                                     <h2 className="truncate font-semibold">
                                         {
                                             integrationSettings.integration
