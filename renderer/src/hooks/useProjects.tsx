@@ -3,14 +3,17 @@ import type {
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CodeEditorId,
+    CodeEditorIntegrationSettings,
     CreateProjectResult,
     InstalledRelease,
+    LaunchProjectResult,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
     SetProjectCodeEditorResult,
 } from '@shared/contracts';
+import { TriangleAlert } from 'lucide-react';
 import {
     createContext,
     type FC,
@@ -19,11 +22,23 @@ import {
     useEffect,
     useState,
 } from 'react';
-import { appBridge, subscribeAppEvent } from '../bridge.ts';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+import {
+    appBridge,
+    codeEditorIntegrationBridge,
+    subscribeAppEvent,
+} from '../bridge.ts';
+import { appRoutePaths } from '../routes';
+import { useAlerts } from './useAlerts';
 
 interface ProjectsContext {
     projects: ProjectDetails[];
+    codeEditorSettings: CodeEditorIntegrationSettings[];
     loading: boolean;
+    rescanCodeEditorIntegration: (
+        integrationId: CodeEditorId,
+    ) => Promise<CodeEditorIntegrationSettings>;
     addProject: (
         projectPath: string,
         options?: AddProjectOptions,
@@ -81,14 +96,43 @@ export const useProjects = () => {
 type ProjectsProviderProps = PropsWithChildren;
 
 export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
+    const { t } = useTranslation(['projects', 'common']);
+    const navigate = useNavigate();
+    const { addAlert, addCustomConfirm } = useAlerts();
     const [projects, setProjects] = useState<ProjectDetails[]>([]);
+    const [codeEditorSettings, setCodeEditorSettings] = useState<
+        CodeEditorIntegrationSettings[]
+    >([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     const getProjects = async () => {
         setLoading(true);
-        const projects = await appBridge.getProjectsDetails();
+        const [projects, integrations] = await Promise.all([
+            appBridge.getProjectsDetails(),
+            codeEditorIntegrationBridge
+                .listIntegrationSettings()
+                .catch(() => []),
+        ]);
         setProjects(projects);
+        setCodeEditorSettings(integrations);
         setLoading(false);
+    };
+
+    const rescanCodeEditorIntegration = async (integrationId: CodeEditorId) => {
+        const updated =
+            await codeEditorIntegrationBridge.rescanIntegration(integrationId);
+        setCodeEditorSettings((current) =>
+            current.some(
+                (settings) => settings.integration.id === integrationId,
+            )
+                ? current.map((settings) =>
+                      settings.integration.id === integrationId
+                          ? updated
+                          : settings,
+                  )
+                : [...current, updated],
+        );
+        return updated;
     };
 
     const createProject = async (
@@ -212,6 +256,79 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         setProjects(result);
     };
 
+    const showMissingCodeEditorWarning = (
+        project: ProjectDetails,
+        result: Extract<LaunchProjectResult, { launched: false }>,
+    ) => {
+        const editor = result.integration.displayName;
+        const handleError = (error: unknown) => {
+            addAlert(
+                t('common:error'),
+                error instanceof Error
+                    ? error.message
+                    : t('messages.codeEditorLaunch.actionFailed'),
+            );
+        };
+
+        addCustomConfirm(
+            t('messages.codeEditorLaunch.title', { editor }),
+            <div className="flex flex-col gap-2">
+                <p>{t('messages.codeEditorLaunch.message', { editor })}</p>
+                {project.release.mono && (
+                    <p>{t('messages.codeEditorLaunch.dotnet')}</p>
+                )}
+            </div>,
+            [
+                {
+                    typeClass: 'btn-primary',
+                    text: t('messages.codeEditorLaunch.launchAnyway'),
+                    onClick: async () => {
+                        try {
+                            await appBridge.launchProject(project, {
+                                allowMissingCodeEditor: true,
+                            });
+                            return true;
+                        } catch (error) {
+                            handleError(error);
+                            return false;
+                        }
+                    },
+                },
+                {
+                    typeClass: 'btn-neutral',
+                    text: t('messages.codeEditorLaunch.openSettings'),
+                    onClick: () => {
+                        navigate(appRoutePaths.settingsTab('codeEditors'));
+                        return true;
+                    },
+                },
+                {
+                    typeClass: 'btn-ghost',
+                    text: t('messages.codeEditorLaunch.useGodotEditor'),
+                    onClick: async () => {
+                        try {
+                            const updatedProject = await setProjectCodeEditor(
+                                project,
+                                null,
+                            );
+                            await appBridge.launchProject(updatedProject);
+                            return true;
+                        } catch (error) {
+                            handleError(error);
+                            return false;
+                        }
+                    },
+                },
+                {
+                    isCancel: true,
+                    typeClass: 'btn-ghost',
+                    text: t('common:buttons.cancel'),
+                },
+            ],
+            <TriangleAlert className="stroke-warning" />,
+        );
+    };
+
     const launchProject = async (project: ProjectDetails) => {
         const all = await appBridge.checkAllProjectsValid();
         setProjects(all);
@@ -219,14 +336,17 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         const p = all.find((p) => p.path === project.path);
 
         if (p?.valid) {
-            await appBridge.launchProject(project);
+            const result = await appBridge.launchProject(p);
+            if (!result.launched) {
+                showMissingCodeEditorWarning(p, result);
+            }
         }
 
         return p;
     };
 
     const refreshProjects = async () => {
-        getProjects();
+        await getProjects();
     };
 
     const checkProjectValid = (project: ProjectDetails) => {
@@ -237,11 +357,17 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
         const off = subscribeAppEvent('projects-updated', setProjects);
+        const offLaunchWarning = subscribeAppEvent(
+            'project-launch-code-editor-warning',
+            ({ project, result }) =>
+                showMissingCodeEditorWarning(project, result),
+        );
         // Initial data fetching on mount
         getProjects();
 
         return () => {
             off();
+            offLaunchWarning();
         };
     }, []);
 
@@ -249,7 +375,9 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         <projectsContext.Provider
             value={{
                 projects,
+                codeEditorSettings,
                 loading,
+                rescanCodeEditorIntegration,
                 addProject,
                 setProjectEditor,
                 setProjectWindowed,

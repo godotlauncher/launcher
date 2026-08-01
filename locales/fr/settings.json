@@ -79,7 +79,8 @@
             "edit": "Modifier",
             "save": "Enregistrer",
             "saving": "Enregistrement...",
-            "cancel": "Annuler"
+            "cancel": "Annuler",
+            "rescan": "Rechercher à nouveau"
         },
         "status": {
             "available": "Disponible",
@@ -87,7 +88,9 @@
             "loadFailed": "Impossible de charger les éditeurs de code.",
             "default": "Éditeur de code par défaut",
             "enabled": "Activé",
-            "disabled": "Désactivé"
+            "disabled": "Désactivé",
+            "rescanFailed": "La nouvelle recherche a échoué.",
+            "projectUsage": "Projets configurés : {{count}}. Projets .NET : {{dotnetCount}}."
         },
         "overview": "Gérez la détection des éditeurs de code et choisissez l'éditeur présélectionné pour les nouveaux projets.",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Désactiver {{editor}} ?",
+            "usage": "Projets configurés : {{count}}. Projets .NET : {{dotnetCount}}.",
+            "existingProjects": "Les projets existants conserveront cet éditeur et leurs paramètres Godot actuels. Ils pourront continuer à l’utiliser tant qu’il reste installé.",
+            "newProjects": "L’éditeur ne sera plus disponible pour les nouvelles sélections ni pour la détection automatique des projets.",
+            "disable": "Désactiver"
         }
     },
     "tools": {

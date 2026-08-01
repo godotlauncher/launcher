@@ -27,11 +27,11 @@ ReactDOM.createRoot(rootElement).render(
                         <HashRouter>
                             <AppNavigationProvider>
                                 <ReleaseProvider>
-                                    <ProjectsProvider>
-                                        <AlertsProvider>
+                                    <AlertsProvider>
+                                        <ProjectsProvider>
                                             <App />
-                                        </AlertsProvider>
-                                    </ProjectsProvider>
+                                        </ProjectsProvider>
+                                    </AlertsProvider>
                                 </ReleaseProvider>
                             </AppNavigationProvider>
                         </HashRouter>

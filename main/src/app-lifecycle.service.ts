@@ -36,6 +36,7 @@ import { getAppIconPath } from './pathResolver.js';
 import { isCacheStale, refreshToolCache } from './services/toolCache.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { ensurePreferencesStorage } from './utils/prefs.utils.js';
+import { ipcWebContentsSend } from './utils.js';
 
 @Injectable()
 export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
@@ -106,9 +107,20 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         mainWindow.setIcon(iconPath);
         setMainWindow(mainWindow);
 
-        await createTray(mainWindow, (project) =>
-            launchProject(project, this.codeEditorIntegrationService),
-        );
+        await createTray(mainWindow, async (project) => {
+            const result = await launchProject(
+                project,
+                this.codeEditorIntegrationService,
+            );
+            if (!result.launched) {
+                this.showMainWindow();
+                ipcWebContentsSend(
+                    'project-launch-code-editor-warning',
+                    mainWindow.webContents,
+                    { project, result },
+                );
+            }
+        });
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         } else {

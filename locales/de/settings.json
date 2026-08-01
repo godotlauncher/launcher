@@ -79,7 +79,8 @@
             "edit": "Bearbeiten",
             "save": "Speichern",
             "saving": "Wird gespeichert...",
-            "cancel": "Abbrechen"
+            "cancel": "Abbrechen",
+            "rescan": "Erneut suchen"
         },
         "status": {
             "available": "Verfügbar",
@@ -87,7 +88,9 @@
             "loadFailed": "Code-Editoren konnten nicht geladen werden.",
             "default": "Standard-Code-Editor",
             "enabled": "Aktiviert",
-            "disabled": "Deaktiviert"
+            "disabled": "Deaktiviert",
+            "rescanFailed": "Erneute Suche fehlgeschlagen.",
+            "projectUsage": "Konfigurierte Projekte: {{count}}. .NET-Projekte: {{dotnetCount}}."
         },
         "overview": "Verwalten Sie die Erkennung von Code-Editoren und wählen Sie aus, welcher Editor für neue Projekte vorausgewählt wird.",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "{{editor}} deaktivieren?",
+            "usage": "Konfigurierte Projekte: {{count}}. .NET-Projekte: {{dotnetCount}}.",
+            "existingProjects": "Bestehende Projekte behalten diese Editorauswahl und ihre aktuellen Godot-Editoreinstellungen. Sie können den Editor weiterhin verwenden, solange er installiert ist.",
+            "newProjects": "Der Editor ist für neue Auswahlen und die automatische Projekterkennung nicht verfügbar.",
+            "disable": "Deaktivieren"
         }
     },
     "tools": {

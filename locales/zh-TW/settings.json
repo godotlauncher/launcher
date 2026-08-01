@@ -79,7 +79,8 @@
             "edit": "編輯",
             "save": "儲存",
             "saving": "正在儲存...",
-            "cancel": "取消"
+            "cancel": "取消",
+            "rescan": "重新掃描"
         },
         "status": {
             "available": "可用",
@@ -87,7 +88,9 @@
             "loadFailed": "無法載入程式碼編輯器。",
             "default": "預設程式碼編輯器",
             "enabled": "已啟用",
-            "disabled": "已停用"
+            "disabled": "已停用",
+            "rescanFailed": "無法重新掃描。",
+            "projectUsage": "已設定專案：{{count}}。.NET 專案：{{dotnetCount}}。"
         },
         "overview": "管理程式碼編輯器偵測，並選擇新專案中預先選取的編輯器。",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "要停用 {{editor}} 嗎？",
+            "usage": "已設定專案：{{count}}。.NET 專案：{{dotnetCount}}。",
+            "existingProjects": "現有專案會保留此編輯器選擇和目前的 Godot 編輯器設定。只要該編輯器仍安裝著，這些專案就能繼續使用。",
+            "newProjects": "新選擇和自動專案偵測將無法使用此編輯器。",
+            "disable": "停用"
         }
     },
     "tools": {

@@ -56,6 +56,14 @@ export class CodeEditorIntegrationService {
         );
     }
 
+    async rescanIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorIntegrationSettings> {
+        const defaultIntegrationId =
+            await this.settingsStore.getDefaultIntegrationId();
+        return this.toIntegrationSettings(integrationId, defaultIntegrationId);
+    }
+
     async setDefaultIntegration(
         integrationId: CodeEditorId,
     ): Promise<CodeEditorIntegrationSettings[]> {

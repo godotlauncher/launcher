@@ -48,6 +48,7 @@ function createServiceMock() {
     return {
         listIntegrationSettings: vi.fn().mockResolvedValue([settings]),
         updateIntegrationSettings: vi.fn().mockResolvedValue(settings),
+        rescanIntegration: vi.fn().mockResolvedValue(settings),
         setDefaultIntegration: vi
             .fn()
             .mockResolvedValue([{ ...settings, isDefault: true }]),
@@ -75,9 +76,13 @@ describe('CodeEditorIntegrationController', () => {
             controller.updateIntegrationSettings(CODE_EDITOR_ID, update),
         ).resolves.toEqual(settings);
         await expect(
+            controller.rescanIntegration(CODE_EDITOR_ID),
+        ).resolves.toEqual(settings);
+        await expect(
             controller.setDefaultIntegration(CODE_EDITOR_ID),
         ).resolves.toEqual([{ ...settings, isDefault: true }]);
         expect(service.listIntegrationSettings).toHaveBeenCalledOnce();
+        expect(service.rescanIntegration).toHaveBeenCalledWith(CODE_EDITOR_ID);
         expect(service.updateIntegrationSettings).toHaveBeenCalledWith(
             CODE_EDITOR_ID,
             update,

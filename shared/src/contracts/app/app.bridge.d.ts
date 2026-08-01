@@ -8,6 +8,8 @@ import type {
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CreateProjectResult,
+    LaunchProjectOptions,
+    LaunchProjectResult,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
@@ -132,7 +134,10 @@ export type AppBridge = {
     initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails>;
     exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;
-    launchProject(project: ProjectDetails): Promise<void>;
+    launchProject(
+        project: ProjectDetails,
+        options?: LaunchProjectOptions,
+    ): Promise<LaunchProjectResult>;
     checkProjectValid(project: ProjectDetails): Promise<ProjectDetails>;
     checkAllProjectsValid(): Promise<ProjectDetails[]>;
     getInstalledTools(): Promise<InstalledTool[]>;

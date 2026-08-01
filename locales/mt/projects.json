@@ -20,7 +20,8 @@
         "invalidReasons": {
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
             "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
-        }
+        },
+        "codeEditorUnavailable": "L-editur tal-kodiċi magħżul ma nstabx."
     },
     "addProject": {
         "selectFile": "Agħżel Fajl tal-Proġett",
@@ -69,7 +70,20 @@
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
             "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
         },
-        "recoveredCodeEditorConfig": "Xi fajls tal-konfigurazzjoni tal-editur tal-kodiċi ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
+        "recoveredCodeEditorConfig": "Xi fajls tal-konfigurazzjoni tal-editur tal-kodiċi ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad.",
+        "codeEditorHealth": {
+            "unavailable": "{{editor}} ma nstabx.",
+            "usage": "Proġetti kkonfigurati: {{count}}. Proġetti .NET: {{dotnetCount}}."
+        },
+        "codeEditorLaunch": {
+            "title": "{{editor}} ma nstabx",
+            "message": "Dan il-proġett huwa kkonfigurat biex juża {{editor}}. Godot xorta jista’ jinfetaħ, iżda l-ftuħ tal-iskripts f’dan l-editur jista’ ma jirnexxix.",
+            "dotnet": "L-integrazzjoni tal-editur C# tista’ wkoll ma tkunx disponibbli għal dan il-proġett .NET.",
+            "actionFailed": "L-azzjoni tal-editur tal-kodiċi falliet.",
+            "launchAnyway": "Iftaħ xorta waħda",
+            "openSettings": "Iftaħ is-settings",
+            "useGodotEditor": "Uża l-editur tal-iskripts ta’ Godot"
+        }
     },
     "changeEditor": {
         "errors": {

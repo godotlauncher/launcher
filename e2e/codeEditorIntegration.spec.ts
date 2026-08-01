@@ -208,6 +208,55 @@ test('Project Settings preserves an unavailable selection and can save explicit 
     await expect(dialog).not.toBeVisible();
 });
 
+test('Project launch warns when its selected code editor is unavailable', async () => {
+    await stubRecordedIpcHandler(electronApp, {
+        key: 'projectLaunch',
+        channel: 'app.launchProject',
+        data: {
+            launched: false,
+            reason: 'code_editor_unavailable',
+            integration: {
+                id: 'vscode',
+                displayName: 'Visual Studio Code',
+                capabilities: { dotnet: true },
+            },
+        },
+    });
+
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage
+        .getByRole('button', {
+            name: SAMPLE_PROJECT_PROTOTYPE.name,
+            exact: true,
+        })
+        .click();
+
+    const warningDialog = mainPage.getByRole('dialog', {
+        name: 'Visual Studio Code was not found',
+    });
+    await expect(warningDialog).toBeVisible();
+    await expect(warningDialog).toContainText(
+        'Godot can still launch, but opening scripts in this editor may fail.',
+    );
+
+    await warningDialog
+        .getByRole('button', { name: 'Launch anyway', exact: true })
+        .click();
+    await expect(warningDialog).not.toBeVisible();
+    await expect
+        .poll(async () =>
+            (await readRecordedIpcCalls(electronApp, 'projectLaunch')).map(
+                (args) => args[1],
+            ),
+        )
+        .toEqual([
+            undefined,
+            {
+                allowMissingCodeEditor: true,
+            },
+        ]);
+});
+
 test('Code Editor settings lock overlapping actions and recover from a failed update', async () => {
     await stubRecordedIpcHandler(electronApp, {
         key: 'integrationUpdate',
@@ -215,6 +264,11 @@ test('Code Editor settings lock overlapping actions and recover from a failed up
         data: SAMPLE_VSCODE_SETTINGS_AVAILABLE,
         pending: true,
         error: 'Simulated integration update failure.',
+    });
+    await stubRecordedIpcHandler(electronApp, {
+        key: 'integrationRescan',
+        channel: 'codeEditorIntegration.rescanIntegration',
+        data: SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     });
     const integrationRow = await openCodeEditorSettings();
 
@@ -230,8 +284,35 @@ test('Code Editor settings lock overlapping actions and recover from a failed up
     const editButton = integrationRow.getByRole('button', {
         name: 'Edit: Visual Studio Code',
     });
+    const rescanButton = integrationRow.getByTestId(
+        'btn-rescan-code-editor-vscode',
+    );
+    await expect(rescanButton).toHaveAccessibleName(
+        'Rescan: Visual Studio Code',
+    );
+    await rescanButton.click();
+    await expect
+        .poll(() => readRecordedIpcCalls(electronApp, 'integrationRescan'))
+        .toHaveLength(1);
 
     await enabledSwitch.click();
+    const disableDialog = mainPage.getByRole('dialog', {
+        name: 'Disable Visual Studio Code?',
+    });
+    await expect(disableDialog).toBeVisible();
+    await expect(disableDialog).toContainText(
+        'Configured projects: 3. .NET projects: 1.',
+    );
+    await expect(disableDialog).toContainText(
+        'Existing projects will keep this editor selection',
+    );
+    await expect(
+        readRecordedIpcCalls(electronApp, 'integrationUpdate'),
+    ).resolves.toHaveLength(0);
+
+    await disableDialog
+        .getByRole('button', { name: 'Disable', exact: true })
+        .click();
     await expect(integrationRow.getByRole('status')).toBeVisible();
     await expect(enabledSwitch).toBeDisabled();
     await expect(defaultButton).toBeDisabled();

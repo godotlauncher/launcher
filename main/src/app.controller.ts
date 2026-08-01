@@ -13,6 +13,7 @@ import type {
     CodeEditorId,
     CustomEngineManifest,
     InstalledRelease,
+    LaunchProjectOptions,
     ProjectDetails,
     ReleaseSummary,
     RenameProjectOptions,
@@ -326,8 +327,12 @@ export class AppController implements AppBridge {
     }
 
     @AppHandler('launchProject')
-    launchProject(project: ProjectDetails) {
-        return launchProject(project, this.codeEditorIntegrationService);
+    launchProject(project: ProjectDetails, options?: LaunchProjectOptions) {
+        return launchProject(
+            project,
+            this.codeEditorIntegrationService,
+            options,
+        );
     }
 
     @AppHandler('checkProjectValid')

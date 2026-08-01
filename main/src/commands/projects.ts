@@ -7,6 +7,8 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
     CodeEditorId,
+    LaunchProjectOptions,
+    LaunchProjectResult,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
@@ -97,7 +99,23 @@ export async function removeProject(
 export async function launchProject(
     project: ProjectDetails,
     codeEditorIntegrationService: CodeEditorIntegrationService,
-): Promise<void> {
+    options: LaunchProjectOptions = {},
+): Promise<LaunchProjectResult> {
+    if (project.codeEditorId && !options.allowMissingCodeEditor) {
+        const integrationSettings =
+            await codeEditorIntegrationService.rescanIntegration(
+                project.codeEditorId,
+            );
+
+        if (!integrationSettings.installation) {
+            return {
+                launched: false,
+                reason: 'code_editor_unavailable',
+                integration: integrationSettings.integration,
+            };
+        }
+    }
+
     const projectListPath = resolveProjectListPath();
 
     const prefs = await getUserPreferences();
@@ -225,6 +243,8 @@ export async function launchProject(
         currentMainWindow?.webContents,
         projects,
     );
+
+    return { launched: true };
 }
 
 export async function checkProjectIsValid(

@@ -79,7 +79,8 @@
             "edit": "编辑",
             "save": "保存",
             "saving": "正在保存...",
-            "cancel": "取消"
+            "cancel": "取消",
+            "rescan": "重新扫描"
         },
         "status": {
             "available": "可用",
@@ -87,7 +88,9 @@
             "loadFailed": "无法加载代码编辑器。",
             "default": "默认代码编辑器",
             "enabled": "已启用",
-            "disabled": "已禁用"
+            "disabled": "已禁用",
+            "rescanFailed": "无法重新扫描。",
+            "projectUsage": "已配置项目：{{count}}。.NET 项目：{{dotnetCount}}。"
         },
         "overview": "管理代码编辑器检测，并选择新项目中预先选定的编辑器。",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "要禁用 {{editor}} 吗？",
+            "usage": "已配置项目：{{count}}。.NET 项目：{{dotnetCount}}。",
+            "existingProjects": "现有项目将保留此编辑器选择和当前的 Godot 编辑器设置。只要该编辑器仍已安装，这些项目就可以继续使用它。",
+            "newProjects": "新选择和自动项目检测将无法使用此编辑器。",
+            "disable": "禁用"
         }
     },
     "tools": {

@@ -20,7 +20,8 @@
         "invalidReasons": {
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
             "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."
-        }
+        },
+        "codeEditorUnavailable": "Seçili kod düzenleyici algılanmadı."
     },
     "addProject": {
         "selectFile": "Proje Dosyasını Seç",
@@ -69,7 +70,20 @@
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
             "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
         },
-        "recoveredCodeEditorConfig": "Bazı kod düzenleyici yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
+        "recoveredCodeEditorConfig": "Bazı kod düzenleyici yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu.",
+        "codeEditorHealth": {
+            "unavailable": "{{editor}} algılanmadı.",
+            "usage": "Yapılandırılmış projeler: {{count}}. .NET projeleri: {{dotnetCount}}."
+        },
+        "codeEditorLaunch": {
+            "title": "{{editor}} bulunamadı",
+            "message": "Bu proje {{editor}} kullanacak şekilde yapılandırılmış. Godot yine de başlatılabilir, ancak betikleri bu düzenleyicide açmak başarısız olabilir.",
+            "dotnet": "C# düzenleyici entegrasyonu da bu .NET projesi için kullanılamayabilir.",
+            "actionFailed": "Kod düzenleyici eylemi başarısız oldu.",
+            "launchAnyway": "Yine de başlat",
+            "openSettings": "Ayarları aç",
+            "useGodotEditor": "Godot betik düzenleyicisini kullan"
+        }
     },
     "changeEditor": {
         "errors": {

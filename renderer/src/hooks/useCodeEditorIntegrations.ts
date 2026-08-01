@@ -9,6 +9,9 @@ import { codeEditorIntegrationBridge } from '../bridge.ts';
 
 export type CodeEditorIntegrationsHook = {
     listIntegrationSettings: () => Promise<CodeEditorIntegrationSettings[]>;
+    rescanIntegration: (
+        integrationId: CodeEditorId,
+    ) => Promise<CodeEditorIntegrationSettings>;
     updateIntegrationSettings: (
         integrationId: CodeEditorId,
         settings: UpdateCodeEditorIntegrationSettings,
@@ -25,6 +28,11 @@ export type CodeEditorIntegrationsHook = {
 export function useCodeEditorIntegrations(): CodeEditorIntegrationsHook {
     const listIntegrationSettings = useCallback(
         () => codeEditorIntegrationBridge.listIntegrationSettings(),
+        [],
+    );
+    const rescanIntegration = useCallback(
+        (integrationId: CodeEditorId) =>
+            codeEditorIntegrationBridge.rescanIntegration(integrationId),
         [],
     );
     const updateIntegrationSettings = useCallback(
@@ -54,6 +62,7 @@ export function useCodeEditorIntegrations(): CodeEditorIntegrationsHook {
 
     return {
         listIntegrationSettings,
+        rescanIntegration,
         updateIntegrationSettings,
         setDefaultIntegration,
         validateIntegrationPath,

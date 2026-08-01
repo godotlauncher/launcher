@@ -20,7 +20,8 @@
         "invalidReasons": {
             "missingProjectFile": "Project file not found. Check the project location.",
             "missingEditor": "Editor not found. Check the editor location."
-        }
+        },
+        "codeEditorUnavailable": "The selected code editor was not detected."
     },
     "addProject": {
         "selectFile": "Select Project File",
@@ -69,7 +70,20 @@
             "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
             "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
         },
-        "recoveredCodeEditorConfig": "Some code editor config files were invalid. Godot Launcher recreated them and preserved the originals as .bad copies."
+        "recoveredCodeEditorConfig": "Some code editor config files were invalid. Godot Launcher recreated them and preserved the originals as .bad copies.",
+        "codeEditorHealth": {
+            "unavailable": "{{editor}} was not detected.",
+            "usage": "Configured projects: {{count}}. .NET projects: {{dotnetCount}}."
+        },
+        "codeEditorLaunch": {
+            "title": "{{editor}} was not found",
+            "message": "This project is configured to use {{editor}}. Godot can still launch, but opening scripts in this editor may fail.",
+            "dotnet": "C# editor integration may also be unavailable for this .NET project.",
+            "actionFailed": "The code editor action failed.",
+            "launchAnyway": "Launch anyway",
+            "openSettings": "Open settings",
+            "useGodotEditor": "Use Godot Script Editor"
+        }
     },
     "changeEditor": {
         "errors": {

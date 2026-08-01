@@ -1,5 +1,8 @@
-import type { CodeEditorIntegrationSettings } from '@shared/contracts';
-import { Pencil, Star } from 'lucide-react';
+import type {
+    CodeEditorId,
+    CodeEditorIntegrationSettings,
+} from '@shared/contracts';
+import { Pencil, RotateCw, Star } from 'lucide-react';
 import type React from 'react';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
@@ -17,6 +20,7 @@ type CodeEditorSettingsPanelProps = {
     active: boolean;
     t: Translate;
     settings: CodeEditorIntegrationSettings[];
+    onRescan: (settings: CodeEditorIntegrationSettings) => Promise<void>;
     onEdit: (settings: CodeEditorIntegrationSettings) => void;
     onSetDefault: (settings: CodeEditorIntegrationSettings) => Promise<void>;
     onEnabledChange: (
@@ -27,6 +31,10 @@ type CodeEditorSettingsPanelProps = {
     loadError: boolean;
     pendingIntegrationId: string | null;
     actionErrors: Record<string, string | undefined>;
+    rescanningIntegrationId: string | null;
+    projectUsage: Partial<
+        Record<CodeEditorId, { count: number; dotnetCount: number }>
+    >;
 };
 
 export const CodeEditorSettingsPanel: React.FC<
@@ -38,9 +46,12 @@ export const CodeEditorSettingsPanel: React.FC<
     onEdit,
     onSetDefault,
     onEnabledChange,
+    onRescan,
     loading,
     loadError,
     pendingIntegrationId,
+    rescanningIntegrationId,
+    projectUsage,
     actionErrors,
 }) => (
     <SettingsPanelSection active={active}>
@@ -111,6 +122,20 @@ export const CodeEditorSettingsPanel: React.FC<
                                         {t('codeEditors.status.missing')}
                                     </span>
                                 )}
+                                {!integrationSettings.installation &&
+                                    (projectUsage[
+                                        integrationSettings.integration.id
+                                    ]?.count ?? 0) > 0 && (
+                                        <p className="text-sm text-warning">
+                                            {t(
+                                                'codeEditors.status.projectUsage',
+                                                projectUsage[
+                                                    integrationSettings
+                                                        .integration.id
+                                                ],
+                                            )}
+                                        </p>
+                                    )}
                             </div>
                             <div className="flex min-h-8 shrink-0 items-center gap-2">
                                 {pendingIntegrationId ===
@@ -120,12 +145,51 @@ export const CodeEditorSettingsPanel: React.FC<
                                         role="status"
                                         aria-label={getQualifiedLabel(
                                             t,
-                                            t('codeEditors.actions.saving'),
+                                            t(
+                                                rescanningIntegrationId ===
+                                                    integrationSettings
+                                                        .integration.id
+                                                    ? 'codeEditors.actions.scanning'
+                                                    : 'codeEditors.actions.saving',
+                                            ),
                                             integrationSettings.integration
                                                 .displayName,
                                         )}
                                     />
                                 )}
+                                <Tooltip
+                                    tip={getQualifiedLabel(
+                                        t,
+                                        t('codeEditors.actions.rescan'),
+                                        integrationSettings.integration
+                                            .displayName,
+                                    )}
+                                    placement="top"
+                                >
+                                    <button
+                                        type="button"
+                                        data-testid={
+                                            'btn-rescan-code-editor-' +
+                                            integrationSettings.integration.id
+                                        }
+                                        className="btn btn-square btn-ghost btn-sm"
+                                        aria-label={getQualifiedLabel(
+                                            t,
+                                            t('codeEditors.actions.rescan'),
+                                            integrationSettings.integration
+                                                .displayName,
+                                        )}
+                                        disabled={Boolean(pendingIntegrationId)}
+                                        onClick={() =>
+                                            void onRescan(integrationSettings)
+                                        }
+                                    >
+                                        <RotateCw
+                                            size={16}
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </Tooltip>
                                 {integrationSettings.enabled && (
                                     <Tooltip
                                         tip={getQualifiedLabel(

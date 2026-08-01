@@ -20,7 +20,8 @@
         "invalidReasons": {
             "missingProjectFile": "Fichier de projet introuvable. Vérifiez l’emplacement du projet.",
             "missingEditor": "Éditeur introuvable. Vérifiez l’emplacement de l’éditeur."
-        }
+        },
+        "codeEditorUnavailable": "L’éditeur de code sélectionné n’a pas été détecté."
     },
     "addProject": {
         "selectFile": "Sélectionner le fichier du projet",
@@ -69,7 +70,20 @@
             "missingProjectFile": "Fichier de projet introuvable. Vérifiez l’emplacement du projet ou supprimez-le puis ajoutez-le à nouveau.",
             "missingEditor": "L’éditeur sélectionné est indisponible. Montez le lecteur ou choisissez un autre éditeur."
         },
-        "recoveredCodeEditorConfig": "Certains fichiers de configuration de l'éditeur de code n'étaient pas valides. Godot Launcher les a recréés et a conservé les originaux sous forme de copies .bad."
+        "recoveredCodeEditorConfig": "Certains fichiers de configuration de l'éditeur de code n'étaient pas valides. Godot Launcher les a recréés et a conservé les originaux sous forme de copies .bad.",
+        "codeEditorHealth": {
+            "unavailable": "{{editor}} n’a pas été détecté.",
+            "usage": "Projets configurés : {{count}}. Projets .NET : {{dotnetCount}}."
+        },
+        "codeEditorLaunch": {
+            "title": "{{editor}} est introuvable",
+            "message": "Ce projet est configuré pour utiliser {{editor}}. Godot peut tout de même démarrer, mais l’ouverture des scripts dans cet éditeur peut échouer.",
+            "dotnet": "L’intégration de l’éditeur C# peut également être indisponible pour ce projet .NET.",
+            "actionFailed": "L’action de l’éditeur de code a échoué.",
+            "launchAnyway": "Démarrer quand même",
+            "openSettings": "Ouvrir les paramètres",
+            "useGodotEditor": "Utiliser l’éditeur de scripts Godot"
+        }
     },
     "changeEditor": {
         "errors": {

@@ -1,5 +1,8 @@
 import type { BackendResult } from '../app/index.js';
-import type { CodeEditorId } from '../codeEditorIntegration/index.js';
+import type {
+    CodeEditorId,
+    CodeEditorIntegrationSummary,
+} from '../codeEditorIntegration/index.js';
 import type {
     EditorChannel,
     EditorFlavor,
@@ -9,6 +12,18 @@ import type {
 export type LaunchPath = string;
 
 export type ProjectInvalidReason = 'missing_project_file' | 'missing_editor';
+
+export type LaunchProjectOptions = {
+    allowMissingCodeEditor?: boolean;
+};
+
+export type LaunchProjectResult =
+    | { launched: true }
+    | {
+          launched: false;
+          reason: 'code_editor_unavailable';
+          integration: CodeEditorIntegrationSummary;
+      };
 
 export type ProjectDetails = {
     name: string;

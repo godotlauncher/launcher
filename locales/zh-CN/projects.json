@@ -20,7 +20,8 @@
         "invalidReasons": {
             "missingProjectFile": "未找到项目文件。请检查项目位置。",
             "missingEditor": "未找到编辑器。请检查编辑器位置。"
-        }
+        },
+        "codeEditorUnavailable": "未检测到所选代码编辑器。"
     },
     "addProject": {
         "selectFile": "选择项目文件",
@@ -69,7 +70,20 @@
             "missingProjectFile": "未找到项目文件。请检查项目位置，或移除后重新添加项目。",
             "missingEditor": "所选编辑器不可用。请挂载驱动器或选择其他编辑器。"
         },
-        "recoveredCodeEditorConfig": "部分代码编辑器配置文件无效。Godot Launcher 已重新创建它们，并将原始文件保留为 .bad 副本。"
+        "recoveredCodeEditorConfig": "部分代码编辑器配置文件无效。Godot Launcher 已重新创建它们，并将原始文件保留为 .bad 副本。",
+        "codeEditorHealth": {
+            "unavailable": "未检测到 {{editor}}。",
+            "usage": "已配置项目：{{count}}。.NET 项目：{{dotnetCount}}。"
+        },
+        "codeEditorLaunch": {
+            "title": "找不到 {{editor}}",
+            "message": "此项目已配置为使用 {{editor}}。Godot 仍可启动，但可能无法在此编辑器中打开脚本。",
+            "dotnet": "此 .NET 项目的 C# 编辑器集成也可能不可用。",
+            "actionFailed": "代码编辑器操作失败。",
+            "launchAnyway": "仍然启动",
+            "openSettings": "打开设置",
+            "useGodotEditor": "使用 Godot 脚本编辑器"
+        }
     },
     "changeEditor": {
         "errors": {

@@ -32,6 +32,7 @@ const settings: CodeEditorIntegrationSettings = {
 
 describe('useCodeEditorIntegrations', () => {
     const listIntegrationSettings = vi.fn(async () => [settings]);
+    const rescanIntegration = vi.fn(async () => settings);
     const updateIntegrationSettings = vi.fn(async () => settings);
     const setDefaultIntegration = vi.fn(async () => [
         { ...settings, isDefault: true },
@@ -53,6 +54,7 @@ describe('useCodeEditorIntegrations', () => {
             electron: {
                 'codeEditorIntegration.listIntegrationSettings':
                     listIntegrationSettings,
+                'codeEditorIntegration.rescanIntegration': rescanIntegration,
                 'codeEditorIntegration.updateIntegrationSettings':
                     updateIntegrationSettings,
                 'codeEditorIntegration.setDefaultIntegration':
@@ -90,10 +92,14 @@ describe('useCodeEditorIntegrations', () => {
         await expect(hook.listIntegrationSettings()).resolves.toEqual([
             settings,
         ]);
+        await expect(hook.rescanIntegration('vscode')).resolves.toEqual(
+            settings,
+        );
         await expect(
             hook.updateIntegrationSettings('vscode', update),
         ).resolves.toEqual(settings);
         expect(listIntegrationSettings).toHaveBeenCalledOnce();
+        expect(rescanIntegration).toHaveBeenCalledWith('vscode');
         await expect(hook.setDefaultIntegration('vscode')).resolves.toEqual([
             { ...settings, isDefault: true },
         ]);

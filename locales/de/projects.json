@@ -20,7 +20,8 @@
         "invalidReasons": {
             "missingProjectFile": "Projektdatei nicht gefunden. Überprüfe den Projektpfad.",
             "missingEditor": "Editor nicht gefunden. Überprüfe den Editorpfad."
-        }
+        },
+        "codeEditorUnavailable": "Der ausgewählte Code-Editor wurde nicht gefunden."
     },
     "addProject": {
         "selectFile": "Projektdatei auswählen",
@@ -76,7 +77,20 @@
             "missingProjectFile": "Projektdatei nicht gefunden. Überprüfe den Projektpfad oder entferne das Projekt und füge es erneut hinzu.",
             "missingEditor": "Der ausgewählte Editor ist nicht verfügbar. Hänge das Laufwerk ein oder wähle einen anderen Editor."
         },
-        "recoveredCodeEditorConfig": "Einige Konfigurationsdateien des Code-Editors waren ungültig. Godot Launcher hat sie neu erstellt und die Originale als .bad-Kopien beibehalten."
+        "recoveredCodeEditorConfig": "Einige Konfigurationsdateien des Code-Editors waren ungültig. Godot Launcher hat sie neu erstellt und die Originale als .bad-Kopien beibehalten.",
+        "codeEditorHealth": {
+            "unavailable": "{{editor}} wurde nicht gefunden.",
+            "usage": "Konfigurierte Projekte: {{count}}. .NET-Projekte: {{dotnetCount}}."
+        },
+        "codeEditorLaunch": {
+            "title": "{{editor}} wurde nicht gefunden",
+            "message": "Dieses Projekt ist für {{editor}} konfiguriert. Godot kann trotzdem gestartet werden, aber das Öffnen von Skripten in diesem Editor kann fehlschlagen.",
+            "dotnet": "Die C#-Editorintegration ist für dieses .NET-Projekt möglicherweise ebenfalls nicht verfügbar.",
+            "actionFailed": "Die Code-Editor-Aktion ist fehlgeschlagen.",
+            "launchAnyway": "Trotzdem starten",
+            "openSettings": "Einstellungen öffnen",
+            "useGodotEditor": "Godot-Skripteditor verwenden"
+        }
     },
     "changeEditor": {
         "errors": {

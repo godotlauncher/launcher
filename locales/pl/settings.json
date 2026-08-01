@@ -79,7 +79,8 @@
             "edit": "Edytuj",
             "save": "Zapisz",
             "saving": "Zapisywanie...",
-            "cancel": "Anuluj"
+            "cancel": "Anuluj",
+            "rescan": "Skanuj ponownie"
         },
         "status": {
             "available": "Dostępne",
@@ -87,7 +88,9 @@
             "loadFailed": "Nie można wczytać edytorów kodu.",
             "default": "Domyślny edytor kodu",
             "enabled": "Włączony",
-            "disabled": "Wyłączony"
+            "disabled": "Wyłączony",
+            "rescanFailed": "Nie udało się ponownie przeskanować.",
+            "projectUsage": "Skonfigurowane projekty: {{count}}. Projekty .NET: {{dotnetCount}}."
         },
         "overview": "Zarządzaj wykrywaniem edytorów kodu i wybierz edytor domyślnie zaznaczony dla nowych projektów.",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Wyłączyć {{editor}}?",
+            "usage": "Skonfigurowane projekty: {{count}}. Projekty .NET: {{dotnetCount}}.",
+            "existingProjects": "Istniejące projekty zachowają ten edytor i bieżące ustawienia edytora Godot. Mogą nadal go używać, dopóki pozostaje zainstalowany.",
+            "newProjects": "Edytor nie będzie dostępny dla nowych wyborów ani automatycznego wykrywania projektów.",
+            "disable": "Wyłącz"
         }
     },
     "tools": {

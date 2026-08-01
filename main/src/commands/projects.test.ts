@@ -192,6 +192,7 @@ const codeEditorIntegrationService = {
     assertIntegrationSelectable: vi.fn(),
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
+    rescanIntegration: vi.fn(),
     resolvePortableSelectionId: vi.fn(),
 } as unknown as CodeEditorIntegrationService;
 
@@ -199,6 +200,7 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
     assertIntegrationSelectable: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
     disableForProject: ReturnType<typeof vi.fn>;
+    rescanIntegration: ReturnType<typeof vi.fn>;
     resolvePortableSelectionId: ReturnType<typeof vi.fn>;
 };
 
@@ -255,6 +257,25 @@ describe('launchProject', () => {
         );
         readProjectLauncherConfig.mockResolvedValue(null);
         writeProjectLauncherConfig.mockResolvedValue(undefined);
+        integrationMocks.rescanIntegration.mockResolvedValue({
+            integration: {
+                id: 'vscode',
+                displayName: 'Visual Studio Code',
+                capabilities: { dotnet: true },
+            },
+            enabled: true,
+            isDefault: false,
+            customPath: null,
+            defaultExecFlags: '',
+            execFlagsOverride: null,
+            resolvedExecFlags: '',
+            installation: {
+                integrationId: 'vscode',
+                path: '/tools/code',
+                version: null,
+            },
+            resolvedGodotExecPath: '/tools/code',
+        });
         integrationMocks.resolvePortableSelectionId.mockImplementation(
             (canonicalId: unknown, portableId: unknown) =>
                 portableId === 'future-editor' ? portableId : canonicalId,
@@ -384,8 +405,61 @@ describe('launchProject', () => {
 
         await expect(
             launchProject(project, codeEditorIntegrationService),
-        ).resolves.toBeUndefined();
+        ).resolves.toEqual({ launched: true });
 
+        expect(childProcessMocks.spawn).toHaveBeenCalled();
+    });
+
+    it('blocks launch without side effects when the selected code editor is unavailable', async () => {
+        const project = createProjectDetails();
+        integrationMocks.rescanIntegration.mockResolvedValue({
+            integration: {
+                id: 'vscode',
+                displayName: 'Visual Studio Code',
+                capabilities: { dotnet: true },
+            },
+            enabled: false,
+            isDefault: false,
+            customPath: null,
+            defaultExecFlags: '',
+            execFlagsOverride: null,
+            resolvedExecFlags: '',
+            installation: null,
+            resolvedGodotExecPath: null,
+        });
+
+        await expect(
+            launchProject(project, codeEditorIntegrationService),
+        ).resolves.toEqual({
+            launched: false,
+            reason: 'code_editor_unavailable',
+            integration: {
+                id: 'vscode',
+                displayName: 'Visual Studio Code',
+                capabilities: { dotnet: true },
+            },
+        });
+
+        expect(getProjectsSnapshot).not.toHaveBeenCalled();
+        expect(storeProjectsList).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    it('launches without scanning when the missing editor warning is explicitly bypassed', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        await expect(
+            launchProject(project, codeEditorIntegrationService, {
+                allowMissingCodeEditor: true,
+            }),
+        ).resolves.toEqual({ launched: true });
+
+        expect(integrationMocks.rescanIntegration).not.toHaveBeenCalled();
         expect(childProcessMocks.spawn).toHaveBeenCalled();
     });
 });

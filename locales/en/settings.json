@@ -80,7 +80,8 @@
             "edit": "Edit",
             "save": "Save",
             "saving": "Saving...",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "rescan": "Rescan"
         },
         "status": {
             "available": "Available",
@@ -88,7 +89,9 @@
             "loadFailed": "Could not load code editors.",
             "default": "Default code editor",
             "enabled": "Enabled",
-            "disabled": "Disabled"
+            "disabled": "Disabled",
+            "rescanFailed": "Unable to rescan.",
+            "projectUsage": "Configured projects: {{count}}. .NET projects: {{dotnetCount}}."
         },
         "drawer": {
             "title": "{{editor}} settings",
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Disable {{editor}}?",
+            "usage": "Configured projects: {{count}}. .NET projects: {{dotnetCount}}.",
+            "existingProjects": "Existing projects will keep this editor selection and their current Godot editor settings. They may continue to use it while it remains installed.",
+            "newProjects": "The editor will be unavailable for new selections and automatic project detection.",
+            "disable": "Disable"
         }
     },
     "tools": {

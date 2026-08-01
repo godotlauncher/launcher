@@ -79,7 +79,8 @@
             "edit": "Editja",
             "save": "Issejvja",
             "saving": "Qed jissejvja...",
-            "cancel": "Ikkanċella"
+            "cancel": "Ikkanċella",
+            "rescan": "Erġa’ skennja"
         },
         "status": {
             "available": "Disponibbli",
@@ -87,7 +88,9 @@
             "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi.",
             "default": "Editur tal-kodiċi predefinit",
             "enabled": "Attivat",
-            "disabled": "Diżattivat"
+            "disabled": "Diżattivat",
+            "rescanFailed": "Ma setax isir skennjar mill-ġdid.",
+            "projectUsage": "Proġetti kkonfigurati: {{count}}. Proġetti .NET: {{dotnetCount}}."
         },
         "overview": "Immaniġġja s-sejbien tal-edituri tal-kodiċi u agħżel liema editur jintgħażel minn qabel għal proġetti ġodda.",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Tiddiżattiva {{editor}}?",
+            "usage": "Proġetti kkonfigurati: {{count}}. Proġetti .NET: {{dotnetCount}}.",
+            "existingProjects": "Il-proġetti eżistenti se jżommu din l-għażla tal-editur u s-settings attwali ta’ Godot. Jistgħu jibqgħu jużawh sakemm jibqa’ installat.",
+            "newProjects": "L-editur mhux se jkun disponibbli għal għażliet ġodda jew għad-detezzjoni awtomatika tal-proġetti.",
+            "disable": "Iddiżattiva"
         }
     },
     "tools": {

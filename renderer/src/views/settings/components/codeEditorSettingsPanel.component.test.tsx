@@ -38,11 +38,14 @@ function renderPanel(
             }
             settings={[settings]}
             onEdit={vi.fn()}
+            onRescan={vi.fn(async () => {})}
             onSetDefault={vi.fn(async () => {})}
             onEnabledChange={vi.fn(async () => {})}
             loading={false}
             loadError={false}
             pendingIntegrationId={null}
+            rescanningIntegrationId={null}
+            projectUsage={{}}
             actionErrors={{}}
             {...overrides}
         />,
@@ -67,6 +70,11 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain('codeEditors.actions.setDefault');
         expect(html).toContain('aria-pressed="false"');
         expect(html).toContain('lucide-star');
+        expect(html).toContain('lucide-rotate-cw');
+        expect(html).toContain('btn-rescan-code-editor-vscode');
+        expect(html).toContain(
+            'codeEditors.actions.rescan: Visual Studio Code',
+        );
         expect(html).toContain(
             'data-tip="codeEditors.actions.setDefault: Visual Studio Code"',
         );
@@ -103,6 +111,17 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).not.toContain('lucide-star');
         expect(html).not.toContain('btn-set-default-code-editor-vscode');
         expect(html).not.toContain('title="codeEditors.status.disabled"');
+    });
+
+    it('shows affected project usage for an unavailable integration', () => {
+        const html = renderPanel({
+            settings: [{ ...settings, installation: null }],
+            projectUsage: {
+                vscode: { count: 3, dotnetCount: 2 },
+            },
+        });
+
+        expect(html).toContain('codeEditors.status.projectUsage');
     });
 
     it('explains why an enabled unavailable integration cannot be the default', () => {
@@ -180,5 +199,17 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html.match(/disabled=""/g)?.length).toBeGreaterThanOrEqual(3);
         expect(html).toContain('role="alert"');
         expect(html).toContain('Visual Studio Code: Unable to save settings.');
+    });
+
+    it('announces a pending integration rescan', () => {
+        const html = renderPanel({
+            pendingIntegrationId: 'vscode',
+            rescanningIntegrationId: 'vscode',
+        });
+
+        expect(html).toContain(
+            'aria-label="codeEditors.actions.scanning: Visual Studio Code"',
+        );
+        expect(html).toContain('disabled=""');
     });
 });

@@ -5,13 +5,17 @@ import type {
 } from '@shared/contracts';
 import clsx from 'clsx';
 import logger from 'electron-log';
+import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../bridge.ts';
+import { useAlerts } from '../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
+import { useProjects } from '../hooks/useProjects';
 import { useTheme } from '../hooks/useTheme';
 import type { SettingsTab } from '../routes';
+import { getCodeEditorProjectUsage } from './projects/projectCodeEditorHealth.model';
 import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
 import { BehaviorSettingsPanel } from './settings/components/behaviorSettingsPanel.component';
 import { CodeEditorSettingsPanel } from './settings/components/codeEditorSettingsPanel.component';
@@ -31,7 +35,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     activeTab: controlledActiveTab,
     onActiveTabChange,
 }) => {
-    const { t } = useTranslation('settings');
+    const { t } = useTranslation(['settings', 'common']);
+    const { addCustomConfirm } = useAlerts();
+    const { projects, rescanCodeEditorIntegration } = useProjects();
     const [localActiveTab, setLocalActiveTab] =
         useState<SettingsTab>('projects');
     const activeTab = controlledActiveTab ?? localActiveTab;
@@ -60,6 +66,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const [codeEditorsLoading, setCodeEditorsLoading] = useState(false);
     const [codeEditorsLoadError, setCodeEditorsLoadError] = useState(false);
     const [pendingCodeEditorId, setPendingCodeEditorId] =
+        useState<CodeEditorId | null>(null);
+    const [rescanningCodeEditorId, setRescanningCodeEditorId] =
         useState<CodeEditorId | null>(null);
     const [codeEditorActionErrors, setCodeEditorActionErrors] = useState<
         Partial<Record<CodeEditorId, string>>
@@ -161,6 +169,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
     const replaceCodeEditorSettings = (
         updatedSettings: CodeEditorIntegrationSettings,
+        syncProjectHealth = true,
     ) => {
         setCodeEditorSettings((currentSettings) =>
             currentSettings.map((current) =>
@@ -173,15 +182,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             ...current,
             [updatedSettings.integration.id]: undefined,
         }));
+        if (syncProjectHealth) {
+            void rescanCodeEditorIntegration(
+                updatedSettings.integration.id,
+            ).catch((error) => {
+                logger.error('Failed to synchronize code editor health', error);
+            });
+        }
         void loadPreferences();
     };
 
-    const setCodeEditorEnabled = async (
+    const applyCodeEditorEnabled = async (
         currentSettings: CodeEditorIntegrationSettings,
         enabled: boolean,
-    ) => {
+    ): Promise<boolean> => {
         if (pendingCodeEditorId) {
-            return;
+            return false;
         }
 
         const integrationId = currentSettings.integration.id;
@@ -201,6 +217,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 },
             );
             replaceCodeEditorSettings(updatedSettings);
+            return true;
         } catch (error) {
             logger.error(
                 `Failed to ${enabled ? 'enable' : 'disable'} code editor integration`,
@@ -213,10 +230,91 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     error: t('codeEditors.drawer.errors.save'),
                 }),
             }));
+            return false;
         } finally {
             setPendingCodeEditorId((current) =>
                 current === integrationId ? null : current,
             );
+        }
+    };
+
+    const setCodeEditorEnabled = async (
+        currentSettings: CodeEditorIntegrationSettings,
+        enabled: boolean,
+    ) => {
+        if (enabled) {
+            await applyCodeEditorEnabled(currentSettings, true);
+            return;
+        }
+
+        const usage = getCodeEditorProjectUsage(
+            projects,
+            currentSettings.integration.id,
+        );
+        if (usage.count === 0) {
+            await applyCodeEditorEnabled(currentSettings, false);
+            return;
+        }
+
+        addCustomConfirm(
+            t('codeEditors.disableConfirm.title', {
+                editor: currentSettings.integration.displayName,
+            }),
+            <div className="flex flex-col gap-2">
+                <p>
+                    {t('codeEditors.disableConfirm.usage', {
+                        count: usage.count,
+                        dotnetCount: usage.dotnetCount,
+                    })}
+                </p>
+                <p>{t('codeEditors.disableConfirm.existingProjects')}</p>
+                <p>{t('codeEditors.disableConfirm.newProjects')}</p>
+            </div>,
+            [
+                {
+                    typeClass: 'btn-warning',
+                    text: t('codeEditors.disableConfirm.disable'),
+                    onClick: async () => {
+                        await applyCodeEditorEnabled(currentSettings, false);
+                        return true;
+                    },
+                },
+                {
+                    isCancel: true,
+                    typeClass: 'btn-ghost',
+                    text: t('common:buttons.cancel'),
+                },
+            ],
+            <TriangleAlert className="stroke-warning" />,
+        );
+    };
+
+    const rescanCodeEditor = async (
+        currentSettings: CodeEditorIntegrationSettings,
+    ) => {
+        if (pendingCodeEditorId) {
+            return;
+        }
+
+        const integrationId = currentSettings.integration.id;
+        setPendingCodeEditorId(integrationId);
+        setRescanningCodeEditorId(integrationId);
+        try {
+            const updatedSettings =
+                await rescanCodeEditorIntegration(integrationId);
+            replaceCodeEditorSettings(updatedSettings, false);
+        } catch (error) {
+            logger.error('Failed to rescan code editor integration', error);
+            setCodeEditorActionErrors((current) => ({
+                ...current,
+                [integrationId]: t('codeEditors.messages.integrationError', {
+                    editor: currentSettings.integration.displayName,
+                    error: t('codeEditors.status.rescanFailed'),
+                }),
+            }));
+        } finally {
+            setPendingCodeEditorId(null);
+            setRescanningCodeEditorId(null);
         }
     };
 
@@ -255,6 +353,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             );
         }
     };
+
+    const codeEditorProjectUsage = useMemo(
+        () =>
+            Object.fromEntries(
+                codeEditorSettings.map((settings) => {
+                    return [
+                        settings.integration.id,
+                        getCodeEditorProjectUsage(
+                            projects,
+                            settings.integration.id,
+                        ),
+                    ];
+                }),
+            ),
+        [codeEditorSettings, projects],
+    );
 
     return (
         <div className="flex flex-col h-full w-full p-1">
@@ -305,11 +419,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             t={t}
                             settings={codeEditorSettings}
                             onEdit={setSelectedCodeEditor}
+                            onRescan={rescanCodeEditor}
                             onEnabledChange={setCodeEditorEnabled}
                             onSetDefault={setDefaultCodeEditor}
                             loading={codeEditorsLoading}
                             loadError={codeEditorsLoadError}
                             pendingIntegrationId={pendingCodeEditorId}
+                            rescanningIntegrationId={rescanningCodeEditorId}
+                            projectUsage={codeEditorProjectUsage}
                             actionErrors={codeEditorActionErrors}
                         />
                         <ToolsSettingsPanel

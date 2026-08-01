@@ -7,6 +7,7 @@ export type TooltipTone =
     | 'primary'
     | 'secondary'
     | 'error'
+    | 'warning'
     | 'info';
 
 type TooltipProps = {
@@ -24,6 +25,7 @@ const tooltipToneClassNames: Record<TooltipTone, string | undefined> = {
     primary: 'tooltip-primary',
     secondary: 'tooltip-secondary',
     error: 'tooltip-error',
+    warning: 'tooltip-warning',
     info: 'tooltip-info',
 };
 

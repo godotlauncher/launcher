@@ -28,6 +28,15 @@ export class CodeEditorIntegrationController
         return this.codeEditorIntegrationService.listIntegrationSettings();
     }
 
+    @CodeEditorIntegrationHandler('rescanIntegration')
+    rescanIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorIntegrationSettings> {
+        return this.codeEditorIntegrationService.rescanIntegration(
+            integrationId,
+        );
+    }
+
     @CodeEditorIntegrationHandler('updateIntegrationSettings')
     updateIntegrationSettings(
         integrationId: CodeEditorId,

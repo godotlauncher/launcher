@@ -79,7 +79,8 @@
             "edit": "編集",
             "save": "保存",
             "saving": "保存中...",
-            "cancel": "キャンセル"
+            "cancel": "キャンセル",
+            "rescan": "再スキャン"
         },
         "status": {
             "available": "利用可能",
@@ -87,7 +88,9 @@
             "loadFailed": "コードエディターを読み込めませんでした。",
             "default": "デフォルトのコードエディター",
             "enabled": "有効",
-            "disabled": "無効"
+            "disabled": "無効",
+            "rescanFailed": "再スキャンできませんでした。",
+            "projectUsage": "設定済みプロジェクト: {{count}}。.NET プロジェクト: {{dotnetCount}}。"
         },
         "overview": "コードエディターの検出を管理し、新しいプロジェクトで事前選択するエディターを選択します。",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "{{editor}} を無効にしますか？",
+            "usage": "設定済みプロジェクト: {{count}}。.NET プロジェクト: {{dotnetCount}}。",
+            "existingProjects": "既存のプロジェクトでは、このエディターの選択と現在の Godot エディター設定が維持されます。インストールされている間は引き続き使用できます。",
+            "newProjects": "新しい選択とプロジェクトの自動検出では、このエディターを使用できなくなります。",
+            "disable": "無効にする"
         }
     },
     "tools": {

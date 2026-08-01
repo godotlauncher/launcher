@@ -32,12 +32,16 @@ const baseProject: ProjectDetails = {
     valid: true,
 };
 
-function renderProjectsTable(rows: ProjectDetails[]): string {
+function renderProjectsTable(
+    rows: ProjectDetails[],
+    unavailableCodeEditorIds: Array<'vscode'> = [],
+): string {
     return renderToStaticMarkup(
         <ProjectsTable
             rows={rows}
             loading={false}
             busyProjects={[]}
+            unavailableCodeEditorIds={unavailableCodeEditorIds}
             sortData={{ field: 'name', order: 'asc' }}
             onSortChange={vi.fn()}
             isInstalledRelease={vi.fn(() => true)}
@@ -84,5 +88,17 @@ describe('ProjectsTable', () => {
         expect(html).toContain('table.codeEditorProject');
         expect(html).toContain('role="img"');
         expect(html).not.toContain('alt="VSCode"');
+    });
+
+    it('renders a warning marker when the selected code editor is unavailable', () => {
+        const html = renderProjectsTable(
+            [{ ...baseProject, codeEditorId: 'vscode' }],
+            ['vscode'],
+        );
+
+        expect(html).toContain('table.codeEditorUnavailable');
+        expect(html).toContain('tooltip-warning');
+        expect(html).toContain('text-warning');
+        expect(html).not.toContain('table.codeEditorProject');
     });
 });

@@ -184,6 +184,27 @@ describe('CodeEditorIntegrationService', () => {
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
     });
 
+    it('rescans one integration and returns its current settings', async () => {
+        const integration = createIntegration();
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            CODE_EDITOR_ID,
+        );
+        const service = createService(integration, settingsStore);
+
+        await expect(
+            service.rescanIntegration(CODE_EDITOR_ID),
+        ).resolves.toMatchObject({
+            integration: integration.metadata,
+            isDefault: true,
+            installation: {
+                integrationId: CODE_EDITOR_ID,
+                path: path.resolve('tools', 'code'),
+            },
+        });
+        expect(integration.detectInstallation).toHaveBeenCalledOnce();
+    });
+
     it.each([
         { enabled: false, available: true },
         { enabled: true, available: false },

@@ -79,7 +79,8 @@
             "edit": "Düzenle",
             "save": "Kaydet",
             "saving": "Kaydediliyor...",
-            "cancel": "İptal"
+            "cancel": "İptal",
+            "rescan": "Yeniden tara"
         },
         "status": {
             "available": "Mevcut",
@@ -87,7 +88,9 @@
             "loadFailed": "Kod düzenleyicileri yüklenemedi.",
             "default": "Varsayılan kod düzenleyici",
             "enabled": "Etkin",
-            "disabled": "Devre dışı"
+            "disabled": "Devre dışı",
+            "rescanFailed": "Yeniden taranamadı.",
+            "projectUsage": "Yapılandırılmış projeler: {{count}}. .NET projeleri: {{dotnetCount}}."
         },
         "overview": "Kod düzenleyici algılamasını yönetin ve yeni projeler için hangi düzenleyicinin önceden seçileceğini belirleyin.",
         "drawer": {
@@ -125,6 +128,13 @@
         },
         "messages": {
             "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "{{editor}} devre dışı bırakılsın mı?",
+            "usage": "Yapılandırılmış projeler: {{count}}. .NET projeleri: {{dotnetCount}}.",
+            "existingProjects": "Mevcut projeler bu düzenleyici seçimini ve geçerli Godot düzenleyici ayarlarını korur. Kurulu olduğu sürece kullanmaya devam edebilirler.",
+            "newProjects": "Düzenleyici yeni seçimler ve otomatik proje algılama için kullanılamaz.",
+            "disable": "Devre dışı bırak"
         }
     },
     "tools": {

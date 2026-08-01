@@ -1,4 +1,4 @@
-import type { ProjectDetails } from '@shared/contracts';
+import type { CodeEditorId, ProjectDetails } from '@shared/contracts';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import {
@@ -26,6 +26,7 @@ type ProjectsTableProps = {
     rows: ProjectDetails[];
     loading: boolean;
     busyProjects: string[];
+    unavailableCodeEditorIds: CodeEditorId[];
     sortData: ProjectSortData;
     onSortChange: (sortData: ProjectSortData) => void;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
@@ -51,6 +52,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     rows,
     loading,
     busyProjects,
+    unavailableCodeEditorIds,
     sortData,
     onSortChange,
     isInstalledRelease,
@@ -202,17 +204,37 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 {row.codeEditorId && (
                                                     <Tooltip
                                                         tip={t(
-                                                            'table.codeEditorProject',
+                                                            unavailableCodeEditorIds.includes(
+                                                                row.codeEditorId,
+                                                            )
+                                                                ? 'table.codeEditorUnavailable'
+                                                                : 'table.codeEditorProject',
                                                         )}
-                                                        tone="primary"
+                                                        tone={
+                                                            unavailableCodeEditorIds.includes(
+                                                                row.codeEditorId,
+                                                            )
+                                                                ? 'warning'
+                                                                : 'primary'
+                                                        }
                                                         className="flex items-center"
                                                         role="img"
                                                         ariaLabel={t(
-                                                            'table.codeEditorProject',
+                                                            unavailableCodeEditorIds.includes(
+                                                                row.codeEditorId,
+                                                            )
+                                                                ? 'table.codeEditorUnavailable'
+                                                                : 'table.codeEditorProject',
                                                         )}
                                                     >
                                                         <Code2
-                                                            className="size-4 text-base-content/50"
+                                                            className={
+                                                                unavailableCodeEditorIds.includes(
+                                                                    row.codeEditorId,
+                                                                )
+                                                                    ? 'size-4 text-warning'
+                                                                    : 'size-4 text-base-content/50'
+                                                            }
                                                             aria-hidden="true"
                                                         />
                                                     </Tooltip>

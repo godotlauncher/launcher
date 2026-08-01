@@ -42,6 +42,9 @@ export type UpdateCodeEditorIntegrationSettings = {
 
 export type CodeEditorIntegrationBridge = {
     listIntegrationSettings(): Promise<CodeEditorIntegrationSettings[]>;
+    rescanIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorIntegrationSettings>;
     updateIntegrationSettings(
         integrationId: CodeEditorId,
         settings: UpdateCodeEditorIntegrationSettings,
