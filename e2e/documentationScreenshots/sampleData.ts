@@ -289,6 +289,7 @@ export const SAMPLE_VSCODE_SETTINGS_AVAILABLE: CodeEditorIntegrationSettings = {
             dotnet: true,
         },
     },
+    isDefault: false,
     enabled: true,
     customPath: null,
     defaultExecFlags: '{project} --goto {file}:{line}:{col}',

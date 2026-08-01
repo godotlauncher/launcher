@@ -25,6 +25,7 @@ export type CodeEditorPathValidationResult = {
 
 export type CodeEditorIntegrationSettings = {
     integration: CodeEditorIntegrationSummary;
+    isDefault: boolean;
     enabled: boolean;
     customPath: string | null;
     defaultExecFlags: string;
@@ -47,6 +48,9 @@ export type CodeEditorIntegrationBridge = {
         integrationId: CodeEditorId,
         settings: UpdateCodeEditorIntegrationSettings,
     ): Promise<CodeEditorIntegrationSettings>;
+    setDefaultIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorIntegrationSettings[]>;
     scanIntegration(
         integrationId: CodeEditorId,
     ): Promise<CodeEditorInstallationSummary | null>;

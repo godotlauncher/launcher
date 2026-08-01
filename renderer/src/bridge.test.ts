@@ -17,6 +17,9 @@ type TestElectronApi = {
         integrationId: string,
         settings: unknown,
     ) => Promise<unknown>;
+    'codeEditorIntegration.setDefaultIntegration': (
+        integrationId: string,
+    ) => Promise<unknown[]>;
     'codeEditorIntegration.scanIntegration': (
         integrationId: string,
     ) => Promise<unknown>;
@@ -40,6 +43,7 @@ describe('renderer bridge', () => {
         customPath: null,
         execFlagsOverride: '',
     }));
+    const setDefaultIntegration = vi.fn(async () => []);
     const scanIntegration = vi.fn(async () => ({
         integrationId: 'vscode',
         path: '/tools/code',
@@ -70,6 +74,8 @@ describe('renderer bridge', () => {
                 listIntegrationSettings,
             'codeEditorIntegration.updateIntegrationSettings':
                 updateIntegrationSettings,
+            'codeEditorIntegration.setDefaultIntegration':
+                setDefaultIntegration,
             'codeEditorIntegration.scanIntegrations': scanIntegrations,
             'codeEditorIntegration.validateIntegrationPath':
                 validateIntegrationPath,
@@ -111,6 +117,7 @@ describe('renderer bridge', () => {
             customPath: null,
             execFlagsOverride: '',
         });
+        await codeEditorIntegrationBridge.setDefaultIntegration('vscode');
         await codeEditorIntegrationBridge.validateIntegrationPath(
             'vscode',
             '/custom/code',
@@ -129,6 +136,7 @@ describe('renderer bridge', () => {
             customPath: null,
             execFlagsOverride: '',
         });
+        expect(setDefaultIntegration).toHaveBeenCalledWith('vscode');
     });
 
     it('subscribes and unsubscribes from application events', () => {

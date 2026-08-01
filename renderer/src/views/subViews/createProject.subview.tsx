@@ -30,6 +30,7 @@ import {
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
+    resolveCreateProjectCodeEditorId,
 } from './createProject/createProject.model';
 
 type SubViewProps = {
@@ -292,13 +293,17 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     }, [listIntegrationSettings]);
 
     useEffect(() => {
-        if (loadingTools) return;
+        if (loadingTools || loadingCodeEditors) return;
 
         const hasGit = hasTool('Git');
         const hasVSCode = hasTool('VSCode');
         setWithGit(hasGit);
-        setWithVSCode(hasVSCode);
-    }, [hasTool, loadingTools]);
+        setWithVSCode(
+            codeEditorIdToLegacyVSCodeFlag(
+                resolveCreateProjectCodeEditorId(codeEditorSettings, hasVSCode),
+            ),
+        );
+    }, [codeEditorSettings, hasTool, loadingCodeEditors, loadingTools]);
 
     const showVSCodeHelp = () => {
         addAlert(

@@ -2,9 +2,10 @@ import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 import type { CachedTool } from '../tools/index.js';
 
 export type CodeEditorIntegrationPreferences = {
+    is_default?: boolean;
     enabled?: boolean;
-    custom_path?: string;
-    text_editor_exec_flags_override?: string;
+    executable_path?: string;
+    executable_args?: string;
 };
 
 export type UserPreferences = {

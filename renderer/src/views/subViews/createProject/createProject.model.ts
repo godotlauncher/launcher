@@ -1,5 +1,7 @@
 import type {
     CachedTool,
+    CodeEditorId,
+    CodeEditorIntegrationSettings,
     InstalledRelease,
     RendererType,
 } from '@shared/contracts';
@@ -121,4 +123,21 @@ export const isVerifiedToolAvailable = (
 ): boolean => {
     const tool = tools.find((tool) => tool.name === name);
     return tool?.verified === true && (tool.path?.length || 0) > 0;
+};
+
+export const resolveCreateProjectCodeEditorId = (
+    settings: CodeEditorIntegrationSettings[],
+    legacyVSCodeAvailable: boolean,
+): CodeEditorId | null => {
+    const defaultSettings = settings.find(
+        (integrationSettings) => integrationSettings.isDefault,
+    );
+
+    if (!defaultSettings) {
+        return legacyVSCodeAvailable ? 'vscode' : null;
+    }
+
+    return defaultSettings.enabled && defaultSettings.installation
+        ? defaultSettings.integration.id
+        : null;
 };

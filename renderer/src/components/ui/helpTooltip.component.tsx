@@ -15,7 +15,10 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
     <Tooltip
         tip={help}
         tone="info"
-        className={clsx('z-20 hover:z-50 focus-within:z-50', className)}
+        className={clsx(
+            'text-info z-20 hover:z-50 focus-within:z-50',
+            className,
+        )}
         role="img"
         ariaLabel={help}
     >

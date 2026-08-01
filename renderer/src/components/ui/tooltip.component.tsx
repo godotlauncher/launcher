@@ -24,7 +24,7 @@ const tooltipToneClassNames: Record<TooltipTone, string | undefined> = {
     primary: 'tooltip-primary',
     secondary: 'tooltip-secondary',
     error: 'tooltip-error',
-    info: 'text-info',
+    info: 'tooltip-info',
 };
 
 export const Tooltip: React.FC<TooltipProps> = ({

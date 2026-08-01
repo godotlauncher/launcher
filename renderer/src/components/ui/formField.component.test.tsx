@@ -15,6 +15,8 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('data-tip="Use an absolute path."');
         expect(html).toContain('aria-label="Use an absolute path."');
+        expect(html).toContain('tooltip-info');
+        expect(html).toContain('text-info');
         expect(html).toContain('lucide-circle-question-mark');
     });
 
@@ -28,6 +30,17 @@ describe('UI form primitives', () => {
         expect(html).toContain('data-tip="Open folder"');
         expect(html).toContain('tooltip-left');
         expect(html).toContain('tooltip-primary');
+    });
+
+    it('uses the DaisyUI info tone for generic tooltips', () => {
+        const html = renderToStaticMarkup(
+            <Tooltip tip="More information" tone="info">
+                <span>Info</span>
+            </Tooltip>,
+        );
+
+        expect(html).toContain('tooltip-info');
+        expect(html).not.toContain('text-info');
     });
 
     it('renders form labels, help, children, and field errors', () => {

@@ -9,6 +9,7 @@ const settings: CodeEditorIntegrationSettings = {
         displayName: 'Visual Studio Code',
         capabilities: { textEditor: true, dotnet: true },
     },
+    isDefault: false,
     enabled: true,
     customPath: null,
     defaultExecFlags: '{project} --goto {file}:{line}:{col}',
@@ -33,6 +34,7 @@ function renderPanel(
             t={(key) => key}
             settings={[settings]}
             onEdit={vi.fn()}
+            onSetDefault={vi.fn(async () => {})}
             onEnabledChange={vi.fn(async () => {})}
             loading={false}
             loadError={false}
@@ -50,13 +52,28 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain('codeEditors.status.enabled');
         expect(html).toContain('detected-code-editor-path');
         expect(html).toContain('codeEditors.actions.edit');
-        expect(html).toContain('>.NET</span>');
+        expect(html).toContain(
+            '>.NET codeEditors.drawer.dotnet.supported</span>',
+        );
         expect(html).toContain('badge-success');
         expect(html).toContain('lucide-pencil');
         expect(html).toContain('lucide-copy');
-        expect(html.indexOf('>.NET</span>')).toBeLessThan(
-            html.indexOf('codeEditors.status.available'),
+        expect(html).toContain('codeEditors.actions.setDefault');
+        expect(html).toContain('aria-pressed="false"');
+        expect(html).toContain('lucide-star');
+        expect(html).toContain('data-tip="codeEditors.actions.setDefault"');
+        expect(html).toContain('data-tip="codeEditors.actions.edit"');
+        expect(html).not.toContain('title="codeEditors.actions.setDefault"');
+        expect(html).not.toContain('title="codeEditors.actions.edit"');
+        expect(html).not.toContain(
+            'title="codeEditors.drawer.dotnet.supported"',
         );
+        expect(html).not.toContain('title="codeEditors.status.available"');
+        expect(html).not.toContain('title="codeEditors.status.enabled"');
+        expect(
+            html.indexOf('>.NET codeEditors.drawer.dotnet.supported</span>'),
+        ).toBeLessThan(html.indexOf('codeEditors.status.available'));
+        expect(html).toContain('tooltip-top');
     });
 
     it('renders an unavailable integration without installation details', () => {
@@ -73,6 +90,32 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).not.toContain('detected-code-editor-path');
         expect(html).not.toContain('>N/A</span>');
         expect(html).not.toContain('lucide-copy');
+        expect(html).not.toContain('lucide-star');
+        expect(html).not.toContain('btn-set-default-code-editor-vscode');
+        expect(html).not.toContain('title="codeEditors.status.disabled"');
+    });
+
+    it('explains why an enabled unavailable integration cannot be the default', () => {
+        const html = renderPanel({
+            settings: [{ ...settings, installation: null }],
+        });
+
+        expect(html).toContain('lucide-star');
+        expect(html).toContain('data-tip="codeEditors.status.missing"');
+        expect(html).toContain('aria-label="codeEditors.status.missing"');
+        expect(html).toContain('disabled=""');
+        expect(html).toContain('lucide-pencil');
+    });
+
+    it('marks the selected default integration', () => {
+        const html = renderPanel({
+            settings: [{ ...settings, isDefault: true }],
+        });
+
+        expect(html).toContain('codeEditors.status.default');
+        expect(html).toContain('aria-pressed="true"');
+        expect(html).toContain('fill-primary');
+        expect(html).toContain('disabled=""');
     });
 
     it('omits the .NET badge when the integration does not support it', () => {
@@ -91,7 +134,9 @@ describe('CodeEditorSettingsPanel', () => {
             ],
         });
 
-        expect(html).not.toContain('>.NET</span>');
+        expect(html).not.toContain(
+            '>.NET codeEditors.drawer.dotnet.supported</span>',
+        );
     });
 
     it('renders loading and error states independently', () => {

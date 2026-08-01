@@ -46,6 +46,15 @@ export class CodeEditorIntegrationController
         );
     }
 
+    @CodeEditorIntegrationHandler('setDefaultIntegration')
+    setDefaultIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorIntegrationSettings[]> {
+        return this.codeEditorIntegrationService.setDefaultIntegration(
+            integrationId,
+        );
+    }
+
     @CodeEditorIntegrationHandler('scanIntegration')
     scanIntegration(
         integrationId: CodeEditorId,

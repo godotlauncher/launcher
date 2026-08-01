@@ -20,6 +20,7 @@ const installation: CodeEditorInstallationSummary = {
 };
 const settings: CodeEditorIntegrationSettings = {
     integration,
+    isDefault: false,
     enabled: true,
     customPath: null,
     defaultExecFlags: '{project} --goto {file}:{line}:{col}',
@@ -34,6 +35,9 @@ describe('useCodeEditorIntegrations', () => {
     const scanIntegration = vi.fn(async () => installation);
     const listIntegrationSettings = vi.fn(async () => [settings]);
     const updateIntegrationSettings = vi.fn(async () => settings);
+    const setDefaultIntegration = vi.fn(async () => [
+        { ...settings, isDefault: true },
+    ]);
     const scanIntegrations = vi.fn(async () => [installation]);
     const validateIntegrationPath = vi.fn(
         async (): Promise<CodeEditorPathValidationResult> => ({
@@ -57,6 +61,8 @@ describe('useCodeEditorIntegrations', () => {
                     listIntegrationSettings,
                 'codeEditorIntegration.updateIntegrationSettings':
                     updateIntegrationSettings,
+                'codeEditorIntegration.setDefaultIntegration':
+                    setDefaultIntegration,
                 'codeEditorIntegration.validateIntegrationPath':
                     validateIntegrationPath,
             },
@@ -108,10 +114,14 @@ describe('useCodeEditorIntegrations', () => {
             hook.updateIntegrationSettings('vscode', update),
         ).resolves.toEqual(settings);
         expect(listIntegrationSettings).toHaveBeenCalledOnce();
+        await expect(hook.setDefaultIntegration('vscode')).resolves.toEqual([
+            { ...settings, isDefault: true },
+        ]);
         expect(updateIntegrationSettings).toHaveBeenCalledWith(
             'vscode',
             update,
         );
+        expect(setDefaultIntegration).toHaveBeenCalledWith('vscode');
     });
 
     it('delegates path validation to the integration bridge', async () => {

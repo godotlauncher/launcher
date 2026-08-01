@@ -101,6 +101,8 @@ function createSettingsStore(
     },
 ): CodeEditorIntegrationSettingsStore {
     return {
+        getDefaultIntegrationId: vi.fn().mockResolvedValue(null),
+        setDefaultIntegrationId: vi.fn().mockResolvedValue(undefined),
         get: vi.fn().mockResolvedValue(settings),
         update: vi.fn().mockResolvedValue(undefined),
     } as unknown as CodeEditorIntegrationSettingsStore;
@@ -158,6 +160,7 @@ describe('CodeEditorIntegrationService', () => {
             {
                 integration: integration.metadata,
                 enabled: false,
+                isDefault: false,
                 customPath,
                 defaultExecFlags: '{project} --goto {file}:{line}:{col}',
                 execFlagsOverride: '--goto {file}',
@@ -181,6 +184,22 @@ describe('CodeEditorIntegrationService', () => {
         });
         expect(integration.configureProject).not.toHaveBeenCalled();
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
+    });
+
+    it('persists a default integration and returns refreshed settings', async () => {
+        const integration = createIntegration();
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            CODE_EDITOR_ID,
+        );
+        const service = createService(integration, settingsStore);
+
+        await expect(
+            service.setDefaultIntegration(CODE_EDITOR_ID),
+        ).resolves.toMatchObject([{ isDefault: true }]);
+        expect(settingsStore.setDefaultIntegrationId).toHaveBeenCalledWith(
+            CODE_EDITOR_ID,
+        );
     });
 
     it('validates and normalizes settings before storing them', async () => {

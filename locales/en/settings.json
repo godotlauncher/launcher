@@ -70,9 +70,10 @@
         }
     },
     "codeEditors": {
-        "overview": "Manage code editor detection and defaults here. These settings are not applied to projects yet.",
+        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
         "actions": {
             "scanning": "Rescanning...",
+            "setDefault": "Set as default",
             "edit": "Edit",
             "save": "Save",
             "saving": "Saving...",
@@ -82,6 +83,7 @@
             "available": "Available",
             "missing": "Not found",
             "unknown": "Unknown",
+            "default": "Default code editor",
             "enabled": "Enabled",
             "disabled": "Disabled"
         },

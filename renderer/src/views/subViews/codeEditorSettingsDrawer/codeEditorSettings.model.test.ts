@@ -14,6 +14,7 @@ const settings: CodeEditorIntegrationSettings = {
         displayName: 'Visual Studio Code',
         capabilities: { textEditor: true, dotnet: true },
     },
+    isDefault: false,
     enabled: true,
     customPath: null,
     defaultExecFlags: '{project} --goto {file}:{line}:{col}',

@@ -24,6 +24,7 @@ const availableVSCodeSettings: CodeEditorIntegrationSettings = {
             dotnet: true,
         },
     },
+    isDefault: false,
     enabled: true,
     customPath: null,
     defaultExecFlags: '{project} --goto {file}:{line}:{col}',

@@ -18,27 +18,56 @@ export type StoredCodeEditorIntegrationSettings = {
 
 @Injectable()
 export class CodeEditorIntegrationSettingsStore {
+    async getDefaultIntegrationId(): Promise<CodeEditorId | null> {
+        const preferences = await getUserPreferences();
+        const integrationSettings = preferences.code_editor_integrations ?? {};
+
+        return (
+            (Object.keys(integrationSettings) as CodeEditorId[]).find(
+                (integrationId) =>
+                    integrationSettings[integrationId]?.is_default === true,
+            ) ?? null
+        );
+    }
+
+    async setDefaultIntegrationId(integrationId: CodeEditorId): Promise<void> {
+        const preferences = await getUserPreferences();
+        const currentIntegrations = preferences.code_editor_integrations ?? {};
+        const nextIntegrations = Object.fromEntries(
+            Object.entries(currentIntegrations).map(([currentId, settings]) => [
+                currentId,
+                {
+                    ...settings,
+                    is_default: currentId === integrationId,
+                },
+            ]),
+        ) as Partial<Record<CodeEditorId, CodeEditorIntegrationPreferences>>;
+        nextIntegrations[integrationId] = {
+            ...currentIntegrations[integrationId],
+            is_default: true,
+        };
+
+        await setUserPreferences({
+            ...preferences,
+            code_editor_integrations: nextIntegrations,
+        });
+    }
+
     async get(
         integrationId: CodeEditorId,
     ): Promise<StoredCodeEditorIntegrationSettings> {
         const preferences = await getUserPreferences();
         const integrationPreferences =
             preferences.code_editor_integrations?.[integrationId];
-        const storedCustomPath = this.normalizePath(
-            integrationPreferences?.custom_path,
-        );
-        const legacyVSCodePath =
-            integrationId === 'vscode'
-                ? this.normalizePath(preferences.vs_code_path)
-                : null;
 
         return {
             enabled: integrationPreferences?.enabled ?? true,
-            customPath: legacyVSCodePath ?? storedCustomPath,
+            customPath: this.normalizePath(
+                integrationPreferences?.executable_path,
+            ),
             execFlagsOverride:
-                typeof integrationPreferences?.text_editor_exec_flags_override ===
-                'string'
-                    ? integrationPreferences.text_editor_exec_flags_override
+                typeof integrationPreferences?.executable_args === 'string'
+                    ? integrationPreferences.executable_args
                     : null,
         };
     }
@@ -48,15 +77,19 @@ export class CodeEditorIntegrationSettingsStore {
         settings: UpdateCodeEditorIntegrationSettings,
     ): Promise<void> {
         const preferences = await getUserPreferences();
+        const currentIntegrationPreferences =
+            preferences.code_editor_integrations?.[integrationId];
         const integrationPreferences: CodeEditorIntegrationPreferences = {
+            ...(typeof currentIntegrationPreferences?.is_default === 'boolean'
+                ? { is_default: currentIntegrationPreferences.is_default }
+                : {}),
             enabled: settings.enabled,
-            ...(integrationId !== 'vscode' && settings.customPath
-                ? { custom_path: settings.customPath }
+            ...(settings.customPath
+                ? { executable_path: settings.customPath }
                 : {}),
             ...(settings.execFlagsOverride !== null
                 ? {
-                      text_editor_exec_flags_override:
-                          settings.execFlagsOverride,
+                      executable_args: settings.execFlagsOverride,
                   }
                 : {}),
         };
@@ -66,9 +99,6 @@ export class CodeEditorIntegrationSettingsStore {
                 ...preferences.code_editor_integrations,
                 [integrationId]: integrationPreferences,
             },
-            ...(integrationId === 'vscode'
-                ? { vs_code_path: settings.customPath ?? '' }
-                : {}),
         };
 
         await setUserPreferences(nextPreferences);

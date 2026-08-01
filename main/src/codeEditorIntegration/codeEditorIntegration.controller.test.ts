@@ -34,6 +34,7 @@ const installation: CodeEditorInstallationSummary = {
 };
 const settings: CodeEditorIntegrationSettings = {
     integration,
+    isDefault: false,
     enabled: true,
     customPath: null,
     defaultExecFlags: '{project} --goto {file}:{line}:{col}',
@@ -48,6 +49,9 @@ function createServiceMock() {
         listIntegrations: vi.fn().mockReturnValue([integration]),
         listIntegrationSettings: vi.fn().mockResolvedValue([settings]),
         updateIntegrationSettings: vi.fn().mockResolvedValue(settings),
+        setDefaultIntegration: vi
+            .fn()
+            .mockResolvedValue([{ ...settings, isDefault: true }]),
         scanIntegration: vi.fn().mockResolvedValue(installation),
         scanIntegrations: vi.fn().mockResolvedValue([installation]),
         validateIntegrationPath: vi.fn().mockResolvedValue({
@@ -91,10 +95,16 @@ describe('CodeEditorIntegrationController', () => {
         await expect(
             controller.updateIntegrationSettings(CODE_EDITOR_ID, update),
         ).resolves.toEqual(settings);
+        await expect(
+            controller.setDefaultIntegration(CODE_EDITOR_ID),
+        ).resolves.toEqual([{ ...settings, isDefault: true }]);
         expect(service.listIntegrationSettings).toHaveBeenCalledOnce();
         expect(service.updateIntegrationSettings).toHaveBeenCalledWith(
             CODE_EDITOR_ID,
             update,
+        );
+        expect(service.setDefaultIntegration).toHaveBeenCalledWith(
+            CODE_EDITOR_ID,
         );
     });
 

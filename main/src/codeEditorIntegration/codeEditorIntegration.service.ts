@@ -37,13 +37,26 @@ export class CodeEditorIntegrationService {
     }
 
     async listIntegrationSettings(): Promise<CodeEditorIntegrationSettings[]> {
+        const defaultIntegrationId =
+            await this.settingsStore.getDefaultIntegrationId();
         return Promise.all(
             this.registry
                 .list()
                 .map((integration) =>
-                    this.toIntegrationSettings(integration.metadata.id),
+                    this.toIntegrationSettings(
+                        integration.metadata.id,
+                        defaultIntegrationId,
+                    ),
                 ),
         );
+    }
+
+    async setDefaultIntegration(
+        integrationId: CodeEditorId,
+    ): Promise<CodeEditorIntegrationSettings[]> {
+        this.registry.get(integrationId);
+        await this.settingsStore.setDefaultIntegrationId(integrationId);
+        return this.listIntegrationSettings();
     }
 
     async updateIntegrationSettings(
@@ -76,7 +89,9 @@ export class CodeEditorIntegrationService {
             execFlagsOverride,
         });
 
-        return this.toIntegrationSettings(integrationId);
+        const defaultIntegrationId =
+            await this.settingsStore.getDefaultIntegrationId();
+        return this.toIntegrationSettings(integrationId, defaultIntegrationId);
     }
 
     async scanIntegration(
@@ -204,6 +219,7 @@ export class CodeEditorIntegrationService {
 
     private async toIntegrationSettings(
         integrationId: CodeEditorId,
+        defaultIntegrationId: CodeEditorId | null,
     ): Promise<CodeEditorIntegrationSettings> {
         const integration = this.registry.get(integrationId);
         const storedSettings = await this.settingsStore.get(integrationId);
@@ -223,6 +239,7 @@ export class CodeEditorIntegrationService {
         return {
             integration: integration.metadata,
             enabled: storedSettings.enabled,
+            isDefault: integrationId === defaultIntegrationId,
             customPath: storedSettings.customPath,
             defaultExecFlags: integration.defaultSettings.execFlags,
             execFlagsOverride: storedSettings.execFlagsOverride,

@@ -1,4 +1,7 @@
-import type { InstalledRelease } from '@shared/contracts';
+import type {
+    CodeEditorIntegrationSettings,
+    InstalledRelease,
+} from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
     buildCreateProjectReleaseRows,
@@ -7,6 +10,7 @@ import {
     isVerifiedToolAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
+    resolveCreateProjectCodeEditorId,
 } from './createProject.model';
 
 const installedRelease = (
@@ -24,6 +28,29 @@ const installedRelease = (
     config_version: 5,
     published_at: null,
     valid: true,
+    ...overrides,
+});
+
+const codeEditorSettings = (
+    overrides: Partial<CodeEditorIntegrationSettings> = {},
+): CodeEditorIntegrationSettings => ({
+    integration: {
+        id: 'vscode',
+        displayName: 'Visual Studio Code',
+        capabilities: { textEditor: true, dotnet: true },
+    },
+    isDefault: true,
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/usr/bin/code',
+        version: null,
+    },
+    resolvedGodotExecPath: '/usr/bin/code',
     ...overrides,
 });
 
@@ -108,5 +135,27 @@ describe('create project model helpers', () => {
                 'VSCode',
             ),
         ).toBe(false);
+    });
+
+    it('uses an explicit available default and preserves the legacy fallback', () => {
+        const availableDefault = codeEditorSettings();
+
+        expect(
+            resolveCreateProjectCodeEditorId([availableDefault], false),
+        ).toBe('vscode');
+        expect(
+            resolveCreateProjectCodeEditorId(
+                [{ ...availableDefault, enabled: false }],
+                true,
+            ),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId(
+                [{ ...availableDefault, installation: null }],
+                true,
+            ),
+        ).toBeNull();
+        expect(resolveCreateProjectCodeEditorId([], true)).toBe('vscode');
+        expect(resolveCreateProjectCodeEditorId([], false)).toBeNull();
     });
 });

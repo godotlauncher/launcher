@@ -16,6 +16,9 @@ export type CodeEditorIntegrationsHook = {
         integrationId: CodeEditorId,
         settings: UpdateCodeEditorIntegrationSettings,
     ) => Promise<CodeEditorIntegrationSettings>;
+    setDefaultIntegration: (
+        integrationId: CodeEditorId,
+    ) => Promise<CodeEditorIntegrationSettings[]>;
     scanIntegration: (
         integrationId: CodeEditorId,
     ) => Promise<CodeEditorInstallationSummary | null>;
@@ -46,6 +49,11 @@ export function useCodeEditorIntegrations(): CodeEditorIntegrationsHook {
             ),
         [],
     );
+    const setDefaultIntegration = useCallback(
+        (integrationId: CodeEditorId) =>
+            codeEditorIntegrationBridge.setDefaultIntegration(integrationId),
+        [],
+    );
     const scanIntegration = useCallback(
         (integrationId: CodeEditorId) =>
             codeEditorIntegrationBridge.scanIntegration(integrationId),
@@ -68,6 +76,7 @@ export function useCodeEditorIntegrations(): CodeEditorIntegrationsHook {
         listIntegrations,
         listIntegrationSettings,
         updateIntegrationSettings,
+        setDefaultIntegration,
         scanIntegration,
         scanIntegrations,
         validateIntegrationPath,

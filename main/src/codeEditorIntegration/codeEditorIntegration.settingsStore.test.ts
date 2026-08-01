@@ -39,15 +39,39 @@ describe('CodeEditorIntegrationSettingsStore', () => {
         );
     });
 
-    it('reads the legacy VS Code path and defaults enabled state', async () => {
+    it('reads and updates the default integration without changing other preferences', async () => {
+        const preferences = createPreferences({
+            language: 'de',
+            code_editor_integrations: {
+                vscode: { enabled: false, executable_path: 'custom/code' },
+            },
+        });
+        preferenceMocks.getUserPreferences.mockResolvedValue(preferences);
+        const store = new CodeEditorIntegrationSettingsStore();
+
+        await expect(store.getDefaultIntegrationId()).resolves.toBeNull();
+        await store.setDefaultIntegrationId('vscode');
+
+        expect(preferenceMocks.setUserPreferences).toHaveBeenCalledWith({
+            ...preferences,
+            code_editor_integrations: {
+                vscode: {
+                    enabled: false,
+                    executable_path: 'custom/code',
+                    is_default: true,
+                },
+            },
+        });
+    });
+
+    it('reads all VS Code integration settings from its own preference object', async () => {
         preferenceMocks.getUserPreferences.mockResolvedValue(
             createPreferences({
-                vs_code_path: ' custom/code ',
                 code_editor_integrations: {
                     vscode: {
                         enabled: false,
-                        custom_path: 'ignored/map/code',
-                        text_editor_exec_flags_override: '',
+                        executable_path: ' custom/code ',
+                        executable_args: '',
                     },
                 },
             }),
@@ -62,13 +86,10 @@ describe('CodeEditorIntegrationSettingsStore', () => {
         });
     });
 
-    it('falls back to the new map when the legacy path is empty', async () => {
+    it('does not read the legacy VS Code path into the new integration', async () => {
         preferenceMocks.getUserPreferences.mockResolvedValue(
             createPreferences({
-                vs_code_path: '',
-                code_editor_integrations: {
-                    vscode: { custom_path: 'map/code' },
-                },
+                vs_code_path: 'legacy/code',
             }),
         );
 
@@ -76,13 +97,16 @@ describe('CodeEditorIntegrationSettingsStore', () => {
             new CodeEditorIntegrationSettingsStore().get('vscode'),
         ).resolves.toEqual({
             enabled: true,
-            customPath: 'map/code',
+            customPath: null,
             execFlagsOverride: null,
         });
     });
 
-    it('keeps the legacy path synchronized when settings are updated', async () => {
-        const preferences = createPreferences({ language: 'de' });
+    it('writes the executable path inside the VS Code integration object', async () => {
+        const preferences = createPreferences({
+            language: 'de',
+            vs_code_path: 'legacy/code',
+        });
         preferenceMocks.getUserPreferences.mockResolvedValue(preferences);
 
         await new CodeEditorIntegrationSettingsStore().update('vscode', {
@@ -93,23 +117,24 @@ describe('CodeEditorIntegrationSettingsStore', () => {
 
         expect(preferenceMocks.setUserPreferences).toHaveBeenCalledWith({
             ...preferences,
-            vs_code_path: 'custom/code',
             code_editor_integrations: {
                 vscode: {
                     enabled: false,
-                    text_editor_exec_flags_override: '--goto {file}',
+                    executable_path: 'custom/code',
+                    executable_args: '--goto {file}',
                 },
             },
         });
     });
 
-    it('clears compatibility values when defaults are restored', async () => {
+    it('clears integration overrides without changing legacy preferences', async () => {
         const preferences = createPreferences({
             vs_code_path: 'old/code',
             code_editor_integrations: {
                 vscode: {
                     enabled: false,
-                    text_editor_exec_flags_override: '--old',
+                    executable_args: '--old',
+                    is_default: true,
                 },
             },
         });
@@ -123,9 +148,8 @@ describe('CodeEditorIntegrationSettingsStore', () => {
 
         expect(preferenceMocks.setUserPreferences).toHaveBeenCalledWith({
             ...preferences,
-            vs_code_path: '',
             code_editor_integrations: {
-                vscode: { enabled: true },
+                vscode: { enabled: true, is_default: true },
             },
         });
     });

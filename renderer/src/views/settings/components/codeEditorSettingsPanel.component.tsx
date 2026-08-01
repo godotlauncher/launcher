@@ -1,7 +1,8 @@
 import type { CodeEditorIntegrationSettings } from '@shared/contracts';
-import { Pencil } from 'lucide-react';
+import { Pencil, Star } from 'lucide-react';
 import type React from 'react';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
+import { Tooltip } from '../../../components/ui/tooltip.component';
 import { SettingsPanelSection } from './settingsPanelSection.component';
 
 type Translate = (key: string) => string;
@@ -11,6 +12,7 @@ type CodeEditorSettingsPanelProps = {
     t: Translate;
     settings: CodeEditorIntegrationSettings[];
     onEdit: (settings: CodeEditorIntegrationSettings) => void;
+    onSetDefault: (settings: CodeEditorIntegrationSettings) => Promise<void>;
     onEnabledChange: (
         settings: CodeEditorIntegrationSettings,
         enabled: boolean,
@@ -21,7 +23,16 @@ type CodeEditorSettingsPanelProps = {
 
 export const CodeEditorSettingsPanel: React.FC<
     CodeEditorSettingsPanelProps
-> = ({ active, t, settings, onEdit, onEnabledChange, loading, loadError }) => (
+> = ({
+    active,
+    t,
+    settings,
+    onEdit,
+    onSetDefault,
+    onEnabledChange,
+    loading,
+    loadError,
+}) => (
     <SettingsPanelSection active={active}>
         <p className="text-sm text-base-content/70">
             {t('codeEditors.overview')}
@@ -61,22 +72,15 @@ export const CodeEditorSettingsPanel: React.FC<
                                     </h2>
                                     {integrationSettings.integration
                                         .capabilities.dotnet && (
-                                        <span
-                                            className="badge badge-outline badge-sm shrink-0"
-                                            title={t(
+                                        <span className="badge badge-outline badge-sm shrink-0">
+                                            .NET{' '}
+                                            {t(
                                                 'codeEditors.drawer.dotnet.supported',
                                             )}
-                                        >
-                                            .NET
                                         </span>
                                     )}
                                     {integrationSettings.installation && (
-                                        <span
-                                            className="badge badge-success badge-sm shrink-0"
-                                            title={t(
-                                                'codeEditors.status.available',
-                                            )}
-                                        >
+                                        <span className="badge badge-success badge-sm shrink-0">
                                             {t('codeEditors.status.available')}
                                         </span>
                                     )}
@@ -100,30 +104,79 @@ export const CodeEditorSettingsPanel: React.FC<
                             </div>
                             <div className="flex min-h-8 shrink-0 items-center gap-2">
                                 {integrationSettings.enabled && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-square btn-ghost btn-sm"
-                                        aria-label={t(
-                                            'codeEditors.actions.edit',
+                                    <Tooltip
+                                        tip={t(
+                                            integrationSettings.isDefault
+                                                ? 'codeEditors.status.default'
+                                                : integrationSettings.installation
+                                                  ? 'codeEditors.actions.setDefault'
+                                                  : 'codeEditors.status.missing',
                                         )}
-                                        title={t('codeEditors.actions.edit')}
-                                        onClick={() =>
-                                            onEdit(integrationSettings)
-                                        }
+                                        placement="top"
                                     >
-                                        <Pencil size={16} aria-hidden="true" />
-                                    </button>
+                                        <button
+                                            type="button"
+                                            data-testid={`btn-set-default-code-editor-${integrationSettings.integration.id}`}
+                                            className="btn btn-square btn-ghost btn-sm"
+                                            aria-label={t(
+                                                integrationSettings.isDefault
+                                                    ? 'codeEditors.status.default'
+                                                    : integrationSettings.installation
+                                                      ? 'codeEditors.actions.setDefault'
+                                                      : 'codeEditors.status.missing',
+                                            )}
+                                            aria-pressed={
+                                                integrationSettings.isDefault
+                                            }
+                                            disabled={
+                                                integrationSettings.isDefault ||
+                                                !integrationSettings.installation
+                                            }
+                                            onClick={() =>
+                                                void onSetDefault(
+                                                    integrationSettings,
+                                                )
+                                            }
+                                        >
+                                            <Star
+                                                size={16}
+                                                className={
+                                                    integrationSettings.isDefault
+                                                        ? 'fill-primary stroke-primary'
+                                                        : undefined
+                                                }
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </Tooltip>
+                                )}
+                                {integrationSettings.enabled && (
+                                    <Tooltip
+                                        tip={t('codeEditors.actions.edit')}
+                                        placement="top"
+                                    >
+                                        <button
+                                            type="button"
+                                            className="btn btn-square btn-ghost btn-sm"
+                                            aria-label={t(
+                                                'codeEditors.actions.edit',
+                                            )}
+                                            onClick={() =>
+                                                onEdit(integrationSettings)
+                                            }
+                                        >
+                                            <Pencil
+                                                size={16}
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </Tooltip>
                                 )}
                                 <input
                                     type="checkbox"
                                     className="toggle toggle-primary"
                                     checked={integrationSettings.enabled}
                                     aria-label={
-                                        integrationSettings.enabled
-                                            ? t('codeEditors.status.enabled')
-                                            : t('codeEditors.status.disabled')
-                                    }
-                                    title={
                                         integrationSettings.enabled
                                             ? t('codeEditors.status.enabled')
                                             : t('codeEditors.status.disabled')

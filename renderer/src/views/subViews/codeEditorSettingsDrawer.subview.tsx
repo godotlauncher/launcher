@@ -181,11 +181,8 @@ export const CodeEditorSettingsDrawer: React.FC<
                                 : t('codeEditors.drawer.fallbackTitle')}
                         </span>
                         {settings?.integration.capabilities.dotnet && (
-                            <span
-                                className="badge badge-outline badge-sm shrink-0"
-                                title={t('codeEditors.drawer.dotnet.supported')}
-                            >
-                                .NET
+                            <span className="badge badge-outline badge-sm shrink-0">
+                                .NET {t('codeEditors.drawer.dotnet.supported')}
                             </span>
                         )}
                     </Drawer.Title>

@@ -47,6 +47,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const {
         listIntegrationSettings,
         updateIntegrationSettings,
+        setDefaultIntegration,
         validateIntegrationPath,
     } = useCodeEditorIntegrations();
 
@@ -191,6 +192,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         }
     };
 
+    const setDefaultCodeEditor = async (
+        currentSettings: CodeEditorIntegrationSettings,
+    ) => {
+        try {
+            const updatedSettings = await setDefaultIntegration(
+                currentSettings.integration.id,
+            );
+            setCodeEditorSettings(updatedSettings);
+        } catch (error) {
+            logger.error(
+                'Failed to set default code editor integration',
+                error,
+            );
+        }
+    };
+
     return (
         <div className="flex flex-col h-full w-full p-1">
             <div className="flex flex-col gap-2 w-full">
@@ -241,6 +258,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             settings={codeEditorSettings}
                             onEdit={setSelectedCodeEditor}
                             onEnabledChange={setCodeEditorEnabled}
+                            onSetDefault={setDefaultCodeEditor}
                             loading={codeEditorsLoading}
                             loadError={codeEditorsLoadError}
                         />
