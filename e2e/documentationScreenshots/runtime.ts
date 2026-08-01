@@ -760,7 +760,7 @@ export async function stubAddProjectEditorResolution(
     );
 }
 
-export async function stubAddProjectRecoveredVSCodeConfig(
+export async function stubAddProjectRecoveredCodeEditorConfig(
     electronApp: ElectronApplication,
 ) {
     await electronApp.evaluate(
@@ -840,7 +840,7 @@ export async function stubAddProjectRecoveredVSCodeConfig(
                     success: true,
                     projects,
                     newProject,
-                    recoveredVSCodeConfigFiles: [
+                    recoveredCodeEditorConfigFiles: [
                         '.vscode/settings.json.1712345678901.bad',
                         '.vscode/extensions.json.1712345678902.bad',
                     ],

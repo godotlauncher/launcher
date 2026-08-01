@@ -8,7 +8,7 @@ import {
     prepareAppWithStubbedData,
     showProjectsDropOverlay,
     stubAddProjectEditorResolution,
-    stubAddProjectRecoveredVSCodeConfig,
+    stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
     stubInstalledTools,
 } from './runtime';
@@ -310,15 +310,15 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
-        fileBase: 'screen_projects_vscode_config_recovered',
-        description: 'Add Project recovered VS Code config warning',
+        fileBase: 'screen_projects_code_editor_config_recovered',
+        description: 'Add Project recovered code editor config warning',
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
-            await stubAddProjectRecoveredVSCodeConfig(electronApp);
+            await stubAddProjectRecoveredCodeEditorConfig(electronApp);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectAdd').click();
