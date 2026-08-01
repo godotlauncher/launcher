@@ -74,6 +74,13 @@ describe('VSCodeIntegration', () => {
         });
 
         fsMocks.existsSync.mockReturnValue(true);
+        vscodeMocks.getVSCodeInstallPath.mockResolvedValueOnce(null);
+        await expect(integration.validatePath(candidatePath)).resolves.toEqual({
+            valid: false,
+            reason: 'Path is not a supported Visual Studio Code installation.',
+        });
+
+        vscodeMocks.getVSCodeInstallPath.mockResolvedValueOnce(candidatePath);
         await expect(
             integration.validatePath(` ${candidatePath} `),
         ).resolves.toEqual({
@@ -235,6 +242,30 @@ describe('VSCodeIntegration', () => {
             },
             dotnet: {
                 externalEditorId: 4,
+            },
+        });
+    });
+
+    it('uses a manually selected macOS executable directly', () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
+        const integration = new VSCodeIntegration();
+        const executablePath =
+            '/Applications/Visual Studio Code.app/Contents/MacOS/Electron';
+
+        expect(
+            integration.resolveGodotConfiguration({
+                installation: {
+                    path: executablePath,
+                    version: null,
+                },
+                settings: { execFlagsOverride: null },
+                godotFlavor: 'standard',
+                godotVersion: 4.3,
+            }),
+        ).toEqual({
+            textEditor: {
+                execPath: executablePath,
+                execFlags: '{project} --goto {file}:{line}:{col}',
             },
         });
     });

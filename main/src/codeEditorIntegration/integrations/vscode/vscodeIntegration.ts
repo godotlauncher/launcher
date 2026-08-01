@@ -58,10 +58,18 @@ export class VSCodeIntegration implements CodeEditorIntegration {
             };
         }
 
+        const installationPath = await getVSCodeInstallPath(candidatePath);
+        if (!installationPath) {
+            return {
+                valid: false,
+                reason: 'Path is not a supported Visual Studio Code installation.',
+            };
+        }
+
         return {
             valid: true,
             installation: {
-                path: candidatePath,
+                path: installationPath,
                 version: null,
             },
         };
@@ -77,15 +85,17 @@ export class VSCodeIntegration implements CodeEditorIntegration {
         godotFlavor: 'standard' | 'dotnet';
         godotVersion: number;
     }): GodotCodeEditorConfiguration {
-        const platformExecPath =
-            process.platform === 'darwin'
-                ? path.resolve(
-                      input.installation.path,
-                      'Contents',
-                      'MacOS',
-                      'Electron',
-                  )
-                : input.installation.path;
+        const isMacOSAppBundle =
+            process.platform === 'darwin' &&
+            path.extname(input.installation.path).toLowerCase() === '.app';
+        const platformExecPath = isMacOSAppBundle
+            ? path.resolve(
+                  input.installation.path,
+                  'Contents',
+                  'MacOS',
+                  'Electron',
+              )
+            : input.installation.path;
 
         return {
             textEditor: {

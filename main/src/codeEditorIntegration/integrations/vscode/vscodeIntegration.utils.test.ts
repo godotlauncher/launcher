@@ -26,6 +26,7 @@ vi.mock('electron-log', () => ({
 vi.mock('node:fs', () => ({
     default: {
         existsSync: vi.fn(),
+        statSync: vi.fn(),
         promises: {
             mkdir: vi.fn(),
             rename: vi.fn(),
@@ -34,6 +35,7 @@ vi.mock('node:fs', () => ({
         },
     },
     existsSync: vi.fn(),
+    statSync: vi.fn(),
     promises: {
         mkdir: vi.fn(),
         rename: vi.fn(),
@@ -551,6 +553,9 @@ describe('addVSCodeNETLaunchConfig', () => {
 describe('getVSCodeInstallPath', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(fs.statSync).mockReturnValue({
+            isFile: () => true,
+        } as fs.Stats);
     });
 
     test('returns null on unsupported platform', async () => {
@@ -572,7 +577,12 @@ describe('getVSCodeInstallPath', () => {
         });
     });
 
-    test('returns provided path if it exists', async () => {
+    test('returns a supported custom executable', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
         vi.mocked(fs.existsSync).mockImplementation(
             (p) => p === '/custom/code',
         );
@@ -581,6 +591,56 @@ describe('getVSCodeInstallPath', () => {
         >('./vscodeIntegration.utils.js');
         const res = await mod.getVSCodeInstallPath('/custom/code');
         expect(res).toBe('/custom/code');
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('rejects an unrelated custom executable without falling back', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+
+        await expect(
+            mod.getVSCodeInstallPath('/custom/editor'),
+        ).resolves.toBeNull();
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('rejects a directory named like the supported executable', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.statSync).mockReturnValue({
+            isFile: () => false,
+        } as fs.Stats);
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+
+        await expect(
+            mod.getVSCodeInstallPath('/custom/code'),
+        ).resolves.toBeNull();
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
     });
 
     test('finds default darwin location', async () => {

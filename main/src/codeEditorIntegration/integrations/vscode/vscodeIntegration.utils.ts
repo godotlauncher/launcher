@@ -506,27 +506,25 @@ export async function addOrUpdateVSCodeRecommendedExtensions(
 /**
  * Retrieves the installation path of Visual Studio Code.
  *
- * This function checks for the installation path of Visual Studio Code based on the current platform.
- * It supports Windows (win32), macOS (darwin), and Linux (linux). If a specific path is provided and exists,
- * it returns that path. Otherwise, it checks the default installation locations for the respective platform.
+ * A custom path must identify a supported VS Code executable or macOS app
+ * bundle. Without a custom path, the platform defaults are checked using the
+ * same validation.
  *
- * @param path - An optional path to check for the Visual Studio Code installation.
+ * @param customPath - An optional path to check for the Visual Studio Code installation.
  * @returns A promise that resolves to the installation path of Visual Studio Code if found, or null if not found.
  */
 export async function getVSCodeInstallPath(
-    path?: string,
+    customPath?: string,
 ): Promise<string | null> {
     // only support win32, darwin, linux
     if (!['win32', 'darwin', 'linux'].includes(process.platform)) {
         return null;
     }
 
-    // check if specified path exists and return it as is (user preference)
-    if (path && fs.existsSync(path)) {
-        return path;
-    }
-
     const platform = process.platform as 'win32' | 'darwin' | 'linux';
+    if (customPath !== undefined) {
+        return resolveVSCodeInstallCandidate(customPath, platform);
+    }
 
     // default locations for vscode for each platform
     const defaultLocations = {
@@ -545,10 +543,77 @@ export async function getVSCodeInstallPath(
     // check default locations for file exist and return first one found
     if (locations) {
         for (const location of locations) {
-            if (fs.existsSync(location)) {
-                return location;
+            const candidate = resolveVSCodeInstallCandidate(location, platform);
+            if (candidate) {
+                return candidate;
             }
         }
     }
     return null;
+}
+
+function isExistingFile(candidatePath: string): boolean {
+    try {
+        return (
+            fs.existsSync(candidatePath) && fs.statSync(candidatePath).isFile()
+        );
+    } catch {
+        return false;
+    }
+}
+
+function resolveVSCodeInstallCandidate(
+    candidatePath: string,
+    platform: 'win32' | 'darwin' | 'linux',
+): string | null {
+    const normalizedPath = candidatePath.trim();
+    if (!normalizedPath) {
+        return null;
+    }
+
+    const pathModule = platform === 'win32' ? path.win32 : path.posix;
+    const basename = pathModule.basename(normalizedPath).toLowerCase();
+
+    if (platform === 'win32') {
+        return (basename === 'code.exe' || basename === 'code.cmd') &&
+            isExistingFile(normalizedPath)
+            ? normalizedPath
+            : null;
+    }
+
+    if (platform === 'linux') {
+        return basename === 'code' && isExistingFile(normalizedPath)
+            ? normalizedPath
+            : null;
+    }
+
+    if (basename === 'visual studio code.app') {
+        const executablePath = pathModule.resolve(
+            normalizedPath,
+            'Contents',
+            'MacOS',
+            'Electron',
+        );
+        return fs.existsSync(normalizedPath) && isExistingFile(executablePath)
+            ? normalizedPath
+            : null;
+    }
+
+    if (basename === 'code') {
+        return isExistingFile(normalizedPath) ? normalizedPath : null;
+    }
+
+    const macosDir = pathModule.dirname(normalizedPath);
+    const contentsDir = pathModule.dirname(macosDir);
+    const bundlePath = pathModule.dirname(contentsDir);
+    const isBundleExecutable =
+        basename === 'electron' &&
+        pathModule.basename(macosDir).toLowerCase() === 'macos' &&
+        pathModule.basename(contentsDir).toLowerCase() === 'contents' &&
+        pathModule.basename(bundlePath).toLowerCase() ===
+            'visual studio code.app';
+
+    return isBundleExecutable && isExistingFile(normalizedPath)
+        ? normalizedPath
+        : null;
 }
