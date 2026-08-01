@@ -43,6 +43,12 @@
     },
     "otherSettings": {
         "title": "Outras configurações",
+        "codeEditor": {
+            "label": "Code Editor",
+            "none": "None",
+            "disabled": "Disabled",
+            "notFound": "Not found"
+        },
         "initGit": "Inicializar repositório Git",
         "gitNotInstalled": "O Git não está instalado neste computador",
         "setupVSCode": "Configurar o Visual Studio Code como editor de texto",

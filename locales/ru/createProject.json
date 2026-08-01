@@ -43,6 +43,12 @@
     },
     "otherSettings": {
         "title": "Другие настройки",
+        "codeEditor": {
+            "label": "Code Editor",
+            "none": "None",
+            "disabled": "Disabled",
+            "notFound": "Not found"
+        },
         "initGit": "Инициализировать Git-репозиторий",
         "gitNotInstalled": "Git не установлен на этом компьютере",
         "setupVSCode": "Установить Visual Studio Code как текстовый редактор",

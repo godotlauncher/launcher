@@ -43,6 +43,12 @@
     },
     "otherSettings": {
         "title": "その他の設定",
+        "codeEditor": {
+            "label": "Code Editor",
+            "none": "None",
+            "disabled": "Disabled",
+            "notFound": "Not found"
+        },
         "initGit": "Gitリポジトリを初期化",
         "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
         "setupVSCode": "Visual Studio Codeをテキストエディタとして設定",

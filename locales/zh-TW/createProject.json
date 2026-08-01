@@ -43,6 +43,12 @@
     },
     "otherSettings": {
         "title": "其他設定",
+        "codeEditor": {
+            "label": "Code Editor",
+            "none": "None",
+            "disabled": "Disabled",
+            "notFound": "Not found"
+        },
         "initGit": "初始化 Git 儲存庫",
         "gitNotInstalled": "此電腦未安裝 Git",
         "setupVSCode": "將 Visual Studio Code 設為文字編輯器",

@@ -9,10 +9,13 @@ import {
     showProjectsDropOverlay,
     stubAddProjectEditorResolution,
     stubAddProjectRecoveredVSCodeConfig,
+    stubCodeEditorIntegrationSettings,
     stubInstalledTools,
 } from './runtime';
 import {
     DEFAULT_TOOLS,
+    SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
     SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
     SAMPLE_CUSTOM_RELEASE,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
@@ -349,6 +352,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -377,6 +383,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             });
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await applyTheme(page, theme);
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
             await page
@@ -425,6 +434,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, TOOLS_NO_GIT);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -449,6 +461,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, TOOLS_NO_VSCODE);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -473,6 +488,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, TOOLS_NONE);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -497,6 +515,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
