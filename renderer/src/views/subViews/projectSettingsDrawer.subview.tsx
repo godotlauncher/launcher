@@ -13,7 +13,6 @@ import { CopyBadge } from '../../components/ui/copyBadge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { TextField } from '../../components/ui/textField.component';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
-import { legacyVSCodeFlagToCodeEditorId } from '../../models/codeEditorIntegration.model';
 import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
     canRenameGodotProject,
@@ -114,9 +113,8 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         }
 
         let disposed = false;
-        const currentCodeEditorId = legacyVSCodeFlagToCodeEditorId(
-            project.withVSCode,
-        );
+        const currentCodeEditorId =
+            project.codeEditorId ?? (project.withVSCode ? 'vscode' : null);
 
         setInitialCodeEditorId(currentCodeEditorId);
         setCodeEditorId(currentCodeEditorId);

@@ -4,6 +4,7 @@ import type {
     ReleaseSummary,
 } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 
 const checksMocks = vi.hoisted(() => ({
     checkAndUpdateProjects: vi.fn(),
@@ -129,6 +130,7 @@ const project: ProjectDetails = {
     valid: false,
 };
 
+const codeEditorIntegrationService = {} as CodeEditorIntegrationService;
 describe('reinstallRelease', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -150,7 +152,10 @@ describe('reinstallRelease', () => {
         checksMocks.checkAndUpdateReleases.mockResolvedValue([validRelease]);
         projectUtilsMocks.getStoredProjectsList.mockResolvedValue([project]);
 
-        const result = await reinstallRelease(invalidRelease);
+        const result = await reinstallRelease(
+            invalidRelease,
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result.release).toBe(validRelease);
@@ -158,6 +163,7 @@ describe('reinstallRelease', () => {
         expect(setProjectEditorMocks.setProjectEditor).toHaveBeenCalledWith(
             project,
             validRelease,
+            codeEditorIntegrationService,
         );
     });
 
@@ -173,7 +179,10 @@ describe('reinstallRelease', () => {
         });
         projectUtilsMocks.getStoredProjectsList.mockResolvedValue([project]);
 
-        const result = await reinstallRelease(invalidRelease);
+        const result = await reinstallRelease(
+            invalidRelease,
+            codeEditorIntegrationService,
+        );
 
         expect(installReleaseMocks.installRelease).toHaveBeenCalledWith(
             releaseSummary,
@@ -182,6 +191,7 @@ describe('reinstallRelease', () => {
         expect(setProjectEditorMocks.setProjectEditor).toHaveBeenCalledWith(
             project,
             validRelease,
+            codeEditorIntegrationService,
         );
         expect(result.success).toBe(true);
         expect(result.release).toBe(validRelease);
@@ -190,7 +200,10 @@ describe('reinstallRelease', () => {
     it('returns a clear failure when release metadata is unavailable', async () => {
         checksMocks.checkAndUpdateReleases.mockResolvedValue([invalidRelease]);
 
-        const result = await reinstallRelease(invalidRelease);
+        const result = await reinstallRelease(
+            invalidRelease,
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(false);
         expect(result.error).toContain('Release metadata not found');

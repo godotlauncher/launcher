@@ -207,7 +207,7 @@ suite('prefs.util', (_test) => {
             const defaultDirs = getDefaultDirs();
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
-                prefs_version: 3,
+                prefs_version: 4,
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -253,7 +253,7 @@ suite('prefs.util', (_test) => {
             const defaultDirs = getDefaultDirs();
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
-                prefs_version: 3,
+                prefs_version: 4,
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,

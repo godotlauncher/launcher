@@ -69,7 +69,8 @@
             "missingProjectFile": "未找到项目文件。请检查项目位置，或移除后重新添加项目。",
             "missingEditor": "所选编辑器不可用。请挂载驱动器或选择其他编辑器。"
         },
-        "recoveredVSCodeConfig": "部分 VS Code 配置文件无效。Godot Launcher 已重新创建它们，并将原始文件保留为 .bad 副本。"
+        "recoveredVSCodeConfig": "部分 VS Code 配置文件无效。Godot Launcher 已重新创建它们，并将原始文件保留为 .bad 副本。",
+        "recoveredCodeEditorConfig": "部分代码编辑器配置文件无效。Godot Launcher 已重新创建它们，并将原始文件保留为 .bad 副本。"
     },
     "changeEditor": {
         "errors": {
@@ -78,7 +79,7 @@
             "differentMajorVersion": "无法使用不同主版本的编辑器\n为保护您的项目，请参阅官方迁移指南：https://godotengine.org"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "未找到项目",
             "vscodeNotInstalled": "此计算机上未安装 Visual Studio Code。",

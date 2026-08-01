@@ -50,27 +50,23 @@ function renderSection(
             loadingTools={false}
             loadingCodeEditors={false}
             gitAvailable
-            vsCodeAvailable
             codeEditorSettings={codeEditorSettings}
             codeEditorId={codeEditorId}
             withGit
-            withVSCode={codeEditorId === 'vscode'}
             onWithGitChange={vi.fn()}
             onCodeEditorIdChange={vi.fn()}
-            onWithVSCodeChange={vi.fn()}
-            onVSCodeHelp={vi.fn()}
         />,
     );
 }
 
 describe('CreateProjectToolOptionsSection', () => {
-    it('renders an editor-neutral selector beside the legacy VS Code option', () => {
+    it('renders the generic code editor selector', () => {
         const html = renderSection([availableVSCodeSettings], 'vscode');
 
         expect(html).toContain('data-testid="selectCreateProjectCodeEditor"');
         expect(html).toContain('Visual Studio Code');
         expect(html).toContain('aria-selected="true"');
-        expect(html).toContain('Setup Visual Studio Code as Text Editor');
+        expect(html).not.toContain('Setup Visual Studio Code as Text Editor');
     });
 
     it('keeps disabled integrations visible but unavailable to select', () => {

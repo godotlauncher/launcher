@@ -39,9 +39,8 @@ function normalizeProjects(projects: ProjectDetails[]): ProjectDetails[] {
 
             return {
                 ...project,
-                ...(codeEditorMode.kind === 'integration'
-                    ? { withVSCode: codeEditorMode.withVSCode }
-                    : {}),
+                codeEditorId: codeEditorMode.codeEditorId,
+                withVSCode: codeEditorMode.withVSCode,
                 last_opened: project.last_opened
                     ? new Date(project.last_opened)
                     : null,
@@ -103,7 +102,7 @@ export async function storeProjectsList(
     options?: ProjectsWriteOptions,
 ): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
-    const persisted = await store.write(projects, options);
+    const persisted = await store.write(normalizeProjects(projects), options);
     return normalizeProjects(persisted);
 }
 

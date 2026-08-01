@@ -2,13 +2,14 @@ import type {
     AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
+    CodeEditorId,
     CreateProjectResult,
     InstalledRelease,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
-    SetProjectVSCodeResult,
+    SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import {
     createContext,
@@ -35,10 +36,10 @@ interface ProjectsContext {
         project: ProjectDetails,
         openWindowed: boolean,
     ) => Promise<ProjectDetails>;
-    setProjectVSCode: (
+    setProjectCodeEditor: (
         project: ProjectDetails,
-        enable: boolean,
-    ) => Promise<SetProjectVSCodeResult>;
+        codeEditorId: CodeEditorId | null,
+    ) => Promise<SetProjectCodeEditorResult>;
     initializeProjectGit: (project: ProjectDetails) => Promise<ProjectDetails>;
     exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
@@ -59,7 +60,7 @@ interface ProjectsContext {
         name: string,
         release: InstalledRelease,
         renderer: RendererType[5],
-        withVSCode: boolean,
+        codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
     ) => Promise<CreateProjectResult>;
@@ -94,7 +95,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         projectName: string,
         release: InstalledRelease,
         renderer: RendererType[5],
-        withVSCode: boolean,
+        codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
     ) => {
@@ -102,7 +103,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             projectName,
             release,
             renderer,
-            withVSCode,
+            codeEditorId,
             withGit,
             overwriteProjectPath,
         );
@@ -157,13 +158,13 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return updatedProject;
     };
 
-    const setProjectVSCode = async (
+    const setProjectCodeEditor = async (
         project: ProjectDetails,
-        enable: boolean,
+        codeEditorId: CodeEditorId | null,
     ) => {
-        const updatedProject = await appBridge.setProjectVSCode(
+        const updatedProject = await appBridge.setProjectCodeEditor(
             project,
-            enable,
+            codeEditorId,
         );
         updateProjectState(updatedProject);
         return updatedProject;
@@ -252,7 +253,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 addProject,
                 setProjectEditor,
                 setProjectWindowed,
-                setProjectVSCode,
+                setProjectCodeEditor,
                 initializeProjectGit,
                 exportProjectEditorSettings,
                 importProjectEditorSettings,

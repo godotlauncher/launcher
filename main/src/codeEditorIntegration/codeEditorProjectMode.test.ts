@@ -2,38 +2,36 @@ import { describe, expect, it } from 'vitest';
 import { resolveCodeEditorProjectMode } from './codeEditorProjectMode.js';
 
 describe('resolveCodeEditorProjectMode', () => {
-    it('keeps projects without a code editor ID on the legacy path', () => {
+    it('copies an absent code editor ID from the legacy VS Code flag', () => {
         expect(
             resolveCodeEditorProjectMode({
                 withVSCode: true,
             }),
         ).toEqual({
-            kind: 'legacy',
+            codeEditorId: 'vscode',
             withVSCode: true,
         });
     });
 
-    it('opts a project into the integration path with no code editor', () => {
+    it('keeps an explicit null code editor selection', () => {
         expect(
             resolveCodeEditorProjectMode({
                 codeEditorId: null,
                 withVSCode: true,
             }),
         ).toEqual({
-            kind: 'integration',
             codeEditorId: null,
             withVSCode: false,
         });
     });
 
-    it('opts a project into the selected code editor integration', () => {
+    it('derives the legacy mirror from the selected integration', () => {
         expect(
             resolveCodeEditorProjectMode({
                 codeEditorId: 'vscode',
                 withVSCode: false,
             }),
         ).toEqual({
-            kind: 'integration',
             codeEditorId: 'vscode',
             withVSCode: true,
         });

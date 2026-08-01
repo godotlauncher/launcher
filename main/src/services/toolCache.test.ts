@@ -25,7 +25,7 @@ vi.mock('../commands/installedTools.js', () => ({
 }));
 
 const basePrefs: UserPreferences = {
-    prefs_version: 3,
+    prefs_version: 4,
     install_location: '/install',
     config_location: '/config',
     projects_location: '/projects',
@@ -46,6 +46,7 @@ const sampleTools: InstalledTool[] = [
     { name: 'Git', version: '2.44.0', path: '/usr/bin/git' },
 ];
 
+const generalTools = sampleTools.filter((tool) => tool.name === 'Git');
 const getUserPreferences = vi.mocked(userPreferencesModule.getUserPreferences);
 const setUserPreferences = vi.mocked(userPreferencesModule.setUserPreferences);
 const getInstalledTools = vi.mocked(installedToolsModule.getInstalledTools);
@@ -59,7 +60,7 @@ describe('toolCache service', () => {
     });
 
     describe('getCachedTools', () => {
-        it('returns cached tools when cache is fresh', async () => {
+        it('filters legacy code editor entries from a fresh cache', async () => {
             getUserPreferences.mockResolvedValue({
                 ...basePrefs,
                 installed_tools: {
@@ -77,14 +78,7 @@ describe('toolCache service', () => {
 
             const tools = await getCachedTools();
 
-            expect(tools).toEqual([
-                {
-                    name: 'VSCode',
-                    path: '/usr/bin/code',
-                    version: '1.0.0',
-                    verified: true,
-                },
-            ]);
+            expect(tools).toEqual([]);
             expect(getInstalledTools).not.toHaveBeenCalled();
         });
 
@@ -101,7 +95,7 @@ describe('toolCache service', () => {
                 expect.objectContaining({
                     installed_tools: {
                         last_scan: expect.any(Number),
-                        tools: sampleTools.map(({ name, path, version }) => ({
+                        tools: generalTools.map(({ name, path, version }) => ({
                             name,
                             path,
                             version,
@@ -111,12 +105,6 @@ describe('toolCache service', () => {
                 }),
             );
             expect(tools).toEqual([
-                {
-                    name: 'VSCode',
-                    path: '/usr/bin/code',
-                    version: '1.0.0',
-                    verified: true,
-                },
                 {
                     name: 'Git',
                     path: '/usr/bin/git',
@@ -205,7 +193,7 @@ describe('toolCache service', () => {
                 expect.objectContaining({
                     installed_tools: {
                         last_scan: expect.any(Number),
-                        tools: sampleTools.map(({ name, path, version }) => ({
+                        tools: generalTools.map(({ name, path, version }) => ({
                             name,
                             path,
                             version,
@@ -216,12 +204,6 @@ describe('toolCache service', () => {
             );
             expect(tools).toEqual([
                 {
-                    name: 'VSCode',
-                    path: '/usr/bin/code',
-                    version: '1.0.0',
-                    verified: true,
-                },
-                {
                     name: 'Git',
                     path: '/usr/bin/git',
                     version: '2.44.0',
@@ -229,6 +211,37 @@ describe('toolCache service', () => {
                 },
             ]);
         });
+    });
+
+    it('retains legacy code editor cache entries only in persisted preferences', async () => {
+        const legacyCodeEditorEntry = {
+            name: 'VSCode' as const,
+            path: '/usr/bin/code',
+            version: '1.0.0',
+            verified: true,
+        };
+        getUserPreferences.mockResolvedValue({
+            ...basePrefs,
+            installed_tools: {
+                last_scan: 1,
+                tools: [legacyCodeEditorEntry],
+            },
+        });
+
+        const tools = await refreshToolCache(generalTools);
+
+        expect(setUserPreferences).toHaveBeenCalledWith(
+            expect.objectContaining({
+                installed_tools: {
+                    last_scan: expect.any(Number),
+                    tools: [
+                        expect.objectContaining({ name: 'Git' }),
+                        legacyCodeEditorEntry,
+                    ],
+                },
+            }),
+        );
+        expect(tools).toEqual([expect.objectContaining({ name: 'Git' })]);
     });
 
     describe('isToolAvailable', () => {
@@ -239,16 +252,16 @@ describe('toolCache service', () => {
                     last_scan: Date.now(),
                     tools: [
                         {
-                            name: 'VSCode',
-                            path: '/usr/bin/code',
-                            version: '1.0.0',
+                            name: 'Git',
+                            path: '/usr/bin/git',
+                            version: '2.44.0',
                             verified: true,
                         },
                     ],
                 },
             });
 
-            expect(await isToolAvailable('VSCode')).toBe(true);
+            expect(await isToolAvailable('Git')).toBe(true);
         });
 
         it('returns false when tool path missing', async () => {
@@ -259,16 +272,16 @@ describe('toolCache service', () => {
                     last_scan: Date.now(),
                     tools: [
                         {
-                            name: 'VSCode',
-                            path: '/usr/bin/code',
-                            version: '1.0.0',
+                            name: 'Git',
+                            path: '/usr/bin/git',
+                            version: '2.44.0',
                             verified: true,
                         },
                     ],
                 },
             });
 
-            expect(await isToolAvailable('VSCode')).toBe(false);
+            expect(await isToolAvailable('Git')).toBe(false);
         });
     });
 });

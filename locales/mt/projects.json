@@ -69,7 +69,8 @@
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
             "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
         },
-        "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
+        "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad.",
+        "recoveredCodeEditorConfig": "Xi fajls tal-konfigurazzjoni tal-editur tal-kodiċi ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
     },
     "changeEditor": {
         "errors": {
@@ -78,7 +79,7 @@
             "differentMajorVersion": "Ma tistax tuża verżjoni maġġuri differenti tal-editur\nBiex tipproteġi l-proġett tiegħek ara l-gwida uffiċjali tal-migrazzjoni fuq https://godotengine.org"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "Il-proġett ma nstabx",
             "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter.",

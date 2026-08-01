@@ -9,6 +9,10 @@ import {
 
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+function isGeneralTool(tool: Pick<CachedTool, 'name'>): boolean {
+    return tool.name !== 'VSCode';
+}
+
 type ToolCacheRecord = {
     last_scan: number;
     tools: CachedTool[];
@@ -34,31 +38,40 @@ async function readToolCache(): Promise<ToolCacheRecord | null> {
 
     return {
         last_scan: prefs.installed_tools.last_scan,
-        tools: prefs.installed_tools.tools.map((tool: CachedTool) => ({
-            ...tool,
-            version: tool.version ?? null,
-            verified: tool.verified ?? verifyToolPath(tool.path),
-        })),
+        tools: prefs.installed_tools.tools
+            .filter(isGeneralTool)
+            .map((tool: CachedTool) => ({
+                ...tool,
+                version: tool.version ?? null,
+                verified: tool.verified ?? verifyToolPath(tool.path),
+            })),
     };
 }
 
 async function writeToolCache(entries: CachedTool[]): Promise<ToolCacheRecord> {
     const prefs = await getUserPreferences();
-    const record: ToolCacheRecord = {
+    const generalToolEntries = entries.filter(isGeneralTool).map((entry) => ({
+        ...entry,
+        version: entry.version ?? null,
+        verified: entry.verified ?? verifyToolPath(entry.path),
+    }));
+    const legacyCodeEditorEntries =
+        prefs.installed_tools?.tools.filter((tool) => !isGeneralTool(tool)) ??
+        [];
+    const persistedRecord: ToolCacheRecord = {
         last_scan: Date.now(),
-        tools: entries.map((entry) => ({
-            ...entry,
-            version: entry.version ?? null,
-            verified: entry.verified ?? verifyToolPath(entry.path),
-        })),
+        tools: [...generalToolEntries, ...legacyCodeEditorEntries],
     };
 
     await setUserPreferences({
         ...prefs,
-        installed_tools: record,
+        installed_tools: persistedRecord,
     });
 
-    return record;
+    return {
+        ...persistedRecord,
+        tools: generalToolEntries,
+    };
 }
 
 export async function getCachedTools(options?: {
@@ -99,7 +112,7 @@ export async function refreshToolCache(
     preScannedTools?: InstalledTool[],
 ): Promise<CachedTool[]> {
     const tools = preScannedTools ?? (await getInstalledTools());
-    const entries: CachedTool[] = tools.map((tool) => ({
+    const entries: CachedTool[] = tools.filter(isGeneralTool).map((tool) => ({
         name: tool.name,
         path: tool.path,
         version: tool.version ?? null,

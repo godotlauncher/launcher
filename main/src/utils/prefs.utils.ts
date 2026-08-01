@@ -110,7 +110,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     const pathModule = platform === 'win32' ? path.win32 : path.posix;
 
     return {
-        prefs_version: 3,
+        prefs_version: 4,
         install_location: pathModule.resolve(defaultPrefs.dataDir),
         config_location: pathModule.resolve(defaultPrefs.configDir),
         projects_location: pathModule.resolve(defaultPrefs.projectDir),

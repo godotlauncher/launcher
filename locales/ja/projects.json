@@ -69,7 +69,8 @@
             "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認するか、プロジェクトを削除して再追加してください。",
             "missingEditor": "選択したエディターは利用できません。ドライブをマウントするか、別のエディターを選択してください。"
         },
-        "recoveredVSCodeConfig": "一部の VS Code 設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。"
+        "recoveredVSCodeConfig": "一部の VS Code 設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。",
+        "recoveredCodeEditorConfig": "一部のコードエディター設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。"
     },
     "changeEditor": {
         "errors": {
@@ -78,7 +79,7 @@
             "differentMajorVersion": "エディタの異なるメジャーバージョンは使用できません\nプロジェクトを保護するため、https://godotengine.org の公式移行ガイドを参照してください"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "プロジェクトが見つかりません",
             "vscodeNotInstalled": "このコンピューターに Visual Studio Code がインストールされていません。",

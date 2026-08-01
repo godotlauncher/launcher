@@ -522,7 +522,7 @@ config/icon="res://assets/icon.svg"
         fs.rmSync(releaseDir, { recursive: true, force: true });
     });
 
-    it('disables VSCode flag when external editor setting is not enabled', async () => {
+    it('preserves the persisted code editor selection during validation', async () => {
         const projectDir = fs.mkdtempSync(
             path.join(os.tmpdir(), 'launcher-project-vscode-'),
         );
@@ -582,7 +582,8 @@ text_editor/external/use_external_editor = false
 
         const validatedProject = await checkProjectValid(project);
 
-        expect(validatedProject.withVSCode).toBe(false);
+        expect(validatedProject.codeEditorId).toBe('vscode');
+        expect(validatedProject.withVSCode).toBe(true);
 
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });

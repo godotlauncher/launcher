@@ -224,7 +224,7 @@ describe('projects.utils', () => {
         expect(updated[0].path).toBe('/projects/keep');
     });
 
-    it('keeps legacy projects without a code editor ID', async () => {
+    it('copies legacy VS Code projects into the canonical code editor field', async () => {
         const legacyProject = {
             path: '/projects/legacy',
             last_opened: null,
@@ -238,7 +238,7 @@ describe('projects.utils', () => {
         );
 
         const [storedProject] = await getStoredProjectsList(projectsFile);
-        expect(storedProject).not.toHaveProperty('codeEditorId');
+        expect(storedProject.codeEditorId).toBe('vscode');
         expect(storedProject.withVSCode).toBe(true);
 
         await storeProjectsList(projectsFile, [storedProject]);
@@ -246,7 +246,7 @@ describe('projects.utils', () => {
         const [persistedProject] = JSON.parse(
             fs.readFileSync(projectsFile, 'utf-8'),
         ) as ProjectDetails[];
-        expect(persistedProject).not.toHaveProperty('codeEditorId');
+        expect(persistedProject.codeEditorId).toBe('vscode');
         expect(persistedProject.withVSCode).toBe(true);
     });
 

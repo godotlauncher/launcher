@@ -126,6 +126,18 @@ export class CodeEditorIntegrationService {
         );
     }
 
+    async findConfiguredIntegration(
+        projectPath: string,
+    ): Promise<CodeEditorId | null> {
+        for (const integration of this.registry.list()) {
+            if (await integration.isConfiguredForProject(projectPath)) {
+                return integration.metadata.id;
+            }
+        }
+
+        return null;
+    }
+
     async validateIntegrationPath(
         integrationId: CodeEditorId,
         pathToValidate: string,
@@ -160,10 +172,12 @@ export class CodeEditorIntegrationService {
     async applyToProject(
         integrationId: CodeEditorId,
         context: CodeEditorProjectContext,
-        customPath?: string,
     ): Promise<CodeEditorApplyResult> {
         const integration = this.registry.get(integrationId);
-        const installation = await integration.detectInstallation(customPath);
+        const storedSettings = await this.settingsStore.get(integrationId);
+        const installation = await integration.detectInstallation(
+            storedSettings.customPath ?? undefined,
+        );
         if (!installation) {
             throw new Error(
                 `${integration.metadata.displayName} installation was not found.`,
@@ -173,7 +187,9 @@ export class CodeEditorIntegrationService {
         const integrationResult = await integration.configureProject(context);
         const launchConfiguration = integration.resolveGodotConfiguration({
             installation,
-            settings: { execFlagsOverride: null },
+            settings: {
+                execFlagsOverride: storedSettings.execFlagsOverride,
+            },
             godotFlavor: context.mono ? 'dotnet' : 'standard',
         }).textEditor;
 

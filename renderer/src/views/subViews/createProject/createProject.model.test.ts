@@ -137,25 +137,27 @@ describe('create project model helpers', () => {
         ).toBe(false);
     });
 
-    it('uses an explicit available default and preserves the legacy fallback', () => {
+    it('uses an explicit available default and falls back to the first available integration', () => {
         const availableDefault = codeEditorSettings();
 
+        expect(resolveCreateProjectCodeEditorId([availableDefault])).toBe(
+            'vscode',
+        );
         expect(
-            resolveCreateProjectCodeEditorId([availableDefault], false),
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, enabled: false },
+            ]),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, installation: null },
+            ]),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, isDefault: false },
+            ]),
         ).toBe('vscode');
-        expect(
-            resolveCreateProjectCodeEditorId(
-                [{ ...availableDefault, enabled: false }],
-                true,
-            ),
-        ).toBeNull();
-        expect(
-            resolveCreateProjectCodeEditorId(
-                [{ ...availableDefault, installation: null }],
-                true,
-            ),
-        ).toBeNull();
-        expect(resolveCreateProjectCodeEditorId([], true)).toBe('vscode');
-        expect(resolveCreateProjectCodeEditorId([], false)).toBeNull();
+        expect(resolveCreateProjectCodeEditorId([])).toBeNull();
     });
 });

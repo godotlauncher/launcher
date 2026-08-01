@@ -1,5 +1,6 @@
 import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { addProject } from './addProject.js';
 
 const fsMocks = vi.hoisted(() => ({
@@ -176,6 +177,18 @@ const { addProjectToList } = projectUtilsMocks;
 const { getInstalledReleases } = releasesMocks;
 const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsDetails } = projectsMocks;
+const codeEditorIntegrationService = {
+    findConfiguredIntegration: vi.fn(),
+    scanIntegration: vi.fn(),
+    applyToProject: vi.fn(),
+    disableForProject: vi.fn(),
+} as unknown as CodeEditorIntegrationService;
+
+const integrationMocks = codeEditorIntegrationService as unknown as {
+    findConfiguredIntegration: ReturnType<typeof vi.fn>;
+    scanIntegration: ReturnType<typeof vi.fn>;
+    applyToProject: ReturnType<typeof vi.fn>;
+};
 const { getInstalledTools } = installedToolsMocks;
 const {
     getProjectDefinition,
@@ -252,6 +265,23 @@ describe('addProject', () => {
 
         // Mock VSCode utilities
         updateVSCodeSettings.mockResolvedValue([]);
+        integrationMocks.findConfiguredIntegration.mockImplementation(
+            async (projectDir: string) =>
+                existsSync(path.resolve(projectDir, '.vscode'))
+                    ? 'vscode'
+                    : null,
+        );
+        integrationMocks.scanIntegration.mockResolvedValue({
+            integrationId: 'vscode',
+            path: '/usr/bin/code',
+            version: null,
+        });
+        integrationMocks.applyToProject.mockImplementation(
+            async (_id, context) => ({
+                editorSettingsFile: context.editorSettingsFile,
+                recoveredConfigFiles: [],
+            }),
+        );
         addVSCodeNETLaunchConfig.mockResolvedValue([]);
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([]);
         createNewEditorSettings.mockResolvedValue('/fake/editor/settings');
@@ -261,7 +291,10 @@ describe('addProject', () => {
     });
 
     it('falls back to an installed mono editor when no flavor-specific match is found', async () => {
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.release.mono).toBe(true);
@@ -317,7 +350,10 @@ describe('addProject', () => {
             },
         ]);
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.release.version).toBe('4.3-beta1');
@@ -355,7 +391,10 @@ describe('addProject', () => {
             },
         ]);
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.last_opened).toBe(lastOpened);
@@ -395,7 +434,10 @@ describe('addProject', () => {
             },
         ]);
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(false);
         expect(result.editorResolution).toMatchObject({
@@ -463,7 +505,10 @@ describe('addProject', () => {
             },
         ]);
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(false);
         expect(result.editorResolution).toMatchObject({
@@ -491,9 +536,13 @@ describe('addProject', () => {
             },
         });
 
-        const result = await addProject('/fake/project/project.godot', {
-            resolution: 'add_missing',
-        });
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            {
+                resolution: 'add_missing',
+            },
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject).toMatchObject({
@@ -538,10 +587,14 @@ describe('addProject', () => {
             },
         });
 
-        const result = await addProject('/fake/project/project.godot', {
-            resolution: 'use_fallback',
-            release: fallbackRelease,
-        });
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            {
+                resolution: 'use_fallback',
+                release: fallbackRelease,
+            },
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.release.version).toBe('4.3-stable');
@@ -574,7 +627,10 @@ describe('addProject', () => {
             },
         ]);
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.release.version).toBe('4.6-custom.1');
@@ -582,7 +638,10 @@ describe('addProject', () => {
     });
 
     it('should not return additionalInfo in the result', async () => {
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result).not.toHaveProperty('additionalInfo');
@@ -594,7 +653,10 @@ describe('addProject', () => {
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
         );
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.icon_path).toBe(
@@ -643,9 +705,25 @@ describe('addProject', () => {
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
             extensionsBackup,
         ]);
+        integrationMocks.applyToProject.mockResolvedValue({
+            editorSettingsFile: '/fake/editor/settings',
+            recoveredConfigFiles: [
+                '.vscode/settings.json.1712345678901.bad',
+                '.vscode/launch.json.1712345678902.bad',
+                '.vscode/extensions.json.1712345678903.bad',
+            ],
+        });
         addVSCodeNETLaunchConfig.mockResolvedValue([launchBackup]);
 
-        const result = await addProject(projectPath);
+        const result = await addProject(
+            projectPath,
+            codeEditorIntegrationService,
+        );
+        expect(result.recoveredCodeEditorConfigFiles).toEqual([
+            '.vscode/settings.json.1712345678901.bad',
+            '.vscode/launch.json.1712345678902.bad',
+            '.vscode/extensions.json.1712345678903.bad',
+        ]);
 
         expect(result.success).toBe(true);
         expect(result.recoveredVSCodeConfigFiles).toEqual([
@@ -676,13 +754,14 @@ describe('addProject', () => {
             return false;
         });
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
-        expect(createNewEditorSettings).toHaveBeenCalledTimes(1);
-        expect(updateEditorSettings).not.toHaveBeenCalled();
-        expect(updateVSCodeSettings).toHaveBeenCalledTimes(1);
-        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledTimes(1);
+        expect(result.newProject?.codeEditorId).toBe('vscode');
+        expect(integrationMocks.applyToProject).toHaveBeenCalledOnce();
     });
 
     it('should update existing editor settings when VSCode is detected and settings exist', async () => {
@@ -706,22 +785,16 @@ describe('addProject', () => {
             return false;
         });
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
-        expect(updateEditorSettings).toHaveBeenCalledTimes(1);
-        expect(updateEditorSettings).toHaveBeenCalledWith(
-            expect.any(String),
-            expect.objectContaining({
-                execPath: expect.any(String),
-                execFlags: '{project} --goto {file}:{line}:{col}',
-                useExternalEditor: true,
-                isMono: true,
-            }),
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({ configurationMode: 'update' }),
         );
-        expect(createNewEditorSettings).not.toHaveBeenCalled();
-        expect(updateVSCodeSettings).toHaveBeenCalledTimes(1);
-        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledTimes(1);
     });
 
     it('should always call updateVSCodeSettings when VSCode is detected', async () => {
@@ -742,14 +815,17 @@ describe('addProject', () => {
             return false;
         });
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
-        expect(updateVSCodeSettings).toHaveBeenCalledWith(
-            expect.stringContaining('/fake/project'),
-            '/fake/launch',
-            4.3,
-            true,
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({
+                projectPath: expect.stringContaining('/fake/project'),
+            }),
         );
     });
 
@@ -771,12 +847,15 @@ describe('addProject', () => {
             return false;
         });
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
-        expect(addVSCodeNETLaunchConfig).toHaveBeenCalledWith(
-            expect.stringContaining('/fake/project'),
-            '/fake/launch',
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({ mono: true }),
         );
     });
 
@@ -791,7 +870,10 @@ describe('addProject', () => {
             return false;
         });
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(createNewEditorSettings).not.toHaveBeenCalled();
@@ -819,7 +901,10 @@ describe('addProject', () => {
             return false;
         });
 
-        const result = await addProject('/fake/project/project.godot');
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
 
         expect(result.success).toBe(true);
         expect(createNewEditorSettings).not.toHaveBeenCalled();

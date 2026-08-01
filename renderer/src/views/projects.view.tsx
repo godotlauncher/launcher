@@ -13,7 +13,6 @@ import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
-import { codeEditorIdToLegacyVSCodeFlag } from '../models/codeEditorIntegration.model';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
@@ -79,7 +78,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         projects,
         setProjectEditor,
         setProjectWindowed,
-        setProjectVSCode,
+        setProjectCodeEditor,
         initializeProjectGit,
         exportProjectEditorSettings,
         importProjectEditorSettings,
@@ -98,9 +97,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectActionsMenu,
         onProjectMoreOptions,
         runProjectAction,
-        showRecoveredVSCodeConfigWarning,
+        showRecoveredCodeEditorConfigWarning,
         handleToggleProjectWindowed,
-        handleToggleProjectVSCode,
         handleInitializeProjectGit,
         handleImportEditorSettings,
         handleRemoveProject,
@@ -111,7 +109,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addCustomConfirm,
         updatePreferences,
         setProjectWindowed,
-        setProjectVSCode,
         initializeProjectGit,
         importProjectEditorSettings,
         removeProject,
@@ -128,7 +125,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addProject,
         installRelease,
         setProjectEditor,
-        showRecoveredVSCodeConfigWarning,
+        showRecoveredCodeEditorConfigWarning,
     });
     const {
         isDraggingOver,
@@ -195,12 +192,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
     ): Promise<ProjectDetails> => {
-        const updatedProject = await setProjectVSCode(
+        const updatedProject = await setProjectCodeEditor(
             project,
-            codeEditorIdToLegacyVSCodeFlag(codeEditorId),
+            codeEditorId,
         );
-        showRecoveredVSCodeConfigWarning(
-            updatedProject.recoveredVSCodeConfigFiles,
+        showRecoveredCodeEditorConfigWarning(
+            updatedProject.recoveredCodeEditorConfigFiles,
         );
         return updatedProject;
     };
@@ -295,7 +292,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             <ProjectActionsMenu
                 project={projectActionsMenu?.project ?? null}
                 anchorRect={projectActionsMenu?.anchorRect ?? null}
-                hasVSCode={projectActionsMenu?.hasVSCode ?? false}
                 hasGit={projectActionsMenu?.hasGit ?? false}
                 t={t}
                 onClose={() => setProjectActionsMenu(null)}
@@ -308,7 +304,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     runProjectAction(() => openProjectEditorFolder(project))
                 }
                 onToggleWindowed={handleToggleProjectWindowed}
-                onToggleVSCode={handleToggleProjectVSCode}
                 onInitializeGit={handleInitializeProjectGit}
                 onExportEditorSettings={(project) =>
                     runProjectAction(() => exportProjectEditorSettings(project))

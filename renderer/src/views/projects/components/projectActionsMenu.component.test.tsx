@@ -46,7 +46,6 @@ describe('ProjectActionsMenu', () => {
                     width: 0,
                     height: 0,
                 }}
-                hasVSCode={false}
                 hasGit={false}
                 t={(key) =>
                     key === 'project.launchEditor'
@@ -61,7 +60,6 @@ describe('ProjectActionsMenu', () => {
                 onOpenProjectFolder={vi.fn()}
                 onOpenEditorSettingsFolder={vi.fn()}
                 onToggleWindowed={vi.fn()}
-                onToggleVSCode={vi.fn()}
                 onInitializeGit={vi.fn()}
                 onExportEditorSettings={vi.fn()}
                 onImportEditorSettings={vi.fn()}

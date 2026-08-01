@@ -1,29 +1,22 @@
 import type { CodeEditorId, ProjectDetails } from '@shared/contracts';
 
-export type CodeEditorProjectMode =
-    | {
-          kind: 'legacy';
-          withVSCode: boolean;
-      }
-    | {
-          kind: 'integration';
-          codeEditorId: CodeEditorId | null;
-          withVSCode: boolean;
-      };
+export type CodeEditorProjectMode = {
+    codeEditorId: CodeEditorId | null;
+    withVSCode: boolean;
+};
 
 export function resolveCodeEditorProjectMode(
     project: Pick<ProjectDetails, 'codeEditorId' | 'withVSCode'>,
 ): CodeEditorProjectMode {
-    if (project.codeEditorId === undefined) {
-        return {
-            kind: 'legacy',
-            withVSCode: project.withVSCode,
-        };
-    }
+    const codeEditorId =
+        project.codeEditorId === undefined
+            ? project.withVSCode
+                ? 'vscode'
+                : null
+            : project.codeEditorId;
 
     return {
-        kind: 'integration',
-        codeEditorId: project.codeEditorId,
-        withVSCode: project.codeEditorId === 'vscode',
+        codeEditorId,
+        withVSCode: codeEditorId === 'vscode',
     };
 }

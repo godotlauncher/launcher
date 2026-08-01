@@ -127,14 +127,16 @@ export const isVerifiedToolAvailable = (
 
 export const resolveCreateProjectCodeEditorId = (
     settings: CodeEditorIntegrationSettings[],
-    legacyVSCodeAvailable: boolean,
 ): CodeEditorId | null => {
     const defaultSettings = settings.find(
         (integrationSettings) => integrationSettings.isDefault,
     );
 
     if (!defaultSettings) {
-        return legacyVSCodeAvailable ? 'vscode' : null;
+        return (
+            settings.find((item) => item.enabled && item.installation)
+                ?.integration.id ?? null
+        );
     }
 
     return defaultSettings.enabled && defaultSettings.installation

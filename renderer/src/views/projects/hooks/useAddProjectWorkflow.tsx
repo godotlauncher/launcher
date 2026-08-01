@@ -45,7 +45,7 @@ type AddProjectWorkflowArgs = {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
-    showRecoveredVSCodeConfigWarning: (recoveredFiles?: string[]) => void;
+    showRecoveredCodeEditorConfigWarning: (recoveredFiles?: string[]) => void;
 };
 
 export function useAddProjectWorkflow({
@@ -60,7 +60,7 @@ export function useAddProjectWorkflow({
     addProject,
     installRelease,
     setProjectEditor,
-    showRecoveredVSCodeConfigWarning,
+    showRecoveredCodeEditorConfigWarning,
 }: AddProjectWorkflowArgs) {
     const findDownloadableRelease = (
         result: AddProjectToListResult,
@@ -299,7 +299,9 @@ export function useAddProjectWorkflow({
             return;
         }
 
-        showRecoveredVSCodeConfigWarning(result.recoveredVSCodeConfigFiles);
+        showRecoveredCodeEditorConfigWarning(
+            result.recoveredCodeEditorConfigFiles,
+        );
     };
 
     const onAddProject = async () => {

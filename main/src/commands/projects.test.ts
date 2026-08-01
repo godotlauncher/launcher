@@ -1,7 +1,7 @@
 import path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import {
     getProjectGodotName,
@@ -9,7 +9,7 @@ import {
     launchProject,
     removeProject,
     renameProject,
-    setProjectVSCode,
+    setProjectCodeEditor,
 } from './projects.js';
 
 const childProcessMocks = vi.hoisted(() => ({
@@ -220,6 +220,16 @@ const { getAssetPath } = pathResolverMocks;
 const { ipcWebContentsSend } = utilsMocks;
 const { writeProjectLauncherConfig } = projectLauncherConfigMocks;
 const { getMainWindow } = mainMocks;
+
+const codeEditorIntegrationService = {
+    applyToProject: vi.fn(),
+    disableForProject: vi.fn(),
+} as unknown as CodeEditorIntegrationService;
+
+const integrationMocks = codeEditorIntegrationService as unknown as {
+    applyToProject: ReturnType<typeof vi.fn>;
+    disableForProject: ReturnType<typeof vi.fn>;
+};
 
 let windowMock: { webContents: unknown };
 
@@ -541,7 +551,7 @@ describe('renameProject', () => {
     });
 });
 
-describe('setProjectVSCode', () => {
+describe('setProjectCodeEditor', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         getDefaultDirs.mockReturnValue({ configDir: '/config' });
@@ -558,8 +568,15 @@ describe('setProjectVSCode', () => {
             async (_p: string, updated: ProjectDetails[]) =>
                 updated as ProjectDetails[],
         );
-    });
 
+        integrationMocks.applyToProject.mockImplementation(
+            async (_id, context) => ({
+                editorSettingsFile: context.editorSettingsFile,
+                recoveredConfigFiles: [],
+            }),
+        );
+        integrationMocks.disableForProject.mockResolvedValue(undefined);
+    });
     it('enables VS Code integration using existing editor settings', async () => {
         const project: ProjectDetails = {
             name: 'Demo',
@@ -625,40 +642,21 @@ describe('setProjectVSCode', () => {
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
         addVSCodeNETLaunchConfig.mockResolvedValue(undefined);
 
-        const result = await setProjectVSCode(project, true);
+        const result = await setProjectCodeEditor(
+            project,
+            'vscode',
+            codeEditorIntegrationService,
+        );
 
-        const expectedExecPath =
-            process.platform === 'darwin'
-                ? path.resolve(
-                      '/Applications/Code',
-                      'Contents',
-                      'MacOS',
-                      'Electron',
-                  )
-                : '/Applications/Code';
-
-        expect(updateEditorSettings).toHaveBeenCalledWith(
-            '/projects/demo/editor_data/editor_settings-4.2.tres',
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscode',
             expect.objectContaining({
-                execPath: expectedExecPath,
-                execFlags: '{project} --goto {file}:{line}:{col}',
-                useExternalEditor: true,
-                isMono: true,
+                projectPath: '/projects/demo',
+                godotLaunchPath: '/godot/godot.exe',
+                godotVersion: 4.2,
+                mono: true,
+                configurationMode: 'update',
             }),
-        );
-        expect(updateVSCodeSettings).toHaveBeenCalledWith(
-            '/projects/demo',
-            '/godot/godot.exe',
-            4.2,
-            true,
-        );
-        expect(addOrUpdateVSCodeRecommendedExtensions).toHaveBeenCalledWith(
-            '/projects/demo',
-            true,
-        );
-        expect(addVSCodeNETLaunchConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            '/godot/godot.exe',
         );
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
@@ -671,6 +669,7 @@ describe('setProjectVSCode', () => {
             expect.any(Array),
         );
         expect(result.withVSCode).toBe(true);
+        expect(result.codeEditorId).toBe('vscode');
     });
 
     it('returns recovered VS Code config files when enabling integration', async () => {
@@ -750,10 +749,23 @@ describe('setProjectVSCode', () => {
             ),
         ]);
 
-        const result = await setProjectVSCode(project, true);
+        integrationMocks.applyToProject.mockResolvedValue({
+            editorSettingsFile:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
+            recoveredConfigFiles: [
+                '.vscode/settings.json.1712345678901.bad',
+                '.vscode/launch.json.1712345678902.bad',
+                '.vscode/extensions.json.1712345678903.bad',
+            ],
+        });
+        const result = await setProjectCodeEditor(
+            project,
+            'vscode',
+            codeEditorIntegrationService,
+        );
 
         expect(result.withVSCode).toBe(true);
-        expect(result.recoveredVSCodeConfigFiles).toEqual([
+        expect(result.recoveredCodeEditorConfigFiles).toEqual([
             '.vscode/settings.json.1712345678901.bad',
             '.vscode/launch.json.1712345678902.bad',
             '.vscode/extensions.json.1712345678903.bad',
@@ -821,9 +833,18 @@ describe('setProjectVSCode', () => {
         updateVSCodeSettings.mockResolvedValue(undefined);
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
 
-        const result = await setProjectVSCode(project, true);
+        integrationMocks.applyToProject.mockResolvedValue({
+            editorSettingsFile:
+                '/projects/demo/editor_data/editor_settings-4.2.tres',
+            recoveredConfigFiles: [],
+        });
+        const result = await setProjectCodeEditor(
+            project,
+            'vscode',
+            codeEditorIntegrationService,
+        );
 
-        expect(createNewEditorSettings).toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).toHaveBeenCalledOnce();
         expect(result.editor_settings_file).toBe(
             '/projects/demo/editor_data/editor_settings-4.2.tres',
         );
@@ -897,7 +918,11 @@ describe('setProjectVSCode', () => {
         addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(undefined);
         addVSCodeNETLaunchConfig.mockResolvedValue(undefined);
 
-        const result = await setProjectVSCode(project, true);
+        const result = await setProjectCodeEditor(
+            project,
+            'vscode',
+            codeEditorIntegrationService,
+        );
 
         expect(storeProjectsList).toHaveBeenCalledTimes(2);
         expect(result.withVSCode).toBe(true);
@@ -954,12 +979,16 @@ describe('setProjectVSCode', () => {
         );
         updateEditorSettings.mockResolvedValue(undefined);
 
-        const result = await setProjectVSCode(project, false);
-
-        expect(updateEditorSettings).toHaveBeenCalledWith(
-            '/projects/demo/editor_data/editor_settings-4.2.tres',
-            { useExternalEditor: false },
+        const result = await setProjectCodeEditor(
+            project,
+            null,
+            codeEditorIntegrationService,
         );
+
+        expect(integrationMocks.disableForProject).toHaveBeenCalledWith(
+            '/projects/demo/editor_data/editor_settings-4.2.tres',
+        );
+        expect(result.codeEditorId).toBeNull();
         expect(result.withVSCode).toBe(false);
         expect(updateVSCodeSettings).not.toHaveBeenCalled();
         expect(addOrUpdateVSCodeRecommendedExtensions).not.toHaveBeenCalled();
@@ -1018,9 +1047,16 @@ describe('setProjectVSCode', () => {
             defaultRenderer: 'FORWARD_PLUS',
         });
 
-        await expect(setProjectVSCode(project, true)).rejects.toThrow(
-            'projects:toggleVSCode.errors.vscodeNotInstalled',
+        integrationMocks.applyToProject.mockRejectedValue(
+            new Error('Visual Studio Code installation was not found.'),
         );
+        await expect(
+            setProjectCodeEditor(
+                project,
+                'vscode',
+                codeEditorIntegrationService,
+            ),
+        ).rejects.toThrow('Visual Studio Code installation was not found.');
         expect(storeProjectsList).not.toHaveBeenCalled();
     });
 });

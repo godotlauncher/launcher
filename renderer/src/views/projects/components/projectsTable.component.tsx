@@ -199,7 +199,8 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                         {row.name}
                                                     </span>
                                                 </button>
-                                                {row.withVSCode && (
+                                                {row.codeEditorId ===
+                                                    'vscode' && (
                                                     <Tooltip
                                                         tip={t(
                                                             'table.vsCodeProject',

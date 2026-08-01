@@ -50,7 +50,7 @@
             "noCompatibleRelease": "Keine installierten Releases für Godot {{version}}.x gefunden, die config_version {{configVersion}} unterstützen."
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "Projekt nicht gefunden",
             "vscodeNotInstalled": "Visual Studio Code ist auf diesem Computer nicht installiert.",
@@ -77,7 +77,8 @@
             "missingProjectFile": "Projektdatei nicht gefunden. Überprüfe den Projektpfad oder entferne das Projekt und füge es erneut hinzu.",
             "missingEditor": "Der ausgewählte Editor ist nicht verfügbar. Hänge das Laufwerk ein oder wähle einen anderen Editor."
         },
-        "recoveredVSCodeConfig": "Einige VS Code-Konfigurationsdateien waren ungültig. Godot Launcher hat sie neu erstellt und die Originale als .bad-Kopien beibehalten."
+        "recoveredVSCodeConfig": "Einige VS Code-Konfigurationsdateien waren ungültig. Godot Launcher hat sie neu erstellt und die Originale als .bad-Kopien beibehalten.",
+        "recoveredCodeEditorConfig": "Einige Konfigurationsdateien des Code-Editors waren ungültig. Godot Launcher hat sie neu erstellt und die Originale als .bad-Kopien beibehalten."
     },
     "changeEditor": {
         "errors": {

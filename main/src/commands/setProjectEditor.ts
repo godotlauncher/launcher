@@ -1,4 +1,3 @@
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
     ChangeProjectEditorResult,
@@ -7,22 +6,14 @@ import type {
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
-import {
-    EDITOR_CONFIG_DIRNAME,
-    PROJECTS_FILENAME,
-    TEMPLATE_DIR_NAME,
-} from '../constants.js';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import { EDITOR_CONFIG_DIRNAME, PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
-import { getAssetPath } from '../pathResolver.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
     SetProjectEditorRelease,
 } from '../utils/godot.utils.js';
-import {
-    createNewEditorSettings,
-    updateEditorSettings,
-} from '../utils/godotProject.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
@@ -30,12 +21,6 @@ import {
     getProjectsSnapshot,
     storeProjectsList,
 } from '../utils/projects.utils.js';
-import {
-    addOrUpdateVSCodeRecommendedExtensions,
-    addVSCodeNETLaunchConfig,
-    updateVSCodeSettings,
-} from '../utils/vscode.utils.js';
-import { getInstalledTools } from './installedTools.js';
 import { getUserPreferences } from './userPreferences.js';
 
 const PROJECT_EDITOR_MAX_ATTEMPTS = 2;
@@ -62,10 +47,12 @@ function resolveProjectEditorPath(
 export async function setProjectEditor(
     project: ProjectDetails,
     newRelease: InstalledRelease,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
 ): Promise<ChangeProjectEditorResult> {
     const { configDir } = getDefaultDirs();
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
     const { install_location: installLocation } = await getUserPreferences();
+    const recoveredCodeEditorConfigFiles = new Set<string>();
 
     for (let attempt = 0; attempt < PROJECT_EDITOR_MAX_ATTEMPTS; attempt++) {
         const { projects, version } =
@@ -131,68 +118,41 @@ export async function setProjectEditor(
         const editorSettingsFilename = config.editorConfigFilename(
             newRelease.version_number,
         );
-        const newEditorSettingsFile = path.resolve(
+        let newEditorSettingsFile = path.resolve(
             projectEditorPath,
             'editor_data',
             editorSettingsFilename,
         );
 
-        const tools = await getInstalledTools();
-        const vsCodeTool = tools.find((t) => t.name === 'VSCode');
-
-        if (currentProject.withVSCode && vsCodeTool) {
-            const templatesDir = path.resolve(
-                getAssetPath(),
-                TEMPLATE_DIR_NAME,
-            );
-            const editorSettingsExists = fs.existsSync(newEditorSettingsFile);
-
-            let vscodeSettingsPath = vsCodeTool.path;
-
-            if (process.platform === 'darwin') {
-                vscodeSettingsPath = path.resolve(
-                    vscodeSettingsPath,
-                    'Contents',
-                    'MacOS',
-                    'Electron',
+        if (currentProject.codeEditorId) {
+            const installation =
+                await codeEditorIntegrationService.scanIntegration(
+                    currentProject.codeEditorId,
                 );
+            if (installation) {
+                const applied =
+                    await codeEditorIntegrationService.applyToProject(
+                        currentProject.codeEditorId,
+                        {
+                            projectPath: currentProject.path,
+                            godotLaunchPath: newLaunchPath,
+                            godotVersion: newRelease.version_number,
+                            mono: newRelease.mono,
+                            editorSettingsFile: newEditorSettingsFile,
+                            editorSettingsFilename,
+                            editorSettingsFormat: config.editorConfigFormat,
+                            configurationMode: 'update',
+                        },
+                    );
+                newEditorSettingsFile = applied.editorSettingsFile;
+                for (const recoveredFile of applied.recoveredConfigFiles) {
+                    recoveredCodeEditorConfigFiles.add(recoveredFile);
+                }
             }
-
-            if (editorSettingsExists) {
-                await updateEditorSettings(newEditorSettingsFile, {
-                    execPath: vscodeSettingsPath,
-                    execFlags: '{project} --goto {file}:{line}:{col}',
-                    useExternalEditor: true,
-                    isMono: newRelease.mono,
-                });
-            } else {
-                await createNewEditorSettings(
-                    templatesDir,
-                    newLaunchPath,
-                    editorSettingsFilename,
-                    config.editorConfigFormat,
-                    true,
-                    vscodeSettingsPath,
-                    '{project} --goto {file}:{line}:{col}',
-                    newRelease.mono,
-                );
-            }
-
-            await updateVSCodeSettings(
-                project.path,
-                newLaunchPath,
-                newRelease.version_number,
-                newRelease.mono,
+        } else {
+            await codeEditorIntegrationService.disableForProject(
+                newEditorSettingsFile,
             );
-
-            await addOrUpdateVSCodeRecommendedExtensions(
-                project.path,
-                newRelease.mono,
-            );
-
-            if (newRelease.mono) {
-                await addVSCodeNETLaunchConfig(project.path, newLaunchPath);
-            }
         }
 
         const updatedProject: ProjectDetails = {
@@ -243,10 +203,15 @@ export async function setProjectEditor(
             project.editor_settings_path = updatedProject.editor_settings_path;
             project.valid = updatedProject.valid;
             project.withVSCode = updatedProject.withVSCode;
+            project.codeEditorId = updatedProject.codeEditorId;
 
             return {
                 success: true,
                 projects: storedProjects,
+                recoveredCodeEditorConfigFiles:
+                    recoveredCodeEditorConfigFiles.size > 0
+                        ? [...recoveredCodeEditorConfigFiles]
+                        : undefined,
             };
         } catch (error) {
             if (

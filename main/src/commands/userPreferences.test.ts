@@ -37,7 +37,7 @@ function createPrefs(
     overrides: Partial<UserPreferences> = {},
 ): UserPreferences {
     return {
-        prefs_version: 3,
+        prefs_version: 4,
         install_location: '/tmp/install',
         config_location: '/tmp/config',
         projects_location: '/tmp/projects',
@@ -77,6 +77,32 @@ describe('userPreferences migration', () => {
         expect(prefs.receive_beta_updates).toBe(false);
         expect(prefs.skipped_app_update_version).toBeUndefined();
         expect(mocks.writePrefsToDisk).toHaveBeenCalledTimes(0);
+    });
+
+    it('copies the legacy VS Code path into integration settings without removing it', async () => {
+        mocks.readPrefsFromDisk.mockResolvedValue(
+            createPrefs({
+                prefs_version: 3,
+                vs_code_path: '/opt/code',
+            }),
+        );
+
+        const prefs = await getUserPreferences();
+
+        expect(prefs).toMatchObject({
+            prefs_version: 4,
+            vs_code_path: '/opt/code',
+            code_editor_integrations: {
+                vscode: {
+                    enabled: true,
+                    executable_path: '/opt/code',
+                },
+            },
+        });
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+            '/tmp/prefs.json',
+            prefs,
+        );
     });
 
     it('clears invalid skipped update preference values', async () => {

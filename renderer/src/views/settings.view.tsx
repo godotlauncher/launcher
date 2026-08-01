@@ -152,11 +152,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         [cachedTools],
     );
 
-    const vsCodeTool = useMemo(
-        () => cachedTools.find((tool) => tool.name === 'VSCode'),
-        [cachedTools],
-    );
-
     const replaceCodeEditorSettings = (
         updatedSettings: CodeEditorIntegrationSettings,
     ) => {
@@ -266,7 +261,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             active={activeTab === 'tools'}
                             t={t}
                             gitTool={gitTool}
-                            vsCodeTool={vsCodeTool}
                             isRescanningTools={isRescanningTools}
                             onRescanTools={rescanTools}
                         />

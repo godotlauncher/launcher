@@ -69,7 +69,8 @@
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
             "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
         },
-        "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
+        "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu.",
+        "recoveredCodeEditorConfig": "Bazı kod düzenleyici yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
     },
     "changeEditor": {
         "errors": {
@@ -78,7 +79,7 @@
             "differentMajorVersion": "Editörün farklı bir ana sürümü kullanılamaz\nProjenizi korumak için https://godotengine.org adresindeki resmi geçiş kılavuzuna bakın"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "Proje bulunamadı",
             "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",

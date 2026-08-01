@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { createProject } from './createProject.js';
 
 const fsMocks = vi.hoisted(() => ({
@@ -78,13 +79,6 @@ const projectUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
 
-const vscodeMocks = vi.hoisted(() => ({
-    addOrUpdateVSCodeRecommendedExtensions: vi.fn(),
-    addVSCodeSettings: vi.fn(),
-}));
-
-vi.mock('../utils/vscode.utils.js', () => vscodeMocks);
-
 const installedToolsMocks = vi.hoisted(() => ({
     getInstalledTools: vi.fn(),
 }));
@@ -105,6 +99,12 @@ vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
     writeProjectLauncherConfig:
         projectLauncherConfigMocks.writeProjectLauncherConfig,
 }));
+
+const codeEditorIntegrationServiceMocks = {
+    applyToProject: vi.fn(),
+};
+const codeEditorIntegrationService =
+    codeEditorIntegrationServiceMocks as unknown as CodeEditorIntegrationService;
 
 describe('createProject', () => {
     const release: InstalledRelease = {
@@ -161,6 +161,10 @@ describe('createProject', () => {
         projectLauncherConfigMocks.writeProjectLauncherConfig.mockResolvedValue(
             undefined,
         );
+        codeEditorIntegrationServiceMocks.applyToProject.mockResolvedValue({
+            editorSettingsFile: '/configured/editor_settings.tres',
+            recoveredConfigFiles: [],
+        });
     });
 
     it('writes project launcher config after creating a project', async () => {
@@ -168,8 +172,9 @@ describe('createProject', () => {
             'Test Project',
             release,
             'FORWARD_PLUS',
+            null,
             false,
-            false,
+            codeEditorIntegrationService,
         );
 
         expect(result.success).toBe(true);
@@ -182,6 +187,33 @@ describe('createProject', () => {
         );
         expect(result.projectDetails?.icon_path).toBe(
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+        );
+    });
+
+    it('applies and persists the selected code editor integration', async () => {
+        const result = await createProject(
+            'Integrated Project',
+            release,
+            'FORWARD_PLUS',
+            'vscode',
+            false,
+            codeEditorIntegrationService,
+        );
+
+        expect(
+            codeEditorIntegrationServiceMocks.applyToProject,
+        ).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({
+                projectPath: path.resolve('/projects/Integrated-Project'),
+                configurationMode: 'create',
+                mono: false,
+            }),
+        );
+        expect(result.projectDetails?.codeEditorId).toBe('vscode');
+        expect(result.projectDetails?.withVSCode).toBe(true);
+        expect(result.projectDetails?.editor_settings_file).toBe(
+            '/configured/editor_settings.tres',
         );
     });
 });

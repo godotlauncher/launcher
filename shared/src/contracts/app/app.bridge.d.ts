@@ -1,4 +1,7 @@
-import type { CodeEditorIntegrationBridge } from '../codeEditorIntegration/index.js';
+import type {
+    CodeEditorId,
+    CodeEditorIntegrationBridge,
+} from '../codeEditorIntegration/index.js';
 import type { UserPreferences } from '../preferences/index.js';
 import type {
     AddProjectOptions,
@@ -9,7 +12,7 @@ import type {
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
-    SetProjectVSCodeResult,
+    SetProjectCodeEditorResult,
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
@@ -100,7 +103,7 @@ export type AppBridge = {
         name: string,
         release: InstalledRelease,
         renderer: RendererType[5],
-        withVSCode: boolean,
+        codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
     ): Promise<CreateProjectResult>;
@@ -122,10 +125,10 @@ export type AppBridge = {
         project: ProjectDetails,
         openWindowed: boolean,
     ): Promise<ProjectDetails>;
-    setProjectVSCode(
+    setProjectCodeEditor(
         project: ProjectDetails,
-        enable: boolean,
-    ): Promise<SetProjectVSCodeResult>;
+        codeEditorId: CodeEditorId | null,
+    ): Promise<SetProjectCodeEditorResult>;
     initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails>;
     exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;

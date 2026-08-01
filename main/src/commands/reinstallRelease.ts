@@ -7,6 +7,7 @@ import type {
 } from '@shared/contracts';
 import logger from 'electron-log';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from '../checks.js';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { getStoredProjectsList } from '../utils/projects.utils.js';
@@ -40,6 +41,7 @@ function projectUsesRelease(
 async function repairProjectsUsingRelease(
     previousRelease: InstalledRelease,
     newRelease: InstalledRelease,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
 ): Promise<void> {
     const { configDir } = getDefaultDirs();
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
@@ -49,7 +51,11 @@ async function repairProjectsUsingRelease(
     );
 
     for (const project of affectedProjects) {
-        const result = await setProjectEditor(project, newRelease);
+        const result = await setProjectEditor(
+            project,
+            newRelease,
+            codeEditorIntegrationService,
+        );
         if (!result.success) {
             logger.warn(
                 `Failed to repair project '${project.name}' after reinstall: ${result.error}`,
@@ -62,6 +68,7 @@ async function repairProjectsUsingRelease(
 
 export async function reinstallRelease(
     release: InstalledRelease,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
 ): Promise<InstallReleaseResult> {
     try {
         logger.info(`Reinstalling release '${release.version}'`);
@@ -73,7 +80,11 @@ export async function reinstallRelease(
             );
 
             if (refreshedRelease?.valid) {
-                await repairProjectsUsingRelease(release, refreshedRelease);
+                await repairProjectsUsingRelease(
+                    release,
+                    refreshedRelease,
+                    codeEditorIntegrationService,
+                );
                 return {
                     success: true,
                     version: refreshedRelease.version,
@@ -96,7 +107,11 @@ export async function reinstallRelease(
         );
 
         if (validReplacement) {
-            await repairProjectsUsingRelease(release, validReplacement);
+            await repairProjectsUsingRelease(
+                release,
+                validReplacement,
+                codeEditorIntegrationService,
+            );
             return {
                 success: true,
                 version: validReplacement.version,
@@ -118,7 +133,11 @@ export async function reinstallRelease(
             return result;
         }
 
-        await repairProjectsUsingRelease(release, result.release);
+        await repairProjectsUsingRelease(
+            release,
+            result.release,
+            codeEditorIntegrationService,
+        );
         return result;
     } catch (error) {
         logger.error(`Failed to reinstall release '${release.version}'`, error);

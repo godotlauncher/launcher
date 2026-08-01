@@ -1,4 +1,4 @@
-import type { ProjectDetails, SetProjectVSCodeResult } from '@shared/contracts';
+import type { ProjectDetails } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useRef, useState } from 'react';
@@ -14,7 +14,6 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 type ProjectActionMenuState = {
     project: ProjectDetails;
     anchorRect: ActionMenuAnchorRect;
-    hasVSCode: boolean;
     hasGit: boolean;
 };
 
@@ -39,10 +38,6 @@ type UseProjectActionsArgs = {
         project: ProjectDetails,
         windowed: boolean,
     ) => Promise<unknown>;
-    setProjectVSCode: (
-        project: ProjectDetails,
-        withVSCode: boolean,
-    ) => Promise<SetProjectVSCodeResult>;
     initializeProjectGit: (project: ProjectDetails) => Promise<unknown>;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<unknown>;
     removeProject: (project: ProjectDetails) => Promise<unknown>;
@@ -55,7 +50,6 @@ export function useProjectActions({
     addCustomConfirm,
     updatePreferences,
     setProjectWindowed,
-    setProjectVSCode,
     initializeProjectGit,
     importProjectEditorSettings,
     removeProject,
@@ -65,14 +59,10 @@ export function useProjectActions({
         useState<ProjectActionMenuState | null>(null);
 
     const getProjectMenuToolAvailability = async (): Promise<{
-        hasVSCode: boolean;
         hasGit: boolean;
     }> => {
         const tools = await appBridge.getCachedTools();
         return {
-            hasVSCode: tools.some(
-                (tool) => tool.name === 'VSCode' && tool.verified,
-            ),
             hasGit: tools.some((tool) => tool.name === 'Git' && tool.verified),
         };
     };
@@ -90,7 +80,7 @@ export function useProjectActions({
         void action().catch(showProjectActionError);
     };
 
-    const showRecoveredVSCodeConfigWarning = (
+    const showRecoveredCodeEditorConfigWarning = (
         recoveredFiles?: string[],
     ): void => {
         if (!recoveredFiles || recoveredFiles.length === 0) {
@@ -100,7 +90,7 @@ export function useProjectActions({
         addAlert(
             t('common:warning'),
             <div className="space-y-2">
-                <p>{t('messages.recoveredVSCodeConfig')}</p>
+                <p>{t('messages.recoveredCodeEditorConfig')}</p>
                 <ul className="list-disc pl-5">
                     {recoveredFiles.map((file) => (
                         <li key={file}>
@@ -120,7 +110,6 @@ export function useProjectActions({
         e.stopPropagation();
         const anchorRect = getActionMenuAnchorRect(e.currentTarget);
         let toolAvailability = {
-            hasVSCode: false,
             hasGit: false,
         };
         try {
@@ -138,18 +127,6 @@ export function useProjectActions({
     const handleToggleProjectWindowed = (project: ProjectDetails) => {
         runProjectAction(async () => {
             await setProjectWindowed(project, !project.open_windowed);
-        });
-    };
-
-    const handleToggleProjectVSCode = (project: ProjectDetails) => {
-        runProjectAction(async () => {
-            const updatedProject = await setProjectVSCode(
-                project,
-                !project.withVSCode,
-            );
-            showRecoveredVSCodeConfigWarning(
-                updatedProject.recoveredVSCodeConfigFiles,
-            );
         });
     };
 
@@ -257,9 +234,8 @@ export function useProjectActions({
         onProjectMoreOptions,
         runProjectAction,
         showProjectActionError,
-        showRecoveredVSCodeConfigWarning,
+        showRecoveredCodeEditorConfigWarning,
         handleToggleProjectWindowed,
-        handleToggleProjectVSCode,
         handleInitializeProjectGit,
         handleImportEditorSettings,
         handleRemoveProject,

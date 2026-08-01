@@ -263,6 +263,8 @@ describe('CodeEditorIntegrationService', () => {
 
     it('applies a detected integration and updates existing Godot settings', async () => {
         const projectPath = path.resolve('project');
+        const customPath = path.resolve('custom', 'code');
+        const execFlagsOverride = '--custom {file}:{line}';
         const recoveredFile = path.resolve(
             projectPath,
             '.vscode',
@@ -272,29 +274,43 @@ describe('CodeEditorIntegrationService', () => {
         vi.mocked(integration.configureProject).mockResolvedValue({
             recoveredConfigFiles: [recoveredFile, recoveredFile],
         });
-        const service = createService(integration);
+        vi.mocked(integration.resolveGodotConfiguration).mockReturnValue({
+            textEditor: {
+                execPath: customPath,
+                execFlags: execFlagsOverride,
+            },
+        });
+        const settingsStore = createSettingsStore({
+            enabled: true,
+            customPath,
+            execFlagsOverride,
+        });
+        const service = createService(integration, settingsStore);
         const context = createContext({ projectPath });
         fsMocks.existsSync.mockReturnValue(true);
 
         await expect(
-            service.applyToProject(
-                CODE_EDITOR_ID,
-                context,
-                path.resolve('custom', 'code'),
-            ),
+            service.applyToProject(CODE_EDITOR_ID, context),
         ).resolves.toEqual({
             editorSettingsFile: context.editorSettingsFile,
             recoveredConfigFiles: ['.vscode/settings.json.bad'],
         });
-        expect(integration.detectInstallation).toHaveBeenCalledWith(
-            path.resolve('custom', 'code'),
-        );
+        expect(settingsStore.get).toHaveBeenCalledWith(CODE_EDITOR_ID);
+        expect(integration.detectInstallation).toHaveBeenCalledWith(customPath);
+        expect(integration.resolveGodotConfiguration).toHaveBeenCalledWith({
+            installation: {
+                path: path.resolve('tools', 'code'),
+                version: null,
+            },
+            settings: { execFlagsOverride },
+            godotFlavor: 'standard',
+        });
         expect(integration.configureProject).toHaveBeenCalledWith(context);
         expect(godotProjectMocks.updateEditorSettings).toHaveBeenCalledWith(
             context.editorSettingsFile,
             {
-                execPath: path.resolve('tools', 'code'),
-                execFlags: '{project} --goto {file}:{line}:{col}',
+                execPath: customPath,
+                execFlags: execFlagsOverride,
                 useExternalEditor: true,
                 isMono: false,
             },
@@ -329,17 +345,35 @@ describe('CodeEditorIntegrationService', () => {
             '{project} --goto {file}:{line}:{col}',
             false,
         );
+        expect(integration.detectInstallation).toHaveBeenCalledWith(undefined);
+        expect(integration.resolveGodotConfiguration).toHaveBeenCalledWith({
+            installation: {
+                path: path.resolve('tools', 'code'),
+                version: null,
+            },
+            settings: { execFlagsOverride: null },
+            godotFlavor: 'standard',
+        });
     });
 
     it('does not configure a project when the integration is unavailable', async () => {
+        const customPath = path.resolve('missing', 'code');
         const integration = createIntegration();
         vi.mocked(integration.detectInstallation).mockResolvedValue(null);
-        const service = createService(integration);
+        const settingsStore = createSettingsStore({
+            enabled: true,
+            customPath,
+            execFlagsOverride: '--custom',
+        });
+        const service = createService(integration, settingsStore);
 
         await expect(
             service.applyToProject(CODE_EDITOR_ID, createContext()),
         ).rejects.toThrow('Visual Studio Code installation was not found.');
+        expect(settingsStore.get).toHaveBeenCalledWith(CODE_EDITOR_ID);
+        expect(integration.detectInstallation).toHaveBeenCalledWith(customPath);
         expect(integration.configureProject).not.toHaveBeenCalled();
+        expect(integration.resolveGodotConfiguration).not.toHaveBeenCalled();
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
     });
 
@@ -371,5 +405,26 @@ describe('CodeEditorIntegrationService', () => {
 
         expect(fsMocks.existsSync).toHaveBeenCalledWith(editorSettingsFile);
         expect(godotProjectMocks.updateEditorSettings).not.toHaveBeenCalled();
+    });
+
+    it('finds the integration already configured for a project', async () => {
+        const integration = createIntegration();
+        const service = createService(integration);
+
+        await expect(
+            service.findConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBe(CODE_EDITOR_ID);
+        expect(integration.isConfiguredForProject).toHaveBeenCalledOnce();
+    });
+
+    it('returns null when no integration is configured for a project', async () => {
+        const integration = createIntegration();
+        vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
+        const service = createService(integration);
+
+        await expect(
+            service.findConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBeNull();
+        expect(integration.isConfiguredForProject).toHaveBeenCalledOnce();
     });
 });

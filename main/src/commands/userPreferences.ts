@@ -15,8 +15,8 @@ function migrateUserPreferences(
     const nextPrefs: UserPreferences = { ...prefs };
     const platform = os.platform();
 
-    if (nextPrefs.prefs_version < 3) {
-        nextPrefs.prefs_version = 3;
+    if (nextPrefs.prefs_version < 4) {
+        nextPrefs.prefs_version = 4;
         updated = true;
     }
 
@@ -45,6 +45,27 @@ function migrateUserPreferences(
         typeof nextPrefs.skipped_app_update_version !== 'string'
     ) {
         nextPrefs.skipped_app_update_version = undefined;
+        updated = true;
+    }
+
+    const legacyVSCodePath = nextPrefs.vs_code_path?.trim();
+    const vscodeIntegration = nextPrefs.code_editor_integrations?.vscode;
+    if (legacyVSCodePath && !vscodeIntegration?.executable_path?.trim()) {
+        nextPrefs.code_editor_integrations = {
+            ...nextPrefs.code_editor_integrations,
+            vscode: {
+                ...vscodeIntegration,
+                executable_path: legacyVSCodePath,
+            },
+        };
+        updated = true;
+    }
+
+    if (
+        nextPrefs.code_editor_integrations?.vscode?.executable_path &&
+        nextPrefs.code_editor_integrations.vscode.enabled === undefined
+    ) {
+        nextPrefs.code_editor_integrations.vscode.enabled = true;
         updated = true;
     }
 

@@ -1,23 +1,19 @@
 import type {
     CachedTool,
+    CodeEditorId,
     CodeEditorIntegrationSettings,
     RendererType,
 } from '@shared/contracts';
-import { CircleHelp, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
-import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
-import {
-    codeEditorIdToLegacyVSCodeFlag,
-    legacyVSCodeFlagToCodeEditorId,
-} from '../../models/codeEditorIntegration.model';
 import { CreateProjectActions } from './createProject/components/createProjectActions.component';
 import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
 import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
@@ -55,7 +51,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const [overwriteProjectPath, setOverwriteProjectPath] =
         useState<boolean>(false);
     const [withGit, setWithGit] = useState<boolean>(true);
-    const [withVSCode, setWithVSCode] = useState<boolean>(true);
+    const [codeEditorId, setCodeEditorId] = useState<CodeEditorId | null>(null);
     const [loadingTools, setLoadingTools] = useState<boolean>(true);
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -65,7 +61,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const overwritePathCheckRequestRef = useRef<number>(0);
     const overwriteBasePathInitializedRef = useRef<boolean>(false);
 
-    const { addAlert } = useAlerts();
     const { installedReleases, downloadingReleases } = useRelease();
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
@@ -213,7 +208,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             projectName,
             allReleases[releaseIndex],
             renderer,
-            withVSCode,
+            codeEditorId,
             withGit,
             overwriteProjectPath ? overwriteSubmitPath : undefined,
         );
@@ -296,22 +291,9 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         if (loadingTools || loadingCodeEditors) return;
 
         const hasGit = hasTool('Git');
-        const hasVSCode = hasTool('VSCode');
         setWithGit(hasGit);
-        setWithVSCode(
-            codeEditorIdToLegacyVSCodeFlag(
-                resolveCreateProjectCodeEditorId(codeEditorSettings, hasVSCode),
-            ),
-        );
+        setCodeEditorId(resolveCreateProjectCodeEditorId(codeEditorSettings));
     }, [codeEditorSettings, hasTool, loadingCodeEditors, loadingTools]);
-
-    const showVSCodeHelp = () => {
-        addAlert(
-            t('otherSettings.vscodeHelp.title'),
-            <p>{t('otherSettings.vscodeHelp.message')}</p>,
-            <CircleHelp />,
-        );
-    };
 
     const handleSelectProjectFolder = async () => {
         setSelectingFolder(true);
@@ -337,7 +319,6 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     };
 
     const gitAvailable = hasTool('Git');
-    const vsCodeAvailable = hasTool('VSCode');
 
     return (
         <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
@@ -405,24 +386,12 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             t={t}
                             loadingTools={loadingTools}
                             gitAvailable={gitAvailable}
-                            vsCodeAvailable={vsCodeAvailable}
                             withGit={withGit}
-                            withVSCode={withVSCode}
                             loadingCodeEditors={loadingCodeEditors}
                             onWithGitChange={setWithGit}
-                            onWithVSCodeChange={setWithVSCode}
                             codeEditorSettings={codeEditorSettings}
-                            codeEditorId={legacyVSCodeFlagToCodeEditorId(
-                                withVSCode,
-                            )}
-                            onCodeEditorIdChange={(codeEditorId) =>
-                                setWithVSCode(
-                                    codeEditorIdToLegacyVSCodeFlag(
-                                        codeEditorId,
-                                    ),
-                                )
-                            }
-                            onVSCodeHelp={showVSCodeHelp}
+                            codeEditorId={codeEditorId}
+                            onCodeEditorIdChange={setCodeEditorId}
                         />
                     </div>
                     <CreateProjectActions

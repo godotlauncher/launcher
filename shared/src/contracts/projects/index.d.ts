@@ -69,15 +69,21 @@ export type AddProjectToListResult = BackendResult & {
     projects?: ProjectDetails[];
     newProject?: ProjectDetails;
     editorResolution?: AddProjectEditorResolution;
+    recoveredCodeEditorConfigFiles?: string[];
     recoveredVSCodeConfigFiles?: string[];
 };
 
 export type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
+    recoveredCodeEditorConfigFiles?: string[];
 };
 
 export type SetProjectVSCodeResult = ProjectDetails & {
     recoveredVSCodeConfigFiles?: string[];
+};
+
+export type SetProjectCodeEditorResult = ProjectDetails & {
+    recoveredCodeEditorConfigFiles?: string[];
 };
 
 export type RenameProjectOptions = {

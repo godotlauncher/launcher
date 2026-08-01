@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
+import { resolveCodeEditorProjectMode } from './codeEditorIntegration/codeEditorProjectMode.js';
 
 import { getCurrentAppConfig } from './config/index.js';
 import { PROJECTS_FILENAME } from './constants.js';
@@ -196,40 +197,9 @@ export async function checkProjectValid(
     const gitDirPath = path.resolve(project.path, '.git');
     project.withGit = await pathExistsForValidation(gitDirPath);
 
-    const vscodeDirPath = path.resolve(project.path, '.vscode');
-    const vscodeDirExists = await pathExistsForValidation(vscodeDirPath);
-    let editorSettingsEnableExternal = false;
-
-    if (
-        project.editor_settings_file &&
-        (await pathExistsForValidation(project.editor_settings_file))
-    ) {
-        try {
-            const editorSettingsContent = await fs.promises.readFile(
-                project.editor_settings_file,
-                'utf-8',
-            );
-            const parsedSettings = parseGodotProjectFile(editorSettingsContent);
-            const resourceSection = parsedSettings.get('resource');
-
-            const useExternalValue =
-                resourceSection?.get(
-                    'text_editor/external/use_external_editor',
-                ) ?? '';
-
-            editorSettingsEnableExternal =
-                useExternalValue.trim().toLowerCase() === 'true';
-        } catch (error) {
-            logger.warn(
-                `Failed to read editor settings for project '${project.name}': ${String(
-                    error,
-                )}`,
-            );
-            editorSettingsEnableExternal = false;
-        }
-    }
-
-    project.withVSCode = vscodeDirExists && editorSettingsEnableExternal;
+    const codeEditorMode = resolveCodeEditorProjectMode(project);
+    project.codeEditorId = codeEditorMode.codeEditorId;
+    project.withVSCode = codeEditorMode.withVSCode;
 
     return project;
 }

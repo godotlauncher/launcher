@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
-import vscodeIcon from '../../../assets/icons/vscode.svg';
 import {
     ActionMenu,
     type ActionMenuAnchorRect,
@@ -22,7 +21,6 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 type ProjectActionsMenuProps = {
     project: ProjectDetails | null;
     anchorRect: ActionMenuAnchorRect | null;
-    hasVSCode: boolean;
     hasGit: boolean;
     t: Translate;
     onClose: () => void;
@@ -31,7 +29,6 @@ type ProjectActionsMenuProps = {
     onOpenProjectFolder: (project: ProjectDetails) => void;
     onOpenEditorSettingsFolder: (project: ProjectDetails) => void;
     onToggleWindowed: (project: ProjectDetails) => void;
-    onToggleVSCode: (project: ProjectDetails) => void;
     onInitializeGit: (project: ProjectDetails) => void;
     onExportEditorSettings: (project: ProjectDetails) => void;
     onImportEditorSettings: (project: ProjectDetails) => void;
@@ -43,7 +40,6 @@ const iconClassName = 'h-4 w-4';
 export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     project,
     anchorRect,
-    hasVSCode,
     hasGit,
     t,
     onClose,
@@ -52,7 +48,6 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     onOpenProjectFolder,
     onOpenEditorSettingsFolder,
     onToggleWindowed,
-    onToggleVSCode,
     onInitializeGit,
     onExportEditorSettings,
     onImportEditorSettings,
@@ -103,16 +98,6 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
                   icon: <PanelTop className={iconClassName} />,
                   checked: Boolean(project.open_windowed),
                   onSelect: () => onToggleWindowed(project),
-              },
-              {
-                  key: 'use-vscode',
-                  label: t('project.useVSCode', { ns: 'menus' }),
-                  icon: (
-                      <img src={vscodeIcon} className={iconClassName} alt="" />
-                  ),
-                  checked: project.withVSCode,
-                  disabled: !project.valid || !hasVSCode,
-                  onSelect: () => onToggleVSCode(project),
               },
               ...(project.valid && hasGit && !project.withGit
                   ? [
