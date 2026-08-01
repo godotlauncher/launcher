@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import path from 'node:path';
 import logger from 'electron-log';
 import { applyEdits, modify, type ParseError, parse } from 'jsonc-parser';
+import { findExecutable } from '../../../utils/platform.utils.js';
 
 type JSONObject = Record<string, unknown>;
 
@@ -467,7 +468,11 @@ export async function getVSCodeInstallPath(
             }
         }
     }
-    return null;
+
+    const pathCandidate = await findExecutable('code');
+    return pathCandidate
+        ? resolveVSCodeInstallCandidate(pathCandidate, platform)
+        : null;
 }
 
 function isExistingFile(candidatePath: string): boolean {

@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { findExecutable } from '../../../utils/platform.utils.js';
 import { updateVSCodeSettings } from './vscodeIntegration.utils.js';
 
 type LaunchConfiguration = {
@@ -17,6 +18,10 @@ vi.mock('electron-log', () => ({
         warn: vi.fn(),
         error: vi.fn(),
     },
+}));
+
+vi.mock('../../../utils/platform.utils.js', () => ({
+    findExecutable: vi.fn(),
 }));
 
 // Mock the fs module
@@ -456,6 +461,7 @@ describe('addVSCodeNETLaunchConfig', () => {
 describe('getVSCodeInstallPath', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(findExecutable).mockResolvedValue(null);
         vi.mocked(fs.statSync).mockReturnValue({
             isFile: () => true,
         } as fs.Stats);
@@ -515,6 +521,7 @@ describe('getVSCodeInstallPath', () => {
         await expect(
             mod.getVSCodeInstallPath('/custom/editor'),
         ).resolves.toBeNull();
+        expect(findExecutable).not.toHaveBeenCalled();
 
         Object.defineProperty(process, 'platform', {
             value: original,
@@ -589,6 +596,7 @@ describe('getVSCodeInstallPath', () => {
         const res = await mod.getVSCodeInstallPath();
         expect(res).toBeTruthy();
         expect(String(res)).toMatch(/Code\.exe$/i);
+        expect(findExecutable).not.toHaveBeenCalled();
 
         Object.defineProperty(process, 'platform', {
             value: original,
@@ -615,6 +623,73 @@ describe('getVSCodeInstallPath', () => {
         const res = await mod.getVSCodeInstallPath();
         expect(res).toBeTruthy();
         expect(String(res)).toMatch(/code$/i);
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test.each([
+        ['win32', 'C:\\Portable\\VS Code\\bin\\code.cmd'],
+        ['darwin', '/usr/local/bin/code'],
+        ['linux', '/opt/vscode/bin/code'],
+    ] as const)('finds a %s VS Code executable on PATH', async (platform, executablePath) => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: platform,
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockImplementation(
+            (candidate) => candidate === executablePath,
+        );
+        vi.mocked(findExecutable).mockResolvedValue(executablePath);
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBe(executablePath);
+        expect(findExecutable).toHaveBeenCalledWith('code');
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('rejects a nonexistent executable found on PATH', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockReturnValue(false);
+        vi.mocked(findExecutable).mockResolvedValue('/missing/code');
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBeNull();
+
+        Object.defineProperty(process, 'platform', {
+            value: original,
+            configurable: true,
+        });
+    });
+
+    test('returns null when default locations and PATH lookup fail', async () => {
+        const original = process.platform;
+        Object.defineProperty(process, 'platform', {
+            value: 'linux',
+            configurable: true,
+        });
+        vi.mocked(fs.existsSync).mockReturnValue(false);
+
+        const mod = await vi.importActual<
+            typeof import('./vscodeIntegration.utils.js')
+        >('./vscodeIntegration.utils.js');
+        await expect(mod.getVSCodeInstallPath()).resolves.toBeNull();
+        expect(findExecutable).toHaveBeenCalledWith('code');
 
         Object.defineProperty(process, 'platform', {
             value: original,
