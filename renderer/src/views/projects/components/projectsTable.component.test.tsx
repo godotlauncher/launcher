@@ -27,7 +27,7 @@ const baseProject: ProjectDetails = {
     },
     launch_path: '/install/4.3/Godot',
     config_version: 5,
-    withVSCode: false,
+    codeEditorId: null,
     withGit: false,
     valid: true,
 };

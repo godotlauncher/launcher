@@ -125,7 +125,7 @@ const project: ProjectDetails = {
     release: invalidRelease,
     launch_path: '/project/editor/Godot.app',
     config_version: 5,
-    withVSCode: false,
+    codeEditorId: null,
     withGit: false,
     valid: false,
 };

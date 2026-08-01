@@ -1,5 +1,6 @@
 import type { UserPreferences } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StoredUserPreferences } from '../utils/prefs.utils.js';
 
 const mocks = vi.hoisted(() => {
     const getDefaultDirs = vi.fn(() => ({ prefsPath: '/tmp/prefs.json' }));
@@ -51,16 +52,16 @@ function createPrefs(
         first_run: true,
         windows_enable_symlinks: false,
         windows_symlink_win_notify: true,
-        vs_code_path: '',
         language: 'system',
         ...overrides,
     };
 }
 
-function mockStoredPrefs(stored: Partial<UserPreferences>): void {
+function mockStoredPrefs(stored: StoredUserPreferences): void {
+    const { vs_code_path: _legacyVSCodePath, ...runtimePrefs } = stored;
     mocks.readPrefsSnapshotFromDisk.mockResolvedValue({
         stored,
-        merged: createPrefs(stored),
+        merged: createPrefs(runtimePrefs),
     });
 }
 
@@ -84,7 +85,7 @@ describe('userPreferences migration', () => {
         expect(mocks.writePrefsToDisk).toHaveBeenCalledTimes(0);
     });
 
-    it('copies the legacy VS Code path into integration settings without removing it', async () => {
+    it('copies the legacy VS Code path into integration settings', async () => {
         mockStoredPrefs({
             prefs_version: 3,
             vs_code_path: '/opt/code',
@@ -94,7 +95,6 @@ describe('userPreferences migration', () => {
 
         expect(prefs).toMatchObject({
             prefs_version: 4,
-            vs_code_path: '/opt/code',
             code_editor_integrations: {
                 vscode: {
                     enabled: true,
@@ -117,7 +117,6 @@ describe('userPreferences migration', () => {
 
         expect(prefs).toMatchObject({
             prefs_version: 4,
-            vs_code_path: '/opt/code',
             code_editor_integrations: {
                 vscode: {
                     enabled: true,
@@ -272,16 +271,23 @@ describe('userPreferences migration', () => {
     });
 
     it('does not restore the legacy path after reset and reload', async () => {
-        let stored: Partial<UserPreferences> = {
+        let stored: StoredUserPreferences = {
             prefs_version: 3,
             vs_code_path: '/legacy/code',
         };
-        mocks.readPrefsSnapshotFromDisk.mockImplementation(async () => ({
-            stored,
-            merged: createPrefs(stored),
-        }));
+        mocks.readPrefsSnapshotFromDisk.mockImplementation(async () => {
+            const { vs_code_path: _legacyVSCodePath, ...runtimePrefs } = stored;
+            return {
+                stored,
+                merged: createPrefs(runtimePrefs),
+            };
+        });
         mocks.writePrefsToDisk.mockImplementation(async (_path, value) => {
-            stored = JSON.parse(JSON.stringify(value)) as UserPreferences;
+            const legacyPath = stored.vs_code_path;
+            stored = {
+                ...JSON.parse(JSON.stringify(value)),
+                ...(legacyPath ? { vs_code_path: legacyPath } : {}),
+            };
         });
 
         const migrated = await getUserPreferences();
@@ -297,7 +303,8 @@ describe('userPreferences migration', () => {
         });
         const reloaded = await getUserPreferences();
 
-        expect(reloaded.vs_code_path).toBe('/legacy/code');
+        expect(reloaded).not.toHaveProperty('vs_code_path');
+        expect(stored.vs_code_path).toBe('/legacy/code');
         expect(
             reloaded.code_editor_integrations?.vscode?.executable_path,
         ).toBeUndefined();

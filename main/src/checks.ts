@@ -2,7 +2,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
-import { resolveCodeEditorProjectMode } from './codeEditorIntegration/codeEditorProject.utils.js';
 
 import { getCurrentAppConfig } from './config/index.js';
 import { PROJECTS_FILENAME } from './constants.js';
@@ -196,10 +195,6 @@ export async function checkProjectValid(
 
     const gitDirPath = path.resolve(project.path, '.git');
     project.withGit = await pathExistsForValidation(gitDirPath);
-
-    const codeEditorMode = resolveCodeEditorProjectMode(project);
-    project.codeEditorId = codeEditorMode.codeEditorId;
-    project.withVSCode = codeEditorMode.withVSCode;
 
     return project;
 }

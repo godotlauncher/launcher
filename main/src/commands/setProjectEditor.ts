@@ -7,10 +7,7 @@ import type {
 import { app } from 'electron';
 import logger from 'electron-log';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import {
-    resolveCodeEditorProjectMode,
-    resolvePortableCodeEditorIdForWrite,
-} from '../codeEditorIntegration/codeEditorProject.utils.js';
+import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { EDITOR_CONFIG_DIRNAME, PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
 import {
@@ -181,7 +178,7 @@ export async function setProjectEditor(
         try {
             const codeEditorId = await resolvePortableCodeEditorIdForWrite(
                 updatedProject.path,
-                resolveCodeEditorProjectMode(updatedProject).codeEditorId,
+                updatedProject.codeEditorId,
                 codeEditorIntegrationService,
             );
             await writeProjectLauncherConfig(updatedProject.path, {
@@ -203,7 +200,6 @@ export async function setProjectEditor(
             project.editor_settings_file = updatedProject.editor_settings_file;
             project.editor_settings_path = updatedProject.editor_settings_path;
             project.valid = updatedProject.valid;
-            project.withVSCode = updatedProject.withVSCode;
             project.codeEditorId = updatedProject.codeEditorId;
 
             return {

@@ -16,10 +16,7 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import {
-    resolveCodeEditorProjectMode,
-    resolvePortableCodeEditorIdForWrite,
-} from '../codeEditorIntegration/codeEditorProject.utils.js';
+import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
@@ -69,7 +66,7 @@ export async function removeProject(
     try {
         const codeEditorId = await resolvePortableCodeEditorIdForWrite(
             project.path,
-            resolveCodeEditorProjectMode(project).codeEditorId,
+            project.codeEditorId,
             codeEditorIntegrationService,
         );
         await writeProjectLauncherConfig(project.path, {
@@ -153,7 +150,7 @@ export async function launchProject(
         try {
             const codeEditorId = await resolvePortableCodeEditorIdForWrite(
                 storedProject.path,
-                resolveCodeEditorProjectMode(storedProject).codeEditorId,
+                storedProject.codeEditorId,
                 codeEditorIntegrationService,
             );
             await writeProjectLauncherConfig(storedProject.path, {
@@ -448,8 +445,7 @@ export async function setProjectCodeEditor(
             release: { ...updatedProjects[projectIndex].release },
         };
 
-        const currentCodeEditorId =
-            resolveCodeEditorProjectMode(targetProject).codeEditorId;
+        const currentCodeEditorId = targetProject.codeEditorId;
 
         if (codeEditorId && currentCodeEditorId === codeEditorId) {
             return targetProject;
@@ -519,7 +515,6 @@ export async function setProjectCodeEditor(
         }
 
         targetProject.codeEditorId = codeEditorId;
-        targetProject.withVSCode = codeEditorId === 'vscode';
         updatedProjects[projectIndex] = targetProject;
 
         try {
@@ -545,7 +540,6 @@ export async function setProjectCodeEditor(
                 storedProjects,
             );
 
-            project.withVSCode = latestProject.withVSCode;
             project.codeEditorId = latestProject.codeEditorId;
             project.editor_settings_file = latestProject.editor_settings_file;
             project.editor_settings_path = latestProject.editor_settings_path;

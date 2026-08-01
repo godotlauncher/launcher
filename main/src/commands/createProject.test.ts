@@ -217,7 +217,6 @@ describe('createProject', () => {
             }),
         );
         expect(result.projectDetails?.codeEditorId).toBe('vscode');
-        expect(result.projectDetails?.withVSCode).toBe(true);
         expect(
             projectLauncherConfigMocks.writeProjectLauncherConfig,
         ).toHaveBeenCalledWith(

@@ -806,7 +806,7 @@ suite('Releases Utils', () => {
                     version: '',
                     version_number: 0,
                     withGit: false,
-                    withVSCode: false,
+                    codeEditorId: null,
                     valid: true,
                     release: {
                         editor_path: '/fake/path/godot',
@@ -834,7 +834,7 @@ suite('Releases Utils', () => {
                     version: '',
                     version_number: 0,
                     withGit: false,
-                    withVSCode: false,
+                    codeEditorId: null,
                     valid: true,
                     release: {
                         arch: 'x64',

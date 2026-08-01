@@ -24,8 +24,7 @@ export type ProjectDetails = {
     release: InstalledRelease;
     launch_path: string;
     config_version: 4 | 5;
-    withVSCode: boolean;
-    codeEditorId?: CodeEditorId | null;
+    codeEditorId: CodeEditorId | null;
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;
@@ -70,16 +69,11 @@ export type AddProjectToListResult = BackendResult & {
     newProject?: ProjectDetails;
     editorResolution?: AddProjectEditorResolution;
     recoveredCodeEditorConfigFiles?: string[];
-    recoveredVSCodeConfigFiles?: string[];
 };
 
 export type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
     recoveredCodeEditorConfigFiles?: string[];
-};
-
-export type SetProjectVSCodeResult = ProjectDetails & {
-    recoveredVSCodeConfigFiles?: string[];
 };
 
 export type SetProjectCodeEditorResult = ProjectDetails & {

@@ -785,7 +785,6 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(result).not.toHaveProperty('additionalInfo');
-        expect(result.recoveredVSCodeConfigFiles).toBeUndefined();
     });
 
     it('stores the resolved project icon url when importing', async () => {
@@ -838,11 +837,6 @@ describe('addProject', () => {
         ]);
 
         expect(result.success).toBe(true);
-        expect(result.recoveredVSCodeConfigFiles).toEqual([
-            '.vscode/settings.json.1712345678901.bad',
-            '.vscode/launch.json.1712345678902.bad',
-            '.vscode/extensions.json.1712345678903.bad',
-        ]);
     });
 
     it('applies an inferred integration when Godot settings do not exist', async () => {

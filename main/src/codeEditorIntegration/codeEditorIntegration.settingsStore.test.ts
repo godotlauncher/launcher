@@ -88,9 +88,7 @@ describe('CodeEditorIntegrationSettingsStore', () => {
 
     it('does not read the legacy VS Code path into the new integration', async () => {
         preferenceMocks.getUserPreferences.mockResolvedValue(
-            createPreferences({
-                vs_code_path: 'legacy/code',
-            }),
+            createPreferences({}),
         );
 
         await expect(
@@ -105,7 +103,6 @@ describe('CodeEditorIntegrationSettingsStore', () => {
     it('writes the executable path inside the VS Code integration object', async () => {
         const preferences = createPreferences({
             language: 'de',
-            vs_code_path: 'legacy/code',
         });
         preferenceMocks.getUserPreferences.mockResolvedValue(preferences);
 
@@ -129,7 +126,6 @@ describe('CodeEditorIntegrationSettingsStore', () => {
 
     it('clears integration overrides without changing legacy preferences', async () => {
         const preferences = createPreferences({
-            vs_code_path: 'old/code',
             code_editor_integrations: {
                 vscode: {
                     enabled: false,

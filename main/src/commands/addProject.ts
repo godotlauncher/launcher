@@ -541,7 +541,6 @@ export async function addProject(
         config_version: configVersion as 5,
         withGit,
         codeEditorId,
-        withVSCode: codeEditorId === 'vscode',
         valid: !addAsMissingEditor,
         invalid_reason: addAsMissingEditor ? 'missing_editor' : undefined,
         release: {
@@ -577,10 +576,6 @@ export async function addProject(
         newProject: project,
         recoveredCodeEditorConfigFiles:
             recoveredCodeEditorConfigFiles.size > 0
-                ? [...recoveredCodeEditorConfigFiles]
-                : undefined,
-        recoveredVSCodeConfigFiles:
-            codeEditorId === 'vscode' && recoveredCodeEditorConfigFiles.size > 0
                 ? [...recoveredCodeEditorConfigFiles]
                 : undefined,
     };

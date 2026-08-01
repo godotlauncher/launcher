@@ -28,7 +28,7 @@ const project: ProjectDetails = {
     },
     launch_path: '/editors/Demo/godot.exe',
     config_version: 5,
-    withVSCode: false,
+    codeEditorId: null,
     withGit: false,
     valid: true,
 };

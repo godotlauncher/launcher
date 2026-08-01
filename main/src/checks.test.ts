@@ -234,7 +234,7 @@ describe('checkProjectValid', () => {
             },
             launch_path: path.join(projectDir, 'Godot'),
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -282,7 +282,7 @@ describe('checkProjectValid', () => {
             },
             launch_path: path.join(projectDir, 'Godot.exe'),
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -334,7 +334,7 @@ describe('checkProjectValid', () => {
             },
             launch_path: path.join(projectDir, 'Godot.exe'),
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: false,
             invalid_reason: 'missing_editor',
@@ -397,7 +397,7 @@ config/icon="res://assets/icon.svg"
             },
             launch_path: path.join(projectDir, 'Godot.exe'),
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
             icon_path: 'file:///stale/icon.svg',
@@ -453,7 +453,7 @@ config/icon="res://assets/icon.svg"
             },
             launch_path: path.join(projectDir, 'Godot.exe'),
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -503,7 +503,7 @@ config/icon="res://assets/icon.svg"
             },
             launch_path: path.join(projectDir, 'missing-Godot.exe'),
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -572,7 +572,7 @@ text_editor/external/use_external_editor = false
             },
             launch_path: path.join(projectDir, 'Godot.exe'),
             config_version: 5,
-            withVSCode: true,
+            codeEditorId: 'vscode',
             withGit: false,
             valid: true,
         };
@@ -583,7 +583,6 @@ text_editor/external/use_external_editor = false
         const validatedProject = await checkProjectValid(project);
 
         expect(validatedProject.codeEditorId).toBe('vscode');
-        expect(validatedProject.withVSCode).toBe(true);
 
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });
@@ -622,7 +621,7 @@ describe('checkAndUpdateProjects', () => {
             },
             launch_path: '/godot/Godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };

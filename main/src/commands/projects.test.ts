@@ -233,7 +233,6 @@ function createProjectDetails(
         launch_path: '/project/editor/Godot.app',
         config_version: 5,
         codeEditorId: 'vscode',
-        withVSCode: true,
         withGit: false,
         valid: true,
         ...overrides,
@@ -289,7 +288,6 @@ describe('launchProject', () => {
             launch_path: '/project/editor/Godot.app',
             config_version: 5,
             codeEditorId: 'vscode',
-            withVSCode: true,
             withGit: false,
             valid: true,
         };
@@ -325,7 +323,6 @@ describe('launchProject', () => {
     it('preserves an unknown portable integration while updating launch metadata', async () => {
         const project = createProjectDetails({
             codeEditorId: null,
-            withVSCode: false,
         });
         getProjectsSnapshot.mockResolvedValue({
             projects: [project],
@@ -352,7 +349,6 @@ describe('launchProject', () => {
     it('preserves explicit None while updating launch metadata', async () => {
         const project = createProjectDetails({
             codeEditorId: null,
-            withVSCode: false,
         });
         getProjectsSnapshot.mockResolvedValue({
             projects: [project],
@@ -436,7 +432,6 @@ describe('removeProject', () => {
             launch_path: '/project/editor/Godot.app',
             config_version: 5,
             codeEditorId: 'vscode',
-            withVSCode: true,
             withGit: false,
             valid: true,
         };
@@ -461,7 +456,6 @@ describe('removeProject', () => {
     it('writes the final sidecar for a never-launched project and preserves an unknown ID', async () => {
         const project = createProjectDetails({
             codeEditorId: null,
-            withVSCode: false,
             last_opened: null,
         });
         readProjectLauncherConfig.mockResolvedValue({
@@ -486,7 +480,6 @@ describe('removeProject', () => {
     it('preserves explicit None in the final removal sidecar', async () => {
         const project = createProjectDetails({
             codeEditorId: null,
-            withVSCode: false,
             last_opened: null,
         });
         readProjectLauncherConfig.mockResolvedValue({
@@ -553,7 +546,7 @@ describe('renameProject', () => {
             },
             launch_path: '/launcher/editors/Demo/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
             ...overrides,
@@ -766,7 +759,7 @@ describe('setProjectCodeEditor', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -834,7 +827,6 @@ describe('setProjectCodeEditor', () => {
             windowMock.webContents,
             expect.any(Array),
         );
-        expect(result.withVSCode).toBe(true);
         expect(result.codeEditorId).toBe('vscode');
     });
 
@@ -865,7 +857,7 @@ describe('setProjectCodeEditor', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -896,8 +888,7 @@ describe('setProjectCodeEditor', () => {
 
         expect(integrationMocks.applyToProject).toHaveBeenCalledOnce();
         expect(storeProjectsList).not.toHaveBeenCalled();
-        expect(project.codeEditorId).toBeUndefined();
-        expect(project.withVSCode).toBe(false);
+        expect(project.codeEditorId).toBeNull();
     });
     it('returns recovered VS Code config files when enabling integration', async () => {
         const project: ProjectDetails = {
@@ -926,7 +917,7 @@ describe('setProjectCodeEditor', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -964,7 +955,6 @@ describe('setProjectCodeEditor', () => {
             codeEditorIntegrationService,
         );
 
-        expect(result.withVSCode).toBe(true);
         expect(result.recoveredCodeEditorConfigFiles).toEqual([
             '.vscode/settings.json.1712345678901.bad',
             '.vscode/launch.json.1712345678902.bad',
@@ -998,7 +988,7 @@ describe('setProjectCodeEditor', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -1070,7 +1060,7 @@ describe('setProjectCodeEditor', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -1100,14 +1090,13 @@ describe('setProjectCodeEditor', () => {
         });
         existsSync.mockReturnValue(true);
 
-        const result = await setProjectCodeEditor(
+        await setProjectCodeEditor(
             project,
             'vscode',
             codeEditorIntegrationService,
         );
 
         expect(storeProjectsList).toHaveBeenCalledTimes(2);
-        expect(result.withVSCode).toBe(true);
     });
 
     it('disables VS Code integration by toggling the external editor flag', async () => {
@@ -1138,7 +1127,6 @@ describe('setProjectCodeEditor', () => {
             launch_path: '/godot/godot.exe',
             config_version: 5,
             codeEditorId: null,
-            withVSCode: false,
             withGit: false,
             valid: true,
         };
@@ -1181,7 +1169,6 @@ describe('setProjectCodeEditor', () => {
             }),
         );
         expect(result.codeEditorId).toBeNull();
-        expect(result.withVSCode).toBe(false);
     });
 
     it.each([
@@ -1190,7 +1177,6 @@ describe('setProjectCodeEditor', () => {
     ])('rejects a directly requested %s integration before project mutation', async (state) => {
         const project = createProjectDetails({
             codeEditorId: null,
-            withVSCode: false,
             launch_path: '/godot/godot.exe',
         });
         getProjectsSnapshot.mockResolvedValue({
@@ -1242,7 +1228,6 @@ describe('setProjectCodeEditor', () => {
             selection: 'known integration',
             project: {
                 codeEditorId: null,
-                withVSCode: false,
             },
             requestedId: 'vscode' as const,
         },
@@ -1250,7 +1235,6 @@ describe('setProjectCodeEditor', () => {
             selection: 'None',
             project: {
                 codeEditorId: 'vscode' as const,
-                withVSCode: true,
             },
             requestedId: null,
         },
@@ -1317,7 +1301,7 @@ describe('setProjectCodeEditor', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -1388,7 +1372,7 @@ describe('initializeProjectGit', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };
@@ -1459,7 +1443,7 @@ describe('initializeProjectGit', () => {
             },
             launch_path: '/godot/godot.exe',
             config_version: 5,
-            withVSCode: false,
+            codeEditorId: null,
             withGit: false,
             valid: true,
         };

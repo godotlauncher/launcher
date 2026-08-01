@@ -242,7 +242,6 @@ export async function createProject(
                 renderer,
                 config_version: config.configVersion,
                 codeEditorId,
-                withVSCode: codeEditorId === 'vscode',
                 withGit,
                 valid: true,
             },
@@ -257,7 +256,7 @@ export async function createProject(
         await writeProjectLauncherConfig(projectPath, {
             release: projectDetails.release,
             launcherVersion: app.getVersion(),
-            codeEditorId: projectDetails.codeEditorId ?? null,
+            codeEditorId: projectDetails.codeEditorId,
         });
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),

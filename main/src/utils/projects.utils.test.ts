@@ -10,6 +10,7 @@ import {
     addProjectToList,
     getStoredProjectsList,
     removeProjectFromList,
+    type StoredProjectDetails,
     storeProjectsList,
 } from './projects.utils.js';
 
@@ -95,7 +96,7 @@ describe('projects.utils', () => {
             version_number: 4,
             version: '4.2.0',
             withGit: false,
-            withVSCode: false,
+            codeEditorId: null,
             open_windowed: false,
             release: {
                 version: '4.2.0',
@@ -127,7 +128,7 @@ describe('projects.utils', () => {
             version_number: 4,
             version: '4.1.0',
             withGit: false,
-            withVSCode: false,
+            codeEditorId: null,
             open_windowed: false,
             release: {
                 version: '4.1.0',
@@ -168,7 +169,7 @@ describe('projects.utils', () => {
                 version_number: 4,
                 version: '4.2.0',
                 withGit: false,
-                withVSCode: false,
+                codeEditorId: null,
                 open_windowed: false,
                 release: {
                     version: '4.2.0',
@@ -197,7 +198,7 @@ describe('projects.utils', () => {
                 version_number: 4,
                 version: '4.2.0',
                 withGit: false,
-                withVSCode: false,
+                codeEditorId: null,
                 open_windowed: false,
                 release: {
                     version: '4.2.0',
@@ -229,7 +230,7 @@ describe('projects.utils', () => {
             path: '/projects/legacy',
             last_opened: null,
             withVSCode: true,
-        } as ProjectDetails;
+        } as unknown as StoredProjectDetails;
 
         fs.writeFileSync(
             projectsFile,
@@ -239,13 +240,12 @@ describe('projects.utils', () => {
 
         const [storedProject] = await getStoredProjectsList(projectsFile);
         expect(storedProject.codeEditorId).toBe('vscode');
-        expect(storedProject.withVSCode).toBe(true);
 
         await storeProjectsList(projectsFile, [storedProject]);
 
         const [persistedProject] = JSON.parse(
             fs.readFileSync(projectsFile, 'utf-8'),
-        ) as ProjectDetails[];
+        ) as StoredProjectDetails[];
         expect(persistedProject.codeEditorId).toBe('vscode');
         expect(persistedProject.withVSCode).toBe(true);
     });
@@ -256,19 +256,17 @@ describe('projects.utils', () => {
                 path: '/projects/none',
                 last_opened: null,
                 codeEditorId: null,
-                withVSCode: true,
             } as ProjectDetails,
             {
                 path: '/projects/vscode',
                 last_opened: null,
                 codeEditorId: 'vscode',
-                withVSCode: false,
             } as ProjectDetails,
         ]);
 
         const persistedProjects = JSON.parse(
             fs.readFileSync(projectsFile, 'utf-8'),
-        ) as ProjectDetails[];
+        ) as StoredProjectDetails[];
         const noCodeEditor = persistedProjects.find(
             (project) => project.codeEditorId === null,
         );

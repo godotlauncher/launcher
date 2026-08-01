@@ -1,7 +1,6 @@
 import * as path from 'node:path';
-import type { ProjectDetails } from '@shared/contracts';
+import type { CodeEditorId, ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
-import { resolveCodeEditorProjectMode } from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
@@ -11,7 +10,16 @@ import {
 } from './jsonStoreFactory.js';
 import { getDefaultDirs } from './platform.utils.js';
 
-let projectsStore: TypedJsonStore<ProjectDetails[]> | null = null;
+export type StoredProjectDetails = Omit<
+    ProjectDetails,
+    'codeEditorId' | 'last_opened'
+> & {
+    codeEditorId?: CodeEditorId | null;
+    withVSCode?: boolean;
+    last_opened: Date | string | null;
+};
+
+let projectsStore: TypedJsonStore<StoredProjectDetails[]> | null = null;
 let projectsPath: string | null = null;
 
 export type ProjectsWriteOptions = {
@@ -34,23 +42,49 @@ function resolveProjectsPath(pathOverride?: string): string {
 
 function normalizeProjects(projects: ProjectDetails[]): ProjectDetails[] {
     return projects
-        .map((project) => {
-            const codeEditorMode = resolveCodeEditorProjectMode(project);
-
-            return {
-                ...project,
-                codeEditorId: codeEditorMode.codeEditorId,
-                withVSCode: codeEditorMode.withVSCode,
-                last_opened: project.last_opened
-                    ? new Date(project.last_opened)
-                    : null,
-            };
-        })
+        .map((project) => ({
+            ...project,
+            last_opened: toDate(project.last_opened),
+        }))
         .sort(
             (a, b) =>
                 (a.last_opened ?? new Date(0)).getTime() -
                 (b.last_opened ?? new Date(0)).getTime(),
         );
+}
+
+export function fromStoredProject(
+    storedProject: StoredProjectDetails,
+): ProjectDetails {
+    const { withVSCode, ...project } = storedProject;
+
+    return {
+        ...project,
+        codeEditorId:
+            storedProject.codeEditorId !== undefined
+                ? storedProject.codeEditorId
+                : withVSCode
+                  ? 'vscode'
+                  : null,
+        last_opened: toDate(storedProject.last_opened),
+    };
+}
+
+export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
+    return {
+        ...project,
+        withVSCode: project.codeEditorId === 'vscode',
+    };
+}
+
+function fromStoredProjects(
+    projects: StoredProjectDetails[],
+): ProjectDetails[] {
+    return normalizeProjects(projects.map(fromStoredProject));
+}
+
+function toStoredProjects(projects: ProjectDetails[]): StoredProjectDetails[] {
+    return normalizeProjects(projects).map(toStoredProject);
 }
 
 function toDate(value: Date | string | null | undefined): Date | null {
@@ -68,18 +102,17 @@ function toDate(value: Date | string | null | undefined): Date | null {
 
 function ensureProjectsStore(
     pathOverride?: string,
-): TypedJsonStore<ProjectDetails[]> {
+): TypedJsonStore<StoredProjectDetails[]> {
     const resolvedPath = resolveProjectsPath(pathOverride);
     if (projectsStore && projectsPath === resolvedPath) {
         return projectsStore;
     }
 
-    projectsStore = createTypedJsonStore<ProjectDetails[]>({
+    projectsStore = createTypedJsonStore<StoredProjectDetails[]>({
         id: `projects:${resolvedPath}`,
         logLabel: 'projects list',
         pathProvider: () => resolvedPath,
         defaultValue: async () => [],
-        normalize: async (projects) => normalizeProjects(projects),
         onParseError: (error) => {
             logger.error('Failed to read stored project list', error);
             return [];
@@ -102,8 +135,8 @@ export async function storeProjectsList(
     options?: ProjectsWriteOptions,
 ): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
-    const persisted = await store.write(normalizeProjects(projects), options);
-    return normalizeProjects(persisted);
+    const persisted = await store.write(toStoredProjects(projects), options);
+    return fromStoredProjects(persisted);
 }
 
 export async function getProjectsSnapshot(
@@ -112,7 +145,7 @@ export async function getProjectsSnapshot(
     const store = ensureProjectsStore(storeDir);
     const snapshot = await store.readSnapshot();
     return {
-        projects: normalizeProjects(snapshot.value),
+        projects: fromStoredProjects(snapshot.value),
         version: snapshot.version,
     };
 }
@@ -145,10 +178,14 @@ export async function removeProjectFromList(
     projectPath: string,
 ): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
-    const updated = await store.update((projects) =>
-        projects.filter((p) => p.path !== projectPath),
+    const updated = await store.update((storedProjects) =>
+        toStoredProjects(
+            fromStoredProjects(storedProjects).filter(
+                (p) => p.path !== projectPath,
+            ),
+        ),
     );
-    return normalizeProjects(updated);
+    return fromStoredProjects(updated);
 }
 
 /**
@@ -169,8 +206,8 @@ export async function addProjectToList(
 ): Promise<ProjectDetails[]> {
     const store = ensureProjectsStore(storeDir);
 
-    const updated = await store.update((projects) => {
-        const list = [...projects];
+    const updated = await store.update((storedProjects) => {
+        const list = fromStoredProjects(storedProjects);
         const incoming = {
             ...project,
             last_opened: toDate(project.last_opened),
@@ -190,10 +227,10 @@ export async function addProjectToList(
                 (toDate(b.last_opened)?.getTime() ?? 0),
         );
 
-        return list;
+        return toStoredProjects(list);
     });
 
-    return normalizeProjects(updated);
+    return fromStoredProjects(updated);
 }
 
 export function __resetProjectsStoreForTesting(): void {

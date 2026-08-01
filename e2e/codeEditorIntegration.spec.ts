@@ -157,7 +157,6 @@ test('Project Settings preserves an unavailable selection and can save explicit 
         data: {
             ...SAMPLE_PROJECT_PROTOTYPE,
             codeEditorId: null,
-            withVSCode: false,
         },
     });
 

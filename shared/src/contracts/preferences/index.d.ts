@@ -25,7 +25,6 @@ export type UserPreferences = {
     code_editor_integrations?: Partial<
         Record<CodeEditorId, CodeEditorIntegrationPreferences>
     >;
-    vs_code_path?: string;
     language?: string;
     skipped_app_update_version?: string;
     installed_tools?: {

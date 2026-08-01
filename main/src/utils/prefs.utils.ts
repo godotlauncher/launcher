@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { UserPreferences } from '@shared/contracts';
+import type { CachedTool, UserPreferences } from '@shared/contracts';
 import { dialog } from 'electron';
 import logger from 'electron-log';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
@@ -19,7 +19,9 @@ import {
 } from './jsonStoreFactory.js';
 import { getDefaultDirs } from './platform.utils.js';
 
-export type StoredUserPreferences = Partial<UserPreferences>;
+export type StoredUserPreferences = Partial<UserPreferences> & {
+    vs_code_path?: string;
+};
 
 export type UserPreferencesSnapshot = {
     stored: StoredUserPreferences;
@@ -36,13 +38,33 @@ function clonePrefs<T>(prefs: T): T {
     return JSON.parse(JSON.stringify(prefs));
 }
 
+function isLegacyCodeEditorTool(tool: Pick<CachedTool, 'name'>): boolean {
+    return tool.name === 'VSCode';
+}
+
+function legacyCodeEditorTools(prefs: StoredUserPreferences): CachedTool[] {
+    return prefs.installed_tools?.tools.filter(isLegacyCodeEditorTool) ?? [];
+}
+
 function mergeWithDefaults(
     defaultPrefs: UserPreferences,
     prefs: StoredUserPreferences,
 ): UserPreferences {
+    const { vs_code_path: _legacyVSCodePath, ...runtimePrefs } =
+        clonePrefs(prefs);
+    const installedTools = runtimePrefs.installed_tools
+        ? {
+              ...runtimePrefs.installed_tools,
+              tools: runtimePrefs.installed_tools.tools.filter(
+                  (tool) => !isLegacyCodeEditorTool(tool),
+              ),
+          }
+        : undefined;
+
     return {
         ...clonePrefs(defaultPrefs),
-        ...clonePrefs(prefs),
+        ...runtimePrefs,
+        ...(installedTools ? { installed_tools: installedTools } : {}),
     };
 }
 
@@ -129,7 +151,6 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         first_run: true,
         windows_enable_symlinks: false,
         windows_symlink_win_notify: platform !== 'win32',
-        vs_code_path: '',
         language: 'system', // Default to system language detection
     };
 }
@@ -177,7 +198,31 @@ export async function writePrefsToDisk(
     prefs: UserPreferences,
 ): Promise<void> {
     const store = ensurePrefsStore(prefsPath);
-    await store.write(clonePrefs(prefs));
+    await store.update((storedPrefs) => {
+        const retainedLegacyTools = legacyCodeEditorTools(storedPrefs);
+        const runtimeTools =
+            prefs.installed_tools?.tools.filter(
+                (tool) => !isLegacyCodeEditorTool(tool),
+            ) ?? [];
+        const installedTools =
+            prefs.installed_tools || retainedLegacyTools.length > 0
+                ? {
+                      last_scan:
+                          prefs.installed_tools?.last_scan ??
+                          storedPrefs.installed_tools?.last_scan ??
+                          0,
+                      tools: [...runtimeTools, ...retainedLegacyTools],
+                  }
+                : undefined;
+
+        return {
+            ...clonePrefs(prefs),
+            ...(storedPrefs.vs_code_path !== undefined
+                ? { vs_code_path: storedPrefs.vs_code_path }
+                : {}),
+            ...(installedTools ? { installed_tools: installedTools } : {}),
+        };
+    });
 }
 
 export async function getLoadedPrefs(): Promise<UserPreferences> {

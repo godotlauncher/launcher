@@ -51,7 +51,7 @@ function migrateUserPreferences(
         updated = true;
     }
 
-    const legacyVSCodePath = nextPrefs.vs_code_path?.trim();
+    const legacyVSCodePath = storedPrefs.vs_code_path?.trim();
     const vscodeIntegration = nextPrefs.code_editor_integrations?.vscode;
     if (
         storedPrefsVersion < 4 &&

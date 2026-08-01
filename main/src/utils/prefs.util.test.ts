@@ -222,7 +222,6 @@ suite('prefs.util', (_test) => {
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
                 windows_symlink_win_notify: false,
-                vs_code_path: '',
                 language: 'system',
             });
         });
@@ -268,7 +267,6 @@ suite('prefs.util', (_test) => {
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
                 windows_symlink_win_notify: true,
-                vs_code_path: '',
                 language: 'system',
             });
         });
@@ -300,10 +298,8 @@ suite('prefs.util', (_test) => {
         );
 
         expect(snapshot.stored).toEqual(storedPrefs);
-        expect(snapshot.merged).toEqual({
-            ...defaultPrefs,
-            ...storedPrefs,
-        });
+        expect(snapshot.merged.prefs_version).toBe(3);
+        expect(snapshot.merged).not.toHaveProperty('vs_code_path');
     });
 
     it('should read default prefs when prefs file does not exist', async () => {
@@ -326,5 +322,51 @@ suite('prefs.util', (_test) => {
             'utf-8',
         );
         expect(fsPromisesMock.writeFile).toHaveBeenCalledTimes(1);
+    });
+    it('preserves legacy editor fields while writing runtime preferences', async () => {
+        const prefsPath = '/home/user/.godot/prefs.json';
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify({
+                prefs_version: 4,
+                vs_code_path: '/legacy/code',
+                installed_tools: {
+                    last_scan: 1,
+                    tools: [
+                        {
+                            name: 'VSCode',
+                            path: '/legacy/code',
+                            version: null,
+                            verified: true,
+                        },
+                    ],
+                },
+            }),
+        );
+        const runtimePrefs = await getDefaultPrefs();
+
+        await writePrefsToDisk(prefsPath, {
+            ...runtimePrefs,
+            installed_tools: {
+                last_scan: 2,
+                tools: [
+                    {
+                        name: 'Git',
+                        path: '/usr/bin/git',
+                        version: null,
+                        verified: true,
+                    },
+                ],
+            },
+        });
+
+        const writeCall = vi.mocked(fsPromisesMock.writeFile).mock.calls.at(-1);
+        expect(writeCall).toBeDefined();
+        const persisted = JSON.parse(writeCall?.[1] as string);
+        expect(persisted.vs_code_path).toBe('/legacy/code');
+        expect(persisted.installed_tools.tools).toEqual([
+            expect.objectContaining({ name: 'Git' }),
+            expect.objectContaining({ name: 'VSCode' }),
+        ]);
     });
 });

@@ -181,7 +181,6 @@ describe('setProjectEditor', () => {
             release: mockOldRelease,
             launch_path: '/fake/launch/old',
             config_version: 5,
-            withVSCode: true,
             codeEditorId: 'vscode',
             withGit: false,
             valid: true,
@@ -395,7 +394,6 @@ describe('setProjectEditor', () => {
 
     it('disables external editor settings when no integration is selected', async () => {
         mockProject.codeEditorId = null;
-        mockProject.withVSCode = false;
 
         const result = await setProjectEditor(
             mockProject,
@@ -445,7 +443,6 @@ describe('setProjectEditor', () => {
 
     it('preserves an unknown portable integration during a Godot editor change', async () => {
         mockProject.codeEditorId = null;
-        mockProject.withVSCode = false;
         getProjectsSnapshot.mockResolvedValue({
             projects: [mockProject],
             version: 'v1',
