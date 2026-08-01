@@ -305,10 +305,7 @@ export class CodeEditorIntegrationService {
         return {
             integration: integration.metadata,
             enabled: storedSettings.enabled,
-            isDefault:
-                storedSettings.enabled &&
-                installation !== null &&
-                integrationId === defaultIntegrationId,
+            isDefault: integrationId === defaultIntegrationId,
             customPath: storedSettings.customPath,
             defaultExecFlags: integration.defaultSettings.execFlags,
             execFlagsOverride: storedSettings.execFlagsOverride,
