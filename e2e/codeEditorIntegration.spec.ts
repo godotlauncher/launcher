@@ -126,7 +126,7 @@ test('Create Project submits both an integration and explicit None', async () =>
     await expect
         .poll(async () =>
             (await readRecordedIpcCalls(electronApp, 'createProject')).map(
-                (args) => (args[3] as string | null) ?? null,
+                (args) => args[3] as string | null | undefined,
             ),
         )
         .toEqual(['vscode']);
@@ -141,7 +141,7 @@ test('Create Project submits both an integration and explicit None', async () =>
     await expect
         .poll(async () =>
             (await readRecordedIpcCalls(electronApp, 'createProject')).map(
-                (args) => (args[3] as string | null) ?? null,
+                (args) => args[3] as string | null | undefined,
             ),
         )
         .toEqual(['vscode', null]);
@@ -203,7 +203,7 @@ test('Project Settings preserves an unavailable selection and can save explicit 
                     electronApp,
                     'projectCodeEditor',
                 )
-            ).map((args) => (args[1] as string | null) ?? null),
+            ).map((args) => args[1] as string | null | undefined),
         )
         .toEqual([null]);
     await expect(dialog).not.toBeVisible();
