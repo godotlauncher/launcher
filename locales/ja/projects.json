@@ -99,6 +99,15 @@
                 "label": "プロジェクトフォルダー"
             }
         },
+        "codeEditor": {
+            "title": "コードエディター",
+            "help": "このプロジェクトで使用するコードエディターを選択します。",
+            "none": "なし",
+            "disabled": "無効",
+            "notFound": "見つかりません",
+            "loading": "コードエディターを読み込んでいます...",
+            "loadFailed": "コードエディターを読み込めませんでした。"
+        },
         "godot": {
             "renameLabel": "Godot プロジェクト名も変更する",
             "loading": "Godot プロジェクトを確認中...",

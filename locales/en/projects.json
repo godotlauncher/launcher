@@ -99,6 +99,15 @@
                 "label": "Project folder"
             }
         },
+        "codeEditor": {
+            "title": "Code Editor",
+            "help": "Choose the code editor used for this project.",
+            "none": "None",
+            "disabled": "Disabled",
+            "notFound": "Not found",
+            "loading": "Loading code editors...",
+            "loadFailed": "Could not load code editors."
+        },
         "godot": {
             "renameLabel": "Also rename Godot project",
             "loading": "Checking Godot project...",

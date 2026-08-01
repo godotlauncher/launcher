@@ -99,6 +99,15 @@
                 "label": "Folder tal-proġett"
             }
         },
+        "codeEditor": {
+            "title": "Editur tal-Kodiċi",
+            "help": "Agħżel l-editur tal-kodiċi li jintuża għal dan il-proġett.",
+            "none": "Xejn",
+            "disabled": "Diżattivat",
+            "notFound": "Ma nstabx",
+            "loading": "Qed jitgħabbew l-edituri tal-kodiċi...",
+            "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi."
+        },
         "godot": {
             "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",
             "loading": "Qed jiġi ċċekkjat il-proġett Godot...",

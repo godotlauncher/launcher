@@ -20,6 +20,13 @@ vi.mock('react-i18next', () => {
         'projects:editProject.godot.loading': 'Checking Godot project...',
         'projects:editProject.godot.unavailable':
             'project.godot is unavailable.',
+        'projects:editProject.codeEditor.title': 'Code Editor',
+        'projects:editProject.codeEditor.help':
+            'Choose the code editor used for this project.',
+        'projects:editProject.codeEditor.none': 'None',
+        'projects:editProject.codeEditor.loading': 'Loading code editors...',
+        'projects:editProject.codeEditor.loadFailed':
+            'Could not load code editors.',
         'projects:editProject.actions.update': 'Update',
         'projects:editProject.actions.updating': 'Updating...',
         'common:buttons.cancel': 'Cancel',
@@ -83,6 +90,7 @@ describe('ProjectSettingsDrawer', () => {
                 open
                 onOpenChange={vi.fn()}
                 onRenameProject={vi.fn()}
+                onSetProjectCodeEditor={vi.fn()}
                 getProjectGodotName={vi.fn()}
             />,
         );
@@ -93,6 +101,8 @@ describe('ProjectSettingsDrawer', () => {
         expect(html).toContain('/projects/demo');
         expect(html).not.toContain('Project folder');
         expect(html).toContain('Also rename Godot project');
+        expect(html).toContain('Code Editor');
+        expect(html).toContain('Choose the code editor used for this project.');
         expect(html).toContain('Update');
         expect(html).toContain('Cancel');
     });

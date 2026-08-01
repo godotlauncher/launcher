@@ -99,6 +99,15 @@
                 "label": "Pasta do projeto"
             }
         },
+        "codeEditor": {
+            "title": "Editor de código",
+            "help": "Escolha o editor de código usado neste projeto.",
+            "none": "Nenhum",
+            "disabled": "Desativado",
+            "notFound": "Não encontrado",
+            "loading": "Carregando editores de código...",
+            "loadFailed": "Não foi possível carregar os editores de código."
+        },
         "godot": {
             "renameLabel": "Também renomear o projeto Godot",
             "loading": "Verificando projeto Godot...",

@@ -99,6 +99,15 @@
                 "label": "Carpeta del proyecto"
             }
         },
+        "codeEditor": {
+            "title": "Editor de código",
+            "help": "Elige el editor de código que se usará para este proyecto.",
+            "none": "Ninguno",
+            "disabled": "Deshabilitado",
+            "notFound": "No encontrado",
+            "loading": "Cargando editores de código...",
+            "loadFailed": "No se pudieron cargar los editores de código."
+        },
         "godot": {
             "renameLabel": "Renombrar también el proyecto de Godot",
             "loading": "Comprobando proyecto de Godot...",

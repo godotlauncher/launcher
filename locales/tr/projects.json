@@ -99,6 +99,15 @@
                 "label": "Proje klasörü"
             }
         },
+        "codeEditor": {
+            "title": "Kod Düzenleyici",
+            "help": "Bu proje için kullanılacak kod düzenleyiciyi seçin.",
+            "none": "Yok",
+            "disabled": "Devre dışı",
+            "notFound": "Bulunamadı",
+            "loading": "Kod düzenleyicileri yükleniyor...",
+            "loadFailed": "Kod düzenleyicileri yüklenemedi."
+        },
         "godot": {
             "renameLabel": "Godot projesini de yeniden adlandır",
             "loading": "Godot projesi denetleniyor...",

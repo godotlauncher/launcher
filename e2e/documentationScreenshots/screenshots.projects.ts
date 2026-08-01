@@ -154,13 +154,16 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
     },
     {
         fileBase: 'screen_projects_rename_drawer',
-        description: 'Project rename drawer',
+        description: 'Project settings drawer',
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await expect(
@@ -178,6 +181,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     name: `${SAMPLE_PROJECT_PROTOTYPE.name} Settings`,
                 }),
             ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByTestId('selectProjectCodeEditor'),
+            ).toHaveValue('vscode');
             const nameField = page.locator('#projectEditName');
             await nameField.fill('My-Renamed-Prototype');
             await expect(

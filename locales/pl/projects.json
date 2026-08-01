@@ -99,6 +99,15 @@
                 "label": "Folder projektu"
             }
         },
+        "codeEditor": {
+            "title": "Edytor kodu",
+            "help": "Wybierz edytor kodu używany w tym projekcie.",
+            "none": "Brak",
+            "disabled": "Wyłączony",
+            "notFound": "Nie znaleziono",
+            "loading": "Wczytywanie edytorów kodu...",
+            "loadFailed": "Nie można wczytać edytorów kodu."
+        },
         "godot": {
             "renameLabel": "Zmień także nazwę projektu Godot",
             "loading": "Sprawdzanie projektu Godot...",

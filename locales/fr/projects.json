@@ -99,6 +99,15 @@
                 "label": "Dossier du projet"
             }
         },
+        "codeEditor": {
+            "title": "Éditeur de code",
+            "help": "Choisissez l'éditeur de code utilisé pour ce projet.",
+            "none": "Aucun",
+            "disabled": "Désactivé",
+            "notFound": "Introuvable",
+            "loading": "Chargement des éditeurs de code...",
+            "loadFailed": "Impossible de charger les éditeurs de code."
+        },
         "godot": {
             "renameLabel": "Renommer aussi le projet Godot",
             "loading": "Vérification du projet Godot...",

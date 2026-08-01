@@ -99,6 +99,15 @@
                 "label": "项目文件夹"
             }
         },
+        "codeEditor": {
+            "title": "代码编辑器",
+            "help": "选择此项目使用的代码编辑器。",
+            "none": "无",
+            "disabled": "已禁用",
+            "notFound": "未找到",
+            "loading": "正在加载代码编辑器...",
+            "loadFailed": "无法加载代码编辑器。"
+        },
         "godot": {
             "renameLabel": "同时重命名 Godot 项目",
             "loading": "正在检查 Godot 项目...",

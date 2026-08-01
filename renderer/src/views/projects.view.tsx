@@ -1,4 +1,8 @@
-import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
+import type {
+    CodeEditorId,
+    InstalledRelease,
+    ProjectDetails,
+} from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
@@ -9,6 +13,7 @@ import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
+import { codeEditorIdToLegacyVSCodeFlag } from '../models/codeEditorIntegration.model';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
@@ -186,6 +191,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         }
     };
 
+    const onSetProjectCodeEditor = async (
+        project: ProjectDetails,
+        codeEditorId: CodeEditorId | null,
+    ): Promise<ProjectDetails> => {
+        const updatedProject = await setProjectVSCode(
+            project,
+            codeEditorIdToLegacyVSCodeFlag(codeEditorId),
+        );
+        showRecoveredVSCodeConfigWarning(
+            updatedProject.recoveredVSCodeConfigFiles,
+        );
+        return updatedProject;
+    };
+
     const filteredRows = filterAndSortProjects(projects, textSearch, sortData);
 
     return (
@@ -306,6 +325,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     }
                 }}
                 onRenameProject={renameProject}
+                onSetProjectCodeEditor={onSetProjectCodeEditor}
                 getProjectGodotName={getProjectGodotName}
             />
             {createOpen && (

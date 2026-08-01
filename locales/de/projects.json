@@ -99,6 +99,15 @@
                 "label": "Projektordner"
             }
         },
+        "codeEditor": {
+            "title": "Code-Editor",
+            "help": "Wählen Sie den Code-Editor aus, der für dieses Projekt verwendet wird.",
+            "none": "Keine",
+            "disabled": "Deaktiviert",
+            "notFound": "Nicht gefunden",
+            "loading": "Code-Editoren werden geladen...",
+            "loadFailed": "Code-Editoren konnten nicht geladen werden."
+        },
         "godot": {
             "renameLabel": "Godot-Projekt ebenfalls umbenennen",
             "loading": "Godot-Projekt wird geprüft...",
