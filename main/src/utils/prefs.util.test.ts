@@ -323,7 +323,7 @@ suite('prefs.util', (_test) => {
         );
         expect(fsPromisesMock.writeFile).toHaveBeenCalledTimes(1);
     });
-    it('preserves legacy editor fields while writing runtime preferences', async () => {
+    it('replaces legacy editor fields when writing runtime preferences', async () => {
         const prefsPath = '/home/user/.godot/prefs.json';
         fsMock.existsSync.mockReturnValueOnce(true);
         fsPromisesMock.readFile.mockResolvedValueOnce(
@@ -363,10 +363,9 @@ suite('prefs.util', (_test) => {
         const writeCall = vi.mocked(fsPromisesMock.writeFile).mock.calls.at(-1);
         expect(writeCall).toBeDefined();
         const persisted = JSON.parse(writeCall?.[1] as string);
-        expect(persisted.vs_code_path).toBe('/legacy/code');
+        expect(persisted).not.toHaveProperty('vs_code_path');
         expect(persisted.installed_tools.tools).toEqual([
             expect.objectContaining({ name: 'Git' }),
-            expect.objectContaining({ name: 'VSCode' }),
         ]);
     });
 });

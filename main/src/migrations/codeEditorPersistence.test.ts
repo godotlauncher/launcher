@@ -57,15 +57,22 @@ describe('code editor persistence migrations', () => {
         ).toEqual({ codeEditorId: null, withVSCode: false });
     });
 
-    it('copies a pre-v4 legacy path without removing it', () => {
+    it('copies a pre-v4 legacy path and removes the old field', () => {
         expect(
             migrateStoredPreferencesRecord({
                 prefs_version: 3,
                 vs_code_path: '/legacy/code',
+                installed_tools: {
+                    last_scan: 1,
+                    tools: [{ name: 'Git' }, { name: 'VSCode' }],
+                },
             }),
         ).toEqual({
             prefs_version: 3,
-            vs_code_path: '/legacy/code',
+            installed_tools: {
+                last_scan: 1,
+                tools: [{ name: 'Git' }],
+            },
             code_editor_integrations: {
                 vscode: {
                     enabled: true,
@@ -75,12 +82,14 @@ describe('code editor persistence migrations', () => {
         });
     });
 
-    it('does not restore a legacy path for version 4 preferences', () => {
+    it('removes a legacy path from version 4 preferences', () => {
         const stored = {
             prefs_version: 4,
             vs_code_path: '/legacy/code',
         };
-        expect(migrateStoredPreferencesRecord(stored)).toBe(stored);
+        expect(migrateStoredPreferencesRecord(stored)).toEqual({
+            prefs_version: 4,
+        });
     });
 
     it('migrates project files and keeps legacy fields on disk', async () => {
@@ -120,12 +129,13 @@ describe('code editor persistence migrations', () => {
 
         await migrateCodeEditorPreferences();
 
-        expect(JSON.parse(readFileSync(prefsPath, 'utf-8'))).toMatchObject({
+        const persisted = JSON.parse(readFileSync(prefsPath, 'utf-8'));
+        expect(persisted).toMatchObject({
             prefs_version: 3,
-            vs_code_path: '/legacy/code',
             code_editor_integrations: {
                 vscode: { executable_path: '/legacy/code' },
             },
         });
+        expect(persisted).not.toHaveProperty('vs_code_path');
     });
 });

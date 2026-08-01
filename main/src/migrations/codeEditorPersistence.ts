@@ -55,12 +55,31 @@ export function migrateStoredProjectRecord(project: JsonRecord): JsonRecord {
 export function migrateStoredPreferencesRecord(prefs: JsonRecord): JsonRecord {
     const storedVersion =
         typeof prefs.prefs_version === 'number' ? prefs.prefs_version : 0;
-    if (storedVersion >= 4) {
-        return prefs;
-    }
-
     const legacyPath =
         typeof prefs.vs_code_path === 'string' ? prefs.vs_code_path.trim() : '';
+    const { vs_code_path: _legacyVSCodePath, ...migratedPrefs } = prefs;
+    const installedTools = isJsonRecord(prefs.installed_tools)
+        ? prefs.installed_tools
+        : undefined;
+    const cachedTools = Array.isArray(installedTools?.tools)
+        ? installedTools.tools
+        : undefined;
+    const canonicalPrefs = cachedTools
+        ? {
+              ...migratedPrefs,
+              installed_tools: {
+                  ...installedTools,
+                  tools: cachedTools.filter(
+                      (tool) => !isJsonRecord(tool) || tool.name !== 'VSCode',
+                  ),
+              },
+          }
+        : migratedPrefs;
+
+    if (storedVersion >= 4) {
+        return canonicalPrefs;
+    }
+
     const integrations = isJsonRecord(prefs.code_editor_integrations)
         ? prefs.code_editor_integrations
         : {};
@@ -71,7 +90,7 @@ export function migrateStoredPreferencesRecord(prefs: JsonRecord): JsonRecord {
             : '';
 
     return {
-        ...prefs,
+        ...canonicalPrefs,
         ...(legacyPath && !genericPath
             ? {
                   code_editor_integrations: {

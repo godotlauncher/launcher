@@ -283,11 +283,7 @@ describe('userPreferences migration', () => {
             };
         });
         mocks.writePrefsToDisk.mockImplementation(async (_path, value) => {
-            const legacyPath = stored.vs_code_path;
-            stored = {
-                ...JSON.parse(JSON.stringify(value)),
-                ...(legacyPath ? { vs_code_path: legacyPath } : {}),
-            };
+            stored = JSON.parse(JSON.stringify(value));
         });
 
         const migrated = await getUserPreferences();
@@ -304,7 +300,7 @@ describe('userPreferences migration', () => {
         const reloaded = await getUserPreferences();
 
         expect(reloaded).not.toHaveProperty('vs_code_path');
-        expect(stored.vs_code_path).toBe('/legacy/code');
+        expect(stored).not.toHaveProperty('vs_code_path');
         expect(
             reloaded.code_editor_integrations?.vscode?.executable_path,
         ).toBeUndefined();
