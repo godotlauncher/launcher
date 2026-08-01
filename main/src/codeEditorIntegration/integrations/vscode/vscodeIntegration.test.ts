@@ -113,6 +113,37 @@ describe('VSCodeIntegration', () => {
         ).toHaveBeenCalledWith(context.projectPath, context.mono);
     });
 
+    it('updates VS Code-owned project files in update mode', async () => {
+        const integration = new VSCodeIntegration();
+        const context = createContext({
+            configurationMode: 'update',
+            mono: true,
+        });
+        vscodeMocks.updateVSCodeSettings.mockResolvedValue([
+            path.resolve('settings.bad'),
+        ]);
+        vscodeMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
+            path.resolve('extensions.bad'),
+        ]);
+
+        await expect(integration.configureProject(context)).resolves.toEqual({
+            recoveredConfigFiles: [
+                path.resolve('settings.bad'),
+                path.resolve('extensions.bad'),
+            ],
+        });
+        expect(vscodeMocks.updateVSCodeSettings).toHaveBeenCalledWith(
+            context.projectPath,
+            context.godotLaunchPath,
+            context.godotVersion,
+            context.mono,
+        );
+        expect(vscodeMocks.addVSCodeSettings).not.toHaveBeenCalled();
+        expect(
+            vscodeMocks.addOrUpdateVSCodeRecommendedExtensions,
+        ).toHaveBeenCalledWith(context.projectPath, context.mono);
+    });
+
     it.each([
         true,
         false,
