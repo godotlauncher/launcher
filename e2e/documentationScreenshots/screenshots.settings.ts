@@ -1,11 +1,70 @@
-import type { ElectronApplication } from '@playwright/test';
-import { prepareUpdatesScreenshot } from './runtime';
+import { type ElectronApplication, expect } from '@playwright/test';
+import type { CodeEditorIntegrationSettings } from '@shared/contracts';
+import {
+    prepareUpdatesScreenshot,
+    stubCodeEditorIntegrationSettings,
+} from './runtime';
+import {
+    SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    SAMPLE_VSCODE_SETTINGS_DISABLED,
+    SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+    SAMPLE_VSCODE_SETTINGS_OVERRIDDEN,
+} from './sampleData';
 import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import {
     APP_UPDATE_MESSAGE,
     APP_UPDATE_RELEASE_URL,
     APP_UPDATE_VERSION,
 } from './versions';
+
+async function navigateToCodeEditorSettings(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    settings: CodeEditorIntegrationSettings,
+    openDrawer = false,
+) {
+    await page.getByTestId('btnProjects').click();
+    await stubCodeEditorIntegrationSettings(electronApp, [settings]);
+    await page.getByTestId('btnSettings').click();
+    await page.getByTestId('tabCodeEditors').click();
+
+    const integration = page.getByTestId('code-editor-integration-vscode');
+    await expect(integration).toBeVisible({ timeout: 10000 });
+    await expect(
+        integration.getByText(
+            settings.installation ? 'Available' : 'Not found',
+            { exact: true },
+        ),
+    ).toBeVisible();
+
+    const enabledSwitch = integration.getByRole('checkbox');
+    if (settings.enabled) {
+        await expect(enabledSwitch).toBeChecked();
+    } else {
+        await expect(enabledSwitch).not.toBeChecked();
+    }
+
+    if (openDrawer) {
+        await integration.getByRole('button', { name: 'Edit' }).click();
+        await expect(
+            page.getByRole('dialog', {
+                name: 'Visual Studio Code settings',
+            }),
+        ).toBeVisible({ timeout: 10000 });
+    }
+
+    await page.waitForTimeout(400);
+}
+
+async function closeCodeEditorSettingsDrawer(page: ElectronPage) {
+    await page.keyboard.press('Escape');
+    await expect(
+        page.getByRole('dialog', {
+            name: 'Visual Studio Code settings',
+        }),
+    ).not.toBeVisible();
+    await page.waitForTimeout(200);
+}
 
 export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
     {
@@ -45,6 +104,85 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
             await page.waitForTimeout(600);
         },
     },
+    {
+        fileBase: 'screen_settings_code_editors_available',
+        description: 'Settings (Code Editors tab, VS Code available)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            );
+        },
+    },
+    {
+        fileBase: 'screen_settings_code_editors_disabled',
+        description: 'Settings (Code Editors tab, VS Code disabled)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_DISABLED,
+            );
+        },
+    },
+    {
+        fileBase: 'screen_settings_code_editors_not_found',
+        description: 'Settings (Code Editors tab, VS Code not found)',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+            );
+        },
+    },
+    {
+        fileBase: 'screen_settings_code_editors_drawer_defaults',
+        description:
+            'Settings (Code Editors tab, VS Code default settings drawer)',
+        viewportHeight: 800,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+                true,
+            );
+        },
+        cleanup: closeCodeEditorSettingsDrawer,
+    },
+    {
+        fileBase: 'screen_settings_code_editors_drawer_overrides',
+        description:
+            'Settings (Code Editors tab, VS Code overridden settings drawer)',
+        viewportHeight: 800,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await navigateToCodeEditorSettings(
+                page,
+                electronApp,
+                SAMPLE_VSCODE_SETTINGS_OVERRIDDEN,
+                true,
+            );
+        },
+        cleanup: closeCodeEditorSettingsDrawer,
+    },
+
     {
         fileBase: 'screen_settings_tools',
         description: 'Settings (Tools tab)',

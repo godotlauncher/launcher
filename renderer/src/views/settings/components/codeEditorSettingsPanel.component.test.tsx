@@ -68,8 +68,11 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain('codeEditors.status.disabled');
         expect(html).not.toContain('lucide-pencil');
         expect(html).not.toContain('codeEditors.actions.edit');
-        expect(html).toContain('badge-warning');
+        expect(html).toContain('badge-neutral');
+        expect(html).not.toContain('badge-warning');
         expect(html).not.toContain('detected-code-editor-path');
+        expect(html).not.toContain('>N/A</span>');
+        expect(html).not.toContain('lucide-copy');
     });
 
     it('omits the .NET badge when the integration does not support it', () => {

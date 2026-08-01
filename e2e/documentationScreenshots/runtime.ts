@@ -6,6 +6,7 @@ import type {
     AddProjectOptions,
     AppBridge,
     AppUpdateMessage,
+    CodeEditorIntegrationSettings,
     InstalledRelease,
     ProjectDetails,
     ReleaseInstallProgress,
@@ -377,6 +378,26 @@ export async function stubAppData(
             injectedAvailableReleases: availableReleases,
             injectedAvailablePrereleases: availablePrereleases,
         },
+    );
+}
+
+export async function stubCodeEditorIntegrationSettings(
+    electronApp: ElectronApplication,
+    settings: CodeEditorIntegrationSettings[],
+) {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedSettings: CodeEditorIntegrationSettings[],
+        ) => {
+            const channel = 'codeEditorIntegration.listIntegrationSettings';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedSettings,
+            }));
+        },
+        settings,
     );
 }
 

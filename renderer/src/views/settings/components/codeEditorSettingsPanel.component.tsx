@@ -43,7 +43,7 @@ export const CodeEditorSettingsPanel: React.FC<
         )}
 
         {!loading && !loadError && (
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="mt-4 grid gap-4">
                 {settings.map((integrationSettings) => (
                     <section
                         key={integrationSettings.integration.id}
@@ -51,40 +51,52 @@ export const CodeEditorSettingsPanel: React.FC<
                         className="flex flex-col gap-4 rounded-box border border-base-300 bg-base-200/40 p-4"
                     >
                         <div className="flex items-start justify-between gap-4">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <h2 className="truncate font-semibold">
-                                    {
-                                        integrationSettings.integration
-                                            .displayName
-                                    }
-                                </h2>
-                                {integrationSettings.integration.capabilities
-                                    .dotnet && (
-                                    <span
-                                        className="badge badge-outline badge-sm shrink-0"
-                                        title={t(
-                                            'codeEditors.drawer.dotnet.supported',
-                                        )}
-                                    >
-                                        .NET
+                            <div className="flex min-w-0 flex-1 flex-col gap-1">
+                                <div className="flex min-w-0 items-center gap-2">
+                                    <h2 className="truncate font-semibold">
+                                        {
+                                            integrationSettings.integration
+                                                .displayName
+                                        }
+                                    </h2>
+                                    {integrationSettings.integration
+                                        .capabilities.dotnet && (
+                                        <span
+                                            className="badge badge-outline badge-sm shrink-0"
+                                            title={t(
+                                                'codeEditors.drawer.dotnet.supported',
+                                            )}
+                                        >
+                                            .NET
+                                        </span>
+                                    )}
+                                    {integrationSettings.installation && (
+                                        <span
+                                            className="badge badge-success badge-sm shrink-0"
+                                            title={t(
+                                                'codeEditors.status.available',
+                                            )}
+                                        >
+                                            {t('codeEditors.status.available')}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {integrationSettings.installation ? (
+                                    <CopyBadge
+                                        value={
+                                            integrationSettings.installation
+                                                .path
+                                        }
+                                        label={t('common:buttons.copyPath')}
+                                        copiedLabel={t('common:success')}
+                                        className="self-start"
+                                    />
+                                ) : (
+                                    <span className="badge badge-outline badge-neutral badge-sm h-7 self-start">
+                                        {t('codeEditors.status.missing')}
                                     </span>
                                 )}
-                                <span
-                                    className={`badge badge-sm shrink-0 ${
-                                        integrationSettings.installation
-                                            ? 'badge-success'
-                                            : 'badge-warning'
-                                    }`}
-                                    title={
-                                        integrationSettings.installation
-                                            ? t('codeEditors.status.available')
-                                            : t('codeEditors.status.missing')
-                                    }
-                                >
-                                    {integrationSettings.installation
-                                        ? t('codeEditors.status.available')
-                                        : t('codeEditors.status.missing')}
-                                </span>
                             </div>
                             <div className="flex min-h-8 shrink-0 items-center gap-2">
                                 {integrationSettings.enabled && (
@@ -125,15 +137,6 @@ export const CodeEditorSettingsPanel: React.FC<
                                 />
                             </div>
                         </div>
-
-                        {integrationSettings.installation && (
-                            <CopyBadge
-                                value={integrationSettings.installation.path}
-                                label={t('common:buttons.copyPath')}
-                                copiedLabel={t('common:success')}
-                                className="self-start"
-                            />
-                        )}
                     </section>
                 ))}
             </div>

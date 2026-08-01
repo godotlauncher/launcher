@@ -1,4 +1,5 @@
 import type {
+    CodeEditorIntegrationSettings,
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
@@ -278,6 +279,55 @@ export function createPreferences(
         ...overrides,
     };
 }
+
+export const SAMPLE_VSCODE_SETTINGS_AVAILABLE: CodeEditorIntegrationSettings = {
+    integration: {
+        id: 'vscode',
+        displayName: 'Visual Studio Code',
+        capabilities: {
+            textEditor: true,
+            dotnet: true,
+        },
+    },
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/Applications/Visual Studio Code.app',
+        version: '1.95.0',
+    },
+    resolvedGodotExecPath:
+        '/Applications/Visual Studio Code.app/Contents/MacOS/Electron',
+};
+
+export const SAMPLE_VSCODE_SETTINGS_DISABLED: CodeEditorIntegrationSettings = {
+    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    enabled: false,
+};
+
+export const SAMPLE_VSCODE_SETTINGS_NOT_FOUND: CodeEditorIntegrationSettings = {
+    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    installation: null,
+    resolvedGodotExecPath: null,
+};
+
+export const SAMPLE_VSCODE_SETTINGS_OVERRIDDEN: CodeEditorIntegrationSettings = {
+    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    customPath: '/Users/docs/Applications/Visual Studio Code.app',
+    execFlagsOverride:
+        '{project} --reuse-window --goto {file}:{line}:{col}',
+    resolvedExecFlags: '{project} --reuse-window --goto {file}:{line}:{col}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/Users/docs/Applications/Visual Studio Code.app',
+        version: '1.95.0',
+    },
+    resolvedGodotExecPath:
+        '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Electron',
+};
 
 export const DEFAULT_TOOLS: CachedTool[] = [
     { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },
