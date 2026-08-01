@@ -183,7 +183,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             ).toBeVisible({ timeout: 10000 });
             await expect(
                 page.getByTestId('selectProjectCodeEditor'),
-            ).toHaveValue('vscode');
+            ).toHaveText('Visual Studio Code');
             const nameField = page.locator('#projectEditName');
             await nameField.fill('My-Renamed-Prototype');
             await expect(

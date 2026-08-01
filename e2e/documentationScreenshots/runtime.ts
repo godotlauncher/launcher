@@ -718,6 +718,7 @@ export async function stubAddProjectEditorResolution(
                         launch_path:
                             '/Users/docs/Godot/Editors/Godot_4.6.3/Godot.app/Contents/MacOS/Godot',
                         config_version: 5,
+                        codeEditorId: null,
                         withVSCode: false,
                         withGit: true,
                         valid: false,
@@ -822,6 +823,7 @@ export async function stubAddProjectRecoveredVSCodeConfig(
                     launch_path:
                         '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
                     config_version: 5,
+                    codeEditorId: 'vscode',
                     withVSCode: true,
                     withGit: true,
                     valid: true,
