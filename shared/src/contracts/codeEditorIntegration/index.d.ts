@@ -42,7 +42,6 @@ export type UpdateCodeEditorIntegrationSettings = {
 };
 
 export type CodeEditorIntegrationBridge = {
-    listIntegrations(): Promise<CodeEditorIntegrationSummary[]>;
     listIntegrationSettings(): Promise<CodeEditorIntegrationSettings[]>;
     updateIntegrationSettings(
         integrationId: CodeEditorId,
@@ -51,10 +50,6 @@ export type CodeEditorIntegrationBridge = {
     setDefaultIntegration(
         integrationId: CodeEditorId,
     ): Promise<CodeEditorIntegrationSettings[]>;
-    scanIntegration(
-        integrationId: CodeEditorId,
-    ): Promise<CodeEditorInstallationSummary | null>;
-    scanIntegrations(): Promise<CodeEditorInstallationSummary[]>;
     validateIntegrationPath(
         integrationId: CodeEditorId,
         path: string,

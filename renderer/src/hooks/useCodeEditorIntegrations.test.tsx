@@ -31,14 +31,11 @@ const settings: CodeEditorIntegrationSettings = {
 };
 
 describe('useCodeEditorIntegrations', () => {
-    const listIntegrations = vi.fn(async () => [integration]);
-    const scanIntegration = vi.fn(async () => installation);
     const listIntegrationSettings = vi.fn(async () => [settings]);
     const updateIntegrationSettings = vi.fn(async () => settings);
     const setDefaultIntegration = vi.fn(async () => [
         { ...settings, isDefault: true },
     ]);
-    const scanIntegrations = vi.fn(async () => [installation]);
     const validateIntegrationPath = vi.fn(
         async (): Promise<CodeEditorPathValidationResult> => ({
             valid: true,
@@ -54,9 +51,6 @@ describe('useCodeEditorIntegrations', () => {
             }
         ).window = {
             electron: {
-                'codeEditorIntegration.listIntegrations': listIntegrations,
-                'codeEditorIntegration.scanIntegration': scanIntegration,
-                'codeEditorIntegration.scanIntegrations': scanIntegrations,
                 'codeEditorIntegration.listIntegrationSettings':
                     listIntegrationSettings,
                 'codeEditorIntegration.updateIntegrationSettings':
@@ -84,20 +78,6 @@ describe('useCodeEditorIntegrations', () => {
         }
         return captured;
     }
-
-    it('delegates catalog and scan operations to the integration bridge', async () => {
-        const hook = renderHook();
-
-        await expect(hook.listIntegrations()).resolves.toEqual([integration]);
-        await expect(hook.scanIntegration('vscode')).resolves.toEqual(
-            installation,
-        );
-        await expect(hook.scanIntegrations()).resolves.toEqual([installation]);
-
-        expect(listIntegrations).toHaveBeenCalledOnce();
-        expect(scanIntegration).toHaveBeenCalledWith('vscode');
-        expect(scanIntegrations).toHaveBeenCalledOnce();
-    });
 
     it('delegates settings operations to the integration bridge', async () => {
         const hook = renderHook();

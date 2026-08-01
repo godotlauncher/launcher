@@ -4,10 +4,8 @@ import {
 } from '@mariodebono/di-electron';
 import type {
     CodeEditorId,
-    CodeEditorInstallationSummary,
     CodeEditorIntegrationBridge,
     CodeEditorIntegrationSettings,
-    CodeEditorIntegrationSummary,
     CodeEditorPathValidationResult,
     UpdateCodeEditorIntegrationSettings,
 } from '@shared/contracts';
@@ -24,11 +22,6 @@ export class CodeEditorIntegrationController
     constructor(
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
     ) {}
-
-    @CodeEditorIntegrationHandler('listIntegrations')
-    async listIntegrations(): Promise<CodeEditorIntegrationSummary[]> {
-        return this.codeEditorIntegrationService.listIntegrations();
-    }
 
     @CodeEditorIntegrationHandler('listIntegrationSettings')
     listIntegrationSettings(): Promise<CodeEditorIntegrationSettings[]> {
@@ -53,18 +46,6 @@ export class CodeEditorIntegrationController
         return this.codeEditorIntegrationService.setDefaultIntegration(
             integrationId,
         );
-    }
-
-    @CodeEditorIntegrationHandler('scanIntegration')
-    scanIntegration(
-        integrationId: CodeEditorId,
-    ): Promise<CodeEditorInstallationSummary | null> {
-        return this.codeEditorIntegrationService.scanIntegration(integrationId);
-    }
-
-    @CodeEditorIntegrationHandler('scanIntegrations')
-    scanIntegrations(): Promise<CodeEditorInstallationSummary[]> {
-        return this.codeEditorIntegrationService.scanIntegrations();
     }
 
     @CodeEditorIntegrationHandler('validateIntegrationPath')

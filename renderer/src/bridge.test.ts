@@ -11,7 +11,6 @@ type TestElectronApi = {
     getPlatform: () => Promise<string>;
     rendererReady: () => Promise<void>;
     subscribeProjects: (callback: (projects: unknown[]) => void) => () => void;
-    'codeEditorIntegration.listIntegrations': () => Promise<unknown[]>;
     'codeEditorIntegration.listIntegrationSettings': () => Promise<unknown[]>;
     'codeEditorIntegration.updateIntegrationSettings': (
         integrationId: string,
@@ -20,10 +19,6 @@ type TestElectronApi = {
     'codeEditorIntegration.setDefaultIntegration': (
         integrationId: string,
     ) => Promise<unknown[]>;
-    'codeEditorIntegration.scanIntegration': (
-        integrationId: string,
-    ) => Promise<unknown>;
-    'codeEditorIntegration.scanIntegrations': () => Promise<unknown[]>;
     'codeEditorIntegration.validateIntegrationPath': (
         integrationId: string,
         pathToValidate: string,
@@ -34,9 +29,6 @@ describe('renderer bridge', () => {
     const getPlatform = vi.fn(async () => 'win32');
     const getPath = vi.fn(() => '/projects/example/project.godot');
     const rendererReady = vi.fn(async () => undefined);
-    const listIntegrations = vi.fn(async () => [
-        { id: 'vscode', displayName: 'Visual Studio Code' },
-    ]);
     const listIntegrationSettings = vi.fn(async () => []);
     const updateIntegrationSettings = vi.fn(async () => ({
         enabled: false,
@@ -44,18 +36,6 @@ describe('renderer bridge', () => {
         execFlagsOverride: '',
     }));
     const setDefaultIntegration = vi.fn(async () => []);
-    const scanIntegration = vi.fn(async () => ({
-        integrationId: 'vscode',
-        path: '/tools/code',
-        version: null,
-    }));
-    const scanIntegrations = vi.fn(async () => [
-        {
-            integrationId: 'vscode',
-            path: '/tools/code',
-            version: null,
-        },
-    ]);
     const validateIntegrationPath = vi.fn(async () => ({ valid: true }));
     const unsubscribe = vi.fn();
     let projectsListener: ((projects: unknown[]) => void) | undefined;
@@ -68,15 +48,12 @@ describe('renderer bridge', () => {
             getPlatform,
             getPathForFile: getPath,
             rendererReady,
-            'codeEditorIntegration.listIntegrations': listIntegrations,
-            'codeEditorIntegration.scanIntegration': scanIntegration,
             'codeEditorIntegration.listIntegrationSettings':
                 listIntegrationSettings,
             'codeEditorIntegration.updateIntegrationSettings':
                 updateIntegrationSettings,
             'codeEditorIntegration.setDefaultIntegration':
                 setDefaultIntegration,
-            'codeEditorIntegration.scanIntegrations': scanIntegrations,
             'codeEditorIntegration.validateIntegrationPath':
                 validateIntegrationPath,
             subscribeProjects: (listener) => {
@@ -104,13 +81,6 @@ describe('renderer bridge', () => {
     });
 
     it('delegates through the code editor integration namespace', async () => {
-        await expect(
-            codeEditorIntegrationBridge.listIntegrations(),
-        ).resolves.toEqual([
-            { id: 'vscode', displayName: 'Visual Studio Code' },
-        ]);
-        await codeEditorIntegrationBridge.scanIntegration('vscode');
-        await codeEditorIntegrationBridge.scanIntegrations();
         await codeEditorIntegrationBridge.listIntegrationSettings();
         await codeEditorIntegrationBridge.updateIntegrationSettings('vscode', {
             enabled: false,
@@ -123,9 +93,6 @@ describe('renderer bridge', () => {
             '/custom/code',
         );
 
-        expect(listIntegrations).toHaveBeenCalledOnce();
-        expect(scanIntegration).toHaveBeenCalledWith('vscode');
-        expect(scanIntegrations).toHaveBeenCalledOnce();
         expect(validateIntegrationPath).toHaveBeenCalledWith(
             'vscode',
             '/custom/code',
