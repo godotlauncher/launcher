@@ -8,7 +8,9 @@ vi.mock('@mariodebono/di-electron', () => ({
 }));
 
 import { CodeEditorIntegrationModule } from './codeEditorIntegration.module.js';
+import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
+import { VSCodeIntegration } from './integrations/vscode/vscodeIntegration.js';
 
 vi.mock('electron', () => ({
     app: {
@@ -25,6 +27,18 @@ describe('CodeEditorIntegrationModule', () => {
         expect(app.get(CodeEditorIntegrationService)).toBeInstanceOf(
             CodeEditorIntegrationService,
         );
+
+        await app.destroyAsync();
+    });
+
+    it('registers VS Code exactly once', async () => {
+        const app = await createApplication(CodeEditorIntegrationModule, {
+            logger: false,
+        });
+
+        const integrations = app.get(CodeEditorIntegrationRegistry).list();
+        expect(integrations).toHaveLength(1);
+        expect(integrations[0]).toBeInstanceOf(VSCodeIntegration);
 
         await app.destroyAsync();
     });
