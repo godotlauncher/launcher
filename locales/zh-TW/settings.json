@@ -6,7 +6,7 @@
         "appearance": "外觀",
         "behavior": "行為",
         "tools": "工具",
-        "codeEditors": "Code Editors",
+        "codeEditors": "程式碼編輯器",
         "updates": "更新"
     },
     "appearance": {
@@ -72,52 +72,52 @@
     "codeEditors": {
         "actions": {
             "scanning": "正在重新掃描...",
-            "setDefault": "Set as default",
-            "edit": "Edit",
-            "save": "Save",
-            "saving": "Saving...",
-            "cancel": "Cancel"
+            "setDefault": "設為預設",
+            "edit": "編輯",
+            "save": "儲存",
+            "saving": "正在儲存...",
+            "cancel": "取消"
         },
         "status": {
             "available": "可用",
             "missing": "未找到",
             "unknown": "未知",
-            "default": "Default code editor",
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+            "default": "預設程式碼編輯器",
+            "enabled": "已啟用",
+            "disabled": "已停用"
         },
-        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
+        "overview": "管理程式碼編輯器偵測，並選擇新專案中預先選取的編輯器。",
         "drawer": {
-            "title": "{{editor}} settings",
-            "fallbackTitle": "Code editor settings",
+            "title": "{{editor}} 設定",
+            "fallbackTitle": "程式碼編輯器設定",
             "integration": {
-                "enabled": "Enabled"
+                "enabled": "已啟用"
             },
             "path": {
-                "label": "Executable path",
-                "autodetectedLabel": "Executable path (Autodetected)",
-                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
-                "automatic": "Automatic detection",
-                "browse": "Browse",
-                "reset": "Use automatic detection",
-                "select": "Select code editor executable",
-                "allFiles": "All files",
-                "waiting": "Waiting for file selection..."
+                "label": "可執行檔路徑",
+                "autodetectedLabel": "可執行檔路徑（自動偵測）",
+                "help": "留空以使用自動偵測。自訂路徑會覆寫偵測到的安裝。",
+                "automatic": "自動偵測",
+                "browse": "瀏覽",
+                "reset": "使用自動偵測",
+                "select": "選擇程式碼編輯器可執行檔",
+                "allFiles": "所有檔案",
+                "waiting": "正在等待選擇檔案..."
             },
             "textEditor": {
-                "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
-                "flagsLabel": "Launch arguments",
-                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
-                "reset": "Reset to default"
+                "title": "外部文字編輯器",
+                "help": "啟用專案遷移後，這些參數將用於 Godot 的外部文字編輯器命令。",
+                "flagsLabel": "啟動參數",
+                "flagsHelp": "Godot 預留位置包括 {project}、{file}、{line} 和 {col}。空值也是有效的覆寫設定。",
+                "reset": "重設為預設值"
             },
             "dotnet": {
-                "supported": "Supported"
+                "supported": "支援"
             },
             "errors": {
-                "invalidPath": "Select a valid code editor executable.",
-                "dialog": "Unable to open the file selector.",
-                "save": "Unable to save code editor settings."
+                "invalidPath": "請選擇有效的程式碼編輯器可執行檔。",
+                "dialog": "無法開啟檔案選擇器。",
+                "save": "無法儲存程式碼編輯器設定。"
             }
         }
     },

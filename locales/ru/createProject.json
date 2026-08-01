@@ -44,10 +44,10 @@
     "otherSettings": {
         "title": "Другие настройки",
         "codeEditor": {
-            "label": "Code Editor",
-            "none": "None",
-            "disabled": "Disabled",
-            "notFound": "Not found"
+            "label": "Редактор кода",
+            "none": "Нет",
+            "disabled": "Отключен",
+            "notFound": "Не найдено"
         },
         "initGit": "Инициализировать Git-репозиторий",
         "gitNotInstalled": "Git не установлен на этом компьютере",

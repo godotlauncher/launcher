@@ -6,7 +6,7 @@
         "appearance": "外観",
         "behavior": "動作",
         "tools": "ツール",
-        "codeEditors": "Code Editors",
+        "codeEditors": "コードエディター",
         "updates": "アップデート"
     },
     "appearance": {
@@ -72,52 +72,52 @@
     "codeEditors": {
         "actions": {
             "scanning": "再スキャン中...",
-            "setDefault": "Set as default",
-            "edit": "Edit",
-            "save": "Save",
-            "saving": "Saving...",
-            "cancel": "Cancel"
+            "setDefault": "デフォルトに設定",
+            "edit": "編集",
+            "save": "保存",
+            "saving": "保存中...",
+            "cancel": "キャンセル"
         },
         "status": {
             "available": "利用可能",
             "missing": "見つかりません",
             "unknown": "不明",
-            "default": "Default code editor",
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+            "default": "デフォルトのコードエディター",
+            "enabled": "有効",
+            "disabled": "無効"
         },
-        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
+        "overview": "コードエディターの検出を管理し、新しいプロジェクトで事前選択するエディターを選択します。",
         "drawer": {
-            "title": "{{editor}} settings",
-            "fallbackTitle": "Code editor settings",
+            "title": "{{editor}} の設定",
+            "fallbackTitle": "コードエディターの設定",
             "integration": {
-                "enabled": "Enabled"
+                "enabled": "有効"
             },
             "path": {
-                "label": "Executable path",
-                "autodetectedLabel": "Executable path (Autodetected)",
-                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
-                "automatic": "Automatic detection",
-                "browse": "Browse",
-                "reset": "Use automatic detection",
-                "select": "Select code editor executable",
-                "allFiles": "All files",
-                "waiting": "Waiting for file selection..."
+                "label": "実行ファイルのパス",
+                "autodetectedLabel": "実行ファイルのパス（自動検出）",
+                "help": "自動検出を使用する場合は空のままにしてください。カスタムパスを指定すると、検出されたインストールより優先されます。",
+                "automatic": "自動検出",
+                "browse": "参照",
+                "reset": "自動検出を使用",
+                "select": "コードエディターの実行ファイルを選択",
+                "allFiles": "すべてのファイル",
+                "waiting": "ファイルの選択を待っています..."
             },
             "textEditor": {
-                "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
-                "flagsLabel": "Launch arguments",
-                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
-                "reset": "Reset to default"
+                "title": "外部テキストエディター",
+                "help": "プロジェクト移行が有効になると、これらの引数が Godot の外部テキストエディターコマンドに使用されます。",
+                "flagsLabel": "起動引数",
+                "flagsHelp": "Godot のプレースホルダーには {project}、{file}、{line}、{col} が含まれます。空の値も有効な上書き設定です。",
+                "reset": "デフォルトに戻す"
             },
             "dotnet": {
-                "supported": "Supported"
+                "supported": "サポート"
             },
             "errors": {
-                "invalidPath": "Select a valid code editor executable.",
-                "dialog": "Unable to open the file selector.",
-                "save": "Unable to save code editor settings."
+                "invalidPath": "有効なコードエディターの実行ファイルを選択してください。",
+                "dialog": "ファイル選択ダイアログを開けません。",
+                "save": "コードエディターの設定を保存できません。"
             }
         }
     },

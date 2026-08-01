@@ -6,7 +6,7 @@
         "appearance": "Внешний вид",
         "behavior": "Поведение",
         "tools": "Инструменты",
-        "codeEditors": "Code Editors",
+        "codeEditors": "Редакторы кода",
         "updates": "Обновления"
     },
     "appearance": {
@@ -72,52 +72,52 @@
     "codeEditors": {
         "actions": {
             "scanning": "Повторное сканирование...",
-            "setDefault": "Set as default",
-            "edit": "Edit",
-            "save": "Save",
-            "saving": "Saving...",
-            "cancel": "Cancel"
+            "setDefault": "Сделать редактором по умолчанию",
+            "edit": "Редактировать",
+            "save": "Сохранить",
+            "saving": "Сохранение...",
+            "cancel": "Отмена"
         },
         "status": {
             "available": "Доступно",
             "missing": "Не найдено",
             "unknown": "Неизвестно",
-            "default": "Default code editor",
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+            "default": "Редактор кода по умолчанию",
+            "enabled": "Включен",
+            "disabled": "Отключен"
         },
-        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
+        "overview": "Управляйте обнаружением редакторов кода и выбирайте редактор, который будет предварительно выбран для новых проектов.",
         "drawer": {
-            "title": "{{editor}} settings",
-            "fallbackTitle": "Code editor settings",
+            "title": "Настройки {{editor}}",
+            "fallbackTitle": "Настройки редактора кода",
             "integration": {
-                "enabled": "Enabled"
+                "enabled": "Включен"
             },
             "path": {
-                "label": "Executable path",
-                "autodetectedLabel": "Executable path (Autodetected)",
-                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
-                "automatic": "Automatic detection",
-                "browse": "Browse",
-                "reset": "Use automatic detection",
-                "select": "Select code editor executable",
-                "allFiles": "All files",
-                "waiting": "Waiting for file selection..."
+                "label": "Путь к исполняемому файлу",
+                "autodetectedLabel": "Путь к исполняемому файлу (обнаружен автоматически)",
+                "help": "Оставьте поле пустым, чтобы использовать автоматическое обнаружение. Пользовательский путь заменяет обнаруженную установку.",
+                "automatic": "Автоматическое обнаружение",
+                "browse": "Обзор",
+                "reset": "Использовать автоматическое обнаружение",
+                "select": "Выбрать исполняемый файл редактора кода",
+                "allFiles": "Все файлы",
+                "waiting": "Ожидание выбора файла..."
             },
             "textEditor": {
-                "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
-                "flagsLabel": "Launch arguments",
-                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
-                "reset": "Reset to default"
+                "title": "Внешний текстовый редактор",
+                "help": "Эти аргументы будут использоваться для команды внешнего текстового редактора Godot после включения миграции проектов.",
+                "flagsLabel": "Аргументы запуска",
+                "flagsHelp": "Заполнители Godot включают {project}, {file}, {line} и {col}. Пустое значение является допустимым переопределением.",
+                "reset": "Восстановить значение по умолчанию"
             },
             "dotnet": {
-                "supported": "Supported"
+                "supported": "Поддерживается"
             },
             "errors": {
-                "invalidPath": "Select a valid code editor executable.",
-                "dialog": "Unable to open the file selector.",
-                "save": "Unable to save code editor settings."
+                "invalidPath": "Выберите допустимый исполняемый файл редактора кода.",
+                "dialog": "Не удалось открыть средство выбора файлов.",
+                "save": "Не удалось сохранить настройки редактора кода."
             }
         }
     },

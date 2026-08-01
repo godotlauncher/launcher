@@ -44,10 +44,10 @@
     "otherSettings": {
         "title": "其他设置",
         "codeEditor": {
-            "label": "Code Editor",
-            "none": "None",
-            "disabled": "Disabled",
-            "notFound": "Not found"
+            "label": "代码编辑器",
+            "none": "无",
+            "disabled": "已禁用",
+            "notFound": "未找到"
         },
         "initGit": "初始化 Git 仓库",
         "gitNotInstalled": "此电脑未安装 Git",

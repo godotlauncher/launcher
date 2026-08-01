@@ -44,10 +44,10 @@
     "otherSettings": {
         "title": "その他の設定",
         "codeEditor": {
-            "label": "Code Editor",
-            "none": "None",
-            "disabled": "Disabled",
-            "notFound": "Not found"
+            "label": "コードエディター",
+            "none": "なし",
+            "disabled": "無効",
+            "notFound": "見つかりません"
         },
         "initGit": "Gitリポジトリを初期化",
         "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",

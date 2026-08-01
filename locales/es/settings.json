@@ -6,7 +6,7 @@
         "appearance": "Apariencia",
         "behavior": "Comportamiento",
         "tools": "Herramientas",
-        "codeEditors": "Code Editors",
+        "codeEditors": "Editores de código",
         "updates": "Actualizaciones"
     },
     "appearance": {
@@ -72,52 +72,52 @@
     "codeEditors": {
         "actions": {
             "scanning": "Reescanear...",
-            "setDefault": "Set as default",
-            "edit": "Edit",
-            "save": "Save",
-            "saving": "Saving...",
-            "cancel": "Cancel"
+            "setDefault": "Establecer como predeterminado",
+            "edit": "Editar",
+            "save": "Guardar",
+            "saving": "Guardando...",
+            "cancel": "Cancelar"
         },
         "status": {
             "available": "Disponible",
             "missing": "No encontrado",
             "unknown": "Desconocido",
-            "default": "Default code editor",
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+            "default": "Editor de código predeterminado",
+            "enabled": "Habilitado",
+            "disabled": "Deshabilitado"
         },
-        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
+        "overview": "Gestiona la detección de editores de código y elige qué editor se preselecciona para los proyectos nuevos.",
         "drawer": {
-            "title": "{{editor}} settings",
-            "fallbackTitle": "Code editor settings",
+            "title": "Configuración de {{editor}}",
+            "fallbackTitle": "Configuración del editor de código",
             "integration": {
-                "enabled": "Enabled"
+                "enabled": "Habilitado"
             },
             "path": {
-                "label": "Executable path",
-                "autodetectedLabel": "Executable path (Autodetected)",
-                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
-                "automatic": "Automatic detection",
-                "browse": "Browse",
-                "reset": "Use automatic detection",
-                "select": "Select code editor executable",
-                "allFiles": "All files",
-                "waiting": "Waiting for file selection..."
+                "label": "Ruta del ejecutable",
+                "autodetectedLabel": "Ruta del ejecutable (detectada automáticamente)",
+                "help": "Déjalo vacío para usar la detección automática. Una ruta personalizada reemplaza la instalación detectada.",
+                "automatic": "Detección automática",
+                "browse": "Examinar",
+                "reset": "Usar detección automática",
+                "select": "Seleccionar el ejecutable del editor de código",
+                "allFiles": "Todos los archivos",
+                "waiting": "Esperando la selección de archivo..."
             },
             "textEditor": {
-                "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
-                "flagsLabel": "Launch arguments",
-                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
-                "reset": "Reset to default"
+                "title": "Editor de texto externo",
+                "help": "Estos argumentos se usarán para el comando de editor de texto externo de Godot cuando se habilite la migración de proyectos.",
+                "flagsLabel": "Argumentos de inicio",
+                "flagsHelp": "Los marcadores de posición de Godot incluyen {project}, {file}, {line} y {col}. Un valor vacío es una sustitución válida.",
+                "reset": "Restablecer valor predeterminado"
             },
             "dotnet": {
-                "supported": "Supported"
+                "supported": "Compatible"
             },
             "errors": {
-                "invalidPath": "Select a valid code editor executable.",
-                "dialog": "Unable to open the file selector.",
-                "save": "Unable to save code editor settings."
+                "invalidPath": "Selecciona un ejecutable válido del editor de código.",
+                "dialog": "No se puede abrir el selector de archivos.",
+                "save": "No se puede guardar la configuración del editor de código."
             }
         }
     },

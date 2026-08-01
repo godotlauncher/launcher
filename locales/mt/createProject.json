@@ -44,10 +44,10 @@
     "otherSettings": {
         "title": "Settings Oħra",
         "codeEditor": {
-            "label": "Code Editor",
-            "none": "None",
-            "disabled": "Disabled",
-            "notFound": "Not found"
+            "label": "Editur tal-Kodiċi",
+            "none": "Xejn",
+            "disabled": "Diżattivat",
+            "notFound": "Ma nstabx"
         },
         "initGit": "Ibda Git Repository",
         "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",

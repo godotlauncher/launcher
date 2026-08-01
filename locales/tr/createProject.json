@@ -44,10 +44,10 @@
     "otherSettings": {
         "title": "Diğer Ayarlar",
         "codeEditor": {
-            "label": "Code Editor",
-            "none": "None",
-            "disabled": "Disabled",
-            "notFound": "Not found"
+            "label": "Kod Düzenleyici",
+            "none": "Yok",
+            "disabled": "Devre dışı",
+            "notFound": "Bulunamadı"
         },
         "initGit": "Git Deposu Başlat",
         "gitNotInstalled": "Git bu bilgisayarda yüklü değil",

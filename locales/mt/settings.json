@@ -6,7 +6,7 @@
         "appearance": "Dehra",
         "behavior": "Imġiba",
         "tools": "Għodod",
-        "codeEditors": "Code Editors",
+        "codeEditors": "Edituri tal-Kodiċi",
         "updates": "Aġġornamenti"
     },
     "appearance": {
@@ -72,52 +72,52 @@
     "codeEditors": {
         "actions": {
             "scanning": "Qed jerskanna...",
-            "setDefault": "Set as default",
-            "edit": "Edit",
-            "save": "Save",
-            "saving": "Saving...",
-            "cancel": "Cancel"
+            "setDefault": "Issettja bħala predefinit",
+            "edit": "Editja",
+            "save": "Issejvja",
+            "saving": "Qed jissejvja...",
+            "cancel": "Ikkanċella"
         },
         "status": {
             "available": "Disponibbli",
             "missing": "Ma nstabx",
             "unknown": "Mhux magħruf",
-            "default": "Default code editor",
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+            "default": "Editur tal-kodiċi predefinit",
+            "enabled": "Attivat",
+            "disabled": "Diżattivat"
         },
-        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
+        "overview": "Immaniġġja s-sejbien tal-edituri tal-kodiċi u agħżel liema editur jintgħażel minn qabel għal proġetti ġodda.",
         "drawer": {
-            "title": "{{editor}} settings",
-            "fallbackTitle": "Code editor settings",
+            "title": "Issettjar ta' {{editor}}",
+            "fallbackTitle": "Issettjar tal-editur tal-kodiċi",
             "integration": {
-                "enabled": "Enabled"
+                "enabled": "Attivat"
             },
             "path": {
-                "label": "Executable path",
-                "autodetectedLabel": "Executable path (Autodetected)",
-                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
-                "automatic": "Automatic detection",
-                "browse": "Browse",
-                "reset": "Use automatic detection",
-                "select": "Select code editor executable",
-                "allFiles": "All files",
-                "waiting": "Waiting for file selection..."
+                "label": "Mogħdija tal-eżekutibbli",
+                "autodetectedLabel": "Mogħdija tal-eżekutibbli (misjuba awtomatikament)",
+                "help": "Ħalli vojt biex tuża s-sejbien awtomatiku. Mogħdija personalizzata tieħu post l-installazzjoni misjuba.",
+                "automatic": "Sejbien awtomatiku",
+                "browse": "Ibbrawżja",
+                "reset": "Uża s-sejbien awtomatiku",
+                "select": "Agħżel l-eżekutibbli tal-editur tal-kodiċi",
+                "allFiles": "Il-fajls kollha",
+                "waiting": "Qed jistenna l-għażla tal-fajl..."
             },
             "textEditor": {
-                "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
-                "flagsLabel": "Launch arguments",
-                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
-                "reset": "Reset to default"
+                "title": "Editur estern tat-test",
+                "help": "Dawn l-argumenti se jintużaw għall-kmand tal-editur estern tat-test ta' Godot meta l-migrazzjoni tal-proġett tkun attivata.",
+                "flagsLabel": "Argumenti tat-tnedija",
+                "flagsHelp": "Il-placeholders ta' Godot jinkludu {project}, {file}, {line}, u {col}. Valur vojt huwa sostituzzjoni valida.",
+                "reset": "Irrisettja għall-valur predefinit"
             },
             "dotnet": {
-                "supported": "Supported"
+                "supported": "Appoġġjat"
             },
             "errors": {
-                "invalidPath": "Select a valid code editor executable.",
-                "dialog": "Unable to open the file selector.",
-                "save": "Unable to save code editor settings."
+                "invalidPath": "Agħżel eżekutibbli validu tal-editur tal-kodiċi.",
+                "dialog": "Ma setax jinfetaħ is-selettur tal-fajls.",
+                "save": "Ma setax jiġi ssejvjat l-issettjar tal-editur tal-kodiċi."
             }
         }
     },

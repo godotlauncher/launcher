@@ -6,7 +6,7 @@
         "appearance": "Görünüm",
         "behavior": "Davranış",
         "tools": "Araçlar",
-        "codeEditors": "Code Editors",
+        "codeEditors": "Kod Düzenleyicileri",
         "updates": "Güncellemeler"
     },
     "appearance": {
@@ -72,52 +72,52 @@
     "codeEditors": {
         "actions": {
             "scanning": "Yeniden taranıyor...",
-            "setDefault": "Set as default",
-            "edit": "Edit",
-            "save": "Save",
-            "saving": "Saving...",
-            "cancel": "Cancel"
+            "setDefault": "Varsayılan olarak ayarla",
+            "edit": "Düzenle",
+            "save": "Kaydet",
+            "saving": "Kaydediliyor...",
+            "cancel": "İptal"
         },
         "status": {
             "available": "Mevcut",
             "missing": "Bulunamadı",
             "unknown": "Bilinmiyor",
-            "default": "Default code editor",
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+            "default": "Varsayılan kod düzenleyici",
+            "enabled": "Etkin",
+            "disabled": "Devre dışı"
         },
-        "overview": "Manage code editor detection and choose which editor is preselected for new projects.",
+        "overview": "Kod düzenleyici algılamasını yönetin ve yeni projeler için hangi düzenleyicinin önceden seçileceğini belirleyin.",
         "drawer": {
-            "title": "{{editor}} settings",
-            "fallbackTitle": "Code editor settings",
+            "title": "{{editor}} ayarları",
+            "fallbackTitle": "Kod düzenleyici ayarları",
             "integration": {
-                "enabled": "Enabled"
+                "enabled": "Etkin"
             },
             "path": {
-                "label": "Executable path",
-                "autodetectedLabel": "Executable path (Autodetected)",
-                "help": "Leave empty to use automatic detection. A custom path overrides the detected installation.",
-                "automatic": "Automatic detection",
-                "browse": "Browse",
-                "reset": "Use automatic detection",
-                "select": "Select code editor executable",
-                "allFiles": "All files",
-                "waiting": "Waiting for file selection..."
+                "label": "Yürütülebilir dosya yolu",
+                "autodetectedLabel": "Yürütülebilir dosya yolu (otomatik algılandı)",
+                "help": "Otomatik algılamayı kullanmak için boş bırakın. Özel bir yol algılanan kurulumun yerine geçer.",
+                "automatic": "Otomatik algılama",
+                "browse": "Gözat",
+                "reset": "Otomatik algılamayı kullan",
+                "select": "Kod düzenleyici yürütülebilir dosyasını seç",
+                "allFiles": "Tüm Dosyalar",
+                "waiting": "Dosya seçimi bekleniyor..."
             },
             "textEditor": {
-                "title": "External Text Editor",
-                "help": "These arguments will be used for Godot's external text editor command when project migration is enabled.",
-                "flagsLabel": "Launch arguments",
-                "flagsHelp": "Godot placeholders include {project}, {file}, {line}, and {col}. An empty value is a valid override.",
-                "reset": "Reset to default"
+                "title": "Harici metin düzenleyici",
+                "help": "Proje geçişi etkinleştirildiğinde bu bağımsız değişkenler Godot'un harici metin düzenleyici komutunda kullanılacaktır.",
+                "flagsLabel": "Başlatma bağımsız değişkenleri",
+                "flagsHelp": "Godot yer tutucuları {project}, {file}, {line} ve {col} değerlerini içerir. Boş bir değer geçerli bir geçersiz kılmadır.",
+                "reset": "Varsayılana sıfırla"
             },
             "dotnet": {
-                "supported": "Supported"
+                "supported": "Destekleniyor"
             },
             "errors": {
-                "invalidPath": "Select a valid code editor executable.",
-                "dialog": "Unable to open the file selector.",
-                "save": "Unable to save code editor settings."
+                "invalidPath": "Geçerli bir kod düzenleyici yürütülebilir dosyası seçin.",
+                "dialog": "Dosya seçici açılamıyor.",
+                "save": "Kod düzenleyici ayarları kaydedilemiyor."
             }
         }
     },

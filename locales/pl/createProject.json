@@ -44,10 +44,10 @@
     "otherSettings": {
         "title": "Inne ustawienia",
         "codeEditor": {
-            "label": "Code Editor",
-            "none": "None",
-            "disabled": "Disabled",
-            "notFound": "Not found"
+            "label": "Edytor kodu",
+            "none": "Brak",
+            "disabled": "Wyłączony",
+            "notFound": "Nie znaleziono"
         },
         "initGit": "Zainicjuj repozytorium Git",
         "gitNotInstalled": "Git nie jest zainstalowany na tym komputerze",
