@@ -71,10 +71,6 @@
             "missingEditor": "所选编辑器不可用。请挂载驱动器或选择其他编辑器。"
         },
         "recoveredCodeEditorConfig": "部分代码编辑器配置文件无效。Godot Launcher 已重新创建它们，并将原始文件保留为 .bad 副本。",
-        "codeEditorHealth": {
-            "unavailable": "未检测到 {{editor}}。",
-            "usage": "已配置项目：{{count}}。.NET 项目：{{dotnetCount}}。"
-        },
         "codeEditorLaunch": {
             "title": "找不到 {{editor}}",
             "message": "此项目已配置为使用 {{editor}}。Godot 仍可启动，但可能无法在此编辑器中打开脚本。",

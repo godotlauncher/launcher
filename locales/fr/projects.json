@@ -71,10 +71,6 @@
             "missingEditor": "L’éditeur sélectionné est indisponible. Montez le lecteur ou choisissez un autre éditeur."
         },
         "recoveredCodeEditorConfig": "Certains fichiers de configuration de l'éditeur de code n'étaient pas valides. Godot Launcher les a recréés et a conservé les originaux sous forme de copies .bad.",
-        "codeEditorHealth": {
-            "unavailable": "{{editor}} n’a pas été détecté.",
-            "usage": "Projets configurés : {{count}}. Projets .NET : {{dotnetCount}}."
-        },
         "codeEditorLaunch": {
             "title": "{{editor}} est introuvable",
             "message": "Ce projet est configuré pour utiliser {{editor}}. Godot peut tout de même démarrer, mais l’ouverture des scripts dans cet éditeur peut échouer.",

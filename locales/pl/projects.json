@@ -71,10 +71,6 @@
             "missingEditor": "Wybrany edytor jest niedostępny. Zamontuj dysk albo wybierz inny edytor."
         },
         "recoveredCodeEditorConfig": "Niektóre pliki konfiguracyjne edytora kodu były nieprawidłowe. Godot Launcher utworzył je ponownie i zachował oryginały jako kopie .bad.",
-        "codeEditorHealth": {
-            "unavailable": "Nie wykryto {{editor}}.",
-            "usage": "Skonfigurowane projekty: {{count}}. Projekty .NET: {{dotnetCount}}."
-        },
         "codeEditorLaunch": {
             "title": "Nie znaleziono {{editor}}",
             "message": "Ten projekt jest skonfigurowany do używania {{editor}}. Godot może się uruchomić, ale otwieranie skryptów w tym edytorze może się nie powieść.",

@@ -127,7 +127,9 @@ describe('ProjectsTable', () => {
             'table.codeEditorUnavailable: Visual Studio Code',
         );
         expect(html).toContain('data-tooltip-trigger=""');
-        expect(html).toContain('grayscale opacity-60');
+        expect(html).toContain('lucide-triangle-alert');
+        expect(html).toContain('stroke-warning');
+        expect(html).not.toContain('vscode.svg');
         expect(html).not.toContain('table.codeEditorProject');
     });
 });

@@ -1,16 +1,8 @@
-import type {
-    CodeEditorId,
-    CodeEditorIntegrationSettings,
-    ProjectDetails,
-} from '@shared/contracts';
+import type { CodeEditorId, ProjectDetails } from '@shared/contracts';
 
 export type CodeEditorProjectUsage = {
     count: number;
     dotnetCount: number;
-};
-
-export type UnavailableCodeEditorUsage = CodeEditorProjectUsage & {
-    settings: CodeEditorIntegrationSettings;
 };
 
 export function getCodeEditorProjectUsage(
@@ -26,20 +18,4 @@ export function getCodeEditorProjectUsage(
         dotnetCount: affectedProjects.filter((project) => project.release.mono)
             .length,
     };
-}
-
-export function getUnavailableCodeEditorUsage(
-    projects: ProjectDetails[],
-    settings: CodeEditorIntegrationSettings[],
-): UnavailableCodeEditorUsage[] {
-    return settings
-        .filter((integrationSettings) => !integrationSettings.installation)
-        .map((integrationSettings) => ({
-            settings: integrationSettings,
-            ...getCodeEditorProjectUsage(
-                projects,
-                integrationSettings.integration.id,
-            ),
-        }))
-        .filter(({ count }) => count > 0);
 }

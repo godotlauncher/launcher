@@ -243,16 +243,19 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                             codeEditorTooltip
                                                         }
                                                     >
-                                                        <CodeEditorIntegrationIcon
-                                                            integrationId={
-                                                                row.codeEditorId
-                                                            }
-                                                            className={`size-4 ${
-                                                                codeEditorUnavailable
-                                                                    ? 'grayscale opacity-60'
-                                                                    : ''
-                                                            }`}
-                                                        />
+                                                        {codeEditorUnavailable ? (
+                                                            <TriangleAlert
+                                                                className="size-4 stroke-warning"
+                                                                aria-hidden="true"
+                                                            />
+                                                        ) : (
+                                                            <CodeEditorIntegrationIcon
+                                                                integrationId={
+                                                                    row.codeEditorId
+                                                                }
+                                                                className="size-4"
+                                                            />
+                                                        )}
                                                     </Tooltip>
                                                 )}
                                                 {row.withGit && (

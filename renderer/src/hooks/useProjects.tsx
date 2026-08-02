@@ -357,6 +357,10 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
         const off = subscribeAppEvent('projects-updated', setProjects);
+        const offCodeEditorIntegrations = subscribeAppEvent(
+            'code-editor-integrations-updated',
+            setCodeEditorSettings,
+        );
         const offLaunchWarning = subscribeAppEvent(
             'project-launch-code-editor-warning',
             ({ project, result }) =>
@@ -367,6 +371,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
         return () => {
             off();
+            offCodeEditorIntegrations();
             offLaunchWarning();
         };
     }, []);

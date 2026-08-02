@@ -71,10 +71,6 @@
             "missingEditor": "選択したエディターは利用できません。ドライブをマウントするか、別のエディターを選択してください。"
         },
         "recoveredCodeEditorConfig": "一部のコードエディター設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。",
-        "codeEditorHealth": {
-            "unavailable": "{{editor}} が検出されませんでした。",
-            "usage": "設定済みプロジェクト: {{count}}。.NET プロジェクト: {{dotnetCount}}。"
-        },
         "codeEditorLaunch": {
             "title": "{{editor}} が見つかりません",
             "message": "このプロジェクトは {{editor}} を使用するように設定されています。Godot は起動できますが、このエディターでスクリプトを開けない可能性があります。",

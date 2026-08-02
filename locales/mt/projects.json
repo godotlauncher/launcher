@@ -71,10 +71,6 @@
             "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
         },
         "recoveredCodeEditorConfig": "Xi fajls tal-konfigurazzjoni tal-editur tal-kodiċi ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad.",
-        "codeEditorHealth": {
-            "unavailable": "{{editor}} ma nstabx.",
-            "usage": "Proġetti kkonfigurati: {{count}}. Proġetti .NET: {{dotnetCount}}."
-        },
         "codeEditorLaunch": {
             "title": "{{editor}} ma nstabx",
             "message": "Dan il-proġett huwa kkonfigurat biex juża {{editor}}. Godot xorta jista’ jinfetaħ, iżda l-ftuħ tal-iskripts f’dan l-editur jista’ ma jirnexxix.",

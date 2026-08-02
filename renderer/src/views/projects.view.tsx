@@ -21,7 +21,6 @@ import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
 import { useProjectActions } from './projects/hooks/useProjectActions';
 import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
 import { useProjectsSort } from './projects/hooks/useProjectsSort';
-import { getUnavailableCodeEditorUsage } from './projects/projectCodeEditorHealth.model';
 import {
     filterAndSortProjects,
     getInvalidProjectMessageKey,
@@ -204,11 +203,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         return updatedProject;
     };
 
-    const unavailableCodeEditorUsage = getUnavailableCodeEditorUsage(
-        projects,
-        codeEditorSettings,
-    );
-
     const filteredRows = filterAndSortProjects(projects, textSearch, sortData);
 
     return (
@@ -280,34 +274,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             }}
                         />
                     </div>
-                )}
-                {unavailableCodeEditorUsage.map(
-                    ({ settings, count, dotnetCount }) => (
-                        <div
-                            key={settings.integration.id}
-                            className="alert alert-warning my-2"
-                            role="status"
-                        >
-                            <TriangleAlert aria-hidden="true" />
-                            <div>
-                                <p className="font-semibold">
-                                    {t(
-                                        'messages.codeEditorHealth.unavailable',
-                                        {
-                                            editor: settings.integration
-                                                .displayName,
-                                        },
-                                    )}
-                                </p>
-                                <p>
-                                    {t('messages.codeEditorHealth.usage', {
-                                        count,
-                                        dotnetCount,
-                                    })}
-                                </p>
-                            </div>
-                        </div>
-                    ),
                 )}
                 <div className="divider m-0"></div>
                 <ProjectsTable

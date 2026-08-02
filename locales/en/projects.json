@@ -71,10 +71,6 @@
             "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
         },
         "recoveredCodeEditorConfig": "Some code editor config files were invalid. Godot Launcher recreated them and preserved the originals as .bad copies.",
-        "codeEditorHealth": {
-            "unavailable": "{{editor}} was not detected.",
-            "usage": "Configured projects: {{count}}. .NET projects: {{dotnetCount}}."
-        },
         "codeEditorLaunch": {
             "title": "{{editor}} was not found",
             "message": "This project is configured to use {{editor}}. Godot can still launch, but opening scripts in this editor may fail.",

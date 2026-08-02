@@ -58,20 +58,11 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
 
-            const warning = page
-                .locator('.alert-warning')
-                .filter({ hasText: 'Visual Studio Code was not detected.' });
-            await expect(warning).toBeVisible({ timeout: 10000 });
-            await expect(warning).toContainText(
-                'Configured projects: 3. .NET projects: 1.',
+            const warningMarkers = page.locator(
+                'tbody .lucide-triangle-alert.stroke-warning',
             );
-            await expect(
-                page
-                    .getByRole('img', {
-                        name: 'Visual Studio Code was not detected.',
-                    })
-                    .first(),
-            ).toBeVisible();
+            await expect(warningMarkers).toHaveCount(3);
+            await expect(page.locator('.alert-warning')).toHaveCount(0);
             await page.waitForTimeout(400);
         },
         cleanup: async (

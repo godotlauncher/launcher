@@ -144,7 +144,9 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
             },
         );
 
-        this.disposeFocusRevalidation = setupFocusRevalidation(mainWindow);
+        this.disposeFocusRevalidation = setupFocusRevalidation(mainWindow, () =>
+            this.codeEditorIntegrationService.listIntegrationSettings(),
+        );
         electronAutoUpdater.on(
             'before-quit-for-update',
             this.handleBeforeQuitForUpdate,
