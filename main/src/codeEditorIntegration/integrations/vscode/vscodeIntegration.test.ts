@@ -12,13 +12,18 @@ vi.mock('node:fs', () => ({
     default: { existsSync: fsMocks.existsSync },
 }));
 
-const vscodeMocks = vi.hoisted(() => ({
-    addOrUpdateVSCodeRecommendedExtensions: vi.fn(),
+const installationMocks = vi.hoisted(() => ({
     getVSCodeInstallPath: vi.fn(),
+    resolveVSCodeGodotExecPath: vi.fn(),
+}));
+
+const projectConfigurationMocks = vi.hoisted(() => ({
+    addOrUpdateVSCodeRecommendedExtensions: vi.fn(),
     updateVSCodeSettings: vi.fn(),
 }));
 
-vi.mock('./vscodeIntegration.utils.js', () => vscodeMocks);
+vi.mock('./vscodeInstallation.js', () => installationMocks);
+vi.mock('./vscodeProjectConfiguration.js', () => projectConfigurationMocks);
 
 function createContext(
     overrides: Partial<CodeEditorProjectContext> = {},
@@ -39,8 +44,11 @@ describe('VSCodeIntegration', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         fsMocks.existsSync.mockReturnValue(false);
-        vscodeMocks.updateVSCodeSettings.mockResolvedValue([]);
-        vscodeMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(
+        installationMocks.resolveVSCodeGodotExecPath.mockImplementation(
+            (installationPath: string) => installationPath,
+        );
+        projectConfigurationMocks.updateVSCodeSettings.mockResolvedValue([]);
+        projectConfigurationMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(
             [],
         );
     });
@@ -52,7 +60,7 @@ describe('VSCodeIntegration', () => {
     it('detects installations and validates explicit paths independently', async () => {
         const integration = new VSCodeIntegration();
         const candidatePath = path.resolve('tools', 'code');
-        vscodeMocks.getVSCodeInstallPath.mockResolvedValue(candidatePath);
+        installationMocks.getVSCodeInstallPath.mockResolvedValue(candidatePath);
 
         await expect(
             integration.detectInstallation(candidatePath),
@@ -71,13 +79,15 @@ describe('VSCodeIntegration', () => {
         });
 
         fsMocks.existsSync.mockReturnValue(true);
-        vscodeMocks.getVSCodeInstallPath.mockResolvedValueOnce(null);
+        installationMocks.getVSCodeInstallPath.mockResolvedValueOnce(null);
         await expect(integration.validatePath(candidatePath)).resolves.toEqual({
             valid: false,
             reason: 'Path is not a supported Visual Studio Code installation.',
         });
 
-        vscodeMocks.getVSCodeInstallPath.mockResolvedValueOnce(candidatePath);
+        installationMocks.getVSCodeInstallPath.mockResolvedValueOnce(
+            candidatePath,
+        );
         await expect(
             integration.validatePath(` ${candidatePath} `),
         ).resolves.toEqual({
@@ -92,12 +102,12 @@ describe('VSCodeIntegration', () => {
     it('configures VS Code-owned project files through existing utilities', async () => {
         const integration = new VSCodeIntegration();
         const context = createContext({ mono: true });
-        vscodeMocks.updateVSCodeSettings.mockResolvedValue([
+        projectConfigurationMocks.updateVSCodeSettings.mockResolvedValue([
             path.resolve('settings.bad'),
         ]);
-        vscodeMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue([
-            path.resolve('extensions.bad'),
-        ]);
+        projectConfigurationMocks.addOrUpdateVSCodeRecommendedExtensions.mockResolvedValue(
+            [path.resolve('extensions.bad')],
+        );
 
         await expect(integration.configureProject(context)).resolves.toEqual({
             recoveredConfigFiles: [
@@ -105,14 +115,16 @@ describe('VSCodeIntegration', () => {
                 path.resolve('extensions.bad'),
             ],
         });
-        expect(vscodeMocks.updateVSCodeSettings).toHaveBeenCalledWith(
+        expect(
+            projectConfigurationMocks.updateVSCodeSettings,
+        ).toHaveBeenCalledWith(
             context.projectPath,
             context.godotLaunchPath,
             context.godotVersion,
             context.mono,
         );
         expect(
-            vscodeMocks.addOrUpdateVSCodeRecommendedExtensions,
+            projectConfigurationMocks.addOrUpdateVSCodeRecommendedExtensions,
         ).toHaveBeenCalledWith(context.projectPath, context.mono);
     });
 
@@ -132,10 +144,10 @@ describe('VSCodeIntegration', () => {
         );
     });
 
-    it('passes non-macOS executables through with Godot command flags', () => {
-        vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
+    it('passes the Linux executable through with Godot command flags', () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
         const integration = new VSCodeIntegration();
-        const executablePath = path.resolve('tools', 'code.exe');
+        const executablePath = path.resolve('tools', 'code');
 
         expect(
             integration.resolveGodotConfiguration({
@@ -153,13 +165,19 @@ describe('VSCodeIntegration', () => {
                 execFlags: '{project} --goto {file}:{line}:{col}',
             },
         });
+        expect(
+            installationMocks.resolveVSCodeGodotExecPath,
+        ).toHaveBeenCalledWith(executablePath);
     });
 
     it('uses the VS Code command script for Godot on Windows when available', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
-        fsMocks.existsSync.mockReturnValue(true);
         const integration = new VSCodeIntegration();
         const executablePath = path.resolve('tools', 'Code.exe');
+        const commandPath = path.resolve('tools', 'bin', 'code.cmd');
+        installationMocks.resolveVSCodeGodotExecPath.mockReturnValue(
+            commandPath,
+        );
 
         expect(
             integration.resolveGodotConfiguration({
@@ -173,13 +191,13 @@ describe('VSCodeIntegration', () => {
             }),
         ).toEqual({
             textEditor: {
-                execPath: path.resolve('tools', 'bin', 'code.cmd'),
+                execPath: commandPath,
                 execFlags: '{project} --goto {file}:{line}:{col}',
             },
         });
-        expect(fsMocks.existsSync).toHaveBeenCalledWith(
-            path.resolve('tools', 'bin', 'code.cmd'),
-        );
+        expect(
+            installationMocks.resolveVSCodeGodotExecPath,
+        ).toHaveBeenCalledWith(executablePath);
     });
     it('passes the resolved macOS executable to Godot', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
