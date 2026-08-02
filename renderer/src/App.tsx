@@ -340,6 +340,7 @@ function MainLayout() {
                             <button
                                 type="button"
                                 data-testid="btnDiscord"
+                                data-external-link=""
                                 className="py-2 rounded-md relative"
                                 onClick={() =>
                                     openExternalLink(COMMUNITY_DISCORD_URL)

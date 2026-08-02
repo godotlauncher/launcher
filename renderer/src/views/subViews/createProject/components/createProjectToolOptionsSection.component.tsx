@@ -71,7 +71,7 @@ export const CreateProjectToolOptionsSection: React.FC<
                     invisible: loadingTools || loadingCodeEditors,
                 })}
             >
-                <label className="flex cursor-pointer gap-2 items-center">
+                <label className="flex gap-2 items-center">
                     <input
                         type="checkbox"
                         className="checkbox"

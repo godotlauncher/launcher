@@ -15,7 +15,7 @@ type AppUpdateBannerContentProps = AppUpdateBannerProps & {
     t: (key: string) => string;
 };
 
-const bannerLinkClass = 'underline cursor-pointer hover:no-underline';
+const bannerLinkClass = 'underline hover:no-underline';
 
 export function getAppUpdateBannerContent({
     updateAvailable,
@@ -134,6 +134,7 @@ export function getAppUpdateBannerContent({
                         ReleaseLink: (
                             <button
                                 data-testid="btnAppUpdateManual"
+                                data-external-link=""
                                 type="button"
                                 onClick={() => openUpdateUrl(url)}
                                 className={bannerLinkClass}

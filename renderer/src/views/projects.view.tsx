@@ -274,7 +274,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                         onClick={() =>
                                             setCurrentView('installs')
                                         }
-                                        className="underline cursor-pointer"
+                                        className="underline"
                                     />
                                 ),
                             }}

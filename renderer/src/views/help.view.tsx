@@ -37,6 +37,7 @@ export const HelpVIew: React.FC = () => {
                     </h1>
                     <div className="flex flex-1 gap-2 justify-end">
                         <button
+                            data-external-link=""
                             type="button"
                             onClick={() =>
                                 open(
@@ -66,6 +67,7 @@ export const HelpVIew: React.FC = () => {
                                     <h1 className="flex gap-1 items-baseline text-xl">
                                         {t('launcher.title')}
                                         <button
+                                            data-external-link=""
                                             type="button"
                                             onClick={() => openChangeLog()}
                                             className="btn-link flex-row items-center text-sm m-0 p-0 flex gap-1"
@@ -80,6 +82,7 @@ export const HelpVIew: React.FC = () => {
                                                 {t('launcher.homePage')}
                                             </h3>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(
@@ -97,6 +100,7 @@ export const HelpVIew: React.FC = () => {
                                                 {t('launcher.docs')}
                                             </h3>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(
@@ -121,6 +125,7 @@ export const HelpVIew: React.FC = () => {
                                                 {t('godot.engine')}
                                             </h3>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(
@@ -138,6 +143,7 @@ export const HelpVIew: React.FC = () => {
                                                 {t('godot.docs')}
                                             </h3>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(
@@ -158,6 +164,7 @@ export const HelpVIew: React.FC = () => {
                                     <h1 className="text-xl flex flex-row items-baseline gap-1">
                                         {t('community.title')}
                                         <button
+                                            data-external-link=""
                                             type="button"
                                             onClick={() =>
                                                 openExternalLink(
@@ -173,6 +180,7 @@ export const HelpVIew: React.FC = () => {
                                     <ul className="flex flex-row items-center justify-start px-4">
                                         <li>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(
@@ -196,6 +204,7 @@ export const HelpVIew: React.FC = () => {
                                     <h1 className="text-xl flex flex-row items-baseline gap-1">
                                         {t('contribute.title')}{' '}
                                         <button
+                                            data-external-link=""
                                             type="button"
                                             onClick={() =>
                                                 openExternalLink(
@@ -212,6 +221,7 @@ export const HelpVIew: React.FC = () => {
                                     <ul className="flex gap-2">
                                         <li>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(
@@ -226,6 +236,7 @@ export const HelpVIew: React.FC = () => {
                                         </li>
                                         <li>
                                             <button
+                                                data-external-link=""
                                                 type="button"
                                                 onClick={() =>
                                                     openExternalLink(

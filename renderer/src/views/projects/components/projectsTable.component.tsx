@@ -81,9 +81,9 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
         }
 
         return sortData.order === 'asc' ? (
-            <ChevronUp className="w-4 h-4 ml-2 cursor-pointer" />
+            <ChevronUp className="w-4 h-4 ml-2" />
         ) : (
-            <ChevronDown className="w-4 h-4 ml-2 cursor-pointer" />
+            <ChevronDown className="w-4 h-4 ml-2" />
         );
     };
 
@@ -125,7 +125,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                         <th className="min-w-48 w-full">
                             <button
                                 type="button"
-                                className="flex items-center gap-2 cursor-pointer"
+                                className="flex items-center gap-2"
                                 onClick={() => toggleSort('name')}
                             >
                                 {t('table.name')}
@@ -135,7 +135,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                         <th className="w-44 min-w-44">
                             <button
                                 type="button"
-                                className="flex items-center gap-2 cursor-pointer"
+                                className="flex items-center gap-2"
                                 onClick={() => toggleSort('modified')}
                             >
                                 {t('table.modified')}

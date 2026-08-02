@@ -31,7 +31,7 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
                 </p>
             </div>
             <div className=" flex flex-col gap-8">
-                <label className="flex flex-row items-start cursor-pointer gap-4">
+                <label className="flex flex-row items-start gap-4">
                     <input
                         type="checkbox"
                         className="checkbox"

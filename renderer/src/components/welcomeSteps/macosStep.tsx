@@ -21,6 +21,7 @@ export const MacOSStep: React.FC = () => {
                             components={{
                                 ButtonLink: (
                                     <button
+                                        data-external-link=""
                                         type="button"
                                         className="hover:underline text-info"
                                         onClick={() =>

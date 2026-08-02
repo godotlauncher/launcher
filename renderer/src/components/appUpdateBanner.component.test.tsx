@@ -9,6 +9,7 @@ import {
 type BannerButtonElement = React.ReactElement<{
     onClick: () => Promise<void>;
     'data-testid'?: string;
+    'data-external-link'?: string;
 }>;
 
 type BannerTransElement = React.ReactElement<{
@@ -188,6 +189,12 @@ describe('AppUpdateBanner', () => {
         expect(content.props.i18nKey).toBe('app.update.manualWithVersion');
         expect(content.props.components.ReleaseLink).toBeDefined();
         expect(content.props.components.SkipButton).toBeDefined();
+        expect(
+            content.props.components.ReleaseLink?.props['data-external-link'],
+        ).toBe('');
+        expect(
+            content.props.components.SkipButton?.props['data-external-link'],
+        ).toBeUndefined();
 
         await content.props.components.ReleaseLink?.props.onClick();
         await content.props.components.SkipButton?.props.onClick();

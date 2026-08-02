@@ -49,7 +49,7 @@ export const AppearanceSettingsPanel: React.FC<
                 {themeOptions.map((option) => (
                     <label
                         key={option.value}
-                        className="flex flex-row  items-center justify-start  gap-4 cursor-pointer "
+                        className="flex flex-row items-center justify-start gap-4"
                     >
                         <input
                             onChange={(event) => {

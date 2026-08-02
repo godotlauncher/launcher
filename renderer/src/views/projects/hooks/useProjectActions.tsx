@@ -187,7 +187,7 @@ export function useProjectActions({
                     })}
                 </p>
                 <p>{t('dialogs:removeProject.detail')}</p>
-                <label className="flex cursor-pointer items-center gap-2">
+                <label className="flex items-center gap-2">
                     <input
                         type="checkbox"
                         className="checkbox checkbox-sm"

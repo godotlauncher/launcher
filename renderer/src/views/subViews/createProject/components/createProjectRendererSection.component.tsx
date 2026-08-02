@@ -64,10 +64,7 @@ export const CreateProjectRendererSection: React.FC<
         {versionNumber >= 4 && (
             <div className="flex flex-row gap-4 p-4">
                 {rendererOptions.map((option) => (
-                    <label
-                        key={option.value}
-                        className="flex cursor-pointer gap-2"
-                    >
+                    <label key={option.value} className="flex gap-2">
                         <input
                             type="radio"
                             name="project-renderer"
