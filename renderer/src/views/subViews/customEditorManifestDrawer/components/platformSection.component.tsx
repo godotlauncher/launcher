@@ -7,6 +7,7 @@ import { ChevronDown, RotateCcw } from 'lucide-react';
 import type React from 'react';
 import { PathField } from '../../../../components/ui/pathField.component';
 import { SelectField } from '../../../../components/ui/selectField.component';
+import { Tooltip } from '../../../../components/ui/tooltip.component';
 import { getFieldError } from '../customEditorManifest.messages';
 import type {
     CustomEditorManifestPlatformFormState,
@@ -58,6 +59,7 @@ export const PlatformSection: React.FC<PlatformSectionProps> = ({
         t,
     );
     const isIncludedInJson = platformForm.editorPath.trim().length > 0;
+    const clearPlatformLabel = t('customEditor.creator.actions.clearPlatform');
 
     return (
         <section className="rounded-box border border-base-300 bg-base-100">
@@ -81,23 +83,16 @@ export const PlatformSection: React.FC<PlatformSectionProps> = ({
                     />
                 </button>
                 {platformForm.expanded && isIncludedInJson && (
-                    <span
-                        className="tooltip tooltip-right relative z-20 hover:z-50 focus-within:z-50"
-                        data-tip={t(
-                            'customEditor.creator.actions.clearPlatform',
-                        )}
-                    >
+                    <Tooltip tip={clearPlatformLabel} placement="right">
                         <button
                             type="button"
                             className="btn btn-ghost btn-square btn-xs"
-                            aria-label={`${t(
-                                'customEditor.creator.actions.clearPlatform',
-                            )}: ${platformLabel}`}
+                            aria-label={`${clearPlatformLabel}: ${platformLabel}`}
                             onClick={() => onClear(platform)}
                         >
                             <RotateCcw size={14} aria-hidden="true" />
                         </button>
-                    </span>
+                    </Tooltip>
                 )}
             </div>
             {platformForm.expanded && (

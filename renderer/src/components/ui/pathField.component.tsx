@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { CircleX, File, Folder } from 'lucide-react';
 import type React from 'react';
 import { FormField } from './formField.component';
+import { Tooltip } from './tooltip.component';
 
 export type PathFieldBrowseKind = 'file' | 'directory';
 
@@ -68,14 +69,16 @@ export const PathField: React.FC<PathFieldProps> = ({
                         disabled={disabled}
                     />
                     {error && (
-                        <span
-                            className="tooltip tooltip-right tooltip-error absolute right-2 top-1/2 z-20 -translate-y-1/2 text-error hover:z-50 focus-within:z-50"
-                            data-tip={error}
+                        <Tooltip
+                            tip={error}
+                            placement="right"
+                            tone="error"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-error"
                             role="img"
-                            aria-label={error}
+                            ariaLabel={error}
                         >
                             <CircleX size={15} aria-hidden="true" />
-                        </span>
+                        </Tooltip>
                     )}
                 </div>
                 <button

@@ -207,6 +207,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                             <div className="font-bold flex text-lg gap-2 items-center justify-start min-w-0">
                                                 {!row.valid && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             getInvalidProjectTableKey(
                                                                 row,
@@ -229,6 +230,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 </button>
                                                 {row.codeEditorId && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={codeEditorTooltip}
                                                         tone={
                                                             codeEditorUnavailable
@@ -255,6 +257,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 )}
                                                 {row.withGit && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.gitProject',
                                                         )}
@@ -274,6 +277,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 )}
                                                 {row.release.mono && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.dotNetProject',
                                                         )}
@@ -287,6 +291,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 )}
                                                 {row.release.prerelease && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.prerelease',
                                                         )}
@@ -300,6 +305,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 )}
                                                 {row.open_windowed && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.windowedMode',
                                                         )}

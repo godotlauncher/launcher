@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { CircleX } from 'lucide-react';
 import type React from 'react';
 import { HelpTooltip } from './helpTooltip.component';
+import { Tooltip } from './tooltip.component';
 
 export type FormFieldProps = {
     id: string;
@@ -41,17 +42,19 @@ export const FormField: React.FC<FormFieldProps> = ({
         <div className="relative">
             {children}
             {error && (
-                <span
+                <Tooltip
+                    tip={error}
+                    placement="right"
+                    tone="error"
                     className={clsx(
-                        'tooltip tooltip-right tooltip-error absolute top-1/2 z-20 -translate-y-1/2 text-error hover:z-50 focus-within:z-50',
+                        'absolute top-1/2 -translate-y-1/2 text-error',
                         errorIconClassName,
                     )}
-                    data-tip={error}
                     role="img"
-                    aria-label={error}
+                    ariaLabel={error}
                 >
                     <CircleX size={15} aria-hidden="true" />
-                </span>
+                </Tooltip>
             )}
         </div>
     </div>

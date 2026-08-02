@@ -112,9 +112,9 @@ describe('CustomEditorManifestDrawer', () => {
         );
         expect(html).toContain('&quot;platforms&quot;: []');
         expect(html).toContain(
-            'data-tip="Folder where the manifest will be written."',
+            'aria-label="Folder where the manifest will be written."',
         );
-        expect(html).toContain('data-tip="Godot compatibility version."');
+        expect(html).toContain('aria-label="Godot compatibility version."');
         expect(html).toContain('Create and register');
         expect(html).toContain('Cancel');
     });

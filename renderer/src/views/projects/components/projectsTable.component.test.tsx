@@ -126,7 +126,7 @@ describe('ProjectsTable', () => {
         expect(html).toContain(
             'table.codeEditorUnavailable: Visual Studio Code',
         );
-        expect(html).toContain('tooltip-warning');
+        expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('grayscale opacity-60');
         expect(html).not.toContain('table.codeEditorProject');
     });

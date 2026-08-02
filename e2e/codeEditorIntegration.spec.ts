@@ -264,6 +264,161 @@ test('Project launch warns when its selected code editor is unavailable', async 
         ]);
 });
 
+test('Tooltip stays inside the viewport without expanding settings overflow', async () => {
+    const displayName =
+        'Visual Studio Code with an intentionally long integration name';
+    await stubCodeEditorIntegrationSettings(electronApp, [
+        {
+            ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            integration: {
+                ...SAMPLE_VSCODE_SETTINGS_AVAILABLE.integration,
+                displayName,
+            },
+        },
+    ]);
+    const integrationRow = await openCodeEditorSettings();
+    const scroller = integrationRow.locator(
+        'xpath=ancestor::div[contains(@class, "overflow-y-auto")][1]',
+    );
+    const defaultButton = integrationRow.getByTestId(
+        'btn-set-default-code-editor-vscode',
+    );
+    const readOverflow = () =>
+        scroller.evaluate((element) => ({
+            clientWidth: element.clientWidth,
+            scrollWidth: element.scrollWidth,
+        }));
+
+    await expect
+        .poll(async () => {
+            const overflow = await readOverflow();
+            return overflow.scrollWidth - overflow.clientWidth;
+        })
+        .toBe(0);
+
+    const tooltipText = await defaultButton.getAttribute('aria-label');
+    expect(tooltipText).toBeTruthy();
+    await defaultButton.hover();
+    const tooltip = mainPage.getByRole('tooltip');
+    await mainPage.waitForTimeout(250);
+    expect(await tooltip.count()).toBe(0);
+    await mainPage.mouse.move(0, 0);
+    await mainPage.waitForTimeout(350);
+    expect(await tooltip.count()).toBe(0);
+
+    await defaultButton.hover();
+    await expect(tooltip).toHaveText(tooltipText as string);
+    await expect(tooltip).toBeVisible();
+    await expect
+        .poll(async () =>
+            await tooltip.evaluate(
+                (element) => element.parentElement === document.body,
+            ),
+        )
+        .toBe(true);
+
+    const tooltipId = await tooltip.getAttribute('id');
+    expect(tooltipId).toBeTruthy();
+    await expect(defaultButton).toHaveAttribute(
+        'aria-describedby',
+        tooltipId as string,
+    );
+    await expect(tooltip).toHaveClass(/bg-neutral/);
+    await expect(tooltip).toHaveClass(/text-neutral-content/);
+    await mainPage.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+    await defaultButton.focus();
+    await expect(tooltip).toBeVisible();
+
+    const assertInsideViewport = async () => {
+        const box = await tooltip.boundingBox();
+        const viewport = mainPage.viewportSize();
+        expect(box).not.toBeNull();
+        expect(viewport).not.toBeNull();
+        expect(box?.x).toBeGreaterThanOrEqual(8);
+        expect(box?.y).toBeGreaterThanOrEqual(8);
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+            (viewport?.width ?? 0) - 8,
+        );
+        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+            (viewport?.height ?? 0) - 8,
+        );
+        return box;
+    };
+
+    const initialBox = await assertInsideViewport();
+    const initialTriggerBox = await defaultButton.boundingBox();
+    await expect
+        .poll(async () => {
+            const overflow = await readOverflow();
+            return overflow.scrollWidth - overflow.clientWidth;
+        })
+        .toBe(0);
+
+    const scrollFixture = await scroller.evaluate((element) => {
+        const spacer = document.createElement('div');
+        spacer.dataset.tooltipScrollFixture = '';
+        spacer.style.height = '1000px';
+        spacer.style.minHeight = '1000px';
+        element.append(spacer);
+        element.style.setProperty('flex', '0 0 100px', 'important');
+        element.style.setProperty('height', '100px', 'important');
+        element.style.setProperty('min-height', '0', 'important');
+        element.style.setProperty('max-height', '100px', 'important');
+        element.scrollTop = 100;
+        element.dispatchEvent(new Event('scroll'));
+        return {
+            clientHeight: element.clientHeight,
+            scrollHeight: element.scrollHeight,
+            scrollTop: element.scrollTop,
+        };
+    });
+    expect(scrollFixture.scrollHeight).toBeGreaterThan(
+        scrollFixture.clientHeight,
+    );
+    expect(scrollFixture.scrollTop).toBeGreaterThan(0);
+    await expect
+        .poll(async () => (await defaultButton.boundingBox())?.y)
+        .not.toBe(initialTriggerBox?.y);
+    await expect
+        .poll(async () => (await tooltip.boundingBox())?.y)
+        .not.toBe(initialBox?.y);
+    await assertInsideViewport();
+    await scroller.evaluate((element) => {
+        element.scrollTop = 0;
+        element
+            .querySelector('[data-tooltip-scroll-fixture]')
+            ?.remove();
+        element.style.removeProperty('flex');
+        element.style.removeProperty('height');
+        element.style.removeProperty('min-height');
+        element.style.removeProperty('max-height');
+    });
+
+    const beforeResizeX = (await tooltip.boundingBox())?.x;
+    await mainPage.setViewportSize({ width: 1100, height: 600 });
+    await expect
+        .poll(async () => (await tooltip.boundingBox())?.x)
+        .not.toBe(beforeResizeX);
+    await assertInsideViewport();
+
+    await mainPage.mouse.move(0, 0);
+    await expect(tooltip).toBeVisible();
+    await defaultButton.blur();
+    await expect(tooltip).toHaveCount(0);
+
+    await defaultButton.focus();
+    await expect(tooltip).toBeVisible();
+    await mainPage.keyboard.press('Escape');
+    await expect(tooltip).toHaveCount(0);
+
+    await defaultButton.blur();
+    await defaultButton.focus();
+    await expect(tooltip).toBeVisible();
+    await defaultButton.press('Enter');
+    await expect(tooltip).toHaveCount(0);
+});
+
 test('Code Editor settings lock overlapping actions and recover from a failed update', async () => {
     await stubRecordedIpcHandler(electronApp, {
         key: 'integrationUpdate',

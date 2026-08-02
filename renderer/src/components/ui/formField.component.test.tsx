@@ -18,34 +18,38 @@ describe('UI form primitives', () => {
             <HelpTooltip help="Use an absolute path." />,
         );
 
-        expect(html).toContain('data-tip="Use an absolute path."');
+        expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Use an absolute path."');
-        expect(html).toContain('tooltip-info');
         expect(html).toContain('text-info');
         expect(html).toContain('lucide-circle-question-mark');
     });
 
-    it('renders generic tooltip placement and tone classes', () => {
+    it('renders a generic tooltip trigger without pre-rendering content', () => {
         const html = renderToStaticMarkup(
-            <Tooltip tip="Open folder" placement="left" tone="primary">
+            <Tooltip
+                tip="Open folder"
+                placement="left"
+                tone="primary"
+                delay={0}
+            >
                 <button type="button">Open</button>
             </Tooltip>,
         );
 
-        expect(html).toContain('data-tip="Open folder"');
-        expect(html).toContain('tooltip-left');
-        expect(html).toContain('tooltip-primary');
+        expect(html).toContain('data-tooltip-trigger=""');
+        expect(html).toContain('<button type="button">Open</button>');
+        expect(html).not.toContain('Open folder');
     });
 
-    it('uses the DaisyUI info tone for generic tooltips', () => {
+    it('mounts tooltip content only when the trigger opens', () => {
         const html = renderToStaticMarkup(
             <Tooltip tip="More information" tone="info">
                 <span>Info</span>
             </Tooltip>,
         );
 
-        expect(html).toContain('tooltip-info');
-        expect(html).not.toContain('text-info');
+        expect(html).not.toContain('More information');
+        expect(html).not.toContain('role="tooltip"');
     });
 
     it('renders form labels, help, children, and field errors', () => {
@@ -65,8 +69,8 @@ describe('UI form primitives', () => {
         expect(html).toContain('for="engineName"');
         expect(html).toContain('Engine name');
         expect(html).toContain('>Reset</button>');
-        expect(html).toContain('data-tip="Shown in launcher."');
-        expect(html).toContain('data-tip="Engine name is required."');
+        expect(html).toContain('aria-label="Shown in launcher."');
+        expect(html).toContain('aria-label="Engine name is required."');
         expect(html).toContain('lucide-circle-x');
     });
 
@@ -113,7 +117,7 @@ describe('UI form primitives', () => {
             />,
         );
 
-        expect(html).toContain('data-tip="Output folder is required."');
+        expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Output folder is required."');
         expect(html).toContain('lucide-circle-x');
         expect(html).toContain('lucide-folder');

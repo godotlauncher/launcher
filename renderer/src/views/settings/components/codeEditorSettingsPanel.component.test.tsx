@@ -77,10 +77,10 @@ describe('CodeEditorSettingsPanel', () => {
             'codeEditors.actions.rescan: Visual Studio Code',
         );
         expect(html).toContain(
-            'data-tip="codeEditors.actions.setDefault: Visual Studio Code"',
+            'aria-label="codeEditors.actions.setDefault: Visual Studio Code"',
         );
         expect(html).toContain(
-            'data-tip="codeEditors.actions.edit: Visual Studio Code"',
+            'aria-label="codeEditors.actions.edit: Visual Studio Code"',
         );
         expect(html).not.toContain('title="codeEditors.actions.setDefault"');
         expect(html).not.toContain('title="codeEditors.actions.edit"');
@@ -92,7 +92,6 @@ describe('CodeEditorSettingsPanel', () => {
         expect(
             html.indexOf('>.NET codeEditors.drawer.dotnet.supported</span>'),
         ).toBeLessThan(html.indexOf('codeEditors.status.available'));
-        expect(html).toContain('tooltip-top');
     });
 
     it('renders an unavailable integration without installation details', () => {
@@ -131,9 +130,7 @@ describe('CodeEditorSettingsPanel', () => {
         });
 
         expect(html).toContain('lucide-star');
-        expect(html).toContain(
-            'data-tip="codeEditors.status.missing: Visual Studio Code"',
-        );
+        expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain(
             'aria-label="codeEditors.status.missing: Visual Studio Code"',
         );
