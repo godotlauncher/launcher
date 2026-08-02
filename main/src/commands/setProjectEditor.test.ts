@@ -44,13 +44,10 @@ const godotUtilsMocks = vi.hoisted(() => ({
 vi.mock('../utils/godot.utils.js', () => godotUtilsMocks);
 
 const projectLauncherConfigMocks = vi.hoisted(() => ({
-    readProjectLauncherConfig: vi.fn(),
     writeProjectLauncherConfig: vi.fn(),
 }));
 
 vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
-    readProjectLauncherConfig:
-        projectLauncherConfigMocks.readProjectLauncherConfig,
     writeProjectLauncherConfig:
         projectLauncherConfigMocks.writeProjectLauncherConfig,
 }));
@@ -119,7 +116,6 @@ const codeEditorIntegrationService = {
     scanIntegration: vi.fn(),
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
-    resolvePortableSelectionId: vi.fn(),
 } as unknown as CodeEditorIntegrationService;
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
@@ -127,11 +123,9 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
     scanIntegration: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
     disableForProject: ReturnType<typeof vi.fn>;
-    resolvePortableSelectionId: ReturnType<typeof vi.fn>;
 };
 
-const { readProjectLauncherConfig, writeProjectLauncherConfig } =
-    projectLauncherConfigMocks;
+const { writeProjectLauncherConfig } = projectLauncherConfigMocks;
 
 describe('setProjectEditor', () => {
     let mockProject: ProjectDetails;
@@ -226,12 +220,7 @@ describe('setProjectEditor', () => {
 
         existsSync.mockReturnValue(false);
 
-        readProjectLauncherConfig.mockResolvedValue(null);
         writeProjectLauncherConfig.mockResolvedValue(undefined);
-        integrationMocks.resolvePortableSelectionId.mockImplementation(
-            (canonicalId: unknown, portableId: unknown) =>
-                portableId === 'future-editor' ? portableId : canonicalId,
-        );
         integrationMocks.scanIntegration.mockResolvedValue({
             integrationId: 'vscode',
             path: '/usr/bin/code',
@@ -263,7 +252,6 @@ describe('setProjectEditor', () => {
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
                 lastOpened: null,
-                codeEditorId: 'vscode',
             }),
         );
     });
@@ -439,35 +427,6 @@ describe('setProjectEditor', () => {
             'vscode',
             expect.objectContaining({ projectPath: '/fake/project' }),
         );
-    });
-
-    it('preserves an unknown portable integration during a Godot editor change', async () => {
-        mockProject.codeEditorId = null;
-        getProjectsSnapshot.mockResolvedValue({
-            projects: [mockProject],
-            version: 'v1',
-        });
-        readProjectLauncherConfig.mockResolvedValue({
-            code_editor: { id: 'future-editor' },
-        });
-
-        const result = await setProjectEditor(
-            mockProject,
-            mockNewRelease,
-            codeEditorIntegrationService,
-        );
-
-        expect(result.success).toBe(true);
-        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/fake/project',
-            expect.objectContaining({
-                codeEditorId: 'future-editor',
-            }),
-        );
-        expect(
-            integrationMocks.resolvePortableSelectionId,
-        ).toHaveBeenCalledWith(null, 'future-editor');
     });
 
     it('should return error when trying to use same release', async () => {

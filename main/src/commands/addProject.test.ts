@@ -1,7 +1,6 @@
 import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import type { ProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProject } from './addProject.js';
 
 const fsMocks = vi.hoisted(() => ({
@@ -156,7 +155,6 @@ const { getInstalledReleases } = releasesMocks;
 const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsDetails } = projectsMocks;
 const codeEditorIntegrationService = {
-    isRegisteredIntegration: vi.fn(),
     findConfiguredIntegrations: vi.fn(),
     getSelectionEligibility: vi.fn(),
     applyToProject: vi.fn(),
@@ -164,7 +162,6 @@ const codeEditorIntegrationService = {
 } as unknown as CodeEditorIntegrationService;
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
-    isRegisteredIntegration: ReturnType<typeof vi.fn>;
     findConfiguredIntegrations: ReturnType<typeof vi.fn>;
     getSelectionEligibility: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
@@ -175,22 +172,6 @@ const {
 } = godotUtilsMocks;
 const { readProjectLauncherConfig, writeProjectLauncherConfig } =
     projectLauncherConfigMocks;
-
-function createStableProjectLauncherConfig(
-    codeEditor?: ProjectLauncherConfig['code_editor'],
-): ProjectLauncherConfig {
-    return {
-        config: { version: 1 },
-        launcher: { version: '1.9.0' },
-        editor: {
-            channel: 'official',
-            flavor: 'dotnet',
-            base_version: '4.3',
-            version: '4.3-stable',
-        },
-        ...(codeEditor ? { code_editor: codeEditor } : {}),
-    };
-}
 
 describe('addProject', () => {
     beforeEach(() => {
@@ -257,9 +238,6 @@ describe('addProject', () => {
         });
         setProjectEditorRelease.mockResolvedValue('/fake/launch');
 
-        integrationMocks.isRegisteredIntegration.mockImplementation(
-            (id: string) => id === 'vscode',
-        );
         integrationMocks.findConfiguredIntegrations.mockImplementation(
             async (projectDir: string) =>
                 existsSync(path.resolve(projectDir, '.vscode'))
@@ -295,15 +273,14 @@ describe('addProject', () => {
             expect.objectContaining({
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
-                codeEditorId: null,
             }),
         );
     });
 
-    it('uses an explicit code editor without project-file detection', async () => {
-        readProjectLauncherConfig.mockResolvedValue(
-            createStableProjectLauncherConfig({ id: 'vscode' }),
-        );
+    it('uses the locally configured code editor when importing', async () => {
+        integrationMocks.findConfiguredIntegrations.mockResolvedValue([
+            'vscode',
+        ]);
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -311,100 +288,16 @@ describe('addProject', () => {
         );
 
         expect(result.success).toBe(true);
-        expect(result.newProject?.codeEditorId).toBe('vscode');
         expect(
             integrationMocks.findConfiguredIntegrations,
-        ).not.toHaveBeenCalled();
+        ).toHaveBeenCalledWith('/fake/project');
+        expect(result.newProject?.codeEditorId).toBe('vscode');
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
             expect.objectContaining({ projectPath: '/fake/project' }),
         );
-    });
-
-    it('treats an explicit None as authoritative', async () => {
-        readProjectLauncherConfig.mockResolvedValue(
-            createStableProjectLauncherConfig({ id: null }),
-        );
-
-        const result = await addProject(
-            '/fake/project/project.godot',
-            codeEditorIntegrationService,
-        );
-
-        expect(result.success).toBe(true);
-        expect(result.newProject?.codeEditorId).toBeNull();
-        expect(
-            integrationMocks.findConfiguredIntegrations,
-        ).not.toHaveBeenCalled();
-        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-    });
-
-    it('preserves an unknown code editor without selecting another integration', async () => {
-        readProjectLauncherConfig.mockResolvedValue(
-            createStableProjectLauncherConfig({ id: 'future-editor' }),
-        );
-
-        const result = await addProject(
-            '/fake/project/project.godot',
-            codeEditorIntegrationService,
-        );
-
-        expect(result.success).toBe(true);
-        expect(result.newProject?.codeEditorId).toBeNull();
-        expect(
-            integrationMocks.findConfiguredIntegrations,
-        ).not.toHaveBeenCalled();
-        expect(integrationMocks.getSelectionEligibility).not.toHaveBeenCalled();
-        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/fake/project',
-            expect.objectContaining({ codeEditorId: 'future-editor' }),
-        );
-    });
-
-    it('keeps a known code editor selected when its installation is unavailable', async () => {
-        readProjectLauncherConfig.mockResolvedValue(
-            createStableProjectLauncherConfig({ id: 'vscode' }),
-        );
-        integrationMocks.getSelectionEligibility.mockResolvedValue(
-            'unavailable',
-        );
-
-        const result = await addProject(
-            '/fake/project/project.godot',
-            codeEditorIntegrationService,
-        );
-
-        expect(result.success).toBe(true);
-        expect(result.newProject?.codeEditorId).toBe('vscode');
-        expect(
-            integrationMocks.findConfiguredIntegrations,
-        ).not.toHaveBeenCalled();
-        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/fake/project',
-            expect.objectContaining({ codeEditorId: 'vscode' }),
-        );
-    });
-
-    it('preserves an explicit disabled integration without applying it', async () => {
-        readProjectLauncherConfig.mockResolvedValue(
-            createStableProjectLauncherConfig({ id: 'vscode' }),
-        );
-        integrationMocks.getSelectionEligibility.mockResolvedValue('disabled');
-
-        const result = await addProject(
-            '/fake/project/project.godot',
-            codeEditorIntegrationService,
-        );
-
-        expect(result.success).toBe(true);
-        expect(result.newProject?.codeEditorId).toBe('vscode');
-        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/fake/project',
-            expect.objectContaining({ codeEditorId: 'vscode' }),
-        );
+        const [, input] = writeProjectLauncherConfig.mock.calls[0];
+        expect(input).not.toHaveProperty('codeEditorId');
     });
 
     it('imports ambiguous project-file matches as explicit None', async () => {
@@ -422,10 +315,6 @@ describe('addProject', () => {
         expect(result.newProject?.codeEditorId).toBeNull();
         expect(integrationMocks.getSelectionEligibility).not.toHaveBeenCalled();
         expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/fake/project',
-            expect.objectContaining({ codeEditorId: null }),
-        );
     });
 
     it('does not infer a disabled integration from project files', async () => {
@@ -535,7 +424,6 @@ describe('addProject', () => {
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
                 lastOpened,
-                codeEditorId: null,
             }),
         );
     });
@@ -662,7 +550,6 @@ describe('addProject', () => {
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },
             launcher: { version: '1.9.0' },
-            code_editor: { id: 'vscode' },
             editor: {
                 channel: 'custom',
                 flavor: 'gdscript',
@@ -681,7 +568,7 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(result.newProject).toMatchObject({
-            codeEditorId: 'vscode',
+            codeEditorId: null,
             valid: false,
             invalid_reason: 'missing_editor',
             launch_path: '',
@@ -740,7 +627,6 @@ describe('addProject', () => {
             expect.objectContaining({
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
-                codeEditorId: null,
             }),
         );
     });

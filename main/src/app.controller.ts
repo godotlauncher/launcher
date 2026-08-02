@@ -263,7 +263,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('removeProject')
     removeProject(project: ProjectDetails) {
-        return removeProject(project, this.codeEditorIntegrationService);
+        return removeProject(project);
     }
 
     @AppHandler('renameProject')

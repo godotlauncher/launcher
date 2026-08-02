@@ -90,13 +90,10 @@ const utilsMocks = vi.hoisted(() => ({
 vi.mock('../utils.js', () => utilsMocks);
 
 const projectLauncherConfigMocks = vi.hoisted(() => ({
-    readProjectLauncherConfig: vi.fn(),
     writeProjectLauncherConfig: vi.fn(),
 }));
 
 vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
-    readProjectLauncherConfig:
-        projectLauncherConfigMocks.readProjectLauncherConfig,
     writeProjectLauncherConfig:
         projectLauncherConfigMocks.writeProjectLauncherConfig,
 }));
@@ -184,8 +181,7 @@ const { gitInit } = gitUtilsMocks;
 const { getUserPreferences } = userPreferencesMocks;
 const { getAssetPath } = pathResolverMocks;
 const { ipcWebContentsSend } = utilsMocks;
-const { readProjectLauncherConfig, writeProjectLauncherConfig } =
-    projectLauncherConfigMocks;
+const { writeProjectLauncherConfig } = projectLauncherConfigMocks;
 const { getMainWindow } = mainMocks;
 
 const codeEditorIntegrationService = {
@@ -193,7 +189,6 @@ const codeEditorIntegrationService = {
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
     rescanIntegration: vi.fn(),
-    resolvePortableSelectionId: vi.fn(),
 } as unknown as CodeEditorIntegrationService;
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
@@ -201,7 +196,6 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
     applyToProject: ReturnType<typeof vi.fn>;
     disableForProject: ReturnType<typeof vi.fn>;
     rescanIntegration: ReturnType<typeof vi.fn>;
-    resolvePortableSelectionId: ReturnType<typeof vi.fn>;
 };
 
 let windowMock: { webContents: unknown };
@@ -255,7 +249,6 @@ describe('launchProject', () => {
         storeProjectsList.mockImplementation(
             async (_path, projects, _options) => projects,
         );
-        readProjectLauncherConfig.mockResolvedValue(null);
         writeProjectLauncherConfig.mockResolvedValue(undefined);
         integrationMocks.rescanIntegration.mockResolvedValue({
             integration: {
@@ -276,10 +269,6 @@ describe('launchProject', () => {
             },
             resolvedGodotExecPath: '/tools/code',
         });
-        integrationMocks.resolvePortableSelectionId.mockImplementation(
-            (canonicalId: unknown, portableId: unknown) =>
-                portableId === 'future-editor' ? portableId : canonicalId,
-        );
     });
 
     it('writes project launcher config when launching a stored project', async () => {
@@ -326,7 +315,6 @@ describe('launchProject', () => {
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
                 lastOpened: expect.any(Date),
-                codeEditorId: 'vscode',
             }),
         );
         expect(storeProjectsList).toHaveBeenCalledWith(
@@ -338,58 +326,6 @@ describe('launchProject', () => {
                 }),
             ]),
             expect.objectContaining({ expectedVersion: 'v1' }),
-        );
-    });
-
-    it('preserves an unknown portable integration while updating launch metadata', async () => {
-        const project = createProjectDetails({
-            codeEditorId: null,
-        });
-        getProjectsSnapshot.mockResolvedValue({
-            projects: [project],
-            version: 'v1',
-        });
-        readProjectLauncherConfig.mockResolvedValue({
-            code_editor: { id: 'future-editor' },
-        });
-
-        await launchProject(project, codeEditorIntegrationService);
-
-        expect(
-            integrationMocks.resolvePortableSelectionId,
-        ).toHaveBeenCalledWith(null, 'future-editor');
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                lastOpened: expect.any(Date),
-                codeEditorId: 'future-editor',
-            }),
-        );
-    });
-
-    it('preserves explicit None while updating launch metadata', async () => {
-        const project = createProjectDetails({
-            codeEditorId: null,
-        });
-        getProjectsSnapshot.mockResolvedValue({
-            projects: [project],
-            version: 'v1',
-        });
-        readProjectLauncherConfig.mockResolvedValue({
-            code_editor: { id: null },
-        });
-
-        await launchProject(project, codeEditorIntegrationService);
-
-        expect(
-            integrationMocks.resolvePortableSelectionId,
-        ).toHaveBeenCalledWith(null, null);
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                lastOpened: expect.any(Date),
-                codeEditorId: null,
-            }),
         );
     });
 
@@ -470,12 +406,7 @@ describe('removeProject', () => {
         getDefaultDirs.mockReturnValue({ configDir: '/config' });
         removeProjectEditor.mockResolvedValue(undefined);
         removeProjectFromList.mockResolvedValue([]);
-        readProjectLauncherConfig.mockResolvedValue(null);
         writeProjectLauncherConfig.mockResolvedValue(undefined);
-        integrationMocks.resolvePortableSelectionId.mockImplementation(
-            (canonicalId: unknown, portableId: unknown) =>
-                portableId === 'future-editor' ? portableId : canonicalId,
-        );
     });
 
     it('writes last opened to project launcher config before removing a project', async () => {
@@ -510,7 +441,7 @@ describe('removeProject', () => {
             valid: true,
         };
 
-        await removeProject(project, codeEditorIntegrationService);
+        await removeProject(project);
 
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/projects/demo',
@@ -518,59 +449,13 @@ describe('removeProject', () => {
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
                 lastOpened,
-                codeEditorId: 'vscode',
             }),
         );
+        const [, input] = writeProjectLauncherConfig.mock.calls[0];
+        expect(input).not.toHaveProperty('codeEditorId');
         expect(removeProjectFromList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             '/projects/demo',
-        );
-    });
-
-    it('writes the final sidecar for a never-launched project and preserves an unknown ID', async () => {
-        const project = createProjectDetails({
-            codeEditorId: null,
-            last_opened: null,
-        });
-        readProjectLauncherConfig.mockResolvedValue({
-            code_editor: { id: 'future-editor' },
-        });
-
-        await removeProject(project, codeEditorIntegrationService);
-
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                lastOpened: null,
-                codeEditorId: 'future-editor',
-            }),
-        );
-        expect(removeProjectFromList).toHaveBeenCalledWith(
-            path.resolve('/config', 'projects.json'),
-            '/projects/demo',
-        );
-    });
-
-    it('preserves explicit None in the final removal sidecar', async () => {
-        const project = createProjectDetails({
-            codeEditorId: null,
-            last_opened: null,
-        });
-        readProjectLauncherConfig.mockResolvedValue({
-            code_editor: { id: null },
-        });
-
-        await removeProject(project, codeEditorIntegrationService);
-
-        expect(
-            integrationMocks.resolvePortableSelectionId,
-        ).toHaveBeenCalledWith(null, null);
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                lastOpened: null,
-                codeEditorId: null,
-            }),
         );
     });
 
@@ -580,9 +465,7 @@ describe('removeProject', () => {
             new Error('Sidecar is read-only'),
         );
 
-        await expect(
-            removeProject(project, codeEditorIntegrationService),
-        ).resolves.toEqual([]);
+        await expect(removeProject(project)).resolves.toEqual([]);
 
         expect(removeProjectEditor).toHaveBeenCalledWith(project);
         expect(removeProjectFromList).toHaveBeenCalledWith(
@@ -879,18 +762,7 @@ describe('setProjectCodeEditor', () => {
                 mono: true,
             }),
         );
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                release: expect.objectContaining({ version: '4.2' }),
-                launcherVersion: '1.0.0',
-                lastOpened: null,
-                codeEditorId: 'vscode',
-            }),
-        );
-        expect(
-            writeProjectLauncherConfig.mock.invocationCallOrder[0],
-        ).toBeLessThan(storeProjectsList.mock.invocationCallOrder[0]);
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             expect.any(Array),
@@ -904,7 +776,7 @@ describe('setProjectCodeEditor', () => {
         expect(result.codeEditorId).toBe('vscode');
     });
 
-    it('does not persist the local selection when the sidecar write fails', async () => {
+    it('persists the local selection without writing the sidecar', async () => {
         const project: ProjectDetails = {
             name: 'Demo',
             path: '/projects/demo',
@@ -958,11 +830,12 @@ describe('setProjectCodeEditor', () => {
                 'vscode',
                 codeEditorIntegrationService,
             ),
-        ).rejects.toThrow('Cannot write .godotlauncher');
+        ).resolves.toMatchObject({ codeEditorId: 'vscode' });
 
         expect(integrationMocks.applyToProject).toHaveBeenCalledOnce();
-        expect(storeProjectsList).not.toHaveBeenCalled();
-        expect(project.codeEditorId).toBeNull();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(storeProjectsList).toHaveBeenCalledOnce();
+        expect(project.codeEditorId).toBe('vscode');
     });
     it('returns recovered VS Code config files when enabling integration', async () => {
         const project: ProjectDetails = {
@@ -1233,15 +1106,7 @@ describe('setProjectCodeEditor', () => {
             '/projects/demo/editor_data/editor_settings-4.2.tres',
             'standard',
         );
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                release: expect.objectContaining({ version: '4.2' }),
-                launcherVersion: '1.0.0',
-                lastOpened: null,
-                codeEditorId: null,
-            }),
-        );
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
         expect(result.codeEditorId).toBeNull();
     });
 
@@ -1312,7 +1177,7 @@ describe('setProjectCodeEditor', () => {
             },
             requestedId: null,
         },
-    ])('replaces an unknown portable ID with explicit $selection', async ({
+    ])('persists explicit $selection locally without writing the sidecar', async ({
         project: projectOverrides,
         requestedId,
     }) => {
@@ -1329,9 +1194,6 @@ describe('setProjectCodeEditor', () => {
             configVersion: 5,
             defaultRenderer: 'FORWARD_PLUS',
         });
-        readProjectLauncherConfig.mockResolvedValue({
-            code_editor: { id: 'future-editor' },
-        });
 
         await setProjectCodeEditor(
             project,
@@ -1339,14 +1201,8 @@ describe('setProjectCodeEditor', () => {
             codeEditorIntegrationService,
         );
 
-        expect(readProjectLauncherConfig).not.toHaveBeenCalled();
-        expect(
-            integrationMocks.resolvePortableSelectionId,
-        ).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({ codeEditorId: requestedId }),
-        );
+        expect(project.codeEditorId).toBe(requestedId);
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 
     it('throws when VS Code is not installed', async () => {

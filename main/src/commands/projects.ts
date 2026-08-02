@@ -18,7 +18,6 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { resolvePortableCodeEditorIdForWrite } from '../codeEditorIntegration/codeEditorProject.utils.js';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
@@ -59,23 +58,16 @@ export async function getProjectsDetails(): Promise<ProjectDetails[]> {
 
 export async function removeProject(
     project: ProjectDetails,
-    codeEditorIntegrationService: CodeEditorIntegrationService,
 ): Promise<ProjectDetails[]> {
     const defaultDirs = getDefaultDirs();
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
 
     try {
-        const codeEditorId = await resolvePortableCodeEditorIdForWrite(
-            project.path,
-            project.codeEditorId,
-            codeEditorIntegrationService,
-        );
         await writeProjectLauncherConfig(project.path, {
             release: project.release,
             launcherVersion: app.getVersion(),
             lastOpened: project.last_opened,
-            codeEditorId,
         });
     } catch (error) {
         logger.warn(
@@ -166,16 +158,10 @@ export async function launchProject(
     if (storedProject) {
         project = storedProject;
         try {
-            const codeEditorId = await resolvePortableCodeEditorIdForWrite(
-                storedProject.path,
-                storedProject.codeEditorId,
-                codeEditorIntegrationService,
-            );
             await writeProjectLauncherConfig(storedProject.path, {
                 release: storedProject.release,
                 launcherVersion: app.getVersion(),
                 lastOpened: storedProject.last_opened,
-                codeEditorId,
             });
         } catch (error) {
             logger.warn(
@@ -538,13 +524,6 @@ export async function setProjectCodeEditor(
         updatedProjects[projectIndex] = targetProject;
 
         try {
-            await writeProjectLauncherConfig(targetProject.path, {
-                release: targetProject.release,
-                launcherVersion: app.getVersion(),
-                lastOpened: targetProject.last_opened,
-                codeEditorId,
-            });
-
             const storedProjects = await storeProjectsList(
                 projectListPath,
                 updatedProjects,

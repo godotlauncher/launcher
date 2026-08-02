@@ -658,21 +658,4 @@ describe('CodeEditorIntegrationService', () => {
         ).resolves.toEqual([]);
         expect(integration.isConfiguredForProject).toHaveBeenCalledOnce();
     });
-
-    it('preserves only unregistered portable selection IDs on unrelated writes', () => {
-        const service = createService(createIntegration());
-
-        expect(service.resolvePortableSelectionId(null, 'future-editor')).toBe(
-            'future-editor',
-        );
-        expect(
-            service.resolvePortableSelectionId(null, CODE_EDITOR_ID),
-        ).toBeNull();
-        expect(service.resolvePortableSelectionId(CODE_EDITOR_ID, null)).toBe(
-            CODE_EDITOR_ID,
-        );
-        expect(service.resolvePortableSelectionId(CODE_EDITOR_ID, '  ')).toBe(
-            CODE_EDITOR_ID,
-        );
-    });
 });

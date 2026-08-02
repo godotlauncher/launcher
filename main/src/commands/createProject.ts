@@ -256,7 +256,6 @@ export async function createProject(
         await writeProjectLauncherConfig(projectPath, {
             release: projectDetails.release,
             launcherVersion: app.getVersion(),
-            codeEditorId: projectDetails.codeEditorId,
         });
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),

@@ -179,22 +179,6 @@ export class CodeEditorIntegrationService {
         return configuredIntegrationIds;
     }
 
-    resolvePortableSelectionId(
-        canonicalId: CodeEditorId | null,
-        portableId: string | null | undefined,
-    ): string | null {
-        const normalizedPortableId = portableId?.trim();
-
-        if (
-            normalizedPortableId &&
-            !this.isRegisteredIntegration(normalizedPortableId)
-        ) {
-            return normalizedPortableId;
-        }
-
-        return canonicalId;
-    }
-
     async validateIntegrationPath(
         integrationId: CodeEditorId,
         pathToValidate: string,

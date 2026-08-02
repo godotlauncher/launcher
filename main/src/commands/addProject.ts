@@ -4,7 +4,6 @@ import type {
     AddProjectEditorResolution,
     AddProjectOptions,
     AddProjectToListResult,
-    CodeEditorId,
     InstalledRelease,
     ProjectConfig,
     ProjectDetails,
@@ -440,42 +439,16 @@ export async function addProject(
     }
 
     const withGit = fs.existsSync(path.resolve(dirname, '.git'));
-    const configuredCodeEditor = projectLauncherConfig?.code_editor;
-    let codeEditorId: CodeEditorId | null;
-    let projectLauncherCodeEditorId: string | null;
-
-    if (configuredCodeEditor) {
-        const requestedId = configuredCodeEditor.id;
-        projectLauncherCodeEditorId = requestedId;
-
-        if (
-            requestedId &&
-            codeEditorIntegrationService.isRegisteredIntegration(requestedId)
-        ) {
-            codeEditorId = requestedId;
-        } else {
-            codeEditorId = null;
-            if (requestedId) {
-                logger.warn(
-                    `Unknown code editor integration '${requestedId}' in ${projectLauncherConfigPath}; preserving the selection without configuring it`,
-                );
-            }
-        }
-    } else {
-        const configuredIntegrationIds =
-            await codeEditorIntegrationService.findConfiguredIntegrations(
-                dirname,
-            );
-        codeEditorId =
-            configuredIntegrationIds.length === 1
-                ? configuredIntegrationIds[0]
-                : null;
-        if (configuredIntegrationIds.length > 1) {
-            logger.warn(
-                `Multiple code editor integrations are configured for '${projectName}'; importing with no code editor selected`,
-            );
-        }
-        projectLauncherCodeEditorId = codeEditorId;
+    const configuredIntegrationIds =
+        await codeEditorIntegrationService.findConfiguredIntegrations(dirname);
+    const codeEditorId =
+        configuredIntegrationIds.length === 1
+            ? configuredIntegrationIds[0]
+            : null;
+    if (configuredIntegrationIds.length > 1) {
+        logger.warn(
+            `Multiple code editor integrations are configured for '${projectName}'; importing with no code editor selected`,
+        );
     }
 
     const recoveredCodeEditorConfigFiles = new Set<string>();
@@ -564,7 +537,6 @@ export async function addProject(
             release: project.release,
             launcherVersion: app.getVersion(),
             lastOpened: project.last_opened,
-            codeEditorId: projectLauncherCodeEditorId,
         });
     }
 
