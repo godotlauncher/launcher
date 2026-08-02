@@ -37,7 +37,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     createOpen: controlledCreateOpen,
     onCreateOpenChange,
 }) => {
-    const { t } = useTranslation(['projects', 'common', 'menus', 'dialogs']);
+    const { t, i18n } = useTranslation([
+        'projects',
+        'common',
+        'menus',
+        'dialogs',
+    ]);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -279,6 +284,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 <ProjectsTable
                     rows={filteredRows}
                     loading={loading}
+                    locale={i18n.resolvedLanguage ?? i18n.language ?? 'en'}
                     busyProjects={busyProjects}
                     codeEditorSettings={codeEditorSettings}
                     sortData={sortData}

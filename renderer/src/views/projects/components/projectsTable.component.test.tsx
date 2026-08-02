@@ -60,11 +60,13 @@ function renderProjectsTable(
     codeEditorSettings: CodeEditorIntegrationSettings[] = [
         availableVSCodeSettings,
     ],
+    locale = 'en',
 ): string {
     return renderToStaticMarkup(
         <ProjectsTable
             rows={rows}
             loading={false}
+            locale={locale}
             busyProjects={[]}
             codeEditorSettings={codeEditorSettings}
             sortData={{ field: 'name', order: 'asc' }}
@@ -131,5 +133,37 @@ describe('ProjectsTable', () => {
         expect(html).toContain('stroke-warning');
         expect(html).not.toContain('vscode.svg');
         expect(html).not.toContain('table.codeEditorProject');
+    });
+
+    it('renders a localized relative modified time', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-02T12:00:00Z'));
+
+        try {
+            const project = {
+                ...baseProject,
+                last_opened: new Date('2026-08-02T10:00:00Z'),
+            };
+
+            const englishHtml = renderProjectsTable(
+                [project],
+                [availableVSCodeSettings],
+                'en',
+            );
+            const germanHtml = renderProjectsTable(
+                [project],
+                [availableVSCodeSettings],
+                'de',
+            );
+
+            expect(englishHtml).toContain('2 hours ago');
+            expect(germanHtml).toContain('vor 2 Stunden');
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('renders a neutral marker for a missing modified time', () => {
+        expect(renderProjectsTable([baseProject])).toContain('<p>-</p>');
     });
 });

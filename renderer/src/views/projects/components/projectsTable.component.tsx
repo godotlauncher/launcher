@@ -2,8 +2,6 @@ import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
 } from '@shared/contracts';
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
 import {
     ChevronDown,
     ChevronsUpDown,
@@ -17,17 +15,16 @@ import gitIconColor from '../../../assets/icons/git_icon_color.svg';
 import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
+import { formatRelativeTime } from '../../../i18n/relativeTime';
 import {
     getInvalidProjectTableKey,
     type ProjectSortData,
 } from '../projectsView.model';
 
-TimeAgo.addLocale(en);
-const timeAgo = new TimeAgo('en-US');
-
 type ProjectsTableProps = {
     rows: ProjectDetails[];
     loading: boolean;
+    locale: string;
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];
     sortData: ProjectSortData;
@@ -54,6 +51,7 @@ function getProjectVersionLabel(project: ProjectDetails): React.ReactNode {
 export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     rows,
     loading,
+    locale,
     busyProjects,
     codeEditorSettings,
     sortData,
@@ -339,7 +337,10 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                 <td className="">
                                     <p>
                                         {row.last_opened
-                                            ? timeAgo.format(row.last_opened)
+                                            ? formatRelativeTime(
+                                                  row.last_opened,
+                                                  locale,
+                                              )
                                             : '-'}
                                     </p>
                                 </td>
