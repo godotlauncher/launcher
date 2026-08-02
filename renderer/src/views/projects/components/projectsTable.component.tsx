@@ -7,6 +7,7 @@ import {
     ChevronsUpDown,
     ChevronUp,
     EllipsisVertical,
+    FlaskConical,
     ImageOff,
     TriangleAlert,
 } from 'lucide-react';
@@ -298,10 +299,15 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                         )}
                                                         tone="secondary"
                                                         className="right-0 flex items-center"
+                                                        role="img"
+                                                        ariaLabel={t(
+                                                            'table.prerelease',
+                                                        )}
                                                     >
-                                                        <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
-                                                            pr
-                                                        </span>
+                                                        <FlaskConical
+                                                            className="size-4 text-purple-500"
+                                                            aria-hidden="true"
+                                                        />
                                                     </Tooltip>
                                                 )}
                                                 {row.open_windowed && (

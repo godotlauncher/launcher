@@ -166,4 +166,18 @@ describe('ProjectsTable', () => {
     it('renders a neutral marker for a missing modified time', () => {
         expect(renderProjectsTable([baseProject])).toContain('<p>-</p>');
     });
+
+    it('renders a purple flask icon for prerelease projects', () => {
+        const html = renderProjectsTable([
+            {
+                ...baseProject,
+                release: { ...baseProject.release, prerelease: true },
+            },
+        ]);
+
+        expect(html).toContain('lucide-flask-conical');
+        expect(html).toContain('text-purple-500');
+        expect(html).toContain('aria-label="table.prerelease"');
+        expect(html).not.toContain('>pr</span>');
+    });
 });
