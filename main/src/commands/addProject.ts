@@ -500,7 +500,7 @@ export async function addProject(
             release?.version ?? `${releaseBaseVersion.toFixed(1)} (missing)`,
         version_number: release?.version_number ?? releaseBaseVersion,
         renderer,
-        last_opened: projectLauncherConfig?.project?.last_opened ?? null,
+        last_opened: null,
         launch_path,
         editor_settings_path: editorSettingsFile
             ? path.dirname(editorSettingsFile)
@@ -536,7 +536,6 @@ export async function addProject(
         await writeProjectLauncherConfig(dirname, {
             release: project.release,
             launcherVersion: app.getVersion(),
-            lastOpened: project.last_opened,
         });
     }
 

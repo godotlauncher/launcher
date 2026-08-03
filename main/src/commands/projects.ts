@@ -67,7 +67,6 @@ export async function removeProject(
         await writeProjectLauncherConfig(project.path, {
             release: project.release,
             launcherVersion: app.getVersion(),
-            lastOpened: project.last_opened,
         });
     } catch (error) {
         logger.warn(
@@ -161,7 +160,6 @@ export async function launchProject(
             await writeProjectLauncherConfig(storedProject.path, {
                 release: storedProject.release,
                 launcherVersion: app.getVersion(),
-                lastOpened: storedProject.last_opened,
             });
         } catch (error) {
             logger.warn(

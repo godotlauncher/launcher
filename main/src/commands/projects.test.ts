@@ -314,7 +314,6 @@ describe('launchProject', () => {
             expect.objectContaining({
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
-                lastOpened: expect.any(Date),
             }),
         );
         expect(storeProjectsList).toHaveBeenCalledWith(
@@ -409,8 +408,7 @@ describe('removeProject', () => {
         writeProjectLauncherConfig.mockResolvedValue(undefined);
     });
 
-    it('writes last opened to project launcher config before removing a project', async () => {
-        const lastOpened = new Date('2024-05-06T07:08:09.000Z');
+    it('writes project launcher config before removing a project', async () => {
         const project: ProjectDetails = {
             name: 'Demo',
             path: '/projects/demo',
@@ -419,7 +417,7 @@ describe('removeProject', () => {
             renderer: 'FORWARD_PLUS',
             editor_settings_path: '',
             editor_settings_file: '',
-            last_opened: lastOpened,
+            last_opened: new Date('2024-05-06T07:08:09.000Z'),
             open_windowed: false,
             release: {
                 version: '4.3-stable',
@@ -448,7 +446,6 @@ describe('removeProject', () => {
             expect.objectContaining({
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
-                lastOpened,
             }),
         );
         const [, input] = writeProjectLauncherConfig.mock.calls[0];

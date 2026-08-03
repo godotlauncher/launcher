@@ -251,7 +251,6 @@ describe('setProjectEditor', () => {
             expect.objectContaining({
                 release: expect.objectContaining({ version: '4.3-stable' }),
                 launcherVersion: '1.0.0',
-                lastOpened: null,
             }),
         );
     });
