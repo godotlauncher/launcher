@@ -280,6 +280,7 @@ describe('AppLifecycleService', () => {
         expect(mocks.createTray).toHaveBeenCalledWith(
             mainWindow,
             expect.any(Function),
+            expect.any(Function),
         );
         const launchFromTray = mocks.createTray.mock.calls[0]?.[1] as (
             selectedProject: typeof project,
@@ -291,6 +292,17 @@ describe('AppLifecycleService', () => {
             project,
             codeEditorIntegrationService,
         );
+    });
+
+    it('routes tray show requests through the standard window reveal path', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+        const showFromTray = mocks.createTray.mock.calls[0]?.[2] as () => void;
+
+        showFromTray();
+
+        expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
     });
 
     it('reveals the window and forwards unavailable tray launches to the renderer', async () => {

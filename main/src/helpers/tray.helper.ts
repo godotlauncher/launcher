@@ -11,13 +11,16 @@ import { getStoredProjectsList } from '../utils/projects.utils.js';
 let tray: Tray;
 let mainWindow: BrowserWindow;
 let launchProjectFromTray: (project: ProjectDetails) => Promise<void>;
+let showMainWindowFromTray: () => void;
 
 export async function createTray(
     window: BrowserWindow,
     launchProjectHandler: (project: ProjectDetails) => Promise<void>,
+    showMainWindowHandler: () => void,
 ): Promise<Tray> {
     mainWindow = window;
     launchProjectFromTray = launchProjectHandler;
+    showMainWindowFromTray = showMainWindowHandler;
 
     tray = new Tray(
         path.resolve(
@@ -42,10 +45,7 @@ export async function createTray(
 
     if (process.platform === 'win32') {
         tray.on('click', async () => {
-            mainWindow.show();
-            if (app.dock) {
-                app.dock.show();
-            }
+            showMainWindowFromTray();
         });
 
         tray.on('right-click', async () => {
@@ -65,7 +65,7 @@ export async function updateLinuxTray(): Promise<void> {
 
 export async function updateMenu(
     _tray: Tray,
-    mainWindow: BrowserWindow,
+    _mainWindow: BrowserWindow,
 ): Promise<Electron.Menu> {
     const projectListFIle = path.resolve(
         await getConfigDir(),
@@ -115,10 +115,7 @@ export async function updateMenu(
         {
             label: t('menus:tray.showGodotLauncher'),
             click: () => {
-                mainWindow.show();
-                if (app.dock) {
-                    app.dock.show();
-                }
+                showMainWindowFromTray();
             },
         },
         { type: 'separator' },

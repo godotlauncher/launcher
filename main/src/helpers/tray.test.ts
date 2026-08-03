@@ -151,6 +151,7 @@ const mainWindowMock = {
     isVisible: vi.fn().mockReturnValue(false),
 };
 const browserWindow = mainWindowMock as unknown as BrowserWindow;
+const showMainWindow = vi.fn();
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -167,6 +168,7 @@ test('Should have tray menu with show and quit', async () => {
     await createTray(
         browserWindow,
         vi.fn(async () => undefined),
+        showMainWindow,
     );
 
     // Mac platform will not show menu on load but Linux would
@@ -202,8 +204,8 @@ test('Should have tray menu with show and quit', async () => {
 
     // Test the click handlers
     callClick(showMenuItem);
-    expect(mainWindowMock.show).toHaveBeenCalled();
-    expect(app.dock?.show).toHaveBeenCalled();
+    expect(showMainWindow).toHaveBeenCalledOnce();
+    expect(mainWindowMock.show).not.toHaveBeenCalled();
 
     callClick(quitMenuItem);
     expect(app.quit).toHaveBeenCalled();
@@ -213,6 +215,7 @@ test('Should show window on tray click', async () => {
     await createTray(
         browserWindow,
         vi.fn(async () => undefined),
+        showMainWindow,
     );
 
     // Check that the event handler was registered

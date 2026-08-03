@@ -107,20 +107,24 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         mainWindow.setIcon(iconPath);
         setMainWindow(mainWindow);
 
-        await createTray(mainWindow, async (project) => {
-            const result = await launchProject(
-                project,
-                this.codeEditorIntegrationService,
-            );
-            if (!result.launched) {
-                this.showMainWindow();
-                ipcWebContentsSend(
-                    'project-launch-code-editor-warning',
-                    mainWindow.webContents,
-                    { project, result },
+        await createTray(
+            mainWindow,
+            async (project) => {
+                const result = await launchProject(
+                    project,
+                    this.codeEditorIntegrationService,
                 );
-            }
-        });
+                if (!result.launched) {
+                    this.showMainWindow();
+                    ipcWebContentsSend(
+                        'project-launch-code-editor-warning',
+                        mainWindow.webContents,
+                        { project, result },
+                    );
+                }
+            },
+            () => this.showMainWindow(),
+        );
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         } else {
