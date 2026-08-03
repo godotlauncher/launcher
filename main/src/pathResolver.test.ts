@@ -1,12 +1,12 @@
 import * as path from 'node:path';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
-    __resetCurrentAppConfigForTesting,
-    configuration,
-    setCurrentAppConfig,
-} from './config/index.js';
-import { getAssetPath, getUIPath } from './pathResolver';
+    getAssetPath,
+    getExternalResourceRoot,
+    getLocalesPath,
+    getUIPath,
+} from './pathResolver';
 
 vi.mock('electron-updater', () => ({
     default: {
@@ -59,37 +59,45 @@ vi.mock('electron', () => ({
 }));
 
 describe('Path Resolver', () => {
-    afterEach(() => {
-        __resetCurrentAppConfigForTesting();
-    });
-
     it('should get UI path', () => {
         const uiPath = getUIPath();
 
         expect(uiPath).toBe(path.join('/app/path', '/dist-react/index.html'));
     });
 
-    it('should get asset path for dev', () => {
-        setCurrentAppConfig(
-            configuration({
-                isPackaged: false,
-                appPath: '/app/path',
-            }),
-        );
+    it('resolves source resources below the application path', () => {
+        const input = {
+            isPackaged: false,
+            appPath: '/workspace/Godot Launcher',
+        };
 
-        const assetPath = getAssetPath();
-        expect(assetPath).toBe(path.join('/app/path', 'main/assets'));
+        expect(getExternalResourceRoot(input)).toBe(input.appPath);
+        expect(getAssetPath(input)).toBe(
+            path.join(input.appPath, 'main/assets'),
+        );
+        expect(getLocalesPath(input)).toBe(path.join(input.appPath, 'locales'));
     });
 
-    it('should get asset path for prod', () => {
-        setCurrentAppConfig(
-            configuration({
-                isPackaged: true,
-                appPath: '/app/app.asar',
-            }),
-        );
+    it('resolves official package resources beside the application archive', () => {
+        const input = {
+            isPackaged: true,
+            appPath: '/opt/Godot Launcher/resources/app.asar',
+        };
+        const resourceRoot = path.dirname(input.appPath);
 
-        const assetPath = getAssetPath();
-        expect(assetPath).toBe(path.join('/app', 'assets'));
+        expect(getExternalResourceRoot(input)).toBe(resourceRoot);
+        expect(getAssetPath(input)).toBe(path.join(resourceRoot, 'assets'));
+        expect(getLocalesPath(input)).toBe(path.join(resourceRoot, 'locales'));
+    });
+
+    it('resolves system Electron resources from an ASAR application path', () => {
+        const input = {
+            isPackaged: false,
+            appPath: '/usr/lib/godot-launcher/app.asar',
+        };
+
+        expect(getExternalResourceRoot(input)).toBe('/usr/lib/godot-launcher');
+        expect(getAssetPath(input)).toBe('/usr/lib/godot-launcher/assets');
+        expect(getLocalesPath(input)).toBe('/usr/lib/godot-launcher/locales');
     });
 });

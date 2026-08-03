@@ -1,7 +1,14 @@
 import path from 'node:path';
 import { app } from 'electron';
 
-import { isDev } from './utils.js';
+import { isInstalledRuntime, type RuntimeModeInput } from './runtimeMode.js';
+
+function getRuntimeModeInput(): RuntimeModeInput {
+    return {
+        isPackaged: app.isPackaged,
+        appPath: app.getAppPath(),
+    };
+}
 
 /**
  * Retrieves the file path to the UI's index.html file.
@@ -15,6 +22,20 @@ export function getUIPath() {
     return path.join(app.getAppPath(), '/dist-react/index.html');
 }
 
+export function getExternalResourceRoot(
+    input: RuntimeModeInput = getRuntimeModeInput(),
+): string {
+    return isInstalledRuntime(input)
+        ? path.dirname(input.appPath)
+        : input.appPath;
+}
+
+export function getLocalesPath(
+    input: RuntimeModeInput = getRuntimeModeInput(),
+): string {
+    return path.join(getExternalResourceRoot(input), 'locales');
+}
+
 /**
  * Retrieves the path to the assets directory.
  *
@@ -23,10 +44,13 @@ export function getUIPath() {
  *
  * @returns {string} The full path to the assets directory.
  */
-export function getAssetPath() {
-    return isDev()
-        ? path.join(app.getAppPath(), 'main/assets')
-        : path.join(app.getAppPath(), '..', 'assets');
+export function getAssetPath(
+    input: RuntimeModeInput = getRuntimeModeInput(),
+): string {
+    const resourceRoot = getExternalResourceRoot(input);
+    return isInstalledRuntime(input)
+        ? path.join(resourceRoot, 'assets')
+        : path.join(resourceRoot, 'main/assets');
 }
 
 /**
