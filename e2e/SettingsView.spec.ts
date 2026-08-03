@@ -8,7 +8,6 @@ let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
 test.beforeEach(async () => {
     electronApp = await _electron.launch({
         args: ['.'],
-        env: { NODE_ENV: 'development' },
     });
     mainPage = await getMainWindow(electronApp);
     await mainPage.getByTestId('btnSettings').click();

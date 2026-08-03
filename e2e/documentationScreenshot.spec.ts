@@ -71,7 +71,6 @@ async function withDocumentationApp(
     );
     const launchEnv: Record<string, string> = {
         ...baseEnv,
-        NODE_ENV: 'development',
         APPDATA: path.join(fixtureHome, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(fixtureHome, 'AppData', 'Local'),
         GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',

@@ -9,7 +9,7 @@ let splashscreenPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
 test.beforeAll(async () => {
     electronApp = await _electron.launch({
         args: ['.'],
-        env: { NODE_ENV: 'development' },
+        env: { NODE_ENV: 'production' },
     });
     splashscreenPage = await electronApp.firstWindow();
     mainPage = await getMainWindow(electronApp);

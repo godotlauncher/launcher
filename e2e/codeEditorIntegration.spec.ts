@@ -752,7 +752,6 @@ function createIsolatedLaunchEnvironment(homeDir: string) {
                     typeof entry[1] === 'string',
             ),
         ),
-        NODE_ENV: 'development',
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
         GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',

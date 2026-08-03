@@ -41,7 +41,7 @@
     "scripts": {
         "clean:electron": "rimraf dist-electron",
         "dev": "npm-run-all --race --parallel dev:electron dev:react",
-        "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
+        "dev:electron": "npm run transpile:electron && electron .",
         "dev:react": "vite",
         "build": "tsc && vite build",
         "transpile:electron": "run-s clean:electron transpile:electron:compile",
@@ -111,7 +111,6 @@
         "@vitejs/plugin-react": "^6.0.5",
         "@vitest/coverage-v8": "^4.1.10",
         "auto-changelog": "^2.6.0",
-        "cross-env": "^10.1.0",
         "daisyui": "^5.7.14",
         "dotenv": "^17.4.2",
         "dotenv-expand": "^13.0.0",

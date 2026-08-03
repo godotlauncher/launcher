@@ -8,7 +8,7 @@ function argv(...args: string[]): string[] {
 }
 
 describe('configuration', () => {
-    it('resolves development runtime flags from env and cli', () => {
+    it('resolves development runtime flags from Electron and cli', () => {
         const config = configuration({
             args: argv(
                 '--launcher-debug',
@@ -17,9 +17,10 @@ describe('configuration', () => {
                 '--hidden',
             ),
             env: {
-                NODE_ENV: 'development',
                 GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
             },
+            isPackaged: false,
+            appPath: '/workspace/launcher',
             platform: 'linux',
             homedir: '/home/user',
         });
@@ -27,7 +28,6 @@ describe('configuration', () => {
         expect(config).toEqual(
             expect.objectContaining({
                 appName: 'Godot Launcher',
-                nodeEnv: 'development',
                 isDev: true,
                 debugMode: true,
                 disableSandbox: true,
@@ -42,14 +42,35 @@ describe('configuration', () => {
         const config = configuration({
             args: argv('--no-sandbox', '--no-dev-menu'),
             env: {
-                NODE_ENV: 'production',
                 GODOT_LAUNCHER_DISABLE_SANDBOX: '0',
                 GODOT_LAUNCHER_NO_DEV_MENU: 'false',
             },
+            isPackaged: true,
+            appPath: '/opt/launcher/app.asar',
         });
 
         expect(config.disableSandbox).toBe(true);
         expect(config.disableDevMenu).toBe(true);
+    });
+
+    it('keeps installed mode and debug independent from NODE_ENV', () => {
+        const installed = configuration({
+            args: argv(),
+            env: { NODE_ENV: 'development' },
+            isPackaged: true,
+            appPath: '/opt/launcher/app.asar',
+        });
+        const debug = configuration({
+            args: argv('--launcher-debug'),
+            env: { NODE_ENV: 'development' },
+            isPackaged: true,
+            appPath: '/opt/launcher/app.asar',
+        });
+
+        expect(installed.isDev).toBe(false);
+        expect(installed.debugMode).toBe(false);
+        expect(debug.isDev).toBe(false);
+        expect(debug.debugMode).toBe(true);
     });
 
     it('preserves existing default path layout for Windows and Linux', () => {
