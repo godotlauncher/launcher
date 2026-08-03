@@ -303,6 +303,27 @@ describe('setProjectEditor', () => {
         );
     });
 
+    it('sanitises the name-derived editor folder fallback', async () => {
+        mockProject.name = 'COM1.data';
+        mockProject.launch_path = '';
+        mockProject.editor_settings_file = '';
+        mockProject.editor_settings_path = '';
+        mockProject.codeEditorId = null;
+
+        const result = await setProjectEditor(
+            mockProject,
+            mockNewRelease,
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(SetProjectEditorRelease).toHaveBeenCalledWith(
+            path.resolve('/install/.editor_config/_COM1.data'),
+            mockNewRelease,
+            mockOldRelease,
+        );
+    });
+
     it('applies the selected integration', async () => {
         existsSync.mockReturnValue(true);
 

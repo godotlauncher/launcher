@@ -30,6 +30,7 @@ import {
     parseGodotProjectFile,
 } from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
+import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
 import { getInstalledTools } from './installedTools.js';
@@ -70,13 +71,14 @@ export async function createProject(
 
     // clean name, remove spaces and replace with -
     projectName = projectName.trim().replaceAll(' ', '-');
+    const projectDirectoryName = sanitiseProjectDirectoryName(projectName);
 
     const { projects_location: projectDir, install_location: installDir } =
         await getUserPreferences();
     logger.info(overwriteProjectPath);
     const projectPath = overwriteProjectPath
-        ? overwriteProjectPath
-        : path.resolve(projectDir, projectName);
+        ? path.resolve(path.dirname(overwriteProjectPath), projectDirectoryName)
+        : path.resolve(projectDir, projectDirectoryName);
 
     // If the target exists, allow it only when it's an empty directory.
     if (fs.existsSync(projectPath)) {
@@ -179,7 +181,7 @@ export async function createProject(
         const projectEditorPath = path.resolve(
             installDir,
             EDITOR_CONFIG_DIRNAME,
-            projectName,
+            projectDirectoryName,
         );
         // const launch_path = await setEditorSymlink(projectEditorPath, release.editor_path);
         const launch_path = await SetProjectEditorRelease(

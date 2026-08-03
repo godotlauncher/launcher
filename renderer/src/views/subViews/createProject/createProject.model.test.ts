@@ -5,6 +5,7 @@ import type {
 import { describe, expect, it } from 'vitest';
 import {
     buildCreateProjectReleaseRows,
+    getCreateProjectDirectorySegment,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
     isVerifiedToolAvailable,
@@ -55,6 +56,17 @@ const codeEditorSettings = (
 });
 
 describe('create project model helpers', () => {
+    it.each([
+        ['Example Project', 'Example-Project'],
+        ['Example: Project', 'Example--Project'],
+        ['NUL.txt', '_NUL.txt'],
+        ['trailing. ', 'trailing'],
+        ['../escape', '..-escape'],
+        ['', 'project'],
+    ])('previews %j with directory segment %j', (input, expected) => {
+        expect(getCreateProjectDirectorySegment(input)).toBe(expected);
+    });
+
     it('normalizes project base paths before joining the project segment', () => {
         expect(normalizeBasePathForJoin('C:\\Projects\\', '\\')).toBe(
             'C:\\Projects',

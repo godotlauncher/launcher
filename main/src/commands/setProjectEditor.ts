@@ -16,6 +16,7 @@ import {
 } from '../utils/godot.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
+import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import {
     getProjectsSnapshot,
@@ -41,7 +42,11 @@ function resolveProjectEditorPath(
         return path.dirname(project.editor_settings_path);
     }
 
-    return path.resolve(installLocation, EDITOR_CONFIG_DIRNAME, project.name);
+    return path.resolve(
+        installLocation,
+        EDITOR_CONFIG_DIRNAME,
+        sanitiseProjectDirectoryName(project.name),
+    );
 }
 
 export async function setProjectEditor(

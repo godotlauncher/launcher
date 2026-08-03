@@ -20,6 +20,7 @@ import { CreateProjectRendererSection } from './createProject/components/createP
 import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
 import {
     buildCreateProjectReleaseRows,
+    getCreateProjectDirectorySegment,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
     isVerifiedToolAvailable,
@@ -69,6 +70,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const { preferences, platform } = usePreferences();
     const pathSeparator = platform === 'win32' ? '\\' : '/';
     const defaultOverwriteBasePath = preferences?.projects_location ?? '';
+    const projectDirectorySegment = useMemo(
+        () => getCreateProjectDirectorySegment(projectName),
+        [projectName],
+    );
 
     const allReleases = useMemo(
         () =>
@@ -81,15 +86,18 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     const derivedProjectPath = useMemo(() => {
         const basePath = preferences?.projects_location || '';
+        const segment = projectName
+            ? projectDirectorySegment
+            : '<project-name>';
         if (platform === 'win32') {
-            return `${basePath}\\${projectName}`;
+            return `${basePath}\\${segment}`;
         }
-        return `${basePath}/${projectName}`;
-    }, [projectName, preferences, platform]);
+        return `${basePath}/${segment}`;
+    }, [preferences, platform, projectDirectorySegment, projectName]);
 
     const projectSegmentDisplay = useMemo(
-        () => projectName || '<project-name>',
-        [projectName],
+        () => (projectName ? projectDirectorySegment : '<project-name>'),
+        [projectDirectorySegment, projectName],
     );
 
     const overwriteDisplayPath = useMemo(
@@ -106,10 +114,10 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         () =>
             joinBasePathWithProjectSegment(
                 overwriteBasePath,
-                projectName,
+                projectDirectorySegment,
                 pathSeparator,
             ),
-        [overwriteBasePath, pathSeparator, projectName],
+        [overwriteBasePath, pathSeparator, projectDirectorySegment],
     );
 
     const overwritePathSuffixDisplay = useMemo(
