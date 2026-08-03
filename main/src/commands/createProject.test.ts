@@ -194,6 +194,49 @@ describe('createProject', () => {
         expect(result.projectDetails?.icon_path).toBe(
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
         );
+        expect(result.projectDetails?.name).toBe('Test Project');
+        expect(godotUtilsMocks.createProjectFile).toHaveBeenCalledWith(
+            expect.any(String),
+            5,
+            release.version_number,
+            'Test Project',
+            'FORWARD_PLUS',
+        );
+    });
+
+    it('uses a safe directory segment without changing the display name', async () => {
+        const result = await createProject(
+            'Example: Project',
+            release,
+            'FORWARD_PLUS',
+            null,
+            false,
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.projectPath).toBe(
+            path.resolve('/projects/Example--Project'),
+        );
+        expect(result.projectDetails?.name).toBe('Example: Project');
+        expect(godotUtilsMocks.SetProjectEditorRelease).toHaveBeenCalledWith(
+            path.resolve('/install/.editor_config/Example--Project'),
+            release,
+        );
+    });
+
+    it('sanitises the project segment appended to an override base path', async () => {
+        const result = await createProject(
+            'NUL.txt',
+            release,
+            'FORWARD_PLUS',
+            null,
+            false,
+            codeEditorIntegrationService,
+            path.resolve('/custom/NUL.txt'),
+        );
+
+        expect(result.projectPath).toBe(path.resolve('/custom/_NUL.txt'));
     });
 
     it('applies and persists the selected code editor integration', async () => {

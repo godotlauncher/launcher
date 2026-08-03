@@ -31,6 +31,7 @@ import {
     parseGodotProjectFile,
 } from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
+import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import {
     getReleaseBaseVersion,
     getReleaseChannel,
@@ -414,7 +415,7 @@ export async function addProject(
     const projectEditorPath = path.resolve(
         prefs.install_location,
         EDITOR_CONFIG_DIRNAME,
-        projectName,
+        sanitiseProjectDirectoryName(projectName),
     );
     let editorConfigFileName = '';
     let editorSettingsFile = '';

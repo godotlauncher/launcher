@@ -277,6 +277,22 @@ describe('addProject', () => {
         );
     });
 
+    it('sanitises only the imported editor directory name', async () => {
+        getProjectNameFromParsed.mockResolvedValue('Example: Project');
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.name).toBe('Example: Project');
+        expect(setProjectEditorRelease).toHaveBeenCalledWith(
+            path.resolve('/install/.editor_config/Example- Project'),
+            expect.any(Object),
+        );
+    });
+
     it('uses the locally configured code editor when importing', async () => {
         integrationMocks.findConfiguredIntegrations.mockResolvedValue([
             'vscode',

@@ -83,16 +83,8 @@ export const CreateProjectProjectSection: React.FC<
                         type="text"
                         placeholder={t('project.nameplaceholder')}
                         onChange={(event) =>
-                            onProjectNameChange(
-                                event.target.value.replace(/\s/g, '-'),
-                            )
+                            onProjectNameChange(event.target.value)
                         }
-                        onKeyDown={(event) => {
-                            if (event.key === ' ') {
-                                event.currentTarget.value = `${event.currentTarget.value}-`;
-                                event.preventDefault();
-                            }
-                        }}
                     />
                     <label className="input w-full z-10">
                         <input

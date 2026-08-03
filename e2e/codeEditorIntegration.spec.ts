@@ -107,6 +107,8 @@ test('SelectField supports keyboard navigation and announces its selected code e
 });
 
 test('Create Project submits both an integration and explicit None', async () => {
+    const projectName = 'Code Editor E2E Project';
+
     await stubRecordedIpcHandler(electronApp, {
         key: 'createProject',
         channel: 'app.createProject',
@@ -117,9 +119,9 @@ test('Create Project submits both an integration and explicit None', async () =>
     });
     await openCreateProject();
 
-    await mainPage
-        .getByTestId('inputProjectName')
-        .fill('Code-Editor-E2E-Project');
+    const projectNameInput = mainPage.getByTestId('inputProjectName');
+    await projectNameInput.fill(projectName);
+    await expect(projectNameInput).toHaveValue(projectName);
 
     const trigger = mainPage.getByTestId('selectCreateProjectCodeEditor');
     await expect(trigger).toHaveText('Visual Studio Code');
@@ -131,6 +133,13 @@ test('Create Project submits both an integration and explicit None', async () =>
             ),
         )
         .toEqual(['vscode']);
+    await expect
+        .poll(async () =>
+            (await readRecordedIpcCalls(electronApp, 'createProject')).map(
+                (args) => args[0] as string | undefined,
+            ),
+        )
+        .toEqual([projectName]);
 
     await trigger.click();
     await mainPage
@@ -146,6 +155,13 @@ test('Create Project submits both an integration and explicit None', async () =>
             ),
         )
         .toEqual(['vscode', null]);
+    await expect
+        .poll(async () =>
+            (await readRecordedIpcCalls(electronApp, 'createProject')).map(
+                (args) => args[0] as string | undefined,
+            ),
+        )
+        .toEqual([projectName, projectName]);
 });
 
 test('Project Settings preserves an unavailable selection and can save explicit None', async () => {
