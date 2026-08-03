@@ -30,13 +30,12 @@ describe('relative time localization', () => {
         expect(resolveRelativeTimeLocale('ZH_tw')).toBe('zh-Hant');
     });
 
-    it.each([
-        undefined,
-        '',
-        'unsupported',
-    ])('falls back to English for %s', (locale) => {
-        expect(resolveRelativeTimeLocale(locale)).toBe('en');
-    });
+    it.each([undefined, '', 'unsupported'])(
+        'falls back to English for %s',
+        (locale) => {
+            expect(resolveRelativeTimeLocale(locale)).toBe('en');
+        },
+    );
 
     it.each([
         ['en', '2 hours ago'],

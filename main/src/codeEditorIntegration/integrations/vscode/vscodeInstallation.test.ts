@@ -376,30 +376,32 @@ describe('getVSCodeInstallPath', () => {
         });
     });
 
-    test.each([
-        '/usr/bin/code',
-        '/snap/bin/code',
-    ])('finds the Linux VS Code executable at %s when PATH lookup fails', async (executablePath) => {
-        const original = process.platform;
-        Object.defineProperty(process, 'platform', {
-            value: 'linux',
-            configurable: true,
-        });
-        vi.mocked(fs.existsSync).mockImplementation(
-            (candidate) => candidate === executablePath,
-        );
+    test.each(['/usr/bin/code', '/snap/bin/code'])(
+        'finds the Linux VS Code executable at %s when PATH lookup fails',
+        async (executablePath) => {
+            const original = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: 'linux',
+                configurable: true,
+            });
+            vi.mocked(fs.existsSync).mockImplementation(
+                (candidate) => candidate === executablePath,
+            );
 
-        const mod = await vi.importActual<
-            typeof import('./vscodeInstallation.js')
-        >('./vscodeInstallation.js');
-        await expect(mod.getVSCodeInstallPath()).resolves.toBe(executablePath);
-        expect(findExecutable).toHaveBeenCalledWith('code');
+            const mod = await vi.importActual<
+                typeof import('./vscodeInstallation.js')
+            >('./vscodeInstallation.js');
+            await expect(mod.getVSCodeInstallPath()).resolves.toBe(
+                executablePath,
+            );
+            expect(findExecutable).toHaveBeenCalledWith('code');
 
-        Object.defineProperty(process, 'platform', {
-            value: original,
-            configurable: true,
-        });
-    });
+            Object.defineProperty(process, 'platform', {
+                value: original,
+                configurable: true,
+            });
+        },
+    );
 
     test('does not detect the internal Linux VS Code Electron binary', async () => {
         const original = process.platform;
@@ -450,28 +452,33 @@ describe('getVSCodeInstallPath', () => {
         ['win32', 'C:\\Portable\\VS Code\\bin\\code.cmd'],
         ['darwin', '/usr/local/bin/code'],
         ['linux', '/opt/vscode/bin/code'],
-    ] as const)('finds a %s VS Code executable on PATH', async (platform, executablePath) => {
-        const original = process.platform;
-        Object.defineProperty(process, 'platform', {
-            value: platform,
-            configurable: true,
-        });
-        vi.mocked(fs.existsSync).mockImplementation(
-            (candidate) => candidate === executablePath,
-        );
-        vi.mocked(findExecutable).mockResolvedValue(executablePath);
+    ] as const)(
+        'finds a %s VS Code executable on PATH',
+        async (platform, executablePath) => {
+            const original = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: platform,
+                configurable: true,
+            });
+            vi.mocked(fs.existsSync).mockImplementation(
+                (candidate) => candidate === executablePath,
+            );
+            vi.mocked(findExecutable).mockResolvedValue(executablePath);
 
-        const mod = await vi.importActual<
-            typeof import('./vscodeInstallation.js')
-        >('./vscodeInstallation.js');
-        await expect(mod.getVSCodeInstallPath()).resolves.toBe(executablePath);
-        expect(findExecutable).toHaveBeenCalledWith('code');
+            const mod = await vi.importActual<
+                typeof import('./vscodeInstallation.js')
+            >('./vscodeInstallation.js');
+            await expect(mod.getVSCodeInstallPath()).resolves.toBe(
+                executablePath,
+            );
+            expect(findExecutable).toHaveBeenCalledWith('code');
 
-        Object.defineProperty(process, 'platform', {
-            value: original,
-            configurable: true,
-        });
-    });
+            Object.defineProperty(process, 'platform', {
+                value: original,
+                configurable: true,
+            });
+        },
+    );
 
     test('rejects a nonexistent executable found on PATH', async () => {
         const original = process.platform;
@@ -524,20 +531,20 @@ describe('resolveVSCodeGodotExecPath', () => {
         vi.restoreAllMocks();
     });
 
-    test.each([
-        'darwin',
-        'linux',
-    ] as const)('passes the installation path through on %s', async (platform) => {
-        vi.spyOn(process, 'platform', 'get').mockReturnValue(platform);
-        const installationPath = path.resolve('tools', 'code');
-        const mod = await vi.importActual<
-            typeof import('./vscodeInstallation.js')
-        >('./vscodeInstallation.js');
+    test.each(['darwin', 'linux'] as const)(
+        'passes the installation path through on %s',
+        async (platform) => {
+            vi.spyOn(process, 'platform', 'get').mockReturnValue(platform);
+            const installationPath = path.resolve('tools', 'code');
+            const mod = await vi.importActual<
+                typeof import('./vscodeInstallation.js')
+            >('./vscodeInstallation.js');
 
-        expect(mod.resolveVSCodeGodotExecPath(installationPath)).toBe(
-            installationPath,
-        );
-    });
+            expect(mod.resolveVSCodeGodotExecPath(installationPath)).toBe(
+                installationPath,
+            );
+        },
+    );
 
     test('uses an existing code.cmd path directly on Windows', async () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');

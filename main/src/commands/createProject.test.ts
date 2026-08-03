@@ -230,34 +230,34 @@ describe('createProject', () => {
         );
     });
 
-    it.each([
-        'disabled',
-        'unavailable',
-    ])('rejects a directly requested %s integration before writing project files', async (state) => {
-        codeEditorIntegrationServiceMocks.assertIntegrationSelectable.mockRejectedValue(
-            new Error(`Visual Studio Code is ${state}.`),
-        );
+    it.each(['disabled', 'unavailable'])(
+        'rejects a directly requested %s integration before writing project files',
+        async (state) => {
+            codeEditorIntegrationServiceMocks.assertIntegrationSelectable.mockRejectedValue(
+                new Error(`Visual Studio Code is ${state}.`),
+            );
 
-        const result = await createProject(
-            'Rejected Project',
-            release,
-            'FORWARD_PLUS',
-            'vscode',
-            false,
-            codeEditorIntegrationService,
-        );
+            const result = await createProject(
+                'Rejected Project',
+                release,
+                'FORWARD_PLUS',
+                'vscode',
+                false,
+                codeEditorIntegrationService,
+            );
 
-        expect(result).toEqual({
-            success: false,
-            error: `Visual Studio Code is ${state}.`,
-        });
-        expect(
-            codeEditorIntegrationServiceMocks.assertIntegrationSelectable,
-        ).toHaveBeenCalledWith('vscode');
-        expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
-        expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
-        expect(fsMocks.promises.writeFile).not.toHaveBeenCalled();
-        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
-        expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
-    });
+            expect(result).toEqual({
+                success: false,
+                error: `Visual Studio Code is ${state}.`,
+            });
+            expect(
+                codeEditorIntegrationServiceMocks.assertIntegrationSelectable,
+            ).toHaveBeenCalledWith('vscode');
+            expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+            expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(fsMocks.promises.writeFile).not.toHaveBeenCalled();
+            expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+            expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
+        },
+    );
 });

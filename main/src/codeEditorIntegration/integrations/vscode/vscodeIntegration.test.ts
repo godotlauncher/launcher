@@ -128,21 +128,21 @@ describe('VSCodeIntegration', () => {
         ).toHaveBeenCalledWith(context.projectPath, context.mono);
     });
 
-    it.each([
-        true,
-        false,
-    ])('reports project configuration as %s from the .vscode directory', async (configured) => {
-        const integration = new VSCodeIntegration();
-        const projectPath = path.resolve('project');
-        fsMocks.existsSync.mockReturnValue(configured);
+    it.each([true, false])(
+        'reports project configuration as %s from the .vscode directory',
+        async (configured) => {
+            const integration = new VSCodeIntegration();
+            const projectPath = path.resolve('project');
+            fsMocks.existsSync.mockReturnValue(configured);
 
-        await expect(
-            integration.isConfiguredForProject(projectPath),
-        ).resolves.toBe(configured);
-        expect(fsMocks.existsSync).toHaveBeenCalledWith(
-            path.resolve(projectPath, '.vscode'),
-        );
-    });
+            await expect(
+                integration.isConfiguredForProject(projectPath),
+            ).resolves.toBe(configured);
+            expect(fsMocks.existsSync).toHaveBeenCalledWith(
+                path.resolve(projectPath, '.vscode'),
+            );
+        },
+    );
 
     it('passes the Linux executable through with Godot command flags', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');

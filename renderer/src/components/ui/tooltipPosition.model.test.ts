@@ -38,16 +38,19 @@ describe('calculateTooltipPosition', () => {
         ['right', 'left', { ...centeredTrigger, right: 316, left: 276 }],
         ['bottom', 'top', { ...centeredTrigger, top: 216, bottom: 236 }],
         ['left', 'right', { ...centeredTrigger, right: 44, left: 4 }],
-    ])('flips %s to %s near the viewport edge', (preferred, side, triggerRect) => {
-        expect(
-            calculateTooltipPosition({
-                triggerRect,
-                tooltipSize,
-                viewport,
-                preferredSide: preferred,
-            }).side,
-        ).toBe(side);
-    });
+    ])(
+        'flips %s to %s near the viewport edge',
+        (preferred, side, triggerRect) => {
+            expect(
+                calculateTooltipPosition({
+                    triggerRect,
+                    tooltipSize,
+                    viewport,
+                    preferredSide: preferred,
+                }).side,
+            ).toBe(side);
+        },
+    );
 
     it('clamps the tooltip and arrow inside the viewport', () => {
         const position = calculateTooltipPosition({

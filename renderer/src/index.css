@@ -139,25 +139,25 @@ input:focus {
 
 /* Desktop controls use the native arrow. External links opt into the hand. */
 #root
-    :where(
-        a,
-        button,
-        [role="button"],
-        [role="link"],
-        [role="menuitem"],
-        [role="option"],
-        [role="tab"],
-        input[type="button"],
-        input[type="checkbox"],
-        input[type="file"],
-        input[type="radio"],
-        input[type="range"],
-        input[type="reset"],
-        input[type="submit"],
-        label,
-        select,
-        summary
-    ) {
+:where(
+    a,
+    button,
+    [role="button"],
+    [role="link"],
+    [role="menuitem"],
+    [role="option"],
+    [role="tab"],
+    input[type="button"],
+    input[type="checkbox"],
+    input[type="file"],
+    input[type="radio"],
+    input[type="range"],
+    input[type="reset"],
+    input[type="submit"],
+    label,
+    select,
+    summary
+) {
     cursor: default;
 }
 

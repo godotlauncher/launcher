@@ -86,20 +86,23 @@ describe('Drawer', () => {
         ['right', 'items-stretch justify-end', 'border-l border-base-300'],
         ['top', 'items-start justify-stretch', 'border-b border-base-300'],
         ['bottom', 'items-end justify-stretch', 'border-t border-base-300'],
-    ] as const)('renders %s side placement classes and state attributes', (side, containerClassName, panelClassName) => {
-        const html = renderToStaticMarkup(
-            <Drawer open onOpenChange={noop} side={side} ariaLabel={side}>
-                <Drawer.Body>{side}</Drawer.Body>
-            </Drawer>,
-        );
+    ] as const)(
+        'renders %s side placement classes and state attributes',
+        (side, containerClassName, panelClassName) => {
+            const html = renderToStaticMarkup(
+                <Drawer open onOpenChange={noop} side={side} ariaLabel={side}>
+                    <Drawer.Body>{side}</Drawer.Body>
+                </Drawer>,
+            );
 
-        expect(html).toContain(containerClassName);
-        expect(html).toContain(panelClassName);
-        expect(html).toContain('class="drawer-backdrop');
-        expect(html).toContain('class="drawer-panel');
-        expect(html).toContain('data-state="open"');
-        expect(html).toContain(`data-side="${side}"`);
-    });
+            expect(html).toContain(containerClassName);
+            expect(html).toContain(panelClassName);
+            expect(html).toContain('class="drawer-backdrop');
+            expect(html).toContain('class="drawer-panel');
+            expect(html).toContain('data-state="open"');
+            expect(html).toContain(`data-side="${side}"`);
+        },
+    );
 
     it('renders dialog accessibility attributes from a title slot', () => {
         const html = renderToStaticMarkup(
