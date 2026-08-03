@@ -8,6 +8,7 @@ import {
     PRERELEASES_FILENAME,
     RELEASES_FILENAME,
 } from '../constants.js';
+import { isDevelopmentRuntime } from '../runtimeMode.js';
 import { parseCliArgs } from './app-config.cli.js';
 import { parseProcessEnv } from './app-config.env.js';
 import {
@@ -21,6 +22,8 @@ export type ResolveAppConfigOptions = {
     env?: NodeJS.ProcessEnv;
     platform?: NodeJS.Platform;
     homedir?: string;
+    isPackaged?: boolean;
+    appPath?: string;
 };
 
 export type ResolveAppPathsOptions = {
@@ -70,14 +73,15 @@ export function configuration(
 ): AppConfig {
     const envConfig = parseProcessEnv(options.env ?? process.env);
     const cliConfig = parseCliArgs(options.args ?? process.argv);
-    const nodeEnv = envConfig.NODE_ENV ?? 'production';
-    const isDev = nodeEnv === 'development';
+    const isDev = isDevelopmentRuntime({
+        isPackaged: options.isPackaged ?? false,
+        appPath: options.appPath ?? process.cwd(),
+    });
 
     return AppConfigSchema.parse({
         appName: 'Godot Launcher',
-        nodeEnv,
         isDev,
-        debugMode: isDev || (cliConfig.debug ?? false),
+        debugMode: cliConfig.debug ?? false,
         disableSandbox:
             (envConfig.GODOT_LAUNCHER_DISABLE_SANDBOX ?? false) ||
             (cliConfig.disableSandbox ?? false),

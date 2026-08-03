@@ -1,7 +1,11 @@
 import * as path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { __resetCurrentAppConfigForTesting } from './config/index.js';
+import {
+    __resetCurrentAppConfigForTesting,
+    configuration,
+    setCurrentAppConfig,
+} from './config/index.js';
 import { getAssetPath, getUIPath } from './pathResolver';
 
 vi.mock('electron-updater', () => ({
@@ -57,7 +61,6 @@ vi.mock('electron', () => ({
 describe('Path Resolver', () => {
     afterEach(() => {
         __resetCurrentAppConfigForTesting();
-        vi.unstubAllEnvs();
     });
 
     it('should get UI path', () => {
@@ -67,14 +70,24 @@ describe('Path Resolver', () => {
     });
 
     it('should get asset path for dev', () => {
-        vi.stubEnv('NODE_ENV', 'development');
+        setCurrentAppConfig(
+            configuration({
+                isPackaged: false,
+                appPath: '/app/path',
+            }),
+        );
 
         const assetPath = getAssetPath();
         expect(assetPath).toBe(path.join('/app/path', 'main/assets'));
     });
 
     it('should get asset path for prod', () => {
-        vi.stubEnv('NODE_ENV', 'production');
+        setCurrentAppConfig(
+            configuration({
+                isPackaged: true,
+                appPath: '/app/app.asar',
+            }),
+        );
 
         const assetPath = getAssetPath();
         expect(assetPath).toBe(path.join('/app', 'assets'));

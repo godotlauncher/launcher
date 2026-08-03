@@ -1,7 +1,8 @@
 import type { AppEventMap } from '@shared/contracts';
-import type { WebContents } from 'electron';
+import { app, type WebContents } from 'electron';
 import { getCurrentAppConfigIfInitialized } from './config/index.js';
 import { getMainWindow } from './mainWindow.js';
+import { isDevelopmentRuntime } from './runtimeMode.js';
 
 export function isDev(): boolean {
     const appConfig = getCurrentAppConfigIfInitialized();
@@ -9,7 +10,10 @@ export function isDev(): boolean {
         return appConfig.isDev;
     }
 
-    return process.env.NODE_ENV === 'development';
+    return isDevelopmentRuntime({
+        isPackaged: app.isPackaged,
+        appPath: app.getAppPath(),
+    });
 }
 
 export function ipcWebContentsSend<Key extends keyof AppEventMap>(

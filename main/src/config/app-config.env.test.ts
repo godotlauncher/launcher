@@ -24,13 +24,4 @@ describe('parseProcessEnv', () => {
             }).GODOT_LAUNCHER_DISABLE_SANDBOX,
         ).toBeUndefined();
     });
-
-    it('parses supported node env values', () => {
-        expect(parseProcessEnv({ NODE_ENV: 'development' }).NODE_ENV).toBe(
-            'development',
-        );
-        expect(
-            parseProcessEnv({ NODE_ENV: 'invalid' }).NODE_ENV,
-        ).toBeUndefined();
-    });
 });

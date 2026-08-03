@@ -15,6 +15,8 @@ import {
 const appConfig = configuration({
     args: process.argv,
     env: process.env,
+    isPackaged: app.isPackaged,
+    appPath: app.getAppPath(),
 });
 setCurrentAppConfig(appConfig);
 

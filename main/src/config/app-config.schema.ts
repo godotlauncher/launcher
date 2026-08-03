@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-export const NodeEnvSchema = z
-    .enum(['development', 'production', 'test'])
-    .catch('production');
-
 export const AppPathsSchema = z.object({
     dataDir: z.string(),
     configDir: z.string(),
@@ -17,7 +13,6 @@ export const AppPathsSchema = z.object({
 
 export const AppConfigSchema = z.object({
     appName: z.string(),
-    nodeEnv: NodeEnvSchema,
     isDev: z.boolean(),
     debugMode: z.boolean(),
     disableSandbox: z.boolean(),
