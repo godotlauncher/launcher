@@ -194,6 +194,14 @@ describe('createProject', () => {
         expect(result.projectDetails?.icon_path).toBe(
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
         );
+        expect(result.projectDetails?.name).toBe('Test Project');
+        expect(godotUtilsMocks.createProjectFile).toHaveBeenCalledWith(
+            expect.any(String),
+            5,
+            release.version_number,
+            'Test Project',
+            'FORWARD_PLUS',
+        );
     });
 
     it('uses a safe directory segment without changing the display name', async () => {
@@ -210,7 +218,7 @@ describe('createProject', () => {
         expect(result.projectPath).toBe(
             path.resolve('/projects/Example--Project'),
         );
-        expect(result.projectDetails?.name).toBe('Example:-Project');
+        expect(result.projectDetails?.name).toBe('Example: Project');
         expect(godotUtilsMocks.SetProjectEditorRelease).toHaveBeenCalledWith(
             path.resolve('/install/.editor_config/Example--Project'),
             release,

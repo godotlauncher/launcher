@@ -69,9 +69,10 @@ export async function createProject(
         withGit = false;
     }
 
-    // clean name, remove spaces and replace with -
-    projectName = projectName.trim().replaceAll(' ', '-');
-    const projectDirectoryName = sanitiseProjectDirectoryName(projectName);
+    projectName = projectName.trim();
+    const projectDirectoryName = sanitiseProjectDirectoryName(
+        projectName.replaceAll(' ', '-'),
+    );
 
     const { projects_location: projectDir, install_location: installDir } =
         await getUserPreferences();
