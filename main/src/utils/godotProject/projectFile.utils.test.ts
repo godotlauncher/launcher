@@ -67,23 +67,26 @@ describe('projectFile utilities', () => {
         ['5', '"mobile"', 'MOBILE'],
         ['5', '"gl_compatibility"', 'COMPATIBLE'],
         ['5', '"custom"', 'Unknown'],
-    ] as const)('returns the renderer for config version %s and method %s', async (configVersion, renderingMethod, expectedRenderer) => {
-        const parsedProject = new Map([
-            ['ROOT', new Map([['config_version', configVersion]])],
-            [
-                'rendering',
-                new Map(
-                    renderingMethod
-                        ? [['renderer/rendering_method', renderingMethod]]
-                        : [],
-                ),
-            ],
-        ]);
+    ] as const)(
+        'returns the renderer for config version %s and method %s',
+        async (configVersion, renderingMethod, expectedRenderer) => {
+            const parsedProject = new Map([
+                ['ROOT', new Map([['config_version', configVersion]])],
+                [
+                    'rendering',
+                    new Map(
+                        renderingMethod
+                            ? [['renderer/rendering_method', renderingMethod]]
+                            : [],
+                    ),
+                ],
+            ]);
 
-        await expect(getProjectRendererFromParsed(parsedProject)).resolves.toBe(
-            expectedRenderer,
-        );
-    });
+            await expect(
+                getProjectRendererFromParsed(parsedProject),
+            ).resolves.toBe(expectedRenderer);
+        },
+    );
 
     test('returns the numeric project config version', async () => {
         const parsedProject = parseGodotProjectFile(projectFile);

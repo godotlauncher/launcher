@@ -1107,34 +1107,34 @@ describe('setProjectCodeEditor', () => {
         expect(result.codeEditorId).toBeNull();
     });
 
-    it.each([
-        'disabled',
-        'unavailable',
-    ])('rejects a directly requested %s integration before project mutation', async (state) => {
-        const project = createProjectDetails({
-            codeEditorId: null,
-            launch_path: '/godot/godot.exe',
-        });
-        getProjectsSnapshot.mockResolvedValue({
-            projects: [project],
-            version: 'v1',
-        });
-        integrationMocks.assertIntegrationSelectable.mockRejectedValue(
-            new Error(`Visual Studio Code is ${state}.`),
-        );
+    it.each(['disabled', 'unavailable'])(
+        'rejects a directly requested %s integration before project mutation',
+        async (state) => {
+            const project = createProjectDetails({
+                codeEditorId: null,
+                launch_path: '/godot/godot.exe',
+            });
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            integrationMocks.assertIntegrationSelectable.mockRejectedValue(
+                new Error(`Visual Studio Code is ${state}.`),
+            );
 
-        await expect(
-            setProjectCodeEditor(
-                project,
-                'vscode',
-                codeEditorIntegrationService,
-            ),
-        ).rejects.toThrow(`Visual Studio Code is ${state}.`);
+            await expect(
+                setProjectCodeEditor(
+                    project,
+                    'vscode',
+                    codeEditorIntegrationService,
+                ),
+            ).rejects.toThrow(`Visual Studio Code is ${state}.`);
 
-        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
-        expect(storeProjectsList).not.toHaveBeenCalled();
-    });
+            expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+            expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+            expect(storeProjectsList).not.toHaveBeenCalled();
+        },
+    );
 
     it('keeps an already selected disabled integration as a no-op', async () => {
         const project = createProjectDetails();
@@ -1174,33 +1174,33 @@ describe('setProjectCodeEditor', () => {
             },
             requestedId: null,
         },
-    ])('persists explicit $selection locally without writing the sidecar', async ({
-        project: projectOverrides,
-        requestedId,
-    }) => {
-        const project = createProjectDetails(projectOverrides);
-        getProjectsSnapshot.mockResolvedValue({
-            projects: [project],
-            version: 'v1',
-        });
-        getProjectDefinition.mockReturnValue({
-            editorConfigFilename: () => 'editor_settings-4.3.tres',
-            editorConfigFormat: 3,
-            resources: [],
-            projectFilename: 'project.godot',
-            configVersion: 5,
-            defaultRenderer: 'FORWARD_PLUS',
-        });
+    ])(
+        'persists explicit $selection locally without writing the sidecar',
+        async ({ project: projectOverrides, requestedId }) => {
+            const project = createProjectDetails(projectOverrides);
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getProjectDefinition.mockReturnValue({
+                editorConfigFilename: () => 'editor_settings-4.3.tres',
+                editorConfigFormat: 3,
+                resources: [],
+                projectFilename: 'project.godot',
+                configVersion: 5,
+                defaultRenderer: 'FORWARD_PLUS',
+            });
 
-        await setProjectCodeEditor(
-            project,
-            requestedId,
-            codeEditorIntegrationService,
-        );
+            await setProjectCodeEditor(
+                project,
+                requestedId,
+                codeEditorIntegrationService,
+            );
 
-        expect(project.codeEditorId).toBe(requestedId);
-        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
-    });
+            expect(project.codeEditorId).toBe(requestedId);
+            expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        },
+    );
 
     it('throws when VS Code is not installed', async () => {
         const project: ProjectDetails = {

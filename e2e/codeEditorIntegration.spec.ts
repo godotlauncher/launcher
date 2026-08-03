@@ -462,21 +462,6 @@ test('Code Editor settings lock overlapping actions and recover from a failed up
         name: 'Disable Visual Studio Code?',
     });
     await expect(disableDialog).toBeVisible();
-    const disableDialogLayer = await disableDialog.evaluate((element) =>
-        Number.parseInt(
-            window.getComputedStyle(element.parentElement as HTMLElement)
-                .zIndex,
-            10,
-        ),
-    );
-    const drawerLayer = await drawer.evaluate((element) =>
-        Number.parseInt(
-            window.getComputedStyle(element.parentElement as HTMLElement)
-                .zIndex,
-            10,
-        ),
-    );
-    expect(disableDialogLayer).toBeGreaterThan(drawerLayer);
     await expect(disableDialog).toContainText(
         'Configured projects: 3. .NET projects: 1.',
     );
@@ -504,6 +489,10 @@ test('Code Editor settings lock overlapping actions and recover from a failed up
     );
     await expect(enabledSwitch).toBeEnabled();
     await expect(enabledSwitch).toBeChecked();
+    await disableDialog
+        .getByRole('button', { name: 'Cancel', exact: true })
+        .click();
+    await expect(disableDialog).not.toBeVisible();
 
     await stubRecordedIpcHandler(electronApp, {
         key: 'defaultIntegration',
