@@ -1,6 +1,5 @@
-import path from 'node:path';
 import { Module } from '@mariodebono/di';
-import { ConfigModule, ConfigService } from '@mariodebono/di-config';
+import { ConfigModule } from '@mariodebono/di-config';
 import {
     I18nModule,
     type I18nModuleOptions,
@@ -18,6 +17,7 @@ import {
     I18N_NAMESPACES,
     SUPPORTED_LOCALES,
 } from './i18n/config.js';
+import { getLocalesPath } from './pathResolver.js';
 
 @Module({
     imports: [
@@ -30,22 +30,16 @@ import {
         }),
         CodeEditorIntegrationModule,
         I18nModule.forRootAsync({
-            inject: [ConfigService<AppConfig>],
-            useFactory: (configService: ConfigService<AppConfig>) => {
-                const localesRoot = configService.get('isDev')
-                    ? path.join(process.cwd(), 'locales')
-                    : path.join(process.resourcesPath, 'locales');
-
-                return {
-                    localesRoot,
+            useFactory: () =>
+                ({
+                    localesRoot: getLocalesPath(),
                     supportedLocales: [...SUPPORTED_LOCALES],
                     namespaces: [...I18N_NAMESPACES],
                     fallbackLocale: DEFAULT_LOCALE,
                     initialLocale: DEFAULT_LOCALE,
                     systemLocale:
                         Intl.DateTimeFormat().resolvedOptions().locale,
-                } satisfies I18nModuleOptions;
-            },
+                }) satisfies I18nModuleOptions,
         }),
     ],
     providers: [AppController, AppLifecycleService],
