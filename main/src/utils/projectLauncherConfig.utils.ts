@@ -25,6 +25,12 @@ export type ProjectLauncherConfig = {
     };
 };
 
+export type ProjectLauncherConfigInput = {
+    release: InstalledRelease;
+    launcherVersion: string;
+    lastOpened?: Date | null;
+};
+
 type IniDocument = Record<string, Record<string, string>>;
 
 function parseIni(content: string): IniDocument {
@@ -111,10 +117,10 @@ export function getReleaseBaseVersion(
 }
 
 export function createProjectLauncherConfig(
-    release: InstalledRelease,
-    launcherVersion: string,
-    lastOpened?: Date | null,
+    input: ProjectLauncherConfigInput,
 ): ProjectLauncherConfig {
+    const { release, launcherVersion, lastOpened } = input;
+
     return {
         config: {
             version: 1,
@@ -230,15 +236,9 @@ export async function readProjectLauncherConfig(
 
 export async function writeProjectLauncherConfig(
     projectDir: string,
-    release: InstalledRelease,
-    launcherVersion: string,
-    lastOpened?: Date | null,
+    input: ProjectLauncherConfigInput,
 ): Promise<void> {
-    const config = createProjectLauncherConfig(
-        release,
-        launcherVersion,
-        lastOpened,
-    );
+    const config = createProjectLauncherConfig(input);
     await fs.promises.writeFile(
         path.resolve(projectDir, PROJECT_LAUNCHER_CONFIG_FILENAME),
         serializeProjectLauncherConfig(config),

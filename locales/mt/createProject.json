@@ -43,14 +43,14 @@
     },
     "otherSettings": {
         "title": "Settings Oħra",
+        "codeEditor": {
+            "label": "Editur tal-Kodiċi",
+            "none": "Xejn",
+            "disabled": "Diżattivat",
+            "notFound": "Ma nstabx"
+        },
         "initGit": "Ibda Git Repository",
-        "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",
-        "setupVSCode": "Issettja Visual Studio Code bħala Text Editur",
-        "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter",
-        "vscodeHelp": {
-            "title": "Għaliex Visual Studio Code ma jinstabx?",
-            "message": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code fis-settings."
-        }
+        "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter"
     },
     "buttons": {
         "editNow": "Editja issa",

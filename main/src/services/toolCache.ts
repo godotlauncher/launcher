@@ -44,21 +44,22 @@ async function readToolCache(): Promise<ToolCacheRecord | null> {
 
 async function writeToolCache(entries: CachedTool[]): Promise<ToolCacheRecord> {
     const prefs = await getUserPreferences();
-    const record: ToolCacheRecord = {
+    const normalizedEntries = entries.map((entry) => ({
+        ...entry,
+        version: entry.version ?? null,
+        verified: entry.verified ?? verifyToolPath(entry.path),
+    }));
+    const persistedRecord: ToolCacheRecord = {
         last_scan: Date.now(),
-        tools: entries.map((entry) => ({
-            ...entry,
-            version: entry.version ?? null,
-            verified: entry.verified ?? verifyToolPath(entry.path),
-        })),
+        tools: normalizedEntries,
     };
 
     await setUserPreferences({
         ...prefs,
-        installed_tools: record,
+        installed_tools: persistedRecord,
     });
 
-    return record;
+    return persistedRecord;
 }
 
 export async function getCachedTools(options?: {

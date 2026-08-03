@@ -158,7 +158,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setInstallOpen(true)}
-                                        className="underline cursor-pointer"
+                                        className="underline"
                                     />
                                 ),
                             }}

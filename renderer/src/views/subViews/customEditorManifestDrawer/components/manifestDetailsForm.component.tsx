@@ -4,6 +4,7 @@ import type React from 'react';
 import { HelpTooltip } from '../../../../components/ui/helpTooltip.component';
 import { PathField } from '../../../../components/ui/pathField.component';
 import { TextField } from '../../../../components/ui/textField.component';
+import { Tooltip } from '../../../../components/ui/tooltip.component';
 import { getFieldError } from '../customEditorManifest.messages';
 import type {
     CustomEditorManifestField,
@@ -149,14 +150,16 @@ export const ManifestDetailsForm: React.FC<ManifestDetailsFormProps> = ({
                     {t('customEditor.creator.fields.platform.label')}
                 </span>
                 {platformsError && (
-                    <span
-                        className="tooltip tooltip-right tooltip-error relative z-20 text-error hover:z-50 focus-within:z-50"
-                        data-tip={platformsError}
+                    <Tooltip
+                        tip={platformsError}
+                        placement="right"
+                        tone="error"
+                        className="text-error"
                         role="img"
-                        aria-label={platformsError}
+                        ariaLabel={platformsError}
                     >
                         <CircleX size={15} aria-hidden="true" />
-                    </span>
+                    </Tooltip>
                 )}
             </div>
             <div className="flex flex-col gap-2">

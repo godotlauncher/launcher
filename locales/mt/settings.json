@@ -6,6 +6,7 @@
         "appearance": "Dehra",
         "behavior": "Imġiba",
         "tools": "Għodod",
+        "codeEditors": "Edituri tal-Kodiċi",
         "updates": "Aġġornamenti"
     },
     "appearance": {
@@ -68,6 +69,74 @@
             "system": "Sistema (Awtomatiku)"
         }
     },
+    "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
+        "actions": {
+            "scanning": "Qed jerskanna...",
+            "setDefault": "Issettja bħala predefinit",
+            "edit": "Editja",
+            "save": "Issejvja",
+            "saving": "Qed jissejvja...",
+            "cancel": "Ikkanċella",
+            "rescan": "Erġa’ skennja"
+        },
+        "status": {
+            "available": "Disponibbli",
+            "missing": "Ma nstabx",
+            "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi.",
+            "default": "Editur tal-kodiċi predefinit",
+            "enabled": "Attivat",
+            "disabled": "Diżattivat",
+            "rescanFailed": "Ma setax isir skennjar mill-ġdid.",
+            "projectUsage": "Proġetti kkonfigurati: {{count}}. Proġetti .NET: {{dotnetCount}}."
+        },
+        "overview": "Immaniġġja s-sejbien tal-edituri tal-kodiċi u agħżel liema editur jintgħażel minn qabel għal proġetti ġodda.",
+        "drawer": {
+            "title": "Issettjar ta' {{editor}}",
+            "fallbackTitle": "Issettjar tal-editur tal-kodiċi",
+            "integration": {
+                "enabled": "Attivat"
+            },
+            "path": {
+                "label": "Mogħdija tal-eżekutibbli",
+                "autodetectedLabel": "Mogħdija tal-eżekutibbli (misjuba awtomatikament)",
+                "help": "Ħalli vojt biex tuża s-sejbien awtomatiku. Mogħdija personalizzata tieħu post l-installazzjoni misjuba.",
+                "automatic": "Sejbien awtomatiku",
+                "browse": "Ibbrawżja",
+                "reset": "Uża s-sejbien awtomatiku",
+                "select": "Agħżel l-eżekutibbli tal-editur tal-kodiċi",
+                "allFiles": "Il-fajls kollha",
+                "waiting": "Qed jistenna l-għażla tal-fajl..."
+            },
+            "textEditor": {
+                "title": "Editur estern tat-test",
+                "help": "Dawn l-argumenti jintużaw meta Godot jiftaħ fajls f'dan l-editur tal-kodiċi.",
+                "flagsLabel": "Argumenti tat-tnedija",
+                "flagsHelp": "Il-placeholders ta' Godot jinkludu {project}, {file}, {line}, u {col}. Valur vojt huwa sostituzzjoni valida.",
+                "reset": "Irrisettja għall-valur predefinit"
+            },
+            "dotnet": {
+                "supported": "Appoġġjat"
+            },
+            "errors": {
+                "invalidPath": "Agħżel eżekutibbli validu tal-editur tal-kodiċi.",
+                "dialog": "Ma setax jinfetaħ is-selettur tal-fajls.",
+                "save": "Ma setax jiġi ssejvjat l-issettjar tal-editur tal-kodiċi."
+            }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Tiddiżattiva {{editor}}?",
+            "usage": "Proġetti kkonfigurati: {{count}}. Proġetti .NET: {{dotnetCount}}.",
+            "existingProjects": "Il-proġetti eżistenti se jżommu din l-għażla tal-editur u s-settings attwali ta’ Godot. Jistgħu jibqgħu jużawh sakemm jibqa’ installat.",
+            "newProjects": "L-editur mhux se jkun disponibbli għal għażliet ġodda jew għad-detezzjoni awtomatika tal-proġetti.",
+            "disable": "Iddiżattiva"
+        }
+    },
     "tools": {
         "overview": "Il-launcher jivvalida malajr il-paths tal-għodda fil-cache meta din it-tab tkun fil-fokus. Esegwix skannatura sħiħa jekk biddilt l-installazzjonijiet fuq dan is-sistema.",
         "actions": {
@@ -85,19 +154,6 @@
             "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",
             "installed": "Installat:",
             "version": "Verżjoni:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Editur ta' kodiċi mgħaġġel u estensibbli b'appoġġ għal GDScript u .NET għal Godot.",
-            "notDetectedTitle": "Visual Studio Code ma nstabx!",
-            "notDetectedMessage": "Godot Launcher biss kapaċi jiskopri VS Code awtomatikament jekk kien installat fil-PATH. Tista' minflok tispeċifika l-indirizz għall-eżekutibbli ta' VS Code hawn taħt",
-            "pathLabel": "Indirizz ta' Visual Studio Code għall-Eżekutibbli",
-            "selectExecutable": "Agħżel Eżekutibbli ta' Visual Studio Code",
-            "autodetected": "(awtomatikament skopert)",
-            "noPathSet": "ebda indirizz issettjat",
-            "clearCustomPath": "Neħħi Indirizz Custom",
-            "waitingForDialog": "Qed nistennew id-djalogu...",
-            "installed": "Installat:"
         }
     },
     "updates": {

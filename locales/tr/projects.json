@@ -15,12 +15,13 @@
         "dotNetProject": "Bu bir .Net Projesidir",
         "prerelease": "Ön sürüm Godot editör sürümü kullanılıyor",
         "windowedMode": "Bu proje pencere modunda açık",
-        "vsCodeProject": "Bu proje için Visual Studio Code harici düzenleyici olarak etkin",
+        "codeEditorProject": "{{editor}} kullanılıyor",
         "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
         "invalidReasons": {
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
             "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."
-        }
+        },
+        "codeEditorUnavailable": "{{editor}} algılanmadı."
     },
     "addProject": {
         "selectFile": "Proje Dosyasını Seç",
@@ -69,7 +70,16 @@
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin veya projeyi kaldırıp yeniden ekleyin.",
             "missingEditor": "Seçilen düzenleyici kullanılamıyor. Sürücüyü bağlayın veya başka bir düzenleyici seçin."
         },
-        "recoveredVSCodeConfig": "Bazı VS Code yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu."
+        "recoveredCodeEditorConfig": "Bazı kod düzenleyici yapılandırma dosyaları geçersizdi. Godot Launcher bunları yeniden oluşturdu ve özgün dosyaları .bad kopyaları olarak korudu.",
+        "codeEditorLaunch": {
+            "title": "{{editor}} bulunamadı",
+            "message": "Bu proje {{editor}} kullanacak şekilde yapılandırılmış. Godot yine de başlatılabilir, ancak betikleri bu düzenleyicide açmak başarısız olabilir.",
+            "dotnet": "C# düzenleyici entegrasyonu da bu .NET projesi için kullanılamayabilir.",
+            "actionFailed": "Kod düzenleyici eylemi başarısız oldu.",
+            "launchAnyway": "Yine de başlat",
+            "openSettings": "Ayarları aç",
+            "disableAndLaunch": "Devre dışı bırak ve başlat"
+        }
     },
     "changeEditor": {
         "errors": {
@@ -78,10 +88,9 @@
             "differentMajorVersion": "Editörün farklı bir ana sürümü kullanılamaz\nProjenizi korumak için https://godotengine.org adresindeki resmi geçiş kılavuzuna bakın"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "Proje bulunamadı",
-            "vscodeNotInstalled": "Bu bilgisayarda Visual Studio Code yüklü değil.",
             "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
             "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
         }
@@ -98,6 +107,15 @@
             "path": {
                 "label": "Proje klasörü"
             }
+        },
+        "codeEditor": {
+            "title": "Kod Düzenleyici",
+            "help": "Bu proje için kullanılacak kod düzenleyiciyi seçin.",
+            "none": "Yok",
+            "disabled": "Devre dışı",
+            "notFound": "Bulunamadı",
+            "loading": "Kod düzenleyicileri yükleniyor...",
+            "loadFailed": "Kod düzenleyicileri yüklenemedi."
         },
         "godot": {
             "renameLabel": "Godot projesini de yeniden adlandır",

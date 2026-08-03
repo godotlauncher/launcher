@@ -86,7 +86,7 @@ export const WindowsSymlinkSetting: React.FC = () => {
                         {t('windowsSymlinks.description')}
                     </p>
                 </div>
-                <label className="flex flex-row items-start gap-4 cursor-pointer">
+                <label className="flex flex-row items-start gap-4">
                     <input
                         type="checkbox"
                         className="checkbox"

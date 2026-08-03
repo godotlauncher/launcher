@@ -182,7 +182,7 @@ export const CreateProjectProjectSection: React.FC<
                             </option>
                         ))}
                     </select>
-                    <label className="flex h-10 cursor-pointer gap-2 items-center w-[300px]">
+                    <label className="flex h-10 gap-2 items-center w-[300px]">
                         <input
                             type="checkbox"
                             data-testid="checkboxOverwriteProjectPath"

@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { parse as parseJSONC } from 'jsonc-parser';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { addVSCodeSettings, updateVSCodeSettings } from './vscode.utils.js';
+import { updateVSCodeSettings } from './vscodeProjectConfiguration.js';
 
 type LaunchConfiguration = {
     program: unknown;
@@ -13,6 +13,7 @@ type LaunchConfiguration = {
 // Mock electron-log to suppress expected warnings in tests
 vi.mock('electron-log', () => ({
     default: {
+        debug: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
         error: vi.fn(),
@@ -39,101 +40,6 @@ vi.mock('node:fs', () => ({
     },
 }));
 
-// Mock addVSCodeNETLaunchConfig
-vi.mock('./vscode.utils.js', async () => {
-    const actual =
-        await vi.importActual<typeof import('./vscode.utils.js')>(
-            './vscode.utils.js',
-        );
-    return {
-        ...actual,
-        addVSCodeNETLaunchConfig: vi.fn(),
-    };
-});
-
-describe('addVSCodeSettings', () => {
-    const projectDir = '/some/project';
-    const launchPath = '/path/to/godot';
-
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined);
-        vi.mocked(fs.promises.rename).mockResolvedValue(undefined);
-        vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
-        vi.mocked(fs.promises.readFile).mockResolvedValue('{}');
-        // default to no existing files
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-    });
-
-    test('creates .vscode and settings.json when none exist', async () => {
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await addVSCodeSettings(projectDir, launchPath, 4, false);
-
-        // Ensure .vscode dir created
-        expect(fs.promises.mkdir).toHaveBeenCalledWith(
-            expect.stringContaining('.vscode'),
-            { recursive: true },
-        );
-
-        // Find written settings.json call
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
-        expect(settings['files.exclude']['**/*.gd.uid']).toBe(true);
-    });
-
-    test('merges with existing settings.json', async () => {
-        const existing = { 'editor.fontSize': 12, 'some.key': 'value' };
-        vi.mocked(fs.existsSync).mockImplementation((p) =>
-            p.toString().endsWith('settings.json'),
-        );
-        vi.mocked(fs.promises.readFile).mockResolvedValue(
-            JSON.stringify(existing),
-        );
-
-        await addVSCodeSettings(projectDir, launchPath, 4, false);
-
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['editor.fontSize']).toBe(12);
-        expect(settings['some.key']).toBe('value');
-        expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
-    });
-
-    test('uses godot3 key for Godot 3.x', async () => {
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await addVSCodeSettings(projectDir, launchPath, 3.5, false);
-
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['godotTools.editorPath.godot3']).toBe(launchPath);
-    });
-
-    test('when isMono is true, settings.json is still written (launch config handled separately)', async () => {
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await addVSCodeSettings(projectDir, launchPath, 4, true);
-
-        // ensure settings.json was written
-        const writeCall = vi
-            .mocked(fs.promises.writeFile)
-            .mock.calls.find((c) => c[0].toString().endsWith('settings.json'));
-        expect(writeCall).toBeDefined();
-        const settings = JSON.parse(writeCall?.[1] as string);
-        expect(settings['godotTools.editorPath.godot4']).toBe(launchPath);
-    });
-});
-
 describe('addOrUpdateVSCodeRecommendedExtensions', () => {
     const projectDir = '/some/ext-project';
     const settingsPath = path.join(projectDir, '.vscode');
@@ -152,7 +58,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         const writeCall = vi
@@ -174,7 +80,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         const writeCall = vi
@@ -196,7 +102,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         );
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         const writeCall = vi
@@ -231,7 +137,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         const backupFile = `${extensionsFile}.1712345678901.bad`;
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         expect(recoveredFiles).toEqual([backupFile]);
@@ -258,7 +164,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
 }`);
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         expect(recoveredFiles).toEqual([]);
@@ -289,7 +195,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
 }`);
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         expect(recoveredFiles).toEqual([]);
@@ -307,7 +213,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
 }`);
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         expect(recoveredFiles).toEqual([]);
@@ -344,7 +250,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         const backupFile = `${extensionsFile}.1712345678902.bad`;
 
         const recoveredFiles = await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, true);
 
         expect(recoveredFiles).toEqual([backupFile]);
@@ -366,7 +272,7 @@ describe('addOrUpdateVSCodeRecommendedExtensions', () => {
         );
 
         await (
-            await import('./vscode.utils.js')
+            await import('./vscodeProjectConfiguration.js')
         ).addOrUpdateVSCodeRecommendedExtensions(projectDir, false);
 
         const writeCall = vi
@@ -398,10 +304,9 @@ describe('addVSCodeNETLaunchConfig', () => {
     test('creates launch.json and tasks.json when none exist', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeProjectConfiguration.js')
+        >('./vscodeProjectConfiguration.js');
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
 
         expect(fs.promises.mkdir).toHaveBeenCalledWith(
@@ -438,10 +343,9 @@ describe('addVSCodeNETLaunchConfig', () => {
         });
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeProjectConfiguration.js')
+        >('./vscodeProjectConfiguration.js');
         await mod.addVSCodeNETLaunchConfig(
             projectDir,
             '/Applications/Godot.app',
@@ -479,10 +383,9 @@ describe('addVSCodeNETLaunchConfig', () => {
             JSON.stringify(existing),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeProjectConfiguration.js')
+        >('./vscodeProjectConfiguration.js');
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
 
         const launchCall = vi
@@ -508,10 +411,9 @@ describe('addVSCodeNETLaunchConfig', () => {
         const launchFile = path.resolve(projectDir, '.vscode', 'launch.json');
         const backupFile = `${launchFile}.1712345678903.bad`;
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeProjectConfiguration.js')
+        >('./vscodeProjectConfiguration.js');
         const recoveredFiles = await mod.addVSCodeNETLaunchConfig(
             projectDir,
             launchPath,
@@ -538,133 +440,15 @@ describe('addVSCodeNETLaunchConfig', () => {
             JSON.stringify({ version: '2.0.0', tasks: [{ label: 'custom' }] }),
         );
 
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
+        const mod = await vi.importActual<
+            typeof import('./vscodeProjectConfiguration.js')
+        >('./vscodeProjectConfiguration.js');
         await mod.addVSCodeNETLaunchConfig(projectDir, launchPath);
 
         const tasksCall = vi
             .mocked(fs.promises.writeFile)
             .mock.calls.find((c) => c[0].toString().endsWith('tasks.json'));
         expect(tasksCall).toBeUndefined();
-    });
-});
-
-describe('getVSCodeInstallPath', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
-    test('returns null on unsupported platform', async () => {
-        const original = process.platform;
-        Object.defineProperty(process, 'platform', {
-            value: 'sunos',
-            configurable: true,
-        });
-
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
-        const res = await mod.getVSCodeInstallPath();
-        expect(res).toBeNull();
-
-        Object.defineProperty(process, 'platform', {
-            value: original,
-            configurable: true,
-        });
-    });
-
-    test('returns provided path if it exists', async () => {
-        vi.mocked(fs.existsSync).mockImplementation(
-            (p) => p === '/custom/code',
-        );
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
-        const res = await mod.getVSCodeInstallPath('/custom/code');
-        expect(res).toBe('/custom/code');
-    });
-
-    test('finds default darwin location', async () => {
-        const original = process.platform;
-        Object.defineProperty(process, 'platform', {
-            value: 'darwin',
-            configurable: true,
-        });
-        vi.mocked(fs.existsSync).mockImplementation((p) =>
-            String(p).includes('Visual Studio Code.app'),
-        );
-
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
-        const res = await mod.getVSCodeInstallPath();
-        expect(res).toContain('Visual Studio Code.app');
-
-        Object.defineProperty(process, 'platform', {
-            value: original,
-            configurable: true,
-        });
-    });
-
-    test('finds default windows location including LOCALAPPDATA', async () => {
-        const original = process.platform;
-        const originalLocal = process.env.LOCALAPPDATA;
-        Object.defineProperty(process, 'platform', {
-            value: 'win32',
-            configurable: true,
-        });
-        process.env.LOCALAPPDATA = 'C:\\Users\\Me\\AppData\\Local';
-
-        vi.mocked(fs.existsSync).mockImplementation(
-            (p) =>
-                String(p).includes('Programs\\Microsoft VS Code') ||
-                String(p).includes('Local'),
-        );
-
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
-        const res = await mod.getVSCodeInstallPath();
-        expect(res).toBeTruthy();
-        expect(String(res)).toMatch(/Code\.exe$/i);
-
-        Object.defineProperty(process, 'platform', {
-            value: original,
-            configurable: true,
-        });
-        process.env.LOCALAPPDATA = originalLocal;
-    });
-
-    test('finds default linux location', async () => {
-        const original = process.platform;
-        Object.defineProperty(process, 'platform', {
-            value: 'linux',
-            configurable: true,
-        });
-        vi.mocked(fs.existsSync).mockImplementation(
-            (p) =>
-                String(p).includes('/usr/bin') ||
-                String(p).includes('/snap/bin'),
-        );
-
-        const mod =
-            await vi.importActual<typeof import('./vscode.utils.js')>(
-                './vscode.utils.js',
-            );
-        const res = await mod.getVSCodeInstallPath();
-        expect(res).toBeTruthy();
-        expect(String(res)).toMatch(/code$/i);
-
-        Object.defineProperty(process, 'platform', {
-            value: original,
-            configurable: true,
-        });
     });
 });
 
@@ -825,6 +609,28 @@ describe('updateVSCodeSettings', () => {
         expect(writtenSettings['godotTools.editorPath.godot5']).toBe(
             '/path/to/godot5',
         );
+    });
+
+    test('should replace a null files.exclude value', async () => {
+        const existingSettings = {
+            'editor.fontSize': 14,
+            'files.exclude': null,
+        };
+
+        vi.mocked(fs.existsSync).mockImplementation((p) =>
+            p.toString().endsWith('settings.json'),
+        );
+        vi.mocked(fs.promises.readFile).mockResolvedValue(
+            JSON.stringify(existingSettings),
+        );
+
+        await updateVSCodeSettings(testProjectDir, '/path/to/godot', 4, false);
+
+        const writeCall = vi.mocked(fs.promises.writeFile).mock.calls[0];
+        const writtenSettings = JSON.parse(writeCall[1] as string);
+
+        expect(writtenSettings['editor.fontSize']).toBe(14);
+        expect(writtenSettings['files.exclude']['**/*.gd.uid']).toBe(true);
     });
 
     test('should preserve user file excludes when merging', async () => {

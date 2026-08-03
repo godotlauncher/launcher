@@ -6,7 +6,10 @@ import {
 } from '@mariodebono/di-electron/renderer';
 import type { AppBridgeNamespaces, AppEventMap } from '@shared/contracts';
 
-export const appBridge = createRendererBridge<AppBridgeNamespaces>().app;
+const rendererBridge = createRendererBridge<AppBridgeNamespaces>();
+
+export const appBridge = rendererBridge.app;
+export const codeEditorIntegrationBridge = rendererBridge.codeEditorIntegration;
 
 const appEvents = createRendererEvents();
 

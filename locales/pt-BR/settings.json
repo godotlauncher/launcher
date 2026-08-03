@@ -6,6 +6,7 @@
         "appearance": "Aparência",
         "behavior": "Comportamento",
         "tools": "Ferramentas",
+        "codeEditors": "Editores de código",
         "updates": "Atualizações"
     },
     "appearance": {
@@ -68,6 +69,74 @@
             "system": "Sistema (detecção automática)"
         }
     },
+    "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
+        "actions": {
+            "scanning": "Reescaneando...",
+            "setDefault": "Definir como padrão",
+            "edit": "Editar",
+            "save": "Salvar",
+            "saving": "Salvando...",
+            "cancel": "Cancelar",
+            "rescan": "Verificar novamente"
+        },
+        "status": {
+            "available": "Disponível",
+            "missing": "Não encontrado",
+            "loadFailed": "Não foi possível carregar os editores de código.",
+            "default": "Editor de código padrão",
+            "enabled": "Ativado",
+            "disabled": "Desativado",
+            "rescanFailed": "Não foi possível verificar novamente.",
+            "projectUsage": "Projetos configurados: {{count}}. Projetos .NET: {{dotnetCount}}."
+        },
+        "overview": "Gerencie a detecção de editores de código e escolha qual editor será pré-selecionado para novos projetos.",
+        "drawer": {
+            "title": "Configurações do {{editor}}",
+            "fallbackTitle": "Configurações do editor de código",
+            "integration": {
+                "enabled": "Ativado"
+            },
+            "path": {
+                "label": "Caminho do executável",
+                "autodetectedLabel": "Caminho do executável (detectado automaticamente)",
+                "help": "Deixe em branco para usar a detecção automática. Um caminho personalizado substitui a instalação detectada.",
+                "automatic": "Detecção automática",
+                "browse": "Procurar",
+                "reset": "Usar detecção automática",
+                "select": "Selecionar executável do editor de código",
+                "allFiles": "Todos os arquivos",
+                "waiting": "Aguardando seleção de arquivo..."
+            },
+            "textEditor": {
+                "title": "Editor de texto externo",
+                "help": "Estes argumentos são usados quando o Godot abre arquivos neste editor de código.",
+                "flagsLabel": "Argumentos de inicialização",
+                "flagsHelp": "Os marcadores de posição do Godot incluem {project}, {file}, {line} e {col}. Um valor vazio é uma substituição válida.",
+                "reset": "Restaurar padrão"
+            },
+            "dotnet": {
+                "supported": "Compatível"
+            },
+            "errors": {
+                "invalidPath": "Selecione um executável válido do editor de código.",
+                "dialog": "Não foi possível abrir o seletor de arquivos.",
+                "save": "Não foi possível salvar as configurações do editor de código."
+            }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Desativar {{editor}}?",
+            "usage": "Projetos configurados: {{count}}. Projetos .NET: {{dotnetCount}}.",
+            "existingProjects": "Os projetos existentes manterão este editor e as configurações atuais do editor Godot. Eles poderão continuar usando-o enquanto permanecer instalado.",
+            "newProjects": "O editor não ficará disponível para novas seleções nem para a detecção automática de projetos.",
+            "disable": "Desativar"
+        }
+    },
     "tools": {
         "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma varredura completa se você alterou instalações neste sistema.",
         "actions": {
@@ -85,19 +154,6 @@
             "description": "Git é um sistema de controle de versão distribuído para gerenciar alterações de código e colaboração.",
             "installed": "Instalado:",
             "version": "Versão:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Um editor de código rápido e extensível com suporte a GDScript e .NET para o Godot.",
-            "notDetectedTitle": "Visual Studio Code não detectado!",
-            "notDetectedMessage": "O Godot Launcher só consegue detectar automaticamente o VS Code se ele estiver no PATH. Como alternativa, informe abaixo o caminho para o executável.",
-            "pathLabel": "Caminho para o executável do Visual Studio Code",
-            "selectExecutable": "Selecionar executável do Visual Studio Code",
-            "autodetected": "(detectado automaticamente)",
-            "noPathSet": "nenhum caminho definido",
-            "clearCustomPath": "Limpar caminho personalizado",
-            "waitingForDialog": "Aguardando janela...",
-            "installed": "Instalado:"
         }
     },
     "updates": {

@@ -10,6 +10,7 @@ import {
     addProjectToList,
     getStoredProjectsList,
     removeProjectFromList,
+    type StoredProjectDetails,
     storeProjectsList,
 } from './projects.utils.js';
 
@@ -95,7 +96,7 @@ describe('projects.utils', () => {
             version_number: 4,
             version: '4.2.0',
             withGit: false,
-            withVSCode: false,
+            codeEditorId: null,
             open_windowed: false,
             release: {
                 version: '4.2.0',
@@ -127,7 +128,7 @@ describe('projects.utils', () => {
             version_number: 4,
             version: '4.1.0',
             withGit: false,
-            withVSCode: false,
+            codeEditorId: null,
             open_windowed: false,
             release: {
                 version: '4.1.0',
@@ -168,7 +169,7 @@ describe('projects.utils', () => {
                 version_number: 4,
                 version: '4.2.0',
                 withGit: false,
-                withVSCode: false,
+                codeEditorId: null,
                 open_windowed: false,
                 release: {
                     version: '4.2.0',
@@ -197,7 +198,7 @@ describe('projects.utils', () => {
                 version_number: 4,
                 version: '4.2.0',
                 withGit: false,
-                withVSCode: false,
+                codeEditorId: null,
                 open_windowed: false,
                 release: {
                     version: '4.2.0',
@@ -222,5 +223,58 @@ describe('projects.utils', () => {
         );
         expect(updated).toHaveLength(1);
         expect(updated[0].path).toBe('/projects/keep');
+    });
+
+    it('copies legacy VS Code projects into the canonical code editor field', async () => {
+        const legacyProject = {
+            path: '/projects/legacy',
+            last_opened: null,
+            withVSCode: true,
+        } as unknown as StoredProjectDetails;
+
+        fs.writeFileSync(
+            projectsFile,
+            JSON.stringify([legacyProject], null, 4),
+            'utf-8',
+        );
+
+        const [storedProject] = await getStoredProjectsList(projectsFile);
+        expect(storedProject.codeEditorId).toBe('vscode');
+
+        await storeProjectsList(projectsFile, [storedProject]);
+
+        const [persistedProject] = JSON.parse(
+            fs.readFileSync(projectsFile, 'utf-8'),
+        ) as StoredProjectDetails[];
+        expect(persistedProject.codeEditorId).toBe('vscode');
+        expect(persistedProject.withVSCode).toBe(true);
+    });
+
+    it('mirrors the legacy VS Code flag for opted-in projects', async () => {
+        await storeProjectsList(projectsFile, [
+            {
+                path: '/projects/none',
+                last_opened: null,
+                codeEditorId: null,
+            } as ProjectDetails,
+            {
+                path: '/projects/vscode',
+                last_opened: null,
+                codeEditorId: 'vscode',
+            } as ProjectDetails,
+        ]);
+
+        const persistedProjects = JSON.parse(
+            fs.readFileSync(projectsFile, 'utf-8'),
+        ) as StoredProjectDetails[];
+        const noCodeEditor = persistedProjects.find(
+            (project) => project.codeEditorId === null,
+        );
+        const withVSCode = persistedProjects.find(
+            (project) => project.codeEditorId === 'vscode',
+        );
+
+        expect(noCodeEditor?.withVSCode).toBe(false);
+        expect(withVSCode?.withVSCode).toBe(true);
     });
 });

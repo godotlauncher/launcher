@@ -5,29 +5,34 @@ import { FormField } from './formField.component';
 export type TextFieldProps = {
     id: string;
     label: string;
+    labelAction?: React.ReactNode;
     help: string;
     value: string;
     onChange: (value: string) => void;
     onBlur?: () => void;
     placeholder?: string;
     error?: string;
+    disabled?: boolean;
     compact?: boolean;
 };
 
 export const TextField: React.FC<TextFieldProps> = ({
     id,
     label,
+    labelAction,
     help,
     value,
     onChange,
     onBlur,
     placeholder,
     error,
+    disabled = false,
     compact = false,
 }) => (
     <FormField
         id={id}
         label={label}
+        labelAction={labelAction}
         help={help}
         error={error}
         compact={compact}
@@ -43,6 +48,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
             placeholder={placeholder}
+            disabled={disabled}
         />
     </FormField>
 );

@@ -19,7 +19,14 @@ import {
 } from './jsonStoreFactory.js';
 import { getDefaultDirs } from './platform.utils.js';
 
-type StoredUserPreferences = Partial<UserPreferences>;
+export type StoredUserPreferences = Partial<UserPreferences> & {
+    vs_code_path?: string;
+};
+
+export type UserPreferencesSnapshot = {
+    stored: StoredUserPreferences;
+    merged: UserPreferences;
+};
 
 let prefsPathCache: string | null = null;
 let prefsStore: TypedJsonStore<StoredUserPreferences> | null = null;
@@ -35,9 +42,12 @@ function mergeWithDefaults(
     defaultPrefs: UserPreferences,
     prefs: StoredUserPreferences,
 ): UserPreferences {
+    const { vs_code_path: _legacyVSCodePath, ...runtimePrefs } =
+        clonePrefs(prefs);
+
     return {
         ...clonePrefs(defaultPrefs),
-        ...clonePrefs(prefs),
+        ...runtimePrefs,
     };
 }
 
@@ -110,7 +120,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     const pathModule = platform === 'win32' ? path.win32 : path.posix;
 
     return {
-        prefs_version: 3,
+        prefs_version: 4,
         install_location: pathModule.resolve(defaultPrefs.dataDir),
         config_location: pathModule.resolve(defaultPrefs.configDir),
         projects_location: pathModule.resolve(defaultPrefs.projectDir),
@@ -124,7 +134,6 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         first_run: true,
         windows_enable_symlinks: false,
         windows_symlink_win_notify: platform !== 'win32',
-        vs_code_path: '',
         language: 'system', // Default to system language detection
     };
 }
@@ -150,10 +159,21 @@ export async function readPrefsFromDisk(
     prefsPath: string,
     defaultPrefs: UserPreferences,
 ): Promise<UserPreferences> {
+    const snapshot = await readPrefsSnapshotFromDisk(prefsPath, defaultPrefs);
+    return snapshot.merged;
+}
+
+export async function readPrefsSnapshotFromDisk(
+    prefsPath: string,
+    defaultPrefs: UserPreferences,
+): Promise<UserPreferencesSnapshot> {
     const store = ensurePrefsStore(prefsPath);
     const storedPrefs = await store.read();
     const merged = mergeWithDefaults(defaultPrefs, storedPrefs);
-    return clonePrefs(merged);
+    return {
+        stored: clonePrefs(storedPrefs),
+        merged: clonePrefs(merged),
+    };
 }
 
 export async function writePrefsToDisk(

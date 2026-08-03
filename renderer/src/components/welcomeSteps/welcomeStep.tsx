@@ -21,6 +21,7 @@ export const WelcomeStep: React.FC = () => {
             <p>
                 {t('welcomeStep.enjoy')}
                 <button
+                    data-external-link=""
                     type="button"
                     className="btn btn-link p-0 flex gap-1"
                     onClick={() =>

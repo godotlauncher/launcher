@@ -1,14 +1,20 @@
+import type {
+    CodeEditorId,
+    CodeEditorIntegrationBridge,
+} from '../codeEditorIntegration/index.js';
 import type { UserPreferences } from '../preferences/index.js';
 import type {
     AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CreateProjectResult,
+    LaunchProjectOptions,
+    LaunchProjectResult,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
-    SetProjectVSCodeResult,
+    SetProjectCodeEditorResult,
 } from '../projects/index.js';
 import type {
     AvailableReleasesResult,
@@ -99,7 +105,7 @@ export type AppBridge = {
         name: string,
         release: InstalledRelease,
         renderer: RendererType[5],
-        withVSCode: boolean,
+        codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
     ): Promise<CreateProjectResult>;
@@ -121,14 +127,17 @@ export type AppBridge = {
         project: ProjectDetails,
         openWindowed: boolean,
     ): Promise<ProjectDetails>;
-    setProjectVSCode(
+    setProjectCodeEditor(
         project: ProjectDetails,
-        enable: boolean,
-    ): Promise<SetProjectVSCodeResult>;
+        codeEditorId: CodeEditorId | null,
+    ): Promise<SetProjectCodeEditorResult>;
     initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails>;
     exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;
-    launchProject(project: ProjectDetails): Promise<void>;
+    launchProject(
+        project: ProjectDetails,
+        options?: LaunchProjectOptions,
+    ): Promise<LaunchProjectResult>;
     checkProjectValid(project: ProjectDetails): Promise<ProjectDetails>;
     checkAllProjectsValid(): Promise<ProjectDetails[]>;
     getInstalledTools(): Promise<InstalledTool[]>;
@@ -152,4 +161,5 @@ export type AppBridge = {
 
 export type AppBridgeNamespaces = {
     app: AppBridge;
+    codeEditorIntegration: CodeEditorIntegrationBridge;
 };

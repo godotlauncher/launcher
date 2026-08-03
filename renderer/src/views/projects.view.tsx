@@ -1,4 +1,8 @@
-import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
+import type {
+    CodeEditorId,
+    InstalledRelease,
+    ProjectDetails,
+} from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
@@ -33,7 +37,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     createOpen: controlledCreateOpen,
     onCreateOpenChange,
 }) => {
-    const { t } = useTranslation(['projects', 'common', 'menus', 'dialogs']);
+    const { t, i18n } = useTranslation([
+        'projects',
+        'common',
+        'menus',
+        'dialogs',
+    ]);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -72,9 +81,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     } = useRelease();
     const {
         projects,
+        codeEditorSettings,
         setProjectEditor,
         setProjectWindowed,
-        setProjectVSCode,
+        setProjectCodeEditor,
         initializeProjectGit,
         exportProjectEditorSettings,
         importProjectEditorSettings,
@@ -93,9 +103,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectActionsMenu,
         onProjectMoreOptions,
         runProjectAction,
-        showRecoveredVSCodeConfigWarning,
+        showRecoveredCodeEditorConfigWarning,
         handleToggleProjectWindowed,
-        handleToggleProjectVSCode,
         handleInitializeProjectGit,
         handleImportEditorSettings,
         handleRemoveProject,
@@ -106,7 +115,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addCustomConfirm,
         updatePreferences,
         setProjectWindowed,
-        setProjectVSCode,
         initializeProjectGit,
         importProjectEditorSettings,
         removeProject,
@@ -123,7 +131,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addProject,
         installRelease,
         setProjectEditor,
-        showRecoveredVSCodeConfigWarning,
+        showRecoveredCodeEditorConfigWarning,
     });
     const {
         isDraggingOver,
@@ -184,6 +192,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             await checkAllReleasesValid();
             addAlert(t('common:error'), t('messages.invalidReleaseEditor'));
         }
+    };
+
+    const onSetProjectCodeEditor = async (
+        project: ProjectDetails,
+        codeEditorId: CodeEditorId | null,
+    ): Promise<ProjectDetails> => {
+        const updatedProject = await setProjectCodeEditor(
+            project,
+            codeEditorId,
+        );
+        showRecoveredCodeEditorConfigWarning(
+            updatedProject.recoveredCodeEditorConfigFiles,
+        );
+        return updatedProject;
     };
 
     const filteredRows = filterAndSortProjects(projects, textSearch, sortData);
@@ -251,7 +273,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                         onClick={() =>
                                             setCurrentView('installs')
                                         }
-                                        className="underline cursor-pointer"
+                                        className="underline"
                                     />
                                 ),
                             }}
@@ -262,7 +284,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 <ProjectsTable
                     rows={filteredRows}
                     loading={loading}
+                    locale={i18n.resolvedLanguage ?? i18n.language ?? 'en'}
                     busyProjects={busyProjects}
+                    codeEditorSettings={codeEditorSettings}
                     sortData={sortData}
                     onSortChange={setSortData}
                     isInstalledRelease={isInstalledRelease}
@@ -276,7 +300,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             <ProjectActionsMenu
                 project={projectActionsMenu?.project ?? null}
                 anchorRect={projectActionsMenu?.anchorRect ?? null}
-                hasVSCode={projectActionsMenu?.hasVSCode ?? false}
                 hasGit={projectActionsMenu?.hasGit ?? false}
                 t={t}
                 onClose={() => setProjectActionsMenu(null)}
@@ -289,7 +312,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     runProjectAction(() => openProjectEditorFolder(project))
                 }
                 onToggleWindowed={handleToggleProjectWindowed}
-                onToggleVSCode={handleToggleProjectVSCode}
                 onInitializeGit={handleInitializeProjectGit}
                 onExportEditorSettings={(project) =>
                     runProjectAction(() => exportProjectEditorSettings(project))
@@ -306,6 +328,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     }
                 }}
                 onRenameProject={renameProject}
+                onSetProjectCodeEditor={onSetProjectCodeEditor}
                 getProjectGodotName={getProjectGodotName}
             />
             {createOpen && (

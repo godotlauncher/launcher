@@ -7,6 +7,7 @@ import {
 } from '@mariodebono/di-electron-i18n';
 import { AppController } from './app.controller.js';
 import { AppLifecycleService } from './app-lifecycle.service.js';
+import { CodeEditorIntegrationModule } from './codeEditorIntegration/codeEditorIntegration.module.js';
 import {
     type AppConfig,
     AppConfigSchema,
@@ -27,6 +28,7 @@ import {
             load: [getCurrentAppConfig],
             validationSchema: AppConfigSchema,
         }),
+        CodeEditorIntegrationModule,
         I18nModule.forRootAsync({
             inject: [ConfigService<AppConfig>],
             useFactory: (configService: ConfigService<AppConfig>) => {

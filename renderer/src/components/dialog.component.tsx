@@ -14,7 +14,7 @@ export const Dialog: React.FC<DialogProps> = ({
     footer,
 }) => {
     return (
-        <div className="absolute z-50 inset-0 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed z-60 inset-0 bg-black/80 flex items-center justify-center p-4">
             <section
                 className="bg-base-100 border border-base-300 rounded-lg shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden"
                 role="dialog"
@@ -35,7 +35,7 @@ export const Dialog: React.FC<DialogProps> = ({
                     {children}
                 </div>
                 {footer && (
-                    <footer className="px-5 py-4 border-t border-base-300 bg-base-200/40 flex justify-end gap-2">
+                    <footer className="px-5 py-4 border-t border-base-300 bg-base-200/40 flex flex-wrap justify-end gap-2">
                         {footer}
                     </footer>
                 )}

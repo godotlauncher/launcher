@@ -21,6 +21,9 @@ import { app, dialog, autoUpdater as electronAutoUpdater } from 'electron';
 import logger from 'electron-log/main.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
+import { launchProject } from './commands/projects.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 import { createMenu } from './helpers/menu.helper.js';
@@ -33,6 +36,7 @@ import { getAppIconPath } from './pathResolver.js';
 import { isCacheStale, refreshToolCache } from './services/toolCache.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { ensurePreferencesStorage } from './utils/prefs.utils.js';
+import { ipcWebContentsSend } from './utils.js';
 
 @Injectable()
 export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
@@ -45,6 +49,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly electronAppService: ElectronAppService,
         private readonly windowManager: WindowManagerService,
         private readonly i18nService: I18nService,
+        private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
     ) {}
 
     onModuleInit(): void {
@@ -102,7 +107,24 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         mainWindow.setIcon(iconPath);
         setMainWindow(mainWindow);
 
-        await createTray(mainWindow);
+        await createTray(
+            mainWindow,
+            async (project) => {
+                const result = await launchProject(
+                    project,
+                    this.codeEditorIntegrationService,
+                );
+                if (!result.launched) {
+                    this.showMainWindow();
+                    ipcWebContentsSend(
+                        'project-launch-code-editor-warning',
+                        mainWindow.webContents,
+                        { project, result },
+                    );
+                }
+            },
+            () => this.showMainWindow(),
+        );
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         } else {
@@ -126,7 +148,9 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
             },
         );
 
-        this.disposeFocusRevalidation = setupFocusRevalidation(mainWindow);
+        this.disposeFocusRevalidation = setupFocusRevalidation(mainWindow, () =>
+            this.codeEditorIntegrationService.listIntegrationSettings(),
+        );
         electronAutoUpdater.on(
             'before-quit-for-update',
             this.handleBeforeQuitForUpdate,

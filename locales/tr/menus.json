@@ -21,8 +21,6 @@
         "exportEditorSettings": "Editör Ayarlarını Dosyaya Aktar",
         "importEditorSettings": "Editör Ayarlarını Dosyadan İçe Aktar",
         "removeFromList": "Projeyi Listeden Kaldır",
-        "useVSCode": "Visual Studio Code'u metin düzenleyici olarak kullan",
-        "useVSCodeTooltip": "Bu proje için Visual Studio Code'u harici betik düzenleyici olarak aç veya kapat.",
         "initGit": "Git Deposu Başlat",
         "initGitTooltip": "Bu proje klasöründe yeni bir Git deposu oluşturur."
     },

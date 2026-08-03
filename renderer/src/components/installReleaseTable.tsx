@@ -3,6 +3,7 @@ import { HardDrive, HardDriveDownload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 import { ReleaseInstallProgressIndicator } from './releaseInstallProgress.component';
+import { Tooltip } from './ui/tooltip.component';
 
 type InstallReleaseTableProps = {
     releases: ReleaseSummary[];
@@ -69,15 +70,16 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                 {getInstalledRelease(row.version, false)
                                     ?.valid !== false &&
                                 getInstalledRelease(row.version, false) ? (
-                                    <p
-                                        className="tooltip tooltip-left flex items-center text-info gap-1"
-                                        data-tip={t(
+                                    <Tooltip
+                                        className="flex items-center text-info gap-1"
+                                        placement="left"
+                                        tip={t(
                                             'table.tooltips.installedGDScript',
                                             { version: row.version },
                                         )}
                                     >
                                         <HardDrive /> {t('table.gdscript')}
-                                    </p>
+                                    </Tooltip>
                                 ) : isDownloadingRelease(row.version, false) &&
                                   standardProgress ? (
                                     <ReleaseInstallProgressIndicator
@@ -86,9 +88,10 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                     />
                                 ) : getInstalledRelease(row.version, false)
                                       ?.valid === false ? (
-                                    <p
-                                        className="tooltip tooltip-left flex items-center"
-                                        data-tip={t(
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
                                             'table.tooltips.reinstallGDScript',
                                             { version: row.version },
                                         )}
@@ -114,11 +117,12 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                             })}{' '}
                                             {t('table.gdscript')}
                                         </button>
-                                    </p>
+                                    </Tooltip>
                                 ) : (
-                                    <p
-                                        className="tooltip tooltip-left flex items-center"
-                                        data-tip={t(
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
                                             'table.tooltips.downloadGDScript',
                                             { version: row.version },
                                         )}
@@ -141,23 +145,24 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                             <HardDriveDownload />{' '}
                                             {t('table.gdscript')}
                                         </button>
-                                    </p>
+                                    </Tooltip>
                                 )}
                             </td>
                             <td>
                                 {getInstalledRelease(row.version, true)
                                     ?.valid !== false &&
                                 getInstalledRelease(row.version, true) ? (
-                                    <p
-                                        className="tooltip tooltip-left flex items-center gap-1 text-xs text-info"
-                                        data-tip={t(
+                                    <Tooltip
+                                        className="flex items-center gap-1 text-xs text-info"
+                                        placement="left"
+                                        tip={t(
                                             'table.tooltips.installedDotNet',
                                             { version: row.version },
                                         )}
                                     >
                                         <HardDrive />
                                         {t('table.dotnet')}
-                                    </p>
+                                    </Tooltip>
                                 ) : isDownloadingRelease(row.version, true) &&
                                   dotNetProgress ? (
                                     <ReleaseInstallProgressIndicator
@@ -166,9 +171,10 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                     />
                                 ) : getInstalledRelease(row.version, true)
                                       ?.valid === false ? (
-                                    <p
-                                        className="tooltip tooltip-left flex items-center"
-                                        data-tip={t(
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
                                             'table.tooltips.reinstallDotNet',
                                             { version: row.version },
                                         )}
@@ -194,11 +200,12 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                             })}{' '}
                                             {t('table.dotnet')}
                                         </button>
-                                    </p>
+                                    </Tooltip>
                                 ) : (
-                                    <p
-                                        className="tooltip tooltip-left flex items-center"
-                                        data-tip={t(
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
                                             'table.tooltips.downloadDotNet',
                                             { version: row.version },
                                         )}
@@ -218,7 +225,7 @@ export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
                                             <HardDriveDownload />
                                             {t('table.dotnet')}
                                         </button>
-                                    </p>
+                                    </Tooltip>
                                 )}
                             </td>
                         </tr>

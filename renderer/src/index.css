@@ -74,6 +74,20 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+@keyframes reveal-after-delay {
+    from {
+        visibility: hidden;
+    }
+
+    to {
+        visibility: visible;
+    }
+}
+
+.reveal-after-one-second {
+    animation: reveal-after-delay 0s linear 1s both;
+}
+
 @font-face {
     font-family: "Nunito Sans";
     src: url("/assets/Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.ttf")
@@ -121,4 +135,36 @@ input:focus {
     /* user-select: none; */
     /* outline: none !important; */
     @apply outline-none;
+}
+
+/* Desktop controls use the native arrow. External links opt into the hand. */
+#root
+    :where(
+        a,
+        button,
+        [role="button"],
+        [role="link"],
+        [role="menuitem"],
+        [role="option"],
+        [role="tab"],
+        input[type="button"],
+        input[type="checkbox"],
+        input[type="file"],
+        input[type="radio"],
+        input[type="range"],
+        input[type="reset"],
+        input[type="submit"],
+        label,
+        select,
+        summary
+    ) {
+    cursor: default;
+}
+
+#root [data-external-link] {
+    cursor: pointer;
+}
+
+#root :where(:disabled, [aria-disabled="true"], .cursor-not-allowed) {
+    cursor: not-allowed;
 }

@@ -6,6 +6,7 @@
         "appearance": "Görünüm",
         "behavior": "Davranış",
         "tools": "Araçlar",
+        "codeEditors": "Kod Düzenleyicileri",
         "updates": "Güncellemeler"
     },
     "appearance": {
@@ -68,6 +69,74 @@
             "system": "Sistem (Otomatik algıla)"
         }
     },
+    "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
+        "actions": {
+            "scanning": "Yeniden taranıyor...",
+            "setDefault": "Varsayılan olarak ayarla",
+            "edit": "Düzenle",
+            "save": "Kaydet",
+            "saving": "Kaydediliyor...",
+            "cancel": "İptal",
+            "rescan": "Yeniden tara"
+        },
+        "status": {
+            "available": "Mevcut",
+            "missing": "Bulunamadı",
+            "loadFailed": "Kod düzenleyicileri yüklenemedi.",
+            "default": "Varsayılan kod düzenleyici",
+            "enabled": "Etkin",
+            "disabled": "Devre dışı",
+            "rescanFailed": "Yeniden taranamadı.",
+            "projectUsage": "Yapılandırılmış projeler: {{count}}. .NET projeleri: {{dotnetCount}}."
+        },
+        "overview": "Kod düzenleyici algılamasını yönetin ve yeni projeler için hangi düzenleyicinin önceden seçileceğini belirleyin.",
+        "drawer": {
+            "title": "{{editor}} ayarları",
+            "fallbackTitle": "Kod düzenleyici ayarları",
+            "integration": {
+                "enabled": "Etkin"
+            },
+            "path": {
+                "label": "Yürütülebilir dosya yolu",
+                "autodetectedLabel": "Yürütülebilir dosya yolu (otomatik algılandı)",
+                "help": "Otomatik algılamayı kullanmak için boş bırakın. Özel bir yol algılanan kurulumun yerine geçer.",
+                "automatic": "Otomatik algılama",
+                "browse": "Gözat",
+                "reset": "Otomatik algılamayı kullan",
+                "select": "Kod düzenleyici yürütülebilir dosyasını seç",
+                "allFiles": "Tüm Dosyalar",
+                "waiting": "Dosya seçimi bekleniyor..."
+            },
+            "textEditor": {
+                "title": "Harici metin düzenleyici",
+                "help": "Godot dosyaları bu kod düzenleyicide açtığında bu bağımsız değişkenler kullanılır.",
+                "flagsLabel": "Başlatma bağımsız değişkenleri",
+                "flagsHelp": "Godot yer tutucuları {project}, {file}, {line} ve {col} değerlerini içerir. Boş bir değer geçerli bir geçersiz kılmadır.",
+                "reset": "Varsayılana sıfırla"
+            },
+            "dotnet": {
+                "supported": "Destekleniyor"
+            },
+            "errors": {
+                "invalidPath": "Geçerli bir kod düzenleyici yürütülebilir dosyası seçin.",
+                "dialog": "Dosya seçici açılamıyor.",
+                "save": "Kod düzenleyici ayarları kaydedilemiyor."
+            }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "{{editor}} devre dışı bırakılsın mı?",
+            "usage": "Yapılandırılmış projeler: {{count}}. .NET projeleri: {{dotnetCount}}.",
+            "existingProjects": "Mevcut projeler bu düzenleyici seçimini ve geçerli Godot düzenleyici ayarlarını korur. Kurulu olduğu sürece kullanmaya devam edebilirler.",
+            "newProjects": "Düzenleyici yeni seçimler ve otomatik proje algılama için kullanılamaz.",
+            "disable": "Devre dışı bırak"
+        }
+    },
     "tools": {
         "overview": "Bu sekme odaklandığında başlatıcı önbelleğe alınmış araç yollarını hızlıca doğrular. Bu sistemde kurulumları değiştirdiyseniz tam bir yeniden tarama çalıştırın.",
         "actions": {
@@ -85,19 +154,6 @@
             "description": "Git, kod değişikliklerini yönetmek ve işbirliği yapmak için dağıtık bir sürüm kontrol sistemidir.",
             "installed": "Kurulu:",
             "version": "Sürüm:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Godot için GDScript ve .NET desteğine sahip hızlı, genişletilebilir bir kod editörü.",
-            "notDetectedTitle": "Visual Studio Code Algılanamadı!",
-            "notDetectedMessage": "Godot Launcher, VS Code'u yalnızca PATH'te yüklüyse otomatik olarak algılayabilir. Bunun yerine aşağıdan VS Code çalıştırılabilir dosyasının yolunu belirtebilirsiniz",
-            "pathLabel": "Visual Studio Code Çalıştırılabilir Dosya Yolu",
-            "selectExecutable": "Visual Studio Code Çalıştırılabilir Dosyasını Seç",
-            "autodetected": "(otomatik algılandı)",
-            "noPathSet": "yol ayarlanmadı",
-            "clearCustomPath": "Özel Yolu Temizle",
-            "waitingForDialog": "İletişim kutusu bekleniyor...",
-            "installed": "Kurulu:"
         }
     },
     "updates": {

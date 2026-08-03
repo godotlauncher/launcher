@@ -75,6 +75,27 @@ describe('jsonStore', () => {
         });
     });
 
+    it('persists normalized disk content on the next write', async () => {
+        const filePath = createTempFile('normalized.json');
+        fs.writeFileSync(filePath, JSON.stringify({ count: 1 }), 'utf-8');
+
+        const store = createJsonStore<{ count: number; migrated?: boolean }>({
+            pathProvider: () => filePath,
+            defaultValue: () => ({ count: 0 }),
+            normalize: (value) => ({ ...value, migrated: true }),
+        });
+
+        const snapshot = await store.read();
+        expect(snapshot.value).toEqual({ count: 1, migrated: true });
+
+        await store.write(snapshot.value);
+
+        expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({
+            count: 1,
+            migrated: true,
+        });
+    });
+
     it('serialises concurrent updates', async () => {
         const filePath = createTempFile('concurrent.json');
         const store = createJsonStore<number[]>({

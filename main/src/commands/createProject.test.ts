@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { createProject } from './createProject.js';
 
 const fsMocks = vi.hoisted(() => ({
@@ -78,13 +79,6 @@ const projectUtilsMocks = vi.hoisted(() => ({
 
 vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
 
-const vscodeMocks = vi.hoisted(() => ({
-    addOrUpdateVSCodeRecommendedExtensions: vi.fn(),
-    addVSCodeSettings: vi.fn(),
-}));
-
-vi.mock('../utils/vscode.utils.js', () => vscodeMocks);
-
 const installedToolsMocks = vi.hoisted(() => ({
     getInstalledTools: vi.fn(),
 }));
@@ -105,6 +99,13 @@ vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
     writeProjectLauncherConfig:
         projectLauncherConfigMocks.writeProjectLauncherConfig,
 }));
+
+const codeEditorIntegrationServiceMocks = {
+    assertIntegrationSelectable: vi.fn(),
+    applyToProject: vi.fn(),
+};
+const codeEditorIntegrationService =
+    codeEditorIntegrationServiceMocks as unknown as CodeEditorIntegrationService;
 
 describe('createProject', () => {
     const release: InstalledRelease = {
@@ -161,6 +162,13 @@ describe('createProject', () => {
         projectLauncherConfigMocks.writeProjectLauncherConfig.mockResolvedValue(
             undefined,
         );
+        codeEditorIntegrationServiceMocks.assertIntegrationSelectable.mockResolvedValue(
+            undefined,
+        );
+        codeEditorIntegrationServiceMocks.applyToProject.mockResolvedValue({
+            editorSettingsFile: '/configured/editor_settings.tres',
+            recoveredConfigFiles: [],
+        });
     });
 
     it('writes project launcher config after creating a project', async () => {
@@ -168,8 +176,9 @@ describe('createProject', () => {
             'Test Project',
             release,
             'FORWARD_PLUS',
+            null,
             false,
-            false,
+            codeEditorIntegrationService,
         );
 
         expect(result.success).toBe(true);
@@ -177,11 +186,78 @@ describe('createProject', () => {
             projectLauncherConfigMocks.writeProjectLauncherConfig,
         ).toHaveBeenCalledWith(
             path.resolve('/projects/Test-Project'),
-            expect.objectContaining({ version: '4.3-stable' }),
-            '1.0.0',
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+            }),
         );
         expect(result.projectDetails?.icon_path).toBe(
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
         );
+    });
+
+    it('applies and persists the selected code editor integration', async () => {
+        const result = await createProject(
+            'Integrated Project',
+            release,
+            'FORWARD_PLUS',
+            'vscode',
+            false,
+            codeEditorIntegrationService,
+        );
+
+        expect(
+            codeEditorIntegrationServiceMocks.applyToProject,
+        ).toHaveBeenCalledWith(
+            'vscode',
+            expect.objectContaining({
+                projectPath: path.resolve('/projects/Integrated-Project'),
+                mono: false,
+            }),
+        );
+        expect(result.projectDetails?.codeEditorId).toBe('vscode');
+        expect(
+            projectLauncherConfigMocks.writeProjectLauncherConfig,
+        ).toHaveBeenCalledWith(
+            path.resolve('/projects/Integrated-Project'),
+            expect.objectContaining({
+                release: expect.objectContaining({ version: '4.3-stable' }),
+                launcherVersion: '1.0.0',
+            }),
+        );
+        expect(result.projectDetails?.editor_settings_file).toBe(
+            '/configured/editor_settings.tres',
+        );
+    });
+
+    it.each([
+        'disabled',
+        'unavailable',
+    ])('rejects a directly requested %s integration before writing project files', async (state) => {
+        codeEditorIntegrationServiceMocks.assertIntegrationSelectable.mockRejectedValue(
+            new Error(`Visual Studio Code is ${state}.`),
+        );
+
+        const result = await createProject(
+            'Rejected Project',
+            release,
+            'FORWARD_PLUS',
+            'vscode',
+            false,
+            codeEditorIntegrationService,
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: `Visual Studio Code is ${state}.`,
+        });
+        expect(
+            codeEditorIntegrationServiceMocks.assertIntegrationSelectable,
+        ).toHaveBeenCalledWith('vscode');
+        expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+        expect(fsMocks.promises.writeFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
     });
 });

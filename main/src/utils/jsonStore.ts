@@ -33,6 +33,7 @@ export class JsonStoreConflictError extends Error {
 type CachedEntry = {
     value: unknown;
     hash: string;
+    needsPersistence?: boolean;
 };
 
 const storeCache = new Map<string, CachedEntry>();
@@ -162,7 +163,11 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
         const normalized = await normalizeValue(fromDisk);
         const cachedValue = cloneJson(normalized);
         const hash = hashJson(cachedValue);
-        const entry = { value: cachedValue, hash };
+        const entry = {
+            value: cachedValue,
+            hash,
+            needsPersistence: hashJson(fromDisk) !== hash,
+        };
         storeCache.set(path, entry);
         return snapshotFromCache(path, entry);
     }
@@ -184,7 +189,11 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
             throw new JsonStoreConflictError(path);
         }
 
-        if (existing && existing.hash === newHash) {
+        if (
+            existing &&
+            existing.hash === newHash &&
+            !existing.needsPersistence
+        ) {
             storeCache.set(path, existing);
             return snapshotFromCache(path, existing);
         }

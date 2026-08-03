@@ -64,3 +64,28 @@ test('Can navigate the main window', async () => {
         await expect(mainPage.getByTestId('helpTitle')).toBeVisible();
     });
 });
+
+test('Uses desktop cursors for app controls and a hand for external links', async () => {
+    await expect(mainPage.getByTestId('btnProjects')).toHaveCSS(
+        'cursor',
+        'default',
+    );
+
+    await mainPage.getByTestId('btnSettings').click();
+    await expect(mainPage.getByTestId('tabAppearance')).toHaveCSS(
+        'cursor',
+        'default',
+    );
+    await mainPage.getByTestId('tabAppearance').click();
+    await expect(mainPage.getByTestId('themeLight')).toHaveCSS(
+        'cursor',
+        'default',
+    );
+
+    await mainPage.getByTestId('btnHelp').click();
+    await expect(
+        mainPage.getByRole('button', {
+            name: 'Third-party copyright notices',
+        }),
+    ).toHaveCSS('cursor', 'pointer');
+});

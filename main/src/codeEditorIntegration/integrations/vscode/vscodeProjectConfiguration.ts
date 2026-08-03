@@ -22,10 +22,6 @@ function isStringArray(value: unknown): value is string[] {
     );
 }
 
-function isSettingsJSONObject(value: unknown): value is JSONObject {
-    return isJSONObject(value);
-}
-
 function isExtensionsJSONObject(
     value: unknown,
 ): value is JSONObject & { recommendations?: string[] } {
@@ -44,10 +40,6 @@ function isLaunchJSONObject(
         Array.isArray(value.configurations) &&
         value.configurations.every(isJSONObject)
     );
-}
-
-function dedupeRecoveredFiles(paths: string[]): string[] {
-    return [...new Set(paths)];
 }
 
 async function preserveInvalidVSCodeConfig(filePath: string): Promise<string> {
@@ -227,7 +219,7 @@ function createVSCodeLaunchConfig(programPath: string): JSONObject {
  *
  * @returns A promise that resolves when the settings have been successfully added or updated.
  */
-export async function addVSCodeSettings(
+export async function updateVSCodeSettings(
     projectDir: string,
     launchPath: string,
     editorVersion: number,
@@ -244,7 +236,7 @@ export async function addVSCodeSettings(
     let settingsText = JSON.stringify(vsCodeConfig, null, 4);
     const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
         settingsFile,
-        isSettingsJSONObject,
+        isJSONObject,
         'settings.json',
     );
 
@@ -271,85 +263,11 @@ export async function addVSCodeSettings(
 
     if (isMono) {
         recoveredFiles.push(
-            ...((await addVSCodeNETLaunchConfig(projectDir, launchPath)) ?? []),
+            ...(await addVSCodeNETLaunchConfig(projectDir, launchPath)),
         );
     }
 
-    return dedupeRecoveredFiles(recoveredFiles);
-}
-
-/**
- * Updates VSCode settings for a Godot project (merges with existing settings, preserving user customizations).
- *
- * This function updates only the launcher-managed keys in an existing `.vscode/settings.json` file,
- * performing a deep merge to preserve all user settings and customizations. If the file doesn't exist,
- * it creates a new one.
- *
- * @param projectDir - The directory of the Godot project where the VSCode settings will be updated.
- * @param launchPath - The path to the Godot editor executable.
- * @param editorVersion - The version of the Godot editor (either 3 or 4).
- * @param isMono - Whether this is a mono/.NET build.
- *
- * @returns A promise that resolves when the settings have been successfully updated.
- */
-export async function updateVSCodeSettings(
-    projectDir: string,
-    launchPath: string,
-    editorVersion: number,
-    isMono: boolean,
-): Promise<string[]> {
-    const vsCodeConfig = createVSCodeSettings(launchPath, editorVersion);
-    const settingsPath = path.resolve(projectDir, '.vscode');
-
-    if (!fs.existsSync(settingsPath)) {
-        await fs.promises.mkdir(settingsPath, { recursive: true });
-    }
-
-    const settingsFile = path.resolve(settingsPath, 'settings.json');
-    let settingsText = JSON.stringify(vsCodeConfig, null, 4);
-    const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
-        settingsFile,
-        isSettingsJSONObject,
-        'settings.json',
-    );
-
-    if (parsed && raw !== null) {
-        const mergedExcludes =
-            isJSONObject(parsed['files.exclude']) &&
-            isJSONObject(vsCodeConfig['files.exclude'])
-                ? {
-                      ...parsed['files.exclude'],
-                      ...vsCodeConfig['files.exclude'],
-                  }
-                : vsCodeConfig['files.exclude'];
-
-        const { 'files.exclude': _filesExclude, ...topLevelConfig } =
-            vsCodeConfig;
-
-        settingsText = updateChangedJSONCProperties(
-            raw,
-            parsed,
-            topLevelConfig,
-        );
-        settingsText = updateJSONCObjectEntries(
-            settingsText,
-            'files.exclude',
-            parsed['files.exclude'],
-            mergedExcludes,
-        );
-    }
-
-    if (settingsText !== raw) {
-        await fs.promises.writeFile(settingsFile, settingsText, 'utf-8');
-    }
-
-    if (isMono) {
-        recoveredFiles.push(
-            ...((await addVSCodeNETLaunchConfig(projectDir, launchPath)) ?? []),
-        );
-    }
-
-    return dedupeRecoveredFiles(recoveredFiles);
+    return recoveredFiles;
 }
 
 /**
@@ -374,7 +292,7 @@ export async function addVSCodeNETLaunchConfig(
     projectDir: string,
     launchPath: string,
 ): Promise<string[]> {
-    const lanchJsonPath = path.resolve(projectDir, '.vscode', 'launch.json');
+    const launchJsonPath = path.resolve(projectDir, '.vscode', 'launch.json');
     const preLaunchTaskPath = path.resolve(projectDir, '.vscode', 'tasks.json');
 
     if (!fs.existsSync(path.resolve(projectDir, '.vscode'))) {
@@ -389,7 +307,7 @@ export async function addVSCodeNETLaunchConfig(
     }
 
     const { parsed, raw, recoveredFiles } = await readRecoverableVSCodeConfig(
-        lanchJsonPath,
+        launchJsonPath,
         isLaunchJSONObject,
         'launch.json',
     );
@@ -416,7 +334,7 @@ export async function addVSCodeNETLaunchConfig(
         );
     }
 
-    await fs.promises.writeFile(lanchJsonPath, launchConfigText);
+    await fs.promises.writeFile(launchJsonPath, launchConfigText);
 
     const preLaunchTask = {
         version: '2.0.0',
@@ -439,7 +357,7 @@ export async function addVSCodeNETLaunchConfig(
         );
     }
 
-    return dedupeRecoveredFiles(recoveredFiles);
+    return recoveredFiles;
 }
 
 /**
@@ -500,55 +418,5 @@ export async function addOrUpdateVSCodeRecommendedExtensions(
         );
     }
 
-    return dedupeRecoveredFiles(recoveredFiles);
-}
-
-/**
- * Retrieves the installation path of Visual Studio Code.
- *
- * This function checks for the installation path of Visual Studio Code based on the current platform.
- * It supports Windows (win32), macOS (darwin), and Linux (linux). If a specific path is provided and exists,
- * it returns that path. Otherwise, it checks the default installation locations for the respective platform.
- *
- * @param path - An optional path to check for the Visual Studio Code installation.
- * @returns A promise that resolves to the installation path of Visual Studio Code if found, or null if not found.
- */
-export async function getVSCodeInstallPath(
-    path?: string,
-): Promise<string | null> {
-    // only support win32, darwin, linux
-    if (!['win32', 'darwin', 'linux'].includes(process.platform)) {
-        return null;
-    }
-
-    // check if specified path exists and return it as is (user preference)
-    if (path && fs.existsSync(path)) {
-        return path;
-    }
-
-    const platform = process.platform as 'win32' | 'darwin' | 'linux';
-
-    // default locations for vscode for each platform
-    const defaultLocations = {
-        darwin: ['/Applications/Visual Studio Code.app'],
-        win32: [
-            'C:\\Program Files\\Microsoft VS Code\\Code.exe',
-            'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe',
-            process.env.LOCALAPPDATA +
-                '\\Programs\\Microsoft VS Code\\Code.exe',
-        ],
-        linux: ['/usr/share/code/code', '/usr/bin/code', '/snap/bin/code'],
-    };
-
-    const locations: string[] | undefined = defaultLocations[platform];
-
-    // check default locations for file exist and return first one found
-    if (locations) {
-        for (const location of locations) {
-            if (fs.existsSync(location)) {
-                return location;
-            }
-        }
-    }
-    return null;
+    return recoveredFiles;
 }

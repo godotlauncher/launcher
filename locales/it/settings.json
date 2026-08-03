@@ -6,6 +6,7 @@
         "appearance": "Aspetto",
         "behavior": "Comportamento",
         "tools": "Strumenti",
+        "codeEditors": "Editor di codice",
         "updates": "Aggiornamenti"
     },
     "appearance": {
@@ -68,6 +69,74 @@
             "system": "Sistema (rilevamento automatico)"
         }
     },
+    "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
+        "actions": {
+            "scanning": "Riscansionamento...",
+            "setDefault": "Imposta come predefinito",
+            "edit": "Modifica",
+            "save": "Salva",
+            "saving": "Salvataggio...",
+            "cancel": "Annulla",
+            "rescan": "Rileva di nuovo"
+        },
+        "status": {
+            "available": "Disponibile",
+            "missing": "Non trovato",
+            "loadFailed": "Impossibile caricare gli editor di codice.",
+            "default": "Editor di codice predefinito",
+            "enabled": "Abilitato",
+            "disabled": "Disabilitato",
+            "rescanFailed": "Impossibile eseguire una nuova rilevazione.",
+            "projectUsage": "Progetti configurati: {{count}}. Progetti .NET: {{dotnetCount}}."
+        },
+        "overview": "Gestisci il rilevamento degli editor di codice e scegli quale editor preselezionare per i nuovi progetti.",
+        "drawer": {
+            "title": "Impostazioni di {{editor}}",
+            "fallbackTitle": "Impostazioni dell'editor di codice",
+            "integration": {
+                "enabled": "Abilitato"
+            },
+            "path": {
+                "label": "Percorso dell'eseguibile",
+                "autodetectedLabel": "Percorso dell'eseguibile (rilevato automaticamente)",
+                "help": "Lascia vuoto per usare il rilevamento automatico. Un percorso personalizzato sostituisce l'installazione rilevata.",
+                "automatic": "Rilevamento automatico",
+                "browse": "Sfoglia",
+                "reset": "Usa rilevamento automatico",
+                "select": "Seleziona l'eseguibile dell'editor di codice",
+                "allFiles": "Tutti i file",
+                "waiting": "In attesa della selezione del file..."
+            },
+            "textEditor": {
+                "title": "Editor di testo esterno",
+                "help": "Questi argomenti vengono usati quando Godot apre i file in questo editor di codice.",
+                "flagsLabel": "Argomenti di avvio",
+                "flagsHelp": "I segnaposto di Godot includono {project}, {file}, {line} e {col}. Un valore vuoto è una sostituzione valida.",
+                "reset": "Ripristina valore predefinito"
+            },
+            "dotnet": {
+                "supported": "Supportato"
+            },
+            "errors": {
+                "invalidPath": "Seleziona un eseguibile valido dell'editor di codice.",
+                "dialog": "Impossibile aprire il selettore di file.",
+                "save": "Impossibile salvare le impostazioni dell'editor di codice."
+            }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Disabilitare {{editor}}?",
+            "usage": "Progetti configurati: {{count}}. Progetti .NET: {{dotnetCount}}.",
+            "existingProjects": "I progetti esistenti manterranno questo editor e le impostazioni correnti dell’editor Godot. Potranno continuare a usarlo finché rimane installato.",
+            "newProjects": "L’editor non sarà disponibile per nuove selezioni o per il rilevamento automatico dei progetti.",
+            "disable": "Disabilita"
+        }
+    },
     "tools": {
         "overview": "Il launcher verifica rapidamente i percorsi degli strumenti memorizzati nella cache quando questa scheda riceve il focus. Esegui una scansione completa se hai modificato le installazioni su questo sistema.",
         "actions": {
@@ -85,19 +154,6 @@
             "description": "Git è un sistema di controllo versione distribuito per gestire modifiche al codice e collaborazioni.",
             "installed": "Installato:",
             "version": "Versione:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Un editor di codice veloce ed estensibile con supporto GDScript e .NET per Godot.",
-            "notDetectedTitle": "Visual Studio Code non rilevato!",
-            "notDetectedMessage": "Godot Launcher può rilevare automaticamente VS Code solo se è stato aggiunto al PATH. Puoi invece specificare il percorso dell'eseguibile qui sotto",
-            "pathLabel": "Percorso dell'eseguibile di Visual Studio Code",
-            "selectExecutable": "Seleziona l'eseguibile di Visual Studio Code",
-            "autodetected": "(rilevato automaticamente)",
-            "noPathSet": "nessun percorso impostato",
-            "clearCustomPath": "Cancella percorso personalizzato",
-            "waitingForDialog": "In attesa della finestra di dialogo...",
-            "installed": "Installato:"
         }
     },
     "updates": {

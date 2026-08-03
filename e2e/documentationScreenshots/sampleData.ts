@@ -1,4 +1,5 @@
 import type {
+    CodeEditorIntegrationSettings,
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
@@ -155,7 +156,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         release: SAMPLE_INSTALLED_RELEASES[0],
         launch_path: '/Applications/Godot_4.7/Godot.app/Contents/MacOS/Godot',
         config_version: 5,
-        withVSCode: true,
+        codeEditorId: 'vscode',
         withGit: true,
         valid: true,
     },
@@ -175,7 +176,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         launch_path:
             '/Applications/Godot_4.5.1_dotnet/Godot_mono.app/Contents/MacOS/Godot',
         config_version: 5,
-        withVSCode: true,
+        codeEditorId: 'vscode',
         withGit: true,
         valid: true,
     },
@@ -194,7 +195,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         release: SAMPLE_CUSTOM_RELEASE,
         launch_path: SAMPLE_CUSTOM_RELEASE.editor_path,
         config_version: 5,
-        withVSCode: true,
+        codeEditorId: 'vscode',
         withGit: false,
         valid: true,
     },
@@ -218,7 +219,7 @@ export const SAMPLE_PROJECT_WITH_MISSING_EDITOR: ProjectDetails = {
     release: SAMPLE_UNAVAILABLE_RELEASE,
     launch_path: SAMPLE_UNAVAILABLE_RELEASE.editor_path,
     config_version: 5,
-    withVSCode: false,
+    codeEditorId: null,
     withGit: true,
     valid: false,
     invalid_reason: 'missing_editor',
@@ -266,7 +267,6 @@ export const SAMPLE_PREFS: UserPreferences = {
     first_run: false,
     windows_enable_symlinks: true,
     windows_symlink_win_notify: true,
-    vs_code_path: '/Applications/Visual Studio Code.app',
     language: 'system',
 };
 
@@ -278,6 +278,55 @@ export function createPreferences(
         ...overrides,
     };
 }
+
+export const SAMPLE_VSCODE_SETTINGS_AVAILABLE: CodeEditorIntegrationSettings = {
+    integration: {
+        id: 'vscode',
+        displayName: 'Visual Studio Code',
+        capabilities: {
+            dotnet: true,
+        },
+    },
+    isDefault: false,
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/Applications/Visual Studio Code.app/Contents/MacOS/Code',
+        version: '1.95.0',
+    },
+    resolvedGodotExecPath:
+        '/Applications/Visual Studio Code.app/Contents/MacOS/Code',
+};
+
+export const SAMPLE_VSCODE_SETTINGS_DISABLED: CodeEditorIntegrationSettings = {
+    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    enabled: false,
+};
+
+export const SAMPLE_VSCODE_SETTINGS_NOT_FOUND: CodeEditorIntegrationSettings = {
+    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    installation: null,
+    resolvedGodotExecPath: null,
+};
+
+export const SAMPLE_VSCODE_SETTINGS_OVERRIDDEN: CodeEditorIntegrationSettings = {
+    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    customPath: '/Users/docs/Applications/Visual Studio Code.app',
+    execFlagsOverride:
+        '{project} --reuse-window --goto {file}:{line}:{col}',
+    resolvedExecFlags: '{project} --reuse-window --goto {file}:{line}:{col}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Code',
+        version: '1.95.0',
+    },
+    resolvedGodotExecPath:
+        '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Code',
+};
 
 export const DEFAULT_TOOLS: CachedTool[] = [
     { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },

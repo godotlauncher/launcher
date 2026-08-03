@@ -10,8 +10,10 @@ import type {
     AppFileFilter,
     AppOpenDialogProperty,
     CheckForUpdatesOptions,
+    CodeEditorId,
     CustomEngineManifest,
     InstalledRelease,
+    LaunchProjectOptions,
     ProjectDetails,
     ReleaseSummary,
     RenameProjectOptions,
@@ -29,6 +31,8 @@ import {
     setBetaChannel,
 } from './autoUpdater.js';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
 import { addProject } from './commands/addProject.js';
 import { createProject } from './commands/createProject.js';
 import {
@@ -50,7 +54,7 @@ import {
     launchProject,
     removeProject,
     renameProject,
-    setProjectVSCode,
+    setProjectCodeEditor,
     setProjectWindowed,
 } from './commands/projects.js';
 import { registerCustomEngine } from './commands/registerCustomEngine.js';
@@ -91,8 +95,8 @@ export class AppController implements AppBridge {
     constructor(
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
+        private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
     ) {}
-
     @AppHandler('getUserPreferences')
     getUserPreferences() {
         return getUserPreferences();
@@ -193,7 +197,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('reinstallRelease')
     reinstallRelease(release: InstalledRelease) {
-        return reinstallRelease(release);
+        return reinstallRelease(release, this.codeEditorIntegrationService);
     }
 
     @AppHandler('registerCustomEngine')
@@ -242,7 +246,7 @@ export class AppController implements AppBridge {
         name: string,
         release: InstalledRelease,
         renderer: RendererType[5],
-        withVSCode: boolean,
+        codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
     ) {
@@ -250,8 +254,9 @@ export class AppController implements AppBridge {
             name,
             release,
             renderer,
-            withVSCode,
+            codeEditorId,
             withGit,
+            this.codeEditorIntegrationService,
             overwriteProjectPath,
         );
     }
@@ -273,12 +278,20 @@ export class AppController implements AppBridge {
 
     @AppHandler('addProject')
     addProject(projectPath: string, options?: AddProjectOptions) {
-        return addProject(projectPath, options);
+        return addProject(
+            projectPath,
+            this.codeEditorIntegrationService,
+            options,
+        );
     }
 
     @AppHandler('setProjectEditor')
     setProjectEditor(project: ProjectDetails, release: InstalledRelease) {
-        return setProjectEditor(project, release);
+        return setProjectEditor(
+            project,
+            release,
+            this.codeEditorIntegrationService,
+        );
     }
 
     @AppHandler('setProjectWindowed')
@@ -286,9 +299,16 @@ export class AppController implements AppBridge {
         return setProjectWindowed(project, openWindowed);
     }
 
-    @AppHandler('setProjectVSCode')
-    setProjectVSCode(project: ProjectDetails, enable: boolean) {
-        return setProjectVSCode(project, enable);
+    @AppHandler('setProjectCodeEditor')
+    setProjectCodeEditor(
+        project: ProjectDetails,
+        codeEditorId: CodeEditorId | null,
+    ) {
+        return setProjectCodeEditor(
+            project,
+            codeEditorId,
+            this.codeEditorIntegrationService,
+        );
     }
 
     @AppHandler('initializeProjectGit')
@@ -307,8 +327,12 @@ export class AppController implements AppBridge {
     }
 
     @AppHandler('launchProject')
-    launchProject(project: ProjectDetails) {
-        return launchProject(project);
+    launchProject(project: ProjectDetails, options?: LaunchProjectOptions) {
+        return launchProject(
+            project,
+            this.codeEditorIntegrationService,
+            options,
+        );
     }
 
     @AppHandler('checkProjectValid')

@@ -28,7 +28,7 @@ const project: ProjectDetails = {
     },
     launch_path: '/editors/Demo/godot.exe',
     config_version: 5,
-    withVSCode: false,
+    codeEditorId: null,
     withGit: false,
     valid: true,
 };
@@ -46,7 +46,6 @@ describe('ProjectActionsMenu', () => {
                     width: 0,
                     height: 0,
                 }}
-                hasVSCode={false}
                 hasGit={false}
                 t={(key) =>
                     key === 'project.launchEditor'
@@ -61,7 +60,6 @@ describe('ProjectActionsMenu', () => {
                 onOpenProjectFolder={vi.fn()}
                 onOpenEditorSettingsFolder={vi.fn()}
                 onToggleWindowed={vi.fn()}
-                onToggleVSCode={vi.fn()}
                 onInitializeGit={vi.fn()}
                 onExportEditorSettings={vi.fn()}
                 onImportEditorSettings={vi.fn()}

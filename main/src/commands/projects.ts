@@ -6,20 +6,22 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
+    CodeEditorId,
+    LaunchProjectOptions,
+    LaunchProjectResult,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
-    SetProjectVSCodeResult,
+    SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
 import { checkProjectValid } from '../checks.js';
-import { PROJECTS_FILENAME, TEMPLATE_DIR_NAME } from '../constants.js';
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
-import { getAssetPath } from '../pathResolver.js';
-import { getCachedTools } from '../services/toolCache.js';
 import { gitInit } from '../utils/git.utils.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
@@ -27,9 +29,7 @@ import {
     removeProjectEditor,
 } from '../utils/godot.utils.js';
 import {
-    createNewEditorSettings,
     readGodotProjectName,
-    updateEditorSettings,
     updateGodotProjectName,
 } from '../utils/godotProject.utils.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
@@ -40,11 +40,6 @@ import {
     removeProjectFromList,
     storeProjectsList,
 } from '../utils/projects.utils.js';
-import {
-    addOrUpdateVSCodeRecommendedExtensions,
-    addVSCodeNETLaunchConfig,
-    updateVSCodeSettings,
-} from '../utils/vscode.utils.js';
 import { ipcWebContentsSend } from '../utils.js';
 import { getUserPreferences } from './userPreferences.js';
 
@@ -53,16 +48,6 @@ const PROJECT_WRITE_MAX_ATTEMPTS = 2;
 function resolveProjectListPath(): string {
     const { configDir } = getDefaultDirs();
     return path.resolve(configDir, PROJECTS_FILENAME);
-}
-
-function toProjectRelativeDisplayPath(
-    projectDir: string,
-    filePath: string,
-): string {
-    return path
-        .relative(projectDir, filePath)
-        .split(path.sep)
-        .join(path.posix.sep);
 }
 
 export async function getProjectsDetails(): Promise<ProjectDetails[]> {
@@ -78,25 +63,22 @@ export async function removeProject(
     const { configDir } = defaultDirs;
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
 
+    try {
+        await writeProjectLauncherConfig(project.path, {
+            release: project.release,
+            launcherVersion: app.getVersion(),
+            lastOpened: project.last_opened,
+        });
+    } catch (error) {
+        logger.warn(
+            `Failed to write project launcher config for '${project.name}' before removing it`,
+            error,
+        );
+    }
+
     // remove .editor_settings link to godot
     // await removeEditorSymlink(project.launch_path);
     await removeProjectEditor(project);
-
-    if (project.last_opened) {
-        try {
-            await writeProjectLauncherConfig(
-                project.path,
-                project.release,
-                app.getVersion(),
-                project.last_opened,
-            );
-        } catch (error) {
-            logger.warn(
-                `Failed to write project launcher config for '${project.name}' before removing it`,
-                error,
-            );
-        }
-    }
 
     const projects = await removeProjectFromList(projectListPath, project.path);
     if (process.platform === 'linux') {
@@ -106,7 +88,26 @@ export async function removeProject(
     return projects;
 }
 
-export async function launchProject(project: ProjectDetails): Promise<void> {
+export async function launchProject(
+    project: ProjectDetails,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
+    options: LaunchProjectOptions = {},
+): Promise<LaunchProjectResult> {
+    if (project.codeEditorId && !options.allowMissingCodeEditor) {
+        const integrationSettings =
+            await codeEditorIntegrationService.rescanIntegration(
+                project.codeEditorId,
+            );
+
+        if (!integrationSettings.installation) {
+            return {
+                launched: false,
+                reason: 'code_editor_unavailable',
+                integration: integrationSettings.integration,
+            };
+        }
+    }
+
     const projectListPath = resolveProjectListPath();
 
     const prefs = await getUserPreferences();
@@ -157,12 +158,11 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
     if (storedProject) {
         project = storedProject;
         try {
-            await writeProjectLauncherConfig(
-                storedProject.path,
-                storedProject.release,
-                app.getVersion(),
-                storedProject.last_opened,
-            );
+            await writeProjectLauncherConfig(storedProject.path, {
+                release: storedProject.release,
+                launcherVersion: app.getVersion(),
+                lastOpened: storedProject.last_opened,
+            });
         } catch (error) {
             logger.warn(
                 `Failed to write project launcher config for '${storedProject.name}'`,
@@ -229,6 +229,8 @@ export async function launchProject(project: ProjectDetails): Promise<void> {
         currentMainWindow?.webContents,
         projects,
     );
+
+    return { launched: true };
 }
 
 export async function checkProjectIsValid(
@@ -426,12 +428,13 @@ export async function renameProject(
     throw new Error('Failed to rename project due to concurrent modifications');
 }
 
-export async function setProjectVSCode(
+export async function setProjectCodeEditor(
     project: ProjectDetails,
-    enable: boolean,
-): Promise<SetProjectVSCodeResult> {
+    codeEditorId: CodeEditorId | null,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
+): Promise<SetProjectCodeEditorResult> {
     const projectListPath = resolveProjectListPath();
-    const recoveredVSCodeConfigFiles = new Set<string>();
+    const recoveredCodeEditorConfigFiles = new Set<string>();
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
         const { projects, version } =
@@ -439,7 +442,7 @@ export async function setProjectVSCode(
         const projectIndex = projects.findIndex((p) => p.path === project.path);
 
         if (projectIndex === -1) {
-            throw new Error(t('projects:toggleVSCode.errors.projectNotFound'));
+            throw new Error(t('projects:setCodeEditor.errors.projectNotFound'));
         }
 
         const updatedProjects = [...projects];
@@ -448,25 +451,20 @@ export async function setProjectVSCode(
             release: { ...updatedProjects[projectIndex].release },
         };
 
-        if (targetProject.withVSCode === enable) {
+        const currentCodeEditorId = targetProject.codeEditorId;
+
+        if (codeEditorId && currentCodeEditorId === codeEditorId) {
             return targetProject;
         }
 
-        if (enable) {
-            const cachedTools = await getCachedTools();
-            const vsCodeTool = cachedTools.find(
-                (t) => t.name === 'VSCode' && t.verified,
+        if (codeEditorId) {
+            await codeEditorIntegrationService.assertIntegrationSelectable(
+                codeEditorId,
             );
-
-            if (!vsCodeTool) {
-                throw new Error(
-                    t('projects:toggleVSCode.errors.vscodeNotInstalled'),
-                );
-            }
 
             if (!targetProject.launch_path) {
                 throw new Error(
-                    t('projects:toggleVSCode.errors.missingLaunchPath'),
+                    t('projects:setCodeEditor.errors.missingLaunchPath'),
                 );
             }
 
@@ -477,22 +475,7 @@ export async function setProjectVSCode(
 
             if (!projectDefinition) {
                 throw new Error(
-                    t('projects:toggleVSCode.errors.invalidProjectDefinition'),
-                );
-            }
-
-            const templatesDir = path.resolve(
-                getAssetPath(),
-                TEMPLATE_DIR_NAME,
-            );
-
-            let vscodeExecPath = vsCodeTool.path;
-            if (process.platform === 'darwin') {
-                vscodeExecPath = path.resolve(
-                    vscodeExecPath,
-                    'Contents',
-                    'MacOS',
-                    'Electron',
+                    t('projects:setCodeEditor.errors.invalidProjectDefinition'),
                 );
             }
 
@@ -510,84 +493,34 @@ export async function setProjectVSCode(
                 );
             }
 
-            if (fs.existsSync(editorSettingsFile)) {
-                await updateEditorSettings(editorSettingsFile, {
-                    execPath: vscodeExecPath,
-                    execFlags: '{project} --goto {file}:{line}:{col}',
-                    useExternalEditor: true,
-                    isMono: targetProject.release.mono,
-                });
-            } else {
-                const createdEditorSettings = await createNewEditorSettings(
-                    templatesDir,
-                    targetProject.launch_path,
+            const applied = await codeEditorIntegrationService.applyToProject(
+                codeEditorId,
+                {
+                    projectPath: targetProject.path,
+                    godotLaunchPath: targetProject.launch_path,
+                    godotVersion: targetProject.release.version_number,
+                    mono: targetProject.release.mono,
+                    editorSettingsFile,
                     editorSettingsFilename,
-                    projectDefinition.editorConfigFormat,
-                    true,
-                    vscodeExecPath,
-                    '{project} --goto {file}:{line}:{col}',
-                    targetProject.release.mono,
-                );
-                editorSettingsFile = createdEditorSettings;
-            }
-
-            targetProject.editor_settings_file = editorSettingsFile;
-            targetProject.editor_settings_path =
-                path.dirname(editorSettingsFile);
-
-            const recoveredSettingsFiles = await updateVSCodeSettings(
-                targetProject.path,
-                targetProject.launch_path,
-                targetProject.release.version_number,
-                targetProject.release.mono,
+                    editorSettingsFormat: projectDefinition.editorConfigFormat,
+                },
             );
-            for (const recoveredFile of recoveredSettingsFiles ?? []) {
-                recoveredVSCodeConfigFiles.add(
-                    toProjectRelativeDisplayPath(
-                        targetProject.path,
-                        recoveredFile,
-                    ),
-                );
-            }
 
-            const recoveredExtensionFiles =
-                await addOrUpdateVSCodeRecommendedExtensions(
-                    targetProject.path,
-                    targetProject.release.mono,
-                );
-            for (const recoveredFile of recoveredExtensionFiles ?? []) {
-                recoveredVSCodeConfigFiles.add(
-                    toProjectRelativeDisplayPath(
-                        targetProject.path,
-                        recoveredFile,
-                    ),
-                );
+            targetProject.editor_settings_file = applied.editorSettingsFile;
+            targetProject.editor_settings_path = path.dirname(
+                applied.editorSettingsFile,
+            );
+            for (const recoveredFile of applied.recoveredConfigFiles) {
+                recoveredCodeEditorConfigFiles.add(recoveredFile);
             }
-
-            if (targetProject.release.mono) {
-                const recoveredLaunchFiles = await addVSCodeNETLaunchConfig(
-                    targetProject.path,
-                    targetProject.launch_path,
-                );
-                for (const recoveredFile of recoveredLaunchFiles ?? []) {
-                    recoveredVSCodeConfigFiles.add(
-                        toProjectRelativeDisplayPath(
-                            targetProject.path,
-                            recoveredFile,
-                        ),
-                    );
-                }
-            }
-        } else if (
-            targetProject.editor_settings_file &&
-            fs.existsSync(targetProject.editor_settings_file)
-        ) {
-            await updateEditorSettings(targetProject.editor_settings_file, {
-                useExternalEditor: false,
-            });
+        } else {
+            await codeEditorIntegrationService.disableForProject(
+                targetProject.editor_settings_file,
+                targetProject.release.mono ? 'dotnet' : 'standard',
+            );
         }
 
-        targetProject.withVSCode = enable;
+        targetProject.codeEditorId = codeEditorId;
         updatedProjects[projectIndex] = targetProject;
 
         try {
@@ -606,15 +539,15 @@ export async function setProjectVSCode(
                 storedProjects,
             );
 
-            project.withVSCode = latestProject.withVSCode;
+            project.codeEditorId = latestProject.codeEditorId;
             project.editor_settings_file = latestProject.editor_settings_file;
             project.editor_settings_path = latestProject.editor_settings_path;
 
             return {
                 ...latestProject,
-                recoveredVSCodeConfigFiles:
-                    recoveredVSCodeConfigFiles.size > 0
-                        ? [...recoveredVSCodeConfigFiles]
+                recoveredCodeEditorConfigFiles:
+                    recoveredCodeEditorConfigFiles.size > 0
+                        ? [...recoveredCodeEditorConfigFiles]
                         : undefined,
             };
         } catch (error) {
@@ -628,7 +561,7 @@ export async function setProjectVSCode(
         }
     }
 
-    throw new Error('Failed to update VSCode integration for project');
+    throw new Error('Failed to update code editor integration for project');
 }
 
 export async function initializeProjectGit(

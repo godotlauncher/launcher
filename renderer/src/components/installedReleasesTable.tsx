@@ -3,6 +3,7 @@ import { HardDrive, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
 import { ReleaseInstallProgressIndicator } from './releaseInstallProgress.component';
+import { Tooltip } from './ui/tooltip.component';
 
 type InstalledReleaseTableProps = {
     releases: InstalledRelease[];
@@ -159,9 +160,10 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                                 ) : (
                                     <div className="flex flex-row gap-2 items-center">
                                         {!row.mono && (
-                                            <p
-                                                className="tooltip tooltip-left flex items-center"
-                                                data-tip={t(
+                                            <Tooltip
+                                                className="flex items-center"
+                                                placement="left"
+                                                tip={t(
                                                     'table.tooltips.installed',
                                                     { version: row.version },
                                                 )}
@@ -181,13 +183,14 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                                                         )}{' '}
                                                     </>
                                                 )}
-                                            </p>
+                                            </Tooltip>
                                         )}
 
                                         {row.mono && (
-                                            <p
-                                                className="tooltip tooltip-left flex items-center"
-                                                data-tip={t(
+                                            <Tooltip
+                                                className="flex items-center"
+                                                placement="left"
+                                                tip={t(
                                                     'table.tooltips.installedDotNet',
                                                     { version: row.version },
                                                 )}
@@ -195,10 +198,10 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                                                 <span className="flex flex-row items-center gap-1 text-xs">
                                                     {row.install_path.length >
                                                     0 ? (
-                                                        <p className="flex items-center gap-2">
+                                                        <span className="flex items-center gap-2">
                                                             <HardDrive />
                                                             {t('table.dotnet')}
-                                                        </p>
+                                                        </span>
                                                     ) : progress ? (
                                                         <ReleaseInstallProgressIndicator
                                                             progress={progress}
@@ -216,7 +219,7 @@ export const InstalledReleaseTable: React.FC<InstalledReleaseTableProps> = ({
                                                         </>
                                                     )}
                                                 </span>
-                                            </p>
+                                            </Tooltip>
                                         )}
                                     </div>
                                 )}

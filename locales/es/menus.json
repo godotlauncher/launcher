@@ -18,8 +18,6 @@
         "openEditorSettingsFolder": "Abrir carpeta de configuración del editor",
         "openWindowed": "Usar modo ventana",
         "openWindowedTooltip": "Cuando esta opción está marcada, Godot se iniciará en modo ventana.",
-        "useVSCode": "Usar Visual Studio Code como editor de texto",
-        "useVSCodeTooltip": "Activa o desactiva Visual Studio Code como editor externo para este proyecto.",
         "initGit": "Inicializar repositorio Git",
         "initGitTooltip": "Crea un nuevo repositorio Git en esta carpeta del proyecto.",
         "exportEditorSettings": "Exportar configuración del editor a archivo",

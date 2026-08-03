@@ -43,14 +43,14 @@
     },
     "otherSettings": {
         "title": "Diğer Ayarlar",
+        "codeEditor": {
+            "label": "Kod Düzenleyici",
+            "none": "Yok",
+            "disabled": "Devre dışı",
+            "notFound": "Bulunamadı"
+        },
         "initGit": "Git Deposu Başlat",
-        "gitNotInstalled": "Git bu bilgisayarda yüklü değil",
-        "setupVSCode": "Visual Studio Code'u Metin Editörü olarak Ayarla",
-        "vscodeNotInstalled": "Visual Studio Code bu bilgisayarda yüklü değil",
-        "vscodeHelp": {
-            "title": "Visual Studio Code neden algılanmıyor?",
-            "message": "Godot Launcher, VS Code'u yalnızca PATH'te yüklüyse otomatik olarak algılayabilir. Bunun yerine ayarlardan VS Code çalıştırılabilir dosyasının yolunu belirtebilirsiniz."
-        }
+        "gitNotInstalled": "Git bu bilgisayarda yüklü değil"
     },
     "buttons": {
         "editNow": "Şimdi düzenle",

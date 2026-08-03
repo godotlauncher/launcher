@@ -15,12 +15,13 @@
         "dotNetProject": "這是一個 .NET 專案",
         "prerelease": "使用預先釋出的 Godot 編輯器版本",
         "windowedMode": "此專案以視窗模式開啟",
-        "vsCodeProject": "此專案已啟用 Visual Studio Code 作為外部編輯器",
+        "codeEditorProject": "正在使用 {{editor}}",
         "gitProject": "此專案使用 Git 進行版本控制",
         "invalidReasons": {
             "missingProjectFile": "找不到專案檔案。請檢查專案位置。",
             "missingEditor": "找不到編輯器。請檢查編輯器位置。"
-        }
+        },
+        "codeEditorUnavailable": "未偵測到 {{editor}}。"
     },
     "addProject": {
         "selectFile": "選擇專案檔",
@@ -69,7 +70,16 @@
             "missingProjectFile": "找不到專案檔案。請檢查專案位置，或移除後重新新增專案。",
             "missingEditor": "所選編輯器無法使用。請掛載磁碟機或選擇其他編輯器。"
         },
-        "recoveredVSCodeConfig": "部分 VS Code 設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。"
+        "recoveredCodeEditorConfig": "部分程式碼編輯器設定檔無效。Godot Launcher 已重新建立它們，並將原始檔保留為 .bad 副本。",
+        "codeEditorLaunch": {
+            "title": "找不到 {{editor}}",
+            "message": "此專案已設定為使用 {{editor}}。Godot 仍可啟動，但可能無法在此編輯器中開啟腳本。",
+            "dotnet": "此 .NET 專案的 C# 編輯器整合也可能無法使用。",
+            "actionFailed": "程式碼編輯器操作失敗。",
+            "launchAnyway": "仍然啟動",
+            "openSettings": "開啟設定",
+            "disableAndLaunch": "停用並啟動"
+        }
     },
     "changeEditor": {
         "errors": {
@@ -78,10 +88,9 @@
             "differentMajorVersion": "無法使用不同主版本的編輯器\n為保護您的專案，請參考官方遷移指南：https://godotengine.org"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "找不到專案",
-            "vscodeNotInstalled": "此電腦上未安裝 Visual Studio Code。",
             "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
             "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
         }
@@ -98,6 +107,15 @@
             "path": {
                 "label": "專案資料夾"
             }
+        },
+        "codeEditor": {
+            "title": "程式碼編輯器",
+            "help": "選擇此專案使用的程式碼編輯器。",
+            "none": "無",
+            "disabled": "已停用",
+            "notFound": "未找到",
+            "loading": "正在載入程式碼編輯器...",
+            "loadFailed": "無法載入程式碼編輯器。"
         },
         "godot": {
             "renameLabel": "同時重新命名 Godot 專案",

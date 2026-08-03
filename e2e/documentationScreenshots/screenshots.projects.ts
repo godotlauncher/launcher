@@ -6,13 +6,17 @@ import {
     openProjectActionsMenu,
     prepareAppUpdateBannerScreenshot,
     prepareAppWithStubbedData,
+    setScreenshotViewport,
     showProjectsDropOverlay,
     stubAddProjectEditorResolution,
-    stubAddProjectRecoveredVSCodeConfig,
+    stubAddProjectRecoveredCodeEditorConfig,
+    stubCodeEditorIntegrationSettings,
     stubInstalledTools,
 } from './runtime';
 import {
     DEFAULT_TOOLS,
+    SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
     SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
     SAMPLE_CUSTOM_RELEASE,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
@@ -38,6 +42,98 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnProjects').click();
             await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_projects_code_editor_unavailable',
+        description: 'Projects view with unavailable code editor',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                codeEditorSettings: [SAMPLE_VSCODE_SETTINGS_NOT_FOUND],
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+
+            const warningMarkers = page.locator(
+                'tbody .lucide-triangle-alert.stroke-warning',
+            );
+            await expect(warningMarkers).toHaveCount(3);
+            await expect(page.locator('.alert-warning')).toHaveCount(0);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_code_editor_launch_warning',
+        description: 'Project launch warning for unavailable code editor',
+        viewportHeight: 800,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                codeEditorSettings: [SAMPLE_VSCODE_SETTINGS_NOT_FOUND],
+                projectLaunchResult: {
+                    launched: false,
+                    reason: 'code_editor_unavailable',
+                    integration: {
+                        id: 'vscode',
+                        displayName: 'Visual Studio Code',
+                        capabilities: { dotnet: true },
+                    },
+                },
+            });
+            await setScreenshotViewport(page, 800);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            await page
+                .getByRole('button', {
+                    name: 'My-Other-Game',
+                    exact: true,
+                })
+                .click();
+
+            const warningDialog = page.getByRole('dialog', {
+                name: 'Visual Studio Code was not found',
+            });
+            await expect(warningDialog).toBeVisible({ timeout: 10000 });
+            await expect(warningDialog).toContainText(
+                'C# editor integration may also be unavailable for this .NET project.',
+            );
+            await expect(warningDialog.getByRole('button')).toHaveText([
+                'Launch anyway',
+                'Disable & Launch',
+                'Open settings',
+                'Cancel',
+            ]);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const cancelButton = page.getByRole('button', {
+                name: 'Cancel',
+                exact: true,
+            });
+            if (await cancelButton.isVisible().catch(() => false)) {
+                await cancelButton.click();
+            }
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
         },
     },
     {
@@ -151,13 +247,16 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
     },
     {
         fileBase: 'screen_projects_rename_drawer',
-        description: 'Project rename drawer',
+        description: 'Project settings drawer',
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await expect(
@@ -175,6 +274,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     name: `${SAMPLE_PROJECT_PROTOTYPE.name} Settings`,
                 }),
             ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByTestId('selectProjectCodeEditor'),
+            ).toHaveText('Visual Studio Code');
             const nameField = page.locator('#projectEditName');
             await nameField.fill('My-Renamed-Prototype');
             await expect(
@@ -301,15 +403,15 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
-        fileBase: 'screen_projects_vscode_config_recovered',
-        description: 'Add Project recovered VS Code config warning',
+        fileBase: 'screen_projects_code_editor_config_recovered',
+        description: 'Add Project recovered code editor config warning',
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
-            await stubAddProjectRecoveredVSCodeConfig(electronApp);
+            await stubAddProjectRecoveredCodeEditorConfig(electronApp);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectAdd').click();
@@ -349,6 +451,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -377,6 +482,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             });
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await applyTheme(page, theme);
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectCreate').click();
             await page
@@ -425,6 +533,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, TOOLS_NO_GIT);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -449,6 +560,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, TOOLS_NO_VSCODE);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -473,6 +587,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, TOOLS_NONE);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
@@ -497,6 +614,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')

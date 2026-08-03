@@ -1,13 +1,14 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
+    CodeEditorId,
     CreateProjectResult,
     InstalledRelease,
     RendererType,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
-
+import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import {
     EDITOR_CONFIG_DIRNAME,
     MIN_VERSION,
@@ -25,17 +26,12 @@ import {
     SetProjectEditorRelease,
 } from '../utils/godot.utils.js';
 import {
-    createNewEditorSettings,
     getProjectIconUrlFromParsed,
     parseGodotProjectFile,
 } from '../utils/godotProject.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
-import {
-    addOrUpdateVSCodeRecommendedExtensions,
-    addVSCodeSettings,
-} from '../utils/vscode.utils.js';
 import { getInstalledTools } from './installedTools.js';
 import { getUserPreferences } from './userPreferences.js';
 
@@ -43,21 +39,27 @@ export async function createProject(
     projectName: string,
     release: InstalledRelease,
     renderer: RendererType[5],
-    withVSCode: boolean,
+    codeEditorId: CodeEditorId | null,
     withGit: boolean,
+    codeEditorIntegrationService: CodeEditorIntegrationService,
     overwriteProjectPath?: string,
 ): Promise<CreateProjectResult> {
+    if (codeEditorId) {
+        try {
+            await codeEditorIntegrationService.assertIntegrationSelectable(
+                codeEditorId,
+            );
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
     const tools = await getInstalledTools();
 
-    const vsCodeTool = tools.find((t) => t.name === 'VSCode');
     const gitTool = tools.find((t) => t.name === 'Git');
-
-    if (withVSCode && !vsCodeTool) {
-        logger.warn(
-            'Create Project with VS Code, but VSCode is not installed. Setting withVSCode to false',
-        );
-        withVSCode = false;
-    }
 
     if (withGit && !gitTool) {
         logger.warn(
@@ -195,48 +197,29 @@ export async function createProject(
             await gitAddAndCommit(projectPath);
         }
 
-        if (withVSCode && vsCodeTool) {
-            await addVSCodeSettings(
-                projectPath,
-                launch_path,
-                release.version_number,
-                release.mono,
-            );
-            await addOrUpdateVSCodeRecommendedExtensions(
-                projectPath,
-                release.mono,
-            );
-
-            let vscodeSettingsPath = vsCodeTool.path;
-
-            // on macos we need to go into the app bundle
-            if (process.platform === 'darwin') {
-                vscodeSettingsPath = path.resolve(
-                    vscodeSettingsPath,
-                    'Contents',
-                    'MacOS',
-                    'Electron',
-                );
-            }
-
-            // create editor settings for vscode
-            await createNewEditorSettings(
-                templatesDir,
-                launch_path,
-                config.editorConfigFilename(release.version_number),
-                config.editorConfigFormat,
-                true,
-                vscodeSettingsPath,
-                '{project} --goto {file}:{line}:{col}',
-                release.mono,
-            );
-        }
-
-        const editorSettingsPath = path.resolve(
+        let editorSettingsPath = path.resolve(
             path.dirname(launch_path),
             'editor_data',
             config.editorConfigFilename(release.version_number),
         );
+
+        if (codeEditorId) {
+            const applied = await codeEditorIntegrationService.applyToProject(
+                codeEditorId,
+                {
+                    projectPath,
+                    godotLaunchPath: launch_path,
+                    godotVersion: release.version_number,
+                    mono: release.mono,
+                    editorSettingsFile: editorSettingsPath,
+                    editorSettingsFilename: config.editorConfigFilename(
+                        release.version_number,
+                    ),
+                    editorSettingsFormat: config.editorConfigFormat,
+                },
+            );
+            editorSettingsPath = applied.editorSettingsFile;
+        }
 
         // setup the editor location for settings
         const result: CreateProjectResult = {
@@ -258,7 +241,7 @@ export async function createProject(
                 release,
                 renderer,
                 config_version: config.configVersion,
-                withVSCode,
+                codeEditorId,
                 withGit,
                 valid: true,
             },
@@ -270,11 +253,10 @@ export async function createProject(
         if (!projectDetails) {
             throw new Error('Missing project details after creation');
         }
-        await writeProjectLauncherConfig(
-            projectPath,
-            projectDetails.release,
-            app.getVersion(),
-        );
+        await writeProjectLauncherConfig(projectPath, {
+            release: projectDetails.release,
+            launcherVersion: app.getVersion(),
+        });
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),
             projectDetails,

@@ -1,3 +1,4 @@
+import type { CodeEditorIntegrationSettings } from '@shared/contracts';
 import type { BrowserWindow } from 'electron';
 import logger from 'electron-log';
 
@@ -7,7 +8,14 @@ import { ipcWebContentsSend } from '../utils.js';
 const FOCUS_DEBOUNCE_MS = 2000;
 const BACKGROUND_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 
-async function performRevalidation(targetWindow: BrowserWindow): Promise<void> {
+type RefreshCodeEditorIntegrations = () => Promise<
+    CodeEditorIntegrationSettings[]
+>;
+
+async function performRevalidation(
+    targetWindow: BrowserWindow,
+    refreshCodeEditorIntegrations: RefreshCodeEditorIntegrations,
+): Promise<void> {
     if (targetWindow.isDestroyed()) {
         logger.warn('Skipping revalidation: main window destroyed');
         return;
@@ -16,9 +24,16 @@ async function performRevalidation(targetWindow: BrowserWindow): Promise<void> {
     logger.debug('Running focus-triggered revalidation for projects/releases');
 
     try {
-        const [releases, projects] = await Promise.all([
+        const [releases, projects, codeEditorSettings] = await Promise.all([
             checkAndUpdateReleases(),
             checkAndUpdateProjects({ repairMissingLaunchPath: false }),
+            refreshCodeEditorIntegrations().catch((error) => {
+                logger.error(
+                    'Failed to refresh code editor integrations',
+                    error,
+                );
+                return null;
+            }),
         ]);
 
         const webContents = targetWindow.webContents;
@@ -31,12 +46,22 @@ async function performRevalidation(targetWindow: BrowserWindow): Promise<void> {
 
         ipcWebContentsSend('releases-updated', webContents, releases);
         ipcWebContentsSend('projects-updated', webContents, projects);
+        if (codeEditorSettings) {
+            ipcWebContentsSend(
+                'code-editor-integrations-updated',
+                webContents,
+                codeEditorSettings,
+            );
+        }
     } catch (error) {
         logger.error('Failed to revalidate projects/releases on focus', error);
     }
 }
 
-export function setupFocusRevalidation(mainWindow: BrowserWindow): () => void {
+export function setupFocusRevalidation(
+    mainWindow: BrowserWindow,
+    refreshCodeEditorIntegrations: RefreshCodeEditorIntegrations,
+): () => void {
     let debounceTimer: NodeJS.Timeout | undefined;
     let backgroundTimer: NodeJS.Timeout | undefined;
     let isRunning = false;
@@ -59,7 +84,10 @@ export function setupFocusRevalidation(mainWindow: BrowserWindow): () => void {
 
             isRunning = true;
             try {
-                await performRevalidation(mainWindow);
+                await performRevalidation(
+                    mainWindow,
+                    refreshCodeEditorIntegrations,
+                );
                 lastRun = Date.now();
             } finally {
                 isRunning = false;

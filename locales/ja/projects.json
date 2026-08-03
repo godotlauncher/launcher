@@ -15,12 +15,13 @@
         "dotNetProject": "これは.Netプロジェクトです",
         "prerelease": "プレリリース版のGodotエディタを使用しています",
         "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
-        "vsCodeProject": "このプロジェクトでは Visual Studio Code が外部エディターとして有効になっています",
+        "codeEditorProject": "{{editor}} を使用中",
         "gitProject": "このプロジェクトはバージョン管理に Git を使用しています",
         "invalidReasons": {
             "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認してください。",
             "missingEditor": "エディターが見つかりません。エディターの場所を確認してください。"
-        }
+        },
+        "codeEditorUnavailable": "{{editor}} が検出されませんでした。"
     },
     "addProject": {
         "selectFile": "プロジェクトファイルを選択",
@@ -69,7 +70,16 @@
             "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認するか、プロジェクトを削除して再追加してください。",
             "missingEditor": "選択したエディターは利用できません。ドライブをマウントするか、別のエディターを選択してください。"
         },
-        "recoveredVSCodeConfig": "一部の VS Code 設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。"
+        "recoveredCodeEditorConfig": "一部のコードエディター設定ファイルが無効でした。Godot Launcher はそれらを再作成し、元のファイルを .bad コピーとして保持しました。",
+        "codeEditorLaunch": {
+            "title": "{{editor}} が見つかりません",
+            "message": "このプロジェクトは {{editor}} を使用するように設定されています。Godot は起動できますが、このエディターでスクリプトを開けない可能性があります。",
+            "dotnet": "この .NET プロジェクトでは、C# エディター連携も利用できない可能性があります。",
+            "actionFailed": "コードエディターの操作に失敗しました。",
+            "launchAnyway": "そのまま起動",
+            "openSettings": "設定を開く",
+            "disableAndLaunch": "無効にして起動"
+        }
     },
     "changeEditor": {
         "errors": {
@@ -78,10 +88,9 @@
             "differentMajorVersion": "エディタの異なるメジャーバージョンは使用できません\nプロジェクトを保護するため、https://godotengine.org の公式移行ガイドを参照してください"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "プロジェクトが見つかりません",
-            "vscodeNotInstalled": "このコンピューターに Visual Studio Code がインストールされていません。",
             "missingLaunchPath": "このプロジェクトの Godot 起動パスが見つかりません。",
             "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。"
         }
@@ -98,6 +107,15 @@
             "path": {
                 "label": "プロジェクトフォルダー"
             }
+        },
+        "codeEditor": {
+            "title": "コードエディター",
+            "help": "このプロジェクトで使用するコードエディターを選択します。",
+            "none": "なし",
+            "disabled": "無効",
+            "notFound": "見つかりません",
+            "loading": "コードエディターを読み込んでいます...",
+            "loadFailed": "コードエディターを読み込めませんでした。"
         },
         "godot": {
             "renameLabel": "Godot プロジェクト名も変更する",

@@ -6,6 +6,7 @@
         "appearance": "Wygląd",
         "behavior": "Zachowanie",
         "tools": "Narzędzia",
+        "codeEditors": "Edytory kodu",
         "updates": "Aktualizacje"
     },
     "appearance": {
@@ -68,6 +69,74 @@
             "system": "System (automatyczne wykrywanie)"
         }
     },
+    "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{action}}: {{editor}}"
+        },
+        "actions": {
+            "scanning": "Ponowne skanowanie...",
+            "setDefault": "Ustaw jako domyślny",
+            "edit": "Edytuj",
+            "save": "Zapisz",
+            "saving": "Zapisywanie...",
+            "cancel": "Anuluj",
+            "rescan": "Skanuj ponownie"
+        },
+        "status": {
+            "available": "Dostępne",
+            "missing": "Nie znaleziono",
+            "loadFailed": "Nie można wczytać edytorów kodu.",
+            "default": "Domyślny edytor kodu",
+            "enabled": "Włączony",
+            "disabled": "Wyłączony",
+            "rescanFailed": "Nie udało się ponownie przeskanować.",
+            "projectUsage": "Skonfigurowane projekty: {{count}}. Projekty .NET: {{dotnetCount}}."
+        },
+        "overview": "Zarządzaj wykrywaniem edytorów kodu i wybierz edytor domyślnie zaznaczony dla nowych projektów.",
+        "drawer": {
+            "title": "Ustawienia {{editor}}",
+            "fallbackTitle": "Ustawienia edytora kodu",
+            "integration": {
+                "enabled": "Włączony"
+            },
+            "path": {
+                "label": "Ścieżka pliku wykonywalnego",
+                "autodetectedLabel": "Ścieżka pliku wykonywalnego (wykryta automatycznie)",
+                "help": "Pozostaw puste, aby użyć automatycznego wykrywania. Niestandardowa ścieżka zastępuje wykrytą instalację.",
+                "automatic": "Automatyczne wykrywanie",
+                "browse": "Przeglądaj",
+                "reset": "Użyj automatycznego wykrywania",
+                "select": "Wybierz plik wykonywalny edytora kodu",
+                "allFiles": "Wszystkie pliki",
+                "waiting": "Oczekiwanie na wybór pliku..."
+            },
+            "textEditor": {
+                "title": "Zewnętrzny edytor tekstu",
+                "help": "Te argumenty są używane, gdy Godot otwiera pliki w tym edytorze kodu.",
+                "flagsLabel": "Argumenty uruchamiania",
+                "flagsHelp": "Symbole zastępcze Godot obejmują {project}, {file}, {line} i {col}. Pusta wartość jest prawidłowym nadpisaniem.",
+                "reset": "Przywróć domyślne"
+            },
+            "dotnet": {
+                "supported": "Obsługiwane"
+            },
+            "errors": {
+                "invalidPath": "Wybierz prawidłowy plik wykonywalny edytora kodu.",
+                "dialog": "Nie można otworzyć selektora plików.",
+                "save": "Nie można zapisać ustawień edytora kodu."
+            }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "Wyłączyć {{editor}}?",
+            "usage": "Skonfigurowane projekty: {{count}}. Projekty .NET: {{dotnetCount}}.",
+            "existingProjects": "Istniejące projekty zachowają ten edytor i bieżące ustawienia edytora Godot. Mogą nadal go używać, dopóki pozostaje zainstalowany.",
+            "newProjects": "Edytor nie będzie dostępny dla nowych wyborów ani automatycznego wykrywania projektów.",
+            "disable": "Wyłącz"
+        }
+    },
     "tools": {
         "overview": "Launcher szybko sprawdza pamiętane ścieżki narzędzi, gdy ta karta otrzymuje fokus. Wykonaj pełne ponowne skanowanie, jeśli zmieniłeś instalacje na tym systemie.",
         "actions": {
@@ -85,19 +154,6 @@
             "description": "Git to rozproszony system kontroli wersji do zarządzania zmianami w kodzie i współpracy.",
             "installed": "Zainstalowany:",
             "version": "Wersja:"
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "Szybki, rozszerzalny edytor kodu z obsługą GDScript i .NET dla Godot.",
-            "notDetectedTitle": "Nie wykryto Visual Studio Code!",
-            "notDetectedMessage": "Godot Launcher może automatycznie wykryć VS Code tylko wtedy, gdy został zainstalowany w PATH. Zamiast tego możesz określić ścieżkę do pliku wykonywalnego VS Code poniżej",
-            "pathLabel": "Ścieżka do pliku wykonywalnego Visual Studio Code",
-            "selectExecutable": "Wybierz plik wykonywalny Visual Studio Code",
-            "autodetected": "(wykryty automatycznie)",
-            "noPathSet": "nie ustawiono ścieżki",
-            "clearCustomPath": "Wyczyść niestandardową ścieżkę",
-            "waitingForDialog": "Oczekiwanie na okno dialogowe...",
-            "installed": "Zainstalowany:"
         }
     },
     "updates": {

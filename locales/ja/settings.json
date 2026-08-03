@@ -6,6 +6,7 @@
         "appearance": "外観",
         "behavior": "動作",
         "tools": "ツール",
+        "codeEditors": "コードエディター",
         "updates": "アップデート"
     },
     "appearance": {
@@ -68,6 +69,74 @@
             "system": "システム（自動検出）"
         }
     },
+    "codeEditors": {
+        "accessibility": {
+            "integrationAction": "{{editor}}: {{action}}"
+        },
+        "actions": {
+            "scanning": "再スキャン中...",
+            "setDefault": "デフォルトに設定",
+            "edit": "編集",
+            "save": "保存",
+            "saving": "保存中...",
+            "cancel": "キャンセル",
+            "rescan": "再スキャン"
+        },
+        "status": {
+            "available": "利用可能",
+            "missing": "見つかりません",
+            "loadFailed": "コードエディターを読み込めませんでした。",
+            "default": "デフォルトのコードエディター",
+            "enabled": "有効",
+            "disabled": "無効",
+            "rescanFailed": "再スキャンできませんでした。",
+            "projectUsage": "設定済みプロジェクト: {{count}}。.NET プロジェクト: {{dotnetCount}}。"
+        },
+        "overview": "コードエディターの検出を管理し、新しいプロジェクトで事前選択するエディターを選択します。",
+        "drawer": {
+            "title": "{{editor}} の設定",
+            "fallbackTitle": "コードエディターの設定",
+            "integration": {
+                "enabled": "有効"
+            },
+            "path": {
+                "label": "実行ファイルのパス",
+                "autodetectedLabel": "実行ファイルのパス（自動検出）",
+                "help": "自動検出を使用する場合は空のままにしてください。カスタムパスを指定すると、検出されたインストールより優先されます。",
+                "automatic": "自動検出",
+                "browse": "参照",
+                "reset": "自動検出を使用",
+                "select": "コードエディターの実行ファイルを選択",
+                "allFiles": "すべてのファイル",
+                "waiting": "ファイルの選択を待っています..."
+            },
+            "textEditor": {
+                "title": "外部テキストエディター",
+                "help": "Godot がこのコードエディターでファイルを開くときに、これらの引数が使用されます。",
+                "flagsLabel": "起動引数",
+                "flagsHelp": "Godot のプレースホルダーには {project}、{file}、{line}、{col} が含まれます。空の値も有効な上書き設定です。",
+                "reset": "デフォルトに戻す"
+            },
+            "dotnet": {
+                "supported": "サポート"
+            },
+            "errors": {
+                "invalidPath": "有効なコードエディターの実行ファイルを選択してください。",
+                "dialog": "ファイル選択ダイアログを開けません。",
+                "save": "コードエディターの設定を保存できません。"
+            }
+        },
+        "messages": {
+            "integrationError": "{{editor}}: {{error}}"
+        },
+        "disableConfirm": {
+            "title": "{{editor}} を無効にしますか？",
+            "usage": "設定済みプロジェクト: {{count}}。.NET プロジェクト: {{dotnetCount}}。",
+            "existingProjects": "既存のプロジェクトでは、このエディターの選択と現在の Godot エディター設定が維持されます。インストールされている間は引き続き使用できます。",
+            "newProjects": "新しい選択とプロジェクトの自動検出では、このエディターを使用できなくなります。",
+            "disable": "無効にする"
+        }
+    },
     "tools": {
         "overview": "このタブにフォーカスが当たると、ランチャーはキャッシュされたツールのパスを素早く検証します。システムでインストールを変更した場合は、完全な再スキャンを実行してください。",
         "actions": {
@@ -85,19 +154,6 @@
             "description": "Gitは、コードの変更管理とコラボレーションのための分散型バージョン管理システムです。",
             "installed": "インストール済み：",
             "version": "バージョン："
-        },
-        "vscode": {
-            "title": "Visual Studio Code",
-            "description": "GDScriptと.NETをサポートする高速で拡張可能なコードエディタです。",
-            "notDetectedTitle": "Visual Studio Codeが検出されませんでした！",
-            "notDetectedMessage": "Godot LauncherはPATHにインストールされている場合のみVS Codeを自動検出できます。代わりに以下でVS Codeの実行ファイルへのパスを指定できます",
-            "pathLabel": "Visual Studio Code実行ファイルへのパス",
-            "selectExecutable": "Visual Studio Code実行ファイルを選択",
-            "autodetected": "（自動検出）",
-            "noPathSet": "パスが設定されていません",
-            "clearCustomPath": "カスタムパスをクリア",
-            "waitingForDialog": "ダイアログを待機中...",
-            "installed": "インストール済み："
         }
     },
     "updates": {

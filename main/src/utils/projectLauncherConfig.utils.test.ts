@@ -23,7 +23,10 @@ const release: InstalledRelease = {
 
 describe('projectLauncherConfig.utils', () => {
     it('serializes the v1 project config shape', () => {
-        const config = createProjectLauncherConfig(release, '1.9.0');
+        const config = createProjectLauncherConfig({
+            release,
+            launcherVersion: '1.9.0',
+        });
 
         expect(serializeProjectLauncherConfig(config)).toBe(`[config]
 version=1
@@ -67,11 +70,11 @@ version=4.6-custom.1
 
     it('serializes and parses the optional last opened timestamp', () => {
         const lastOpened = new Date('2024-05-06T07:08:09.000Z');
-        const config = createProjectLauncherConfig(
+        const config = createProjectLauncherConfig({
             release,
-            '1.9.0',
+            launcherVersion: '1.9.0',
             lastOpened,
-        );
+        });
 
         expect(serializeProjectLauncherConfig(config)).toBe(`[config]
 version=1
@@ -88,7 +91,6 @@ flavor=gdscript
 base_version=4.3
 version=4.3-stable
 `);
-
         expect(
             parseProjectLauncherConfig(serializeProjectLauncherConfig(config)),
         ).toEqual(config);
@@ -141,14 +143,14 @@ version=4.3-stable
     });
 
     it('writes custom release flavors when present', () => {
-        const config = createProjectLauncherConfig(
-            {
+        const config = createProjectLauncherConfig({
+            release: {
                 ...release,
                 source: 'custom',
                 flavor: 'steam',
             },
-            '1.9.0',
-        );
+            launcherVersion: '1.9.0',
+        });
 
         expect(config.editor).toMatchObject({
             channel: 'custom',

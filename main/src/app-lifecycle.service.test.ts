@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
     checkAndUpdateProjects: vi.fn(),
     checkAndUpdateReleases: vi.fn(),
+    launchProject: vi.fn(),
+    ipcWebContentsSend: vi.fn(),
     isCacheStale: vi.fn(),
     configureI18n: vi.fn(),
     getLocale: vi.fn(() => 'de-DE'),
@@ -89,6 +91,9 @@ vi.mock('./checks.js', () => ({
     checkAndUpdateProjects: mocks.checkAndUpdateProjects,
     checkAndUpdateReleases: mocks.checkAndUpdateReleases,
 }));
+vi.mock('./commands/projects.js', () => ({
+    launchProject: mocks.launchProject,
+}));
 vi.mock('./services/toolCache.js', () => ({
     isCacheStale: mocks.isCacheStale,
     refreshToolCache: vi.fn(),
@@ -116,6 +121,9 @@ vi.mock('./pathResolver.js', () => ({
 vi.mock('./utils/platform.utils.js', () => ({
     setAutoStart: mocks.setAutoStart,
 }));
+vi.mock('./utils.js', () => ({
+    ipcWebContentsSend: mocks.ipcWebContentsSend,
+}));
 
 describe('AppLifecycleService', () => {
     const defaultPreferences = {
@@ -142,6 +150,7 @@ describe('AppLifecycleService', () => {
     };
     const mainWindow = {
         hide: vi.fn(),
+        webContents: {},
         on: vi.fn(),
         setIcon: vi.fn(),
     };
@@ -153,6 +162,7 @@ describe('AppLifecycleService', () => {
         getSystemLocale: vi.fn(() => 'en'),
         setLocale: vi.fn(),
     };
+    const codeEditorIntegrationService = {};
 
     function createService() {
         return new AppLifecycleService(
@@ -160,6 +170,7 @@ describe('AppLifecycleService', () => {
             electronAppService as never,
             windowManager as never,
             i18nService as never,
+            codeEditorIntegrationService as never,
         );
     }
 
@@ -194,6 +205,7 @@ describe('AppLifecycleService', () => {
             startHidden: false,
         });
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
+        mocks.launchProject.mockResolvedValue({ launched: true });
         mocks.isCacheStale.mockResolvedValue(false);
         mocks.setupFocusRevalidation.mockReturnValue(
             mocks.disposeFocusRevalidation,
@@ -257,6 +269,69 @@ describe('AppLifecycleService', () => {
 
         expect(mainWindow.hide).toHaveBeenCalledOnce();
         expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
+    });
+
+    it('routes tray launches through the code editor aware project command', async () => {
+        const service = createService();
+        const project = { path: '/projects/demo' };
+
+        await initializeLifecycle(service);
+
+        expect(mocks.createTray).toHaveBeenCalledWith(
+            mainWindow,
+            expect.any(Function),
+            expect.any(Function),
+        );
+        const launchFromTray = mocks.createTray.mock.calls[0]?.[1] as (
+            selectedProject: typeof project,
+        ) => Promise<void>;
+
+        await launchFromTray(project);
+
+        expect(mocks.launchProject).toHaveBeenCalledWith(
+            project,
+            codeEditorIntegrationService,
+        );
+    });
+
+    it('routes tray show requests through the standard window reveal path', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+        const showFromTray = mocks.createTray.mock.calls[0]?.[2] as () => void;
+
+        showFromTray();
+
+        expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+    });
+
+    it('reveals the window and forwards unavailable tray launches to the renderer', async () => {
+        const service = createService();
+        const project = { path: '/projects/demo' };
+        const result = {
+            launched: false,
+            reason: 'code_editor_unavailable',
+            integration: {
+                id: 'vscode',
+                displayName: 'Visual Studio Code',
+                capabilities: { dotnet: true },
+            },
+        };
+        mocks.launchProject.mockResolvedValue(result);
+
+        await initializeLifecycle(service);
+        const launchFromTray = mocks.createTray.mock.calls[0]?.[1] as (
+            selectedProject: typeof project,
+        ) => Promise<void>;
+
+        await launchFromTray(project);
+
+        expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'project-launch-code-editor-warning',
+            mainWindow.webContents,
+            { project, result },
+        );
     });
 
     it('requests a framework quit when the updater event precedes app.before-quit', async () => {

@@ -60,6 +60,7 @@ const createMockBrowserWindow = () => {
 
 let mockWindow: ReturnType<typeof createMockBrowserWindow>;
 
+let refreshCodeEditorIntegrations: ReturnType<typeof vi.fn>;
 describe('setupFocusRevalidation', () => {
     beforeEach(() => {
         vi.useFakeTimers();
@@ -71,11 +72,13 @@ describe('setupFocusRevalidation', () => {
         moduleMocks.checkAndUpdateReleases.mockResolvedValue([]);
 
         mockWindow = createMockBrowserWindow();
+        refreshCodeEditorIntegrations = vi.fn().mockResolvedValue([]);
     });
 
     it('debounces focus-triggered revalidation and broadcasts updates', async () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
+            refreshCodeEditorIntegrations,
         );
 
         mockWindow.emit('focus');
@@ -85,6 +88,7 @@ describe('setupFocusRevalidation', () => {
 
         expect(moduleMocks.checkAndUpdateReleases).toHaveBeenCalledTimes(1);
         expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledTimes(1);
+        expect(refreshCodeEditorIntegrations).toHaveBeenCalledTimes(1);
         expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledWith({
             repairMissingLaunchPath: false,
         });
@@ -100,12 +104,44 @@ describe('setupFocusRevalidation', () => {
             [],
         );
 
+        expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'code-editor-integrations-updated',
+            mockWindow.webContents,
+            [],
+        );
+        dispose();
+    });
+
+    it('keeps the last known code editor settings when refresh fails', async () => {
+        refreshCodeEditorIntegrations.mockRejectedValue(
+            new Error('Detection failed'),
+        );
+        const dispose = setupFocusRevalidation(
+            mockWindow as unknown as BrowserWindow,
+            refreshCodeEditorIntegrations,
+        );
+
+        mockWindow.emit('focus');
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            mockWindow.webContents,
+            [],
+        );
+        expect(moduleMocks.ipcWebContentsSend).not.toHaveBeenCalledWith(
+            'code-editor-integrations-updated',
+            expect.anything(),
+            expect.anything(),
+        );
+
         dispose();
     });
 
     it('stops scheduling once disposed', async () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
+            refreshCodeEditorIntegrations,
         );
 
         mockWindow.emit('focus');

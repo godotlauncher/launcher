@@ -43,14 +43,14 @@
     },
     "otherSettings": {
         "title": "Другие настройки",
+        "codeEditor": {
+            "label": "Редактор кода",
+            "none": "Нет",
+            "disabled": "Отключен",
+            "notFound": "Не найдено"
+        },
         "initGit": "Инициализировать Git-репозиторий",
-        "gitNotInstalled": "Git не установлен на этом компьютере",
-        "setupVSCode": "Установить Visual Studio Code как текстовый редактор",
-        "vscodeNotInstalled": "Visual Studio Code не установлен на этом компьютере",
-        "vscodeHelp": {
-            "title": "Почему Visual Studio Code не обнаружен?",
-            "message": "Godot Launcher может автоматически обнаружить VS Code только если он был установлен в PATH. Вместо этого вы можете указать путь к исполняемому файлу VS Code в настройках."
-        }
+        "gitNotInstalled": "Git не установлен на этом компьютере"
     },
     "buttons": {
         "editNow": "Редактировать сейчас",

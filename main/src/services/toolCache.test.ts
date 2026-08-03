@@ -25,7 +25,7 @@ vi.mock('../commands/installedTools.js', () => ({
 }));
 
 const basePrefs: UserPreferences = {
-    prefs_version: 3,
+    prefs_version: 4,
     install_location: '/install',
     config_location: '/config',
     projects_location: '/projects',
@@ -42,7 +42,6 @@ const basePrefs: UserPreferences = {
 };
 
 const sampleTools: InstalledTool[] = [
-    { name: 'VSCode', version: '1.0.0', path: '/usr/bin/code' },
     { name: 'Git', version: '2.44.0', path: '/usr/bin/git' },
 ];
 
@@ -59,35 +58,6 @@ describe('toolCache service', () => {
     });
 
     describe('getCachedTools', () => {
-        it('returns cached tools when cache is fresh', async () => {
-            getUserPreferences.mockResolvedValue({
-                ...basePrefs,
-                installed_tools: {
-                    last_scan: Date.now(),
-                    tools: [
-                        {
-                            name: 'VSCode',
-                            path: '/usr/bin/code',
-                            version: '1.0.0',
-                            verified: true,
-                        },
-                    ],
-                },
-            });
-
-            const tools = await getCachedTools();
-
-            expect(tools).toEqual([
-                {
-                    name: 'VSCode',
-                    path: '/usr/bin/code',
-                    version: '1.0.0',
-                    verified: true,
-                },
-            ]);
-            expect(getInstalledTools).not.toHaveBeenCalled();
-        });
-
         it('refreshes cache when none exists', async () => {
             getUserPreferences
                 .mockResolvedValueOnce(basePrefs)
@@ -112,12 +82,6 @@ describe('toolCache service', () => {
             );
             expect(tools).toEqual([
                 {
-                    name: 'VSCode',
-                    path: '/usr/bin/code',
-                    version: '1.0.0',
-                    verified: true,
-                },
-                {
                     name: 'Git',
                     path: '/usr/bin/git',
                     version: '2.44.0',
@@ -140,14 +104,7 @@ describe('toolCache service', () => {
                 ...basePrefs,
                 installed_tools: {
                     last_scan: Date.now() - 1000 * 60 * 60 * 25, // 25 hours ago
-                    tools: [
-                        {
-                            name: 'VSCode',
-                            path: '/usr/bin/code',
-                            version: '1.0.0',
-                            verified: true,
-                        },
-                    ],
+                    tools: [],
                 },
             };
 
@@ -216,12 +173,6 @@ describe('toolCache service', () => {
             );
             expect(tools).toEqual([
                 {
-                    name: 'VSCode',
-                    path: '/usr/bin/code',
-                    version: '1.0.0',
-                    verified: true,
-                },
-                {
                     name: 'Git',
                     path: '/usr/bin/git',
                     version: '2.44.0',
@@ -239,16 +190,16 @@ describe('toolCache service', () => {
                     last_scan: Date.now(),
                     tools: [
                         {
-                            name: 'VSCode',
-                            path: '/usr/bin/code',
-                            version: '1.0.0',
+                            name: 'Git',
+                            path: '/usr/bin/git',
+                            version: '2.44.0',
                             verified: true,
                         },
                     ],
                 },
             });
 
-            expect(await isToolAvailable('VSCode')).toBe(true);
+            expect(await isToolAvailable('Git')).toBe(true);
         });
 
         it('returns false when tool path missing', async () => {
@@ -259,16 +210,16 @@ describe('toolCache service', () => {
                     last_scan: Date.now(),
                     tools: [
                         {
-                            name: 'VSCode',
-                            path: '/usr/bin/code',
-                            version: '1.0.0',
+                            name: 'Git',
+                            path: '/usr/bin/git',
+                            version: '2.44.0',
                             verified: true,
                         },
                     ],
                 },
             });
 
-            expect(await isToolAvailable('VSCode')).toBe(false);
+            expect(await isToolAvailable('Git')).toBe(false);
         });
     });
 });

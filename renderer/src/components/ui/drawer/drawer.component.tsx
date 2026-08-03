@@ -465,7 +465,6 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 tabIndex={-1}
                 className={clsx(
                     'drawer-backdrop absolute inset-0 border-0 bg-black/80 p-0',
-                    closeOnBackdrop ? 'cursor-pointer' : 'cursor-default',
                     backdropClassName,
                 )}
                 data-state={drawerState}

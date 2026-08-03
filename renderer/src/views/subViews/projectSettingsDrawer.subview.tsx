@@ -1,4 +1,6 @@
 import type {
+    CodeEditorId,
+    CodeEditorIntegrationSettings,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
@@ -10,8 +12,11 @@ import { useTranslation } from 'react-i18next';
 import { CopyBadge } from '../../components/ui/copyBadge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { TextField } from '../../components/ui/textField.component';
+import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
+import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
     canRenameGodotProject,
+    hasProjectCodeEditorChanges,
     hasProjectRenameChanges,
     validateProjectRenameName,
 } from './projectSettingsDrawer/projectSettings.model';
@@ -24,6 +29,10 @@ type ProjectSettingsDrawerProps = {
         project: ProjectDetails,
         options: RenameProjectOptions,
     ) => Promise<RenameProjectResult>;
+    onSetProjectCodeEditor: (
+        project: ProjectDetails,
+        codeEditorId: CodeEditorId | null,
+    ) => Promise<ProjectDetails>;
     getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
 };
 
@@ -32,9 +41,12 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     open,
     onOpenChange,
     onRenameProject,
+    onSetProjectCodeEditor,
     getProjectGodotName,
 }) => {
     const { t } = useTranslation(['projects', 'common']);
+    const { listIntegrationSettings } = useCodeEditorIntegrations();
+    const [initialName, setInitialName] = useState('');
     const [name, setName] = useState('');
     const [godotProjectName, setGodotProjectName] = useState<string | null>(
         null,
@@ -45,6 +57,15 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const [godotError, setGodotError] = useState<string>();
     const [formError, setFormError] = useState<string>();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [initialCodeEditorId, setInitialCodeEditorId] =
+        useState<CodeEditorId | null>(null);
+    const [codeEditorId, setCodeEditorId] = useState<CodeEditorId | null>(null);
+    const [codeEditorTouched, setCodeEditorTouched] = useState(false);
+    const [codeEditorSettings, setCodeEditorSettings] = useState<
+        CodeEditorIntegrationSettings[]
+    >([]);
+    const [loadingCodeEditors, setLoadingCodeEditors] = useState(false);
+    const [codeEditorLoadFailed, setCodeEditorLoadFailed] = useState(false);
 
     useEffect(() => {
         if (!open || !project) {
@@ -53,6 +74,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
 
         let disposed = false;
 
+        setInitialName(project.name);
         setName(project.name);
         setGodotProjectName(null);
         setRenameGodotProject(false);
@@ -86,6 +108,43 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             disposed = true;
         };
     }, [getProjectGodotName, open, project]);
+
+    useEffect(() => {
+        if (!open || !project) {
+            return;
+        }
+
+        let disposed = false;
+        const currentCodeEditorId = project.codeEditorId ?? null;
+
+        setInitialCodeEditorId(currentCodeEditorId);
+        setCodeEditorId(currentCodeEditorId);
+        setCodeEditorTouched(false);
+        setCodeEditorSettings([]);
+        setCodeEditorLoadFailed(false);
+        setLoadingCodeEditors(true);
+
+        listIntegrationSettings()
+            .then((settings) => {
+                if (!disposed) {
+                    setCodeEditorSettings(settings);
+                }
+            })
+            .catch(() => {
+                if (!disposed) {
+                    setCodeEditorLoadFailed(true);
+                }
+            })
+            .finally(() => {
+                if (!disposed) {
+                    setLoadingCodeEditors(false);
+                }
+            });
+
+        return () => {
+            disposed = true;
+        };
+    }, [listIntegrationSettings, open, project]);
 
     const getValidationMessage = (
         validationError: ReturnType<typeof validateProjectRenameName>,
@@ -122,6 +181,12 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setFormError(undefined);
     };
 
+    const handleCodeEditorChange = (nextCodeEditorId: CodeEditorId | null) => {
+        setCodeEditorId(nextCodeEditorId);
+        setCodeEditorTouched(true);
+        setFormError(undefined);
+    };
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
@@ -134,22 +199,56 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setGodotError(undefined);
 
         try {
-            const result = await onRenameProject(project, {
-                name: name.trim(),
+            let currentProject = project;
+            const renameChanged = hasProjectRenameChanges(
+                initialName,
+                godotProjectName,
+                name,
                 renameGodotProject,
-            });
+            );
+            const codeEditorChanged = hasProjectCodeEditorChanges(
+                initialCodeEditorId,
+                codeEditorId,
+                codeEditorTouched,
+            );
 
-            if (!result.success) {
-                const message = result.error ?? t('editProject.updateFailed');
-                setFormError(message);
+            if (renameChanged) {
+                const result = await onRenameProject(project, {
+                    name: name.trim(),
+                    renameGodotProject,
+                });
 
-                if (result.errorField === 'name') {
-                    setNameError(message);
-                } else if (result.errorField === 'godot') {
-                    setGodotError(message);
+                if (!result.success) {
+                    const message =
+                        result.error ?? t('editProject.updateFailed');
+                    setFormError(message);
+
+                    if (result.errorField === 'name') {
+                        setNameError(message);
+                    } else if (result.errorField === 'godot') {
+                        setGodotError(message);
+                    }
+
+                    return;
                 }
 
-                return;
+                const updatedName = result.project?.name ?? name.trim();
+                currentProject = result.project ?? {
+                    ...currentProject,
+                    name: updatedName,
+                };
+                setInitialName(updatedName);
+                setName(updatedName);
+                if (renameGodotProject) {
+                    setGodotProjectName(updatedName);
+                }
+                setRenameGodotProject(false);
+            }
+
+            if (codeEditorChanged) {
+                await onSetProjectCodeEditor(currentProject, codeEditorId);
+                setInitialCodeEditorId(codeEditorId);
+                setCodeEditorTouched(false);
             }
 
             onOpenChange(false);
@@ -167,14 +266,22 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const trimmedName = name.trim();
     const godotProjectAvailable = godotProjectName !== null;
     const godotRenameEnabled = canRenameGodotProject(name, godotProjectName);
-    const hasChanges =
+    const hasRenameChanges =
         project &&
         hasProjectRenameChanges(
-            project.name,
+            initialName,
             godotProjectName,
             name,
             renameGodotProject,
         );
+    const hasCodeEditorChanges =
+        project &&
+        hasProjectCodeEditorChanges(
+            initialCodeEditorId,
+            codeEditorId,
+            codeEditorTouched,
+        );
+    const hasChanges = hasRenameChanges || hasCodeEditorChanges;
     const saveDisabled =
         !project ||
         trimmedName.length === 0 ||
@@ -283,6 +390,18 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                             )}
                         </span>
                     </label>
+
+                    <div className="divider my-0" />
+
+                    <ProjectCodeEditorSection
+                        t={t}
+                        codeEditorId={codeEditorId}
+                        settings={codeEditorSettings}
+                        loading={loadingCodeEditors}
+                        loadFailed={codeEditorLoadFailed}
+                        disabled={!project?.valid || isSubmitting}
+                        onChange={handleCodeEditorChange}
+                    />
                 </Drawer.Body>
                 <Drawer.Footer>
                     <button

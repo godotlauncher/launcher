@@ -1,7 +1,9 @@
 import type { ElectronApplication } from '@playwright/test';
 import type {
     AppUpdateMessage,
+    CodeEditorIntegrationSettings,
     InstalledRelease,
+    LaunchProjectResult,
     ProjectDetails,
     ReleaseSummary,
     UserPreferences,
@@ -53,4 +55,6 @@ export type StubbedAppDataOptions = {
     availableReleases?: ReleaseSummary[];
     availablePrereleases?: ReleaseSummary[];
     tools?: CachedTool[];
+    codeEditorSettings?: CodeEditorIntegrationSettings[];
+    projectLaunchResult?: LaunchProjectResult;
 };

@@ -162,7 +162,7 @@ export const CheckForUpdates: React.FC = () => {
                                                         onClick={() =>
                                                             installAndRelaunch()
                                                         }
-                                                        className="underline cursor-pointer hover:no-underline"
+                                                        className="underline hover:no-underline"
                                                     />
                                                 ),
                                             }}
@@ -178,7 +178,7 @@ export const CheckForUpdates: React.FC = () => {
                                                         onClick={() =>
                                                             installAndRelaunch()
                                                         }
-                                                        className="underline cursor-pointer hover:no-underline"
+                                                        className="underline hover:no-underline"
                                                     />
                                                 ),
                                             }}
@@ -203,10 +203,11 @@ export const CheckForUpdates: React.FC = () => {
                                             Button: (
                                                 <button
                                                     type="button"
+                                                    data-external-link=""
                                                     onClick={
                                                         openManualUpdateUrl
                                                     }
-                                                    className="underline cursor-pointer hover:no-underline"
+                                                    className="underline hover:no-underline"
                                                 />
                                             ),
                                         }}

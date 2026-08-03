@@ -151,7 +151,7 @@ const ReleaseRow: React.FC<ReleaseRowProps> = ({
             data-testid={`rowReleaseSelect_}`}
             onClick={() => onSelectedReleaseChange(row)}
             key={`releaseSelect_${getSelectableReleaseKey(row)}`}
-            className="even:bg-base-300 hover:bg-base-content/10 cursor-pointer"
+            className="even:bg-base-300 hover:bg-base-content/10"
         >
             <td className="flex flex-col items-center justify-center">
                 <input

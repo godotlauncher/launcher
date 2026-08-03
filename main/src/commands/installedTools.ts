@@ -1,7 +1,5 @@
 import type { InstalledTool } from '@shared/contracts';
 import { findExecutable, getCommandVersion } from '../utils/platform.utils.js';
-import { getVSCodeInstallPath } from '../utils/vscode.utils.js';
-import { getUserPreferences } from './userPreferences.js';
 
 export async function getInstalledTools(): Promise<InstalledTool[]> {
     const installedTools: InstalledTool[] = [];
@@ -15,18 +13,6 @@ export async function getInstalledTools(): Promise<InstalledTool[]> {
             name: 'Git',
             version: gitVersion,
             path: gitPath,
-        });
-    }
-
-    // check if vscode is installed
-    const { vs_code_path } = await getUserPreferences();
-    const vscodePath = await getVSCodeInstallPath(vs_code_path);
-
-    if (vscodePath) {
-        installedTools.push({
-            name: 'VSCode',
-            version: '',
-            path: vscodePath ?? '',
         });
     }
 

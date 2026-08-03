@@ -1,4 +1,12 @@
+import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 import type { CachedTool } from '../tools/index.js';
+
+export type CodeEditorIntegrationPreferences = {
+    is_default?: boolean;
+    enabled?: boolean;
+    executable_path?: string;
+    executable_args?: string;
+};
 
 export type UserPreferences = {
     prefs_version: number;
@@ -14,7 +22,9 @@ export type UserPreferences = {
     first_run: boolean;
     windows_enable_symlinks: boolean;
     windows_symlink_win_notify: boolean;
-    vs_code_path?: string;
+    code_editor_integrations?: Partial<
+        Record<CodeEditorId, CodeEditorIntegrationPreferences>
+    >;
     language?: string;
     skipped_app_update_version?: string;
     installed_tools?: {

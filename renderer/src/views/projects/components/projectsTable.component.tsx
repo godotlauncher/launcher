@@ -1,31 +1,33 @@
-import type { ProjectDetails } from '@shared/contracts';
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
+import type {
+    CodeEditorIntegrationSettings,
+    ProjectDetails,
+} from '@shared/contracts';
 import {
     ChevronDown,
     ChevronsUpDown,
     ChevronUp,
     EllipsisVertical,
+    FlaskConical,
     ImageOff,
     TriangleAlert,
 } from 'lucide-react';
 import type React from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
-import vscodeIcon from '../../../assets/icons/vscode.svg';
+import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
+import { formatRelativeTime } from '../../../i18n/relativeTime';
 import {
     getInvalidProjectTableKey,
     type ProjectSortData,
 } from '../projectsView.model';
 
-TimeAgo.addLocale(en);
-const timeAgo = new TimeAgo('en-US');
-
 type ProjectsTableProps = {
     rows: ProjectDetails[];
     loading: boolean;
+    locale: string;
     busyProjects: string[];
+    codeEditorSettings: CodeEditorIntegrationSettings[];
     sortData: ProjectSortData;
     onSortChange: (sortData: ProjectSortData) => void;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
@@ -36,7 +38,7 @@ type ProjectsTableProps = {
         event: React.MouseEvent,
         project: ProjectDetails,
     ) => void;
-    t: (key: string) => string;
+    t: (key: string, options?: Record<string, unknown>) => string;
 };
 
 function getProjectVersionLabel(project: ProjectDetails): React.ReactNode {
@@ -50,7 +52,9 @@ function getProjectVersionLabel(project: ProjectDetails): React.ReactNode {
 export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     rows,
     loading,
+    locale,
     busyProjects,
+    codeEditorSettings,
     sortData,
     onSortChange,
     isInstalledRelease,
@@ -76,9 +80,9 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
         }
 
         return sortData.order === 'asc' ? (
-            <ChevronUp className="w-4 h-4 ml-2 cursor-pointer" />
+            <ChevronUp className="w-4 h-4 ml-2" />
         ) : (
-            <ChevronDown className="w-4 h-4 ml-2 cursor-pointer" />
+            <ChevronDown className="w-4 h-4 ml-2" />
         );
     };
 
@@ -120,7 +124,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                         <th className="min-w-48 w-full">
                             <button
                                 type="button"
-                                className="flex items-center gap-2 cursor-pointer"
+                                className="flex items-center gap-2"
                                 onClick={() => toggleSort('name')}
                             >
                                 {t('table.name')}
@@ -130,7 +134,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                         <th className="w-44 min-w-44">
                             <button
                                 type="button"
-                                className="flex items-center gap-2 cursor-pointer"
+                                className="flex items-center gap-2"
                                 onClick={() => toggleSort('modified')}
                             >
                                 {t('table.modified')}
@@ -145,6 +149,29 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                     {rows.map((row) => {
                         const editorDownloading =
                             isProjectEditorDownloading(row);
+                        const selectedCodeEditor = row.codeEditorId
+                            ? codeEditorSettings.find(
+                                  (settings) =>
+                                      settings.integration.id ===
+                                      row.codeEditorId,
+                              )
+                            : undefined;
+                        const codeEditorUnavailable = Boolean(
+                            selectedCodeEditor &&
+                                !selectedCodeEditor.installation,
+                        );
+                        const codeEditorTooltip = row.codeEditorId
+                            ? t(
+                                  codeEditorUnavailable
+                                      ? 'table.codeEditorUnavailable'
+                                      : 'table.codeEditorProject',
+                                  {
+                                      editor:
+                                          selectedCodeEditor?.integration
+                                              .displayName ?? row.codeEditorId,
+                                  },
+                              )
+                            : '';
 
                         return (
                             <tr
@@ -179,6 +206,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                             <div className="font-bold flex text-lg gap-2 items-center justify-start min-w-0">
                                                 {!row.valid && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             getInvalidProjectTableKey(
                                                                 row,
@@ -199,25 +227,39 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                         {row.name}
                                                     </span>
                                                 </button>
-                                                {row.withVSCode && (
+                                                {row.codeEditorId && (
                                                     <Tooltip
-                                                        tip={t(
-                                                            'table.vsCodeProject',
-                                                        )}
-                                                        tone="primary"
+                                                        placement="top"
+                                                        tip={codeEditorTooltip}
+                                                        tone={
+                                                            codeEditorUnavailable
+                                                                ? 'warning'
+                                                                : 'primary'
+                                                        }
                                                         className="flex items-center"
+                                                        role="img"
+                                                        ariaLabel={
+                                                            codeEditorTooltip
+                                                        }
                                                     >
-                                                        <span className="text-xs text-base-content/50 ">
-                                                            <img
-                                                                src={vscodeIcon}
-                                                                className="w-4 h-4"
-                                                                alt="VSCode"
+                                                        {codeEditorUnavailable ? (
+                                                            <TriangleAlert
+                                                                className="size-4 stroke-warning"
+                                                                aria-hidden="true"
                                                             />
-                                                        </span>
+                                                        ) : (
+                                                            <CodeEditorIntegrationIcon
+                                                                integrationId={
+                                                                    row.codeEditorId
+                                                                }
+                                                                className="size-4"
+                                                            />
+                                                        )}
                                                     </Tooltip>
                                                 )}
                                                 {row.withGit && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.gitProject',
                                                         )}
@@ -237,6 +279,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 )}
                                                 {row.release.mono && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.dotNetProject',
                                                         )}
@@ -250,19 +293,26 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                                 )}
                                                 {row.release.prerelease && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.prerelease',
                                                         )}
                                                         tone="secondary"
                                                         className="right-0 flex items-center"
+                                                        role="img"
+                                                        ariaLabel={t(
+                                                            'table.prerelease',
+                                                        )}
                                                     >
-                                                        <span className="badge badge-secondary badge-outline text-xs text-base-content/50 ">
-                                                            pr
-                                                        </span>
+                                                        <FlaskConical
+                                                            className="size-4 text-purple-500"
+                                                            aria-hidden="true"
+                                                        />
                                                     </Tooltip>
                                                 )}
                                                 {row.open_windowed && (
                                                     <Tooltip
+                                                        placement="top"
                                                         tip={t(
                                                             'table.windowedMode',
                                                         )}
@@ -293,7 +343,10 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                                 <td className="">
                                     <p>
                                         {row.last_opened
-                                            ? timeAgo.format(row.last_opened)
+                                            ? formatRelativeTime(
+                                                  row.last_opened,
+                                                  locale,
+                                              )
                                             : '-'}
                                     </p>
                                 </td>

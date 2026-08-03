@@ -15,12 +15,13 @@
         "dotNetProject": "Dan huwa Proġett .Net",
         "prerelease": "Qed tuża verżjoni pre-release tal-editur Godot",
         "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
-        "vsCodeProject": "Visual Studio Code huwa attivat bhala editur estern għal dan il-proġett",
+        "codeEditorProject": "Qed jintuża {{editor}}",
         "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
         "invalidReasons": {
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
             "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."
-        }
+        },
+        "codeEditorUnavailable": "{{editor}} ma ġiex identifikat."
     },
     "addProject": {
         "selectFile": "Agħżel Fajl tal-Proġett",
@@ -69,7 +70,16 @@
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
             "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
         },
-        "recoveredVSCodeConfig": "Xi fajls tal-konfigurazzjoni ta' VS Code ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad."
+        "recoveredCodeEditorConfig": "Xi fajls tal-konfigurazzjoni tal-editur tal-kodiċi ma kinux validi. Godot Launcher reġa' ħoloqhom u żamm l-oriġinali bħala kopji .bad.",
+        "codeEditorLaunch": {
+            "title": "{{editor}} ma nstabx",
+            "message": "Dan il-proġett huwa kkonfigurat biex juża {{editor}}. Godot xorta jista’ jinfetaħ, iżda l-ftuħ tal-iskripts f’dan l-editur jista’ ma jirnexxix.",
+            "dotnet": "L-integrazzjoni tal-editur C# tista’ wkoll ma tkunx disponibbli għal dan il-proġett .NET.",
+            "actionFailed": "L-azzjoni tal-editur tal-kodiċi falliet.",
+            "launchAnyway": "Iftaħ xorta waħda",
+            "openSettings": "Iftaħ is-settings",
+            "disableAndLaunch": "Iddiżattiva u niedi"
+        }
     },
     "changeEditor": {
         "errors": {
@@ -78,10 +88,9 @@
             "differentMajorVersion": "Ma tistax tuża verżjoni maġġuri differenti tal-editur\nBiex tipproteġi l-proġett tiegħek ara l-gwida uffiċjali tal-migrazzjoni fuq https://godotengine.org"
         }
     },
-    "toggleVSCode": {
+    "setCodeEditor": {
         "errors": {
             "projectNotFound": "Il-proġett ma nstabx",
-            "vscodeNotInstalled": "Visual Studio Code mhuwiex installat fuq dan il-kompjuter.",
             "missingLaunchPath": "Il-perkors tat-tnedija ta' Godot għal dan il-proġett mhux magħruf.",
             "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
         }
@@ -98,6 +107,15 @@
             "path": {
                 "label": "Folder tal-proġett"
             }
+        },
+        "codeEditor": {
+            "title": "Editur tal-Kodiċi",
+            "help": "Agħżel l-editur tal-kodiċi li jintuża għal dan il-proġett.",
+            "none": "Xejn",
+            "disabled": "Diżattivat",
+            "notFound": "Ma nstabx",
+            "loading": "Qed jitgħabbew l-edituri tal-kodiċi...",
+            "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi."
         },
         "godot": {
             "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",

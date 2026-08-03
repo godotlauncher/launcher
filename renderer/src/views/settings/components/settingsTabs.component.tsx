@@ -9,6 +9,7 @@ const settingsTabTestIds: Record<SettingsTab, string> = {
     installs: 'tabInstalls',
     appearance: 'tabAppearance',
     behavior: 'tabBehavior',
+    codeEditors: 'tabCodeEditors',
     tools: 'tabTools',
     updates: 'tabUpdates',
 };

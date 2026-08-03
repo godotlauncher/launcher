@@ -1,5 +1,9 @@
 import type { BackendResult } from '../app/index.js';
 import type {
+    CodeEditorId,
+    CodeEditorIntegrationSummary,
+} from '../codeEditorIntegration/index.js';
+import type {
     EditorChannel,
     EditorFlavor,
     InstalledRelease,
@@ -8,6 +12,18 @@ import type {
 export type LaunchPath = string;
 
 export type ProjectInvalidReason = 'missing_project_file' | 'missing_editor';
+
+export type LaunchProjectOptions = {
+    allowMissingCodeEditor?: boolean;
+};
+
+export type LaunchProjectResult =
+    | { launched: true }
+    | {
+          launched: false;
+          reason: 'code_editor_unavailable';
+          integration: CodeEditorIntegrationSummary;
+      };
 
 export type ProjectDetails = {
     name: string;
@@ -23,7 +39,7 @@ export type ProjectDetails = {
     release: InstalledRelease;
     launch_path: string;
     config_version: 4 | 5;
-    withVSCode: boolean;
+    codeEditorId: CodeEditorId | null;
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;
@@ -67,15 +83,16 @@ export type AddProjectToListResult = BackendResult & {
     projects?: ProjectDetails[];
     newProject?: ProjectDetails;
     editorResolution?: AddProjectEditorResolution;
-    recoveredVSCodeConfigFiles?: string[];
+    recoveredCodeEditorConfigFiles?: string[];
 };
 
 export type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
+    recoveredCodeEditorConfigFiles?: string[];
 };
 
-export type SetProjectVSCodeResult = ProjectDetails & {
-    recoveredVSCodeConfigFiles?: string[];
+export type SetProjectCodeEditorResult = ProjectDetails & {
+    recoveredCodeEditorConfigFiles?: string[];
 };
 
 export type RenameProjectOptions = {

@@ -20,6 +20,7 @@ import {
     getDefaultPrefs,
     getPrefsPath,
     readPrefsFromDisk,
+    readPrefsSnapshotFromDisk,
     writePrefsToDisk,
 } from './prefs.utils';
 
@@ -207,7 +208,7 @@ suite('prefs.util', (_test) => {
             const defaultDirs = getDefaultDirs();
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
-                prefs_version: 3,
+                prefs_version: 4,
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -221,7 +222,6 @@ suite('prefs.util', (_test) => {
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
                 windows_symlink_win_notify: false,
-                vs_code_path: '',
                 language: 'system',
             });
         });
@@ -253,7 +253,7 @@ suite('prefs.util', (_test) => {
             const defaultDirs = getDefaultDirs();
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
-                prefs_version: 3,
+                prefs_version: 4,
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -267,7 +267,6 @@ suite('prefs.util', (_test) => {
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
                 windows_symlink_win_notify: true,
-                vs_code_path: '',
                 language: 'system',
             });
         });
@@ -280,6 +279,27 @@ suite('prefs.util', (_test) => {
         const prefsPath = '/home/user/.godot/prefs.json';
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
         expect(prefs).toEqual({ a: 1 });
+    });
+
+    it('should expose stored prefs separately from default-merged prefs', async () => {
+        const storedPrefs = {
+            prefs_version: 3,
+            vs_code_path: '/legacy/code',
+        };
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify(storedPrefs),
+        );
+        const defaultPrefs = await getDefaultPrefs();
+
+        const snapshot = await readPrefsSnapshotFromDisk(
+            '/home/user/.godot/prefs.json',
+            defaultPrefs,
+        );
+
+        expect(snapshot.stored).toEqual(storedPrefs);
+        expect(snapshot.merged.prefs_version).toBe(3);
+        expect(snapshot.merged).not.toHaveProperty('vs_code_path');
     });
 
     it('should read default prefs when prefs file does not exist', async () => {
@@ -302,5 +322,50 @@ suite('prefs.util', (_test) => {
             'utf-8',
         );
         expect(fsPromisesMock.writeFile).toHaveBeenCalledTimes(1);
+    });
+    it('replaces legacy editor fields when writing runtime preferences', async () => {
+        const prefsPath = '/home/user/.godot/prefs.json';
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify({
+                prefs_version: 4,
+                vs_code_path: '/legacy/code',
+                installed_tools: {
+                    last_scan: 1,
+                    tools: [
+                        {
+                            name: 'VSCode',
+                            path: '/legacy/code',
+                            version: null,
+                            verified: true,
+                        },
+                    ],
+                },
+            }),
+        );
+        const runtimePrefs = await getDefaultPrefs();
+
+        await writePrefsToDisk(prefsPath, {
+            ...runtimePrefs,
+            installed_tools: {
+                last_scan: 2,
+                tools: [
+                    {
+                        name: 'Git',
+                        path: '/usr/bin/git',
+                        version: null,
+                        verified: true,
+                    },
+                ],
+            },
+        });
+
+        const writeCall = vi.mocked(fsPromisesMock.writeFile).mock.calls.at(-1);
+        expect(writeCall).toBeDefined();
+        const persisted = JSON.parse(writeCall?.[1] as string);
+        expect(persisted).not.toHaveProperty('vs_code_path');
+        expect(persisted.installed_tools.tools).toEqual([
+            expect.objectContaining({ name: 'Git' }),
+        ]);
     });
 });

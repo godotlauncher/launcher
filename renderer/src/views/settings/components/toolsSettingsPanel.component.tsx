@@ -1,7 +1,6 @@
 import type { CachedTool } from '@shared/contracts';
 import type React from 'react';
 import { GitToolSettings } from '../../../components/settings/gitToolSettings.component';
-import { VSCodeToolSettings } from '../../../components/settings/vsCodeToolSettings.component';
 import { SettingsPanelSection } from './settingsPanelSection.component';
 
 type Translate = (key: string) => string;
@@ -10,7 +9,6 @@ type ToolsSettingsPanelProps = {
     active: boolean;
     t: Translate;
     gitTool?: CachedTool;
-    vsCodeTool?: CachedTool;
     isRescanningTools: boolean;
     onRescanTools: () => Promise<void>;
 };
@@ -19,7 +17,6 @@ export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
     active,
     t,
     gitTool,
-    vsCodeTool,
     isRescanningTools,
     onRescanTools,
 }) => (
@@ -55,11 +52,5 @@ export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
         </div>
         <div className="divider"></div>
         <GitToolSettings tool={gitTool} />
-        <div className="divider"></div>
-        <VSCodeToolSettings
-            tool={vsCodeTool}
-            refreshing={isRescanningTools}
-            onRescan={onRescanTools}
-        />
     </SettingsPanelSection>
 );
