@@ -1,3 +1,4 @@
+import logger from 'electron-log/renderer';
 import { useEffect } from 'react';
 import { appBridge } from '../bridge';
 
@@ -7,20 +8,8 @@ export function useSplashscreenHandoff(ready: boolean): void {
             return;
         }
 
-        let secondFrame: number | undefined;
-        const firstFrame = requestAnimationFrame(() => {
-            secondFrame = requestAnimationFrame(() => {
-                void appBridge.rendererReady().catch((error) => {
-                    console.error('Failed to close splash screen', error);
-                });
-            });
+        void appBridge.rendererReady().catch((error) => {
+            logger.error('Failed to close splash screen', error);
         });
-
-        return () => {
-            cancelAnimationFrame(firstFrame);
-            if (secondFrame !== undefined) {
-                cancelAnimationFrame(secondFrame);
-            }
-        };
     }, [ready]);
 }
