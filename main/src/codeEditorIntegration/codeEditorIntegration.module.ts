@@ -1,4 +1,5 @@
 import { Module } from '@mariodebono/di';
+import { CodeEditorInstallationCache } from './codeEditorInstallationCache.js';
 import { CodeEditorIntegrationController } from './codeEditorIntegration.controller.js';
 import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
@@ -22,6 +23,7 @@ import { VSCodiumIntegrationModule } from './integrations/vscodium/vscodiumInteg
         },
         CodeEditorIntegrationSettingsStore,
         CodeEditorIntegrationService,
+        CodeEditorInstallationCache,
         CodeEditorIntegrationController,
     ],
     exports: [CodeEditorIntegrationService],

@@ -68,6 +68,15 @@ describe('VSCodeIntegration', () => {
             path: candidatePath,
             version: null,
         });
+        await expect(
+            integration.validateInstallation({
+                path: candidatePath,
+                version: null,
+            }),
+        ).resolves.toEqual({
+            path: candidatePath,
+            version: null,
+        });
 
         await expect(integration.validatePath('')).resolves.toEqual({
             valid: false,

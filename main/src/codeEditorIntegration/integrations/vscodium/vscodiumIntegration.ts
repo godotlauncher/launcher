@@ -11,6 +11,7 @@ import type {
 import {
     getVSCodiumInstallation,
     resolveVSCodiumGodotConfiguration,
+    validateVSCodiumInstallation,
 } from './vscodiumInstallation.js';
 import { configureVSCodiumProject } from './vscodiumProjectConfiguration.js';
 
@@ -33,6 +34,11 @@ export class VSCodiumIntegration implements CodeEditorIntegration {
         customPath?: string,
     ): Promise<CodeEditorInstallation | null> {
         return getVSCodiumInstallation(customPath);
+    }
+    async validateInstallation(
+        installation: CodeEditorInstallation,
+    ): Promise<CodeEditorInstallation | null> {
+        return validateVSCodiumInstallation(installation);
     }
 
     async validatePath(

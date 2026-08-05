@@ -80,6 +80,9 @@ function createIntegration(
         }),
         validatePath: vi.fn().mockResolvedValue({
             valid: true,
+            validateInstallation: vi
+                .fn()
+                .mockImplementation(async (installation) => installation),
             installation: {
                 path: path.resolve('tools', 'code'),
                 version: null,
@@ -112,6 +115,8 @@ function createSettingsStore(
         setDefaultIntegrationId: vi.fn().mockResolvedValue(undefined),
         get: vi.fn().mockResolvedValue(settings),
         update: vi.fn().mockResolvedValue(undefined),
+        getDetectedInstallation: vi.fn().mockResolvedValue(undefined),
+        setDetectedInstallation: vi.fn().mockResolvedValue(undefined),
     } as unknown as CodeEditorIntegrationSettingsStore;
 }
 

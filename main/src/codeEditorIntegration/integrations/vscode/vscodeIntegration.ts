@@ -42,6 +42,18 @@ export class VSCodeIntegration implements CodeEditorIntegration {
             : null;
     }
 
+    async validateInstallation(
+        installation: CodeEditorInstallation,
+    ): Promise<CodeEditorInstallation | null> {
+        const installationPath = await getVSCodeInstallPath(installation.path);
+        return installationPath
+            ? {
+                  path: installationPath,
+                  version: installation.version,
+              }
+            : null;
+    }
+
     async validatePath(
         pathToValidate: string,
     ): Promise<CodeEditorPathValidation> {

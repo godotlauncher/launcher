@@ -5,6 +5,7 @@ import type {
 } from '../../codeEditorIntegration.types.js';
 import {
     findLinuxVSCodium,
+    resolveFlatpakVSCodium,
     resolveLinuxVSCodium,
 } from './vscodiumInstallation.linux.js';
 import {
@@ -36,6 +37,19 @@ export async function getVSCodiumInstallation(
             : resolveLinuxVSCodium(customPath);
     }
     return null;
+}
+
+export async function validateVSCodiumInstallation(
+    installation: CodeEditorInstallation,
+): Promise<CodeEditorInstallation | null> {
+    if (
+        process.platform === 'linux' &&
+        path.posix.basename(installation.path) === 'flatpak'
+    ) {
+        return resolveFlatpakVSCodium(installation.path);
+    }
+
+    return getVSCodiumInstallation(installation.path);
 }
 
 export function resolveVSCodiumGodotConfiguration(

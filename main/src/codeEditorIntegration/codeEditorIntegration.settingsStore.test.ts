@@ -149,4 +149,132 @@ describe('CodeEditorIntegrationSettingsStore', () => {
             },
         });
     });
+    it('reads only the detected installation for the current OS and architecture', async () => {
+        preferenceMocks.getUserPreferences.mockResolvedValue(
+            createPreferences({
+                code_editor_integrations: {
+                    vscodium: {
+                        detected_installations: {
+                            [process.platform]: {
+                                [process.arch]: {
+                                    path: ' /usr/bin/flatpak ',
+                                    version: null,
+                                    checked_at: 123,
+                                },
+                                other: {
+                                    path: '/other/architecture',
+                                    version: '1.0.0',
+                                    checked_at: 100,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+        );
+
+        await expect(
+            new CodeEditorIntegrationSettingsStore().getDetectedInstallation(
+                'vscodium',
+            ),
+        ).resolves.toEqual({
+            installation: {
+                path: '/usr/bin/flatpak',
+                version: null,
+            },
+            checkedAt: 123,
+        });
+    });
+
+    it('writes the current OS and architecture without removing portable entries', async () => {
+        const preferences = createPreferences({
+            code_editor_integrations: {
+                vscodium: {
+                    enabled: false,
+                    detected_installations: {
+                        other_platform: {
+                            x64: {
+                                path: '/portable/other',
+                                version: '1.0.0',
+                                checked_at: 50,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        preferenceMocks.getUserPreferences.mockResolvedValue(preferences);
+
+        await new CodeEditorIntegrationSettingsStore().setDetectedInstallation(
+            'vscodium',
+            { path: '/usr/bin/flatpak', version: null },
+            123,
+        );
+
+        expect(preferenceMocks.setUserPreferences).toHaveBeenCalledWith({
+            ...preferences,
+            code_editor_integrations: {
+                vscodium: {
+                    enabled: false,
+                    detected_installations: {
+                        other_platform: {
+                            x64: {
+                                path: '/portable/other',
+                                version: '1.0.0',
+                                checked_at: 50,
+                            },
+                        },
+                        [process.platform]: {
+                            [process.arch]: {
+                                path: '/usr/bin/flatpak',
+                                version: null,
+                                checked_at: 123,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    });
+    it('serializes detection writes for different integrations', async () => {
+        let preferences = createPreferences();
+        preferenceMocks.getUserPreferences.mockImplementation(
+            async () => preferences,
+        );
+        preferenceMocks.setUserPreferences.mockImplementation(async (value) => {
+            preferences = value;
+            return value;
+        });
+        const store = new CodeEditorIntegrationSettingsStore();
+
+        await Promise.all([
+            store.setDetectedInstallation(
+                'vscode',
+                { path: 'code', version: null },
+                100,
+            ),
+            store.setDetectedInstallation(
+                'vscodium',
+                { path: 'codium', version: '1.2.3' },
+                200,
+            ),
+        ]);
+
+        expect(
+            preferences.code_editor_integrations?.vscode
+                ?.detected_installations?.[process.platform]?.[process.arch],
+        ).toEqual({
+            path: 'code',
+            version: null,
+            checked_at: 100,
+        });
+        expect(
+            preferences.code_editor_integrations?.vscodium
+                ?.detected_installations?.[process.platform]?.[process.arch],
+        ).toEqual({
+            path: 'codium',
+            version: '1.2.3',
+            checked_at: 200,
+        });
+    });
 });

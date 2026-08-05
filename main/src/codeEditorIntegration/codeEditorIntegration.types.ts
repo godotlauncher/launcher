@@ -68,6 +68,9 @@ export interface CodeEditorIntegration {
     ): Promise<CodeEditorInstallation | null>;
 
     validatePath(path: string): Promise<CodeEditorPathValidation>;
+    validateInstallation(
+        installation: CodeEditorInstallation,
+    ): Promise<CodeEditorInstallation | null>;
 
     isConfiguredForProject(projectPath: string): Promise<boolean>;
 

@@ -6,6 +6,7 @@ import { VSCodiumIntegration } from './vscodiumIntegration.js';
 const installationMocks = vi.hoisted(() => ({
     getVSCodiumInstallation: vi.fn(),
     resolveVSCodiumGodotConfiguration: vi.fn(),
+    validateVSCodiumInstallation: vi.fn(),
 }));
 
 const projectConfigurationMocks = vi.hoisted(() => ({
@@ -66,6 +67,23 @@ describe('VSCodiumIntegration', () => {
         expect(installationMocks.getVSCodiumInstallation).toHaveBeenCalledWith(
             executablePath,
         );
+
+        installationMocks.validateVSCodiumInstallation.mockResolvedValue({
+            path: executablePath,
+            version: '1.2.3',
+        });
+        await expect(
+            integration.validateInstallation({
+                path: executablePath,
+                version: '1.2.3',
+            }),
+        ).resolves.toEqual({ path: executablePath, version: '1.2.3' });
+        expect(
+            installationMocks.validateVSCodiumInstallation,
+        ).toHaveBeenCalledWith({
+            path: executablePath,
+            version: '1.2.3',
+        });
 
         await expect(integration.validatePath('   ')).resolves.toEqual({
             valid: false,
