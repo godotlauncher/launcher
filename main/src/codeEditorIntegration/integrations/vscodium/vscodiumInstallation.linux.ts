@@ -55,11 +55,11 @@ export async function resolveFlatpakVSCodium(
         return null;
     }
 
-    const installedRef = await execFileText(flatpakPath, [
-        'info',
-        '--show-ref',
-        'com.vscodium.codium',
-    ]);
+    const installedRef = await execFileText(
+        flatpakPath,
+        ['info', '--show-ref', 'com.vscodium.codium'],
+        { logFailure: false },
+    );
     if (
         !installedRef ||
         !/^app\/com\.vscodium\.codium\/[^/]+\/stable$/.test(installedRef)

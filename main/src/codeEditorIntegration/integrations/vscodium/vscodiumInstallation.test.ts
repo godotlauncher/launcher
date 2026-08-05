@@ -6,8 +6,12 @@ const platformMocks = vi.hoisted(() => ({
     findExecutable: vi.fn(),
 }));
 
+const loggerMocks = vi.hoisted(() => ({
+    debug: vi.fn(),
+}));
+
 vi.mock('../../../utils/platform.utils.js', () => platformMocks);
-vi.mock('electron-log', () => ({ default: { debug: vi.fn() } }));
+vi.mock('electron-log', () => ({ default: loggerMocks }));
 vi.mock('node:child_process', () => ({ execFile: vi.fn() }));
 vi.mock('node:fs', () => ({
     accessSync: vi.fn(),
@@ -167,6 +171,28 @@ describe('VSCodium installation resolution', () => {
             execPath: '/usr/bin/flatpak',
             execFlags: 'run com.vscodium.codium --goto {file}:{line}:{col}',
         });
+    });
+
+    it('silently ignores Flatpak when VSCodium is not installed', async () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+        vi.mocked(execFile).mockImplementation(((
+            _file,
+            _args,
+            _options,
+            callback,
+        ) => {
+            callback?.(new Error('com.vscodium.codium not installed'), '', '');
+            return undefined;
+        }) as typeof execFile);
+        const { resolveFlatpakVSCodium } = await import(
+            './vscodiumInstallation.linux.js'
+        );
+
+        await expect(
+            resolveFlatpakVSCodium('/usr/bin/flatpak'),
+        ).resolves.toBeNull();
+        expect(execFile).toHaveBeenCalledTimes(1);
+        expect(loggerMocks.debug).not.toHaveBeenCalled();
     });
 
     it('does not execute a manually selected Flatpak command', async () => {
