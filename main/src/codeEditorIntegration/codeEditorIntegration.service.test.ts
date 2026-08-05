@@ -80,18 +80,23 @@ function createIntegration(
         }),
         validatePath: vi.fn().mockResolvedValue({
             valid: true,
+            validateInstallation: vi
+                .fn()
+                .mockImplementation(async (installation) => installation),
             installation: {
                 path: path.resolve('tools', 'code'),
                 version: null,
             },
         }),
         isConfiguredForProject: vi.fn().mockResolvedValue(true),
-        resolveGodotConfiguration: vi.fn().mockReturnValue({
+        resolveGodotConfiguration: vi.fn().mockImplementation((input) => ({
             textEditor: {
                 execPath: path.resolve('tools', 'code'),
-                execFlags: '{project} --goto {file}:{line}:{col}',
+                execFlags:
+                    input.settings.execFlagsOverride ??
+                    '{project} --goto {file}:{line}:{col}',
             },
-        }),
+        })),
         configureProject: vi.fn().mockResolvedValue({
             recoveredConfigFiles: [],
         }),
@@ -110,6 +115,8 @@ function createSettingsStore(
         setDefaultIntegrationId: vi.fn().mockResolvedValue(undefined),
         get: vi.fn().mockResolvedValue(settings),
         update: vi.fn().mockResolvedValue(undefined),
+        getDetectedInstallation: vi.fn().mockResolvedValue(undefined),
+        setDetectedInstallation: vi.fn().mockResolvedValue(undefined),
     } as unknown as CodeEditorIntegrationSettingsStore;
 }
 

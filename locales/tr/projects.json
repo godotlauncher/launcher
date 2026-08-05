@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "Proje bulunamadı",
             "missingLaunchPath": "Bu proje için Godot başlatma yolu eksik.",
-            "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi."
+            "invalidProjectDefinition": "Bu Godot sürümü için düzenleyici ayarları şablonu belirlenemedi.",
+            "noEditorSelected": "Bu proje için bir kod düzenleyici seçilmedi."
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "Devre dışı",
             "notFound": "Bulunamadı",
             "loading": "Kod düzenleyicileri yükleniyor...",
-            "loadFailed": "Kod düzenleyicileri yüklenemedi."
+            "loadFailed": "Kod düzenleyicileri yüklenemedi.",
+            "resetConfig": {
+                "label": "Yapılandırmayı sıfırla",
+                "confirmTitle": "{{editor}} yapılandırması sıfırlansın mı?",
+                "confirmMessage": "Bu işlem projenin kod düzenleyici yapılandırmasını yeniden uygular."
+            }
         },
         "godot": {
             "renameLabel": "Godot projesini de yeniden adlandır",

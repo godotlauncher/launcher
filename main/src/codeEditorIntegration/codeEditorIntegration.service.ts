@@ -14,6 +14,8 @@ import {
     createNewEditorSettings,
     updateEditorSettings,
 } from '../utils/godotProject.utils.js';
+import { CodeEditorInstallationCache } from './codeEditorInstallationCache.js';
+
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -35,6 +37,10 @@ export class CodeEditorIntegrationService {
     constructor(
         private readonly registry: CodeEditorIntegrationRegistry,
         private readonly settingsStore: CodeEditorIntegrationSettingsStore,
+        private readonly installationCache: CodeEditorInstallationCache = new CodeEditorInstallationCache(
+            registry,
+            settingsStore,
+        ),
     ) {}
 
     isRegisteredIntegration(id: string): id is CodeEditorId {
@@ -56,12 +62,34 @@ export class CodeEditorIntegrationService {
         );
     }
 
+    async revalidateIntegrationSettings(): Promise<
+        CodeEditorIntegrationSettings[]
+    > {
+        const defaultIntegrationId =
+            await this.settingsStore.getDefaultIntegrationId();
+        return Promise.all(
+            this.registry
+                .list()
+                .map((integration) =>
+                    this.toIntegrationSettings(
+                        integration.metadata.id,
+                        defaultIntegrationId,
+                        'revalidate',
+                    ),
+                ),
+        );
+    }
+
     async rescanIntegration(
         integrationId: CodeEditorId,
     ): Promise<CodeEditorIntegrationSettings> {
         const defaultIntegrationId =
             await this.settingsStore.getDefaultIntegrationId();
-        return this.toIntegrationSettings(integrationId, defaultIntegrationId);
+        return this.toIntegrationSettings(
+            integrationId,
+            defaultIntegrationId,
+            'rescan',
+        );
     }
 
     async setDefaultIntegration(
@@ -102,6 +130,7 @@ export class CodeEditorIntegrationService {
             customPath,
             execFlagsOverride,
         });
+        this.installationCache.invalidate(integrationId);
 
         const defaultIntegrationId =
             await this.settingsStore.getDefaultIntegrationId();
@@ -111,14 +140,14 @@ export class CodeEditorIntegrationService {
     async getSelectionEligibility(
         integrationId: CodeEditorId,
     ): Promise<CodeEditorSelectionEligibility> {
-        const integration = this.registry.get(integrationId);
         const storedSettings = await this.settingsStore.get(integrationId);
 
         if (!storedSettings.enabled) {
             return 'disabled';
         }
 
-        const installation = await integration.detectInstallation(
+        const installation = await this.installationCache.revalidate(
+            integrationId,
             storedSettings.customPath ?? undefined,
         );
         return installation ? 'eligible' : 'unavailable';
@@ -145,12 +174,12 @@ export class CodeEditorIntegrationService {
         integrationId: CodeEditorId,
         customPath?: string,
     ): Promise<CodeEditorInstallationSummary | null> {
-        const integration = this.registry.get(integrationId);
         const savedCustomPath =
             customPath === undefined
                 ? (await this.settingsStore.get(integrationId)).customPath
                 : customPath;
-        const installation = await integration.detectInstallation(
+        const installation = await this.installationCache.revalidate(
+            integrationId,
             savedCustomPath ?? undefined,
         );
         return installation
@@ -207,7 +236,8 @@ export class CodeEditorIntegrationService {
     ): Promise<CodeEditorApplyResult> {
         const integration = this.registry.get(integrationId);
         const storedSettings = await this.settingsStore.get(integrationId);
-        const installation = await integration.detectInstallation(
+        const installation = await this.installationCache.revalidate(
+            integrationId,
             storedSettings.customPath ?? undefined,
         );
         if (!installation) {
@@ -274,14 +304,31 @@ export class CodeEditorIntegrationService {
         });
     }
 
+    private resolveInstallation(
+        integrationId: CodeEditorId,
+        customPath: string | undefined,
+        mode: 'snapshot' | 'revalidate' | 'rescan',
+    ): Promise<CodeEditorInstallation | null> {
+        if (mode === 'rescan') {
+            return this.installationCache.rescan(integrationId, customPath);
+        }
+        if (mode === 'revalidate') {
+            return this.installationCache.revalidate(integrationId, customPath);
+        }
+        return this.installationCache.getSnapshot(integrationId, customPath);
+    }
+
     private async toIntegrationSettings(
         integrationId: CodeEditorId,
         defaultIntegrationId: CodeEditorId | null,
+        mode: 'snapshot' | 'revalidate' | 'rescan' = 'snapshot',
     ): Promise<CodeEditorIntegrationSettings> {
         const integration = this.registry.get(integrationId);
         const storedSettings = await this.settingsStore.get(integrationId);
-        const installation = await integration.detectInstallation(
+        const installation = await this.resolveInstallation(
+            integrationId,
             storedSettings.customPath ?? undefined,
+            mode,
         );
         const resolvedConfiguration = installation
             ? integration.resolveGodotConfiguration({
@@ -302,6 +349,7 @@ export class CodeEditorIntegrationService {
             defaultExecFlags: integration.defaultSettings.execFlags,
             execFlagsOverride: storedSettings.execFlagsOverride,
             resolvedExecFlags:
+                resolvedConfiguration?.textEditor.execFlags ??
                 storedSettings.execFlagsOverride ??
                 integration.defaultSettings.execFlags,
             installation: installation

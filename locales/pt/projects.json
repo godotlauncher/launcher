@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "Projeto não encontrado",
             "missingLaunchPath": "O caminho de inicialização do Godot para este projeto está em falta.",
-            "invalidProjectDefinition": "Não foi possível determinar o modelo de definições do editor para esta versão do Godot."
+            "invalidProjectDefinition": "Não foi possível determinar o modelo de definições do editor para esta versão do Godot.",
+            "noEditorSelected": "Não está selecionado nenhum editor de código para este projeto."
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "Desativado",
             "notFound": "Não encontrado",
             "loading": "A carregar editores de código...",
-            "loadFailed": "Não foi possível carregar os editores de código."
+            "loadFailed": "Não foi possível carregar os editores de código.",
+            "resetConfig": {
+                "label": "Repor configuração",
+                "confirmTitle": "Repor a configuração do {{editor}}?",
+                "confirmMessage": "Isto voltará a aplicar a configuração do editor de código do projeto."
+            }
         },
         "godot": {
             "renameLabel": "Mudar também o nome do projeto Godot",

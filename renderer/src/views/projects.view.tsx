@@ -85,6 +85,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectEditor,
         setProjectWindowed,
         setProjectCodeEditor,
+        resetProjectCodeEditorConfig,
         initializeProjectGit,
         exportProjectEditorSettings,
         importProjectEditorSettings,
@@ -202,6 +203,16 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             project,
             codeEditorId,
         );
+        showRecoveredCodeEditorConfigWarning(
+            updatedProject.recoveredCodeEditorConfigFiles,
+        );
+        return updatedProject;
+    };
+
+    const onResetProjectCodeEditorConfig = async (
+        project: ProjectDetails,
+    ): Promise<ProjectDetails> => {
+        const updatedProject = await resetProjectCodeEditorConfig(project);
         showRecoveredCodeEditorConfigWarning(
             updatedProject.recoveredCodeEditorConfigFiles,
         );
@@ -329,6 +340,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 }}
                 onRenameProject={renameProject}
                 onSetProjectCodeEditor={onSetProjectCodeEditor}
+                onResetProjectCodeEditorConfig={onResetProjectCodeEditorConfig}
                 getProjectGodotName={getProjectGodotName}
             />
             {createOpen && (

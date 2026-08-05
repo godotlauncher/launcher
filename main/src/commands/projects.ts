@@ -6,13 +6,11 @@ import {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
-    CodeEditorId,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
-    SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
@@ -23,11 +21,7 @@ import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
 import { gitInit } from '../utils/git.utils.js';
-import {
-    DEFAULT_PROJECT_DEFINITION,
-    getProjectDefinition,
-    removeProjectEditor,
-} from '../utils/godot.utils.js';
+import { removeProjectEditor } from '../utils/godot.utils.js';
 import {
     readGodotProjectName,
     updateGodotProjectName,
@@ -426,142 +420,10 @@ export async function renameProject(
     throw new Error('Failed to rename project due to concurrent modifications');
 }
 
-export async function setProjectCodeEditor(
-    project: ProjectDetails,
-    codeEditorId: CodeEditorId | null,
-    codeEditorIntegrationService: CodeEditorIntegrationService,
-): Promise<SetProjectCodeEditorResult> {
-    const projectListPath = resolveProjectListPath();
-    const recoveredCodeEditorConfigFiles = new Set<string>();
-
-    for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
-        const { projects, version } =
-            await getProjectsSnapshot(projectListPath);
-        const projectIndex = projects.findIndex((p) => p.path === project.path);
-
-        if (projectIndex === -1) {
-            throw new Error(t('projects:setCodeEditor.errors.projectNotFound'));
-        }
-
-        const updatedProjects = [...projects];
-        const targetProject: ProjectDetails = {
-            ...updatedProjects[projectIndex],
-            release: { ...updatedProjects[projectIndex].release },
-        };
-
-        const currentCodeEditorId = targetProject.codeEditorId;
-
-        if (codeEditorId && currentCodeEditorId === codeEditorId) {
-            return targetProject;
-        }
-
-        if (codeEditorId) {
-            await codeEditorIntegrationService.assertIntegrationSelectable(
-                codeEditorId,
-            );
-
-            if (!targetProject.launch_path) {
-                throw new Error(
-                    t('projects:setCodeEditor.errors.missingLaunchPath'),
-                );
-            }
-
-            const projectDefinition = getProjectDefinition(
-                targetProject.release.version_number,
-                DEFAULT_PROJECT_DEFINITION,
-            );
-
-            if (!projectDefinition) {
-                throw new Error(
-                    t('projects:setCodeEditor.errors.invalidProjectDefinition'),
-                );
-            }
-
-            const editorSettingsFilename =
-                projectDefinition.editorConfigFilename(
-                    targetProject.release.version_number,
-                );
-            let editorSettingsFile = targetProject.editor_settings_file;
-
-            if (!editorSettingsFile) {
-                editorSettingsFile = path.resolve(
-                    path.dirname(targetProject.launch_path),
-                    'editor_data',
-                    editorSettingsFilename,
-                );
-            }
-
-            const applied = await codeEditorIntegrationService.applyToProject(
-                codeEditorId,
-                {
-                    projectPath: targetProject.path,
-                    godotLaunchPath: targetProject.launch_path,
-                    godotVersion: targetProject.release.version_number,
-                    mono: targetProject.release.mono,
-                    editorSettingsFile,
-                    editorSettingsFilename,
-                    editorSettingsFormat: projectDefinition.editorConfigFormat,
-                },
-            );
-
-            targetProject.editor_settings_file = applied.editorSettingsFile;
-            targetProject.editor_settings_path = path.dirname(
-                applied.editorSettingsFile,
-            );
-            for (const recoveredFile of applied.recoveredConfigFiles) {
-                recoveredCodeEditorConfigFiles.add(recoveredFile);
-            }
-        } else {
-            await codeEditorIntegrationService.disableForProject(
-                targetProject.editor_settings_file,
-                targetProject.release.mono ? 'dotnet' : 'standard',
-            );
-        }
-
-        targetProject.codeEditorId = codeEditorId;
-        updatedProjects[projectIndex] = targetProject;
-
-        try {
-            const storedProjects = await storeProjectsList(
-                projectListPath,
-                updatedProjects,
-                { expectedVersion: version },
-            );
-            const latestProject =
-                storedProjects.find((p) => p.path === targetProject.path) ??
-                targetProject;
-
-            ipcWebContentsSend(
-                'projects-updated',
-                getMainWindow()?.webContents,
-                storedProjects,
-            );
-
-            project.codeEditorId = latestProject.codeEditorId;
-            project.editor_settings_file = latestProject.editor_settings_file;
-            project.editor_settings_path = latestProject.editor_settings_path;
-
-            return {
-                ...latestProject,
-                recoveredCodeEditorConfigFiles:
-                    recoveredCodeEditorConfigFiles.size > 0
-                        ? [...recoveredCodeEditorConfigFiles]
-                        : undefined,
-            };
-        } catch (error) {
-            if (
-                error instanceof JsonStoreConflictError &&
-                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
-            ) {
-                continue;
-            }
-            throw error;
-        }
-    }
-
-    throw new Error('Failed to update code editor integration for project');
-}
-
+export {
+    resetProjectCodeEditorConfig,
+    setProjectCodeEditor,
+} from './projectCodeEditor.js';
 export async function initializeProjectGit(
     project: ProjectDetails,
 ): Promise<ProjectDetails> {

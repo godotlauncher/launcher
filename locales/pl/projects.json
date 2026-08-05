@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "Nie znaleziono projektu",
             "missingLaunchPath": "Brakuje ścieżki uruchamiania Godot dla tego projektu.",
-            "invalidProjectDefinition": "Nie można ustalić szablonu ustawień edytora dla tej wersji Godot."
+            "invalidProjectDefinition": "Nie można ustalić szablonu ustawień edytora dla tej wersji Godot.",
+            "noEditorSelected": "Dla tego projektu nie wybrano edytora kodu."
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "Wyłączony",
             "notFound": "Nie znaleziono",
             "loading": "Wczytywanie edytorów kodu...",
-            "loadFailed": "Nie można wczytać edytorów kodu."
+            "loadFailed": "Nie można wczytać edytorów kodu.",
+            "resetConfig": {
+                "label": "Resetuj konfigurację",
+                "confirmTitle": "Zresetować konfigurację {{editor}}?",
+                "confirmMessage": "Spowoduje to ponowne zastosowanie konfiguracji edytora kodu projektu."
+            }
         },
         "godot": {
             "renameLabel": "Zmień także nazwę projektu Godot",

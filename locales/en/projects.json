@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "Project not found",
             "missingLaunchPath": "Godot launch path is missing for this project.",
-            "invalidProjectDefinition": "Unable to determine editor settings template for this Godot version."
+            "invalidProjectDefinition": "Unable to determine editor settings template for this Godot version.",
+            "noEditorSelected": "No code editor is selected for this project."
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "Disabled",
             "notFound": "Not found",
             "loading": "Loading code editors...",
-            "loadFailed": "Could not load code editors."
+            "loadFailed": "Could not load code editors.",
+            "resetConfig": {
+                "label": "Reset config",
+                "confirmTitle": "Are you sure you want to reset {{editor}} config?",
+                "confirmMessage": "This will reapply the project's code editor configuration."
+            }
         },
         "godot": {
             "renameLabel": "Also rename Godot project",

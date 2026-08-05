@@ -1,4 +1,7 @@
-import type { CodeEditorIntegrationSummary } from '@shared/contracts';
+import type {
+    CodeEditorId,
+    CodeEditorIntegrationSummary,
+} from '@shared/contracts';
 
 export type CodeEditorInstallation = {
     path: string;
@@ -38,6 +41,7 @@ export type CodeEditorProjectContext = {
     editorSettingsFile: string;
     editorSettingsFilename: string;
     editorSettingsFormat: number;
+    previousCodeEditorId?: CodeEditorId | null;
 };
 
 export type CodeEditorPathValidation = {
@@ -64,6 +68,9 @@ export interface CodeEditorIntegration {
     ): Promise<CodeEditorInstallation | null>;
 
     validatePath(path: string): Promise<CodeEditorPathValidation>;
+    validateInstallation(
+        installation: CodeEditorInstallation,
+    ): Promise<CodeEditorInstallation | null>;
 
     isConfiguredForProject(projectPath: string): Promise<boolean>;
 

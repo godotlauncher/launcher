@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "未找到项目",
             "missingLaunchPath": "缺少此项目的 Godot 启动路径。",
-            "invalidProjectDefinition": "无法确定此 Godot 版本的编辑器设置模板。"
+            "invalidProjectDefinition": "无法确定此 Godot 版本的编辑器设置模板。",
+            "noEditorSelected": "此项目尚未选择代码编辑器。"
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "已禁用",
             "notFound": "未找到",
             "loading": "正在加载代码编辑器...",
-            "loadFailed": "无法加载代码编辑器。"
+            "loadFailed": "无法加载代码编辑器。",
+            "resetConfig": {
+                "label": "重置配置",
+                "confirmTitle": "重置 {{editor}} 配置？",
+                "confirmMessage": "这将重新应用项目的代码编辑器配置。"
+            }
         },
         "godot": {
             "renameLabel": "同时重命名 Godot 项目",

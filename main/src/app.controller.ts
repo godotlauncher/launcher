@@ -54,6 +54,7 @@ import {
     launchProject,
     removeProject,
     renameProject,
+    resetProjectCodeEditorConfig,
     setProjectCodeEditor,
     setProjectWindowed,
 } from './commands/projects.js';
@@ -307,6 +308,14 @@ export class AppController implements AppBridge {
         return setProjectCodeEditor(
             project,
             codeEditorId,
+            this.codeEditorIntegrationService,
+        );
+    }
+
+    @AppHandler('resetProjectCodeEditorConfig')
+    resetProjectCodeEditorConfig(project: ProjectDetails) {
+        return resetProjectCodeEditorConfig(
+            project,
             this.codeEditorIntegrationService,
         );
     }

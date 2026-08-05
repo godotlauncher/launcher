@@ -55,6 +55,9 @@ interface ProjectsContext {
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
     ) => Promise<SetProjectCodeEditorResult>;
+    resetProjectCodeEditorConfig: (
+        project: ProjectDetails,
+    ) => Promise<SetProjectCodeEditorResult>;
     initializeProjectGit: (project: ProjectDetails) => Promise<ProjectDetails>;
     exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
@@ -210,6 +213,13 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             project,
             codeEditorId,
         );
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
+    const resetProjectCodeEditorConfig = async (project: ProjectDetails) => {
+        const updatedProject =
+            await appBridge.resetProjectCodeEditorConfig(project);
         updateProjectState(updatedProject);
         return updatedProject;
     };
@@ -387,6 +397,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 setProjectEditor,
                 setProjectWindowed,
                 setProjectCodeEditor,
+                resetProjectCodeEditorConfig,
                 initializeProjectGit,
                 exportProjectEditorSettings,
                 importProjectEditorSettings,

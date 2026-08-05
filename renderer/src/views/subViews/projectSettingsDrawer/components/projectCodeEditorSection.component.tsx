@@ -2,7 +2,7 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
 } from '@shared/contracts';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, RotateCcw } from 'lucide-react';
 import type React from 'react';
 import {
     SelectField,
@@ -53,7 +53,9 @@ type ProjectCodeEditorSectionProps = {
     loading: boolean;
     loadFailed: boolean;
     disabled: boolean;
+    showResetConfig?: boolean;
     onChange: (codeEditorId: CodeEditorId | null) => void;
+    onResetConfig?: () => void;
 };
 
 export const ProjectCodeEditorSection: React.FC<
@@ -65,14 +67,32 @@ export const ProjectCodeEditorSection: React.FC<
     loading,
     loadFailed,
     disabled,
+    showResetConfig = false,
     onChange,
+    onResetConfig,
 }) => (
     <section className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
-                <h2 className="text-lg font-bold">
-                    {t('editProject.codeEditor.title')}
-                </h2>
+                <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold">
+                        {t('editProject.codeEditor.title')}
+                    </h2>
+                    {showResetConfig && (
+                        <button
+                            type="button"
+                            className="btn btn-ghost btn-xs"
+                            aria-label={t(
+                                'editProject.codeEditor.resetConfig.label',
+                            )}
+                            disabled={disabled || loading}
+                            onClick={onResetConfig}
+                        >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            {t('editProject.codeEditor.resetConfig.label')}
+                        </button>
+                    )}
+                </div>
                 <p className="text-sm text-base-content/70">
                     {t('editProject.codeEditor.help')}
                 </p>
