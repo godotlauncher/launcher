@@ -118,9 +118,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         }
 
         setActiveIndex(index);
-        window.requestAnimationFrame(() => {
-            optionRefs.current[index]?.focus();
-        });
+        optionRefs.current[index]?.focus();
     }, []);
 
     const closePopover = useCallback((restoreFocus = true) => {
