@@ -285,7 +285,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 aria-expanded={isOpen}
                 aria-controls={popoverId}
                 className={clsx(
-                    'select select-bordered flex w-full items-center justify-between gap-2 bg-base-300 text-left focus:outline-none focus-visible:border-primary focus-visible:outline-none',
+                    'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left focus:outline-none focus-visible:border-primary focus-visible:outline-none',
                     {
                         'select-sm': compact,
                         'select-error': Boolean(error),
@@ -302,7 +302,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 role="listbox"
                 aria-labelledby={id}
                 onKeyDown={handleListKeyDown}
-                className="dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-box border border-base-300 bg-base-300 shadow-sm"
+                className="dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-box border border-base-300 bg-[var(--select-field-background)] shadow-sm"
                 style={popoverStyle}
             >
                 <ul className="menu w-full p-1">
@@ -321,7 +321,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                                 className={clsx(
                                     'justify-start gap-2 text-left',
                                     option.value === value &&
-                                        'menu-active bg-base-200',
+                                        'menu-active bg-base-200 text-base-content',
                                 )}
                                 onFocus={() => setActiveIndex(index)}
                                 onClick={() => selectOption(index)}

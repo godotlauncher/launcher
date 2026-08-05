@@ -10,6 +10,7 @@
     --color-base-100: oklch(100% 0 0);
     --color-base-200: oklch(98% 0 0);
     --color-base-300: oklch(95% 0 0);
+    --select-field-background: var(--color-base-100);
     --color-base-content: oklch(21% 0.006 285.885);
     --color-primary: #3c77c2;
     --color-primary-content: #f8f6f2;
@@ -45,6 +46,7 @@
     --color-base-100: oklch(25.33% 0.016 252.42);
     --color-base-200: oklch(23.26% 0.014 253.1);
     --color-base-300: oklch(21.15% 0.012 254.09);
+    --select-field-background: var(--color-base-300);
     --color-base-content: #a6abb6;
     --color-primary: #3c77c2;
     --color-primary-content: #f8f6f2;
