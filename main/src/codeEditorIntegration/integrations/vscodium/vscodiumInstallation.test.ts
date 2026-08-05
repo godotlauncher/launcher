@@ -139,14 +139,11 @@ describe('VSCodium installation resolution', () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
         vi.mocked(execFile).mockImplementation(((
             _file,
-            args,
+            _args,
             _options,
             callback,
         ) => {
-            const output = args.includes('--show-ref')
-                ? 'app/com.vscodium.codium/x86_64/stable'
-                : '1.99.0';
-            callback?.(null, output, '');
+            callback?.(null, 'app/com.vscodium.codium/x86_64/stable', '');
             return undefined;
         }) as typeof execFile);
         const { resolveVSCodiumGodotConfiguration } = await import(
@@ -160,7 +157,7 @@ describe('VSCodium installation resolution', () => {
             resolveFlatpakVSCodium('/usr/bin/flatpak'),
         ).resolves.toEqual({
             path: '/usr/bin/flatpak',
-            version: '1.99.0',
+            version: null,
         });
         expect(
             resolveVSCodiumGodotConfiguration(
@@ -171,6 +168,7 @@ describe('VSCodium installation resolution', () => {
             execPath: '/usr/bin/flatpak',
             execFlags: 'run com.vscodium.codium --goto {file}:{line}:{col}',
         });
+        expect(execFile).toHaveBeenCalledTimes(1);
     });
 
     it('silently ignores Flatpak when VSCodium is not installed', async () => {

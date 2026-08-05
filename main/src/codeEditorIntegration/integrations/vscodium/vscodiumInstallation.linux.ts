@@ -67,12 +67,7 @@ export async function resolveFlatpakVSCodium(
         return null;
     }
 
-    const version = await execFileText(flatpakPath, [
-        'info',
-        '--show-version',
-        'com.vscodium.codium',
-    ]);
-    return toInstallation(flatpakPath, version);
+    return toInstallation(flatpakPath, null);
 }
 
 function resolveSnap(): CodeEditorInstallation | null {
