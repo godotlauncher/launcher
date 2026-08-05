@@ -34,11 +34,43 @@ const translations: Record<string, string> = {
     'editProject.codeEditor.notFound': 'Not found',
     'editProject.codeEditor.loading': 'Loading code editors...',
     'editProject.codeEditor.loadFailed': 'Could not load code editors.',
+    'editProject.codeEditor.resetConfig.label': 'Reset config',
 };
 
 const t = (key: string) => translations[key] ?? key;
 
 describe('ProjectCodeEditorSection', () => {
+    it('shows the reset action next to the title only when requested', () => {
+        const visibleHtml = renderToStaticMarkup(
+            <ProjectCodeEditorSection
+                t={t}
+                codeEditorId="vscode"
+                settings={[availableSettings]}
+                loading={false}
+                loadFailed={false}
+                disabled={false}
+                showResetConfig
+                onChange={vi.fn()}
+                onResetConfig={vi.fn()}
+            />,
+        );
+        const hiddenHtml = renderToStaticMarkup(
+            <ProjectCodeEditorSection
+                t={t}
+                codeEditorId="vscode"
+                settings={[availableSettings]}
+                loading={false}
+                loadFailed={false}
+                disabled={false}
+                onChange={vi.fn()}
+            />,
+        );
+
+        expect(visibleHtml).toContain('Reset config');
+        expect(visibleHtml).toContain('aria-label="Reset config"');
+        expect(hiddenHtml).not.toContain('Reset config');
+    });
+
     it('renders and selects an available integration', () => {
         const html = renderToStaticMarkup(
             <ProjectCodeEditorSection

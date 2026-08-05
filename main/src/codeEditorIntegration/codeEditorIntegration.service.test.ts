@@ -86,12 +86,14 @@ function createIntegration(
             },
         }),
         isConfiguredForProject: vi.fn().mockResolvedValue(true),
-        resolveGodotConfiguration: vi.fn().mockReturnValue({
+        resolveGodotConfiguration: vi.fn().mockImplementation((input) => ({
             textEditor: {
                 execPath: path.resolve('tools', 'code'),
-                execFlags: '{project} --goto {file}:{line}:{col}',
+                execFlags:
+                    input.settings.execFlagsOverride ??
+                    '{project} --goto {file}:{line}:{col}',
             },
-        }),
+        })),
         configureProject: vi.fn().mockResolvedValue({
             recoveredConfigFiles: [],
         }),

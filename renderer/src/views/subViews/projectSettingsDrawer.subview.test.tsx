@@ -92,6 +92,7 @@ describe('ProjectSettingsDrawer', () => {
                 onOpenChange={vi.fn()}
                 onRenameProject={vi.fn()}
                 onSetProjectCodeEditor={vi.fn()}
+                onResetProjectCodeEditorConfig={vi.fn()}
                 getProjectGodotName={vi.fn()}
             />,
         );

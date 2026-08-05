@@ -16,6 +16,7 @@ import { CodeEditorIntegrationModule } from './codeEditorIntegration.module.js';
 import { CodeEditorIntegrationRegistry } from './codeEditorIntegration.registry.js';
 import { CodeEditorIntegrationService } from './codeEditorIntegration.service.js';
 import { VSCodeIntegration } from './integrations/vscode/vscodeIntegration.js';
+import { VSCodiumIntegration } from './integrations/vscodium/vscodiumIntegration.js';
 
 vi.mock('electron', () => ({
     app: {
@@ -36,14 +37,15 @@ describe('CodeEditorIntegrationModule', () => {
         await app.destroyAsync();
     });
 
-    it('registers VS Code exactly once', async () => {
+    it('registers VS Code and VSCodium in deterministic order', async () => {
         const app = await createApplication(CodeEditorIntegrationModule, {
             logger: false,
         });
 
         const integrations = app.get(CodeEditorIntegrationRegistry).list();
-        expect(integrations).toHaveLength(1);
+        expect(integrations).toHaveLength(2);
         expect(integrations[0]).toBeInstanceOf(VSCodeIntegration);
+        expect(integrations[1]).toBeInstanceOf(VSCodiumIntegration);
 
         await app.destroyAsync();
     });

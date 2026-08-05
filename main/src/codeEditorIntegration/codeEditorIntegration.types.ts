@@ -1,4 +1,7 @@
-import type { CodeEditorIntegrationSummary } from '@shared/contracts';
+import type {
+    CodeEditorId,
+    CodeEditorIntegrationSummary,
+} from '@shared/contracts';
 
 export type CodeEditorInstallation = {
     path: string;
@@ -38,6 +41,7 @@ export type CodeEditorProjectContext = {
     editorSettingsFile: string;
     editorSettingsFilename: string;
     editorSettingsFormat: number;
+    previousCodeEditorId?: CodeEditorId | null;
 };
 
 export type CodeEditorPathValidation = {

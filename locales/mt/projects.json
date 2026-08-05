@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "Il-proġett ma nstabx",
             "missingLaunchPath": "Il-perkors tat-tnedija ta' Godot għal dan il-proġett mhux magħruf.",
-            "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot."
+            "invalidProjectDefinition": "Ma stajniex niddeterminaw il-mudell tas-settings tal-editur għal din il-verżjoni ta' Godot.",
+            "noEditorSelected": "Ma ntgħażel l-ebda editur tal-kodiċi għal dan il-proġett."
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "Diżattivat",
             "notFound": "Ma nstabx",
             "loading": "Qed jitgħabbew l-edituri tal-kodiċi...",
-            "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi."
+            "loadFailed": "Ma setgħux jitgħabbew l-edituri tal-kodiċi.",
+            "resetConfig": {
+                "label": "Irrisettja l-konfigurazzjoni",
+                "confirmTitle": "Trid tirrisettja l-konfigurazzjoni ta' {{editor}}?",
+                "confirmMessage": "Dan jerġa' japplika l-konfigurazzjoni tal-editur tal-kodiċi tal-proġett."
+            }
         },
         "godot": {
             "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",

@@ -302,6 +302,7 @@ export class CodeEditorIntegrationService {
             defaultExecFlags: integration.defaultSettings.execFlags,
             execFlagsOverride: storedSettings.execFlagsOverride,
             resolvedExecFlags:
+                resolvedConfiguration?.textEditor.execFlags ??
                 storedSettings.execFlagsOverride ??
                 integration.defaultSettings.execFlags,
             installation: installation

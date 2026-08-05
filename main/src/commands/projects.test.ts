@@ -9,6 +9,7 @@ import {
     launchProject,
     removeProject,
     renameProject,
+    resetProjectCodeEditorConfig,
     setProjectCodeEditor,
 } from './projects.js';
 
@@ -773,6 +774,33 @@ describe('setProjectCodeEditor', () => {
         expect(result.codeEditorId).toBe('vscode');
     });
 
+    it('passes the previous editor when switching integrations', async () => {
+        const project = createProjectDetails({ codeEditorId: 'vscode' });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getProjectDefinition.mockReturnValue({
+            editorConfigFilename: () => 'editor_settings-4.3.tres',
+            editorConfigFormat: 3,
+            resources: [],
+            projectFilename: 'project.godot',
+            configVersion: 5,
+            defaultRenderer: 'FORWARD_PLUS',
+        });
+
+        await setProjectCodeEditor(
+            project,
+            'vscodium',
+            codeEditorIntegrationService,
+        );
+
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscodium',
+            expect.objectContaining({ previousCodeEditorId: 'vscode' }),
+        );
+    });
+
     it('persists the local selection without writing the sidecar', async () => {
         const project: ProjectDetails = {
             name: 'Demo',
@@ -1261,6 +1289,86 @@ describe('setProjectCodeEditor', () => {
                 codeEditorIntegrationService,
             ),
         ).rejects.toThrow('Visual Studio Code installation was not found.');
+        expect(storeProjectsList).not.toHaveBeenCalled();
+    });
+});
+
+describe('resetProjectCodeEditorConfig', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        windowMock = { webContents: {} };
+        getMainWindow.mockReturnValue(windowMock);
+        storeProjectsList.mockImplementation(
+            async (_path: string, projects: ProjectDetails[]) => projects,
+        );
+        integrationMocks.assertIntegrationSelectable.mockResolvedValue(
+            undefined,
+        );
+        getProjectDefinition.mockReturnValue({
+            editorConfigFilename: () => 'editor_settings-4.3.tres',
+            editorConfigFormat: 3,
+            resources: [],
+            projectFilename: 'project.godot',
+            configVersion: 5,
+            defaultRenderer: 'FORWARD_PLUS',
+        });
+    });
+
+    it('reapplies the persisted editor without running switch cleanup', async () => {
+        const project = createProjectDetails({
+            codeEditorId: 'vscodium',
+            editor_settings_file:
+                '/project/editor/editor_data/editor_settings-4.3.tres',
+            editor_settings_path: '/project/editor/editor_data',
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [structuredClone(project)],
+            version: 'v1',
+        });
+        integrationMocks.applyToProject.mockResolvedValue({
+            editorSettingsFile: project.editor_settings_file,
+            recoveredConfigFiles: ['.vscode/launch.json.1.bad'],
+        });
+
+        const result = await resetProjectCodeEditorConfig(
+            project,
+            codeEditorIntegrationService,
+        );
+
+        expect(
+            integrationMocks.assertIntegrationSelectable,
+        ).toHaveBeenCalledWith('vscodium');
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscodium',
+            expect.objectContaining({
+                projectPath: project.path,
+                previousCodeEditorId: null,
+            }),
+        );
+        expect(result).toMatchObject({
+            codeEditorId: 'vscodium',
+            recoveredCodeEditorConfigFiles: ['.vscode/launch.json.1.bad'],
+        });
+        expect(storeProjectsList).toHaveBeenCalledWith(
+            expect.stringContaining('projects.json'),
+            expect.any(Array),
+            { expectedVersion: 'v1' },
+        );
+    });
+
+    it('rejects reset when the project has no selected editor', async () => {
+        const project = createProjectDetails({ codeEditorId: null });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        await expect(
+            resetProjectCodeEditorConfig(project, codeEditorIntegrationService),
+        ).rejects.toThrow('projects:setCodeEditor.errors.noEditorSelected');
+
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
         expect(storeProjectsList).not.toHaveBeenCalled();
     });
 });

@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "プロジェクトが見つかりません",
             "missingLaunchPath": "このプロジェクトの Godot 起動パスが見つかりません。",
-            "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。"
+            "invalidProjectDefinition": "この Godot バージョンのエディター設定テンプレートを特定できませんでした。",
+            "noEditorSelected": "このプロジェクトにはコードエディターが選択されていません。"
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "無効",
             "notFound": "見つかりません",
             "loading": "コードエディターを読み込んでいます...",
-            "loadFailed": "コードエディターを読み込めませんでした。"
+            "loadFailed": "コードエディターを読み込めませんでした。",
+            "resetConfig": {
+                "label": "設定をリセット",
+                "confirmTitle": "{{editor}} の設定をリセットしますか？",
+                "confirmMessage": "プロジェクトのコードエディター設定を再適用します。"
+            }
         },
         "godot": {
             "renameLabel": "Godot プロジェクト名も変更する",

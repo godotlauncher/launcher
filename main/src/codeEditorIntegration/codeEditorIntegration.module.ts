@@ -6,15 +6,19 @@ import { CodeEditorIntegrationSettingsStore } from './codeEditorIntegration.sett
 import type { CodeEditorIntegration } from './codeEditorIntegration.types.js';
 import { VSCodeIntegration } from './integrations/vscode/vscodeIntegration.js';
 import { VSCodeIntegrationModule } from './integrations/vscode/vscodeIntegration.module.js';
+import { VSCodiumIntegration } from './integrations/vscodium/vscodiumIntegration.js';
+import { VSCodiumIntegrationModule } from './integrations/vscodium/vscodiumIntegration.module.js';
 
 @Module({
-    imports: [VSCodeIntegrationModule],
+    imports: [VSCodeIntegrationModule, VSCodiumIntegrationModule],
     providers: [
         {
             provide: CodeEditorIntegrationRegistry,
-            inject: [VSCodeIntegration],
-            useFactory: (vscode: CodeEditorIntegration) =>
-                new CodeEditorIntegrationRegistry([vscode]),
+            inject: [VSCodeIntegration, VSCodiumIntegration],
+            useFactory: (
+                vscode: CodeEditorIntegration,
+                vscodium: CodeEditorIntegration,
+            ) => new CodeEditorIntegrationRegistry([vscode, vscodium]),
         },
         CodeEditorIntegrationSettingsStore,
         CodeEditorIntegrationService,

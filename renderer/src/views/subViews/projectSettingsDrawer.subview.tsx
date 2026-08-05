@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { CopyBadge } from '../../components/ui/copyBadge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { TextField } from '../../components/ui/textField.component';
+import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
@@ -33,6 +34,9 @@ type ProjectSettingsDrawerProps = {
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
     ) => Promise<ProjectDetails>;
+    onResetProjectCodeEditorConfig: (
+        project: ProjectDetails,
+    ) => Promise<ProjectDetails>;
     getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
 };
 
@@ -42,9 +46,11 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     onOpenChange,
     onRenameProject,
     onSetProjectCodeEditor,
+    onResetProjectCodeEditorConfig,
     getProjectGodotName,
 }) => {
     const { t } = useTranslation(['projects', 'common']);
+    const { addCustomConfirm } = useAlerts();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const [initialName, setInitialName] = useState('');
     const [name, setName] = useState('');
@@ -282,6 +288,50 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             codeEditorTouched,
         );
     const hasChanges = hasRenameChanges || hasCodeEditorChanges;
+    const selectedCodeEditorSettings = codeEditorId
+        ? codeEditorSettings.find(
+              (settings) => settings.integration.id === codeEditorId,
+          )
+        : undefined;
+    const selectedCodeEditorName =
+        selectedCodeEditorSettings?.integration.displayName ?? codeEditorId;
+    const showResetCodeEditorConfig =
+        initialCodeEditorId !== null && initialCodeEditorId === codeEditorId;
+    const requestCodeEditorConfigReset = () => {
+        if (!project || !selectedCodeEditorName) {
+            return;
+        }
+
+        addCustomConfirm(
+            t('editProject.codeEditor.resetConfig.confirmTitle', {
+                editor: selectedCodeEditorName,
+            }),
+            <p>{t('editProject.codeEditor.resetConfig.confirmMessage')}</p>,
+            [
+                {
+                    typeClass: 'btn-primary',
+                    text: t('editProject.codeEditor.resetConfig.label'),
+                    onClick: async () => {
+                        try {
+                            await onResetProjectCodeEditorConfig(project);
+                        } catch (error) {
+                            setFormError(
+                                error instanceof Error
+                                    ? error.message
+                                    : t('editProject.updateFailed'),
+                            );
+                        }
+                        return true;
+                    },
+                },
+                {
+                    isCancel: true,
+                    typeClass: 'btn-ghost',
+                    text: t('common:buttons.cancel'),
+                },
+            ],
+        );
+    };
     const saveDisabled =
         !project ||
         trimmedName.length === 0 ||
@@ -400,7 +450,9 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                         loading={loadingCodeEditors}
                         loadFailed={codeEditorLoadFailed}
                         disabled={!project?.valid || isSubmitting}
+                        showResetConfig={showResetCodeEditorConfig}
                         onChange={handleCodeEditorChange}
+                        onResetConfig={requestCodeEditorConfigReset}
                     />
                 </Drawer.Body>
                 <Drawer.Footer>

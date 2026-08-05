@@ -52,6 +52,15 @@ Source: https://lucide.dev
 Lucide Icons are used throughout the Godot Launcher interface for a unified and clean visual style.  
 Full license text is included in the Appendix.
 
+VSCodium Icon
+-------------
+
+Author: VSCodium contributors
+License: MIT
+Source: https://github.com/VSCodium/vscodium/blob/master/icons/stable/codium_cnl.svg
+
+The VSCodium icon is used to identify the VSCodium code editor integration.
+
 Godot Engine Logo
 -----------------
 

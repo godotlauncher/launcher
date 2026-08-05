@@ -92,7 +92,8 @@
         "errors": {
             "projectNotFound": "找不到專案",
             "missingLaunchPath": "缺少此專案的 Godot 啟動路徑。",
-            "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。"
+            "invalidProjectDefinition": "無法判定此 Godot 版本的編輯器設定範本。",
+            "noEditorSelected": "此專案尚未選擇程式碼編輯器。"
         }
     },
     "editProject": {
@@ -115,7 +116,12 @@
             "disabled": "已停用",
             "notFound": "未找到",
             "loading": "正在載入程式碼編輯器...",
-            "loadFailed": "無法載入程式碼編輯器。"
+            "loadFailed": "無法載入程式碼編輯器。",
+            "resetConfig": {
+                "label": "重設設定",
+                "confirmTitle": "重設 {{editor}} 設定？",
+                "confirmMessage": "這將重新套用專案的程式碼編輯器設定。"
+            }
         },
         "godot": {
             "renameLabel": "同時重新命名 Godot 專案",

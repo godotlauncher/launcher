@@ -1,4 +1,4 @@
-export type CodeEditorId = 'vscode';
+export type CodeEditorId = 'vscode' | 'vscodium';
 
 export type CodeEditorIntegrationCapabilities = {
     dotnet: boolean;

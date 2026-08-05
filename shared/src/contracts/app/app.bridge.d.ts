@@ -131,6 +131,9 @@ export type AppBridge = {
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
     ): Promise<SetProjectCodeEditorResult>;
+    resetProjectCodeEditorConfig(
+        project: ProjectDetails,
+    ): Promise<SetProjectCodeEditorResult>;
     initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails>;
     exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;

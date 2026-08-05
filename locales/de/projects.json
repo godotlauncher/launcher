@@ -55,7 +55,8 @@
         "errors": {
             "projectNotFound": "Projekt nicht gefunden",
             "missingLaunchPath": "Godot-Startpfad für dieses Projekt fehlt.",
-            "invalidProjectDefinition": "Vorlage für Editor-Einstellungen für diese Godot-Version konnte nicht ermittelt werden."
+            "invalidProjectDefinition": "Vorlage für Editor-Einstellungen für diese Godot-Version konnte nicht ermittelt werden.",
+            "noEditorSelected": "Für dieses Projekt ist kein Code-Editor ausgewählt."
         }
     },
     "messages": {
@@ -115,7 +116,12 @@
             "disabled": "Deaktiviert",
             "notFound": "Nicht gefunden",
             "loading": "Code-Editoren werden geladen...",
-            "loadFailed": "Code-Editoren konnten nicht geladen werden."
+            "loadFailed": "Code-Editoren konnten nicht geladen werden.",
+            "resetConfig": {
+                "label": "Konfiguration zurücksetzen",
+                "confirmTitle": "{{editor}}-Konfiguration zurücksetzen?",
+                "confirmMessage": "Dies wendet die Code-Editor-Konfiguration des Projekts erneut an."
+            }
         },
         "godot": {
             "renameLabel": "Godot-Projekt ebenfalls umbenennen",

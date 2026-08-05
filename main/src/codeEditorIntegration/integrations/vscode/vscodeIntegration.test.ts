@@ -101,7 +101,10 @@ describe('VSCodeIntegration', () => {
 
     it('configures VS Code-owned project files through existing utilities', async () => {
         const integration = new VSCodeIntegration();
-        const context = createContext({ mono: true });
+        const context = createContext({
+            mono: true,
+            previousCodeEditorId: 'vscodium',
+        });
         projectConfigurationMocks.updateVSCodeSettings.mockResolvedValue([
             path.resolve('settings.bad'),
         ]);
@@ -122,10 +125,11 @@ describe('VSCodeIntegration', () => {
             context.godotLaunchPath,
             context.godotVersion,
             context.mono,
+            true,
         );
         expect(
             projectConfigurationMocks.addOrUpdateVSCodeRecommendedExtensions,
-        ).toHaveBeenCalledWith(context.projectPath, context.mono);
+        ).toHaveBeenCalledWith(context.projectPath, context.mono, true);
     });
 
     it.each([true, false])(

@@ -2,9 +2,11 @@ import type { CodeEditorId } from '@shared/contracts';
 import { Code2 } from 'lucide-react';
 import type React from 'react';
 import vscodeIcon from '../assets/icons/vscode.svg';
+import vscodiumIcon from '../assets/icons/vscodium.svg';
 
 const integrationIconSources = {
     vscode: vscodeIcon,
+    vscodium: vscodiumIcon,
 } satisfies Record<CodeEditorId, string>;
 
 type CodeEditorIntegrationIconProps = {

@@ -112,12 +112,14 @@ export class VSCodeIntegration implements CodeEditorIntegration {
             context.godotLaunchPath,
             context.godotVersion,
             context.mono,
+            context.previousCodeEditorId === 'vscodium',
         );
 
         recoveredConfigFiles.push(
             ...(await addOrUpdateVSCodeRecommendedExtensions(
                 context.projectPath,
                 context.mono,
+                context.previousCodeEditorId === 'vscodium',
             )),
         );
 
