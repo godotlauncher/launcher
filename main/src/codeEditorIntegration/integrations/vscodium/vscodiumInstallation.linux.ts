@@ -107,8 +107,10 @@ export async function resolveLinuxVSCodium(
         return null;
     }
 
+    // Flatpak metadata commands are restricted to automatic detection. A
+    // manually selected executable must never be run merely to validate it.
     if (path.posix.basename(normalizedPath) === 'flatpak') {
-        return resolveFlatpakVSCodium(normalizedPath);
+        return null;
     }
     if (normalizedPath === '/snap/bin/codium') {
         return resolveSnap();

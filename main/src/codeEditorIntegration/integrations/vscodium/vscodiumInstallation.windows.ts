@@ -23,19 +23,28 @@ function parseRegistryValue(output: string | null): string | null {
     return null;
 }
 
+export function resolveWindowsRegistryExecutablePath(
+    environment: NodeJS.ProcessEnv,
+): string | null {
+    const windowsRoot =
+        environment.SystemRoot?.trim() || environment.WINDIR?.trim();
+    return windowsRoot
+        ? path.win32.resolve(windowsRoot, 'System32', 'reg.exe')
+        : null;
+}
+
 async function queryRegistryValue(
+    registryExecutable: string,
     key: string,
     value: string,
     view: '32' | '64',
 ): Promise<string | null> {
     return parseRegistryValue(
-        await execFileText('reg.exe', [
-            'query',
-            key,
-            '/v',
-            value,
-            `/reg:${view}`,
-        ]),
+        await execFileText(
+            registryExecutable,
+            ['query', key, '/v', value, `/reg:${view}`],
+            { logFailure: false },
+        ),
     );
 }
 
@@ -99,13 +108,18 @@ function pushPath(
 }
 
 async function getInnoCandidates(
+    registryExecutable: string | null,
     hive: 'HKCU' | 'HKLM',
     ids: string[],
 ): Promise<string[]> {
+    if (!registryExecutable) {
+        return [];
+    }
     const locations = await Promise.all(
         ids.flatMap((id) =>
             (['64', '32'] as const).map((view) =>
                 queryRegistryValue(
+                    registryExecutable,
                     `${hive}\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{${id}}_is1`,
                     'InstallLocation',
                     view,
@@ -118,10 +132,16 @@ async function getInnoCandidates(
     );
 }
 
-async function getMsiCandidates(): Promise<string[]> {
+async function getMsiCandidates(
+    registryExecutable: string | null,
+): Promise<string[]> {
+    if (!registryExecutable) {
+        return [];
+    }
     const paths = await Promise.all(
         (['64', '32'] as const).map((view) =>
             queryRegistryValue(
+                registryExecutable,
                 'HKLM\\SOFTWARE\\VSCodium\\VSCodium',
                 'Path',
                 view,
@@ -158,8 +178,15 @@ async function resolveFirst(
 }
 
 export async function findWindowsVSCodium(): Promise<CodeEditorInstallation | null> {
+    const registryExecutablePath = resolveWindowsRegistryExecutablePath(
+        process.env,
+    );
+    const registryExecutable =
+        registryExecutablePath && isExistingFile(registryExecutablePath)
+            ? registryExecutablePath
+            : null;
     const userRegistry = await resolveFirst(
-        await getInnoCandidates('HKCU', [
+        await getInnoCandidates(registryExecutable, 'HKCU', [
             '0FD05EB4-651E-4E78-A062-515204B47A3A',
             '2E1F05D1-C245-4562-81EE-28188DB6FD17',
             '57FD70A5-1B8D-4875-9F40-C5553F094828',
@@ -182,13 +209,15 @@ export async function findWindowsVSCodium(): Promise<CodeEditorInstallation | nu
         return userInstallation;
     }
 
-    const msiInstallation = await resolveFirst(await getMsiCandidates());
+    const msiInstallation = await resolveFirst(
+        await getMsiCandidates(registryExecutable),
+    );
     if (msiInstallation) {
         return msiInstallation;
     }
 
     const machineRegistry = await resolveFirst(
-        await getInnoCandidates('HKLM', [
+        await getInnoCandidates(registryExecutable, 'HKLM', [
             '763CBF88-25C6-4B10-952F-326AE657F16B',
             '88DA3577-054F-4CA1-8122-7D820494CFFB',
             '67DEE444-3D04-4258-B92A-BC1F0FF2CAE4',

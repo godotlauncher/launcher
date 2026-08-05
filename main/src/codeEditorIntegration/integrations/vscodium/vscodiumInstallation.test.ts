@@ -145,11 +145,15 @@ describe('VSCodium installation resolution', () => {
             callback?.(null, output, '');
             return undefined;
         }) as typeof execFile);
-        const { getVSCodiumInstallation, resolveVSCodiumGodotConfiguration } =
-            await import('./vscodiumInstallation.js');
+        const { resolveVSCodiumGodotConfiguration } = await import(
+            './vscodiumInstallation.js'
+        );
+        const { resolveFlatpakVSCodium } = await import(
+            './vscodiumInstallation.linux.js'
+        );
 
         await expect(
-            getVSCodiumInstallation('/usr/bin/flatpak'),
+            resolveFlatpakVSCodium('/usr/bin/flatpak'),
         ).resolves.toEqual({
             path: '/usr/bin/flatpak',
             version: '1.99.0',
@@ -163,6 +167,18 @@ describe('VSCodium installation resolution', () => {
             execPath: '/usr/bin/flatpak',
             execFlags: 'run com.vscodium.codium --goto {file}:{line}:{col}',
         });
+    });
+
+    it('does not execute a manually selected Flatpak command', async () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+        const { getVSCodiumInstallation } = await import(
+            './vscodiumInstallation.js'
+        );
+
+        await expect(
+            getVSCodiumInstallation('/custom/bin/flatpak'),
+        ).resolves.toBeNull();
+        expect(execFile).not.toHaveBeenCalled();
     });
 
     it('rejects unstable or unrelated product metadata', async () => {

@@ -118,6 +118,7 @@ export function toInstallation(
 export function execFileText(
     executablePath: string,
     args: string[],
+    options: { logFailure?: boolean } = {},
 ): Promise<string | null> {
     return new Promise((resolve) => {
         execFile(
@@ -130,11 +131,13 @@ export function execFileText(
             },
             (error, stdout) => {
                 if (error) {
-                    logger.debug('VSCodium metadata command failed', {
-                        executablePath,
-                        args,
-                        error,
-                    });
+                    if (options.logFailure !== false) {
+                        logger.debug('VSCodium metadata command failed', {
+                            executablePath,
+                            args,
+                            error: error.message,
+                        });
+                    }
                     resolve(null);
                     return;
                 }
