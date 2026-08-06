@@ -51,7 +51,6 @@ function createPrefs(
         confirm_project_remove: true,
         first_run: true,
         windows_enable_symlinks: false,
-        windows_symlink_win_notify: true,
         language: 'system',
         ...overrides,
     };

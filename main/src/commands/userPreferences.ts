@@ -1,4 +1,3 @@
-import * as os from 'node:os';
 import type { UserPreferences } from '@shared/contracts';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import {
@@ -15,7 +14,6 @@ function migrateUserPreferences(
 ): { updated: boolean; value: UserPreferences } {
     let updated = false;
     const nextPrefs: UserPreferences = { ...prefs };
-    const platform = os.platform();
     const storedPrefsVersion = storedPrefs.prefs_version ?? 0;
 
     if (storedPrefsVersion < 4) {
@@ -26,15 +24,6 @@ function migrateUserPreferences(
     if (typeof nextPrefs.windows_enable_symlinks === 'undefined') {
         nextPrefs.windows_enable_symlinks =
             defaultPrefs.windows_enable_symlinks;
-        updated = true;
-    }
-
-    if (typeof nextPrefs.windows_symlink_win_notify === 'undefined') {
-        const receivedWindowsPrefsUpgrade =
-            platform === 'win32' && storedPrefsVersion < 3;
-        nextPrefs.windows_symlink_win_notify = receivedWindowsPrefsUpgrade
-            ? false
-            : defaultPrefs.windows_symlink_win_notify;
         updated = true;
     }
 

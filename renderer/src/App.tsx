@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,16 +11,11 @@ import {
     useNavigate,
     useParams,
 } from 'react-router';
-
-
-import clsx from 'clsx';
-import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
 import { shouldShowAppLoading } from './App.model';
 import IconDiscord from './assets/icons/Discord-Symbol-Blurple.svg';
 import rocketBlack from './assets/icons/godot_launcher_black.svg';
 import rocketWhite from './assets/icons/godot_launcher_white.svg';
 import { AppUpdateBanner } from './components/appUpdateBanner.component';
-import { WindowsStep } from './components/welcomeSteps/WindowsStep';
 import { COMMUNITY_DISCORD_URL } from './constants';
 import { useApp } from './hooks/useApp';
 import { useAppNavigation } from './hooks/useAppNavigation';
@@ -34,7 +31,7 @@ import { ProjectsView } from './views/projects.view';
 import { SettingsView } from './views/settings.view';
 
 function App() {
-    const { preferences, platform, updatePreferences } = usePreferences();
+    const { preferences } = usePreferences();
     const { initialized: releasesInitialized } = useRelease();
 
     const prefsLoading = !preferences;
@@ -58,26 +55,6 @@ function App() {
 
     if (firstRun) {
         return <WelcomeRoutes />;
-    }
-
-    if (
-        platform === 'win32' &&
-        preferences &&
-        !preferences.windows_symlink_win_notify
-    ) {
-        return (
-            <WindowsSymlinkNoticeRoutes
-                onContinue={() => {
-                    updatePreferences({
-                        windows_symlink_win_notify: true,
-                        prefs_version: Math.max(
-                            preferences.prefs_version ?? 3,
-                            3,
-                        ),
-                    });
-                }}
-            />
-        );
     }
 
     return <MainAppRoutes />;
@@ -112,63 +89,10 @@ function WelcomeRoutes() {
     );
 }
 
-type WindowsSymlinkNoticeRoutesProps = {
-    onContinue: () => void;
-};
-
-function WindowsSymlinkNoticeRoutes({
-    onContinue,
-}: WindowsSymlinkNoticeRoutesProps) {
-    return (
-        <Routes>
-            <Route
-                path={appRoutePaths.windowsSymlinkNotice}
-                element={<WindowsSymlinkNotice onContinue={onContinue} />}
-            />
-            <Route
-                path="*"
-                element={
-                    <Navigate to={appRoutePaths.windowsSymlinkNotice} replace />
-                }
-            />
-        </Routes>
-    );
-}
-
-type WindowsSymlinkNoticeProps = {
-    onContinue: () => void;
-};
-
-function WindowsSymlinkNotice({ onContinue }: WindowsSymlinkNoticeProps) {
-    const { t } = useTranslation('common');
-
-    return (
-        <div className="flex flex-col items-center justify-start w-full h-full">
-            <div className="flex flex-col h-[535px] w-[1008px] p-10">
-                <WindowsStep />
-                <div className="flex-1"></div>
-                <div className="flex justify-center">
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={onContinue}
-                    >
-                        {t('buttons.continue')}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 function MainAppRoutes() {
     return (
         <Routes>
             <Route path={appRoutePaths.welcome} element={<DefaultRoute />} />
-            <Route
-                path={appRoutePaths.windowsSymlinkNotice}
-                element={<DefaultRoute />}
-            />
             <Route path={appRoutePaths.root} element={<MainLayout />}>
                 <Route index element={<DefaultRoute />} />
                 <Route

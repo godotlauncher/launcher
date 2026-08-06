@@ -181,9 +181,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         }
 
         const prefs = await getUserPreferences();
-        const onboardingIncomplete =
-            prefs.first_run ||
-            (process.platform === 'win32' && !prefs.windows_symlink_win_notify);
+        const onboardingIncomplete = prefs.first_run;
 
         if (onboardingIncomplete) {
             logger.debug('Incomplete onboarding, quitting instead of hiding');

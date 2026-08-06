@@ -130,7 +130,6 @@ describe('AppLifecycleService', () => {
         receive_beta_updates: false,
         skipped_app_update_version: '',
         first_run: false,
-        windows_symlink_win_notify: true,
     };
 
     const onActivate = vi.fn();

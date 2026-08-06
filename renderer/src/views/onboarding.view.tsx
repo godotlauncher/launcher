@@ -258,10 +258,6 @@ export const OnboardingView: React.FC = () => {
             await savePreferences({
                 ...draft,
                 first_run: false,
-                windows_symlink_win_notify:
-                    platform === 'win32'
-                        ? true
-                        : draft.windows_symlink_win_notify,
             });
             localStorage.removeItem(ONBOARDING_STEP_STORAGE_KEY);
         } catch {

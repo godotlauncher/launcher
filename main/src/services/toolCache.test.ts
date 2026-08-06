@@ -37,7 +37,6 @@ const basePrefs: UserPreferences = {
     confirm_project_remove: true,
     first_run: false,
     windows_enable_symlinks: false,
-    windows_symlink_win_notify: true,
     language: 'en',
 };
 

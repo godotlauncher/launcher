@@ -24,7 +24,6 @@ export const appRoutePaths = {
     settingsTab: (tab: SettingsTab) => `/settings/${tab}`,
     help: '/help',
     welcome: '/welcome',
-    windowsSymlinkNotice: '/windows-symlink-notice',
 } as const;
 
 export const appViewRoutes: Record<View, string> = {

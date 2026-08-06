@@ -22,7 +22,6 @@ const preferences = {
     confirm_project_remove: true,
     first_run: true,
     windows_enable_symlinks: false,
-    windows_symlink_win_notify: true,
 } satisfies UserPreferences;
 
 describe('onboarding model', () => {

@@ -2,9 +2,8 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
 } from '@shared/contracts';
-import { ChevronDown } from 'lucide-react';
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CodeEditorIntegrationIcon } from '../../components/codeEditorIntegrationIcon.component';
 import { WindowsSymlinkSetting } from '../../components/settings/WindowsSymlinkSetting.component';
@@ -56,7 +55,6 @@ export const SetupStep: React.FC<SetupStepProps> = ({
     onWindowsSymlinksChange,
 }) => {
     const { t } = useTranslation(['welcome', 'settings', 'common']);
-    const [advancedOpen, setAdvancedOpen] = useState(false);
     const selectableIntegrations = useMemo(
         () =>
             integrations.filter(
@@ -131,7 +129,22 @@ export const SetupStep: React.FC<SetupStepProps> = ({
                 />
             </div>
 
-            <PlatformStorageNotice platform={platform} />
+            {platform === 'win32' ? (
+                <div className="rounded-box border border-primary/35 bg-primary/5 p-4">
+                    <WindowsSymlinkSetting
+                        value={windowsSymlinksEnabled}
+                        onChange={(enabled) => {
+                            onWindowsSymlinksChange(enabled);
+                            return true;
+                        }}
+                        disabled={pending}
+                        showDivider={false}
+                        compact
+                    />
+                </div>
+            ) : (
+                <PlatformStorageNotice platform={platform} />
+            )}
 
             <div className="flex flex-col gap-2">
                 <SelectField
@@ -192,42 +205,6 @@ export const SetupStep: React.FC<SetupStepProps> = ({
                     </div>
                 )}
             </div>
-
-            {platform === 'win32' && (
-                <div className="border-t border-base-300 pt-2">
-                    <button
-                        type="button"
-                        className="flex min-h-11 w-full items-center gap-2 rounded-field px-2 text-left font-semibold hover:bg-base-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                        aria-expanded={advancedOpen}
-                        aria-controls="onboarding-windows-advanced"
-                        onClick={() => setAdvancedOpen((open) => !open)}
-                        disabled={pending}
-                    >
-                        <ChevronDown
-                            size={18}
-                            className={advancedOpen ? 'rotate-180' : undefined}
-                            aria-hidden="true"
-                        />
-                        {t('welcome:onboarding.setup.advancedOptions')}
-                    </button>
-                    {advancedOpen && (
-                        <div
-                            id="onboarding-windows-advanced"
-                            className="mt-2 rounded-box border border-base-300 bg-base-200/35 p-4"
-                        >
-                            <WindowsSymlinkSetting
-                                value={windowsSymlinksEnabled}
-                                onChange={(enabled) => {
-                                    onWindowsSymlinksChange(enabled);
-                                    return true;
-                                }}
-                                disabled={pending}
-                                showDivider={false}
-                            />
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
