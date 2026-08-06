@@ -40,7 +40,9 @@ export class CodeEditorIntegrationSettingsStore {
         );
     }
 
-    async setDefaultIntegrationId(integrationId: CodeEditorId): Promise<void> {
+    async setDefaultIntegrationId(
+        integrationId: CodeEditorId | null,
+    ): Promise<void> {
         await this.updatePreferences((preferences) => {
             const currentIntegrations =
                 preferences.code_editor_integrations ?? {};
@@ -57,10 +59,12 @@ export class CodeEditorIntegrationSettingsStore {
             ) as Partial<
                 Record<CodeEditorId, CodeEditorIntegrationPreferences>
             >;
-            nextIntegrations[integrationId] = {
-                ...currentIntegrations[integrationId],
-                is_default: true,
-            };
+            if (integrationId) {
+                nextIntegrations[integrationId] = {
+                    ...currentIntegrations[integrationId],
+                    is_default: true,
+                };
+            }
 
             return {
                 ...preferences,

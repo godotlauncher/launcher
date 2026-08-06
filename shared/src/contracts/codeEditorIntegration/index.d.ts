@@ -50,7 +50,7 @@ export type CodeEditorIntegrationBridge = {
         settings: UpdateCodeEditorIntegrationSettings,
     ): Promise<CodeEditorIntegrationSettings>;
     setDefaultIntegration(
-        integrationId: CodeEditorId,
+        integrationId: CodeEditorId | null,
     ): Promise<CodeEditorIntegrationSettings[]>;
     validateIntegrationPath(
         integrationId: CodeEditorId,

@@ -93,5 +93,75 @@
         "whyTitle": "Почему?",
         "reason": "В отличие от версий для Windows и MacOS, версия для Linux использует символические ссылки на редактор для запуска проектов. Это экономит дисковое пространство и позволяет иметь настройки для каждого проекта.",
         "dotnetNote": "ПРИМЕЧАНИЕ: Если вы работаете с .NET редакторами, вам нужно установить .NET SDK с <ButtonLink>веб-сайта Microsoft .NET</ButtonLink> <Icon />"
+    },
+    "onboarding": {
+        "steps": {
+            "welcome": "Welcome",
+            "appearance": "Appearance",
+            "setup": "Setup",
+            "preferences": "Preferences"
+        },
+        "progressLabel": "Onboarding progress",
+        "reassurance": "You can change these options later in Settings.",
+        "welcome": {
+            "title": "Welcome",
+            "description": "Set up the launcher for the way you work.",
+            "expectation": "In a few short steps, choose where projects and editors are stored, connect a code editor, and set the launch behavior you prefer.",
+            "benefitsLabel": "What the launcher helps you do",
+            "officialAndCustomEditors": "Install and manage official or custom Godot editors.",
+            "projectSettings": "Keep editor choices and settings separate for each project.",
+            "codeEditorIntegration": "Open project files in a detected code editor."
+        },
+        "appearance": {
+            "title": "Choose your appearance",
+            "description": "Choose how the launcher looks. Your selection is applied immediately.",
+            "preview": "You can change the appearance later in Settings."
+        },
+        "setup": {
+            "title": "Choose your setup",
+            "description": "Confirm the default locations and optionally choose a detected code editor.",
+            "recommended": "Recommended",
+            "selectProjectsLocation": "Choose the projects location",
+            "selectEditorLocation": "Choose the editors location",
+            "browseProjectsLocation": "Browse for a projects location",
+            "browseEditorLocation": "Browse for an editors location",
+            "codeEditor": "Default code editor",
+            "codeEditorHelp": "Used when opening scripts and files from the launcher. You can change this later.",
+            "noCodeEditor": "None",
+            "detectingCodeEditors": "Detecting installed code editors...",
+            "codeEditorDetectionFailed": "Code editors could not be detected. You can configure one later in Settings.",
+            "detected": "Detected",
+            "advancedOptions": "Advanced options",
+            "platformNotice": {
+                "windows": "By default, Windows keeps a local editor copy for each project. Advanced options can enable editor symlinks to reduce disk use.",
+                "macos": "macOS keeps a local editor copy for each project because launching editors through symlinks can be unreliable.",
+                "linux": "Linux uses editor symlinks for projects to reduce disk use while keeping project settings separate."
+            }
+        },
+        "preferences": {
+            "title": "Choose your preferences",
+            "description": "Set what the launcher does after opening a project and when your computer starts.",
+            "afterLaunching": "After launching a project",
+            "keepOpen": "Keep the launcher open",
+            "keepOpenHelp": "Leave the launcher window visible.",
+            "minimizeHelp": "Minimize the launcher window.",
+            "closeToTrayHelp": "Hide the launcher window and keep it available from the system tray.",
+            "closeToTrayFallback": "If a system tray is unavailable, the launcher stays open.",
+            "trayUnavailable": "System tray support could not be confirmed. Tray actions will safely fall back to keeping the launcher window open.",
+            "startupTitle": "Startup",
+            "startWithComputer": "Start the launcher when the computer starts",
+            "startInTray": "Start in the system tray",
+            "startInTrayFallback": "Falls back to a normal window if the tray is unavailable."
+        },
+        "navigation": {
+            "finishInstall": "Finish and install an editor",
+            "finishProjects": "Finish and view projects"
+        },
+        "errors": {
+            "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
+            "absolutePath": "Enter an absolute folder path.",
+            "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
+            "finish": "Onboarding could not be completed. Review your choices and try again."
+        }
     }
 }

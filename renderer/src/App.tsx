@@ -10,7 +10,6 @@ import {
     useParams,
 } from 'react-router';
 
-import './App.css';
 
 import clsx from 'clsx';
 import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
@@ -30,9 +29,9 @@ import { appRoutePaths, defaultSettingsTab, isSettingsTab } from './routes';
 import { useSplashscreenHandoff } from './splashscreen/useSplashscreenHandoff';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
+import { OnboardingView } from './views/onboarding.view';
 import { ProjectsView } from './views/projects.view';
 import { SettingsView } from './views/settings.view';
-import { WelcomeView } from './views/welcome.view';
 
 function App() {
     const { preferences, platform, updatePreferences } = usePreferences();
@@ -104,7 +103,7 @@ function LoadingView() {
 function WelcomeRoutes() {
     return (
         <Routes>
-            <Route path={appRoutePaths.welcome} element={<WelcomeView />} />
+            <Route path={appRoutePaths.welcome} element={<OnboardingView />} />
             <Route
                 path="*"
                 element={<Navigate to={appRoutePaths.welcome} replace />}

@@ -64,6 +64,33 @@ describe('CodeEditorIntegrationSettingsStore', () => {
         });
     });
 
+    it('clears the default integration without changing its other settings', async () => {
+        const preferences = createPreferences({
+            code_editor_integrations: {
+                vscode: {
+                    enabled: true,
+                    executable_path: 'custom/code',
+                    is_default: true,
+                },
+            },
+        });
+        preferenceMocks.getUserPreferences.mockResolvedValue(preferences);
+        const store = new CodeEditorIntegrationSettingsStore();
+
+        await store.setDefaultIntegrationId(null);
+
+        expect(preferenceMocks.setUserPreferences).toHaveBeenCalledWith({
+            ...preferences,
+            code_editor_integrations: {
+                vscode: {
+                    enabled: true,
+                    executable_path: 'custom/code',
+                    is_default: false,
+                },
+            },
+        });
+    });
+
     it('reads all VS Code integration settings from its own preference object', async () => {
         preferenceMocks.getUserPreferences.mockResolvedValue(
             createPreferences({

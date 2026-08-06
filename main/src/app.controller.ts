@@ -106,6 +106,15 @@ export class AppController implements AppBridge {
         return getUserPreferences();
     }
 
+    @AppHandler('getOnboardingRecommendedLocations')
+    async getOnboardingRecommendedLocations() {
+        const { dataDir, projectDir } = getCurrentAppConfig().paths;
+        return {
+            projectsLocation: projectDir,
+            editorLocation: dataDir,
+        };
+    }
+
     @AppHandler('setUserPreferences')
     setUserPreferences(prefs: UserPreferences) {
         return setUserPreferences(prefs);

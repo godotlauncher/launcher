@@ -9,6 +9,10 @@ import {
 type TestElectronApi = {
     getPathForFile: (file: File) => string;
     getPlatform: () => Promise<string>;
+    getOnboardingRecommendedLocations: () => Promise<{
+        projectsLocation: string;
+        editorLocation: string;
+    }>;
     rendererReady: () => Promise<void>;
     subscribeProjects: (callback: (projects: unknown[]) => void) => () => void;
     'codeEditorIntegration.listIntegrationSettings': () => Promise<unknown[]>;
@@ -30,6 +34,10 @@ type TestElectronApi = {
 
 describe('renderer bridge', () => {
     const getPlatform = vi.fn(async () => 'win32');
+    const getOnboardingRecommendedLocations = vi.fn(async () => ({
+        projectsLocation: 'C:\\Users\\Mario\\Godot\\Projects',
+        editorLocation: 'C:\\Users\\Mario\\Godot\\Editors',
+    }));
     const getPath = vi.fn(() => '/projects/example/project.godot');
     const rendererReady = vi.fn(async () => undefined);
     const listIntegrationSettings = vi.fn(async () => []);
@@ -50,6 +58,7 @@ describe('renderer bridge', () => {
 
         const electron: TestElectronApi = {
             getPlatform,
+            getOnboardingRecommendedLocations,
             getPathForFile: getPath,
             rendererReady,
             'codeEditorIntegration.listIntegrationSettings':
@@ -76,7 +85,14 @@ describe('renderer bridge', () => {
 
     it('delegates controller requests through the app namespace', async () => {
         await expect(appBridge.getPlatform()).resolves.toBe('win32');
+        await expect(
+            appBridge.getOnboardingRecommendedLocations(),
+        ).resolves.toEqual({
+            projectsLocation: 'C:\\Users\\Mario\\Godot\\Projects',
+            editorLocation: 'C:\\Users\\Mario\\Godot\\Editors',
+        });
         expect(getPlatform).toHaveBeenCalledOnce();
+        expect(getOnboardingRecommendedLocations).toHaveBeenCalledOnce();
     });
 
     it('notifies the main process when the renderer is ready', async () => {

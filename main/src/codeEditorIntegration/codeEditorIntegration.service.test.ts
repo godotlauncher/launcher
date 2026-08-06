@@ -256,6 +256,22 @@ describe('CodeEditorIntegrationService', () => {
         );
     });
 
+    it('clears the default integration without requiring an installed editor', async () => {
+        const integration = createIntegration();
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            null,
+        );
+        const service = createService(integration, settingsStore);
+
+        await expect(
+            service.setDefaultIntegration(null),
+        ).resolves.toMatchObject([{ isDefault: false }]);
+        expect(settingsStore.setDefaultIntegrationId).toHaveBeenCalledWith(
+            null,
+        );
+    });
+
     it('rejects disabled and unavailable integrations as defaults', async () => {
         const disabledIntegration = createIntegration();
         const disabledStore = createSettingsStore({

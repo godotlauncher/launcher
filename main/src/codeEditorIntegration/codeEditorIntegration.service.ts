@@ -93,9 +93,11 @@ export class CodeEditorIntegrationService {
     }
 
     async setDefaultIntegration(
-        integrationId: CodeEditorId,
+        integrationId: CodeEditorId | null,
     ): Promise<CodeEditorIntegrationSettings[]> {
-        await this.assertIntegrationSelectable(integrationId);
+        if (integrationId) {
+            await this.assertIntegrationSelectable(integrationId);
+        }
         await this.settingsStore.setDefaultIntegrationId(integrationId);
 
         return this.listIntegrationSettings();

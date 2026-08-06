@@ -54,8 +54,15 @@ export type AppOpenDialogResult = {
     filePaths: string[];
     bookmarks?: string[];
 };
+
+export type OnboardingRecommendedLocations = {
+    projectsLocation: string;
+    editorLocation: string;
+};
+
 export type AppBridge = {
     getUserPreferences(): Promise<UserPreferences>;
+    getOnboardingRecommendedLocations(): Promise<OnboardingRecommendedLocations>;
     setUserPreferences(prefs: UserPreferences): Promise<UserPreferences>;
     setAutoStart(
         autoStart: boolean,

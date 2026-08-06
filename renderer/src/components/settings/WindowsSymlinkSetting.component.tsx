@@ -4,7 +4,19 @@ import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../hooks/useAlerts';
 import { usePreferences } from '../../hooks/usePreferences';
 
-export const WindowsSymlinkSetting: React.FC = () => {
+type WindowsSymlinkSettingProps = {
+    value?: boolean;
+    onChange?: (enabled: boolean) => Promise<boolean> | boolean;
+    disabled?: boolean;
+    showDivider?: boolean;
+};
+
+export const WindowsSymlinkSetting: React.FC<WindowsSymlinkSettingProps> = ({
+    value,
+    onChange,
+    disabled = false,
+    showDivider = true,
+}) => {
     const { t } = useTranslation('settings');
     const { preferences, savePreferences, platform } = usePreferences();
     const { addCustomConfirm } = useAlerts();
@@ -14,9 +26,14 @@ export const WindowsSymlinkSetting: React.FC = () => {
         return null;
     }
 
+    const enabled = value ?? preferences.windows_enable_symlinks;
+
     const applyPreferenceChange = async (nextValue: boolean) => {
         setSaving(true);
         try {
+            if (onChange) {
+                return await onChange(nextValue);
+            }
             await savePreferences({
                 ...preferences,
                 windows_enable_symlinks: nextValue,
@@ -29,7 +46,12 @@ export const WindowsSymlinkSetting: React.FC = () => {
     };
 
     const handleToggleChange = (checked: boolean) => {
-        if (preferences.windows_enable_symlinks === checked) {
+        if (enabled === checked) {
+            return;
+        }
+
+        if (onChange) {
+            void applyPreferenceChange(checked);
             return;
         }
 
@@ -73,7 +95,7 @@ export const WindowsSymlinkSetting: React.FC = () => {
 
     return (
         <>
-            <div className="divider"></div>
+            {showDivider && <div className="divider"></div>}
             <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-bold">
@@ -90,9 +112,9 @@ export const WindowsSymlinkSetting: React.FC = () => {
                     <input
                         type="checkbox"
                         className="checkbox"
-                        checked={preferences.windows_enable_symlinks}
+                        checked={enabled}
                         onChange={(e) => handleToggleChange(e.target.checked)}
-                        disabled={saving}
+                        disabled={saving || disabled}
                     />
                     <span className="text-sm">
                         {t('windowsSymlinks.checkbox')}
@@ -101,6 +123,17 @@ export const WindowsSymlinkSetting: React.FC = () => {
                 <p className="text-xs text-base-content/70">
                     {t('windowsSymlinks.note')}
                 </p>
+                {enabled && (
+                    <div className="alert alert-warning items-start py-3 text-sm">
+                        <TriangleAlert
+                            className="mt-0.5 size-5 shrink-0"
+                            aria-hidden="true"
+                        />
+                        <span>
+                            {t('windowsSymlinks.enableDescription.line2')}
+                        </span>
+                    </div>
+                )}
             </div>
         </>
     );
