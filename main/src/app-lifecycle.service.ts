@@ -31,7 +31,6 @@ import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
 import { configureI18n } from './i18n/index.js';
 import { setMainWindow } from './mainWindow.js';
-import { runMigrations } from './migrations/index.js';
 import { getAppIconPath } from './pathResolver.js';
 import { isCacheStale, refreshToolCache } from './services/toolCache.js';
 import { setAutoStart } from './utils/platform.utils.js';
@@ -76,12 +75,6 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         }
 
         await ensurePreferencesStorage();
-
-        try {
-            await runMigrations(app.getVersion());
-        } catch (error) {
-            logger.error('Failed to execute migrations', error);
-        }
 
         const userPrefs = await getUserPreferences();
         const requestedLocale = userPrefs.language || 'system';

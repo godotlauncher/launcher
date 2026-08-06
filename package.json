@@ -73,6 +73,7 @@
     },
     "dependencies": {
         "@mariodebono/di": "3.1.0",
+        "@mariodebono/di-app-migrations": "3.1.0",
         "@mariodebono/di-config": "3.1.0",
         "@mariodebono/di-electron": "3.1.0",
         "@mariodebono/di-electron-i18n": "3.1.0",

@@ -15,7 +15,7 @@ import {
     migrateCodeEditorProjects,
     migrateStoredPreferencesRecord,
     migrateStoredProjectRecord,
-} from './codeEditorPersistence.js';
+} from './code-editor-persistence.util.js';
 
 describe('code editor persistence migrations', () => {
     let tempDir: string;

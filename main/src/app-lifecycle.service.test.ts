@@ -3,7 +3,6 @@ import { AppLifecycleService } from './app-lifecycle.service.js';
 
 const mocks = vi.hoisted(() => ({
     ensurePreferencesStorage: vi.fn(),
-    runMigrations: vi.fn(),
     getUserPreferences: vi.fn(),
     checkAndUpdateProjects: vi.fn(),
     checkAndUpdateReleases: vi.fn(),
@@ -80,9 +79,6 @@ vi.mock('electron-log/main.js', () => ({
 
 vi.mock('./utils/prefs.utils.js', () => ({
     ensurePreferencesStorage: mocks.ensurePreferencesStorage,
-}));
-vi.mock('./migrations/index.js', () => ({
-    runMigrations: mocks.runMigrations,
 }));
 vi.mock('./commands/userPreferences.js', () => ({
     getUserPreferences: mocks.getUserPreferences,

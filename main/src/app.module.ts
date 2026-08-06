@@ -6,6 +6,7 @@ import {
 } from '@mariodebono/di-electron-i18n';
 import { AppController } from './app.controller.js';
 import { AppLifecycleService } from './app-lifecycle.service.js';
+import { AppMigrationsModule } from './app-migrations/app-migrations.module.js';
 import { CodeEditorIntegrationModule } from './codeEditorIntegration/codeEditorIntegration.module.js';
 import {
     type AppConfig,
@@ -28,6 +29,7 @@ import { getLocalesPath } from './pathResolver.js';
             load: [getCurrentAppConfig],
             validationSchema: AppConfigSchema,
         }),
+        AppMigrationsModule,
         CodeEditorIntegrationModule,
         I18nModule.forRootAsync({
             useFactory: () =>
