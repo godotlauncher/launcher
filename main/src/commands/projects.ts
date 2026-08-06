@@ -20,6 +20,7 @@ import { PROJECTS_FILENAME } from '../constants.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
+import type { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import { gitInit } from '../utils/git.utils.js';
 import { removeProjectEditor } from '../utils/godot.utils.js';
 import {
@@ -84,6 +85,7 @@ export async function removeProject(
 export async function launchProject(
     project: ProjectDetails,
     codeEditorIntegrationService: CodeEditorIntegrationService,
+    trayAvailabilityService: TrayAvailabilityService,
     options: LaunchProjectOptions = {},
 ): Promise<LaunchProjectResult> {
     if (project.codeEditorId && !options.allowMissingCodeEditor) {
@@ -208,7 +210,17 @@ export async function launchProject(
             currentMainWindow?.minimize();
             break;
         case 'close_to_tray':
-            currentMainWindow?.close();
+            if (!(await trayAvailabilityService.isAvailable())) {
+                logger.info(
+                    'System tray is unavailable; leaving the window visible after project launch',
+                );
+                break;
+            }
+            currentMainWindow?.hide();
+            if (process.platform === 'darwin') {
+                app.dock?.hide();
+                app.setActivationPolicy('accessory');
+            }
             break;
     }
 

@@ -143,6 +143,7 @@ describe('AppLifecycleService', () => {
         offActivate,
         onActivate,
         quit: vi.fn(),
+        setHideOnClose: vi.fn(),
     };
     const mainWindow = {
         hide: vi.fn(),
@@ -160,6 +161,10 @@ describe('AppLifecycleService', () => {
     };
     const codeEditorIntegrationService = {};
 
+    const trayAvailabilityService = {
+        isAvailable: vi.fn(async () => true),
+    };
+
     function createService() {
         return new AppLifecycleService(
             configService as never,
@@ -167,6 +172,7 @@ describe('AppLifecycleService', () => {
             windowManager as never,
             i18nService as never,
             codeEditorIntegrationService as never,
+            trayAvailabilityService as never,
         );
     }
 
@@ -206,6 +212,7 @@ describe('AppLifecycleService', () => {
         mocks.setupFocusRevalidation.mockReturnValue(
             mocks.disposeFocusRevalidation,
         );
+        trayAvailabilityService.isAvailable.mockResolvedValue(true);
     });
 
     it('owns the Electron activation subscription', () => {
@@ -267,6 +274,31 @@ describe('AppLifecycleService', () => {
         expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
     });
 
+    it('reveals a hidden Linux launch when the tray is unavailable', async () => {
+        configService.getAll.mockReturnValue({
+            isDev: false,
+            startHidden: true,
+        });
+        trayAvailabilityService.isAvailable.mockResolvedValue(false);
+        const service = createService();
+
+        await initializeLifecycle(service);
+        service.revealInitialWindow();
+
+        expect(mainWindow.hide).not.toHaveBeenCalled();
+        expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+    });
+
+    it('lets the framework quit on close when the tray is unavailable', async () => {
+        trayAvailabilityService.isAvailable.mockResolvedValue(false);
+        const service = createService();
+
+        await initializeLifecycle(service);
+        await service.onMainWindowClose();
+
+        expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
+        expect(mocks.appQuit).not.toHaveBeenCalled();
+    });
     it('routes tray launches through the code editor aware project command', async () => {
         const service = createService();
         const project = { path: '/projects/demo' };
@@ -287,6 +319,7 @@ describe('AppLifecycleService', () => {
         expect(mocks.launchProject).toHaveBeenCalledWith(
             project,
             codeEditorIntegrationService,
+            trayAvailabilityService,
         );
     });
 
