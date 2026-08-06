@@ -20,6 +20,13 @@ const loggerMocks = vi.hoisted(() => ({
     debug: vi.fn(),
     warn: vi.fn(),
 }));
+const electronMocks = vi.hoisted(() => ({
+    getVersion: vi.fn(() => '1.12.0'),
+}));
+
+vi.mock('electron', () => ({
+    app: { getVersion: electronMocks.getVersion },
+}));
 
 vi.mock('electron-log', () => ({
     default: loggerMocks,
@@ -48,10 +55,16 @@ describe('LauncherAppMigrationStore', () => {
         expect(loggerMocks.debug).toHaveBeenCalledOnce();
     });
 
-    it('normalizes completed IDs without changing valid history', async () => {
+    it('normalizes legacy and structured completion records', async () => {
         writeState(statePath, {
             lastSeenVersion: ' 1.11.0 ',
-            completed: ['alpha', 42, 'alpha', 'beta'],
+            completed: [
+                'alpha',
+                42,
+                { id: 'alpha', executedAt: '2026-08-01T10:00:00.000Z' },
+                { id: ' beta ', launcherVersion: ' 1.11.0 ' },
+                { id: ' ' },
+            ],
         });
 
         await expect(store.listCompletedMigrationIds()).resolves.toEqual([
@@ -60,28 +73,65 @@ describe('LauncherAppMigrationStore', () => {
         ]);
     });
 
-    it('creates the parent directory and preserves state when completing a migration', async () => {
-        await store.markCompleted('alpha', new Date());
-        await store.markCompleted('beta', new Date());
-        await store.markCompleted('alpha', new Date());
+    it('recovers from an empty state file without logging a parse error', async () => {
+        mkdirSync(path.dirname(statePath), { recursive: true });
+        writeFileSync(statePath, '   ', 'utf-8');
+
+        await expect(store.listCompletedMigrationIds()).resolves.toEqual([]);
+        expect(loggerMocks.warn).toHaveBeenCalledWith(
+            `Migration state at ${statePath} is empty, using defaults`,
+        );
+    });
+
+    it('records completion metadata and the launcher version', async () => {
+        await store.markCompleted(
+            'alpha',
+            new Date('2026-08-06T08:00:00.000Z'),
+        );
+        await store.markCompleted('beta', new Date('2026-08-06T09:00:00.000Z'));
+        await store.markCompleted(
+            'alpha',
+            new Date('2026-08-06T10:00:00.000Z'),
+        );
 
         expect(readState(statePath)).toEqual({
-            lastSeenVersion: '0.0.0',
-            completed: ['alpha', 'beta'],
+            lastSeenVersion: '1.12.0',
+            completed: [
+                {
+                    id: 'alpha',
+                    executedAt: '2026-08-06T08:00:00.000Z',
+                    launcherVersion: '1.12.0',
+                },
+                {
+                    id: 'beta',
+                    executedAt: '2026-08-06T09:00:00.000Z',
+                    launcherVersion: '1.12.0',
+                },
+            ],
         });
     });
 
-    it('preserves previous completion history and lastSeenVersion', async () => {
+    it('upgrades legacy IDs on the next successful completion', async () => {
         writeState(statePath, {
             lastSeenVersion: '1.11.0',
             completed: ['previous-migration'],
         });
 
-        await store.markCompleted('new-migration', new Date());
+        await store.markCompleted(
+            'new-migration',
+            new Date('2026-08-06T10:00:00.000Z'),
+        );
 
         expect(readState(statePath)).toEqual({
-            lastSeenVersion: '1.11.0',
-            completed: ['previous-migration', 'new-migration'],
+            lastSeenVersion: '1.12.0',
+            completed: [
+                { id: 'previous-migration' },
+                {
+                    id: 'new-migration',
+                    executedAt: '2026-08-06T10:00:00.000Z',
+                    launcherVersion: '1.12.0',
+                },
+            ],
         });
     });
 
@@ -90,12 +140,23 @@ describe('LauncherAppMigrationStore', () => {
         writeFileSync(statePath, '{invalid', 'utf-8');
 
         await expect(store.listCompletedMigrationIds()).resolves.toEqual([]);
-        expect(loggerMocks.warn).toHaveBeenCalledOnce();
+        expect(loggerMocks.warn).toHaveBeenCalledWith(
+            `Migration state at ${statePath} contains invalid JSON, using defaults`,
+        );
 
-        await store.markCompleted('recovered', new Date());
+        await store.markCompleted(
+            'recovered',
+            new Date('2026-08-06T10:00:00.000Z'),
+        );
         expect(readState(statePath)).toEqual({
-            lastSeenVersion: '0.0.0',
-            completed: ['recovered'],
+            lastSeenVersion: '1.12.0',
+            completed: [
+                {
+                    id: 'recovered',
+                    executedAt: '2026-08-06T10:00:00.000Z',
+                    launcherVersion: '1.12.0',
+                },
+            ],
         });
     });
 
@@ -123,6 +184,30 @@ describe('normalizeMigrationState', () => {
                 completed: 'not-an-array',
             }),
         ).toEqual(DEFAULT_MIGRATION_STATE);
+    });
+
+    it('preserves available metadata when duplicate records are merged', () => {
+        expect(
+            normalizeMigrationState({
+                lastSeenVersion: '1.12.0',
+                completed: [
+                    {
+                        id: 'alpha',
+                        executedAt: '2026-08-06T08:00:00.000Z',
+                    },
+                    { id: 'alpha', launcherVersion: '1.12.0' },
+                ],
+            }),
+        ).toEqual({
+            lastSeenVersion: '1.12.0',
+            completed: [
+                {
+                    id: 'alpha',
+                    executedAt: '2026-08-06T08:00:00.000Z',
+                    launcherVersion: '1.12.0',
+                },
+            ],
+        });
     });
 });
 

@@ -4,12 +4,19 @@ import { Injectable } from '@mariodebono/di';
 import type { AppMigrationStore } from '@mariodebono/di-app-migrations';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ConfigService } from '@mariodebono/di-config';
+import { app } from 'electron';
 import logger from 'electron-log';
 import type { AppConfig } from '../config/index.js';
 
+export interface CompletedMigration {
+    id: string;
+    executedAt?: string;
+    launcherVersion?: string;
+}
+
 export interface MigrationState {
     lastSeenVersion: string;
-    completed: string[];
+    completed: CompletedMigration[];
 }
 
 export const DEFAULT_MIGRATION_STATE: MigrationState = {
@@ -35,16 +42,60 @@ export function normalizeMigrationState(candidate: unknown): MigrationState {
         record.lastSeenVersion.trim()
             ? record.lastSeenVersion.trim()
             : DEFAULT_MIGRATION_STATE.lastSeenVersion;
-    const completed = Array.isArray(record.completed)
-        ? record.completed.filter(
-              (value): value is string => typeof value === 'string',
-          )
-        : [];
+    const completedById = new Map<string, CompletedMigration>();
+
+    if (Array.isArray(record.completed)) {
+        for (const value of record.completed) {
+            const completedMigration = normalizeCompletedMigration(value);
+            if (!completedMigration) {
+                continue;
+            }
+
+            const existing = completedById.get(completedMigration.id);
+            completedById.set(completedMigration.id, {
+                ...existing,
+                ...completedMigration,
+            });
+        }
+    }
 
     return {
         lastSeenVersion,
-        completed: [...new Set(completed)],
+        completed: [...completedById.values()],
     };
+}
+
+function normalizeCompletedMigration(
+    candidate: unknown,
+): CompletedMigration | undefined {
+    if (typeof candidate === 'string') {
+        const id = candidate.trim();
+        return id ? { id } : undefined;
+    }
+
+    if (!candidate || typeof candidate !== 'object') {
+        return undefined;
+    }
+
+    const record = candidate as Record<string, unknown>;
+    if (typeof record.id !== 'string' || !record.id.trim()) {
+        return undefined;
+    }
+
+    const completedMigration: CompletedMigration = {
+        id: record.id.trim(),
+    };
+    if (typeof record.executedAt === 'string' && record.executedAt.trim()) {
+        completedMigration.executedAt = record.executedAt.trim();
+    }
+    if (
+        typeof record.launcherVersion === 'string' &&
+        record.launcherVersion.trim()
+    ) {
+        completedMigration.launcherVersion = record.launcherVersion.trim();
+    }
+
+    return completedMigration;
 }
 
 @Injectable()
@@ -53,18 +104,22 @@ export class LauncherAppMigrationStore implements AppMigrationStore {
 
     async listCompletedMigrationIds(): Promise<string[]> {
         const state = await this.loadState();
-        return [...state.completed];
+        return state.completed.map(({ id }) => id);
     }
 
     async markCompleted(id: string, executedAt: Date): Promise<void> {
-        void executedAt;
-
         const state = await this.loadState();
-        if (state.completed.includes(id)) {
+        if (state.completed.some((migration) => migration.id === id)) {
             return;
         }
 
-        state.completed.push(id);
+        const launcherVersion = app.getVersion();
+        state.completed.push({
+            id,
+            executedAt: executedAt.toISOString(),
+            launcherVersion,
+        });
+        state.lastSeenVersion = launcherVersion;
         await this.saveState(state);
     }
 
@@ -73,9 +128,9 @@ export class LauncherAppMigrationStore implements AppMigrationStore {
     }
 
     private async loadState(): Promise<MigrationState> {
+        let data: string;
         try {
-            const data = await fs.readFile(this.statePath, 'utf-8');
-            return normalizeMigrationState(JSON.parse(data) as unknown);
+            data = await fs.readFile(this.statePath, 'utf-8');
         } catch (error) {
             const fileError = error as NodeJS.ErrnoException;
             if (fileError.code === 'ENOENT') {
@@ -88,6 +143,22 @@ export class LauncherAppMigrationStore implements AppMigrationStore {
             logger.warn(
                 `Failed to read migration state from ${this.statePath}, using defaults`,
                 fileError,
+            );
+            return defaultMigrationState();
+        }
+
+        if (!data.trim()) {
+            logger.warn(
+                `Migration state at ${this.statePath} is empty, using defaults`,
+            );
+            return defaultMigrationState();
+        }
+
+        try {
+            return normalizeMigrationState(JSON.parse(data) as unknown);
+        } catch {
+            logger.warn(
+                `Migration state at ${this.statePath} contains invalid JSON, using defaults`,
             );
             return defaultMigrationState();
         }

@@ -24,6 +24,13 @@ const operationMocks = vi.hoisted(() => ({
     migrateCodeEditorPreferences: vi.fn(),
     migrateCodeEditorProjects: vi.fn(),
 }));
+const electronMocks = vi.hoisted(() => ({
+    getVersion: vi.fn(() => '1.12.0'),
+}));
+
+vi.mock('electron', () => ({
+    app: { getVersion: electronMocks.getVersion },
+}));
 
 vi.mock('../commands/releases.js', () => ({
     clearReleaseCaches: operationMocks.clearReleaseCaches,
@@ -86,6 +93,26 @@ describe('AppMigrationsModule', () => {
             MIGRATE_CODE_EDITOR_PREFERENCES_ID,
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
         ]);
+        expect(readMigrationState(statePath)).toMatchObject({
+            lastSeenVersion: '1.12.0',
+            completed: [
+                {
+                    id: CLEAR_RELEASE_CACHE_MIGRATION_ID,
+                    launcherVersion: '1.12.0',
+                },
+                {
+                    id: MIGRATE_CODE_EDITOR_PREFERENCES_ID,
+                    launcherVersion: '1.12.0',
+                },
+                {
+                    id: MIGRATE_CODE_EDITOR_PROJECTS_ID,
+                    launcherVersion: '1.12.0',
+                },
+            ],
+        });
+        for (const migration of readMigrationState(statePath).completed) {
+            expect(Date.parse(migration.executedAt ?? '')).not.toBeNaN();
+        }
     });
 
     it('keeps completed history and runs only missing migration IDs', async () => {
@@ -103,11 +130,19 @@ describe('AppMigrationsModule', () => {
         ).toHaveBeenCalledOnce();
         expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledOnce();
         expect(readMigrationState(statePath)).toEqual({
-            lastSeenVersion: '1.11.0',
+            lastSeenVersion: '1.12.0',
             completed: [
-                CLEAR_RELEASE_CACHE_MIGRATION_ID,
-                MIGRATE_CODE_EDITOR_PREFERENCES_ID,
-                MIGRATE_CODE_EDITOR_PROJECTS_ID,
+                { id: CLEAR_RELEASE_CACHE_MIGRATION_ID },
+                {
+                    id: MIGRATE_CODE_EDITOR_PREFERENCES_ID,
+                    executedAt: expect.any(String),
+                    launcherVersion: '1.12.0',
+                },
+                {
+                    id: MIGRATE_CODE_EDITOR_PROJECTS_ID,
+                    executedAt: expect.any(String),
+                    launcherVersion: '1.12.0',
+                },
             ],
         });
     });
@@ -179,14 +214,22 @@ function writeMigrationState(stateFilePath: string, state: unknown): void {
 
 function readMigrationState(stateFilePath: string): {
     lastSeenVersion: string;
-    completed: string[];
+    completed: Array<{
+        id: string;
+        executedAt?: string;
+        launcherVersion?: string;
+    }>;
 } {
     return JSON.parse(readFileSync(stateFilePath, 'utf-8')) as {
         lastSeenVersion: string;
-        completed: string[];
+        completed: Array<{
+            id: string;
+            executedAt?: string;
+            launcherVersion?: string;
+        }>;
     };
 }
 
 function readCompletedIds(stateFilePath: string): string[] {
-    return readMigrationState(stateFilePath).completed;
+    return readMigrationState(stateFilePath).completed.map(({ id }) => id);
 }
