@@ -95,9 +95,10 @@ describe('Path Resolver', () => {
             isPackaged: false,
             appPath: '/usr/lib/godot-launcher/app.asar',
         };
+        const resourceRoot = path.dirname(input.appPath);
 
-        expect(getExternalResourceRoot(input)).toBe('/usr/lib/godot-launcher');
-        expect(getAssetPath(input)).toBe('/usr/lib/godot-launcher/assets');
-        expect(getLocalesPath(input)).toBe('/usr/lib/godot-launcher/locales');
+        expect(getExternalResourceRoot(input)).toBe(resourceRoot);
+        expect(getAssetPath(input)).toBe(path.join(resourceRoot, 'assets'));
+        expect(getLocalesPath(input)).toBe(path.join(resourceRoot, 'locales'));
     });
 });
