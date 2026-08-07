@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "La prise en charge de la zone de notification n'a pas pu être confirmée pour cette session. Godot Launcher restera visible ou se fermera au lieu d'être masqué.",
+            "closeFallback": "Fermer dans la zone de notification laissera le lanceur visible."
+        },
         "projects": {
             "title": "Projets",
             "description": "Choisir le comportement de Godot Launcher pour les projets.",
@@ -26,14 +30,14 @@
         },
         "autoStart": {
             "title": "Préférence de démarrage",
-            "description": "Choisir ce que fait GD Launcher au démarrage de votre ordinateur",
+            "description": "Choisir ce que fait Godot Launcher au démarrage de votre ordinateur",
             "linuxWarning": "Le démarrage automatique n'est actuellement pas pris en charge sur Linux",
             "startOnBoot": "Démarrer au démarrage de l'ordinateur.",
             "startInTray": "Démarrer dans la barre d'état système."
         },
         "projectLaunch": {
             "title": "Action de lancement du projet",
-            "description": "Choisir ce que fait GD Launcher après le lancement d'un projet",
+            "description": "Choisir ce que fait Godot Launcher après le lancement d'un projet",
             "none": "Rien",
             "minimize": "Réduire",
             "closeToTray": "Fermer dans la barre d'état système"
@@ -158,7 +162,7 @@
     },
     "updates": {
         "title": "Mises à jour",
-        "description": "Configurer comment GD Launcher vérifie les mises à jour",
+        "description": "Configurer comment Godot Launcher vérifie les mises à jour",
         "autoCheck": "Vérifier automatiquement les mises à jour",
         "betaChannel": "Recevoir les mises à jour beta",
         "betaChannelDescription": "Téléchargez les versions préliminaires depuis GitHub ; elles peuvent être moins stables que les versions officielles.",

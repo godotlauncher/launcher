@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Bu oturum için sistem tepsisi desteği doğrulanamadı. Godot Launcher gizlenmek yerine görünür kalacak veya kapanacak.",
+            "closeFallback": "Sistem tepsisine kapatma, başlatıcıyı görünür bırakacaktır."
+        },
         "projects": {
             "title": "Projeler",
             "description": "Projeler için Godot Launcher davranışını seçin.",
@@ -26,14 +30,14 @@
         },
         "autoStart": {
             "title": "Başlangıç Tercihi",
-            "description": "Bilgisayarınız başladığında GD Launcher'ın ne yapacağını seçin",
+            "description": "Bilgisayarınız başladığında Godot Launcher'ın ne yapacağını seçin",
             "linuxWarning": "Otomatik başlatma şu anda Linux'ta desteklenmiyor",
             "startOnBoot": "Bilgisayar başladığında başlat.",
             "startInTray": "Sistem tepsisinde başlat."
         },
         "projectLaunch": {
             "title": "Proje Başlatma Eylemi",
-            "description": "Bir proje başlattıktan sonra GD Launcher'ın ne yapacağını seçin",
+            "description": "Bir proje başlattıktan sonra Godot Launcher'ın ne yapacağını seçin",
             "none": "Hiçbir şey",
             "minimize": "Simge durumuna küçült",
             "closeToTray": "Sistem tepsisine küçült"
@@ -158,7 +162,7 @@
     },
     "updates": {
         "title": "Güncellemeler",
-        "description": "GD Launcher'ın güncellemeleri nasıl kontrol edeceğini yapılandırın",
+        "description": "Godot Launcher'ın güncellemeleri nasıl kontrol edeceğini yapılandırın",
         "autoCheck": "Güncellemeleri otomatik kontrol et",
         "betaChannel": "Beta güncellemeleri al",
         "betaChannelDescription": "GitHub’dan ön sürüm paketlerini indirir; bunlar resmi sürümlere göre daha az kararlı olabilir.",

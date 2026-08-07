@@ -42,6 +42,9 @@
         "settingsTab": "Personalizza l'esperienza come preferisci nella scheda <strong>Impostazioni</strong>."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "Non è stato possibile confermare il supporto della barra di sistema per questa sessione. Godot Launcher rimarrà visibile o si chiuderà invece di nascondersi.",
+        "trayCloseFallback": "La chiusura nella barra di sistema lascerà visibile il launcher.",
+        "trayStartFallback": "L'avvio nella barra di sistema aprirà normalmente il launcher.",
         "afterLaunching": "Dopo l'avvio di un progetto",
         "nothing": "Niente",
         "minimize": "Riduci a icona",

@@ -3,6 +3,8 @@ import type React from 'react';
 import { AutoStartSetting } from '../../../components/settings/AutoStartSetting.component';
 import { ProjectLaunchAction } from '../../../components/settings/projectLaunchAction.component';
 import { WindowsSymlinkSetting } from '../../../components/settings/WindowsSymlinkSetting.component';
+import { TrayAvailabilityNotice } from '../../../components/trayAvailabilityNotice.component';
+import { useTrayAvailability } from '../../../hooks/useTrayAvailability';
 import { SettingsPanelSection } from './settingsPanelSection.component';
 
 type Translate = (key: string) => string;
@@ -19,46 +21,62 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
     t,
     preferences,
     onPreferencesChange,
-}) => (
-    <SettingsPanelSection active={active} className=" ">
-        <div className="flex flex-col gap-4">
-            <div>
-                <h1 data-testid="projectsSettingsHeader" className="font-bold">
-                    {t('behavior.projects.title')}
-                </h1>
-                <p data-testid="projectsSettingsSubHeader" className="text-sm">
-                    {t('behavior.projects.description')}
-                </p>
-            </div>
-            <div className=" flex flex-col gap-8">
-                <label className="flex flex-row items-start gap-4">
-                    <input
-                        type="checkbox"
-                        className="checkbox"
-                        data-testid="chkConfirmProjectRemoveCheckbox"
-                        checked={preferences?.confirm_project_remove}
-                        onChange={(event) => {
-                            if (preferences) {
-                                onPreferencesChange({
-                                    ...preferences,
-                                    confirm_project_remove:
-                                        event.target.checked,
-                                });
-                            }
-                        }}
-                    />
-                    <span className="">
-                        {t('behavior.projects.confirmRemove')}
-                    </span>
-                </label>
-            </div>
-        </div>
-        <div className="divider"></div>
+}) => {
+    const trayAvailability = useTrayAvailability(active);
 
-        <ProjectLaunchAction />
-        <WindowsSymlinkSetting />
+    return (
+        <SettingsPanelSection active={active} className=" ">
+            <div className="flex flex-col gap-4">
+                <div>
+                    <h1
+                        data-testid="projectsSettingsHeader"
+                        className="font-bold"
+                    >
+                        {t('behavior.projects.title')}
+                    </h1>
+                    <p
+                        data-testid="projectsSettingsSubHeader"
+                        className="text-sm"
+                    >
+                        {t('behavior.projects.description')}
+                    </p>
+                </div>
+                <div className=" flex flex-col gap-8">
+                    <label className="flex flex-row items-start gap-4">
+                        <input
+                            type="checkbox"
+                            className="checkbox"
+                            data-testid="chkConfirmProjectRemoveCheckbox"
+                            checked={preferences?.confirm_project_remove}
+                            onChange={(event) => {
+                                if (preferences) {
+                                    onPreferencesChange({
+                                        ...preferences,
+                                        confirm_project_remove:
+                                            event.target.checked,
+                                    });
+                                }
+                            }}
+                        />
+                        <span className="">
+                            {t('behavior.projects.confirmRemove')}
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div className="divider"></div>
 
-        <div className="divider"></div>
-        <AutoStartSetting />
-    </SettingsPanelSection>
-);
+            <TrayAvailabilityNotice
+                available={trayAvailability}
+                message={t('behavior.trayAvailability.warning')}
+                details={[t('behavior.trayAvailability.closeFallback')]}
+            />
+
+            <ProjectLaunchAction />
+            <WindowsSymlinkSetting />
+
+            <div className="divider"></div>
+            <AutoStartSetting />
+        </SettingsPanelSection>
+    );
+};

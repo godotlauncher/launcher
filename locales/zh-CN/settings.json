@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "无法确认此会话是否支持系统托盘。Godot Launcher 将保持可见或退出，而不会隐藏。",
+            "closeFallback": "关闭到系统托盘时，启动器将保持可见。"
+        },
         "projects": {
             "title": "项目",
             "description": "选择 Godot 启动器 对项目的行为。",
@@ -26,14 +30,14 @@
         },
         "autoStart": {
             "title": "启动偏好",
-            "description": "选择计算机启动时 GD Launcher 的行为",
+            "description": "选择计算机启动时 Godot Launcher 的行为",
             "linuxWarning": "当前在 Linux 上不支持自动启动",
             "startOnBoot": "随系统启动时启动。",
             "startInTray": "启动时最小化到托盘。"
         },
         "projectLaunch": {
             "title": "项目启动动作",
-            "description": "启动项目后选择 GD Launcher 的行为",
+            "description": "启动项目后选择 Godot Launcher 的行为",
             "none": "无",
             "minimize": "最小化",
             "closeToTray": "关闭到系统托盘"
@@ -158,7 +162,7 @@
     },
     "updates": {
         "title": "更新",
-        "description": "配置 GD Launcher 如何检查更新",
+        "description": "配置 Godot Launcher 如何检查更新",
         "autoCheck": "自动检查更新",
         "betaChannel": "接收 Beta 更新",
         "betaChannelDescription": "从 GitHub 下载预发布版本；这些版本可能不如正式发布稳定。",

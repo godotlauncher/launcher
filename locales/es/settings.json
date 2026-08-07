@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "No se pudo confirmar la compatibilidad con la bandeja del sistema para esta sesión. Godot Launcher permanecerá visible o se cerrará en lugar de ocultarse.",
+            "closeFallback": "Cerrar en la bandeja del sistema dejará el lanzador visible."
+        },
         "projects": {
             "title": "Proyectos",
             "description": "Elige el comportamiento de Godot Launcher para los proyectos.",
@@ -26,14 +30,14 @@
         },
         "autoStart": {
             "title": "Preferencia de inicio",
-            "description": "Elige qué hace GD Launcher cuando tu ordenador se inicia",
+            "description": "Elige qué hace Godot Launcher cuando tu ordenador se inicia",
             "linuxWarning": "El inicio automático actualmente no es compatible con Linux",
             "startOnBoot": "Iniciar cuando el ordenador se inicia.",
             "startInTray": "Iniciar en la bandeja del sistema."
         },
         "projectLaunch": {
             "title": "Acción al iniciar proyecto",
-            "description": "Elige qué hace GD Launcher después de iniciar un proyecto",
+            "description": "Elige qué hace Godot Launcher después de iniciar un proyecto",
             "none": "Nada",
             "minimize": "Minimizar",
             "closeToTray": "Cerrar a la bandeja del sistema"
@@ -158,7 +162,7 @@
     },
     "updates": {
         "title": "Actualizaciones",
-        "description": "Configura cómo GD Launcher busca actualizaciones",
+        "description": "Configura cómo Godot Launcher busca actualizaciones",
         "autoCheck": "Buscar actualizaciones automáticamente",
         "betaChannel": "Recibir actualizaciones beta",
         "betaChannelDescription": "Descarga compilaciones preliminares desde GitHub; podrían ser menos estables que los lanzamientos oficiales.",

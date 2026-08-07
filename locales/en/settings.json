@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "System tray support could not be confirmed for this session. Godot Launcher will remain visible or quit instead of hiding.",
+            "closeFallback": "Close to system tray will leave the launcher visible."
+        },
         "projects": {
             "title": "Projects",
             "description": "Choose Godot Launcher behavior for projects.",
@@ -26,14 +30,14 @@
         },
         "autoStart": {
             "title": "Startup Preference",
-            "description": "Choose what GD Launcher does when your computer starts",
+            "description": "Choose how Godot Launcher behaves when your computer starts.",
             "linuxWarning": "Auto start currently is not supported on Linux",
             "startOnBoot": "Start when computer starts.",
             "startInTray": "Start in tray."
         },
         "projectLaunch": {
             "title": "Project Launch Action",
-            "description": "Choose what GD Launcher does after launching a project",
+            "description": "Choose how Godot Launcher behaves after launching a project.",
             "none": "Nothing",
             "minimize": "Minimize",
             "closeToTray": "Close to system tray"
@@ -158,7 +162,7 @@
     },
     "updates": {
         "title": "Updates",
-        "description": "Configure how GD Launcher checks for updates",
+        "description": "Configure how Godot Launcher checks for updates",
         "autoCheck": "Automatically check for updates",
         "betaChannel": "Receive beta updates",
         "betaChannelDescription": "Download prerelease builds from GitHub; these may be less stable than official releases.",

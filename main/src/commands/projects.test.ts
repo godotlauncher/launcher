@@ -199,7 +199,15 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
     rescanIntegration: ReturnType<typeof vi.fn>;
 };
 
-let windowMock: { webContents: unknown };
+const trayAvailabilityService = {
+    isAvailable: vi.fn(async () => true),
+};
+
+let windowMock: {
+    webContents: unknown;
+    hide: ReturnType<typeof vi.fn>;
+    minimize: ReturnType<typeof vi.fn>;
+};
 
 function createProjectDetails(
     overrides: Partial<ProjectDetails> = {},
@@ -243,10 +251,11 @@ describe('launchProject', () => {
         windowMock = {
             webContents: {},
             minimize: vi.fn(),
-            close: vi.fn(),
-        } as unknown as { webContents: unknown };
+            hide: vi.fn(),
+        };
         getMainWindow.mockReturnValue(windowMock);
         getUserPreferences.mockResolvedValue({ post_launch_action: 'none' });
+        trayAvailabilityService.isAvailable.mockResolvedValue(true);
         storeProjectsList.mockImplementation(
             async (_path, projects, _options) => projects,
         );
@@ -308,8 +317,13 @@ describe('launchProject', () => {
             version: 'v1',
         });
 
-        await launchProject(project, codeEditorIntegrationService);
+        await launchProject(
+            project,
+            codeEditorIntegrationService,
+            trayAvailabilityService as never,
+        );
 
+        expect(trayAvailabilityService.isAvailable).not.toHaveBeenCalled();
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/projects/demo',
             expect.objectContaining({
@@ -340,7 +354,11 @@ describe('launchProject', () => {
         );
 
         await expect(
-            launchProject(project, codeEditorIntegrationService),
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
         ).resolves.toEqual({ launched: true });
 
         expect(childProcessMocks.spawn).toHaveBeenCalled();
@@ -365,7 +383,11 @@ describe('launchProject', () => {
         });
 
         await expect(
-            launchProject(project, codeEditorIntegrationService),
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
         ).resolves.toEqual({
             launched: false,
             reason: 'code_editor_unavailable',
@@ -376,6 +398,7 @@ describe('launchProject', () => {
             },
         });
 
+        expect(trayAvailabilityService.isAvailable).not.toHaveBeenCalled();
         expect(getProjectsSnapshot).not.toHaveBeenCalled();
         expect(storeProjectsList).not.toHaveBeenCalled();
         expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
@@ -390,14 +413,56 @@ describe('launchProject', () => {
         });
 
         await expect(
-            launchProject(project, codeEditorIntegrationService, {
-                allowMissingCodeEditor: true,
-            }),
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+                {
+                    allowMissingCodeEditor: true,
+                },
+            ),
         ).resolves.toEqual({ launched: true });
 
         expect(integrationMocks.rescanIntegration).not.toHaveBeenCalled();
         expect(childProcessMocks.spawn).toHaveBeenCalled();
     });
+
+    it.each([
+        {
+            available: true,
+            shouldHide: true,
+        },
+        {
+            available: false,
+            shouldHide: false,
+        },
+    ])(
+        'applies close-to-tray only when availability is $available',
+        async ({ available, shouldHide }) => {
+            const project = createProjectDetails();
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getUserPreferences.mockResolvedValue({
+                post_launch_action: 'close_to_tray',
+            });
+            trayAvailabilityService.isAvailable.mockResolvedValue(available);
+
+            await launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            );
+
+            expect(trayAvailabilityService.isAvailable).toHaveBeenCalledOnce();
+            if (shouldHide) {
+                expect(windowMock.hide).toHaveBeenCalledOnce();
+            } else {
+                expect(windowMock.hide).not.toHaveBeenCalled();
+            }
+        },
+    );
 });
 
 describe('removeProject', () => {

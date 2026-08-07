@@ -19,6 +19,7 @@ import {
     SUPPORTED_LOCALES,
 } from './i18n/config.js';
 import { getLocalesPath } from './pathResolver.js';
+import { TrayAvailabilityService } from './services/tray-availability.service.js';
 
 @Module({
     imports: [
@@ -44,6 +45,6 @@ import { getLocalesPath } from './pathResolver.js';
                 }) satisfies I18nModuleOptions,
         }),
     ],
-    providers: [AppController, AppLifecycleService],
+    providers: [AppController, AppLifecycleService, TrayAvailabilityService],
 })
 export class AppModule {}

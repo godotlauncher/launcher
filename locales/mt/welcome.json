@@ -42,6 +42,9 @@
         "settingsTab": "Ippersonalizza l-esperjenza tiegħek kif trid fit-tab <strong>Settings</strong>."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "L-appoġġ għat-trej tas-sistema ma setax jiġi kkonfermat għal din is-sessjoni. Godot Launcher se jibqa' viżibbli jew jagħlaq minflok jinħeba.",
+        "trayCloseFallback": "L-għeluq fit-trej tas-sistema se jħalli l-launcher viżibbli.",
+        "trayStartFallback": "Il-bidu fit-trej se jiftaħ il-launcher b'mod normali.",
         "afterLaunching": "Wara li Tibda Proġett",
         "nothing": "Xejn",
         "minimize": "Imminimizza",

@@ -33,6 +33,8 @@ import { configureI18n } from './i18n/index.js';
 import { setMainWindow } from './mainWindow.js';
 import { getAppIconPath } from './pathResolver.js';
 import { isCacheStale, refreshToolCache } from './services/toolCache.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { ensurePreferencesStorage } from './utils/prefs.utils.js';
 import { ipcWebContentsSend } from './utils.js';
@@ -49,6 +51,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly windowManager: WindowManagerService,
         private readonly i18nService: I18nService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
 
     onModuleInit(): void {
@@ -106,6 +109,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
                 const result = await launchProject(
                     project,
                     this.codeEditorIntegrationService,
+                    this.trayAvailabilityService,
                 );
                 if (!result.launched) {
                     this.showMainWindow();
@@ -151,7 +155,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         app.on('before-quit', this.handleBeforeQuit);
         mainWindow.on('closed', this.disposeWindowResources);
 
-        this.applyInitialVisibility(prefs.start_in_tray);
+        await this.applyInitialVisibility(prefs.start_in_tray);
     }
 
     revealInitialWindow(): void {
@@ -187,8 +191,17 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
-        logger.debug('Hiding window');
-        this.hideDockIcon();
+        const hideOnClose = await this.trayAvailabilityService.isAvailable();
+        this.electronAppService.setHideOnClose(hideOnClose);
+
+        if (hideOnClose) {
+            logger.debug('Hiding window');
+            this.hideDockIcon();
+        } else {
+            logger.info(
+                'System tray is unavailable; quitting when the main window closes',
+            );
+        }
     }
 
     @OnMainWindowShow({ order: LifecycleHookOrder.After })
@@ -254,10 +267,17 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         });
     }
 
-    private applyInitialVisibility(startInTray: boolean): void {
+    private async applyInitialVisibility(startInTray: boolean): Promise<void> {
         if (this.config.startHidden) {
-            logger.debug('Hiding window on launch with --hidden');
-            this.hideMainWindow();
+            if (await this.trayAvailabilityService.isAvailable()) {
+                logger.debug('Hiding window on launch with --hidden');
+                this.hideMainWindow();
+            } else {
+                logger.info(
+                    'Ignoring --hidden because the Linux system tray is unavailable',
+                );
+                this.revealMainWindowOnRendererReady = true;
+            }
             return;
         }
 

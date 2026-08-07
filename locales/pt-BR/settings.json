@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Não foi possível confirmar o suporte à bandeja do sistema nesta sessão. O Godot Launcher permanecerá visível ou será encerrado em vez de ficar oculto.",
+            "closeFallback": "Fechar na bandeja do sistema deixará o launcher visível."
+        },
         "projects": {
             "title": "Projetos",
             "description": "Escolha como o Godot Launcher deve se comportar com os projetos.",

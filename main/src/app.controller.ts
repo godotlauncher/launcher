@@ -81,6 +81,8 @@ import {
 import { getCurrentAppConfig } from './config/index.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 import { getCachedTools, refreshToolCache } from './services/toolCache.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
@@ -97,6 +99,7 @@ export class AppController implements AppBridge {
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
     @AppHandler('getUserPreferences')
     getUserPreferences() {
@@ -340,6 +343,7 @@ export class AppController implements AppBridge {
         return launchProject(
             project,
             this.codeEditorIntegrationService,
+            this.trayAvailabilityService,
             options,
         );
     }
@@ -376,6 +380,11 @@ export class AppController implements AppBridge {
         return getCurrentAppConfig().docsScreenshots
             ? 'win32'
             : process.platform;
+    }
+
+    @AppHandler('getTrayAvailability')
+    getTrayAvailability() {
+        return this.trayAvailabilityService.isAvailable();
     }
 
     @AppHandler('getAppVersion')

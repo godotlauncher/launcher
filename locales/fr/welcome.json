@@ -42,6 +42,9 @@
         "settingsTab": "Personnalisez votre expérience comme vous le souhaitez dans l'onglet <strong>Paramètres</strong>."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "La prise en charge de la zone de notification n'a pas pu être confirmée pour cette session. Godot Launcher restera visible ou se fermera au lieu d'être masqué.",
+        "trayCloseFallback": "Fermer dans la zone de notification laissera le lanceur visible.",
+        "trayStartFallback": "Démarrer dans la zone de notification ouvrira le lanceur normalement.",
         "afterLaunching": "Après le lancement d'un projet",
         "nothing": "Rien",
         "minimize": "Réduire",

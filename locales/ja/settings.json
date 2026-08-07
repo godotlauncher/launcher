@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "このセッションではシステムトレイのサポートを確認できませんでした。Godot Launcher は非表示にならず、表示されたままになるか終了します。",
+            "closeFallback": "システムトレイに閉じても、ランチャーは表示されたままになります。"
+        },
         "projects": {
             "title": "プロジェクト",
             "description": "プロジェクトに対するGodot Launcherの動作を選択します。",
@@ -26,14 +30,14 @@
         },
         "autoStart": {
             "title": "起動設定",
-            "description": "コンピュータ起動時のGD Launcherの動作を選択",
+            "description": "コンピュータ起動時のGodot Launcherの動作を選択",
             "linuxWarning": "Linuxでは現在、自動起動はサポートされていません",
             "startOnBoot": "コンピュータの起動時に起動する。",
             "startInTray": "トレイに起動する。"
         },
         "projectLaunch": {
             "title": "プロジェクト起動時の動作",
-            "description": "プロジェクト起動後のGD Launcherの動作を選択",
+            "description": "プロジェクト起動後のGodot Launcherの動作を選択",
             "none": "何もしない",
             "minimize": "最小化",
             "closeToTray": "システムトレイに閉じる"
@@ -158,7 +162,7 @@
     },
     "updates": {
         "title": "アップデート",
-        "description": "GD Launcherがアップデートを確認する方法を設定",
+        "description": "Godot Launcherがアップデートを確認する方法を設定",
         "autoCheck": "自動的にアップデートを確認",
         "betaChannel": "ベータ版アップデートを受け取る",
         "betaChannelDescription": "GitHubからプレリリース版をダウンロードします。正式リリースより安定性が低い可能性があります。",

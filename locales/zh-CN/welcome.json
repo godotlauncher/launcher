@@ -42,6 +42,9 @@
         "settingsTab": "在 <strong>设置</strong> 选项卡中按您的喜好定制体验。"
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "无法确认此会话是否支持系统托盘。Godot Launcher 将保持可见或退出，而不会隐藏。",
+        "trayCloseFallback": "关闭到系统托盘时，启动器将保持可见。",
+        "trayStartFallback": "在托盘中启动时，启动器将正常打开。",
         "afterLaunching": "启动项目后",
         "nothing": "不做任何事",
         "minimize": "最小化",
