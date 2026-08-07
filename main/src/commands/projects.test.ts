@@ -131,6 +131,7 @@ vi.mock('electron', () => ({
         whenReady: vi.fn(),
         quit: vi.fn(),
         requestSingleInstanceLock: vi.fn(() => true),
+        setActivationPolicy: vi.fn(),
         dock: {
             show: vi.fn(),
             hide: vi.fn(),

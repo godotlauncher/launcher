@@ -69,6 +69,7 @@ export default (<Configuration>{
     },
     linux: {
         icon: 'build-resources/linux/icon.png',
+        syncDesktopName: true,
         packageCategory: 'devel',
         category: 'Development',
 
