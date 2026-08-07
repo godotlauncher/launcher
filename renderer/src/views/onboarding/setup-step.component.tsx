@@ -139,7 +139,6 @@ export const SetupStep: React.FC<SetupStepProps> = ({
                         }}
                         disabled={pending}
                         showDivider={false}
-                        compact
                     />
                 </div>
             ) : (

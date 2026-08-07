@@ -109,14 +109,14 @@ export const PreferencesStep: React.FC<PreferencesStepProps> = ({
 
             {!trayConfirmed && (
                 <div
-                    className="alert alert-warning items-start py-3 text-sm"
+                    className="alert alert-warning flex flex-row items-start gap-2 py-3 text-sm"
                     role="status"
                 >
                     <TriangleAlert
                         className="mt-0.5 size-5 shrink-0"
                         aria-hidden="true"
                     />
-                    <span>
+                    <span className="min-w-0">
                         {t('welcome:onboarding.preferences.trayUnavailable')}
                     </span>
                 </div>

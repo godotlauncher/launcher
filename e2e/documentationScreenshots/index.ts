@@ -1,10 +1,16 @@
 import { HELP_SCREENSHOTS } from './screenshots.help';
 import { INSTALLS_SCREENSHOTS } from './screenshots.installs';
+import { ONBOARDING_SCREENSHOTS } from './screenshots.onboarding';
 import { PROJECT_SCREENSHOTS } from './screenshots.projects';
 import { SETTINGS_SCREENSHOTS } from './screenshots.settings';
 import type { ScreenshotConfig } from './types';
 
 export const SCREENSHOT_GROUPS = [
+    {
+        name: 'onboarding',
+        timeout: 120000,
+        screenshots: ONBOARDING_SCREENSHOTS,
+    },
     {
         name: 'projects',
         timeout: 180000,
@@ -32,6 +38,7 @@ export const SCREENSHOT_GROUPS = [
 }[];
 
 export const SCREENSHOTS: ScreenshotConfig[] = [
+    ...ONBOARDING_SCREENSHOTS,
     ...PROJECT_SCREENSHOTS,
     ...INSTALLS_SCREENSHOTS,
     ...SETTINGS_SCREENSHOTS,

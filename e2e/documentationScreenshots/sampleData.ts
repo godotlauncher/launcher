@@ -266,7 +266,6 @@ export const SAMPLE_PREFS: UserPreferences = {
     confirm_project_remove: true,
     first_run: false,
     windows_enable_symlinks: true,
-    windows_symlink_win_notify: true,
     language: 'system',
 };
 

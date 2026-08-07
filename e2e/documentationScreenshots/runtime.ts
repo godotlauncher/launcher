@@ -33,6 +33,8 @@ import {
 import type {
     CachedTool,
     ElectronPage,
+    OnboardingScreenshotPlatform,
+    OnboardingScreenshotStep,
     StubbedAppDataOptions,
     ThemeConfig,
     UpdateScreenshotState,
@@ -500,6 +502,102 @@ export async function prepareAppWithStubbedData(
         timeout: 15000,
     });
     await setScreenshotViewport(page);
+}
+
+const ONBOARDING_SCREENSHOT_PATHS: Record<
+    OnboardingScreenshotPlatform,
+    { projectsLocation: string; editorLocation: string }
+> = {
+    win32: {
+        projectsLocation: 'C:\\Users\\docs\\Godot\\Projects',
+        editorLocation: 'C:\\Users\\docs\\Godot\\Editors',
+    },
+    darwin: {
+        projectsLocation: '/Users/docs/Godot/Projects',
+        editorLocation: '/Users/docs/Godot/Editors',
+    },
+    linux: {
+        projectsLocation: '/home/docs/Godot/Projects',
+        editorLocation: '/home/docs/Godot/Editors',
+    },
+};
+
+export async function prepareOnboardingScreenshot(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    platform: OnboardingScreenshotPlatform,
+    step: OnboardingScreenshotStep,
+    trayAvailable = true,
+) {
+    const locations = ONBOARDING_SCREENSHOT_PATHS[platform];
+    const preferences = createPreferences({
+        first_run: true,
+        projects_location: locations.projectsLocation,
+        install_location: locations.editorLocation,
+        windows_enable_symlinks: false,
+        language: 'en',
+    });
+
+    await stubCodeEditorIntegrationSettings(electronApp, [
+        {
+            ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            isDefault: true,
+        },
+    ]);
+    await stubAppData(
+        electronApp,
+        preferences,
+        SAMPLE_PROJECTS,
+        SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+        SAMPLE_AVAILABLE_RELEASES,
+        SAMPLE_AVAILABLE_PRERELEASES,
+    );
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injected: {
+                platform: OnboardingScreenshotPlatform;
+                locations: {
+                    projectsLocation: string;
+                    editorLocation: string;
+                };
+                trayAvailable: boolean;
+            },
+        ) => {
+            const ipcSuccess = <Data>(data: Data) => ({
+                success: true as const,
+                data,
+            });
+            const handlers = {
+                getPlatform: async () => ipcSuccess(injected.platform),
+                getOnboardingRecommendedLocations: async () =>
+                    ipcSuccess(injected.locations),
+                getTrayAvailability: async () =>
+                    ipcSuccess(injected.trayAvailable),
+            };
+
+            for (const [method, handler] of Object.entries(handlers)) {
+                const channel = `app.${method}`;
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, handler);
+            }
+        },
+        { platform, locations, trayAvailable },
+    );
+    await page.evaluate((onboardingStep) => {
+        localStorage.setItem(
+            'godot-launcher.onboarding.step',
+            onboardingStep,
+        );
+    }, step);
+    await reloadScreenshotPage(page);
+    await expect(page.getByTestId('onboarding-step-heading')).toBeVisible({
+        timeout: 15000,
+    });
+    await page.waitForTimeout(500);
+    await page.locator('main').evaluate((element) => {
+        element.scrollTo({ top: 0, left: 0 });
+    });
 }
 
 export async function reloadScreenshotPage(page: ElectronPage) {
