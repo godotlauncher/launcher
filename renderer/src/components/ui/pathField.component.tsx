@@ -21,6 +21,7 @@ export type PathFieldProps = {
     compact?: boolean;
     browseKind?: PathFieldBrowseKind;
     browseLabel?: string;
+    browseText?: string;
 };
 
 export const PathField: React.FC<PathFieldProps> = ({
@@ -38,6 +39,7 @@ export const PathField: React.FC<PathFieldProps> = ({
     compact = false,
     browseKind = 'file',
     browseLabel = `${label} browse`,
+    browseText,
 }) => {
     const BrowseIcon = browseKind === 'directory' ? Folder : File;
 
@@ -94,6 +96,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                     aria-label={browseLabel}
                 >
                     <BrowseIcon size={18} aria-hidden="true" />
+                    {browseText && <span>{browseText}</span>}
                 </button>
             </div>
         </FormField>

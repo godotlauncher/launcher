@@ -4,6 +4,7 @@ import { LauncherAppMigrationStore } from './app-migration.store.js';
 import { ClearReleaseCacheMigration } from './migrations/clear-release-cache.migration.js';
 import { MigrateCodeEditorPreferencesMigration } from './migrations/code-editor-preferences.migration.js';
 import { MigrateCodeEditorProjectsMigration } from './migrations/code-editor-projects.migration.js';
+import { RemoveWindowsSymlinkNoticePreferenceMigration } from './migrations/remove-windows-symlink-notice-preference.migration.js';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { MigrateCodeEditorProjectsMigration } from './migrations/code-editor-pro
         ClearReleaseCacheMigration,
         MigrateCodeEditorPreferencesMigration,
         MigrateCodeEditorProjectsMigration,
+        RemoveWindowsSymlinkNoticePreferenceMigration,
     ],
 })
 export class AppMigrationsModule {}

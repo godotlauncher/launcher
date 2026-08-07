@@ -21,6 +21,7 @@ import { getDefaultDirs } from './platform.utils.js';
 
 export type StoredUserPreferences = Partial<UserPreferences> & {
     vs_code_path?: string;
+    windows_symlink_win_notify?: boolean;
 };
 
 export type UserPreferencesSnapshot = {
@@ -133,7 +134,6 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         confirm_project_remove: true,
         first_run: true,
         windows_enable_symlinks: false,
-        windows_symlink_win_notify: platform !== 'win32',
         language: 'system', // Default to system language detection
     };
 }
@@ -178,7 +178,7 @@ export async function readPrefsSnapshotFromDisk(
 
 export async function writePrefsToDisk(
     prefsPath: string,
-    prefs: UserPreferences,
+    prefs: StoredUserPreferences,
 ): Promise<void> {
     const store = ensurePrefsStore(prefsPath);
     await store.write(clonePrefs(prefs));

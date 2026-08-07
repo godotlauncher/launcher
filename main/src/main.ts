@@ -75,11 +75,9 @@ Menu.setApplicationMenu(null);
 let diApp: Application | undefined;
 
 async function bootstrap(): Promise<void> {
-    if (!appConfig.startHidden && !appConfig.docsScreenshots) {
-        showSplashscreen();
-    }
-
     const applicationPromise = createElectronApplication(AppModule, {
+        appName: appConfig.appName,
+        desktopName: 'org.godotlauncher.launcher.desktop',
         instanceMode: appConfig.isDev ? 'multi' : 'single',
         hideOnClose: true,
         logger: ['error', 'warn'],
@@ -100,6 +98,10 @@ async function bootstrap(): Promise<void> {
             },
         },
     });
+
+    if (!appConfig.startHidden && !appConfig.docsScreenshots) {
+        showSplashscreen();
+    }
 
     try {
         const result = await applicationPromise;

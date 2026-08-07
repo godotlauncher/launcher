@@ -417,7 +417,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         />
                         <AppearanceSettingsPanel
                             active={activeTab === 'appearance'}
-                            t={t}
                             theme={theme}
                             onThemeChange={setTheme}
                         />

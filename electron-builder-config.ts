@@ -1,13 +1,22 @@
 /** biome-ignore-all lint/suspicious/noTemplateCurlyInString: used by electron-builder */
+
+import { copyFile, mkdir } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import { config } from 'dotenv';
 import { expand } from 'dotenv-expand';
-import type { Configuration } from 'electron-builder';
+import type { AfterPackContext, Configuration } from 'electron-builder';
 
 // load .env
 expand(config());
 
 const currentYear = new Date().getFullYear();
 
+const linuxMetainfoFileName = 'org.godotlauncher.launcher.metainfo.xml';
+const linuxMetainfoSource = `build-resources/linux/${linuxMetainfoFileName}`;
+const linuxMetainfoRelativePath = `usr/share/metainfo/${linuxMetainfoFileName}`;
+const linuxMetainfoPackagePath = `/${linuxMetainfoRelativePath}`;
+const linuxMetainfoMapping = `${linuxMetainfoSource}=${linuxMetainfoPackagePath}`;
+const bundledLinuxMetainfoPath = `/opt/Godot Launcher/${linuxMetainfoRelativePath}`;
 const { version } = require('./package.json');
 const isPrerelease =
     version.includes('beta') ||
@@ -33,6 +42,21 @@ export default (<Configuration>{
     executableName: 'Godot Launcher',
 
     files: ['dist-electron', 'dist-react'],
+    afterPack: async ({
+        appOutDir,
+        electronPlatformName,
+    }: AfterPackContext) => {
+        if (electronPlatformName !== 'linux') {
+            return;
+        }
+
+        const destination = join(
+            appOutDir,
+            ...linuxMetainfoRelativePath.split('/'),
+        );
+        await mkdir(dirname(destination), { recursive: true });
+        await copyFile(linuxMetainfoSource, destination);
+    },
     extraResources: [
         {
             from: 'main/assets',
@@ -69,6 +93,7 @@ export default (<Configuration>{
     },
     linux: {
         icon: 'build-resources/linux/icon.png',
+        syncDesktopName: true,
         packageCategory: 'devel',
         category: 'Development',
 
@@ -90,10 +115,20 @@ export default (<Configuration>{
         ],
     },
     deb: {
-        fpm: ['--license=MIT'],
+        fpm: [
+            '--license=MIT',
+            '--exclude',
+            bundledLinuxMetainfoPath,
+            linuxMetainfoMapping,
+        ],
     },
     rpm: {
-        fpm: ['--license=MIT'],
+        fpm: [
+            '--license=MIT',
+            '--exclude',
+            bundledLinuxMetainfoPath,
+            linuxMetainfoMapping,
+        ],
     },
     win: {
         icon: 'build-resources/win/icon.ico',

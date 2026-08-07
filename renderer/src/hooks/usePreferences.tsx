@@ -11,9 +11,11 @@ import { appBridge } from '../bridge.ts';
 
 interface AppPreferences {
     preferences: UserPreferences | null;
-    savePreferences: (preferences: UserPreferences) => void;
+    savePreferences: (preferences: UserPreferences) => Promise<UserPreferences>;
     loadPreferences: () => Promise<UserPreferences>;
-    updatePreferences: (preferences: Partial<UserPreferences>) => void;
+    updatePreferences: (
+        preferences: Partial<UserPreferences>,
+    ) => Promise<UserPreferences>;
     setAutoStart: (
         autoStart: boolean,
         hidden: boolean,
@@ -68,7 +70,7 @@ export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
     const updatePreferences = useCallback(
         async (newPrefs: Partial<UserPreferences>) => {
             const prefs = { ...preferences, ...newPrefs } as UserPreferences;
-            savePreferences(prefs).then(setPreferences);
+            return savePreferences(prefs);
         },
         [preferences, savePreferences],
     );

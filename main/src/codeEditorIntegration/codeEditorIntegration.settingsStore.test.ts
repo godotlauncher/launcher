@@ -26,7 +26,6 @@ function createPreferences(
         confirm_project_remove: true,
         first_run: false,
         windows_enable_symlinks: false,
-        windows_symlink_win_notify: false,
         ...overrides,
     };
 }
@@ -59,6 +58,33 @@ describe('CodeEditorIntegrationSettingsStore', () => {
                     enabled: false,
                     executable_path: 'custom/code',
                     is_default: true,
+                },
+            },
+        });
+    });
+
+    it('clears the default integration without changing its other settings', async () => {
+        const preferences = createPreferences({
+            code_editor_integrations: {
+                vscode: {
+                    enabled: true,
+                    executable_path: 'custom/code',
+                    is_default: true,
+                },
+            },
+        });
+        preferenceMocks.getUserPreferences.mockResolvedValue(preferences);
+        const store = new CodeEditorIntegrationSettingsStore();
+
+        await store.setDefaultIntegrationId(null);
+
+        expect(preferenceMocks.setUserPreferences).toHaveBeenCalledWith({
+            ...preferences,
+            code_editor_integrations: {
+                vscode: {
+                    enabled: true,
+                    executable_path: 'custom/code',
+                    is_default: false,
                 },
             },
         });

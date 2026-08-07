@@ -50,7 +50,7 @@ export class CodeEditorIntegrationController
 
     @CodeEditorIntegrationHandler('setDefaultIntegration')
     setDefaultIntegration(
-        integrationId: CodeEditorId,
+        integrationId: CodeEditorId | null,
     ): Promise<CodeEditorIntegrationSettings[]> {
         return this.codeEditorIntegrationService.setDefaultIntegration(
             integrationId,

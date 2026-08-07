@@ -221,7 +221,6 @@ suite('prefs.util', (_test) => {
                 windows_enable_symlinks: false,
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
-                windows_symlink_win_notify: false,
                 language: 'system',
             });
         });
@@ -266,7 +265,6 @@ suite('prefs.util', (_test) => {
                 windows_enable_symlinks: false,
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
-                windows_symlink_win_notify: true,
                 language: 'system',
             });
         });

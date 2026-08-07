@@ -18,11 +18,13 @@ import {
 } from './migrations/clear-release-cache.migration.js';
 import { MIGRATE_CODE_EDITOR_PREFERENCES_ID } from './migrations/code-editor-preferences.migration.js';
 import { MIGRATE_CODE_EDITOR_PROJECTS_ID } from './migrations/code-editor-projects.migration.js';
+import { REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID } from './migrations/remove-windows-symlink-notice-preference.migration.js';
 
 const operationMocks = vi.hoisted(() => ({
     clearReleaseCaches: vi.fn(),
     migrateCodeEditorPreferences: vi.fn(),
     migrateCodeEditorProjects: vi.fn(),
+    removeWindowsSymlinkNoticePreference: vi.fn(),
 }));
 const electronMocks = vi.hoisted(() => ({
     getVersion: vi.fn(() => '1.12.0'),
@@ -39,6 +41,16 @@ vi.mock('../commands/releases.js', () => ({
 vi.mock('./code-editor-persistence.util.js', () => ({
     migrateCodeEditorPreferences: operationMocks.migrateCodeEditorPreferences,
     migrateCodeEditorProjects: operationMocks.migrateCodeEditorProjects,
+}));
+
+vi.mock('../utils/prefs.utils.js', () => ({
+    getDefaultPrefs: vi.fn(async () => ({})),
+    getPrefsPath: vi.fn(async () => '/config/preferences.json'),
+    readPrefsSnapshotFromDisk: vi.fn(async () => ({
+        stored: { windows_symlink_win_notify: false },
+        merged: {},
+    })),
+    writePrefsToDisk: operationMocks.removeWindowsSymlinkNoticePreference,
 }));
 
 vi.mock('electron-log', () => ({
@@ -63,6 +75,9 @@ describe('AppMigrationsModule', () => {
             undefined,
         );
         operationMocks.migrateCodeEditorProjects.mockResolvedValue(undefined);
+        operationMocks.removeWindowsSymlinkNoticePreference.mockResolvedValue(
+            undefined,
+        );
     });
 
     afterEach(() => {
@@ -84,14 +99,25 @@ describe('AppMigrationsModule', () => {
                 order.push('projects');
             },
         );
+        operationMocks.removeWindowsSymlinkNoticePreference.mockImplementation(
+            async () => {
+                order.push('remove-symlink-notice');
+            },
+        );
 
         await bootstrapMigrations(statePath);
 
-        expect(order).toEqual(['release-cache', 'preferences', 'projects']);
+        expect(order).toEqual([
+            'release-cache',
+            'preferences',
+            'projects',
+            'remove-symlink-notice',
+        ]);
         expect(readCompletedIds(statePath)).toEqual([
             CLEAR_RELEASE_CACHE_MIGRATION_ID,
             MIGRATE_CODE_EDITOR_PREFERENCES_ID,
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
+            REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
         ]);
         expect(readMigrationState(statePath)).toMatchObject({
             lastSeenVersion: '1.12.0',
@@ -106,6 +132,10 @@ describe('AppMigrationsModule', () => {
                 },
                 {
                     id: MIGRATE_CODE_EDITOR_PROJECTS_ID,
+                    launcherVersion: '1.12.0',
+                },
+                {
+                    id: REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
                     launcherVersion: '1.12.0',
                 },
             ],
@@ -129,6 +159,9 @@ describe('AppMigrationsModule', () => {
             operationMocks.migrateCodeEditorPreferences,
         ).toHaveBeenCalledOnce();
         expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledOnce();
+        expect(
+            operationMocks.removeWindowsSymlinkNoticePreference,
+        ).toHaveBeenCalledOnce();
         expect(readMigrationState(statePath)).toEqual({
             lastSeenVersion: '1.12.0',
             completed: [
@@ -140,6 +173,11 @@ describe('AppMigrationsModule', () => {
                 },
                 {
                     id: MIGRATE_CODE_EDITOR_PROJECTS_ID,
+                    executedAt: expect.any(String),
+                    launcherVersion: '1.12.0',
+                },
+                {
+                    id: REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
                     executedAt: expect.any(String),
                     launcherVersion: '1.12.0',
                 },
@@ -157,6 +195,7 @@ describe('AppMigrationsModule', () => {
         expect(readCompletedIds(statePath)).toEqual([
             CLEAR_RELEASE_CACHE_MIGRATION_ID,
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
+            REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
         ]);
 
         await bootstrapMigrations(statePath);
@@ -168,6 +207,7 @@ describe('AppMigrationsModule', () => {
         expect(readCompletedIds(statePath)).toEqual([
             CLEAR_RELEASE_CACHE_MIGRATION_ID,
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
+            REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
             MIGRATE_CODE_EDITOR_PREFERENCES_ID,
         ]);
     });

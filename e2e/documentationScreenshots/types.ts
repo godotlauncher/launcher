@@ -27,6 +27,14 @@ export type ThemeConfig = {
     colorScheme: 'dark' | 'light';
 };
 
+export type OnboardingScreenshotPlatform = 'win32' | 'darwin' | 'linux';
+
+export type OnboardingScreenshotStep =
+    | 'welcome'
+    | 'appearance'
+    | 'setup'
+    | 'preferences';
+
 export type ScreenshotConfig = {
     fileBase: string;
     description: string;
