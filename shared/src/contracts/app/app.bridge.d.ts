@@ -149,6 +149,7 @@ export type AppBridge = {
     }): Promise<CachedTool[]>;
     refreshToolCache(): Promise<CachedTool[]>;
     getPlatform(): Promise<string>;
+    getTrayAvailability(): Promise<boolean>;
     getAppVersion(): Promise<string>;
     relaunchApp(): Promise<void>;
     installUpdateAndRestart(): Promise<void>;

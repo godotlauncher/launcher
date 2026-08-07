@@ -42,6 +42,9 @@
         "settingsTab": "<strong>Ayarlar</strong> sekmesinde deneyiminizi tam olarak istediğiniz gibi özelleştirin."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "Bu oturum için sistem tepsisi desteği doğrulanamadı. Godot Launcher gizlenmek yerine görünür kalacak veya kapanacak.",
+        "trayCloseFallback": "Sistem tepsisine kapatma, başlatıcıyı görünür bırakacaktır.",
+        "trayStartFallback": "Tepside başlatma, başlatıcıyı normal şekilde açacaktır.",
         "afterLaunching": "Bir Proje Başlattıktan Sonra",
         "nothing": "Hiçbir şey",
         "minimize": "Simge durumuna küçült",

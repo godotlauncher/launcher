@@ -42,6 +42,9 @@
         "settingsTab": "<strong>設定</strong>タブで好みに合わせてカスタマイズします。"
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "このセッションではシステムトレイのサポートを確認できませんでした。Godot Launcher は非表示にならず、表示されたままになるか終了します。",
+        "trayCloseFallback": "システムトレイに閉じても、ランチャーは表示されたままになります。",
+        "trayStartFallback": "トレイで起動しても、ランチャーは通常どおり開きます。",
         "afterLaunching": "プロジェクト起動後",
         "nothing": "何もしない",
         "minimize": "最小化",

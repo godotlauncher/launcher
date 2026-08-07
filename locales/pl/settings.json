@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Nie udało się potwierdzić obsługi zasobnika systemowego w tej sesji. Godot Launcher pozostanie widoczny lub zakończy działanie zamiast się ukryć.",
+            "closeFallback": "Zamknięcie do zasobnika systemowego pozostawi launcher widoczny."
+        },
         "projects": {
             "title": "Projekty",
             "description": "Wybierz zachowanie Godot Launcher dla projektów.",

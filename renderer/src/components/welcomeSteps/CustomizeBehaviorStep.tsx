@@ -3,11 +3,14 @@ import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { usePreferences } from '../../hooks/usePreferences';
+import { useTrayAvailability } from '../../hooks/useTrayAvailability';
+import { TrayAvailabilityNotice } from '../trayAvailabilityNotice.component';
 
 export const CustomizeBehaviorStep: React.FC = () => {
     const { t } = useTranslation('welcome');
 
     const { preferences, updatePreferences, setAutoStart } = usePreferences();
+    const trayAvailability = useTrayAvailability();
 
     const setAutoCheckUpdates = async (e: ChangeEvent<HTMLInputElement>) => {
         if (preferences) {
@@ -45,6 +48,14 @@ export const CustomizeBehaviorStep: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4 text-sm">
+            <TrayAvailabilityNotice
+                available={trayAvailability}
+                message={t('customizeBehavior.trayAvailabilityWarning')}
+                details={[
+                    t('customizeBehavior.trayCloseFallback'),
+                    t('customizeBehavior.trayStartFallback'),
+                ]}
+            />
             <div className="flex flex-row gap-">
                 <div className="flex items-center gap-4">
                     <p>{t('customizeBehavior.afterLaunching')}</p>

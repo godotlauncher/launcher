@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Bu oturum için sistem tepsisi desteği doğrulanamadı. Godot Launcher gizlenmek yerine görünür kalacak veya kapanacak.",
+            "closeFallback": "Sistem tepsisine kapatma, başlatıcıyı görünür bırakacaktır."
+        },
         "projects": {
             "title": "Projeler",
             "description": "Projeler için Godot Launcher davranışını seçin.",

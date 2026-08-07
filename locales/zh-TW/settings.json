@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "無法確認此工作階段是否支援系統匣。Godot Launcher 將保持顯示或結束，而不會隱藏。",
+            "closeFallback": "關閉至系統匣時，啟動器將保持顯示。"
+        },
         "projects": {
             "title": "專案",
             "description": "選擇 Godot 啟動器在專案中的行為。",

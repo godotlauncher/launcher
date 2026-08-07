@@ -42,6 +42,9 @@
         "settingsTab": "Customize your experience just the way you like in the <strong>Settings</strong> tab."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "System tray support could not be confirmed for this session. Godot Launcher will remain visible or quit instead of hiding.",
+        "trayCloseFallback": "Close to system tray will leave the launcher visible.",
+        "trayStartFallback": "Start in tray will open the launcher normally.",
         "afterLaunching": "After Launching a Project",
         "nothing": "Nothing",
         "minimize": "Minimize",

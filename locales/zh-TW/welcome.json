@@ -42,6 +42,9 @@
         "settingsTab": "在 <strong>設定</strong> 分頁中依照喜好自訂體驗。"
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "無法確認此工作階段是否支援系統匣。Godot Launcher 將保持顯示或結束，而不會隱藏。",
+        "trayCloseFallback": "關閉至系統匣時，啟動器將保持顯示。",
+        "trayStartFallback": "在系統匣中啟動時，啟動器將正常開啟。",
         "afterLaunching": "啟動專案後",
         "nothing": "不執行任何操作",
         "minimize": "最小化",

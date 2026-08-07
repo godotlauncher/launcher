@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Die Unterstützung der Systemleiste konnte für diese Sitzung nicht bestätigt werden. Godot Launcher bleibt sichtbar oder wird beendet, anstatt ausgeblendet zu werden.",
+            "closeFallback": "Beim Schließen in die Systemleiste bleibt der Launcher sichtbar."
+        },
         "projects": {
             "title": "Projekte",
             "description": "Wählen Sie das Verhalten des Godot Launchers für Projekte.",

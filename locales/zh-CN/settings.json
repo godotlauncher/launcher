@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "无法确认此会话是否支持系统托盘。Godot Launcher 将保持可见或退出，而不会隐藏。",
+            "closeFallback": "关闭到系统托盘时，启动器将保持可见。"
+        },
         "projects": {
             "title": "项目",
             "description": "选择 Godot 启动器 对项目的行为。",

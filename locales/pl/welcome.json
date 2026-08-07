@@ -42,6 +42,9 @@
         "settingsTab": "Dostosuj swoje doświadczenie tak, jak lubisz w zakładce <strong>Ustawienia</strong>."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "Nie udało się potwierdzić obsługi zasobnika systemowego w tej sesji. Godot Launcher pozostanie widoczny lub zakończy działanie zamiast się ukryć.",
+        "trayCloseFallback": "Zamknięcie do zasobnika systemowego pozostawi launcher widoczny.",
+        "trayStartFallback": "Uruchomienie w zasobniku otworzy launcher normalnie.",
         "afterLaunching": "Po uruchomieniu projektu",
         "nothing": "Nic",
         "minimize": "Minimalizuj",

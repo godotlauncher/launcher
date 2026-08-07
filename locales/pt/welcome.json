@@ -42,6 +42,9 @@
         "settingsTab": "Personalize a experiência ao seu gosto no separador <strong>Definições</strong>."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "Não foi possível confirmar o suporte do tabuleiro do sistema nesta sessão. O Godot Launcher permanecerá visível ou será encerrado em vez de ser ocultado.",
+        "trayCloseFallback": "Fechar no tabuleiro do sistema deixará o launcher visível.",
+        "trayStartFallback": "Iniciar no tabuleiro abrirá o launcher normalmente.",
         "afterLaunching": "Após iniciar um projeto",
         "nothing": "Nada",
         "minimize": "Minimizar",

@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Non è stato possibile confermare il supporto della barra di sistema per questa sessione. Godot Launcher rimarrà visibile o si chiuderà invece di nascondersi.",
+            "closeFallback": "La chiusura nella barra di sistema lascerà visibile il launcher."
+        },
         "projects": {
             "title": "Progetti",
             "description": "Scegli come Godot Launcher gestisce i progetti.",

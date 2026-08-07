@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "L-appoġġ għat-trej tas-sistema ma setax jiġi kkonfermat għal din is-sessjoni. Godot Launcher se jibqa' viżibbli jew jagħlaq minflok jinħeba.",
+            "closeFallback": "L-għeluq fit-trej tas-sistema se jħalli l-launcher viżibbli."
+        },
         "projects": {
             "title": "Proġetti",
             "description": "Agħżel l-imġiba ta' Godot Launcher għall-proġetti.",

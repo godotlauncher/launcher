@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "Não foi possível confirmar o suporte do tabuleiro do sistema nesta sessão. O Godot Launcher permanecerá visível ou será encerrado em vez de ser ocultado.",
+            "closeFallback": "Fechar no tabuleiro do sistema deixará o launcher visível."
+        },
         "projects": {
             "title": "Projetos",
             "description": "Escolha o comportamento do Godot Launcher para os projetos.",

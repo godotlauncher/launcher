@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "System tray support could not be confirmed for this session. Godot Launcher will remain visible or quit instead of hiding.",
+            "closeFallback": "Close to system tray will leave the launcher visible."
+        },
         "projects": {
             "title": "Projects",
             "description": "Choose Godot Launcher behavior for projects.",

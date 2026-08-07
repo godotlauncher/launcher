@@ -382,6 +382,11 @@ export class AppController implements AppBridge {
             : process.platform;
     }
 
+    @AppHandler('getTrayAvailability')
+    getTrayAvailability() {
+        return this.trayAvailabilityService.isAvailable();
+    }
+
     @AppHandler('getAppVersion')
     async getAppVersion(): Promise<string> {
         return app.getVersion();

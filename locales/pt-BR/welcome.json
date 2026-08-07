@@ -42,6 +42,9 @@
         "settingsTab": "Personalize sua experiência na aba <strong>Configurações</strong>."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "Não foi possível confirmar o suporte à bandeja do sistema nesta sessão. O Godot Launcher permanecerá visível ou será encerrado em vez de ficar oculto.",
+        "trayCloseFallback": "Fechar na bandeja do sistema deixará o launcher visível.",
+        "trayStartFallback": "Iniciar na bandeja abrirá o launcher normalmente.",
         "afterLaunching": "Após iniciar um projeto",
         "nothing": "Nada",
         "minimize": "Minimizar",

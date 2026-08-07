@@ -19,6 +19,10 @@
         }
     },
     "behavior": {
+        "trayAvailability": {
+            "warning": "このセッションではシステムトレイのサポートを確認できませんでした。Godot Launcher は非表示にならず、表示されたままになるか終了します。",
+            "closeFallback": "システムトレイに閉じても、ランチャーは表示されたままになります。"
+        },
         "projects": {
             "title": "プロジェクト",
             "description": "プロジェクトに対するGodot Launcherの動作を選択します。",

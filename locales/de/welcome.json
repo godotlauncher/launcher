@@ -42,6 +42,9 @@
         "settingsTab": "Passen Sie Ihr Erlebnis im <strong>Einstellungen</strong>-Tab ganz nach Ihren Wünschen an."
     },
     "customizeBehavior": {
+        "trayAvailabilityWarning": "Die Unterstützung der Systemleiste konnte für diese Sitzung nicht bestätigt werden. Godot Launcher bleibt sichtbar oder wird beendet, anstatt ausgeblendet zu werden.",
+        "trayCloseFallback": "Beim Schließen in die Systemleiste bleibt der Launcher sichtbar.",
+        "trayStartFallback": "Beim Start in der Systemleiste wird der Launcher normal geöffnet.",
         "afterLaunching": "Nach dem Start eines Projekts",
         "nothing": "Nichts",
         "minimize": "Minimieren",
