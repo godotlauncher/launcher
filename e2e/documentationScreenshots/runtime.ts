@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { type ElectronApplication, expect } from '@playwright/test';
 import type {
     AddProjectOptions,
@@ -42,6 +43,20 @@ import type {
 
 const SCREENSHOT_MIN_WIDTH = 1024;
 const SCREENSHOT_MIN_HEIGHT = 600;
+
+// Canonical screenshot source for the whole workspace lives outside this
+// repo, in the sibling screenshots project, regardless of cwd.
+const workspaceRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    '..',
+);
+const canonicalScreensDir = path.join(
+    workspaceRoot,
+    'screenshots',
+    'screens',
+);
 
 type AppMethod = keyof AppBridge;
 type AppResult<Method extends AppMethod> = Awaited<
@@ -733,7 +748,7 @@ export async function captureScreenshot(
     baseName: string,
     description: string,
 ) {
-    const outputDir = path.resolve('docs/screenshots');
+    const outputDir = canonicalScreensDir;
     const pngPath = path.join(outputDir, `${baseName}.png`);
     const webpPath = path.join(outputDir, `${baseName}.webp`);
     await fs.mkdir(outputDir, { recursive: true });
