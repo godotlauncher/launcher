@@ -30,14 +30,14 @@
         },
         "autoStart": {
             "title": "啟動偏好",
-            "description": "選擇電腦啟動時 GD Launcher 的行為",
+            "description": "選擇電腦啟動時 Godot Launcher 的行為",
             "linuxWarning": "目前在 Linux 不支援自動啟動",
             "startOnBoot": "電腦開機時啟動。",
             "startInTray": "在系統匣中啟動。"
         },
         "projectLaunch": {
             "title": "專案啟動動作",
-            "description": "選擇啟動專案後 GD Launcher 的行為",
+            "description": "選擇啟動專案後 Godot Launcher 的行為",
             "none": "無",
             "minimize": "最小化",
             "closeToTray": "關閉到系統匣"
@@ -162,7 +162,7 @@
     },
     "updates": {
         "title": "更新",
-        "description": "設定 GD Launcher 如何檢查更新",
+        "description": "設定 Godot Launcher 如何檢查更新",
         "autoCheck": "自動檢查更新",
         "betaChannel": "接收 Beta 更新",
         "betaChannelDescription": "從 GitHub 下載預發布版本；這些版本可能不如正式發布穩定。",

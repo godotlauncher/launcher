@@ -30,14 +30,14 @@
         },
         "autoStart": {
             "title": "Preferencje uruchamiania",
-            "description": "Wybierz, co robi GD Launcher po uruchomieniu komputera",
+            "description": "Wybierz, co robi Godot Launcher po uruchomieniu komputera",
             "linuxWarning": "Automatyczne uruchamianie nie jest obecnie obsługiwane na Linuksie",
             "startOnBoot": "Uruchom przy starcie komputera.",
             "startInTray": "Uruchom w zasobniku systemowym."
         },
         "projectLaunch": {
             "title": "Akcja uruchamiania projektu",
-            "description": "Wybierz, co robi GD Launcher po uruchomieniu projektu",
+            "description": "Wybierz, co robi Godot Launcher po uruchomieniu projektu",
             "none": "Nic",
             "minimize": "Minimalizuj",
             "closeToTray": "Zamknij do zasobnika systemowego"
@@ -162,7 +162,7 @@
     },
     "updates": {
         "title": "Aktualizacje",
-        "description": "Skonfiguruj sposób sprawdzania aktualizacji przez GD Launcher",
+        "description": "Skonfiguruj sposób sprawdzania aktualizacji przez Godot Launcher",
         "autoCheck": "Automatycznie sprawdzaj aktualizacje",
         "betaChannel": "Otrzymuj aktualizacje beta",
         "betaChannelDescription": "Pobierz wersje przedpremierowe z GitHub; mogą być mniej stabilne niż oficjalne wydania.",

@@ -162,7 +162,7 @@
     },
     "updates": {
         "title": "Aggiornamenti",
-        "description": "Configura come GD Launcher controlla gli aggiornamenti",
+        "description": "Configura come Godot Launcher controlla gli aggiornamenti",
         "autoCheck": "Controlla automaticamente gli aggiornamenti",
         "betaChannel": "Ricevere aggiornamenti beta",
         "betaChannelDescription": "Scarica build prerelease da GitHub; potrebbero essere meno stabili delle release ufficiali.",

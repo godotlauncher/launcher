@@ -30,14 +30,14 @@
         },
         "autoStart": {
             "title": "Preferenza tal-Bidu",
-            "description": "Agħżel x'jagħmel GD Launcher meta l-kompjuter tiegħek jibda",
+            "description": "Agħżel x'jagħmel Godot Launcher meta l-kompjuter tiegħek jibda",
             "linuxWarning": "Bidu awtomatiku bħalissa mhuwiex supportat fuq Linux",
             "startOnBoot": "Ibda meta l-kompjuter jibda.",
             "startInTray": "Ibda fit-tray."
         },
         "projectLaunch": {
             "title": "Azzjoni wara li Tibda Proġett",
-            "description": "Agħżel x'jagħmel GD Launcher wara li jibda proġett",
+            "description": "Agħżel x'jagħmel Godot Launcher wara li jibda proġett",
             "none": "Xejn",
             "minimize": "Imminimizza",
             "closeToTray": "Agħlaq għas-system tray"
@@ -162,7 +162,7 @@
     },
     "updates": {
         "title": "Aġġornamenti",
-        "description": "Ikkonfigura kif GD Launcher jiċċekkja għal aġġornamenti",
+        "description": "Ikkonfigura kif Godot Launcher jiċċekkja għal aġġornamenti",
         "autoCheck": "Awtomatikament iċċekkja għal aġġornamenti",
         "betaChannel": "Irċievi aġġornamenti beta",
         "betaChannelDescription": "Niżżel build ta’ qabel rilaxx minn GitHub; dawn jistgħu jkunu inqas stabbli mill-verżjonijiet uffiċjali.",
