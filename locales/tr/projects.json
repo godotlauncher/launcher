@@ -7,7 +7,23 @@
     "search": {
         "placeholder": "Ara"
     },
+    "sections": {
+        "new": "Yeni",
+        "pinned": "Sabitlenenler",
+        "recents": "Son Kullanılanlar",
+        "empty": "Proje bulunamadı."
+    },
+    "card": {
+        "openFolders": "Proje klasorlerini ac",
+        "projectSettings": "Proje ayarlari",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "Pencereli",
+        "opened": "{{age}} acildi",
+        "notOpened": "Henuz acilmadi",
+        "editInGodot": "Godot'ta duzenle"
+    },
     "table": {
+        "moreOptions": "{{project}} için diğer seçenekler",
         "name": "İsim",
         "modified": "Değiştirilme",
         "editor": "Editör",
@@ -99,6 +115,33 @@
     "editProject": {
         "title": "Proje ayarları",
         "description": "Proje adı ayarlarını güncelle.",
+        "tabs": {
+            "project": "Proje",
+            "sourceControl": "Surum kontrolu",
+            "codeEditor": "Kod editoru",
+            "launch": "Baslatma"
+        },
+        "sourceControl": {
+            "title": "Surum kontrolu",
+            "help": "Bu proje icin surum kontrolunu yonetin.",
+            "enabled": "Git bu proje icin baslatildi.",
+            "notConfigured": "Git deposu yapilandirilmadi.",
+            "active": "Etkin",
+            "initialize": "Git'i baslat",
+            "initializing": "Baslatiliyor...",
+            "initFailed": "Git baslatilamadi."
+        },
+        "launch": {
+            "title": "Baslatma",
+            "help": "Godot'nun bu projeyi nasil actigini secin.",
+            "windowed": {
+                "label": "Pencereli modu kullan",
+                "help": "Godot editorunu normal bir pencerede acin."
+            }
+        },
+        "pinned": {
+            "label": "Sabitlendi"
+        },
         "fields": {
             "name": {
                 "label": "Proje adı",
@@ -122,6 +165,11 @@
                 "confirmTitle": "{{editor}} yapılandırması sıfırlansın mı?",
                 "confirmMessage": "Bu işlem projenin kod düzenleyici yapılandırmasını yeniden uygular."
             }
+        },
+        "godotEditor": {
+            "title": "Godot Editoru",
+            "help": "Bu projeyi duzenlemek icin Godot surumunu secin.",
+            "unavailable": "Kullanilamiyor"
         },
         "godot": {
             "renameLabel": "Godot projesini de yeniden adlandır",

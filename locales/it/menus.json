@@ -12,6 +12,8 @@
         "openConfigFolder": "Apri cartella di configurazione"
     },
     "project": {
+        "pinProject": "Fissa progetto",
+        "unpinProject": "Rimuovi progetto dai fissati",
         "openProjectFolder": "Apri cartella progetto",
         "launchEditor": "Modifica in Godot",
         "projectSettings": "Impostazioni progetto",

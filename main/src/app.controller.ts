@@ -56,6 +56,7 @@ import {
     renameProject,
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
+    setProjectPinned,
     setProjectWindowed,
 } from './commands/projects.js';
 import { registerCustomEngine } from './commands/registerCustomEngine.js';
@@ -310,6 +311,11 @@ export class AppController implements AppBridge {
     @AppHandler('setProjectWindowed')
     setProjectWindowed(project: ProjectDetails, openWindowed: boolean) {
         return setProjectWindowed(project, openWindowed);
+    }
+
+    @AppHandler('setProjectPinned')
+    setProjectPinned(project: ProjectDetails, pinned: boolean) {
+        return setProjectPinned(project, pinned);
     }
 
     @AppHandler('setProjectCodeEditor')

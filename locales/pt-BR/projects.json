@@ -7,7 +7,23 @@
     "search": {
         "placeholder": "Pesquisar"
     },
+    "sections": {
+        "new": "Novos",
+        "pinned": "Fixados",
+        "recents": "Recentes",
+        "empty": "Nenhum projeto encontrado."
+    },
+    "card": {
+        "openFolders": "Abrir pastas do projeto",
+        "projectSettings": "Configuracoes do projeto",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "Em janela",
+        "opened": "Aberto {{age}}",
+        "notOpened": "Ainda nao aberto",
+        "editInGodot": "Editar no Godot"
+    },
     "table": {
+        "moreOptions": "Mais opções para {{project}}",
         "name": "Nome",
         "modified": "Modificado",
         "editor": "Editor",
@@ -99,6 +115,33 @@
     "editProject": {
         "title": "Configurações do projeto",
         "description": "Atualize as configurações de nome do projeto.",
+        "tabs": {
+            "project": "Projeto",
+            "sourceControl": "Controle de versao",
+            "codeEditor": "Editor de codigo",
+            "launch": "Inicializacao"
+        },
+        "sourceControl": {
+            "title": "Controle de versao",
+            "help": "Gerencie o controle de versao deste projeto.",
+            "enabled": "O Git esta inicializado para este projeto.",
+            "notConfigured": "Nenhum repositorio Git esta configurado.",
+            "active": "Ativo",
+            "initialize": "Inicializar Git",
+            "initializing": "Inicializando...",
+            "initFailed": "Nao foi possivel inicializar o Git."
+        },
+        "launch": {
+            "title": "Inicializacao",
+            "help": "Escolha como o Godot abre este projeto.",
+            "windowed": {
+                "label": "Usar modo janela",
+                "help": "Abra o editor Godot em uma janela normal."
+            }
+        },
+        "pinned": {
+            "label": "Fixado"
+        },
         "fields": {
             "name": {
                 "label": "Nome do projeto",
@@ -122,6 +165,11 @@
                 "confirmTitle": "Redefinir a configuração do {{editor}}?",
                 "confirmMessage": "Isso reaplicará a configuração do editor de código do projeto."
             }
+        },
+        "godotEditor": {
+            "title": "Editor Godot",
+            "help": "Escolha a versao do Godot usada para editar este projeto.",
+            "unavailable": "Indisponivel"
         },
         "godot": {
             "renameLabel": "Também renomear o projeto Godot",

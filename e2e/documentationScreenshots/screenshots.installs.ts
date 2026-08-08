@@ -3,6 +3,7 @@ import {
     applyTheme,
     closeActionMenu,
     dismissVisibleAlert,
+    getInstallsView,
     hideInstallsManifestDropOverlay,
     openFirstReleaseActionsMenu,
     prepareAppWithStubbedData,
@@ -36,8 +37,9 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
         description: 'Installs view action menu',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnInstalls').click();
+            const installsView = getInstallsView(page);
             await expect(
-                page.getByText(SAMPLE_INSTALLED_RELEASES[0].version, {
+                installsView.getByText(SAMPLE_INSTALLED_RELEASES[0].version, {
                     exact: true,
                 }),
             ).toBeVisible({ timeout: 10000 });
@@ -59,16 +61,17 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             });
             await applyTheme(page, theme);
             await page.getByTestId('btnInstalls').click();
+            const installsView = getInstallsView(page);
             await expect(
-                page.getByText(SAMPLE_INSTALLED_RELEASES[0].version, {
+                installsView.getByText(SAMPLE_INSTALLED_RELEASES[0].version, {
                     exact: true,
                 }),
             ).toBeVisible({ timeout: 10000 });
             await expect(
-                page.getByText(SAMPLE_CUSTOM_RELEASE.name!),
+                installsView.getByText(SAMPLE_CUSTOM_RELEASE.name!),
             ).toBeVisible({ timeout: 10000 });
             await expect(
-                page.getByText(SAMPLE_INSTALLED_RELEASES[1].version, {
+                installsView.getByText(SAMPLE_INSTALLED_RELEASES[1].version, {
                     exact: true,
                 }),
             ).not.toBeVisible({ timeout: 10000 });

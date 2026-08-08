@@ -236,6 +236,7 @@ export async function createProject(
                     projectPath,
                     parsedProjectFile,
                 ),
+                added_at: new Date(),
                 last_opened: null,
                 launch_path: launch_path,
                 editor_settings_path: path.dirname(editorSettingsPath),

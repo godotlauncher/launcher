@@ -1,7 +1,7 @@
 import type { ProjectDetails } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { ProjectActionsMenu } from './projectActionsMenu.component';
+import { ProjectFoldersMenu } from './projectFoldersMenu.component';
 
 const project: ProjectDetails = {
     name: 'Demo',
@@ -12,7 +12,6 @@ const project: ProjectDetails = {
     editor_settings_path: '/editors/Demo/editor_data',
     editor_settings_file: '/editors/Demo/editor_data/editor_settings-4.2.tres',
     last_opened: null,
-    open_windowed: false,
     release: {
         version: '4.2',
         version_number: 4.2,
@@ -33,10 +32,10 @@ const project: ProjectDetails = {
     valid: true,
 };
 
-describe('ProjectActionsMenu', () => {
-    it('renders the remaining project management actions', () => {
+describe('ProjectFoldersMenu', () => {
+    it('renders both project folder destinations', () => {
         const html = renderToStaticMarkup(
-            <ProjectActionsMenu
+            <ProjectFoldersMenu
                 project={project}
                 anchorRect={{
                     top: 0,
@@ -48,28 +47,25 @@ describe('ProjectActionsMenu', () => {
                 }}
                 t={(key) => key}
                 onClose={vi.fn()}
-                onExportEditorSettings={vi.fn()}
-                onImportEditorSettings={vi.fn()}
-                onRemoveProject={vi.fn()}
+                onOpenProjectFolder={vi.fn()}
+                onOpenEditorSettingsFolder={vi.fn()}
             />,
         );
 
-        expect(html).toContain('project.exportEditorSettings');
-        expect(html).toContain('project.importEditorSettings');
-        expect(html).toContain('project.removeFromList');
-        expect(html).not.toContain('project.launchEditor');
-        expect(html).not.toContain('project.projectSettings');
-        expect(html).not.toContain('project.openProjectFolder');
-        expect(html).not.toContain('project.openEditorSettingsFolder');
-        expect(html).not.toContain('project.pinProject');
-        expect(html).not.toContain('project.openWindowed');
-        expect(html).not.toContain('project.initGit');
+        expect(html).toContain('project.openProjectFolder');
+        expect(html).toContain('project.openEditorSettingsFolder');
+        expect(html).toContain('lucide-folder-open');
+        expect(html).toContain('lucide-folder-cog');
     });
 
-    it('does not restore moved actions for pinned projects', () => {
+    it('disables destinations with missing paths', () => {
         const html = renderToStaticMarkup(
-            <ProjectActionsMenu
-                project={{ ...project, pinned: true }}
+            <ProjectFoldersMenu
+                project={{
+                    ...project,
+                    path: '',
+                    editor_settings_path: '',
+                }}
                 anchorRect={{
                     top: 0,
                     right: 0,
@@ -80,13 +76,11 @@ describe('ProjectActionsMenu', () => {
                 }}
                 t={(key) => key}
                 onClose={vi.fn()}
-                onExportEditorSettings={vi.fn()}
-                onImportEditorSettings={vi.fn()}
-                onRemoveProject={vi.fn()}
+                onOpenProjectFolder={vi.fn()}
+                onOpenEditorSettingsFolder={vi.fn()}
             />,
         );
 
-        expect(html).not.toContain('project.unpinProject');
-        expect(html).toContain('project.removeFromList');
+        expect(html.match(/disabled=""/g)).toHaveLength(2);
     });
 });

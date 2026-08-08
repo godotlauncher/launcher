@@ -4,9 +4,12 @@ import type {
     ProjectDetails,
 } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { InstalledReleaseSelector } from '../components/selectInstalledRelease.component';
+import {
+    type ActionMenuAnchorRect,
+    getActionMenuAnchorRect,
+} from '../components/ui/actionMenu.component';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -14,23 +17,28 @@ import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
+import { ProjectFoldersMenu } from './projects/components/projectFoldersMenu.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
-import { ProjectsTable } from './projects/components/projectsTable.component';
+import { ProjectsList } from './projects/components/projectsList.component';
 import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
 import { useProjectActions } from './projects/hooks/useProjectActions';
 import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
-import { useProjectsSort } from './projects/hooks/useProjectsSort';
 import {
-    filterAndSortProjects,
     getInvalidProjectMessageKey,
+    getProjectSections,
 } from './projects/projectsView.model';
-import { CreateProjectSubView } from './subViews/createProject.subview';
+import { CreateProjectDrawer } from './subViews/createProjectDrawer.subview';
 import { ProjectSettingsDrawer } from './subViews/projectSettingsDrawer.subview';
 
 type ProjectsViewProps = {
     createOpen?: boolean;
     onCreateOpenChange?: (open: boolean) => void;
+};
+
+type ProjectFoldersMenuState = {
+    project: ProjectDetails;
+    anchorRect: ActionMenuAnchorRect;
 };
 
 export const ProjectsView: React.FC<ProjectsViewProps> = ({
@@ -55,16 +63,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setLocalCreateOpen(open);
     };
 
-    const [changeEditorFor, setChangeEditorFor] =
-        useState<ProjectDetails | null>();
     const [editProjectFor, setEditProjectFor] = useState<ProjectDetails | null>(
         null,
     );
+    const [projectFoldersMenu, setProjectFoldersMenu] =
+        useState<ProjectFoldersMenuState | null>(null);
     const [addingProject, setAddingProject] = useState<boolean>(false);
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
-
-    const [sortData, setSortData] = useProjectsSort();
+    const [highlightedPinnedProjectPath, setHighlightedPinnedProjectPath] =
+        useState<string | null>(null);
+    const clearPinnedHighlight = useCallback(
+        () => setHighlightedPinnedProjectPath(null),
+        [],
+    );
 
     const { addAlert, addCustomConfirm } = useAlerts();
 
@@ -84,6 +96,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         codeEditorSettings,
         setProjectEditor,
         setProjectWindowed,
+        setProjectPinned,
         setProjectCodeEditor,
         resetProjectCodeEditorConfig,
         initializeProjectGit,
@@ -105,8 +118,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         onProjectMoreOptions,
         runProjectAction,
         showRecoveredCodeEditorConfigWarning,
-        handleToggleProjectWindowed,
-        handleInitializeProjectGit,
+        handleToggleProjectPinned,
         handleImportEditorSettings,
         handleRemoveProject,
     } = useProjectActions({
@@ -115,8 +127,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addAlert,
         addCustomConfirm,
         updatePreferences,
-        setProjectWindowed,
-        initializeProjectGit,
+        setProjectPinned,
+        onProjectPinned: setHighlightedPinnedProjectPath,
         importProjectEditorSettings,
         removeProject,
     });
@@ -156,22 +168,28 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 release.mono === project.release.mono,
         );
 
-    const onChangeProjectEditor = async (
+    const onSetProjectEditorFromSettings = async (
         project: ProjectDetails,
         release: InstalledRelease,
-    ) => {
-        setChangeEditorFor(null);
+    ): Promise<ProjectDetails> => {
         setBusyProjects([...busyProjects, project.path]);
 
         try {
             const result = await setProjectEditor(project, release);
             if (!result.success) {
-                addAlert(
-                    t('common:error'),
-                    result.error || t('messages.setEditorError'),
-                );
-                return;
+                throw new Error(result.error || t('messages.setEditorError'));
             }
+
+            return (
+                result.projects?.find(
+                    (updatedProject) => updatedProject.path === project.path,
+                ) ?? {
+                    ...project,
+                    release,
+                    version: release.version,
+                    version_number: release.version_number,
+                }
+            );
         } finally {
             setBusyProjects((prevValues) =>
                 prevValues.filter((p) => p !== project.path),
@@ -219,7 +237,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         return updatedProject;
     };
 
-    const filteredRows = filterAndSortProjects(projects, textSearch, sortData);
+    const projectSections = getProjectSections(projects, textSearch);
 
     return (
         <>
@@ -237,16 +255,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 />
             )}
 
-            {changeEditorFor && (
-                <InstalledReleaseSelector
-                    title={changeEditorFor.name}
-                    currentRelease={changeEditorFor.release}
-                    onReleaseSelected={(release) =>
-                        onChangeProjectEditor(changeEditorFor, release)
-                    }
-                    onClose={() => setChangeEditorFor(null)}
-                />
-            )}
             {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag-and-drop requires event handlers on container */}
             <div
                 className="flex flex-col h-full w-full overflow-auto p-1"
@@ -292,38 +300,53 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     </div>
                 )}
                 <div className="divider m-0"></div>
-                <ProjectsTable
-                    rows={filteredRows}
+                <ProjectsList
+                    sections={projectSections}
                     loading={loading}
                     locale={i18n.resolvedLanguage ?? i18n.language ?? 'en'}
                     busyProjects={busyProjects}
                     codeEditorSettings={codeEditorSettings}
-                    sortData={sortData}
-                    onSortChange={setSortData}
+                    highlightedPinnedProjectPath={highlightedPinnedProjectPath}
+                    onPinnedHighlightComplete={clearPinnedHighlight}
                     isInstalledRelease={isInstalledRelease}
                     isProjectEditorDownloading={isProjectEditorDownloading}
                     onLaunchProject={(project) => void onLaunchProject(project)}
-                    onChangeEditor={setChangeEditorFor}
-                    onProjectMoreOptions={onProjectMoreOptions}
+                    onProjectFoldersOptions={(event, project) => {
+                        event.stopPropagation();
+                        setProjectActionsMenu(null);
+                        setProjectFoldersMenu({
+                            project,
+                            anchorRect: getActionMenuAnchorRect(
+                                event.currentTarget,
+                            ),
+                        });
+                    }}
+                    onTogglePinned={handleToggleProjectPinned}
+                    onProjectSettings={setEditProjectFor}
+                    onProjectMoreOptions={(event, project) => {
+                        setProjectFoldersMenu(null);
+                        void onProjectMoreOptions(event, project);
+                    }}
                     t={t}
                 />
             </div>
-            <ProjectActionsMenu
-                project={projectActionsMenu?.project ?? null}
-                anchorRect={projectActionsMenu?.anchorRect ?? null}
-                hasGit={projectActionsMenu?.hasGit ?? false}
+            <ProjectFoldersMenu
+                project={projectFoldersMenu?.project ?? null}
+                anchorRect={projectFoldersMenu?.anchorRect ?? null}
                 t={t}
-                onClose={() => setProjectActionsMenu(null)}
-                onLaunchProject={(project) => void onLaunchProject(project)}
-                onProjectSettings={setEditProjectFor}
+                onClose={() => setProjectFoldersMenu(null)}
                 onOpenProjectFolder={(project) =>
                     runProjectAction(() => openProjectFolder(project))
                 }
                 onOpenEditorSettingsFolder={(project) =>
                     runProjectAction(() => openProjectEditorFolder(project))
                 }
-                onToggleWindowed={handleToggleProjectWindowed}
-                onInitializeGit={handleInitializeProjectGit}
+            />
+            <ProjectActionsMenu
+                project={projectActionsMenu?.project ?? null}
+                anchorRect={projectActionsMenu?.anchorRect ?? null}
+                t={t}
+                onClose={() => setProjectActionsMenu(null)}
                 onExportEditorSettings={(project) =>
                     runProjectAction(() => exportProjectEditorSettings(project))
                 }
@@ -339,17 +362,18 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     }
                 }}
                 onRenameProject={renameProject}
+                installedReleases={installedReleases}
+                onSetProjectEditor={onSetProjectEditorFromSettings}
                 onSetProjectCodeEditor={onSetProjectCodeEditor}
+                onSetProjectWindowed={setProjectWindowed}
+                onInitializeProjectGit={initializeProjectGit}
                 onResetProjectCodeEditorConfig={onResetProjectCodeEditorConfig}
                 getProjectGodotName={getProjectGodotName}
             />
-            {createOpen && (
-                <CreateProjectSubView
-                    onClose={() => {
-                        setCreateOpen(false);
-                    }}
-                />
-            )}
+            <CreateProjectDrawer
+                open={createOpen}
+                onOpenChange={setCreateOpen}
+            />
         </>
     );
 };

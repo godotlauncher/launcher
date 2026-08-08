@@ -152,6 +152,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         editor_settings_file:
             '/Users/docs/Godot/Projects/my-awesome-game/.godot/editor_settings-4.7.tres',
         last_opened: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        pinned: true,
         open_windowed: false,
         release: SAMPLE_INSTALLED_RELEASES[0],
         launch_path: '/Applications/Godot_4.7/Godot.app/Contents/MacOS/Godot',
@@ -190,7 +191,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         editor_settings_path: '/Users/docs/Godot/Projects/my-prototype/.godot',
         editor_settings_file:
             '/Users/docs/Godot/Projects/my-prototype/.godot/editor_settings-4.7.tres',
-        last_opened: new Date(Date.now() - 6 * 60 * 60 * 1000),
+        last_opened: null,
         open_windowed: false,
         release: SAMPLE_CUSTOM_RELEASE,
         launch_path: SAMPLE_CUSTOM_RELEASE.editor_path,

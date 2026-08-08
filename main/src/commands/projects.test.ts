@@ -11,6 +11,7 @@ import {
     renameProject,
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
+    setProjectPinned,
 } from './projects.js';
 
 const childProcessMocks = vi.hoisted(() => ({
@@ -464,6 +465,62 @@ describe('launchProject', () => {
             }
         },
     );
+});
+
+describe('setProjectPinned', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        getMainWindow.mockReturnValue({ webContents: {} });
+    });
+
+    it('persists pin state and broadcasts the updated list', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_path, projects) => projects,
+        );
+
+        await expect(setProjectPinned(project, true)).resolves.toMatchObject({
+            path: project.path,
+            pinned: true,
+        });
+
+        expect(storeProjectsList).toHaveBeenCalledWith(
+            path.resolve('/config', 'projects.json'),
+            [expect.objectContaining({ path: project.path, pinned: true })],
+            { expectedVersion: 'v1' },
+        );
+        expect(ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            expect.anything(),
+            [expect.objectContaining({ pinned: true })],
+        );
+    });
+
+    it('retries after a concurrent project-list update', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot
+            .mockResolvedValueOnce({ projects: [project], version: 'v1' })
+            .mockResolvedValueOnce({ projects: [project], version: 'v2' });
+        storeProjectsList
+            .mockRejectedValueOnce(
+                new JsonStoreConflictError('/config/projects.json'),
+            )
+            .mockImplementationOnce(async (_path, projects) => projects);
+
+        await setProjectPinned(project, true);
+
+        expect(storeProjectsList).toHaveBeenCalledTimes(2);
+        expect(storeProjectsList).toHaveBeenLastCalledWith(
+            path.resolve('/config', 'projects.json'),
+            [expect.objectContaining({ pinned: true })],
+            { expectedVersion: 'v2' },
+        );
+    });
 });
 
 describe('removeProject', () => {

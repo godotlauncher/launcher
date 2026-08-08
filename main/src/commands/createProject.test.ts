@@ -195,6 +195,7 @@ describe('createProject', () => {
             'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
         );
         expect(result.projectDetails?.name).toBe('Test Project');
+        expect(result.projectDetails?.added_at).toBeInstanceOf(Date);
         expect(godotUtilsMocks.createProjectFile).toHaveBeenCalledWith(
             expect.any(String),
             5,

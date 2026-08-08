@@ -13,6 +13,7 @@ import {
     captureScreenshot,
     createFixtureHome,
     ensureMainNavigationReady,
+    getInstallsView,
     setScreenshotViewport,
 } from './documentationScreenshots/runtime';
 import { THEMES } from './documentationScreenshots/themes';
@@ -117,36 +118,32 @@ async function primeDocumentationApp(
     );
     await mainPage.getByTestId('btnProjects').click();
     await expect(
-        mainPage.getByRole('button', {
-            name: 'My Awesome Game',
-            exact: true,
-        }),
+        mainPage.getByText('My Awesome Game', { exact: true }).first(),
     ).toBeVisible({
         timeout: 10000,
     });
     await expect(
-        mainPage.getByRole('button', {
-            name: 'My Other Game',
-            exact: true,
-        }),
+        mainPage.getByText('My Other Game', { exact: true }),
     ).toBeVisible({
         timeout: 10000,
     });
     await expect(
-        mainPage.getByRole('button', {
-            name: 'My Prototype',
-            exact: true,
-        }),
+        mainPage.getByText('My Prototype', { exact: true }),
     ).toBeVisible({
         timeout: 10000,
     });
     await mainPage.getByTestId('btnInstalls').click();
-    await expect(mainPage.getByText('4.7-stable', { exact: true })).toBeVisible(
-        {
-            timeout: 10000,
-        },
-    );
-    await expect(mainPage.getByText('4.5.1-stable')).toBeVisible({
+    const installsView = getInstallsView(mainPage);
+    await expect(installsView).toBeVisible({ timeout: 10000 });
+    await expect(mainPage.getByTestId('btnInstallEditor')).toBeVisible({
+        timeout: 10000,
+    });
+    await expect(
+        installsView.getByText('4.7-stable', { exact: true }),
+    ).toBeVisible({
+        timeout: 10000,
+    });
+    await expect(installsView.getByText('4.5.1-stable')).toBeVisible({
         timeout: 10000,
     });
     await expect(

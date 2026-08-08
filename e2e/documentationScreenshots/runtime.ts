@@ -751,6 +751,12 @@ export async function ensureMainNavigationReady(
     }
 }
 
+export function getInstallsView(page: ElectronPage) {
+    return page
+        .locator('section')
+        .filter({ has: page.getByTestId('installsTitle') });
+}
+
 export async function setScreenshotViewport(
     page: ElectronPage,
     height = SCREENSHOT_MIN_HEIGHT,
@@ -793,8 +799,9 @@ export async function openProjectActionsMenu(
     projectName: string,
 ) {
     const projectRow = page
-        .locator('tr')
-        .filter({ has: page.getByRole('button', { name: projectName }) });
+        .locator('[data-project-path]')
+        .filter({ has: page.getByText(projectName, { exact: true }) })
+        .first();
     await projectRow
         .locator('[data-testid="btnProjectMoreOptions"]:visible')
         .click();

@@ -7,7 +7,23 @@
     "search": {
         "placeholder": "Fittex"
     },
+    "sections": {
+        "new": "Ġodda",
+        "pinned": "Imwaħħla",
+        "recents": "Riċenti",
+        "empty": "Ma nstab l-ebda proġett."
+    },
+    "card": {
+        "openFolders": "Iftaħ il-folders tal-proġett",
+        "projectSettings": "Settings tal-proġett",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "F'tieqa",
+        "opened": "Infetaħ {{age}}",
+        "notOpened": "Għadu ma nfetaħx",
+        "editInGodot": "Editja f'Godot"
+    },
     "table": {
+        "moreOptions": "Aktar għażliet għal {{project}}",
         "name": "Isem",
         "modified": "Modifikat",
         "editor": "Editur",
@@ -99,6 +115,33 @@
     "editProject": {
         "title": "Settings tal-Proġett",
         "description": "Aġġorna s-settings tal-isem tal-proġett.",
+        "tabs": {
+            "project": "Proġett",
+            "sourceControl": "Kontroll tas-sors",
+            "codeEditor": "Editur tal-kodiċi",
+            "launch": "Tnedija"
+        },
+        "sourceControl": {
+            "title": "Kontroll tas-sors",
+            "help": "Immaniġġja l-kontroll tal-verżjoni għal dan il-proġett.",
+            "enabled": "Git huwa inizjalizzat għal dan il-proġett.",
+            "notConfigured": "L-ebda repożitorju Git mhu kkonfigurat.",
+            "active": "Attiv",
+            "initialize": "Inizjalizza Git",
+            "initializing": "Qed jiġi inizjalizzat...",
+            "initFailed": "Ma setax jiġi inizjalizzat Git."
+        },
+        "launch": {
+            "title": "Tnedija",
+            "help": "Agħżel kif Godot jiftaħ dan il-proġett.",
+            "windowed": {
+                "label": "Uża modalità ta' tieqa",
+                "help": "Iftaħ l-editur Godot f'tieqa normali."
+            }
+        },
+        "pinned": {
+            "label": "Imwaħħal"
+        },
         "fields": {
             "name": {
                 "label": "Isem tal-proġett",
@@ -122,6 +165,11 @@
                 "confirmTitle": "Trid tirrisettja l-konfigurazzjoni ta' {{editor}}?",
                 "confirmMessage": "Dan jerġa' japplika l-konfigurazzjoni tal-editur tal-kodiċi tal-proġett."
             }
+        },
+        "godotEditor": {
+            "title": "Editur Godot",
+            "help": "Agħżel il-verżjoni ta' Godot għal dan il-proġett.",
+            "unavailable": "Mhux disponibbli"
         },
         "godot": {
             "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",

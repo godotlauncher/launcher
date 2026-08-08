@@ -1,8 +1,9 @@
 import type { ProjectDetails } from '@shared/contracts';
 
-export type ProjectSortData = {
-    field: string;
-    order: 'asc' | 'desc';
+export type ProjectSections = {
+    newProjects: ProjectDetails[];
+    pinnedProjects: ProjectDetails[];
+    recentProjects: ProjectDetails[];
 };
 
 export function getInvalidProjectTableKey(project: ProjectDetails): string {
@@ -27,40 +28,45 @@ export function getInvalidProjectMessageKey(project: ProjectDetails): string {
     }
 }
 
-export function sortProjects(
-    projects: ProjectDetails[],
-    sortData: ProjectSortData,
-): ProjectDetails[] {
+function sortByLastAdded(projects: ProjectDetails[]): ProjectDetails[] {
     return [...projects].sort((a, b) => {
-        if (sortData.field === 'name') {
-            return sortData.order === 'asc'
-                ? a.name.localeCompare(b.name)
-                : b.name.localeCompare(a.name);
-        }
+        const dateDifference =
+            (b.added_at?.getTime() ?? 0) - (a.added_at?.getTime() ?? 0);
 
-        if (sortData.field === 'modified') {
-            const left = a.last_opened?.getTime() || 0;
-            const right = b.last_opened?.getTime() || 0;
-
-            return sortData.order === 'asc' ? left - right : right - left;
-        }
-
-        return 0;
+        return dateDifference || a.name.localeCompare(b.name);
     });
 }
 
-export function filterAndSortProjects(
+function sortByLastOpened(projects: ProjectDetails[]): ProjectDetails[] {
+    return [...projects].sort((a, b) => {
+        const dateDifference =
+            (b.last_opened?.getTime() ?? 0) - (a.last_opened?.getTime() ?? 0);
+
+        return dateDifference || a.name.localeCompare(b.name);
+    });
+}
+
+export function getProjectSections(
     projects: ProjectDetails[],
     textSearch: string,
-    sortData: ProjectSortData,
-): ProjectDetails[] {
-    const normalizedSearch = textSearch.toLowerCase();
+): ProjectSections {
+    const normalizedSearch = textSearch.trim().toLocaleLowerCase();
     const filteredProjects =
         normalizedSearch.length === 0
             ? projects
             : projects.filter((project) =>
-                  project.name.toLowerCase().includes(normalizedSearch),
+                  project.name.toLocaleLowerCase().includes(normalizedSearch),
               );
 
-    return sortProjects(filteredProjects, sortData);
+    return {
+        newProjects: sortByLastAdded(
+            filteredProjects.filter((project) => !project.last_opened),
+        ),
+        pinnedProjects: sortByLastOpened(
+            filteredProjects.filter((project) => project.pinned),
+        ),
+        recentProjects: sortByLastOpened(
+            filteredProjects.filter((project) => project.last_opened),
+        ),
+    };
 }

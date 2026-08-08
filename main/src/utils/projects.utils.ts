@@ -12,8 +12,9 @@ import { getDefaultDirs } from './platform.utils.js';
 
 export type StoredProjectDetails = Omit<
     ProjectDetails,
-    'codeEditorId' | 'last_opened'
+    'added_at' | 'codeEditorId' | 'last_opened'
 > & {
+    added_at?: Date | string;
     codeEditorId?: CodeEditorId | null;
     withVSCode?: boolean;
     last_opened: Date | string | null;
@@ -60,6 +61,8 @@ export function fromStoredProject(
 
     return {
         ...project,
+        added_at: toDate(storedProject.added_at) ?? undefined,
+        pinned: storedProject.pinned ?? false,
         codeEditorId:
             storedProject.codeEditorId !== undefined
                 ? storedProject.codeEditorId

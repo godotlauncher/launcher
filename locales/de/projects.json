@@ -7,7 +7,23 @@
     "search": {
         "placeholder": "Suchen"
     },
+    "sections": {
+        "new": "Neu",
+        "pinned": "Angeheftet",
+        "recents": "Zuletzt verwendet",
+        "empty": "Keine Projekte gefunden."
+    },
+    "card": {
+        "openFolders": "Projektordner offnen",
+        "projectSettings": "Projekteinstellungen",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "Fenstermodus",
+        "opened": "Geoffnet {{age}}",
+        "notOpened": "Noch nicht geoffnet",
+        "editInGodot": "In Godot bearbeiten"
+    },
     "table": {
+        "moreOptions": "Weitere Optionen für {{project}}",
         "name": "Name",
         "modified": "Geändert",
         "editor": "Editor",
@@ -99,6 +115,33 @@
     "editProject": {
         "title": "Projekteinstellungen",
         "description": "Aktualisiere die Namenseinstellungen des Projekts.",
+        "tabs": {
+            "project": "Projekt",
+            "sourceControl": "Versionskontrolle",
+            "codeEditor": "Code-Editor",
+            "launch": "Starten"
+        },
+        "sourceControl": {
+            "title": "Versionskontrolle",
+            "help": "Verwalte die Versionskontrolle fur dieses Projekt.",
+            "enabled": "Git ist fur dieses Projekt initialisiert.",
+            "notConfigured": "Kein Git-Repository konfiguriert.",
+            "active": "Aktiv",
+            "initialize": "Git initialisieren",
+            "initializing": "Wird initialisiert...",
+            "initFailed": "Git konnte nicht initialisiert werden."
+        },
+        "launch": {
+            "title": "Starten",
+            "help": "Lege fest, wie Godot dieses Projekt offnet.",
+            "windowed": {
+                "label": "Fenstermodus verwenden",
+                "help": "Godot in einem normalen Fenster offnen."
+            }
+        },
+        "pinned": {
+            "label": "Angeheftet"
+        },
         "fields": {
             "name": {
                 "label": "Projektname",
@@ -122,6 +165,11 @@
                 "confirmTitle": "{{editor}}-Konfiguration zurücksetzen?",
                 "confirmMessage": "Dies wendet die Code-Editor-Konfiguration des Projekts erneut an."
             }
+        },
+        "godotEditor": {
+            "title": "Godot-Editor",
+            "help": "Wahle die Godot-Version fur dieses Projekt.",
+            "unavailable": "Nicht verfugbar"
         },
         "godot": {
             "renameLabel": "Godot-Projekt ebenfalls umbenennen",

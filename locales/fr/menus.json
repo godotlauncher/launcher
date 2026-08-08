@@ -12,6 +12,8 @@
         "openConfigFolder": "Ouvrir le dossier de configuration"
     },
     "project": {
+        "pinProject": "Épingler le projet",
+        "unpinProject": "Désépingler le projet",
         "openProjectFolder": "Ouvrir le dossier du projet",
         "launchEditor": "Modifier dans Godot",
         "projectSettings": "Paramètres du projet",

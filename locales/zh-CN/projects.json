@@ -7,7 +7,23 @@
     "search": {
         "placeholder": "搜索"
     },
+    "sections": {
+        "new": "新项目",
+        "pinned": "已固定",
+        "recents": "最近使用",
+        "empty": "未找到项目。"
+    },
+    "card": {
+        "openFolders": "打开项目文件夹",
+        "projectSettings": "项目设置",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "窗口模式",
+        "opened": "打开于 {{age}}",
+        "notOpened": "尚未打开",
+        "editInGodot": "在 Godot 中编辑"
+    },
     "table": {
+        "moreOptions": "{{project}} 的更多选项",
         "name": "名称",
         "modified": "修改时间",
         "editor": "编辑器",
@@ -99,6 +115,33 @@
     "editProject": {
         "title": "项目设置",
         "description": "更新项目命名设置。",
+        "tabs": {
+            "project": "项目",
+            "sourceControl": "源代码管理",
+            "codeEditor": "代码编辑器",
+            "launch": "启动"
+        },
+        "sourceControl": {
+            "title": "源代码管理",
+            "help": "管理此项目的版本控制。",
+            "enabled": "此项目已初始化 Git。",
+            "notConfigured": "尚未配置 Git 仓库。",
+            "active": "已启用",
+            "initialize": "初始化 Git",
+            "initializing": "正在初始化...",
+            "initFailed": "无法初始化 Git。"
+        },
+        "launch": {
+            "title": "启动",
+            "help": "选择 Godot 打开此项目的方式。",
+            "windowed": {
+                "label": "使用窗口模式",
+                "help": "在普通窗口中打开 Godot 编辑器。"
+            }
+        },
+        "pinned": {
+            "label": "已固定"
+        },
         "fields": {
             "name": {
                 "label": "项目名称",
@@ -122,6 +165,11 @@
                 "confirmTitle": "重置 {{editor}} 配置？",
                 "confirmMessage": "这将重新应用项目的代码编辑器配置。"
             }
+        },
+        "godotEditor": {
+            "title": "Godot 编辑器",
+            "help": "选择用于编辑此项目的 Godot 版本。",
+            "unavailable": "不可用"
         },
         "godot": {
             "renameLabel": "同时重命名 Godot 项目",

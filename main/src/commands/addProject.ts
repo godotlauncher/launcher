@@ -501,6 +501,7 @@ export async function addProject(
             release?.version ?? `${releaseBaseVersion.toFixed(1)} (missing)`,
         version_number: release?.version_number ?? releaseBaseVersion,
         renderer,
+        added_at: new Date(),
         last_opened: null,
         launch_path,
         editor_settings_path: editorSettingsFile

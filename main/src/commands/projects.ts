@@ -301,6 +301,66 @@ export async function setProjectWindowed(
     return updatedProject;
 }
 
+export async function setProjectPinned(
+    project: ProjectDetails,
+    pinned: boolean,
+): Promise<ProjectDetails> {
+    const projectListPath = resolveProjectListPath();
+    let storedProjects: ProjectDetails[] | null = null;
+
+    for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
+
+        if (projectIndex === -1) {
+            storedProjects = projects;
+            break;
+        }
+
+        const updatedProjects = [...projects];
+        updatedProjects[projectIndex] = {
+            ...updatedProjects[projectIndex],
+            pinned,
+        };
+
+        try {
+            storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
+            break;
+        } catch (error) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    if (!storedProjects) {
+        return { ...project, pinned };
+    }
+
+    const updatedProject = storedProjects.find(
+        (p) => p.path === project.path,
+    ) ?? {
+        ...project,
+        pinned,
+    };
+    ipcWebContentsSend(
+        'projects-updated',
+        getMainWindow()?.webContents,
+        storedProjects,
+    );
+
+    return updatedProject;
+}
+
 function validateProjectName(name: string): RenameProjectResult | null {
     if (name.length === 0) {
         return {

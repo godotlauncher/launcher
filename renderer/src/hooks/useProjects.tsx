@@ -51,6 +51,10 @@ interface ProjectsContext {
         project: ProjectDetails,
         openWindowed: boolean,
     ) => Promise<ProjectDetails>;
+    setProjectPinned: (
+        project: ProjectDetails,
+        pinned: boolean,
+    ) => Promise<ProjectDetails>;
     setProjectCodeEditor: (
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
@@ -200,6 +204,18 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         const updatedProject = await appBridge.setProjectWindowed(
             project,
             openWindowed,
+        );
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
+    const setProjectPinned = async (
+        project: ProjectDetails,
+        pinned: boolean,
+    ) => {
+        const updatedProject = await appBridge.setProjectPinned(
+            project,
+            pinned,
         );
         updateProjectState(updatedProject);
         return updatedProject;
@@ -396,6 +412,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 addProject,
                 setProjectEditor,
                 setProjectWindowed,
+                setProjectPinned,
                 setProjectCodeEditor,
                 resetProjectCodeEditorConfig,
                 initializeProjectGit,

@@ -1,15 +1,6 @@
 import type { ProjectDetails } from '@shared/contracts';
-import {
-    Download,
-    FolderOpen,
-    PanelTop,
-    Pencil,
-    SquarePen,
-    Trash2,
-    Upload,
-} from 'lucide-react';
+import { Download, Trash2, Upload } from 'lucide-react';
 import type React from 'react';
-import gitIconColor from '../../../assets/icons/git_icon_color.svg';
 import {
     ActionMenu,
     type ActionMenuAnchorRect,
@@ -21,15 +12,8 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 type ProjectActionsMenuProps = {
     project: ProjectDetails | null;
     anchorRect: ActionMenuAnchorRect | null;
-    hasGit: boolean;
     t: Translate;
     onClose: () => void;
-    onLaunchProject: (project: ProjectDetails) => void;
-    onProjectSettings: (project: ProjectDetails) => void;
-    onOpenProjectFolder: (project: ProjectDetails) => void;
-    onOpenEditorSettingsFolder: (project: ProjectDetails) => void;
-    onToggleWindowed: (project: ProjectDetails) => void;
-    onInitializeGit: (project: ProjectDetails) => void;
     onExportEditorSettings: (project: ProjectDetails) => void;
     onImportEditorSettings: (project: ProjectDetails) => void;
     onRemoveProject: (project: ProjectDetails) => void;
@@ -40,85 +24,14 @@ const iconClassName = 'h-4 w-4';
 export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     project,
     anchorRect,
-    hasGit,
     t,
     onClose,
-    onLaunchProject,
-    onProjectSettings,
-    onOpenProjectFolder,
-    onOpenEditorSettingsFolder,
-    onToggleWindowed,
-    onInitializeGit,
     onExportEditorSettings,
     onImportEditorSettings,
     onRemoveProject,
 }) => {
     const items: ActionMenuItem[] = project
         ? [
-              {
-                  key: 'launch-editor',
-                  label: t('project.launchEditor', { ns: 'menus' }),
-                  icon: <Pencil className={`${iconClassName} stroke-info`} />,
-                  disabled: !project.valid,
-                  onSelect: () => onLaunchProject(project),
-              },
-              {
-                  key: 'project-settings',
-                  label: t('project.projectSettings', { ns: 'menus' }),
-                  icon: <SquarePen className={iconClassName} />,
-                  onSelect: () => onProjectSettings(project),
-              },
-              {
-                  type: 'separator',
-                  key: 'project-primary-separator',
-              },
-              {
-                  key: 'open-project-folder',
-                  label: t('project.openProjectFolder', { ns: 'menus' }),
-                  icon: <FolderOpen className={iconClassName} />,
-                  disabled: project.path.length === 0,
-                  onSelect: () => onOpenProjectFolder(project),
-              },
-              {
-                  key: 'open-editor-settings-folder',
-                  label: t('project.openEditorSettingsFolder', {
-                      ns: 'menus',
-                  }),
-                  icon: <FolderOpen className={iconClassName} />,
-                  disabled: project.editor_settings_path.length === 0,
-                  onSelect: () => onOpenEditorSettingsFolder(project),
-              },
-              {
-                  type: 'separator',
-                  key: 'launch-options-separator',
-              },
-              {
-                  key: 'open-windowed',
-                  label: t('project.openWindowed', { ns: 'menus' }),
-                  icon: <PanelTop className={iconClassName} />,
-                  checked: Boolean(project.open_windowed),
-                  onSelect: () => onToggleWindowed(project),
-              },
-              ...(project.valid && hasGit && !project.withGit
-                  ? [
-                        {
-                            key: 'initialize-git',
-                            label: t('project.initGit', { ns: 'menus' }),
-                            icon: (
-                                <img
-                                    src={gitIconColor}
-                                    className={iconClassName}
-                                    alt=""
-                                />
-                            ),
-                            onSelect: () => onInitializeGit(project),
-                        } satisfies ActionMenuItem,
-                    ]
-                  : []),
-              {
-                  type: 'separator',
-                  key: 'settings-separator',
-              },
               {
                   key: 'export-editor-settings',
                   label: t('project.exportEditorSettings', { ns: 'menus' }),
