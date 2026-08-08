@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { type ElectronApplication, expect } from '@playwright/test';
 import type {
     AddProjectOptions,
@@ -43,7 +44,21 @@ import type {
 const SCREENSHOT_MIN_WIDTH = 1024;
 const SCREENSHOT_MIN_HEIGHT = 600;
 
-type AppMethod = keyof AppBridge;
+// Canonical screenshot source for the whole workspace lives outside this
+// repo, in the sibling screenshots project, regardless of cwd.
+const workspaceRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    '..',
+);
+const canonicalScreensDir = path.join(
+    workspaceRoot,
+    'screenshots',
+    'screens',
+);
+
+type AppMethod = Extract<keyof AppBridge, string>;
 type AppResult<Method extends AppMethod> = Awaited<
     ReturnType<AppBridge[Method]>
 >;
@@ -197,6 +212,24 @@ export async function applyTheme(page: ElectronPage, theme: ThemeConfig) {
     await page.getByTestId('btnProjects').click();
 }
 
+const shimmedElectronApps = new WeakSet<ElectronApplication>();
+
+async function ensureMainProcessNameHelperShim(
+    electronApp: ElectronApplication,
+) {
+    if (shimmedElectronApps.has(electronApp)) {
+        return;
+    }
+
+    await electronApp.evaluate(() => {
+        const target = globalThis as unknown as Record<string, unknown>;
+        if (typeof target.__name !== 'function') {
+            target.__name = (fn: unknown) => fn;
+        }
+    });
+    shimmedElectronApps.add(electronApp);
+}
+
 export async function stubAppData(
     electronApp: ElectronApplication,
     preferences: UserPreferences,
@@ -205,6 +238,7 @@ export async function stubAppData(
     availableReleases: ReleaseSummary[],
     availablePrereleases: ReleaseSummary[],
 ) {
+    await ensureMainProcessNameHelperShim(electronApp);
     await electronApp.evaluate(
         (
             { ipcMain, BrowserWindow },
@@ -733,7 +767,7 @@ export async function captureScreenshot(
     baseName: string,
     description: string,
 ) {
-    const outputDir = path.resolve('docs/screenshots');
+    const outputDir = canonicalScreensDir;
     const pngPath = path.join(outputDir, `${baseName}.png`);
     const webpPath = path.join(outputDir, `${baseName}.webp`);
     await fs.mkdir(outputDir, { recursive: true });
@@ -877,7 +911,7 @@ export async function stubAddProjectEditorResolution(
                         '',
                     );
                     const newProject: ProjectDetails = {
-                        name: 'Imported-Missing-Editor-Game',
+                        name: 'Imported Missing Editor Game',
                         path: projectDirectory,
                         icon_path: projectIconPath,
                         version: '4.6.3-stable',
@@ -973,7 +1007,7 @@ export async function stubAddProjectRecoveredCodeEditorConfig(
                     '',
                 );
                 const newProject: ProjectDetails = {
-                    name: 'Recovered-VSCode-Config',
+                    name: 'Recovered VS Code Config',
                     path: projectDirectory,
                     icon_path: projectIconPath,
                     version: '4.4.1-stable',

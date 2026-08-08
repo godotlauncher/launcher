@@ -11,6 +11,7 @@ import {
     SAMPLE_VSCODE_SETTINGS_DISABLED,
     SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
     SAMPLE_VSCODE_SETTINGS_OVERRIDDEN,
+    SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
 } from './sampleData';
 import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import {
@@ -26,7 +27,10 @@ async function navigateToCodeEditorSettings(
     openDrawer = false,
 ) {
     await page.getByTestId('btnProjects').click();
-    await stubCodeEditorIntegrationSettings(electronApp, [settings]);
+    await stubCodeEditorIntegrationSettings(electronApp, [
+        settings,
+        SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
+    ]);
     await page.getByTestId('btnSettings').click();
     await page.getByTestId('tabCodeEditors').click();
 
@@ -45,6 +49,15 @@ async function navigateToCodeEditorSettings(
     } else {
         await expect(enabledSwitch).not.toBeChecked();
     }
+
+    const vscodiumIntegration = page.getByTestId(
+        'code-editor-integration-vscodium',
+    );
+    await expect(vscodiumIntegration).toBeVisible({ timeout: 10000 });
+    await expect(
+        vscodiumIntegration.getByText('Available', { exact: true }),
+    ).toBeVisible();
+    await expect(vscodiumIntegration.getByRole('checkbox')).toBeChecked();
 
     if (openDrawer) {
         await integration.getByRole('button', { name: 'Edit' }).click();
@@ -108,7 +121,8 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
     },
     {
         fileBase: 'screen_settings_code_editors_available',
-        description: 'Settings (Code Editors tab, VS Code available)',
+        description:
+            'Settings (Code Editors tab, VS Code and VSCodium available)',
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,

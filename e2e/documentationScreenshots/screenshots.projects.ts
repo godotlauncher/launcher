@@ -100,7 +100,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjects').click();
             await page
                 .getByRole('button', {
-                    name: 'My-Other-Game',
+                    name: 'My Other Game',
                     exact: true,
                 })
                 .click();
@@ -278,7 +278,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 page.getByTestId('selectProjectCodeEditor'),
             ).toHaveText('Visual Studio Code');
             const nameField = page.locator('#projectEditName');
-            await nameField.fill('My-Renamed-Prototype');
+            await nameField.fill('My Renamed Prototype');
             await expect(
                 page.getByRole('checkbox', {
                     name: /Also rename Godot project/,
@@ -314,7 +314,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjects').click();
             await expect(
                 page.getByRole('button', {
-                    name: 'Archive-Prototype',
+                    name: 'Archive Prototype',
                     exact: true,
                 }),
             ).toBeVisible({ timeout: 10000 });
@@ -457,7 +457,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
-                .fill('My-Next-Awesome-Game');
+                .fill('My Next Awesome Game');
             await page.waitForTimeout(600);
         },
         cleanup: async (
@@ -489,7 +489,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
-                .fill('Custom-Editor-Game');
+                .fill('Custom Editor Game');
             const selectedCustomRelease = await page
                 .locator('select')
                 .first()
@@ -539,7 +539,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
-                .fill('My-Next-Awesome-Game');
+                .fill('My Next Awesome Game');
             await page.waitForTimeout(600);
         },
         cleanup: async (
@@ -566,7 +566,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
-                .fill('My-Next-Awesome-Game');
+                .fill('My Next Awesome Game');
             await page.waitForTimeout(600);
         },
         cleanup: async (
@@ -593,7 +593,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
-                .fill('My-Next-Awesome-Game');
+                .fill('My Next Awesome Game');
             await page.waitForTimeout(600);
         },
         cleanup: async (
@@ -620,7 +620,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjectCreate').click();
             await page
                 .getByTestId('inputProjectName')
-                .fill('My-Next-Awesome-Game');
+                .fill('My Next Awesome Game');
             await page.getByTestId('checkboxOverwriteProjectPath').check();
             await page.waitForTimeout(600);
         },

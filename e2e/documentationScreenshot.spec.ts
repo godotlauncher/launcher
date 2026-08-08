@@ -118,7 +118,7 @@ async function primeDocumentationApp(
     await mainPage.getByTestId('btnProjects').click();
     await expect(
         mainPage.getByRole('button', {
-            name: 'My-Awesome-game',
+            name: 'My Awesome Game',
             exact: true,
         }),
     ).toBeVisible({
@@ -126,7 +126,7 @@ async function primeDocumentationApp(
     });
     await expect(
         mainPage.getByRole('button', {
-            name: 'My-Other-Game',
+            name: 'My Other Game',
             exact: true,
         }),
     ).toBeVisible({
@@ -134,7 +134,7 @@ async function primeDocumentationApp(
     });
     await expect(
         mainPage.getByRole('button', {
-            name: 'My-Prototype',
+            name: 'My Prototype',
             exact: true,
         }),
     ).toBeVisible({
