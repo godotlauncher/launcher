@@ -141,7 +141,7 @@ export const SAMPLE_PROJECT_ICON_PATH =
 
 export const SAMPLE_PROJECTS: ProjectDetails[] = [
     {
-        name: 'My-Awesome-game',
+        name: 'My Awesome Game',
         path: '/Users/docs/Godot/Projects/my-awesome-game',
         icon_path: SAMPLE_PROJECT_ICON_PATH,
         version: '4.7-stable',
@@ -161,7 +161,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         valid: true,
     },
     {
-        name: 'My-Other-Game',
+        name: 'My Other Game',
         path: '/Users/docs/Godot/Projects/my-other-game',
         icon_path: SAMPLE_PROJECT_ICON_PATH,
         version: '4.5.1-stable',
@@ -181,7 +181,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         valid: true,
     },
     {
-        name: 'My-Prototype',
+        name: 'My Prototype',
         path: '/Users/docs/Godot/Projects/my-prototype',
         icon_path: SAMPLE_PROJECT_ICON_PATH,
         version: SAMPLE_CUSTOM_RELEASE.version,
@@ -204,7 +204,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
 export const SAMPLE_PROJECT_PROTOTYPE = SAMPLE_PROJECTS[2];
 
 export const SAMPLE_PROJECT_WITH_MISSING_EDITOR: ProjectDetails = {
-    name: 'Archive-Prototype',
+    name: 'Archive Prototype',
     path: '/Volumes/Archive/Godot/Projects/archive-prototype',
     icon_path: SAMPLE_PROJECT_ICON_PATH,
     version: SAMPLE_UNAVAILABLE_RELEASE.version,
@@ -326,6 +326,30 @@ export const SAMPLE_VSCODE_SETTINGS_OVERRIDDEN: CodeEditorIntegrationSettings = 
     resolvedGodotExecPath:
         '/Users/docs/Applications/Visual Studio Code.app/Contents/MacOS/Code',
 };
+
+export const SAMPLE_VSCODIUM_SETTINGS_AVAILABLE: CodeEditorIntegrationSettings =
+    {
+        integration: {
+            id: 'vscodium',
+            displayName: 'VSCodium',
+            capabilities: {
+                dotnet: true,
+            },
+        },
+        isDefault: false,
+        enabled: true,
+        customPath: null,
+        defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+        execFlagsOverride: null,
+        resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+        installation: {
+            integrationId: 'vscodium',
+            path: '/Applications/VSCodium.app/Contents/MacOS/Electron',
+            version: '1.95.0',
+        },
+        resolvedGodotExecPath:
+            '/Applications/VSCodium.app/Contents/MacOS/Electron',
+    };
 
 export const DEFAULT_TOOLS: CachedTool[] = [
     { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },
