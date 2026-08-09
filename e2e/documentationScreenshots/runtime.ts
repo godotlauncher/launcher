@@ -455,6 +455,23 @@ export async function stubProjectLaunchResult(
     );
 }
 
+export async function stubProjectGitInitializationFailure(
+    electronApp: ElectronApplication,
+    error: string,
+) {
+    await electronApp.evaluate(({ ipcMain }, message: string) => {
+        const channel = 'app.initializeProjectGit';
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, async () => ({
+            success: false,
+            error: {
+                type: 'Error',
+                message,
+            },
+        }));
+    }, error);
+}
+
 export async function stubCodeEditorIntegrationRescan(
     electronApp: ElectronApplication,
     settings: CodeEditorIntegrationSettings,

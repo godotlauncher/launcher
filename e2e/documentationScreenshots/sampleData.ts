@@ -204,6 +204,23 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
 
 export const SAMPLE_PROJECT_PROTOTYPE = SAMPLE_PROJECTS[2];
 
+export const SAMPLE_WRAPPED_BADGES_RELEASE: InstalledRelease = {
+    ...SAMPLE_CUSTOM_RELEASE,
+    version: '4.7.0-custom.team-preview-snapshot-2026-08-08-development',
+    name: 'Acme Team Preview',
+};
+
+export const SAMPLE_PROJECT_WITH_WRAPPED_BADGES: ProjectDetails = {
+    ...SAMPLE_PROJECTS[0],
+    name: 'My Badge Showcase',
+    path: '/Users/docs/Godot/Projects/my-badge-showcase',
+    version: SAMPLE_WRAPPED_BADGES_RELEASE.version,
+    release: SAMPLE_WRAPPED_BADGES_RELEASE,
+    launch_path: SAMPLE_WRAPPED_BADGES_RELEASE.editor_path,
+    pinned: false,
+    open_windowed: true,
+};
+
 export const SAMPLE_PROJECT_WITH_MISSING_EDITOR: ProjectDetails = {
     name: 'Archive Prototype',
     path: '/Volumes/Archive/Godot/Projects/archive-prototype',
