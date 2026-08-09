@@ -153,6 +153,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
             '/Users/docs/Godot/Projects/my-awesome-game/.godot/editor_settings-4.7.tres',
         last_opened: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
         pinned: true,
+        pinned_order: 0,
         open_windowed: false,
         release: SAMPLE_INSTALLED_RELEASES[0],
         launch_path: '/Applications/Godot_4.7/Godot.app/Contents/MacOS/Godot',

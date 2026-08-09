@@ -35,7 +35,7 @@ type UseProjectActionsArgs = {
     setProjectPinned: (
         project: ProjectDetails,
         pinned: boolean,
-    ) => Promise<ProjectDetails>;
+    ) => Promise<ProjectDetails[]>;
     onProjectPinned: (projectPath: string) => void;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<unknown>;
     removeProject: (project: ProjectDetails) => Promise<unknown>;
@@ -108,9 +108,9 @@ export function useProjectActions({
         setProjectActionsMenu(null);
         runProjectAction(async () => {
             const pinned = !project.pinned;
-            const updatedProject = await setProjectPinned(project, pinned);
+            await setProjectPinned(project, pinned);
             if (pinned) {
-                onProjectPinned(updatedProject.path);
+                onProjectPinned(project.path);
             }
         });
     };

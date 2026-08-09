@@ -13,6 +13,22 @@
         "recents": "Recents",
         "empty": "No projects found."
     },
+    "pinning": {
+        "reorder": {
+            "label": "Reorder {{project}}",
+            "disabledSearch": "Clear search to reorder pinned projects.",
+            "instructions": "To pick up a pinned project, press Space or Enter. Use the arrow keys to move it, Space or Enter to drop it, and Escape to cancel.",
+            "announcements": {
+                "pickedUp": "Picked up {{project}}, position {{position}} of {{count}}.",
+                "moved": "{{project}} moved to position {{position}} of {{count}}.",
+                "dropped": "Dropped {{project}} at position {{position}} of {{count}}.",
+                "cancelled": "Cancelled moving {{project}}."
+            }
+        },
+        "errors": {
+            "orderChanged": "Pinned projects changed. Refresh and try again."
+        }
+    },
     "card": {
         "openFolders": "Open project folders",
         "projectSettings": "Project settings",

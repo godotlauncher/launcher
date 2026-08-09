@@ -137,7 +137,10 @@ export type AppBridge = {
     setProjectPinned(
         project: ProjectDetails,
         pinned: boolean,
-    ): Promise<ProjectDetails>;
+    ): Promise<ProjectDetails[]>;
+    reorderPinnedProjects(
+        orderedProjectPaths: string[],
+    ): Promise<ProjectDetails[]>;
     setProjectCodeEditor(
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,

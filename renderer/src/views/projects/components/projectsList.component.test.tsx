@@ -62,6 +62,7 @@ function renderProjectsList(
         availableVSCodeSettings,
     ],
     locale = 'en',
+    pinnedReorderingDisabled = false,
 ): string {
     return renderToStaticMarkup(
         <ProjectsList
@@ -76,7 +77,9 @@ function renderProjectsList(
             busyProjects={[]}
             codeEditorSettings={codeEditorSettings}
             highlightedPinnedProjectPath={null}
+            pinnedReorderingDisabled={pinnedReorderingDisabled}
             onPinnedHighlightComplete={vi.fn()}
+            onReorderPinnedProjects={vi.fn()}
             isInstalledRelease={vi.fn(() => true)}
             isProjectEditorDownloading={vi.fn(() => false)}
             onLaunchProject={vi.fn()}
@@ -98,21 +101,61 @@ function renderProjectsList(
 }
 
 describe('ProjectsList', () => {
-    it('renders independent sections and repeated project entries', () => {
-        const project = { ...baseProject, pinned: true };
+    it('renders project sections as lists', () => {
+        const pinnedProject = { ...baseProject, pinned: true };
+        const newProject = {
+            ...baseProject,
+            name: 'New Project',
+            path: '/projects/new',
+        };
         const html = renderProjectsList({
-            newProjects: [project],
-            pinnedProjects: [project],
+            newProjects: [newProject],
+            pinnedProjects: [pinnedProject],
         });
 
         expect(html).toContain('sections.new');
         expect(html).toContain('sections.pinned');
-        expect(html.match(/Sample Project/g)?.length).toBeGreaterThanOrEqual(2);
+        expect(html).toContain('New Project');
+        expect(html).toContain('Sample Project');
         expect(html).toContain('data-project-section="new"');
         expect(html).toContain('data-project-section="pinned"');
         expect(html).not.toContain('<table');
         expect(html).toContain('lucide-pin');
         expect(html).not.toContain('lucide-pin-off');
+    });
+
+    it('shows reorder handles only for pinned projects', () => {
+        const html = renderProjectsList({
+            newProjects: [baseProject],
+            pinnedProjects: [
+                {
+                    ...baseProject,
+                    name: 'Pinned Project',
+                    path: '/projects/pinned',
+                    pinned: true,
+                },
+            ],
+        });
+
+        expect(
+            html.match(/data-testid="btnReorderPinnedProject"/g),
+        ).toHaveLength(1);
+        expect(html).toContain('aria-label="pinning.reorder.label"');
+    });
+
+    it('disables pinned reordering while search results are filtered', () => {
+        const html = renderProjectsList(
+            {
+                pinnedProjects: [{ ...baseProject, pinned: true }],
+            },
+            [availableVSCodeSettings],
+            'en',
+            true,
+        );
+
+        expect(html).toContain(
+            'data-testid="btnReorderPinnedProject" disabled=""',
+        );
     });
 
     it('renders project icons and status markers', () => {

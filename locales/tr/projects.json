@@ -13,6 +13,22 @@
         "recents": "Son Kullanılanlar",
         "empty": "Proje bulunamadı."
     },
+    "pinning": {
+        "reorder": {
+            "label": "{{project}} projesini yeniden sırala",
+            "disabledSearch": "Sabitlenen projeleri yeniden sıralamak için aramayı temizleyin.",
+            "instructions": "Sabitlenen bir projeyi almak için Boşluk veya Enter tuşuna basın. Taşımak için ok tuşlarını, bırakmak için Boşluk veya Enter tuşunu, iptal etmek için Escape tuşunu kullanın.",
+            "announcements": {
+                "pickedUp": "{{project}} alındı, {{count}} içinde {{position}}. konum.",
+                "moved": "{{project}}, {{count}} içinde {{position}}. konuma taşındı.",
+                "dropped": "{{project}}, {{count}} içinde {{position}}. konuma bırakıldı.",
+                "cancelled": "{{project}} taşıma işlemi iptal edildi."
+            }
+        },
+        "errors": {
+            "orderChanged": "Sabitlenen projeler değişti. Yenileyip tekrar deneyin."
+        }
+    },
     "card": {
         "openFolders": "Proje klasorlerini ac",
         "projectSettings": "Proje ayarlari",

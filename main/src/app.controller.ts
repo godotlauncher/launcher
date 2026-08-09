@@ -54,6 +54,7 @@ import {
     launchProject,
     removeProject,
     renameProject,
+    reorderPinnedProjects,
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
     setProjectPinned,
@@ -316,6 +317,11 @@ export class AppController implements AppBridge {
     @AppHandler('setProjectPinned')
     setProjectPinned(project: ProjectDetails, pinned: boolean) {
         return setProjectPinned(project, pinned);
+    }
+
+    @AppHandler('reorderPinnedProjects')
+    reorderPinnedProjects(orderedProjectPaths: string[]) {
+        return reorderPinnedProjects(orderedProjectPaths);
     }
 
     @AppHandler('setProjectCodeEditor')

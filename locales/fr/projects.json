@@ -13,6 +13,22 @@
         "recents": "Récents",
         "empty": "Aucun projet trouvé."
     },
+    "pinning": {
+        "reorder": {
+            "label": "Réorganiser {{project}}",
+            "disabledSearch": "Effacez la recherche pour réorganiser les projets épinglés.",
+            "instructions": "Pour saisir un projet épinglé, appuyez sur Espace ou Entrée. Utilisez les flèches pour le déplacer, Espace ou Entrée pour le déposer et Échap pour annuler.",
+            "announcements": {
+                "pickedUp": "{{project}} saisi, position {{position}} sur {{count}}.",
+                "moved": "{{project}} déplacé à la position {{position}} sur {{count}}.",
+                "dropped": "{{project}} déposé à la position {{position}} sur {{count}}.",
+                "cancelled": "Déplacement de {{project}} annulé."
+            }
+        },
+        "errors": {
+            "orderChanged": "Les projets épinglés ont changé. Actualisez et réessayez."
+        }
+    },
     "card": {
         "openFolders": "Ouvrir les dossiers du projet",
         "projectSettings": "Parametres du projet",

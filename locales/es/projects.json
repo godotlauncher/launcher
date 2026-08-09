@@ -13,6 +13,22 @@
         "recents": "Recientes",
         "empty": "No se encontraron proyectos."
     },
+    "pinning": {
+        "reorder": {
+            "label": "Reordenar {{project}}",
+            "disabledSearch": "Borra la búsqueda para reordenar los proyectos fijados.",
+            "instructions": "Para recoger un proyecto fijado, pulsa Espacio o Intro. Usa las teclas de flecha para moverlo, Espacio o Intro para soltarlo y Escape para cancelar.",
+            "announcements": {
+                "pickedUp": "Se recogió {{project}}, posición {{position}} de {{count}}.",
+                "moved": "{{project}} se movió a la posición {{position}} de {{count}}.",
+                "dropped": "Se soltó {{project}} en la posición {{position}} de {{count}}.",
+                "cancelled": "Se canceló el movimiento de {{project}}."
+            }
+        },
+        "errors": {
+            "orderChanged": "Los proyectos fijados cambiaron. Actualiza e inténtalo de nuevo."
+        }
+    },
     "card": {
         "openFolders": "Abrir carpetas del proyecto",
         "projectSettings": "Ajustes del proyecto",

@@ -37,6 +37,7 @@ export type ProjectDetails = {
     added_at?: Date;
     last_opened: Date | null;
     pinned?: boolean;
+    pinned_order?: number;
     open_windowed?: boolean;
     release: InstalledRelease;
     launch_path: string;

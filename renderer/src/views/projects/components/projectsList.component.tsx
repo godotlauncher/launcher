@@ -1,3 +1,12 @@
+import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers';
+import { Accessibility } from '@dnd-kit/dom';
+import {
+    DragDropProvider,
+    type DragEndEvent,
+    type DragOverEvent,
+    type DragStartEvent,
+} from '@dnd-kit/react';
+import { isSortable, useSortable } from '@dnd-kit/react/sortable';
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
@@ -6,6 +15,7 @@ import {
     EllipsisVertical,
     FlaskConical,
     FolderOpen,
+    GripVertical,
     ImageOff,
     PanelTop,
     Pin,
@@ -15,7 +25,7 @@ import {
     TriangleAlert,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
 import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
@@ -35,7 +45,9 @@ type ProjectsListProps = {
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];
     highlightedPinnedProjectPath: string | null;
+    pinnedReorderingDisabled: boolean;
     onPinnedHighlightComplete: () => void;
+    onReorderPinnedProjects: (orderedProjectPaths: string[]) => Promise<void>;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading: (project: ProjectDetails) => boolean;
     onLaunchProject: (project: ProjectDetails) => void;
@@ -57,12 +69,16 @@ type ProjectListItemProps = Omit<
     | 'sections'
     | 'loading'
     | 'highlightedPinnedProjectPath'
+    | 'pinnedReorderingDisabled'
     | 'onPinnedHighlightComplete'
+    | 'onReorderPinnedProjects'
 > & {
     project: ProjectDetails;
     sectionKey: ProjectSectionKey;
     highlighted: boolean;
     pinnedItemRef?: (element: HTMLLIElement | null) => void;
+    reorderHandle?: React.ReactNode;
+    reorderStateClassName?: string;
 };
 
 const ProjectListItem: React.FC<ProjectListItemProps> = ({
@@ -70,6 +86,8 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     sectionKey,
     highlighted,
     pinnedItemRef,
+    reorderHandle,
+    reorderStateClassName = '',
     locale,
     busyProjects,
     codeEditorSettings,
@@ -115,7 +133,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`relative overflow-hidden rounded-xl border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors hover:border-base-content/20 hover:bg-base-200/55 focus-visible:outline-2 focus-visible:outline-primary ${highlighted ? 'project-pin-highlight' : ''}`}
+            className={`relative overflow-hidden rounded-xl border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors motion-reduce:transition-none hover:border-base-content/20 hover:bg-base-200/55 focus-visible:outline-2 focus-visible:outline-primary ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
             data-project-path={project.path}
             data-project-section={sectionKey}
         >
@@ -168,6 +186,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2 self-start">
+                        {reorderHandle}
                         <Tooltip
                             placement="top"
                             tip={t(
@@ -365,14 +384,179 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     );
 };
 
+type SortablePinnedProjectItemProps = Omit<
+    ProjectListItemProps,
+    'sectionKey' | 'pinnedItemRef' | 'reorderHandle' | 'reorderStateClassName'
+> & {
+    index: number;
+    reorderingDisabled: boolean;
+    pinnedItemRef: (element: HTMLLIElement | null) => void;
+};
+
+const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
+    project,
+    index,
+    reorderingDisabled,
+    pinnedItemRef,
+    t,
+    ...itemProps
+}) => {
+    const { ref, handleRef, isDragging, isDropTarget } = useSortable({
+        id: project.path,
+        index,
+        group: 'pinned-projects',
+        disabled: reorderingDisabled,
+        data: { projectName: project.name },
+    });
+    const setItemRef = (element: HTMLLIElement | null) => {
+        ref(element);
+        pinnedItemRef(element);
+    };
+
+    return (
+        <ProjectListItem
+            {...itemProps}
+            t={t}
+            project={project}
+            sectionKey="pinned"
+            pinnedItemRef={setItemRef}
+            reorderStateClassName={`${isDragging ? 'z-[1] opacity-70' : ''} ${isDropTarget ? 'border-primary/60' : ''}`}
+            reorderHandle={
+                <Tooltip
+                    placement="top"
+                    tip={t(
+                        reorderingDisabled
+                            ? 'pinning.reorder.disabledSearch'
+                            : 'pinning.reorder.label',
+                        { project: project.name },
+                    )}
+                >
+                    <button
+                        ref={handleRef}
+                        type="button"
+                        data-testid="btnReorderPinnedProject"
+                        disabled={reorderingDisabled}
+                        className="btn btn-ghost btn-square h-7 min-h-7 w-7 cursor-grab border border-base-300 bg-base-100/20 active:cursor-grabbing"
+                        aria-label={t('pinning.reorder.label', {
+                            project: project.name,
+                        })}
+                    >
+                        <GripVertical size={16} />
+                    </button>
+                </Tooltip>
+            }
+        />
+    );
+};
+
 export const ProjectsList: React.FC<ProjectsListProps> = ({
     sections,
     loading,
     highlightedPinnedProjectPath,
+    pinnedReorderingDisabled,
     onPinnedHighlightComplete,
+    onReorderPinnedProjects,
     ...itemProps
 }) => {
     const pinnedItemRefs = useRef(new Map<string, HTMLLIElement>());
+    const [isPersistingPinnedOrder, setIsPersistingPinnedOrder] =
+        useState(false);
+    const pinnedProjectsByPath = useMemo(
+        () =>
+            new Map(
+                sections.pinnedProjects.map((project) => [
+                    project.path,
+                    project,
+                ]),
+            ),
+        [sections.pinnedProjects],
+    );
+    const accessibilityPlugin = useMemo(
+        () =>
+            Accessibility.configure({
+                screenReaderInstructions: {
+                    draggable: itemProps.t('pinning.reorder.instructions'),
+                },
+                announcements: {
+                    dragstart: ({ operation }: DragStartEvent) => {
+                        const source = operation.source;
+                        if (!isSortable(source)) return;
+                        const project = pinnedProjectsByPath.get(
+                            String(source.id),
+                        );
+                        return itemProps.t(
+                            'pinning.reorder.announcements.pickedUp',
+                            {
+                                project: project?.name ?? String(source.id),
+                                position: source.index + 1,
+                                count: sections.pinnedProjects.length,
+                            },
+                        );
+                    },
+                    dragover: ({ operation }: DragOverEvent) => {
+                        const source = operation.source;
+                        if (!isSortable(source)) return;
+                        const project = pinnedProjectsByPath.get(
+                            String(source.id),
+                        );
+                        return itemProps.t(
+                            'pinning.reorder.announcements.moved',
+                            {
+                                project: project?.name ?? String(source.id),
+                                position: source.index + 1,
+                                count: sections.pinnedProjects.length,
+                            },
+                        );
+                    },
+                    dragend: ({ operation, canceled }: DragEndEvent) => {
+                        const source = operation.source;
+                        if (!isSortable(source)) return;
+                        const project = pinnedProjectsByPath.get(
+                            String(source.id),
+                        );
+                        return itemProps.t(
+                            canceled
+                                ? 'pinning.reorder.announcements.cancelled'
+                                : 'pinning.reorder.announcements.dropped',
+                            {
+                                project: project?.name ?? String(source.id),
+                                position: source.index + 1,
+                                count: sections.pinnedProjects.length,
+                            },
+                        );
+                    },
+                },
+            }),
+        [itemProps.t, pinnedProjectsByPath, sections.pinnedProjects.length],
+    );
+
+    const handlePinnedDragEnd = ({ canceled, operation }: DragEndEvent) => {
+        const source = operation.source;
+        if (
+            canceled ||
+            !isSortable(source) ||
+            source.initialIndex === source.index ||
+            source.initialIndex < 0 ||
+            source.index < 0
+        ) {
+            return;
+        }
+
+        const orderedProjectPaths = sections.pinnedProjects.map(
+            (project) => project.path,
+        );
+        const [movedProjectPath] = orderedProjectPaths.splice(
+            source.initialIndex,
+            1,
+        );
+        if (!movedProjectPath) return;
+        orderedProjectPaths.splice(source.index, 0, movedProjectPath);
+
+        setIsPersistingPinnedOrder(true);
+        void onReorderPinnedProjects(orderedProjectPaths).finally(() =>
+            setIsPersistingPinnedOrder(false),
+        );
+    };
 
     useEffect(() => {
         if (!highlightedPinnedProjectPath) {
@@ -447,37 +631,66 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                             aria-hidden="true"
                         />
                     </div>
-                    <ul className="flex flex-col gap-3">
-                        {section.projects.map((project) => (
-                            <ProjectListItem
-                                key={`${section.key}_${project.path}`}
-                                {...itemProps}
-                                project={project}
-                                sectionKey={section.key}
-                                highlighted={
-                                    section.key === 'pinned' &&
-                                    highlightedPinnedProjectPath ===
-                                        project.path
-                                }
-                                pinnedItemRef={
-                                    section.key === 'pinned'
-                                        ? (element) => {
-                                              if (element) {
-                                                  pinnedItemRefs.current.set(
-                                                      project.path,
-                                                      element,
-                                                  );
-                                              } else {
-                                                  pinnedItemRefs.current.delete(
-                                                      project.path,
-                                                  );
-                                              }
-                                          }
-                                        : undefined
-                                }
-                            />
-                        ))}
-                    </ul>
+                    {section.key === 'pinned' ? (
+                        <DragDropProvider
+                            modifiers={[RestrictToVerticalAxis]}
+                            plugins={(defaults) =>
+                                defaults.map((plugin) =>
+                                    plugin === Accessibility
+                                        ? accessibilityPlugin
+                                        : plugin,
+                                )
+                            }
+                            onDragEnd={handlePinnedDragEnd}
+                        >
+                            <ul className="flex flex-col gap-3">
+                                {section.projects.map((project, index) => (
+                                    <SortablePinnedProjectItem
+                                        key={`${section.key}_${project.path}`}
+                                        {...itemProps}
+                                        project={project}
+                                        index={index}
+                                        reorderingDisabled={
+                                            pinnedReorderingDisabled ||
+                                            isPersistingPinnedOrder
+                                        }
+                                        highlighted={
+                                            highlightedPinnedProjectPath ===
+                                            project.path
+                                        }
+                                        pinnedItemRef={(element) => {
+                                            if (element) {
+                                                pinnedItemRefs.current.set(
+                                                    project.path,
+                                                    element,
+                                                );
+                                            } else {
+                                                pinnedItemRefs.current.delete(
+                                                    project.path,
+                                                );
+                                            }
+                                        }}
+                                    />
+                                ))}
+                            </ul>
+                        </DragDropProvider>
+                    ) : (
+                        <ul className="flex flex-col gap-3">
+                            {section.projects.map((project) => (
+                                <ProjectListItem
+                                    key={`${section.key}_${project.path}`}
+                                    {...itemProps}
+                                    project={project}
+                                    sectionKey={section.key}
+                                    highlighted={
+                                        section.key === 'pinned' &&
+                                        highlightedPinnedProjectPath ===
+                                            project.path
+                                    }
+                                />
+                            ))}
+                        </ul>
+                    )}
                 </section>
             ))}
         </div>

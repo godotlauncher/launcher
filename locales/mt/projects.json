@@ -13,6 +13,22 @@
         "recents": "Riċenti",
         "empty": "Ma nstab l-ebda proġett."
     },
+    "pinning": {
+        "reorder": {
+            "label": "Ibdel l-ordni ta' {{project}}",
+            "disabledSearch": "Neħħi t-tfittxija biex tibdel l-ordni tal-proġetti mwaħħlin.",
+            "instructions": "Biex taqbad proġett imwaħħal, agħfas Space jew Enter. Uża l-vleġeġ biex tmexxih, Space jew Enter biex tpoġġih, u Escape biex tikkanċella.",
+            "announcements": {
+                "pickedUp": "Inqabad {{project}}, pożizzjoni {{position}} minn {{count}}.",
+                "moved": "{{project}} tmexxa għall-pożizzjoni {{position}} minn {{count}}.",
+                "dropped": "{{project}} tqiegħed fil-pożizzjoni {{position}} minn {{count}}.",
+                "cancelled": "Il-moviment ta' {{project}} ġie kkanċellat."
+            }
+        },
+        "errors": {
+            "orderChanged": "Il-proġetti mwaħħlin inbidlu. Aġġorna u erġa' pprova."
+        }
+    },
     "card": {
         "openFolders": "Iftaħ il-folders tal-proġett",
         "projectSettings": "Settings tal-proġett",

@@ -13,6 +13,22 @@
         "recents": "Zuletzt verwendet",
         "empty": "Keine Projekte gefunden."
     },
+    "pinning": {
+        "reorder": {
+            "label": "Reihenfolge von {{project}} ändern",
+            "disabledSearch": "Leeren Sie die Suche, um angeheftete Projekte neu anzuordnen.",
+            "instructions": "Drücken Sie die Leertaste oder Eingabetaste, um ein angeheftetes Projekt aufzunehmen. Verschieben Sie es mit den Pfeiltasten, legen Sie es mit der Leertaste oder Eingabetaste ab und brechen Sie mit Escape ab.",
+            "announcements": {
+                "pickedUp": "{{project}} aufgenommen, Position {{position}} von {{count}}.",
+                "moved": "{{project}} an Position {{position}} von {{count}} verschoben.",
+                "dropped": "{{project}} an Position {{position}} von {{count}} abgelegt.",
+                "cancelled": "Verschieben von {{project}} abgebrochen."
+            }
+        },
+        "errors": {
+            "orderChanged": "Die angehefteten Projekte wurden geändert. Aktualisieren Sie die Ansicht und versuchen Sie es erneut."
+        }
+    },
     "card": {
         "openFolders": "Projektordner offnen",
         "projectSettings": "Projekteinstellungen",

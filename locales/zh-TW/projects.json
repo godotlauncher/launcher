@@ -13,6 +13,22 @@
         "recents": "最近使用",
         "empty": "找不到專案。"
     },
+    "pinning": {
+        "reorder": {
+            "label": "重新排序 {{project}}",
+            "disabledSearch": "清除搜尋後可重新排序已釘選的專案。",
+            "instructions": "按空白鍵或 Enter 鍵選取已釘選的專案。使用方向鍵移動，按空白鍵或 Enter 鍵放下，按 Escape 鍵取消。",
+            "announcements": {
+                "pickedUp": "已選取 {{project}}，位置 {{position}}，共 {{count}} 個。",
+                "moved": "{{project}} 已移至位置 {{position}}，共 {{count}} 個。",
+                "dropped": "{{project}} 已放在位置 {{position}}，共 {{count}} 個。",
+                "cancelled": "已取消移動 {{project}}。"
+            }
+        },
+        "errors": {
+            "orderChanged": "已釘選的專案已變更。請重新整理後再試一次。"
+        }
+    },
     "card": {
         "openFolders": "開啟專案資料夾",
         "projectSettings": "專案設定",

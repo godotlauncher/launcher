@@ -13,6 +13,22 @@
         "recents": "最近使用した項目",
         "empty": "プロジェクトが見つかりません。"
     },
+    "pinning": {
+        "reorder": {
+            "label": "{{project}} の順序を変更",
+            "disabledSearch": "ピン留めしたプロジェクトを並べ替えるには検索をクリアしてください。",
+            "instructions": "ピン留めしたプロジェクトを選択するには Space または Enter キーを押します。矢印キーで移動し、Space または Enter キーで確定、Escape キーでキャンセルします。",
+            "announcements": {
+                "pickedUp": "{{project}} を選択しました。{{count}} 件中 {{position}} 番目です。",
+                "moved": "{{project}} を {{count}} 件中 {{position}} 番目に移動しました。",
+                "dropped": "{{project}} を {{count}} 件中 {{position}} 番目に配置しました。",
+                "cancelled": "{{project}} の移動をキャンセルしました。"
+            }
+        },
+        "errors": {
+            "orderChanged": "ピン留めしたプロジェクトが変更されました。更新してもう一度お試しください。"
+        }
+    },
     "card": {
         "openFolders": "プロジェクトフォルダーを開く",
         "projectSettings": "プロジェクト設定",

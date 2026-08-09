@@ -138,7 +138,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             const warningMarkers = page.locator(
                 '[data-project-path] .lucide-triangle-alert.stroke-warning',
             );
-            await expect(warningMarkers).toHaveCount(4);
+            await expect(warningMarkers).toHaveCount(3);
             await expect(page.locator('.alert-warning')).toHaveCount(0);
             await page.waitForTimeout(400);
         },

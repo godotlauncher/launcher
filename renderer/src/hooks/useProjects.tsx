@@ -54,7 +54,10 @@ interface ProjectsContext {
     setProjectPinned: (
         project: ProjectDetails,
         pinned: boolean,
-    ) => Promise<ProjectDetails>;
+    ) => Promise<ProjectDetails[]>;
+    reorderPinnedProjects: (
+        orderedProjectPaths: string[],
+    ) => Promise<ProjectDetails[]>;
     setProjectCodeEditor: (
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
@@ -213,12 +216,19 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         pinned: boolean,
     ) => {
-        const updatedProject = await appBridge.setProjectPinned(
+        const updatedProjects = await appBridge.setProjectPinned(
             project,
             pinned,
         );
-        updateProjectState(updatedProject);
-        return updatedProject;
+        setProjects(updatedProjects);
+        return updatedProjects;
+    };
+
+    const reorderPinnedProjects = async (orderedProjectPaths: string[]) => {
+        const updatedProjects =
+            await appBridge.reorderPinnedProjects(orderedProjectPaths);
+        setProjects(updatedProjects);
+        return updatedProjects;
     };
 
     const setProjectCodeEditor = async (
@@ -413,6 +423,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 setProjectEditor,
                 setProjectWindowed,
                 setProjectPinned,
+                reorderPinnedProjects,
                 setProjectCodeEditor,
                 resetProjectCodeEditorConfig,
                 initializeProjectGit,

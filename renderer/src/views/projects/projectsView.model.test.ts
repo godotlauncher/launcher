@@ -4,7 +4,12 @@ import { getProjectSections } from './projectsView.model';
 
 function project(
     name: string,
-    options: { addedAt?: string; lastOpened?: string; pinned?: boolean } = {},
+    options: {
+        addedAt?: string;
+        lastOpened?: string;
+        pinned?: boolean;
+        pinnedOrder?: number;
+    } = {},
 ): ProjectDetails {
     return {
         name,
@@ -12,11 +17,12 @@ function project(
         added_at: options.addedAt ? new Date(options.addedAt) : undefined,
         last_opened: options.lastOpened ? new Date(options.lastOpened) : null,
         pinned: options.pinned,
+        pinned_order: options.pinnedOrder,
     } as ProjectDetails;
 }
 
 describe('getProjectSections', () => {
-    it('keeps section membership independent', () => {
+    it('keeps pinned projects out of new and recents', () => {
         const newPinned = project('New Pinned', { pinned: true });
         const recentPinned = project('Recent Pinned', {
             pinned: true,
@@ -25,9 +31,9 @@ describe('getProjectSections', () => {
 
         const sections = getProjectSections([newPinned, recentPinned], '');
 
-        expect(sections.newProjects).toEqual([newPinned]);
+        expect(sections.newProjects).toEqual([]);
         expect(sections.pinnedProjects).toEqual([recentPinned, newPinned]);
-        expect(sections.recentProjects).toEqual([recentPinned]);
+        expect(sections.recentProjects).toEqual([]);
     });
 
     it('sorts new projects by last added and recent projects by last opened', () => {
@@ -56,6 +62,38 @@ describe('getProjectSections', () => {
         ]);
     });
 
+    it('sorts pinned projects by stored order before legacy fallback', () => {
+        const second = project('Second', {
+            pinned: true,
+            pinnedOrder: 1,
+        });
+        const first = project('First', {
+            pinned: true,
+            pinnedOrder: 0,
+        });
+        const legacyNewer = project('Legacy Newer', {
+            pinned: true,
+            lastOpened: '2026-08-08T12:00:00Z',
+        });
+        const legacyOlder = project('Legacy Older', {
+            pinned: true,
+            lastOpened: '2026-08-01T12:00:00Z',
+            pinnedOrder: -1,
+        });
+
+        const sections = getProjectSections(
+            [legacyOlder, second, legacyNewer, first],
+            '',
+        );
+
+        expect(sections.pinnedProjects.map(({ name }) => name)).toEqual([
+            'First',
+            'Second',
+            'Legacy Newer',
+            'Legacy Older',
+        ]);
+    });
+
     it('filters every section using the same search', () => {
         const match = project('Matching Project', { pinned: true });
         const other = project('Other Project', {
@@ -64,7 +102,7 @@ describe('getProjectSections', () => {
 
         const sections = getProjectSections([match, other], ' matching ');
 
-        expect(sections.newProjects).toEqual([match]);
+        expect(sections.newProjects).toEqual([]);
         expect(sections.pinnedProjects).toEqual([match]);
         expect(sections.recentProjects).toEqual([]);
     });

@@ -46,6 +46,35 @@ function sortByLastOpened(projects: ProjectDetails[]): ProjectDetails[] {
     });
 }
 
+function isValidPinnedOrder(value: number | undefined): value is number {
+    return value !== undefined && Number.isInteger(value) && value >= 0;
+}
+
+function sortPinnedProjects(projects: ProjectDetails[]): ProjectDetails[] {
+    return [...projects].sort((a, b) => {
+        const aOrder = isValidPinnedOrder(a.pinned_order)
+            ? a.pinned_order
+            : undefined;
+        const bOrder = isValidPinnedOrder(b.pinned_order)
+            ? b.pinned_order
+            : undefined;
+        const aHasOrder = aOrder !== undefined;
+        const bHasOrder = bOrder !== undefined;
+
+        if (aOrder !== undefined && bOrder !== undefined && aOrder !== bOrder) {
+            return aOrder - bOrder;
+        }
+        if (aHasOrder !== bHasOrder) {
+            return aHasOrder ? -1 : 1;
+        }
+
+        const dateDifference =
+            (b.last_opened?.getTime() ?? 0) - (a.last_opened?.getTime() ?? 0);
+
+        return dateDifference || a.name.localeCompare(b.name);
+    });
+}
+
 export function getProjectSections(
     projects: ProjectDetails[],
     textSearch: string,
@@ -60,13 +89,17 @@ export function getProjectSections(
 
     return {
         newProjects: sortByLastAdded(
-            filteredProjects.filter((project) => !project.last_opened),
+            filteredProjects.filter(
+                (project) => !project.pinned && !project.last_opened,
+            ),
         ),
-        pinnedProjects: sortByLastOpened(
+        pinnedProjects: sortPinnedProjects(
             filteredProjects.filter((project) => project.pinned),
         ),
         recentProjects: sortByLastOpened(
-            filteredProjects.filter((project) => project.last_opened),
+            filteredProjects.filter(
+                (project) => !project.pinned && project.last_opened,
+            ),
         ),
     };
 }

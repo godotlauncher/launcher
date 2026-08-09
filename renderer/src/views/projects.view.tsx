@@ -97,6 +97,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectEditor,
         setProjectWindowed,
         setProjectPinned,
+        reorderPinnedProjects,
         setProjectCodeEditor,
         resetProjectCodeEditorConfig,
         initializeProjectGit,
@@ -109,6 +110,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         renameProject,
         getProjectGodotName,
         removeProject,
+        refreshProjects,
         loading,
     } = useProjects();
     const { setCurrentView } = useAppNavigation();
@@ -121,6 +123,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         handleToggleProjectPinned,
         handleImportEditorSettings,
         handleRemoveProject,
+        showProjectActionError,
     } = useProjectActions({
         t,
         confirmProjectRemove: preferences?.confirm_project_remove,
@@ -307,7 +310,16 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     busyProjects={busyProjects}
                     codeEditorSettings={codeEditorSettings}
                     highlightedPinnedProjectPath={highlightedPinnedProjectPath}
+                    pinnedReorderingDisabled={textSearch.trim().length > 0}
                     onPinnedHighlightComplete={clearPinnedHighlight}
+                    onReorderPinnedProjects={async (orderedProjectPaths) => {
+                        try {
+                            await reorderPinnedProjects(orderedProjectPaths);
+                        } catch (error) {
+                            showProjectActionError(error);
+                            await refreshProjects();
+                        }
+                    }}
                     isInstalledRelease={isInstalledRelease}
                     isProjectEditorDownloading={isProjectEditorDownloading}
                     onLaunchProject={(project) => void onLaunchProject(project)}
