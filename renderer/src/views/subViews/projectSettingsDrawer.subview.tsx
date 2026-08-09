@@ -694,10 +694,10 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                     {t('editProject.sourceControl.help')}
                                 </p>
                             </div>
-                            <div className="flex items-center justify-between gap-4 rounded-lg border border-base-300 bg-base-200/40 p-4">
-                                <div className="flex items-center gap-3">
+                            <div className="flex items-start justify-between gap-4 rounded-lg border border-base-300 bg-base-200/40 p-4">
+                                <div className="flex min-w-0 items-start gap-3">
                                     <GitBranch className="h-5 w-5" />
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex min-w-0 flex-col gap-1">
                                         <span className="font-semibold">
                                             Git
                                         </span>
@@ -708,6 +708,15 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                                     : 'editProject.sourceControl.notConfigured',
                                             )}
                                         </span>
+                                        {!withGit &&
+                                            !loadingGitAvailability &&
+                                            !gitAvailable && (
+                                                <span className="text-sm text-warning">
+                                                    {t(
+                                                        'createProject:otherSettings.gitNotInstalled',
+                                                    )}
+                                                </span>
+                                            )}
                                     </div>
                                 </div>
                                 {withGit ? (
@@ -736,13 +745,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                                 : 'editProject.sourceControl.initialize',
                                         )}
                                     </button>
-                                ) : (
-                                    <span className="max-w-44 text-right text-sm text-warning">
-                                        {t(
-                                            'createProject:otherSettings.gitNotInstalled',
-                                        )}
-                                    </span>
-                                )}
+                                ) : null}
                             </div>
                         </section>
                     )}
