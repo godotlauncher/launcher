@@ -44,14 +44,16 @@ test('Can navigate the main window', async () => {
         });
     });
 
-    await test.step('Opens projects', async () => {
-        await mainPage.getByTestId('btnProjects').click();
-        await expect(mainPage.getByTestId('projectsTitle')).toBeVisible();
-    });
-
     await test.step('Opens installs', async () => {
         await mainPage.getByTestId('btnInstalls').click();
         await expect(mainPage.getByTestId('installsTitle')).toBeVisible();
+        await expect(mainPage.getByTestId('inputInstallSearch')).toBeFocused();
+    });
+
+    await test.step('Opens projects', async () => {
+        await mainPage.getByTestId('btnProjects').click();
+        await expect(mainPage.getByTestId('projectsTitle')).toBeVisible();
+        await expect(mainPage.getByTestId('inputProjectSearch')).toBeFocused();
     });
 
     await test.step('Opens settings', async () => {

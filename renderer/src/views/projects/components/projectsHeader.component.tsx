@@ -71,6 +71,8 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={onSearchChange}
+                focusOnMount
+                data-testid="inputProjectSearch"
             />
         </div>
     </div>

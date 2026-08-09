@@ -29,6 +29,7 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
         description: 'Installs view',
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnInstalls').click();
+            await expect(page.getByTestId('inputInstallSearch')).toBeFocused();
             await page.waitForTimeout(600);
         },
     },

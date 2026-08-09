@@ -45,7 +45,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         description: 'Projects view',
         viewportHeight: 960,
         navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
             await page.getByTestId('btnProjects').click();
+            await expect(page.getByTestId('inputProjectSearch')).toBeFocused();
             const newSection = page.locator(
                 'section[aria-labelledby="new-projects-heading"]',
             );
