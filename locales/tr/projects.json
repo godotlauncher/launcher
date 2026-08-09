@@ -30,13 +30,13 @@
         }
     },
     "card": {
-        "openFolders": "Proje klasorlerini ac",
-        "projectSettings": "Proje ayarlari",
+        "openFolders": "Proje klasörlerini aç",
+        "projectSettings": "Proje ayarları",
         "godotVersion": "Godot {{version}}",
         "windowed": "Pencereli",
-        "opened": "{{age}} acildi",
-        "notOpened": "Henuz acilmadi",
-        "editInGodot": "Godot'ta duzenle"
+        "opened": "{{age}} açıldı",
+        "notOpened": "Henüz açılmadı",
+        "editInGodot": "Godot'ta düzenle"
     },
     "table": {
         "moreOptions": "{{project}} için diğer seçenekler",
@@ -130,29 +130,30 @@
     },
     "editProject": {
         "title": "Proje ayarları",
+        "drawerTitle": "{{project}} Ayarları",
         "description": "Proje adı ayarlarını güncelle.",
         "tabs": {
             "project": "Proje",
-            "sourceControl": "Surum kontrolu",
-            "codeEditor": "Kod editoru",
-            "launch": "Baslatma"
+            "sourceControl": "Sürüm kontrolü",
+            "codeEditor": "Kod editörü",
+            "launch": "Başlatma"
         },
         "sourceControl": {
-            "title": "Surum kontrolu",
-            "help": "Bu proje icin surum kontrolunu yonetin.",
-            "enabled": "Git bu proje icin baslatildi.",
-            "notConfigured": "Git deposu yapilandirilmadi.",
+            "title": "Sürüm kontrolü",
+            "help": "Bu proje için sürüm kontrolünü yönetin.",
+            "enabled": "Git bu proje için başlatıldı.",
+            "notConfigured": "Git deposu yapılandırılmadı.",
             "active": "Etkin",
-            "initialize": "Git'i baslat",
-            "initializing": "Baslatiliyor...",
-            "initFailed": "Git baslatilamadi."
+            "initialize": "Git'i başlat",
+            "initializing": "Başlatılıyor...",
+            "initFailed": "Git başlatılamadı."
         },
         "launch": {
-            "title": "Baslatma",
-            "help": "Godot'nun bu projeyi nasil actigini secin.",
+            "title": "Başlatma",
+            "help": "Godot'nun bu projeyi nasıl açtığını seçin.",
             "windowed": {
                 "label": "Pencereli modu kullan",
-                "help": "Godot editorunu normal bir pencerede acin."
+                "help": "Godot editörünü normal bir pencerede açın."
             }
         },
         "pinned": {
@@ -183,9 +184,9 @@
             }
         },
         "godotEditor": {
-            "title": "Godot Editoru",
-            "help": "Bu projeyi duzenlemek icin Godot surumunu secin.",
-            "unavailable": "Kullanilamiyor"
+            "title": "Godot Editörü",
+            "help": "Bu projeyi düzenlemek için Godot sürümünü seçin.",
+            "unavailable": "Kullanılamıyor"
         },
         "godot": {
             "renameLabel": "Godot projesini de yeniden adlandır",

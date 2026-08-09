@@ -12,6 +12,7 @@ import { ProjectSettingsDrawer } from './projectSettingsDrawer.subview';
 vi.mock('react-i18next', () => {
     const dictionary: Record<string, string> = {
         'projects:editProject.title': 'Project Settings',
+        'projects:editProject.drawerTitle': 'Settings for {{project}}',
         'projects:editProject.fields.name.label': 'Project name',
         'projects:editProject.fields.name.help':
             'Name shown in Godot Launcher.',
@@ -110,7 +111,7 @@ describe('ProjectSettingsDrawer', () => {
             />,
         );
 
-        expect(html).toContain('Demo Settings');
+        expect(html).toContain('Settings for Demo');
         expect(html).not.toContain('Update project naming settings.');
         expect(html).toContain('Project name');
         expect(html).toContain('Godot Editor');

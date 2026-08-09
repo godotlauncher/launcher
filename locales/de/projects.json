@@ -30,12 +30,12 @@
         }
     },
     "card": {
-        "openFolders": "Projektordner offnen",
+        "openFolders": "Projektordner öffnen",
         "projectSettings": "Projekteinstellungen",
         "godotVersion": "Godot {{version}}",
         "windowed": "Fenstermodus",
-        "opened": "Geoffnet {{age}}",
-        "notOpened": "Noch nicht geoffnet",
+        "opened": "Geöffnet {{age}}",
+        "notOpened": "Noch nicht geöffnet",
         "editInGodot": "In Godot bearbeiten"
     },
     "table": {
@@ -130,6 +130,7 @@
     },
     "editProject": {
         "title": "Projekteinstellungen",
+        "drawerTitle": "Einstellungen für {{project}}",
         "description": "Aktualisiere die Namenseinstellungen des Projekts.",
         "tabs": {
             "project": "Projekt",
@@ -139,8 +140,8 @@
         },
         "sourceControl": {
             "title": "Versionskontrolle",
-            "help": "Verwalte die Versionskontrolle fur dieses Projekt.",
-            "enabled": "Git ist fur dieses Projekt initialisiert.",
+            "help": "Verwalten Sie die Versionskontrolle für dieses Projekt.",
+            "enabled": "Git ist für dieses Projekt initialisiert.",
             "notConfigured": "Kein Git-Repository konfiguriert.",
             "active": "Aktiv",
             "initialize": "Git initialisieren",
@@ -149,10 +150,10 @@
         },
         "launch": {
             "title": "Starten",
-            "help": "Lege fest, wie Godot dieses Projekt offnet.",
+            "help": "Legen Sie fest, wie Godot dieses Projekt öffnet.",
             "windowed": {
                 "label": "Fenstermodus verwenden",
-                "help": "Godot in einem normalen Fenster offnen."
+                "help": "Godot in einem normalen Fenster öffnen."
             }
         },
         "pinned": {
@@ -184,8 +185,8 @@
         },
         "godotEditor": {
             "title": "Godot-Editor",
-            "help": "Wahle die Godot-Version fur dieses Projekt.",
-            "unavailable": "Nicht verfugbar"
+            "help": "Wählen Sie die Godot-Version für dieses Projekt.",
+            "unavailable": "Nicht verfügbar"
         },
         "godot": {
             "renameLabel": "Godot-Projekt ebenfalls umbenennen",

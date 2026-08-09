@@ -31,11 +31,11 @@
     },
     "card": {
         "openFolders": "Abrir pastas do projeto",
-        "projectSettings": "Definicoes do projeto",
+        "projectSettings": "Definições do projeto",
         "godotVersion": "Godot {{version}}",
         "windowed": "Em janela",
         "opened": "Aberto {{age}}",
-        "notOpened": "Ainda nao aberto",
+        "notOpened": "Ainda não aberto",
         "editInGodot": "Editar no Godot"
     },
     "table": {
@@ -130,22 +130,23 @@
     },
     "editProject": {
         "title": "Definições do projeto",
+        "drawerTitle": "Definições de {{project}}",
         "description": "Atualiza as definições do nome do projeto.",
         "tabs": {
             "project": "Projeto",
-            "sourceControl": "Controlo de versoes",
-            "codeEditor": "Editor de codigo",
+            "sourceControl": "Controlo de versões",
+            "codeEditor": "Editor de código",
             "launch": "Arranque"
         },
         "sourceControl": {
-            "title": "Controlo de versoes",
-            "help": "Gira o controlo de versoes deste projeto.",
-            "enabled": "O Git esta inicializado para este projeto.",
-            "notConfigured": "Nenhum repositorio Git esta configurado.",
+            "title": "Controlo de versões",
+            "help": "Gira o controlo de versões deste projeto.",
+            "enabled": "O Git está inicializado para este projeto.",
+            "notConfigured": "Nenhum repositório Git está configurado.",
             "active": "Ativo",
             "initialize": "Inicializar Git",
             "initializing": "A inicializar...",
-            "initFailed": "Nao foi possivel inicializar o Git."
+            "initFailed": "Não foi possível inicializar o Git."
         },
         "launch": {
             "title": "Arranque",
@@ -184,8 +185,8 @@
         },
         "godotEditor": {
             "title": "Editor Godot",
-            "help": "Escolha a versao do Godot usada para editar este projeto.",
-            "unavailable": "Indisponivel"
+            "help": "Escolha a versão do Godot usada para editar este projeto.",
+            "unavailable": "Indisponível"
         },
         "godot": {
             "renameLabel": "Mudar também o nome do projeto Godot",

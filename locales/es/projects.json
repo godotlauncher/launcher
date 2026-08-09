@@ -35,7 +35,7 @@
         "godotVersion": "Godot {{version}}",
         "windowed": "En ventana",
         "opened": "Abierto {{age}}",
-        "notOpened": "Aun no abierto",
+        "notOpened": "Aún no abierto",
         "editInGodot": "Editar en Godot"
     },
     "table": {
@@ -130,18 +130,19 @@
     },
     "editProject": {
         "title": "Configuración del proyecto",
+        "drawerTitle": "Ajustes de {{project}}",
         "description": "Actualiza la configuración del nombre del proyecto.",
         "tabs": {
             "project": "Proyecto",
             "sourceControl": "Control de versiones",
-            "codeEditor": "Editor de codigo",
+            "codeEditor": "Editor de código",
             "launch": "Inicio"
         },
         "sourceControl": {
             "title": "Control de versiones",
             "help": "Gestiona el control de versiones de este proyecto.",
-            "enabled": "Git esta inicializado para este proyecto.",
-            "notConfigured": "No hay ningun repositorio Git configurado.",
+            "enabled": "Git está inicializado para este proyecto.",
+            "notConfigured": "No hay ningún repositorio Git configurado.",
             "active": "Activo",
             "initialize": "Inicializar Git",
             "initializing": "Inicializando...",
@@ -149,7 +150,7 @@
         },
         "launch": {
             "title": "Inicio",
-            "help": "Elige como abre Godot este proyecto.",
+            "help": "Elige cómo abre Godot este proyecto.",
             "windowed": {
                 "label": "Usar modo ventana",
                 "help": "Abrir el editor Godot en una ventana normal."
@@ -184,7 +185,7 @@
         },
         "godotEditor": {
             "title": "Editor de Godot",
-            "help": "Elige la version de Godot usada para editar este proyecto.",
+            "help": "Elige la versión de Godot usada para editar este proyecto.",
             "unavailable": "No disponible"
         },
         "godot": {

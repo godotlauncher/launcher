@@ -35,7 +35,7 @@
         "godotVersion": "Godot {{version}}",
         "windowed": "В окне",
         "opened": "Открыт {{age}}",
-        "notOpened": "Еще не открывался",
+        "notOpened": "Ещё не открывался",
         "editInGodot": "Редактировать в Godot"
     },
     "table": {
@@ -130,6 +130,7 @@
     },
     "editProject": {
         "title": "Настройки проекта",
+        "drawerTitle": "Настройки проекта {{project}}",
         "description": "Обновите настройки имени проекта.",
         "tabs": {
             "project": "Проект",

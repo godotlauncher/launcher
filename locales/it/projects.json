@@ -130,17 +130,18 @@
     },
     "editProject": {
         "title": "Impostazioni progetto",
+        "drawerTitle": "Impostazioni di {{project}}",
         "description": "Aggiorna le impostazioni del nome del progetto.",
         "tabs": {
             "project": "Progetto",
-            "sourceControl": "Controllo versione",
+            "sourceControl": "Controllo di versione",
             "codeEditor": "Editor di codice",
             "launch": "Avvio"
         },
         "sourceControl": {
-            "title": "Controllo versione",
-            "help": "Gestisci il controllo versione per questo progetto.",
-            "enabled": "Git e inizializzato per questo progetto.",
+            "title": "Controllo di versione",
+            "help": "Gestisci il controllo di versione per questo progetto.",
+            "enabled": "Git è inizializzato per questo progetto.",
             "notConfigured": "Nessun repository Git configurato.",
             "active": "Attivo",
             "initialize": "Inizializza Git",
@@ -151,7 +152,7 @@
             "title": "Avvio",
             "help": "Scegli come Godot apre questo progetto.",
             "windowed": {
-                "label": "Usa modalita finestra",
+                "label": "Usa modalità finestra",
                 "help": "Apri l'editor Godot in una finestra normale."
             }
         },

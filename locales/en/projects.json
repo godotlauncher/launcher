@@ -130,6 +130,7 @@
     },
     "editProject": {
         "title": "Project Settings",
+        "drawerTitle": "{{project}} Settings",
         "description": "Update project naming settings.",
         "tabs": {
             "project": "Project",

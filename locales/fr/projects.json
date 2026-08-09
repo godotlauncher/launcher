@@ -31,9 +31,9 @@
     },
     "card": {
         "openFolders": "Ouvrir les dossiers du projet",
-        "projectSettings": "Parametres du projet",
+        "projectSettings": "Paramètres du projet",
         "godotVersion": "Godot {{version}}",
-        "windowed": "Fenetre",
+        "windowed": "Fenêtre",
         "opened": "Ouvert {{age}}",
         "notOpened": "Pas encore ouvert",
         "editInGodot": "Modifier dans Godot"
@@ -130,18 +130,19 @@
     },
     "editProject": {
         "title": "Paramètres du projet",
+        "drawerTitle": "Paramètres de {{project}}",
         "description": "Mettre à jour les paramètres de nom du projet.",
         "tabs": {
             "project": "Projet",
-            "sourceControl": "Controle de version",
-            "codeEditor": "Editeur de code",
+            "sourceControl": "Contrôle de version",
+            "codeEditor": "Éditeur de code",
             "launch": "Lancement"
         },
         "sourceControl": {
-            "title": "Controle de version",
-            "help": "Gerez le controle de version de ce projet.",
-            "enabled": "Git est initialise pour ce projet.",
-            "notConfigured": "Aucun depot Git n'est configure.",
+            "title": "Contrôle de version",
+            "help": "Gérez le contrôle de version de ce projet.",
+            "enabled": "Git est initialisé pour ce projet.",
+            "notConfigured": "Aucun dépôt Git n'est configuré.",
             "active": "Actif",
             "initialize": "Initialiser Git",
             "initializing": "Initialisation...",
@@ -151,8 +152,8 @@
             "title": "Lancement",
             "help": "Choisissez comment Godot ouvre ce projet.",
             "windowed": {
-                "label": "Utiliser le mode fenetre",
-                "help": "Ouvrir l'editeur Godot dans une fenetre normale."
+                "label": "Utiliser le mode fenêtre",
+                "help": "Ouvrir l'éditeur Godot dans une fenêtre normale."
             }
         },
         "pinned": {
@@ -183,8 +184,8 @@
             }
         },
         "godotEditor": {
-            "title": "Editeur Godot",
-            "help": "Choisissez la version de Godot utilisee pour ce projet.",
+            "title": "Éditeur Godot",
+            "help": "Choisissez la version de Godot utilisée pour ce projet.",
             "unavailable": "Indisponible"
         },
         "godot": {

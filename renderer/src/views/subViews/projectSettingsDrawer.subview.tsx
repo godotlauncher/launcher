@@ -527,7 +527,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         isSubmitting ||
         loadingGodotName;
     const drawerTitle = project
-        ? `${project.name} Settings`
+        ? t('editProject.drawerTitle', { project: project.name })
         : t('editProject.title');
 
     return (

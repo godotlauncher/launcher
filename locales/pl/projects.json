@@ -30,7 +30,7 @@
         }
     },
     "card": {
-        "openFolders": "Otworz foldery projektu",
+        "openFolders": "Otwórz foldery projektu",
         "projectSettings": "Ustawienia projektu",
         "godotVersion": "Godot {{version}}",
         "windowed": "W oknie",
@@ -130,6 +130,7 @@
     },
     "editProject": {
         "title": "Ustawienia projektu",
+        "drawerTitle": "Ustawienia projektu {{project}}",
         "description": "Zaktualizuj ustawienia nazwy projektu.",
         "tabs": {
             "project": "Projekt",
@@ -139,20 +140,20 @@
         },
         "sourceControl": {
             "title": "Kontrola wersji",
-            "help": "Zarzadzaj kontrola wersji dla tego projektu.",
+            "help": "Zarządzaj kontrolą wersji dla tego projektu.",
             "enabled": "Git jest zainicjalizowany dla tego projektu.",
             "notConfigured": "Repozytorium Git nie jest skonfigurowane.",
             "active": "Aktywne",
             "initialize": "Zainicjalizuj Git",
             "initializing": "Inicjalizowanie...",
-            "initFailed": "Nie mozna zainicjalizowac Git."
+            "initFailed": "Nie można zainicjalizować Git."
         },
         "launch": {
             "title": "Uruchamianie",
-            "help": "Wybierz sposob otwierania projektu przez Godot.",
+            "help": "Wybierz sposób otwierania projektu przez Godot.",
             "windowed": {
-                "label": "Uzyj trybu okienkowego",
-                "help": "Otworz edytor Godot w zwyklym oknie."
+                "label": "Użyj trybu okienkowego",
+                "help": "Otwórz edytor Godot w zwykłym oknie."
             }
         },
         "pinned": {
@@ -184,8 +185,8 @@
         },
         "godotEditor": {
             "title": "Edytor Godot",
-            "help": "Wybierz wersje Godot uzywana do edycji projektu.",
-            "unavailable": "Niedostepne"
+            "help": "Wybierz wersję Godot używaną do edycji projektu.",
+            "unavailable": "Niedostępne"
         },
         "godot": {
             "renameLabel": "Zmień także nazwę projektu Godot",

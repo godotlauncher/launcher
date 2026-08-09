@@ -130,6 +130,7 @@
     },
     "editProject": {
         "title": "プロジェクト設定",
+        "drawerTitle": "{{project}} の設定",
         "description": "プロジェクト名の設定を更新します。",
         "tabs": {
             "project": "プロジェクト",

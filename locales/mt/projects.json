@@ -130,6 +130,7 @@
     },
     "editProject": {
         "title": "Settings tal-Proġett",
+        "drawerTitle": "Settings ta' {{project}}",
         "description": "Aġġorna s-settings tal-isem tal-proġett.",
         "tabs": {
             "project": "Proġett",
