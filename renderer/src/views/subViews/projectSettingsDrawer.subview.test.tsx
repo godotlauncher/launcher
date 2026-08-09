@@ -12,11 +12,20 @@ import { ProjectSettingsDrawer } from './projectSettingsDrawer.subview';
 vi.mock('react-i18next', () => {
     const dictionary: Record<string, string> = {
         'projects:editProject.title': 'Project Settings',
+        'projects:editProject.drawerTitle': 'Settings for {{project}}',
         'projects:editProject.fields.name.label': 'Project name',
         'projects:editProject.fields.name.help':
             'Name shown in Godot Launcher.',
         'projects:editProject.fields.name.placeholder': 'My Project',
         'projects:editProject.fields.path.label': 'Project folder',
+        'projects:editProject.pinned.label': 'Pinned',
+        'projects:editProject.tabs.project': 'Project',
+        'projects:editProject.tabs.sourceControl': 'Source Control',
+        'projects:editProject.tabs.codeEditor': 'Code Editor',
+        'projects:editProject.tabs.launch': 'Launch',
+        'projects:editProject.godotEditor.title': 'Godot Editor',
+        'projects:editProject.godotEditor.help':
+            'Choose the Godot version used to edit this project.',
         'projects:editProject.godot.renameLabel': 'Also rename Godot project',
         'projects:editProject.godot.loading': 'Checking Godot project...',
         'projects:editProject.godot.unavailable':
@@ -80,6 +89,7 @@ const project: ProjectDetails = {
     config_version: 5,
     codeEditorId: null,
     withGit: false,
+    pinned: true,
     valid: true,
 };
 
@@ -89,24 +99,37 @@ describe('ProjectSettingsDrawer', () => {
             <ProjectSettingsDrawer
                 project={project}
                 open
+                installedReleases={[project.release]}
                 onOpenChange={vi.fn()}
                 onRenameProject={vi.fn()}
+                onSetProjectEditor={vi.fn()}
                 onSetProjectCodeEditor={vi.fn()}
+                onSetProjectWindowed={vi.fn()}
+                onInitializeProjectGit={vi.fn()}
                 onResetProjectCodeEditorConfig={vi.fn()}
                 getProjectGodotName={vi.fn()}
             />,
         );
 
-        expect(html).toContain('Demo Settings');
+        expect(html).toContain('Settings for Demo');
         expect(html).not.toContain('Update project naming settings.');
         expect(html).toContain('Project name');
+        expect(html).toContain('Godot Editor');
+        expect(html).toContain('4.2');
         expect(html).toContain('/projects/demo');
         expect(html).not.toContain('Project folder');
         expect(html).toContain('Also rename Godot project');
         expect(html).toContain('Code Editor');
-        expect(html).toContain('Choose the code editor used for this project.');
+        expect(html).toContain('Source Control');
+        expect(html).toContain('Launch');
+        expect(html).toContain('Pinned');
+        expect(html).not.toContain('Keep this project in the Pinned section.');
         expect(html).toContain('Update');
         expect(html).toContain('Cancel');
+
+        expect(html.indexOf('Also rename Godot project')).toBeGreaterThan(
+            html.indexOf('Project name'),
+        );
     });
 
     it('validates rename names', () => {

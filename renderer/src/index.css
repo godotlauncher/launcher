@@ -90,6 +90,51 @@
     animation: reveal-after-delay 0s linear 1s both;
 }
 
+@keyframes project-pin-highlight {
+    0%,
+    45%,
+    100% {
+        background-color: transparent;
+        box-shadow: 0 0 0 0 transparent;
+    }
+
+    22%,
+    67% {
+        background-color: color-mix(
+            in oklch,
+            var(--color-primary) 16%,
+            transparent
+        );
+        box-shadow: 0 0 0 2px var(--color-primary);
+    }
+}
+
+.project-pin-highlight {
+    animation: project-pin-highlight 1.5s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @keyframes project-pin-highlight {
+        from {
+            background-color: color-mix(
+                in oklch,
+                var(--color-primary) 16%,
+                transparent
+            );
+            box-shadow: 0 0 0 2px var(--color-primary);
+        }
+
+        to {
+            background-color: transparent;
+            box-shadow: 0 0 0 0 transparent;
+        }
+    }
+
+    .project-pin-highlight {
+        animation-duration: 1.5s;
+    }
+}
+
 @font-face {
     font-family: "Nunito Sans";
     src: url("/assets/Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.ttf")

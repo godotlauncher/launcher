@@ -12,6 +12,8 @@
         "openConfigFolder": "開啟設定資料夾"
     },
     "project": {
+        "pinProject": "釘選專案",
+        "unpinProject": "取消釘選專案",
         "openProjectFolder": "開啟專案資料夾",
         "launchEditor": "在 Godot 中編輯",
         "projectSettings": "專案設定",

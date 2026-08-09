@@ -59,36 +59,41 @@ type CreateProjectRendererSectionProps = {
 export const CreateProjectRendererSection: React.FC<
     CreateProjectRendererSectionProps
 > = ({ t, renderer, versionNumber, onRendererChange }) => (
-    <div className="flex flex-col flex-1 gap-2">
+    <div className="flex flex-col gap-2">
         <h2 className="text-md">{t('renderer.title')}</h2>
         {versionNumber >= 4 && (
-            <div className="flex flex-row gap-4 p-4">
-                {rendererOptions.map((option) => (
-                    <label key={option.value} className="flex gap-2">
-                        <input
-                            type="radio"
-                            name="project-renderer"
-                            data-testid={option.testId}
-                            className="radio checked:bg-info justify-start items-center"
-                            value={option.value}
-                            onChange={(event) =>
-                                onRendererChange(
-                                    event.target.value as RendererType[5],
-                                )
-                            }
-                            checked={renderer === option.value}
-                        />
-                        <span className="">{t(option.labelKey)}</span>
-                    </label>
-                ))}
+            <div className="flex flex-col gap-2">
+                <div className="flex flex-row flex-wrap items-center gap-2">
+                    {rendererOptions.map((option) => (
+                        <label
+                            key={option.value}
+                            className="flex flex-row items-center gap-2 rounded-md px-2 py-1.5 hover:bg-base-200"
+                        >
+                            <input
+                                type="radio"
+                                name="project-renderer"
+                                data-testid={option.testId}
+                                className="radio checked:bg-info"
+                                value={option.value}
+                                onChange={(event) =>
+                                    onRendererChange(
+                                        event.target.value as RendererType[5],
+                                    )
+                                }
+                                checked={renderer === option.value}
+                            />
+                            <span>{t(option.labelKey)}</span>
+                        </label>
+                    ))}
+                </div>
+                <div className="border-t border-base-300 pt-3 text-sm">
+                    <ul className="list-disc space-y-1 pl-5">
+                        {rendererFeatureKeys[renderer].map((featureKey) => (
+                            <li key={featureKey}>{t(featureKey)}</li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         )}
-        <div className="text-sm">
-            <ul className="list-disc ml-10">
-                {rendererFeatureKeys[renderer].map((featureKey) => (
-                    <li key={featureKey}>{t(featureKey)}</li>
-                ))}
-            </ul>
-        </div>
     </div>
 );

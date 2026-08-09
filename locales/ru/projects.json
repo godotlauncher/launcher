@@ -7,7 +7,39 @@
     "search": {
         "placeholder": "Поиск"
     },
+    "sections": {
+        "new": "Новые",
+        "pinned": "Закреплённые",
+        "recents": "Недавние",
+        "empty": "Проекты не найдены."
+    },
+    "pinning": {
+        "reorder": {
+            "label": "Изменить порядок {{project}}",
+            "disabledSearch": "Очистите поиск, чтобы изменить порядок закреплённых проектов.",
+            "instructions": "Чтобы выбрать закреплённый проект, нажмите Пробел или Enter. Перемещайте его стрелками, нажмите Пробел или Enter для размещения и Escape для отмены.",
+            "announcements": {
+                "pickedUp": "Выбран {{project}}, позиция {{position}} из {{count}}.",
+                "moved": "{{project}} перемещён на позицию {{position}} из {{count}}.",
+                "dropped": "{{project}} размещён на позиции {{position}} из {{count}}.",
+                "cancelled": "Перемещение {{project}} отменено."
+            }
+        },
+        "errors": {
+            "orderChanged": "Список закреплённых проектов изменился. Обновите страницу и повторите попытку."
+        }
+    },
+    "card": {
+        "openFolders": "Открыть папки проекта",
+        "projectSettings": "Настройки проекта",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "В окне",
+        "opened": "Открыт {{age}}",
+        "notOpened": "Ещё не открывался",
+        "editInGodot": "Редактировать в Godot"
+    },
     "table": {
+        "moreOptions": "Дополнительные действия для {{project}}",
         "name": "Название",
         "modified": "Изменён",
         "editor": "Редактор",
@@ -98,7 +130,35 @@
     },
     "editProject": {
         "title": "Настройки проекта",
+        "drawerTitle": "Настройки проекта {{project}}",
         "description": "Обновите настройки имени проекта.",
+        "tabs": {
+            "project": "Проект",
+            "sourceControl": "Контроль версий",
+            "codeEditor": "Редактор кода",
+            "launch": "Запуск"
+        },
+        "sourceControl": {
+            "title": "Контроль версий",
+            "help": "Настройте контроль версий для этого проекта.",
+            "enabled": "Git инициализирован для этого проекта.",
+            "notConfigured": "Репозиторий Git не настроен.",
+            "active": "Активен",
+            "initialize": "Инициализировать Git",
+            "initializing": "Инициализация...",
+            "initFailed": "Не удалось инициализировать Git."
+        },
+        "launch": {
+            "title": "Запуск",
+            "help": "Выберите, как Godot открывает этот проект.",
+            "windowed": {
+                "label": "Использовать оконный режим",
+                "help": "Открывать редактор Godot в обычном окне."
+            }
+        },
+        "pinned": {
+            "label": "Закреплён"
+        },
         "fields": {
             "name": {
                 "label": "Имя проекта",
@@ -122,6 +182,11 @@
                 "confirmTitle": "Сбросить конфигурацию {{editor}}?",
                 "confirmMessage": "Это повторно применит конфигурацию редактора кода проекта."
             }
+        },
+        "godotEditor": {
+            "title": "Редактор Godot",
+            "help": "Выберите версию Godot для редактирования проекта.",
+            "unavailable": "Недоступно"
         },
         "godot": {
             "renameLabel": "Также переименовать проект Godot",

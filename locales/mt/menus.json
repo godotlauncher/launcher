@@ -12,6 +12,8 @@
         "openConfigFolder": "Iftaħ Folder tal-Konfigurazzjoni"
     },
     "project": {
+        "pinProject": "Waħħal il-proġett",
+        "unpinProject": "Neħħi l-proġett minn Imwaħħla",
         "openProjectFolder": "Iftaħ Folder tal-Proġett",
         "launchEditor": "Editja f'Godot",
         "projectSettings": "Settings tal-Proġett",

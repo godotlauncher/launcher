@@ -4,10 +4,10 @@ import type {
     CodeEditorIntegrationSettings,
     RendererType,
 } from '@shared/contracts';
-import { X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
+import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { useFileSystem } from '../../hooks/useFileSystem';
@@ -31,11 +31,15 @@ import {
 } from './createProject/createProject.model';
 
 type SubViewProps = {
-    onClose: () => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
 };
 
-export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
-    const { t } = useTranslation(['createProject', 'projects']);
+export const CreateProjectDrawer: React.FC<SubViewProps> = ({
+    open,
+    onOpenChange,
+}) => {
+    const { t } = useTranslation(['createProject', 'projects', 'common']);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseIndex, setReleaseIndex] = useState<number>(0);
     const [projectName, setProjectName] = useState<string>('');
@@ -62,6 +66,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     const inputNameRef = useRef<HTMLInputElement>(null);
     const overwritePathCheckRequestRef = useRef<number>(0);
     const overwriteBasePathInitializedRef = useRef<boolean>(false);
+    const defaultOverwriteBasePathRef = useRef('');
 
     const { installedReleases, downloadingReleases } = useRelease();
     const { createProject, launchProject } = useProjects();
@@ -147,6 +152,13 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         (isOverwritePathEmpty || isOverwritePathChangedFromDefault);
 
     useEffect(() => {
+        defaultOverwriteBasePathRef.current =
+            preferences?.projects_location ?? '';
+
+        if (!open) {
+            return;
+        }
+
         if (
             !overwriteBasePathInitializedRef.current &&
             preferences?.projects_location
@@ -154,9 +166,13 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
             setOverwriteBasePath(preferences.projects_location);
             overwriteBasePathInitializedRef.current = true;
         }
-    }, [preferences?.projects_location]);
+    }, [open, preferences?.projects_location]);
 
     useEffect(() => {
+        if (!open) {
+            return;
+        }
+
         if (!overwriteProjectPath) {
             overwritePathCheckRequestRef.current += 1;
             setCheckingOverwriteBasePath(false);
@@ -202,7 +218,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         return () => {
             window.clearTimeout(timeoutId);
         };
-    }, [overwriteBasePath, overwriteProjectPath, pathExists]);
+    }, [open, overwriteBasePath, overwriteProjectPath, pathExists]);
 
     const onCreateProject = async () => {
         setError(undefined);
@@ -225,7 +241,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         setCreating(false);
 
         if (result.success && result.projectDetails) {
-            onClose();
+            onOpenChange(false);
             if (editNow) {
                 launchProject(result.projectDetails);
             }
@@ -257,21 +273,44 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
     );
 
     useEffect(() => {
-        if (inputNameRef.current) {
-            inputNameRef.current.focus();
+        if (!open) {
+            return;
         }
+
+        let active = true;
+        const animationFrameId = window.requestAnimationFrame(() => {
+            inputNameRef.current?.focus();
+        });
+
         appBridge
             .getCachedTools({ refreshIfStale: false })
-            .then(setTools)
+            .then((cachedTools) => {
+                if (active) {
+                    setTools(cachedTools);
+                }
+            })
             .catch(() => {
-                setTools([]);
+                if (active) {
+                    setTools([]);
+                }
             })
             .finally(() => {
-                setLoadingTools(false);
+                if (active) {
+                    setLoadingTools(false);
+                }
             });
-    }, []);
+
+        return () => {
+            active = false;
+            window.cancelAnimationFrame(animationFrameId);
+        };
+    }, [open]);
 
     useEffect(() => {
+        if (!open) {
+            return;
+        }
+
         let active = true;
 
         listIntegrationSettings()
@@ -296,7 +335,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
         return () => {
             active = false;
         };
-    }, [listIntegrationSettings]);
+    }, [listIntegrationSettings, open]);
 
     useEffect(() => {
         if (loadingTools || loadingCodeEditors) return;
@@ -331,39 +370,77 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
 
     const gitAvailable = hasTool('Git');
 
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        setRenderer('FORWARD_PLUS');
+        setReleaseIndex(0);
+        setProjectName('');
+        setOverwriteBasePath(defaultOverwriteBasePathRef.current);
+        setOverwriteBasePathMissing(false);
+        setCheckingOverwriteBasePath(false);
+        setEditNow(true);
+        setError(undefined);
+        setCreating(false);
+        setSelectingFolder(false);
+        setTools([]);
+        setOverwriteProjectPath(false);
+        setWithGit(true);
+        setCodeEditorId(null);
+        setLoadingTools(true);
+        setCodeEditorSettings([]);
+        setLoadingCodeEditors(true);
+        setCodeEditorLoadFailed(false);
+        overwritePathCheckRequestRef.current += 1;
+        overwriteBasePathInitializedRef.current = Boolean(
+            defaultOverwriteBasePathRef.current,
+        );
+    }, [open]);
+
+    const closeDisabled = creating || selectingFolder;
+
     return (
-        <div className="absolute inset-0 z-20 w-full h-full p-4 bg-base-300 flex flex-col items-center">
+        <Drawer
+            open={open}
+            onOpenChange={onOpenChange}
+            side="right"
+            closeOnBackdrop={!closeDisabled}
+            closeOnEscape={!closeDisabled}
+            width="min(900px, 100vw)"
+            panelClassName="max-w-[100vw]"
+        >
             {selectingFolder && (
                 <WaitingForDialogOverlay
-                    className="z-30"
+                    className="z-60"
                     message={t('projects:messages.waitingForDialog')}
                 />
             )}
-            <div className="flex flex-col w-[900px] h-full  overflow-hidden">
-                <div className="flex flex-col gap-2 w-full">
-                    <div className="flex flex-row justify-between">
-                        <h1 data-testid="settingsTitle" className="text-2xl">
-                            {t('title')}
-                        </h1>
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                data-testid="btnCloseCreateProject"
-                            >
-                                <X />
-                            </button>
+            <Drawer.Header>
+                <Drawer.Title>{t('title')}</Drawer.Title>
+                <Drawer.CloseButton
+                    data-testid="btnCloseCreateProject"
+                    disabled={closeDisabled}
+                />
+            </Drawer.Header>
+            <form className="flex min-h-0 flex-1 flex-col">
+                <Drawer.Body className="flex flex-col gap-5">
+                    {error && (
+                        <div
+                            className="alert alert-error alert-soft"
+                            role="alert"
+                        >
+                            {error}
                         </div>
-                    </div>
-                </div>
-                <div className="divider my-2 "></div>
-                <div className="flex flex-col gap-4 p-1">
+                    )}
                     <CreateProjectProjectSection
                         t={t}
                         releases={allReleases}
                         releaseIndex={releaseIndex}
                         inputNameRef={inputNameRef}
                         installedReleaseCount={installedReleases.length}
+                        projectName={projectName}
                         derivedProjectPath={derivedProjectPath}
                         overwriteProjectPath={overwriteProjectPath}
                         overwriteBasePath={overwriteBasePath}
@@ -384,7 +461,7 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                         }
                         onOverwriteProjectPathChange={setOverwriteProjectPath}
                     />
-                    <div className="flex flex-row justify-between">
+                    <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
                         <CreateProjectRendererSection
                             t={t}
                             renderer={renderer}
@@ -406,20 +483,23 @@ export const CreateProjectSubView: React.FC<SubViewProps> = ({ onClose }) => {
                             onCodeEditorIdChange={setCodeEditorId}
                         />
                     </div>
+                </Drawer.Body>
+                <Drawer.Footer className="justify-between">
                     <CreateProjectActions
-                        error={error}
                         editNow={editNow}
                         creating={creating}
                         createDisabled={
                             installedReleases.length < 1 || isOverwritePathEmpty
                         }
                         editNowLabel={t('buttons.editNow')}
+                        cancelLabel={t('common:buttons.cancel')}
                         createLabel={t('buttons.create')}
                         onEditNowChange={setEditNow}
+                        onCancel={() => onOpenChange(false)}
                         onCreateProject={() => void onCreateProject()}
                     />
-                </div>
-            </div>
-        </div>
+                </Drawer.Footer>
+            </form>
+        </Drawer>
     );
 };

@@ -12,6 +12,8 @@
         "openConfigFolder": "Open Config Folder"
     },
     "project": {
+        "pinProject": "Pin Project",
+        "unpinProject": "Unpin Project",
         "openProjectFolder": "Open Project Folder",
         "launchEditor": "Edit in Godot",
         "projectSettings": "Project Settings",

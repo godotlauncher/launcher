@@ -9,7 +9,6 @@ import {
 } from '@playwright/test';
 import {
     createFixtureHome,
-    openProjectActionsMenu,
     prepareAppWithStubbedData,
     stubCodeEditorIntegrationSettings,
 } from './documentationScreenshots/runtime';
@@ -178,15 +177,16 @@ test('Project Settings preserves an unavailable selection and can save explicit 
     });
 
     await mainPage.getByTestId('btnProjects').click();
-    await openProjectActionsMenu(mainPage, SAMPLE_PROJECT_PROTOTYPE.name);
-    await mainPage
-        .getByRole('button', { name: 'Project Settings' })
-        .click();
+    const projectCard = mainPage.locator('[data-project-path]').filter({
+        has: mainPage.getByText(SAMPLE_PROJECT_PROTOTYPE.name, { exact: true }),
+    });
+    await projectCard.getByTestId('btnProjectSettings').click();
 
     const dialog = mainPage.getByRole('dialog', {
         name: `${SAMPLE_PROJECT_PROTOTYPE.name} Settings`,
     });
     await expect(dialog).toBeVisible();
+    await dialog.getByTestId('tabProjectSettings_codeEditor').click();
 
     const trigger = dialog.getByTestId('selectProjectCodeEditor');
     await expect(trigger).toHaveText('Visual Studio Code (Not found)');
@@ -241,12 +241,10 @@ test('Project launch warns when its selected code editor is unavailable', async 
     });
 
     await mainPage.getByTestId('btnProjects').click();
-    await mainPage
-        .getByRole('button', {
-            name: SAMPLE_PROJECT_PROTOTYPE.name,
-            exact: true,
-        })
-        .click();
+    const projectCard = mainPage.locator('[data-project-path]').filter({
+        has: mainPage.getByText(SAMPLE_PROJECT_PROTOTYPE.name, { exact: true }),
+    });
+    await projectCard.getByTestId('btnEditProjectInGodot').click();
 
     const warningDialog = mainPage.getByRole('dialog', {
         name: 'Visual Studio Code was not found',

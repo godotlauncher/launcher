@@ -262,6 +262,7 @@ describe('addProject', () => {
         );
 
         expect(result.success).toBe(true);
+        expect(result.newProject?.added_at).toBeInstanceOf(Date);
         expect(result.newProject?.release.mono).toBe(true);
         expect(result.newProject?.release.version).toBe('4.3-stable');
         expect(setProjectEditorRelease).toHaveBeenCalledWith(

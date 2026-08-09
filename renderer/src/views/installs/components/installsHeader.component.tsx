@@ -98,6 +98,8 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={onSearchChange}
+                focusOnMount
+                data-testid="inputInstallSearch"
             />
         </div>
     </div>

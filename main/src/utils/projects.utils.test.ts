@@ -240,6 +240,8 @@ describe('projects.utils', () => {
 
         const [storedProject] = await getStoredProjectsList(projectsFile);
         expect(storedProject.codeEditorId).toBe('vscode');
+        expect(storedProject.pinned).toBe(false);
+        expect(storedProject.added_at).toBeUndefined();
 
         await storeProjectsList(projectsFile, [storedProject]);
 
@@ -248,6 +250,61 @@ describe('projects.utils', () => {
         ) as StoredProjectDetails[];
         expect(persistedProject.codeEditorId).toBe('vscode');
         expect(persistedProject.withVSCode).toBe(true);
+    });
+
+    it('persists pinned project state', async () => {
+        await storeProjectsList(projectsFile, [
+            {
+                path: '/projects/pinned',
+                last_opened: null,
+                pinned: true,
+                pinned_order: 2,
+                codeEditorId: null,
+            } as ProjectDetails,
+        ]);
+
+        const [storedProject] = await getStoredProjectsList(projectsFile);
+        expect(storedProject.pinned).toBe(true);
+        expect(storedProject.pinned_order).toBe(2);
+    });
+
+    it('drops invalid or unpinned project order values', async () => {
+        await storeProjectsList(projectsFile, [
+            {
+                path: '/projects/invalid-order',
+                last_opened: null,
+                pinned: true,
+                pinned_order: -1,
+                codeEditorId: null,
+            } as ProjectDetails,
+            {
+                path: '/projects/not-pinned',
+                last_opened: null,
+                pinned: false,
+                pinned_order: 0,
+                codeEditorId: null,
+            } as ProjectDetails,
+        ]);
+
+        const storedProjects = await getStoredProjectsList(projectsFile);
+        expect(storedProjects[0].pinned_order).toBeUndefined();
+        expect(storedProjects[1].pinned_order).toBeUndefined();
+    });
+
+    it('normalises persisted added timestamps', async () => {
+        await storeProjectsList(projectsFile, [
+            {
+                path: '/projects/recently-added',
+                added_at: new Date('2026-08-08T09:30:00.000Z'),
+                last_opened: null,
+                codeEditorId: null,
+            } as ProjectDetails,
+        ]);
+
+        const [storedProject] = await getStoredProjectsList(projectsFile);
+        expect(storedProject.added_at).toEqual(
+            new Date('2026-08-08T09:30:00.000Z'),
+        );
     });
 
     it('mirrors the legacy VS Code flag for opted-in projects', async () => {

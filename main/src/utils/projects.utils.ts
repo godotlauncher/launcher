@@ -12,8 +12,9 @@ import { getDefaultDirs } from './platform.utils.js';
 
 export type StoredProjectDetails = Omit<
     ProjectDetails,
-    'codeEditorId' | 'last_opened'
+    'added_at' | 'codeEditorId' | 'last_opened'
 > & {
+    added_at?: Date | string;
     codeEditorId?: CodeEditorId | null;
     withVSCode?: boolean;
     last_opened: Date | string | null;
@@ -60,6 +61,11 @@ export function fromStoredProject(
 
     return {
         ...project,
+        added_at: toDate(storedProject.added_at) ?? undefined,
+        pinned: storedProject.pinned ?? false,
+        pinned_order: storedProject.pinned
+            ? normalizePinnedOrder(storedProject.pinned_order)
+            : undefined,
         codeEditorId:
             storedProject.codeEditorId !== undefined
                 ? storedProject.codeEditorId
@@ -73,8 +79,17 @@ export function fromStoredProject(
 export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
     return {
         ...project,
+        pinned_order: project.pinned
+            ? normalizePinnedOrder(project.pinned_order)
+            : undefined,
         withVSCode: project.codeEditorId === 'vscode',
     };
+}
+
+function normalizePinnedOrder(value: number | undefined): number | undefined {
+    return Number.isInteger(value) && value !== undefined && value >= 0
+        ? value
+        : undefined;
 }
 
 function fromStoredProjects(

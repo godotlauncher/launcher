@@ -12,6 +12,8 @@
         "openConfigFolder": "設定フォルダを開く"
     },
     "project": {
+        "pinProject": "プロジェクトをピン留め",
+        "unpinProject": "ピン留めを解除",
         "openProjectFolder": "プロジェクトフォルダを開く",
         "launchEditor": "Godotで編集",
         "projectSettings": "プロジェクト設定",

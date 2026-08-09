@@ -7,7 +7,39 @@
     "search": {
         "placeholder": "Rechercher"
     },
+    "sections": {
+        "new": "Nouveaux",
+        "pinned": "Épinglés",
+        "recents": "Récents",
+        "empty": "Aucun projet trouvé."
+    },
+    "pinning": {
+        "reorder": {
+            "label": "Réorganiser {{project}}",
+            "disabledSearch": "Effacez la recherche pour réorganiser les projets épinglés.",
+            "instructions": "Pour saisir un projet épinglé, appuyez sur Espace ou Entrée. Utilisez les flèches pour le déplacer, Espace ou Entrée pour le déposer et Échap pour annuler.",
+            "announcements": {
+                "pickedUp": "{{project}} saisi, position {{position}} sur {{count}}.",
+                "moved": "{{project}} déplacé à la position {{position}} sur {{count}}.",
+                "dropped": "{{project}} déposé à la position {{position}} sur {{count}}.",
+                "cancelled": "Déplacement de {{project}} annulé."
+            }
+        },
+        "errors": {
+            "orderChanged": "Les projets épinglés ont changé. Actualisez et réessayez."
+        }
+    },
+    "card": {
+        "openFolders": "Ouvrir les dossiers du projet",
+        "projectSettings": "Paramètres du projet",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "Fenêtre",
+        "opened": "Ouvert {{age}}",
+        "notOpened": "Pas encore ouvert",
+        "editInGodot": "Modifier dans Godot"
+    },
     "table": {
+        "moreOptions": "Plus d'options pour {{project}}",
         "name": "Nom",
         "modified": "Modifié",
         "editor": "Éditeur",
@@ -98,7 +130,35 @@
     },
     "editProject": {
         "title": "Paramètres du projet",
+        "drawerTitle": "Paramètres de {{project}}",
         "description": "Mettre à jour les paramètres de nom du projet.",
+        "tabs": {
+            "project": "Projet",
+            "sourceControl": "Contrôle de version",
+            "codeEditor": "Éditeur de code",
+            "launch": "Lancement"
+        },
+        "sourceControl": {
+            "title": "Contrôle de version",
+            "help": "Gérez le contrôle de version de ce projet.",
+            "enabled": "Git est initialisé pour ce projet.",
+            "notConfigured": "Aucun dépôt Git n'est configuré.",
+            "active": "Actif",
+            "initialize": "Initialiser Git",
+            "initializing": "Initialisation...",
+            "initFailed": "Impossible d'initialiser Git."
+        },
+        "launch": {
+            "title": "Lancement",
+            "help": "Choisissez comment Godot ouvre ce projet.",
+            "windowed": {
+                "label": "Utiliser le mode fenêtre",
+                "help": "Ouvrir l'éditeur Godot dans une fenêtre normale."
+            }
+        },
+        "pinned": {
+            "label": "Épinglé"
+        },
         "fields": {
             "name": {
                 "label": "Nom du projet",
@@ -122,6 +182,11 @@
                 "confirmTitle": "Réinitialiser la configuration de {{editor}} ?",
                 "confirmMessage": "Cela réappliquera la configuration de l'éditeur de code du projet."
             }
+        },
+        "godotEditor": {
+            "title": "Éditeur Godot",
+            "help": "Choisissez la version de Godot utilisée pour ce projet.",
+            "unavailable": "Indisponible"
         },
         "godot": {
             "renameLabel": "Renommer aussi le projet Godot",

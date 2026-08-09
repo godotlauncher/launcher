@@ -7,7 +7,39 @@
     "search": {
         "placeholder": "検索"
     },
+    "sections": {
+        "new": "新規",
+        "pinned": "ピン留め",
+        "recents": "最近使用した項目",
+        "empty": "プロジェクトが見つかりません。"
+    },
+    "pinning": {
+        "reorder": {
+            "label": "{{project}} の順序を変更",
+            "disabledSearch": "ピン留めしたプロジェクトを並べ替えるには検索をクリアしてください。",
+            "instructions": "ピン留めしたプロジェクトを選択するには Space または Enter キーを押します。矢印キーで移動し、Space または Enter キーで確定、Escape キーでキャンセルします。",
+            "announcements": {
+                "pickedUp": "{{project}} を選択しました。{{count}} 件中 {{position}} 番目です。",
+                "moved": "{{project}} を {{count}} 件中 {{position}} 番目に移動しました。",
+                "dropped": "{{project}} を {{count}} 件中 {{position}} 番目に配置しました。",
+                "cancelled": "{{project}} の移動をキャンセルしました。"
+            }
+        },
+        "errors": {
+            "orderChanged": "ピン留めしたプロジェクトが変更されました。更新してもう一度お試しください。"
+        }
+    },
+    "card": {
+        "openFolders": "プロジェクトフォルダーを開く",
+        "projectSettings": "プロジェクト設定",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "ウィンドウ表示",
+        "opened": "{{age}}に開きました",
+        "notOpened": "まだ開いていません",
+        "editInGodot": "Godot で編集"
+    },
     "table": {
+        "moreOptions": "{{project}} のその他のオプション",
         "name": "名前",
         "modified": "変更日時",
         "editor": "エディタ",
@@ -98,7 +130,35 @@
     },
     "editProject": {
         "title": "プロジェクト設定",
+        "drawerTitle": "{{project}} の設定",
         "description": "プロジェクト名の設定を更新します。",
+        "tabs": {
+            "project": "プロジェクト",
+            "sourceControl": "ソース管理",
+            "codeEditor": "コードエディター",
+            "launch": "起動"
+        },
+        "sourceControl": {
+            "title": "ソース管理",
+            "help": "このプロジェクトのバージョン管理を設定します。",
+            "enabled": "このプロジェクトでは Git が初期化されています。",
+            "notConfigured": "Git リポジトリは設定されていません。",
+            "active": "有効",
+            "initialize": "Git を初期化",
+            "initializing": "初期化中...",
+            "initFailed": "Git を初期化できませんでした。"
+        },
+        "launch": {
+            "title": "起動",
+            "help": "Godot でプロジェクトを開く方法を選びます。",
+            "windowed": {
+                "label": "ウィンドウモードを使用",
+                "help": "Godot エディターを通常のウィンドウで開きます。"
+            }
+        },
+        "pinned": {
+            "label": "ピン留め"
+        },
         "fields": {
             "name": {
                 "label": "プロジェクト名",
@@ -122,6 +182,11 @@
                 "confirmTitle": "{{editor}} の設定をリセットしますか？",
                 "confirmMessage": "プロジェクトのコードエディター設定を再適用します。"
             }
+        },
+        "godotEditor": {
+            "title": "Godot エディター",
+            "help": "このプロジェクトの編集に使う Godot バージョンを選択します。",
+            "unavailable": "利用不可"
         },
         "godot": {
             "renameLabel": "Godot プロジェクト名も変更する",

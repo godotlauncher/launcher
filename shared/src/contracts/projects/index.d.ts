@@ -34,7 +34,10 @@ export type ProjectDetails = {
     icon_path?: string;
     editor_settings_path: string;
     editor_settings_file: string;
+    added_at?: Date;
     last_opened: Date | null;
+    pinned?: boolean;
+    pinned_order?: number;
     open_windowed?: boolean;
     release: InstalledRelease;
     launch_path: string;

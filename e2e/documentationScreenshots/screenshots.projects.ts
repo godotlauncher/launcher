@@ -12,11 +12,13 @@ import {
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
     stubInstalledTools,
+    stubProjectGitInitializationFailure,
 } from './runtime';
 import {
     DEFAULT_TOOLS,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
+    SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
     SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION,
     SAMPLE_CUSTOM_RELEASE,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
@@ -39,8 +41,29 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_view',
         description: 'Projects view',
+        viewportHeight: 960,
         navigate: async (page: ElectronPage) => {
+            await page.getByTestId('btnInstalls').click();
             await page.getByTestId('btnProjects').click();
+            await expect(page.getByTestId('inputProjectSearch')).toBeFocused();
+            const newSection = page.locator(
+                'section[aria-labelledby="new-projects-heading"]',
+            );
+            const pinnedSection = page.locator(
+                'section[aria-labelledby="pinned-projects-heading"]',
+            );
+            const recentsSection = page.locator(
+                'section[aria-labelledby="recents-projects-heading"]',
+            );
+            await expect(
+                newSection.getByText('My Prototype', { exact: true }),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                pinnedSection.getByText('My Awesome Game', { exact: true }),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                recentsSection.getByText('My Other Game', { exact: true }),
+            ).toBeInViewport({ timeout: 10000 });
             await page.waitForTimeout(600);
         },
     },
@@ -59,7 +82,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('btnProjects').click();
 
             const warningMarkers = page.locator(
-                'tbody .lucide-triangle-alert.stroke-warning',
+                '[data-project-path] .lucide-triangle-alert.stroke-warning',
             );
             await expect(warningMarkers).toHaveCount(3);
             await expect(page.locator('.alert-warning')).toHaveCount(0);
@@ -98,12 +121,13 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await setScreenshotViewport(page, 800);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
-            await page
-                .getByRole('button', {
-                    name: 'My Other Game',
-                    exact: true,
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText('My Other Game', { exact: true }),
                 })
-                .click();
+                .first();
+            await projectCard.getByTestId('btnEditProjectInGodot').click();
 
             const warningDialog = page.getByRole('dialog', {
                 name: 'Visual Studio Code was not found',
@@ -148,18 +172,59 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await expect(
-                page.getByRole('button', {
-                    name: SAMPLE_PROJECT_PROTOTYPE.name,
-                    exact: true,
-                }),
+                page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, { exact: true }),
             ).toBeVisible({ timeout: 10000 });
             await openProjectActionsMenu(page, SAMPLE_PROJECT_PROTOTYPE.name);
             await expect(
                 page.getByRole('button', {
-                    name: 'Initialize Git Repository',
+                    name: 'Export Editor Settings to File',
                 }),
             ).toBeVisible({ timeout: 10000 });
             await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await closeActionMenu(page);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_folders_menu',
+        description: 'Project folder quick actions',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectFolders').click();
+            await expect(
+                page.getByRole('button', {
+                    name: 'Open Project Folder',
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByRole('button', {
+                    name: 'Open Editor Settings Folder',
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
         },
         cleanup: async (
             page: ElectronPage,
@@ -184,19 +249,21 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await prepareAppWithStubbedData(page, electronApp);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
-            const projectRow = page.locator('tbody tr').filter({
-                has: page.getByRole('button', {
-                    name: project.name,
-                    exact: true,
-                }),
-            });
+            const projectRow = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(project.name, { exact: true }),
+                })
+                .first();
             await expect(projectRow).toBeVisible({ timeout: 10000 });
-            await projectRow
-                .getByRole('button', { name: project.version })
-                .click();
+            await projectRow.getByTestId('btnProjectSettings').click();
+            await page.getByTestId('selectProjectGodotEditor').click();
+            await expect(page.getByRole('listbox')).toBeVisible({
+                timeout: 10000,
+            });
             await expect(
-                page.getByText('Select editor version', { exact: true }),
-            ).toBeVisible({ timeout: 10000 });
+                page.getByRole('option', { name: project.version }),
+            ).toHaveAttribute('aria-selected', 'true');
             await page.waitForTimeout(400);
         },
         cleanup: async (
@@ -221,19 +288,23 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await prepareAppWithStubbedData(page, electronApp);
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
-            const projectRow = page.locator('tbody tr').filter({
-                has: page.getByRole('button', {
-                    name: project.name,
-                    exact: true,
-                }),
-            });
+            const projectRow = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(project.name, { exact: true }),
+                })
+                .first();
             await expect(projectRow).toBeVisible({ timeout: 10000 });
-            await projectRow
-                .getByRole('button', { name: project.version })
-                .click();
+            await projectRow.getByTestId('btnProjectSettings').click();
+            await page.getByTestId('selectProjectGodotEditor').click();
+            await expect(page.getByRole('listbox')).toBeVisible({
+                timeout: 10000,
+            });
             await expect(
-                page.getByText('Select editor version', { exact: true }),
-            ).toBeVisible({ timeout: 10000 });
+                page.getByRole('option', {
+                    name: 'Acme 4.7 Custom Editor (Custom)',
+                }),
+            ).toHaveAttribute('aria-selected', 'true');
             await page.waitForTimeout(400);
         },
         cleanup: async (
@@ -260,23 +331,25 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await expect(
-                page.getByRole('button', {
-                    name: SAMPLE_PROJECT_PROTOTYPE.name,
-                    exact: true,
-                }),
+                page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, { exact: true }),
             ).toBeVisible({ timeout: 10000 });
-            await openProjectActionsMenu(page, SAMPLE_PROJECT_PROTOTYPE.name);
-            await page
-                .getByRole('button', { name: 'Project Settings' })
-                .click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
             await expect(
                 page.getByRole('dialog', {
                     name: `${SAMPLE_PROJECT_PROTOTYPE.name} Settings`,
                 }),
             ).toBeVisible({ timeout: 10000 });
-            await expect(
-                page.getByTestId('selectProjectCodeEditor'),
-            ).toHaveText('Visual Studio Code');
+            await expect(page.getByTestId('selectProjectGodotEditor')).toHaveText(
+                'Acme 4.7 Custom Editor (Custom)',
+            );
             const nameField = page.locator('#projectEditName');
             await nameField.fill('My Renamed Prototype');
             await expect(
@@ -284,6 +357,263 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     name: /Also rename Godot project/,
                 }),
             ).toBeEnabled({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_settings_source_control',
+        description: 'Project settings source control tab',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page
+                .getByTestId('tabProjectSettings_sourceControl')
+                .click();
+            await expect(
+                page.getByRole('button', {
+                    name: 'Initialize Git',
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_settings_source_control_active',
+        description: 'Project settings with active source control',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText('My Awesome Game', { exact: true }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page
+                .getByTestId('tabProjectSettings_sourceControl')
+                .click();
+            await expect(
+                page.getByText('Git is initialized for this project.', {
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page.getByText('Active', { exact: true }),
+            ).toBeVisible();
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_settings_source_control_no_git',
+        description: 'Project settings source control without Git installed',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                tools: TOOLS_NO_GIT,
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page
+                .getByTestId('tabProjectSettings_sourceControl')
+                .click();
+            await expect(
+                page.getByText('Git is not installed on this computer', {
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_settings_source_control_init_failure',
+        description: 'Project settings source control initialization failure',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await stubProjectGitInitializationFailure(
+                electronApp,
+                'Failed to initialize Git repository.',
+            );
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page
+                .getByTestId('tabProjectSettings_sourceControl')
+                .click();
+            await page
+                .getByRole('button', {
+                    name: 'Initialize Git',
+                    exact: true,
+                })
+                .click();
+            await expect(
+                page.getByText('Failed to initialize Git repository.', {
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_settings_code_editor',
+        description: 'Project settings code editor tab',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            ]);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page.getByTestId('tabProjectSettings_codeEditor').click();
+            await expect(
+                page.getByTestId('selectProjectCodeEditor'),
+            ).toHaveText('Visual Studio Code');
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_settings_launch',
+        description: 'Project settings launch tab',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page.getByTestId('tabProjectSettings_launch').click();
+            await expect(
+                page.getByRole('checkbox', {
+                    name: 'Use windowed mode',
+                }),
+            ).toBeVisible({ timeout: 10000 });
             await page.waitForTimeout(400);
         },
         cleanup: async (
@@ -313,10 +643,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await expect(
-                page.getByRole('button', {
-                    name: 'Archive Prototype',
-                    exact: true,
-                }),
+                page.getByText('Archive Prototype', { exact: true }),
             ).toBeVisible({ timeout: 10000 });
             await page.waitForTimeout(600);
         },
@@ -386,7 +713,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     name: 'Editor version required',
                 }),
             ).toBeVisible({ timeout: 10000 });
-            await page.getByRole('button', { name: 'Options' }).click();
+            await page
+                .getByRole('button', { name: 'Options', exact: true })
+                .click();
             await page.waitForTimeout(400);
         },
         cleanup: async (
@@ -464,6 +793,62 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(600);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_code_editor_options',
+        description: 'New Project view with code editor options',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await page.getByTestId('btnProjects').click();
+            await stubCodeEditorIntegrationSettings(electronApp, [
+                {
+                    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+                    isDefault: true,
+                },
+                SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
+            ]);
+            await page.getByTestId('btnProjectCreate').click();
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My Next Awesome Game');
+
+            const codeEditorSelect = page.getByTestId(
+                'selectCreateProjectCodeEditor',
+            );
+            await expect(codeEditorSelect).toHaveText('Visual Studio Code');
+            await codeEditorSelect.click();
+            await expect(page.getByRole('listbox')).toBeVisible({
+                timeout: 10000,
+            });
+            const vscodeOption = page.getByRole('option', {
+                name: 'Visual Studio Code',
+                exact: true,
+            });
+            await expect(vscodeOption).toBeVisible();
+            await expect(vscodeOption).toHaveAttribute(
+                'aria-selected',
+                'true',
+            );
+            await expect(
+                page.getByRole('option', {
+                    name: 'VSCodium',
+                    exact: true,
+                }),
+            ).toBeVisible();
+            await page.waitForTimeout(600);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await page.keyboard.press('Escape');
             await stubInstalledTools(electronApp, DEFAULT_TOOLS);
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);

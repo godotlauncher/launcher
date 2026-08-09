@@ -9,8 +9,10 @@ import {
     launchProject,
     removeProject,
     renameProject,
+    reorderPinnedProjects,
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
+    setProjectPinned,
 } from './projects.js';
 
 const childProcessMocks = vi.hoisted(() => ({
@@ -464,6 +466,247 @@ describe('launchProject', () => {
             }
         },
     );
+});
+
+describe('setProjectPinned', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        getMainWindow.mockReturnValue({ webContents: {} });
+    });
+
+    it('persists pin state and broadcasts the updated list', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_path, projects) => projects,
+        );
+
+        await expect(setProjectPinned(project, true)).resolves.toEqual([
+            expect.objectContaining({
+                path: project.path,
+                pinned: true,
+                pinned_order: 0,
+            }),
+        ]);
+
+        expect(storeProjectsList).toHaveBeenCalledWith(
+            path.resolve('/config', 'projects.json'),
+            [
+                expect.objectContaining({
+                    path: project.path,
+                    pinned: true,
+                    pinned_order: 0,
+                }),
+            ],
+            { expectedVersion: 'v1' },
+        );
+        expect(ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            expect.anything(),
+            [expect.objectContaining({ pinned: true })],
+        );
+    });
+
+    it('retries after a concurrent project-list update', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot
+            .mockResolvedValueOnce({ projects: [project], version: 'v1' })
+            .mockResolvedValueOnce({ projects: [project], version: 'v2' });
+        storeProjectsList
+            .mockRejectedValueOnce(
+                new JsonStoreConflictError('/config/projects.json'),
+            )
+            .mockImplementationOnce(async (_path, projects) => projects);
+
+        await setProjectPinned(project, true);
+
+        expect(storeProjectsList).toHaveBeenCalledTimes(2);
+        expect(storeProjectsList).toHaveBeenLastCalledWith(
+            path.resolve('/config', 'projects.json'),
+            [expect.objectContaining({ pinned: true })],
+            { expectedVersion: 'v2' },
+        );
+    });
+
+    it('puts a newly pinned project first and compacts existing order', async () => {
+        const existing = createProjectDetails({
+            name: 'Existing',
+            path: '/projects/existing',
+            pinned: true,
+            pinned_order: 4,
+        });
+        const project = createProjectDetails({
+            name: 'New Pin',
+            path: '/projects/new-pin',
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [existing, project],
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_path, projects) => projects,
+        );
+
+        const result = await setProjectPinned(project, true);
+
+        expect(result).toEqual([
+            expect.objectContaining({
+                path: existing.path,
+                pinned_order: 1,
+            }),
+            expect.objectContaining({
+                path: project.path,
+                pinned_order: 0,
+            }),
+        ]);
+    });
+
+    it('clears an unpinned project order and compacts remaining projects', async () => {
+        const project = createProjectDetails({
+            pinned: true,
+            pinned_order: 0,
+        });
+        const remaining = createProjectDetails({
+            name: 'Remaining',
+            path: '/projects/remaining',
+            pinned: true,
+            pinned_order: 3,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project, remaining],
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_path, projects) => projects,
+        );
+
+        const result = await setProjectPinned(project, false);
+
+        expect(result).toEqual([
+            expect.objectContaining({
+                path: project.path,
+                pinned: false,
+                pinned_order: undefined,
+            }),
+            expect.objectContaining({
+                path: remaining.path,
+                pinned_order: 0,
+            }),
+        ]);
+    });
+});
+
+describe('reorderPinnedProjects', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+        getMainWindow.mockReturnValue({ webContents: {} });
+    });
+
+    it('persists and broadcasts the complete pinned order', async () => {
+        const first = createProjectDetails({
+            name: 'First',
+            path: '/projects/first',
+            pinned: true,
+            pinned_order: 0,
+        });
+        const second = createProjectDetails({
+            name: 'Second',
+            path: '/projects/second',
+            pinned: true,
+            pinned_order: 1,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [first, second],
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_path, projects) => projects,
+        );
+
+        const result = await reorderPinnedProjects([second.path, first.path]);
+
+        expect(result).toEqual([
+            expect.objectContaining({ path: first.path, pinned_order: 1 }),
+            expect.objectContaining({ path: second.path, pinned_order: 0 }),
+        ]);
+        expect(storeProjectsList).toHaveBeenCalledWith(
+            path.resolve('/config', 'projects.json'),
+            expect.any(Array),
+            { expectedVersion: 'v1' },
+        );
+        expect(ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            expect.anything(),
+            result,
+        );
+    });
+
+    it.each([
+        ['/projects/first'],
+        ['/projects/first', '/projects/first'],
+        ['/projects/first', '/projects/unknown'],
+    ])('rejects a stale or invalid pinned path set', async (...paths) => {
+        const first = createProjectDetails({
+            path: '/projects/first',
+            pinned: true,
+            pinned_order: 0,
+        });
+        const second = createProjectDetails({
+            path: '/projects/second',
+            pinned: true,
+            pinned_order: 1,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [first, second],
+            version: 'v1',
+        });
+
+        await expect(reorderPinnedProjects(paths)).rejects.toThrow(
+            'projects:pinning.errors.orderChanged',
+        );
+        expect(storeProjectsList).not.toHaveBeenCalled();
+    });
+
+    it('retries a write conflict against the latest matching pinned set', async () => {
+        const first = createProjectDetails({
+            path: '/projects/first',
+            pinned: true,
+            pinned_order: 0,
+        });
+        const second = createProjectDetails({
+            path: '/projects/second',
+            pinned: true,
+            pinned_order: 1,
+        });
+        getProjectsSnapshot
+            .mockResolvedValueOnce({
+                projects: [first, second],
+                version: 'v1',
+            })
+            .mockResolvedValueOnce({
+                projects: [first, second],
+                version: 'v2',
+            });
+        storeProjectsList
+            .mockRejectedValueOnce(
+                new JsonStoreConflictError('/config/projects.json'),
+            )
+            .mockImplementationOnce(async (_path, projects) => projects);
+
+        await reorderPinnedProjects([second.path, first.path]);
+
+        expect(storeProjectsList).toHaveBeenCalledTimes(2);
+        expect(storeProjectsList).toHaveBeenLastCalledWith(
+            path.resolve('/config', 'projects.json'),
+            expect.any(Array),
+            { expectedVersion: 'v2' },
+        );
+    });
 });
 
 describe('removeProject', () => {

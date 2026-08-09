@@ -11,6 +11,7 @@ type CreateProjectProjectSectionProps = {
     releaseIndex: number;
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     installedReleaseCount: number;
+    projectName: string;
     derivedProjectPath: string;
     overwriteProjectPath: boolean;
     overwriteBasePath: string;
@@ -36,6 +37,7 @@ export const CreateProjectProjectSection: React.FC<
     releaseIndex,
     inputNameRef,
     installedReleaseCount,
+    projectName,
     derivedProjectPath,
     overwriteProjectPath,
     overwriteBasePath,
@@ -74,19 +76,41 @@ export const CreateProjectProjectSection: React.FC<
                     {t('project.noVersionsInstalled')}
                 </p>
             )}
-            <div className="flex flex-row gap-2">
-                <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-3">
+                <div className="flex flex-row gap-3">
                     <input
                         ref={inputNameRef}
                         data-testid="inputProjectName"
                         className="input input-bordered w-full"
                         type="text"
                         placeholder={t('project.nameplaceholder')}
+                        value={projectName}
                         onChange={(event) =>
                             onProjectNameChange(event.target.value)
                         }
                     />
-                    <label className="input w-full z-10">
+                    <select
+                        className="select select-bordered w-1/3"
+                        value={releaseIndex}
+                        onChange={(event) =>
+                            onReleaseChange(+event.target.value)
+                        }
+                    >
+                        {releases.map((release, index) => (
+                            <option
+                                disabled={release.editor_path?.length === 0}
+                                key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
+                                value={index}
+                            >
+                                {release.editor_path?.length > 0
+                                    ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
+                                    : `${release.name ?? release.version} ${t('project.downloading')}`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <label className="input z-10 min-w-0 flex-1">
                         <input
                             data-testid="inputProjectPath"
                             className="input input-bordered w-full active:outline-0 outline-0"
@@ -146,35 +170,7 @@ export const CreateProjectProjectSection: React.FC<
                             </Tooltip>
                         )}
                     </label>
-                    {overwriteProjectPath && isOverwritePathEmpty && (
-                        <p
-                            data-testid="msgOverwritePathRequired"
-                            className="text-error text-xs"
-                        >
-                            {t('project.overwritePathRequired')}
-                        </p>
-                    )}
-                </div>
-                <div className="flex flex-col gap-2">
-                    <select
-                        className="select select-bordered w-[300px]"
-                        onChange={(event) =>
-                            onReleaseChange(+event.target.value)
-                        }
-                    >
-                        {releases.map((release, index) => (
-                            <option
-                                disabled={release.editor_path?.length === 0}
-                                key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
-                                value={index}
-                            >
-                                {release.editor_path?.length > 0
-                                    ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
-                                    : `${release.name ?? release.version} ${t('project.downloading')}`}
-                            </option>
-                        ))}
-                    </select>
-                    <label className="flex h-10 gap-2 items-center w-[300px]">
+                    <label className="flex items-center gap-2 sm:min-w-48">
                         <input
                             type="checkbox"
                             data-testid="checkboxOverwriteProjectPath"
@@ -186,9 +182,17 @@ export const CreateProjectProjectSection: React.FC<
                                 )
                             }
                         />
-                        <span className="">{t('project.overwritePath')}</span>
+                        <span>{t('project.overwritePath')}</span>
                     </label>
                 </div>
+                {overwriteProjectPath && isOverwritePathEmpty && (
+                    <p
+                        data-testid="msgOverwritePathRequired"
+                        className="text-error text-xs sm:ml-[12.75rem]"
+                    >
+                        {t('project.overwritePathRequired')}
+                    </p>
+                )}
             </div>
         </div>
     );

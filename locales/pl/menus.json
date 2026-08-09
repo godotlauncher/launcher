@@ -12,6 +12,8 @@
         "openConfigFolder": "Otwórz folder konfiguracji"
     },
     "project": {
+        "pinProject": "Przypnij projekt",
+        "unpinProject": "Odepnij projekt",
         "openProjectFolder": "Otwórz folder projektu",
         "launchEditor": "Edytuj w Godot",
         "projectSettings": "Ustawienia projektu",

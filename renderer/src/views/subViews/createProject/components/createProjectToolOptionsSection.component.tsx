@@ -57,7 +57,7 @@ export const CreateProjectToolOptionsSection: React.FC<
     onWithGitChange,
     onCodeEditorIdChange,
 }) => (
-    <div className="flex-1">
+    <div>
         <div className="flex flex-col gap-2">
             <h2 className="text-md flex items-center gap-4">
                 {t('otherSettings.title')}{' '}
@@ -67,7 +67,7 @@ export const CreateProjectToolOptionsSection: React.FC<
             </h2>
 
             <div
-                className={clsx('flex flex-col gap-4 p-4 ', {
+                className={clsx('flex flex-col gap-4 py-2', {
                     invisible: loadingTools || loadingCodeEditors,
                 })}
             >

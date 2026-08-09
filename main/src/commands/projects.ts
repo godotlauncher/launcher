@@ -45,6 +45,67 @@ function resolveProjectListPath(): string {
     return path.resolve(configDir, PROJECTS_FILENAME);
 }
 
+function isValidPinnedOrder(value: number | undefined): value is number {
+    return value !== undefined && Number.isInteger(value) && value >= 0;
+}
+
+function getPinnedPathsInOrder(projects: ProjectDetails[]): string[] {
+    return projects
+        .filter((project) => project.pinned)
+        .sort((a, b) => {
+            const aOrder = isValidPinnedOrder(a.pinned_order)
+                ? a.pinned_order
+                : undefined;
+            const bOrder = isValidPinnedOrder(b.pinned_order)
+                ? b.pinned_order
+                : undefined;
+            const aHasOrder = aOrder !== undefined;
+            const bHasOrder = bOrder !== undefined;
+
+            if (
+                aOrder !== undefined &&
+                bOrder !== undefined &&
+                aOrder !== bOrder
+            ) {
+                return aOrder - bOrder;
+            }
+            if (aHasOrder !== bHasOrder) {
+                return aHasOrder ? -1 : 1;
+            }
+
+            const dateDifference =
+                (b.last_opened?.getTime() ?? 0) -
+                (a.last_opened?.getTime() ?? 0);
+            return dateDifference || a.name.localeCompare(b.name);
+        })
+        .map((project) => project.path);
+}
+
+function applyPinnedOrder(
+    projects: ProjectDetails[],
+    orderedProjectPaths: string[],
+): ProjectDetails[] {
+    const orderByPath = new Map(
+        orderedProjectPaths.map((projectPath, index) => [projectPath, index]),
+    );
+
+    return projects.map((project) => ({
+        ...project,
+        pinned_order: project.pinned
+            ? orderByPath.get(project.path)
+            : undefined,
+    }));
+}
+
+function hasSameProjectPaths(left: string[], right: string[]): boolean {
+    return (
+        left.length === right.length &&
+        new Set(left).size === left.length &&
+        new Set(right).size === right.length &&
+        left.every((projectPath) => right.includes(projectPath))
+    );
+}
+
 export async function getProjectsDetails(): Promise<ProjectDetails[]> {
     const projectListPath = resolveProjectListPath();
     const { projects } = await getProjectsSnapshot(projectListPath);
@@ -299,6 +360,112 @@ export async function setProjectWindowed(
     );
 
     return updatedProject;
+}
+
+export async function setProjectPinned(
+    project: ProjectDetails,
+    pinned: boolean,
+): Promise<ProjectDetails[]> {
+    const projectListPath = resolveProjectListPath();
+    let storedProjects: ProjectDetails[] | null = null;
+
+    for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const projectIndex = projects.findIndex((p) => p.path === project.path);
+
+        if (projectIndex === -1) {
+            storedProjects = projects;
+            break;
+        }
+
+        let updatedProjects = [...projects];
+        updatedProjects[projectIndex] = {
+            ...updatedProjects[projectIndex],
+            pinned,
+            pinned_order: undefined,
+        };
+        const currentPinnedPaths = getPinnedPathsInOrder(updatedProjects);
+        const orderedPinnedPaths = pinned
+            ? [
+                  project.path,
+                  ...currentPinnedPaths.filter(
+                      (projectPath) => projectPath !== project.path,
+                  ),
+              ]
+            : currentPinnedPaths;
+        updatedProjects = applyPinnedOrder(updatedProjects, orderedPinnedPaths);
+
+        try {
+            storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
+            break;
+        } catch (error) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    if (!storedProjects) {
+        return [];
+    }
+    ipcWebContentsSend(
+        'projects-updated',
+        getMainWindow()?.webContents,
+        storedProjects,
+    );
+
+    return storedProjects;
+}
+
+export async function reorderPinnedProjects(
+    orderedProjectPaths: string[],
+): Promise<ProjectDetails[]> {
+    const projectListPath = resolveProjectListPath();
+
+    for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
+        const { projects, version } =
+            await getProjectsSnapshot(projectListPath);
+        const currentPinnedPaths = getPinnedPathsInOrder(projects);
+
+        if (!hasSameProjectPaths(currentPinnedPaths, orderedProjectPaths)) {
+            throw new Error(t('projects:pinning.errors.orderChanged'));
+        }
+
+        const updatedProjects = applyPinnedOrder(projects, orderedProjectPaths);
+
+        try {
+            const storedProjects = await storeProjectsList(
+                projectListPath,
+                updatedProjects,
+                { expectedVersion: version },
+            );
+            ipcWebContentsSend(
+                'projects-updated',
+                getMainWindow()?.webContents,
+                storedProjects,
+            );
+            return storedProjects;
+        } catch (error) {
+            if (
+                error instanceof JsonStoreConflictError &&
+                attempt < PROJECT_WRITE_MAX_ATTEMPTS - 1
+            ) {
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    throw new Error(t('projects:pinning.errors.orderChanged'));
 }
 
 function validateProjectName(name: string): RenameProjectResult | null {

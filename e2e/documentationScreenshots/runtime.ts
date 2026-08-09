@@ -455,6 +455,23 @@ export async function stubProjectLaunchResult(
     );
 }
 
+export async function stubProjectGitInitializationFailure(
+    electronApp: ElectronApplication,
+    error: string,
+) {
+    await electronApp.evaluate(({ ipcMain }, message: string) => {
+        const channel = 'app.initializeProjectGit';
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, async () => ({
+            success: false,
+            error: {
+                type: 'Error',
+                message,
+            },
+        }));
+    }, error);
+}
+
 export async function stubCodeEditorIntegrationRescan(
     electronApp: ElectronApplication,
     settings: CodeEditorIntegrationSettings,
@@ -751,6 +768,12 @@ export async function ensureMainNavigationReady(
     }
 }
 
+export function getInstallsView(page: ElectronPage) {
+    return page
+        .locator('section')
+        .filter({ has: page.getByTestId('installsTitle') });
+}
+
 export async function setScreenshotViewport(
     page: ElectronPage,
     height = SCREENSHOT_MIN_HEIGHT,
@@ -793,8 +816,9 @@ export async function openProjectActionsMenu(
     projectName: string,
 ) {
     const projectRow = page
-        .locator('tr')
-        .filter({ has: page.getByRole('button', { name: projectName }) });
+        .locator('[data-project-path]')
+        .filter({ has: page.getByText(projectName, { exact: true }) })
+        .first();
     await projectRow
         .locator('[data-testid="btnProjectMoreOptions"]:visible')
         .click();

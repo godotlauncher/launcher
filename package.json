@@ -76,6 +76,9 @@
         "ignoreCommitPattern": "^[C|c]i|[R|r]elease|[c|C]hore|changelog|update changelog|updated changelog|update CHANGELOG"
     },
     "dependencies": {
+        "@dnd-kit/abstract": "^0.5.0",
+        "@dnd-kit/dom": "^0.5.0",
+        "@dnd-kit/react": "^0.5.0",
         "@mariodebono/di": "3.2.0",
         "@mariodebono/di-app-migrations": "3.2.0",
         "@mariodebono/di-config": "3.2.0",

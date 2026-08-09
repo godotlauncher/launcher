@@ -2,7 +2,6 @@ import type { ProjectDetails } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useRef, useState } from 'react';
-import { appBridge } from '../../../bridge.ts';
 import type { ConfirmButton } from '../../../components/confirm.component';
 import {
     type ActionMenuAnchorRect,
@@ -14,7 +13,6 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 type ProjectActionMenuState = {
     project: ProjectDetails;
     anchorRect: ActionMenuAnchorRect;
-    hasGit: boolean;
 };
 
 type UseProjectActionsArgs = {
@@ -34,11 +32,11 @@ type UseProjectActionsArgs = {
     updatePreferences: (preferences: {
         confirm_project_remove: boolean;
     }) => void;
-    setProjectWindowed: (
+    setProjectPinned: (
         project: ProjectDetails,
-        windowed: boolean,
-    ) => Promise<unknown>;
-    initializeProjectGit: (project: ProjectDetails) => Promise<unknown>;
+        pinned: boolean,
+    ) => Promise<ProjectDetails[]>;
+    onProjectPinned: (projectPath: string) => void;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<unknown>;
     removeProject: (project: ProjectDetails) => Promise<unknown>;
 };
@@ -49,23 +47,14 @@ export function useProjectActions({
     addAlert,
     addCustomConfirm,
     updatePreferences,
-    setProjectWindowed,
-    initializeProjectGit,
+    setProjectPinned,
+    onProjectPinned,
     importProjectEditorSettings,
     removeProject,
 }: UseProjectActionsArgs) {
     const skipRemoveProjectConfirmRef = useRef<boolean>(false);
     const [projectActionsMenu, setProjectActionsMenu] =
         useState<ProjectActionMenuState | null>(null);
-
-    const getProjectMenuToolAvailability = async (): Promise<{
-        hasGit: boolean;
-    }> => {
-        const tools = await appBridge.getCachedTools();
-        return {
-            hasGit: tools.some((tool) => tool.name === 'Git' && tool.verified),
-        };
-    };
 
     const showProjectActionError = (error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
@@ -103,36 +92,26 @@ export function useProjectActions({
         );
     };
 
-    const onProjectMoreOptions = async (
+    const onProjectMoreOptions = (
         e: React.MouseEvent,
         project: ProjectDetails,
     ) => {
         e.stopPropagation();
         const anchorRect = getActionMenuAnchorRect(e.currentTarget);
-        let toolAvailability = {
-            hasGit: false,
-        };
-        try {
-            toolAvailability = await getProjectMenuToolAvailability();
-        } catch (error) {
-            showProjectActionError(error);
-        }
         setProjectActionsMenu({
             project,
             anchorRect,
-            ...toolAvailability,
         });
     };
 
-    const handleToggleProjectWindowed = (project: ProjectDetails) => {
+    const handleToggleProjectPinned = (project: ProjectDetails) => {
+        setProjectActionsMenu(null);
         runProjectAction(async () => {
-            await setProjectWindowed(project, !project.open_windowed);
-        });
-    };
-
-    const handleInitializeProjectGit = (project: ProjectDetails) => {
-        runProjectAction(async () => {
-            await initializeProjectGit(project);
+            const pinned = !project.pinned;
+            await setProjectPinned(project, pinned);
+            if (pinned) {
+                onProjectPinned(project.path);
+            }
         });
     };
 
@@ -235,8 +214,7 @@ export function useProjectActions({
         runProjectAction,
         showProjectActionError,
         showRecoveredCodeEditorConfigWarning,
-        handleToggleProjectWindowed,
-        handleInitializeProjectGit,
+        handleToggleProjectPinned,
         handleImportEditorSettings,
         handleRemoveProject,
     };

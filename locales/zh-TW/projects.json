@@ -7,7 +7,39 @@
     "search": {
         "placeholder": "搜尋"
     },
+    "sections": {
+        "new": "新專案",
+        "pinned": "已釘選",
+        "recents": "最近使用",
+        "empty": "找不到專案。"
+    },
+    "pinning": {
+        "reorder": {
+            "label": "重新排序 {{project}}",
+            "disabledSearch": "清除搜尋後可重新排序已釘選的專案。",
+            "instructions": "按空白鍵或 Enter 鍵選取已釘選的專案。使用方向鍵移動，按空白鍵或 Enter 鍵放下，按 Escape 鍵取消。",
+            "announcements": {
+                "pickedUp": "已選取 {{project}}，位置 {{position}}，共 {{count}} 個。",
+                "moved": "{{project}} 已移至位置 {{position}}，共 {{count}} 個。",
+                "dropped": "{{project}} 已放在位置 {{position}}，共 {{count}} 個。",
+                "cancelled": "已取消移動 {{project}}。"
+            }
+        },
+        "errors": {
+            "orderChanged": "已釘選的專案已變更。請重新整理後再試一次。"
+        }
+    },
+    "card": {
+        "openFolders": "開啟專案資料夾",
+        "projectSettings": "專案設定",
+        "godotVersion": "Godot {{version}}",
+        "windowed": "視窗模式",
+        "opened": "開啟於 {{age}}",
+        "notOpened": "尚未開啟",
+        "editInGodot": "在 Godot 中編輯"
+    },
     "table": {
+        "moreOptions": "{{project}} 的更多選項",
         "name": "名稱",
         "modified": "修改時間",
         "editor": "編輯器",
@@ -98,7 +130,35 @@
     },
     "editProject": {
         "title": "專案設定",
+        "drawerTitle": "{{project}} 設定",
         "description": "更新專案命名設定。",
+        "tabs": {
+            "project": "專案",
+            "sourceControl": "原始碼管理",
+            "codeEditor": "程式碼編輯器",
+            "launch": "啟動"
+        },
+        "sourceControl": {
+            "title": "原始碼管理",
+            "help": "管理此專案的版本控制。",
+            "enabled": "此專案已初始化 Git。",
+            "notConfigured": "尚未設定 Git 儲存庫。",
+            "active": "已啟用",
+            "initialize": "初始化 Git",
+            "initializing": "正在初始化...",
+            "initFailed": "無法初始化 Git。"
+        },
+        "launch": {
+            "title": "啟動",
+            "help": "選擇 Godot 開啟此專案的方式。",
+            "windowed": {
+                "label": "使用視窗模式",
+                "help": "在一般視窗中開啟 Godot 編輯器。"
+            }
+        },
+        "pinned": {
+            "label": "已釘選"
+        },
         "fields": {
             "name": {
                 "label": "專案名稱",
@@ -122,6 +182,11 @@
                 "confirmTitle": "重設 {{editor}} 設定？",
                 "confirmMessage": "這將重新套用專案的程式碼編輯器設定。"
             }
+        },
+        "godotEditor": {
+            "title": "Godot 編輯器",
+            "help": "選擇用來編輯此專案的 Godot 版本。",
+            "unavailable": "無法使用"
         },
         "godot": {
             "renameLabel": "同時重新命名 Godot 專案",
