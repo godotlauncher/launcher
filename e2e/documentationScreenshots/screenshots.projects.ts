@@ -26,8 +26,6 @@ import {
     SAMPLE_PROJECT_PROTOTYPE,
     SAMPLE_PROJECTS,
     SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
-    SAMPLE_PROJECT_WITH_WRAPPED_BADGES,
-    SAMPLE_WRAPPED_BADGES_RELEASE,
     TOOLS_NO_GIT,
     TOOLS_NO_VSCODE,
     TOOLS_NONE,
@@ -67,60 +65,6 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 recentsSection.getByText('My Other Game', { exact: true }),
             ).toBeInViewport({ timeout: 10000 });
             await page.waitForTimeout(600);
-        },
-    },
-    {
-        fileBase: 'screen_projects_badges_wrapped',
-        description: 'Project badges wrapping before launch actions',
-        viewportHeight: 800,
-        navigate: async (
-            page: ElectronPage,
-            electronApp: ElectronApplication,
-            theme: ThemeConfig,
-        ) => {
-            const longCodeEditorSettings = {
-                ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
-                integration: {
-                    ...SAMPLE_VSCODE_SETTINGS_AVAILABLE.integration,
-                    displayName: 'Visual Studio Code Team Workspace',
-                },
-            };
-            await prepareAppWithStubbedData(page, electronApp, {
-                projects: [SAMPLE_PROJECT_WITH_WRAPPED_BADGES],
-                installedReleases: [SAMPLE_WRAPPED_BADGES_RELEASE],
-                codeEditorSettings: [longCodeEditorSettings],
-            });
-            await setScreenshotViewport(page, 800);
-            await applyTheme(page, theme);
-            await page.getByTestId('btnProjects').click();
-
-            const projectCard = page
-                .locator('[data-project-path]')
-                .filter({
-                    has: page.getByText(
-                        SAMPLE_PROJECT_WITH_WRAPPED_BADGES.name,
-                        { exact: true },
-                    ),
-                })
-                .first();
-            const badges = projectCard.getByTestId('projectBadges');
-            await expect(badges.locator(':scope > *')).toHaveCount(4);
-            const badgeRows = await badges.evaluate((element) => {
-                const rowTops = Array.from(element.children).map((child) =>
-                    Math.round(child.getBoundingClientRect().top),
-                );
-                return new Set(rowTops).size;
-            });
-            expect(badgeRows).toBeGreaterThan(1);
-            await page.waitForTimeout(400);
-        },
-        cleanup: async (
-            page: ElectronPage,
-            electronApp: ElectronApplication,
-            theme: ThemeConfig,
-        ) => {
-            await prepareAppWithStubbedData(page, electronApp);
-            await applyTheme(page, theme);
         },
     },
     {
