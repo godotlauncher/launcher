@@ -180,9 +180,25 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
         .filter((element) => !element.hasAttribute('disabled'));
 }
 
+/**
+ * Focuses an element without moving the page.
+ *
+ * @param element - The element to focus.
+ * @returns Nothing.
+ */
+export function focusDrawerElement(element: HTMLElement): void {
+    element.focus({ preventScroll: true });
+}
+
+/**
+ * Focuses the first available control in a drawer.
+ *
+ * @param panel - The drawer panel to search.
+ * @returns Nothing.
+ */
 function focusFirstDrawerElement(panel: HTMLElement): void {
     const firstFocusableElement = getFocusableElements(panel)[0];
-    (firstFocusableElement ?? panel).focus();
+    focusDrawerElement(firstFocusableElement ?? panel);
 }
 
 function trapFocusInDrawer(
@@ -397,7 +413,9 @@ const DrawerRoot: React.FC<DrawerProps> = ({
 
         return () => {
             window.cancelAnimationFrame(animationFrameId);
-            previouslyFocusedElementRef.current?.focus();
+            if (previouslyFocusedElementRef.current) {
+                focusDrawerElement(previouslyFocusedElementRef.current);
+            }
             previouslyFocusedElementRef.current = null;
         };
     }, [open]);
