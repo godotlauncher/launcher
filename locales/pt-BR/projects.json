@@ -5,7 +5,9 @@
         "withoutEditor": {
             "heading": "Instale o Godot para iniciar um projeto",
             "description": "O Godot Launcher precisa de um editor antes de poder criar ou executar projetos.",
-            "installEditor": "Instalar um editor"
+            "installEditor": "Instalar um editor",
+            "installingDescription": "Seu editor está sendo instalado. Você poderá criar um projeto assim que ele estiver pronto.",
+            "installingEditor": "Instalando editor..."
         },
         "withEditor": {
             "heading": "Inicie seu primeiro projeto",

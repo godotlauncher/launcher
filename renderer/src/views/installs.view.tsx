@@ -2,6 +2,11 @@ import { HardDriveDownload } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../bridge.ts';
+import {
+    ActionMenu,
+    type ActionMenuAnchorRect,
+    getActionMenuAnchorRect,
+} from '../components/ui/actionMenu.component.tsx';
 import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
@@ -64,6 +69,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         useState<boolean>(false);
     const [customEditorManifestDrawerOpen, setCustomEditorManifestDrawerOpen] =
         useState<boolean>(false);
+    const [customEditorMenuAnchorRect, setCustomEditorMenuAnchorRect] =
+        useState<ActionMenuAnchorRect | null>(null);
 
     const { addAlert, addConfirm } = useAlerts();
     const { preferences } = usePreferences();
@@ -177,6 +184,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         description={t('emptyState.description')}
                         primaryActionLabel={t('emptyState.chooseEditor')}
                         secondaryActionLabel={t('emptyState.addCustomEditor')}
+                        onPrimaryAction={() => setInstallOpen(true)}
+                        onSecondaryAction={(event) =>
+                            setCustomEditorMenuAnchorRect(
+                                getActionMenuAnchorRect(event.currentTarget),
+                            )
+                        }
                     />
                 ) : (
                     <>
@@ -211,6 +224,26 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     )
                 }
                 onRemoveRelease={handleRemoveReleaseFromMenu}
+            />
+            <ActionMenu
+                open={customEditorMenuAnchorRect !== null}
+                anchorRect={customEditorMenuAnchorRect}
+                ariaLabel={t('buttons.addCustomEditor')}
+                items={[
+                    {
+                        key: 'select-manifest',
+                        label: t('buttons.selectCustomEditorManifest'),
+                        testId: 'btnEmptyStateSelectCustomEditorManifest',
+                        onSelect: handleAddCustomEngine,
+                    },
+                    {
+                        key: 'create-manifest',
+                        label: t('buttons.createCustomEditorManifest'),
+                        testId: 'btnEmptyStateCreateCustomEditorManifest',
+                        onSelect: () => setCustomEditorManifestDrawerOpen(true),
+                    },
+                ]}
+                onClose={() => setCustomEditorMenuAnchorRect(null)}
             />
             <InstallEditorDrawer
                 open={installOpen}

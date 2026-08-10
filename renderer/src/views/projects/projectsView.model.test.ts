@@ -114,18 +114,22 @@ describe('getProjectsViewState', () => {
             getProjectsViewState({
                 projectCount: 0,
                 installedReleaseCount: 0,
+                downloadingReleaseCount: 0,
                 textSearch: '',
                 projectsLoading: false,
                 releasesLoading: false,
+                releasesInitialized: true,
             }),
         ).toBe('empty-without-editor');
         expect(
             getProjectsViewState({
                 projectCount: 0,
                 installedReleaseCount: 1,
+                downloadingReleaseCount: 0,
                 textSearch: '',
                 projectsLoading: false,
                 releasesLoading: false,
+                releasesInitialized: true,
             }),
         ).toBe('empty-with-editor');
     });
@@ -135,18 +139,22 @@ describe('getProjectsViewState', () => {
             getProjectsViewState({
                 projectCount: 1,
                 installedReleaseCount: 0,
+                downloadingReleaseCount: 0,
                 textSearch: '',
                 projectsLoading: false,
                 releasesLoading: false,
+                releasesInitialized: true,
             }),
         ).toBe('list');
         expect(
             getProjectsViewState({
                 projectCount: 0,
                 installedReleaseCount: 1,
+                downloadingReleaseCount: 0,
                 textSearch: 'missing',
                 projectsLoading: false,
                 releasesLoading: false,
+                releasesInitialized: true,
             }),
         ).toBe('list');
     });
@@ -156,19 +164,48 @@ describe('getProjectsViewState', () => {
             getProjectsViewState({
                 projectCount: 0,
                 installedReleaseCount: 0,
+                downloadingReleaseCount: 0,
                 textSearch: '',
                 projectsLoading: true,
                 releasesLoading: false,
+                releasesInitialized: true,
             }),
         ).toBe('loading');
         expect(
             getProjectsViewState({
                 projectCount: 0,
                 installedReleaseCount: 0,
+                downloadingReleaseCount: 0,
                 textSearch: '',
                 projectsLoading: false,
                 releasesLoading: true,
+                releasesInitialized: false,
             }),
         ).toBe('loading');
+    });
+
+    it('keeps installation and ready states stable during background release refreshes', () => {
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 0,
+                downloadingReleaseCount: 1,
+                textSearch: '',
+                projectsLoading: false,
+                releasesLoading: true,
+                releasesInitialized: true,
+            }),
+        ).toBe('empty-installing-editor');
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 1,
+                downloadingReleaseCount: 0,
+                textSearch: '',
+                projectsLoading: false,
+                releasesLoading: true,
+                releasesInitialized: true,
+            }),
+        ).toBe('empty-with-editor');
     });
 });

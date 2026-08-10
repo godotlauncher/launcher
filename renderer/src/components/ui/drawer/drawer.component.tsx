@@ -405,6 +405,19 @@ const DrawerRoot: React.FC<DrawerProps> = ({
             previouslyFocusedElementRef.current = activeElement;
         }
 
+        return () => {
+            if (previouslyFocusedElementRef.current) {
+                focusDrawerElement(previouslyFocusedElementRef.current);
+            }
+            previouslyFocusedElementRef.current = null;
+        };
+    }, [open]);
+
+    useEffect(() => {
+        if (!open || !shouldRender || typeof window === 'undefined') {
+            return;
+        }
+
         const animationFrameId = window.requestAnimationFrame(() => {
             if (panelRef.current) {
                 focusFirstDrawerElement(panelRef.current);
@@ -413,12 +426,8 @@ const DrawerRoot: React.FC<DrawerProps> = ({
 
         return () => {
             window.cancelAnimationFrame(animationFrameId);
-            if (previouslyFocusedElementRef.current) {
-                focusDrawerElement(previouslyFocusedElementRef.current);
-            }
-            previouslyFocusedElementRef.current = null;
         };
-    }, [open]);
+    }, [open, shouldRender]);
 
     useEffect(() => {
         if (!open || typeof window === 'undefined') {

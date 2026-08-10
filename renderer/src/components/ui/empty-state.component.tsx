@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import type React from 'react';
+import type { MouseEventHandler } from 'react';
 import { useId } from 'react';
 
 type EmptyStateProps = {
@@ -7,9 +8,10 @@ type EmptyStateProps = {
     heading: string;
     description: string;
     primaryActionLabel: string;
+    primaryActionPending?: boolean;
     secondaryActionLabel?: string;
-    onPrimaryAction?: () => void;
-    onSecondaryAction?: () => void;
+    onPrimaryAction?: MouseEventHandler<HTMLButtonElement>;
+    onSecondaryAction?: MouseEventHandler<HTMLButtonElement>;
 };
 
 /**
@@ -23,6 +25,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     heading,
     description,
     primaryActionLabel,
+    primaryActionPending = false,
     secondaryActionLabel,
     onPrimaryAction,
     onSecondaryAction,
@@ -51,11 +54,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             <div className="mt-7 flex flex-col items-center gap-4">
                 <button
                     type="button"
-                    className="btn btn-primary min-w-52"
+                    className="btn btn-primary min-w-52 disabled:border-primary/20 disabled:bg-primary/15 disabled:text-primary disabled:opacity-100"
                     onClick={onPrimaryAction}
+                    disabled={primaryActionPending}
+                    aria-busy={primaryActionPending || undefined}
                     data-testid="btnEmptyStatePrimary"
                 >
-                    {primaryActionLabel}
+                    {primaryActionPending && (
+                        <span
+                            className="loading loading-spinner loading-sm"
+                            aria-hidden="true"
+                        />
+                    )}
+                    <span aria-live="polite">{primaryActionLabel}</span>
                 </button>
                 {secondaryActionLabel && (
                     <button

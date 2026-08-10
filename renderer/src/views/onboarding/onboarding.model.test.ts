@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
     applyOnboardingRecommendedLocations,
     getNextOnboardingStep,
-    getOnboardingDestination,
+    getOnboardingDestinationPath,
     getPreviousOnboardingStep,
     isAbsoluteOnboardingPath,
     parseOnboardingStepId,
@@ -40,9 +40,9 @@ describe('onboarding model', () => {
         expect(getPreviousOnboardingStep('welcome')).toBe('welcome');
     });
 
-    it('routes new users to installs and existing users to projects', () => {
-        expect(getOnboardingDestination([])).toBe('installs');
-        expect(getOnboardingDestination([{} as never])).toBe('projects');
+    it('routes new users into the install drawer and existing users to projects', () => {
+        expect(getOnboardingDestinationPath([])).toBe('/installs/install');
+        expect(getOnboardingDestinationPath([{} as never])).toBe('/projects');
     });
 
     it('validates absolute paths for Windows and Unix platforms', () => {

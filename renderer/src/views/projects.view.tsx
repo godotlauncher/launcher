@@ -6,6 +6,7 @@ import type {
 import { FolderPlus, HardDriveDownload, TriangleAlert } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
@@ -17,6 +18,7 @@ import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
+import { appRoutePaths } from '../routes.ts';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectFoldersMenu } from './projects/components/projectFoldersMenu.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
@@ -59,6 +61,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         'menus',
         'dialogs',
     ]);
+    const navigate = useNavigate();
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -96,7 +99,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         downloadingReleases,
         installRelease,
         isInstalledRelease,
-        loading: releaseLoading,
+        loading: releasesLoading,
+        initialized: releasesInitialized,
         checkAllReleasesValid,
     } = useRelease();
     const {
@@ -252,12 +256,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const viewState = getProjectsViewState({
         projectCount: projects.length,
         installedReleaseCount: installedReleases.length,
+        downloadingReleaseCount: downloadingReleases.length,
         textSearch,
         projectsLoading: loading,
-        releasesLoading: releaseLoading,
+        releasesLoading,
+        releasesInitialized,
     });
     const showEmptyState =
         viewState === 'empty-without-editor' ||
+        viewState === 'empty-installing-editor' ||
         viewState === 'empty-with-editor';
 
     return (
@@ -334,6 +341,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         secondaryActionLabel={t(
                             'emptyState.addExistingProject',
                         )}
+                        onPrimaryAction={() =>
+                            navigate(appRoutePaths.installEditor)
+                        }
+                        onSecondaryAction={() => void onAddProject()}
                     />
                 )}
                 {viewState === 'empty-with-editor' && (
@@ -347,6 +358,25 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         secondaryActionLabel={t(
                             'emptyState.addExistingProject',
                         )}
+                        onPrimaryAction={() => setCreateOpen(true)}
+                        onSecondaryAction={() => void onAddProject()}
+                    />
+                )}
+                {viewState === 'empty-installing-editor' && (
+                    <EmptyState
+                        icon={HardDriveDownload}
+                        heading={t('emptyState.withoutEditor.heading')}
+                        description={t(
+                            'emptyState.withoutEditor.installingDescription',
+                        )}
+                        primaryActionLabel={t(
+                            'emptyState.withoutEditor.installingEditor',
+                        )}
+                        primaryActionPending
+                        secondaryActionLabel={t(
+                            'emptyState.addExistingProject',
+                        )}
+                        onSecondaryAction={() => void onAddProject()}
                     />
                 )}
                 {!showEmptyState && (

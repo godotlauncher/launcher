@@ -5,7 +5,9 @@
         "withoutEditor": {
             "heading": "Godot をインストールしてプロジェクトを開始",
             "description": "プロジェクトを作成または実行するには、Godot Launcher にエディターが必要です。",
-            "installEditor": "エディターをインストール"
+            "installEditor": "エディターをインストール",
+            "installingDescription": "エディターをインストールしています。準備ができ次第、プロジェクトを作成できます。",
+            "installingEditor": "エディターをインストール中..."
         },
         "withEditor": {
             "heading": "最初のプロジェクトを開始",

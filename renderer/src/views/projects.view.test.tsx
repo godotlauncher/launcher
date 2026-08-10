@@ -10,7 +10,15 @@ const projectState = vi.hoisted(() => ({
 }));
 const releaseState = vi.hoisted(() => ({
     installedReleases: [] as InstalledRelease[],
+    downloadingReleases: [] as Array<{ version: string; mono: boolean }>,
     loading: false,
+    initialized: true,
+}));
+const navigate = vi.hoisted(() => vi.fn());
+
+vi.mock('react-router', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('react-router')>()),
+    useNavigate: () => navigate,
 }));
 
 vi.mock('../hooks/useAlerts', () => ({
@@ -39,10 +47,11 @@ vi.mock('../hooks/useRelease', () => ({
         installedReleases: releaseState.installedReleases,
         availableReleases: [],
         availablePrereleases: [],
-        downloadingReleases: [],
+        downloadingReleases: releaseState.downloadingReleases,
         installRelease: vi.fn(),
         isInstalledRelease: vi.fn(() => false),
         loading: releaseState.loading,
+        initialized: releaseState.initialized,
         checkAllReleasesValid: vi.fn(),
     }),
 }));
@@ -129,6 +138,10 @@ vi.mock('react-i18next', () => {
         'projects:emptyState.withoutEditor.description':
             'Godot Launcher needs an editor before it can create or run projects.',
         'projects:emptyState.withoutEditor.installEditor': 'Install an editor',
+        'projects:emptyState.withoutEditor.installingDescription':
+            'Your editor is installing. You can create a project as soon as it is ready.',
+        'projects:emptyState.withoutEditor.installingEditor':
+            'Installing editor...',
         'projects:emptyState.withEditor.heading': 'Start your first project',
         'projects:emptyState.withEditor.description':
             'Create something new, or add a project already on this computer.',
@@ -153,10 +166,13 @@ vi.mock('react-i18next', () => {
 
 describe('ProjectsView', () => {
     beforeEach(() => {
+        navigate.mockClear();
         projectState.projects = [];
         projectState.loading = false;
         releaseState.installedReleases = [];
+        releaseState.downloadingReleases = [];
         releaseState.loading = false;
+        releaseState.initialized = true;
     });
 
     it('guides users to install Godot when both collections are empty', () => {
@@ -184,6 +200,22 @@ describe('ProjectsView', () => {
         expect(html).toContain('Add an existing project');
         expect(html).not.toContain('inputProjectSearch');
         expect(html).not.toContain('btnProjectAdd');
+        expect(html).not.toContain('btnProjectCreate');
+    });
+
+    it('waits for an installing editor without exposing project list chrome', () => {
+        releaseState.downloadingReleases = [
+            { version: '4.7-stable', mono: false },
+        ];
+
+        const html = renderToStaticMarkup(<ProjectsView />);
+
+        expect(html).toContain('Your editor is installing.');
+        expect(html).toContain('Installing editor...');
+        expect(html).toContain('aria-busy="true"');
+        expect(html).toContain('disabled=""');
+        expect(html).toContain('Add an existing project');
+        expect(html).not.toContain('inputProjectSearch');
         expect(html).not.toContain('btnProjectCreate');
     });
 });

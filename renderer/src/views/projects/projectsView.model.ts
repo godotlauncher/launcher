@@ -9,15 +9,18 @@ export type ProjectSections = {
 export type ProjectsViewState =
     | 'loading'
     | 'empty-without-editor'
+    | 'empty-installing-editor'
     | 'empty-with-editor'
     | 'list';
 
 type GetProjectsViewStateOptions = {
     projectCount: number;
     installedReleaseCount: number;
+    downloadingReleaseCount: number;
     textSearch: string;
     projectsLoading: boolean;
     releasesLoading: boolean;
+    releasesInitialized: boolean;
 };
 
 /**
@@ -30,11 +33,13 @@ type GetProjectsViewStateOptions = {
 export function getProjectsViewState({
     projectCount,
     installedReleaseCount,
+    downloadingReleaseCount,
     textSearch,
     projectsLoading,
     releasesLoading,
+    releasesInitialized,
 }: GetProjectsViewStateOptions): ProjectsViewState {
-    if (projectsLoading || releasesLoading) {
+    if (projectsLoading || (releasesLoading && !releasesInitialized)) {
         return 'loading';
     }
 
@@ -42,8 +47,12 @@ export function getProjectsViewState({
         return 'list';
     }
 
-    return installedReleaseCount > 0
-        ? 'empty-with-editor'
+    if (installedReleaseCount > 0) {
+        return 'empty-with-editor';
+    }
+
+    return downloadingReleaseCount > 0
+        ? 'empty-installing-editor'
         : 'empty-without-editor';
 }
 

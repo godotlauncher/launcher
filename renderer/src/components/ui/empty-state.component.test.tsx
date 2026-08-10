@@ -41,4 +41,21 @@ describe('EmptyState', () => {
         expect(html).toContain('btnEmptyStatePrimary');
         expect(html).not.toContain('btnEmptyStateSecondary');
     });
+
+    it('renders a disabled busy primary action while work is pending', () => {
+        const html = renderToStaticMarkup(
+            <EmptyState
+                icon={FolderPlus}
+                heading="Waiting"
+                description="Work is in progress."
+                primaryActionLabel="Installing editor..."
+                primaryActionPending
+            />,
+        );
+
+        expect(html).toContain('disabled=""');
+        expect(html).toContain('aria-busy="true"');
+        expect(html).toContain('loading-spinner');
+        expect(html).toContain('Installing editor...');
+    });
 });

@@ -5,7 +5,9 @@
         "withoutEditor": {
             "heading": "安裝 Godot 以開始專案",
             "description": "Godot Launcher 需要編輯器才能建立或執行專案。",
-            "installEditor": "安裝編輯器"
+            "installEditor": "安裝編輯器",
+            "installingDescription": "編輯器正在安裝。安裝完成後即可建立專案。",
+            "installingEditor": "正在安裝編輯器..."
         },
         "withEditor": {
             "heading": "開始您的第一個專案",
