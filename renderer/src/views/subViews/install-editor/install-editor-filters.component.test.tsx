@@ -25,7 +25,7 @@ describe('InstallEditorFilters', () => {
 
         expect(html).toContain('42s cooldown');
         expect(html).toContain(
-            'data-tip="A one-minute cooldown helps prevent GitHub request throttling."',
+            'data-tip="You can refresh once per minute to reduce requests to GitHub."',
         );
         expect(html).toContain('data-testid="btnRefreshInstallEditorCatalog"');
         expect(html).toContain('disabled=""');
@@ -58,7 +58,7 @@ function renderFilters(
             refreshLabel="Reload release list"
             loadingLabel="Loading editor versions"
             cooldownLabel={`${refreshCooldownSeconds}s cooldown`}
-            cooldownTooltip="A one-minute cooldown helps prevent GitHub request throttling."
+            cooldownTooltip="You can refresh once per minute to reduce requests to GitHub."
             onShowChange={vi.fn()}
             onChannelChange={vi.fn()}
             onRefresh={vi.fn()}

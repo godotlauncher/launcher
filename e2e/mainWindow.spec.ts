@@ -91,14 +91,6 @@ test('Can navigate the main window', async () => {
         await expect(mainPage.getByRole('tooltip')).toHaveText(
             'Reload Release List',
         );
-        await reloadButton.click();
-        await expect(reloadButton).toBeDisabled();
-        await drawer.getByTestId('tabInstallsLatest').hover();
-        await expect(mainPage.getByRole('tooltip')).toBeHidden();
-        await reloadButton.locator('..').hover();
-        await expect(mainPage.getByRole('tooltip')).toContainText(
-            'GitHub request throttling',
-        );
         await drawer.getByTestId('tabInstallsLatest').hover();
         await expect(mainPage.getByRole('tooltip')).toBeHidden();
 

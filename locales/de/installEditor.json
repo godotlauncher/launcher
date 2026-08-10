@@ -22,13 +22,16 @@
         "latestPrerelease": "Neueste Vorabversion",
         "olderReleases": "Ältere Versionen",
         "cooldown": "{{seconds}} s Abkühlzeit",
-        "cooldownTooltip": "Eine einminütige Pause hilft, die Drosselung von GitHub-Anfragen zu vermeiden."
+        "cooldownTooltip": "Du kannst die Liste einmal pro Minute aktualisieren, um die Anzahl der Anfragen an GitHub zu reduzieren."
     },
     "buttons": {
         "reload": "Release-Liste neu laden"
     },
     "errors": {
         "fetchError": "Beim Abrufen der Releases ist ein Fehler aufgetreten.",
+        "catalogUpdateTitle": "Editorliste konnte nicht aktualisiert werden",
+        "catalogUpdateCached": "Die gespeicherte Editorliste ist weiterhin verfügbar. GitHub begrenzt möglicherweise vorübergehend Anfragen. Warte einige Minuten, bevor du erneut aktualisierst.",
+        "catalogLoadFailed": "Die Editorliste konnte nicht geladen werden. Prüfe deine Verbindung und versuche es in einigen Minuten erneut.",
         "retryInline": "Bitte versuchen Sie es erneut. <Button>Erneut versuchen</Button>",
         "noPlatformAsset": "Kein Asset für Plattform gefunden",
         "invalidEditorVersion": "Ungültige Editor-Version",

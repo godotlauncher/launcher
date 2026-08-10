@@ -22,13 +22,16 @@
         "latestPrerelease": "En son ön sürüm",
         "olderReleases": "Eski sürümler",
         "cooldown": "{{seconds}} sn bekleme",
-        "cooldownTooltip": "Bir dakikalık bekleme, GitHub istek sınırlamasını önlemeye yardımcı olur."
+        "cooldownTooltip": "GitHub'a gönderilen istekleri azaltmak için dakikada bir kez yenileyebilirsiniz."
     },
     "buttons": {
         "reload": "Sürüm Listesini Yeniden Yükle"
     },
     "errors": {
         "fetchError": "Sürümler alınırken bir hata oluştu.",
+        "catalogUpdateTitle": "Düzenleyici listesi güncellenemedi",
+        "catalogUpdateCached": "Kaydedilmiş düzenleyici listesi hâlâ kullanılabilir. GitHub istekleri geçici olarak sınırlıyor olabilir. Yeniden yenilemeden önce birkaç dakika bekleyin.",
+        "catalogLoadFailed": "Düzenleyici listesi yüklenemedi. Bağlantınızı kontrol edin ve birkaç dakika sonra tekrar deneyin.",
         "retryInline": "Lütfen tekrar deneyin. <Button>Tekrar dene</Button>",
         "noPlatformAsset": "Platform için Varlık bulunamadı",
         "invalidEditorVersion": "Geçersiz editör sürümü",

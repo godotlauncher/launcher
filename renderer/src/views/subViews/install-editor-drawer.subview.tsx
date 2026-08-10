@@ -1,7 +1,7 @@
 import type { ReleaseSummary } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CopyBadge } from '../../components/ui/copyBadge.component.tsx';
 import { Drawer } from '../../components/ui/drawer/drawer.component.tsx';
@@ -45,6 +45,7 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
         null,
     );
     const [refreshCooldownSeconds, setRefreshCooldownSeconds] = useState(0);
+    const shownCatalogErrorRef = useRef<string | undefined>(undefined);
     const {
         availableReleases,
         availablePrereleases,
@@ -107,6 +108,26 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
     );
     const hasCatalogData =
         availableReleases.length > 0 || availablePrereleases.length > 0;
+
+    useEffect(() => {
+        if (!hasError) {
+            shownCatalogErrorRef.current = undefined;
+            return;
+        }
+
+        if (!open || shownCatalogErrorRef.current === hasError) {
+            return;
+        }
+
+        shownCatalogErrorRef.current = hasError;
+        addAlert(
+            t('errors.catalogUpdateTitle'),
+            hasCatalogData
+                ? t('errors.catalogUpdateCached')
+                : t('errors.catalogLoadFailed'),
+            <TriangleAlert className="inline text-warning" />,
+        );
+    }, [addAlert, hasCatalogData, hasError, open, t]);
 
     /**
      * Refreshes the catalog and starts the reload button cooldown.
@@ -223,25 +244,6 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
                     onChannelChange={setChannel}
                     onRefresh={handleCatalogRefresh}
                 />
-
-                {hasError && (
-                    <div className="alert alert-warning alert-soft py-2">
-                        <TriangleAlert size={18} aria-hidden="true" />
-                        <div className="min-w-0 flex-1">
-                            <p className="font-medium">
-                                {t('errors.fetchError')}
-                            </p>
-                            <p className="truncate text-xs">{hasError}</p>
-                        </div>
-                        <button
-                            type="button"
-                            className="btn btn-sm"
-                            onClick={() => void refreshAvailableReleases()}
-                        >
-                            {t('common:buttons.retry')}
-                        </button>
-                    </div>
-                )}
 
                 <div className="divider my-0 p-0" />
 

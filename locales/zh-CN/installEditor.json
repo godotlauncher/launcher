@@ -22,13 +22,16 @@
         "latestPrerelease": "最新预发布版",
         "olderReleases": "较旧版本",
         "cooldown": "冷却 {{seconds}} 秒",
-        "cooldownTooltip": "一分钟的冷却时间有助于防止 GitHub 限制请求。"
+        "cooldownTooltip": "每分钟可以刷新一次，以减少向 GitHub 发送的请求。"
     },
     "buttons": {
         "reload": "重新加载版本列表"
     },
     "errors": {
         "fetchError": "获取发行版本时发生错误。",
+        "catalogUpdateTitle": "无法更新编辑器列表",
+        "catalogUpdateCached": "已保存的编辑器列表仍然可用。GitHub 可能正在暂时限制请求。请等待几分钟后再刷新。",
+        "catalogLoadFailed": "无法加载编辑器列表。请检查网络连接，并在几分钟后重试。",
         "retryInline": "请重试。 <Button>重试</Button>",
         "noPlatformAsset": "未找到适用于该平台的资源",
         "invalidEditorVersion": "无效的编辑器版本",

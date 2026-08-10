@@ -22,13 +22,16 @@
         "latestPrerelease": "最新預先釋出版",
         "olderReleases": "較舊版本",
         "cooldown": "冷卻 {{seconds}} 秒",
-        "cooldownTooltip": "一分鐘的冷卻時間有助於防止 GitHub 限制請求。"
+        "cooldownTooltip": "每分鐘可以重新整理一次，以減少傳送至 GitHub 的請求。"
     },
     "buttons": {
         "reload": "重新載入發行清單"
     },
     "errors": {
         "fetchError": "擷取發行版本時發生錯誤。",
+        "catalogUpdateTitle": "無法更新編輯器清單",
+        "catalogUpdateCached": "已儲存的編輯器清單仍可使用。GitHub 可能正在暫時限制請求。請等待幾分鐘後再重新整理。",
+        "catalogLoadFailed": "無法載入編輯器清單。請檢查網路連線，並在幾分鐘後重試。",
         "retryInline": "請再試一次。<Button>重試</Button>",
         "noPlatformAsset": "找不到此平台的資產",
         "invalidEditorVersion": "無效的編輯器版本",

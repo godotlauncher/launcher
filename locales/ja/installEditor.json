@@ -22,13 +22,16 @@
         "latestPrerelease": "最新のプレリリース",
         "olderReleases": "以前のリリース",
         "cooldown": "あと{{seconds}}秒",
-        "cooldownTooltip": "1分間の待機により、GitHubのリクエスト制限を防ぎます。"
+        "cooldownTooltip": "GitHubへのリクエストを減らすため、更新は1分に1回行えます。"
     },
     "buttons": {
         "reload": "リリースリストを再読み込み"
     },
     "errors": {
         "fetchError": "リリースの取得中にエラーが発生しました。",
+        "catalogUpdateTitle": "エディター一覧を更新できませんでした",
+        "catalogUpdateCached": "保存済みのエディター一覧は引き続き利用できます。GitHubが一時的にリクエストを制限している可能性があります。数分待ってからもう一度更新してください。",
+        "catalogLoadFailed": "エディター一覧を読み込めませんでした。接続を確認し、数分後にもう一度お試しください。",
         "retryInline": "もう一度お試しください。<Button>再試行</Button>",
         "noPlatformAsset": "プラットフォーム用のアセットが見つかりません",
         "invalidEditorVersion": "無効なエディタバージョン",

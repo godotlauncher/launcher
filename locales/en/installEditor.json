@@ -22,13 +22,16 @@
         "latestPrerelease": "Latest prerelease",
         "olderReleases": "Older releases",
         "cooldown": "{{seconds}}s cooldown",
-        "cooldownTooltip": "A one-minute cooldown helps prevent GitHub request throttling."
+        "cooldownTooltip": "You can refresh once per minute to reduce requests to GitHub."
     },
     "buttons": {
         "reload": "Reload Release List"
     },
     "errors": {
         "fetchError": "There was an error fetching releases.",
+        "catalogUpdateTitle": "Could not update editor list",
+        "catalogUpdateCached": "The saved editor list is still available. GitHub may be temporarily limiting requests. Please wait a few minutes before refreshing again.",
+        "catalogLoadFailed": "The editor list could not be loaded. Check your connection and try again in a few minutes.",
         "retryInline": "Please try again. <Button>Try again</Button>",
         "noPlatformAsset": "No Asset found for platform",
         "invalidEditorVersion": "Invalid editor version",

@@ -62,6 +62,7 @@ export type StubbedAppDataOptions = {
     installedReleases?: InstalledRelease[];
     availableReleases?: ReleaseSummary[];
     availablePrereleases?: ReleaseSummary[];
+    catalogRefreshError?: string;
     tools?: CachedTool[];
     codeEditorSettings?: CodeEditorIntegrationSettings[];
     projectLaunchResult?: LaunchProjectResult;

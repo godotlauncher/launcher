@@ -22,13 +22,16 @@
         "latestPrerelease": "Ultima pre-release",
         "olderReleases": "Versioni precedenti",
         "cooldown": "{{seconds}} s di attesa",
-        "cooldownTooltip": "Un'attesa di un minuto aiuta a evitare la limitazione delle richieste GitHub."
+        "cooldownTooltip": "Puoi aggiornare una volta al minuto per ridurre le richieste a GitHub."
     },
     "buttons": {
         "reload": "Ricarica elenco versioni"
     },
     "errors": {
         "fetchError": "Si è verificato un errore durante il recupero delle versioni.",
+        "catalogUpdateTitle": "Impossibile aggiornare l'elenco degli editor",
+        "catalogUpdateCached": "L'elenco degli editor salvato è ancora disponibile. GitHub potrebbe limitare temporaneamente le richieste. Attendi qualche minuto prima di aggiornare di nuovo.",
+        "catalogLoadFailed": "Impossibile caricare l'elenco degli editor. Controlla la connessione e riprova tra qualche minuto.",
         "retryInline": "Si è verificato un errore. <Button>Riprova</Button>",
         "noPlatformAsset": "Nessuna risorsa trovata per la piattaforma",
         "invalidEditorVersion": "Versione editor non valida",

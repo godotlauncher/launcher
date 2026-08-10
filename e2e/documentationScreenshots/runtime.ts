@@ -89,10 +89,12 @@ const screenshotEditorArchitecture: EditorCatalogArchitecture =
  * Creates catalog data from the release fixtures used by screenshots.
  *
  * @param releases - The stable and prerelease fixtures to include.
+ * @param refreshError - An optional mocked provider refresh error.
  * @returns Catalog data for the dedicated editor catalog bridge.
  */
 function createScreenshotEditorCatalog(
     releases: ReleaseSummary[],
+    refreshError?: string,
 ): EditorCatalogResult {
     const now = Date.now();
 
@@ -103,6 +105,7 @@ function createScreenshotEditorCatalog(
                 id: 'official-stable',
                 lastFetchedAt: now,
                 isStale: false,
+                ...(refreshError ? { refreshError } : {}),
             },
             {
                 id: 'official-prerelease',
@@ -346,6 +349,7 @@ async function ensureMainProcessNameHelperShim(
  * @param installedReleases - The installed editors returned to the renderer.
  * @param availableReleases - The stable catalog fixtures to return.
  * @param availablePrereleases - The prerelease catalog fixtures to return.
+ * @param catalogRefreshError - An optional mocked catalog refresh error.
  * @returns A promise that ends when the handlers are ready.
  */
 export async function stubAppData(
@@ -355,12 +359,13 @@ export async function stubAppData(
     installedReleases: InstalledRelease[],
     availableReleases: ReleaseSummary[],
     availablePrereleases: ReleaseSummary[],
+    catalogRefreshError?: string,
 ) {
     await ensureMainProcessNameHelperShim(electronApp);
     const editorCatalog = createScreenshotEditorCatalog([
         ...availableReleases,
         ...availablePrereleases,
-    ]);
+    ], catalogRefreshError);
     await electronApp.evaluate(
         (
             { ipcMain, BrowserWindow },
@@ -672,6 +677,14 @@ export async function releasePendingCodeEditorIntegrationRescan(
     });
 }
 
+/**
+ * Prepares the screenshot app with mocked launcher data.
+ *
+ * @param page - The Electron page to reload.
+ * @param electronApp - The Electron app that owns the mocked handlers.
+ * @param options - Optional data overrides for the screenshot state.
+ * @returns A promise that ends when the mocked page is ready.
+ */
 export async function prepareAppWithStubbedData(
     page: ElectronPage,
     electronApp: ElectronApplication,
@@ -692,6 +705,7 @@ export async function prepareAppWithStubbedData(
         options.installedReleases ?? SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
         options.availableReleases ?? SAMPLE_AVAILABLE_RELEASES,
         options.availablePrereleases ?? SAMPLE_AVAILABLE_PRERELEASES,
+        options.catalogRefreshError,
     );
     await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
     await reloadScreenshotPage(page);

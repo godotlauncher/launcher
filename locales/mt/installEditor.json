@@ -22,13 +22,16 @@
         "latestPrerelease": "L-aħħar pre-rilaxx",
         "olderReleases": "Verżjonijiet eqdem",
         "cooldown": "{{seconds}}s stennija",
-        "cooldownTooltip": "Stennija ta' minuta tgħin biex tevita li GitHub jillimita t-talbiet."
+        "cooldownTooltip": "Tista' taġġorna darba kull minuta biex tnaqqas it-talbiet lil GitHub."
     },
     "buttons": {
         "reload": "Erġa' llowdja l-Lista ta' Releases"
     },
     "errors": {
         "fetchError": "Kien hemm żball waqt li qed jinġibu r-releases.",
+        "catalogUpdateTitle": "Ma setgħetx tiġi aġġornata l-lista tal-edituri",
+        "catalogUpdateCached": "Il-lista tal-edituri ssejvjata għadha disponibbli. GitHub jista' jkun qed jillimita t-talbiet temporanjament. Stenna ftit minuti qabel terġa' taġġorna.",
+        "catalogLoadFailed": "Il-lista tal-edituri ma setgħetx titgħabba. Iċċekkja l-konnessjoni tiegħek u erġa' pprova fi ftit minuti.",
         "retryInline": "Jekk jogħġbok erġa' pprova. <Button>Erġa' pprova</Button>",
         "noPlatformAsset": "Ebda Asset ma nstab għall-pjattaforma",
         "invalidEditorVersion": "Verżjoni tal-editur invalida",

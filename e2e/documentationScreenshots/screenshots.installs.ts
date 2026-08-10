@@ -251,6 +251,12 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_installs_catalog_error',
+        description: 'Install editor catalog update error',
+        navigate: navigateToCatalogErrorScreenshot,
+        cleanup: cleanupCatalogErrorScreenshot,
+    },
+    {
         fileBase: 'screen_installs_download_progress',
         description: 'Install New Version view with download progress',
         navigate: async (
@@ -269,6 +275,9 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             await expect(installButton).toBeVisible({ timeout: 10000 });
             await installButton.click({ force: true });
             await expect(closeButton).toBeVisible({ timeout: 10000 });
+            const editorDrawer = page.getByRole('dialog', {
+                name: 'Install Godot Editor',
+            }).last();
 
             const release = SAMPLE_AVAILABLE_RELEASES[0];
             await publishReleaseInstallProgress(electronApp, [
@@ -294,12 +303,12 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
                 },
             ]);
 
-            const gdscriptProgress = page.getByTestId(
+            const gdscriptProgress = editorDrawer.getByTestId(
                 `installProgress${release.version}`,
-            );
-            const dotnetProgress = page.getByTestId(
+            ).first();
+            const dotnetProgress = editorDrawer.getByTestId(
                 `installProgress${release.version}-mono`,
-            );
+            ).first();
             await expect(gdscriptProgress).toHaveRole('status');
             await expect(
                 gdscriptProgress.getByText('Downloading'),
@@ -351,7 +360,12 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             await installButton.click({ force: true });
             await expect(closeButton).toBeVisible({ timeout: 10000 });
 
-            await page.getByTestId('btnDownload4.7-stable').click();
+            await page
+                .getByRole('dialog', { name: 'Install Godot Editor' })
+                .last()
+                .getByTestId('btnDownload4.7-stable')
+                .first()
+                .click();
             await expect(
                 page.getByText('Download interrupted.', { exact: false }),
             ).toBeVisible({ timeout: 10000 });
@@ -377,3 +391,62 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
 ];
+
+/**
+ * Opens the editor drawer with a mocked catalog refresh error.
+ *
+ * @param page - The Electron page to prepare.
+ * @param electronApp - The Electron app that owns the mocked handlers.
+ * @param theme - The screenshot theme to restore after reloading.
+ * @returns A promise that ends when the error modal is visible.
+ */
+async function navigateToCatalogErrorScreenshot(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    theme: ThemeConfig,
+): Promise<void> {
+    const technicalError =
+        'Failed to fetch editor catalog: 403; API rate limit exceeded for this address.';
+    await prepareAppWithStubbedData(page, electronApp, {
+        catalogRefreshError: technicalError,
+    });
+    await applyTheme(page, theme);
+    await page.getByTestId('btnInstalls').click();
+    await page.getByTestId('btnInstallEditor').click();
+
+    const errorDialog = page.getByRole('dialog', {
+        name: 'Could not update editor list',
+    });
+    await expect(errorDialog).toBeVisible({ timeout: 10000 });
+    await expect(errorDialog).toContainText(
+        'The saved editor list is still available.',
+    );
+    await expect(page.getByText(technicalError)).toHaveCount(0);
+    await page.waitForTimeout(400);
+}
+
+/**
+ * Restores the normal mocked catalog after the error screenshot.
+ *
+ * @param page - The Electron page to restore.
+ * @param electronApp - The Electron app that owns the mocked handlers.
+ * @param theme - The screenshot theme to restore after reloading.
+ * @returns A promise that ends when the normal mocked page is ready.
+ */
+async function cleanupCatalogErrorScreenshot(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    theme: ThemeConfig,
+): Promise<void> {
+    await dismissVisibleAlert(page);
+    const closeButton = page.getByTestId('btnCloseInstallEditor');
+    if (await closeButton.isVisible().catch(() => false)) {
+        await closeButton.click();
+    } else {
+        await page.keyboard.press('Escape');
+    }
+
+    await prepareAppWithStubbedData(page, electronApp);
+    await applyTheme(page, theme);
+    await page.waitForTimeout(600);
+}
