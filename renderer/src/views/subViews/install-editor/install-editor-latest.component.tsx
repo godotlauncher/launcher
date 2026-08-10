@@ -32,9 +32,9 @@ export const InstallEditorLatest: React.FC<InstallEditorLatestProps> = ({
     }
 
     return (
-        <div className="flex min-h-0 flex-col gap-4 pb-2">
+        <div className="flex h-full min-h-0 flex-col gap-4 overflow-auto pb-2">
             <section className="flex flex-col gap-2">
-                <p className="text-lg font-medium text-base-content/80">
+                <p className="text-base font-bold text-base-content">
                     {channel === 'stable'
                         ? t('catalog.latestStableRelease')
                         : t('catalog.latestPrerelease')}
@@ -49,7 +49,7 @@ export const InstallEditorLatest: React.FC<InstallEditorLatestProps> = ({
 
             {secondaryReleases.length > 0 && (
                 <section className="flex flex-col gap-2">
-                    <p className="mt-2 font-medium text-base-content/80">
+                    <p className="mt-2 text-base font-bold text-base-content">
                         {t('catalog.olderReleases')}
                     </p>
                     {secondaryReleases.map((release) => (
@@ -93,11 +93,11 @@ const ReleaseCard: React.FC<ReleaseCardProps> = ({
         }
     >
         <div className="flex min-w-0 flex-1 flex-col items-start">
-            <span className="truncate text-base font-medium">
+            <span className="truncate text-lg font-semibold leading-tight text-base-content">
                 {release.version}
             </span>
             {release.published_at && (
-                <span className="text-xs text-base-content/60">
+                <span className="text-xs text-base-content/50">
                     {release.published_at.split('T')[0]}
                 </span>
             )}

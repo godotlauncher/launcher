@@ -200,7 +200,7 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
 
             <Drawer.Body
                 scrollable={false}
-                className="flex min-h-0 flex-col gap-1 p-0"
+                className="flex min-h-0 flex-col gap-1"
             >
                 <InstallEditorFilters
                     show={show}
@@ -245,7 +245,7 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
 
                 <div className="divider my-0 p-0" />
 
-                <div className="min-h-0 flex-1 overflow-auto">
+                <div className="min-h-0 flex-1">
                     {loading && !hasCatalogData ? (
                         <div className="flex h-full items-center justify-center text-base-content/70">
                             {t('catalog.loading')}

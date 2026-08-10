@@ -66,6 +66,13 @@ test('Can navigate the main window', async () => {
             'aria-selected',
             'true',
         );
+        const latestVersionLabel = drawer
+            .locator('article')
+            .first()
+            .locator('span')
+            .first();
+        await expect(latestVersionLabel).toHaveCSS('font-size', '15.75px');
+        await expect(latestVersionLabel).toHaveCSS('font-weight', '600');
         const reloadButton = drawer.getByTestId(
             'btnRefreshInstallEditorCatalog',
         );
@@ -158,6 +165,22 @@ test('Can navigate the main window', async () => {
         const drawerSearch = drawer.getByTestId('inputInstallSearch');
         await expect(drawerSearch).toBeEnabled();
         await expect(drawerSearch).toBeFocused();
+        const allReleaseList = drawer.getByTestId('installEditorAllList');
+        await expect(allReleaseList.getByRole('table')).toHaveCount(0);
+        await expect(
+            allReleaseList.getByTestId('inputInstallSearch'),
+        ).toHaveCount(0);
+        await expect(allReleaseList.locator('h3').first()).toHaveCSS(
+            'position',
+            'sticky',
+        );
+        const allVersionLabel = allReleaseList
+            .locator('article')
+            .first()
+            .locator('span')
+            .first();
+        await expect(allVersionLabel).toHaveCSS('font-size', '15.75px');
+        await expect(allVersionLabel).toHaveCSS('font-weight', '600');
         await drawerSearch.fill('4.5');
         await drawer.getByTestId('tabInstallsPrerelease').click();
         await expect(

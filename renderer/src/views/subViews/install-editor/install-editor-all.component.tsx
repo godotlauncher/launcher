@@ -1,8 +1,10 @@
 import type { ReleaseSummary } from '@shared/contracts';
 import type React from 'react';
-import { useTranslation } from 'react-i18next';
 import { SearchField } from '../../../components/ui/searchField.component.tsx';
-import type { InstallEditorChannel } from './install-editor.model.ts';
+import {
+    groupInstallEditorReleases,
+    type InstallEditorChannel,
+} from './install-editor.model.ts';
 import { InstallEditorVariantAction } from './install-editor-variant-action.component.tsx';
 
 type InstallEditorAllProps = {
@@ -17,10 +19,10 @@ type InstallEditorAllProps = {
 };
 
 /**
- * Renders all matching releases in a compact table.
+ * Renders all matching releases in compact version groups.
  *
  * @param props - The matching releases and install actions.
- * @returns The complete catalog table.
+ * @returns The complete grouped catalog.
  */
 export const InstallEditorAll: React.FC<InstallEditorAllProps> = ({
     channel,
@@ -32,10 +34,10 @@ export const InstallEditorAll: React.FC<InstallEditorAllProps> = ({
     onInstall,
     onReinstall,
 }) => {
-    const { t } = useTranslation('installEditor');
+    const releaseGroups = groupInstallEditorReleases(releases);
 
     return (
-        <div className="flex min-h-0 flex-col gap-2">
+        <div className="flex h-full min-h-0 flex-col gap-2">
             <div className="flex shrink-0 justify-end">
                 <SearchField
                     key={channel}
@@ -50,61 +52,78 @@ export const InstallEditorAll: React.FC<InstallEditorAllProps> = ({
             </div>
 
             {releases.length === 0 ? (
-                <div className="flex min-h-32 items-center justify-center text-base-content/70">
+                <div className="flex min-h-0 flex-1 items-center justify-center text-base-content/70">
                     {emptyLabel}
                 </div>
             ) : (
-                <div className="min-h-0 overflow-auto rounded-box border border-base-300">
-                    <table className="table table-pin-rows table-sm">
-                        <thead className="bg-base-200 text-xs">
-                            <tr>
-                                <th>{t('table.headers.version')}</th>
-                                <th className="text-right">
-                                    {t('table.headers.download')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {releases.map((release) => (
-                                <tr key={release.version}>
-                                    <td>
-                                        <div className="flex min-w-0 flex-col">
-                                            <span className="font-medium">
-                                                {release.version}
-                                            </span>
-                                            {release.published_at && (
-                                                <span className="text-xs text-base-content/60">
-                                                    {
-                                                        release.published_at.split(
-                                                            'T',
-                                                        )[0]
-                                                    }
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="flex flex-wrap justify-end gap-2">
-                                            <InstallEditorVariantAction
-                                                release={release}
-                                                mono={false}
-                                                onInstall={onInstall}
-                                                onReinstall={onReinstall}
-                                            />
-                                            <InstallEditorVariantAction
-                                                release={release}
-                                                mono
-                                                onInstall={onInstall}
-                                                onReinstall={onReinstall}
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div
+                    className="flex min-h-0 flex-1 flex-col overflow-auto pr-1"
+                    data-testid="installEditorAllList"
+                >
+                    {releaseGroups.map((group) => (
+                        <section key={group.baseVersion} className="pb-3">
+                            <h3 className="sticky top-0 z-10 bg-base-100/95 px-3 py-2 text-base font-bold leading-tight text-base-content/80 backdrop-blur-sm">
+                                {group.baseVersion}
+                            </h3>
+                            <div className="flex flex-col gap-1">
+                                {group.releases.map((release) => (
+                                    <ReleaseRow
+                                        key={release.version}
+                                        release={release}
+                                        onInstall={onInstall}
+                                        onReinstall={onReinstall}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    ))}
                 </div>
             )}
         </div>
     );
 };
+
+type ReleaseRowProps = {
+    release: ReleaseSummary;
+    onInstall: (release: ReleaseSummary, mono: boolean) => Promise<void>;
+    onReinstall: (release: ReleaseSummary, mono: boolean) => Promise<void>;
+};
+
+/**
+ * Renders one thin release card in an All version group.
+ *
+ * @param props - The release and its install actions.
+ * @returns One borderless release card.
+ */
+const ReleaseRow: React.FC<ReleaseRowProps> = ({
+    release,
+    onInstall,
+    onReinstall,
+}) => (
+    <article className="flex min-h-14 flex-col items-stretch gap-3 rounded-box px-3 py-2 hover:bg-base-200/65 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 flex-col items-start">
+            <span className="truncate text-lg font-semibold leading-tight text-base-content">
+                {release.version}
+            </span>
+            {release.published_at && (
+                <span className="text-xs text-base-content/50">
+                    {release.published_at.split('T')[0]}
+                </span>
+            )}
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <InstallEditorVariantAction
+                release={release}
+                mono={false}
+                onInstall={onInstall}
+                onReinstall={onReinstall}
+            />
+            <InstallEditorVariantAction
+                release={release}
+                mono
+                onInstall={onInstall}
+                onReinstall={onReinstall}
+            />
+        </div>
+    </article>
+);

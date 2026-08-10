@@ -4,6 +4,7 @@ import {
     getInstallEditorRefreshCooldownSeconds,
     getInstallEditorRows,
     getLatestInstallEditorRows,
+    groupInstallEditorReleases,
 } from './install-editor.model.ts';
 
 describe('install editor drawer model', () => {
@@ -51,6 +52,30 @@ describe('install editor drawer model', () => {
                 search: 'beta',
             }),
         ).toEqual([prerelease[1]]);
+    });
+
+    it('groups releases by major and minor version', () => {
+        expect(
+            groupInstallEditorReleases([
+                stable[1],
+                stable[3],
+                stable[0],
+                stable[4],
+            ]),
+        ).toEqual([
+            {
+                baseVersion: '4.6',
+                releases: [stable[1]],
+            },
+            {
+                baseVersion: '4.5',
+                releases: [stable[3], stable[0]],
+            },
+            {
+                baseVersion: '4.4',
+                releases: [stable[4]],
+            },
+        ]);
     });
 
     it('counts refresh cooldown seconds from the current time', () => {

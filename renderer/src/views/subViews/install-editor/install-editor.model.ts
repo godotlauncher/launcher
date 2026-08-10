@@ -2,6 +2,10 @@ import type { ReleaseSummary } from '@shared/contracts';
 
 export type InstallEditorShow = 'latest' | 'all';
 export type InstallEditorChannel = 'stable' | 'prerelease';
+export type InstallEditorReleaseGroup = {
+    baseVersion: string;
+    releases: ReleaseSummary[];
+};
 
 type GetInstallEditorRowsOptions = {
     show: InstallEditorShow;
@@ -76,6 +80,30 @@ export function getInstallEditorRows({
             .filter((value): value is string => Boolean(value))
             .some((value) => value.toLowerCase().includes(normalizedSearch)),
     );
+}
+
+/**
+ * Groups releases by their major and minor version.
+ *
+ * @param releases - The sorted releases to group.
+ * @returns Release groups in the same order as the input.
+ */
+export function groupInstallEditorReleases(
+    releases: ReleaseSummary[],
+): InstallEditorReleaseGroup[] {
+    const groups = new Map<string, ReleaseSummary[]>();
+
+    for (const release of releases) {
+        const baseVersion = getReleaseBaseVersion(release);
+        const group = groups.get(baseVersion) ?? [];
+        group.push(release);
+        groups.set(baseVersion, group);
+    }
+
+    return Array.from(groups, ([baseVersion, groupedReleases]) => ({
+        baseVersion,
+        releases: groupedReleases,
+    }));
 }
 
 /**
