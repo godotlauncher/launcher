@@ -8,13 +8,30 @@
         "prerelease": "Préversion"
     },
     "filters": {
+        "show": "Afficher",
+        "latest": "Dernières",
+        "all": "Toutes",
+        "channel": "Canal",
+        "stable": "Stable",
         "showInstalledOnly": "Afficher uniquement les installées"
+    },
+    "catalog": {
+        "loading": "Chargement des versions de l'éditeur...",
+        "empty": "Aucune version de l'éditeur trouvée.",
+        "latestStableRelease": "Dernière version stable",
+        "latestPrerelease": "Dernière préversion",
+        "olderReleases": "Anciennes versions",
+        "cooldown": "{{seconds}} s d'attente",
+        "cooldownTooltip": "Vous pouvez actualiser une fois par minute pour réduire les requêtes envoyées à GitHub."
     },
     "buttons": {
         "reload": "Recharger la liste des versions"
     },
     "errors": {
         "fetchError": "Une erreur s'est produite lors de la récupération des versions.",
+        "catalogUpdateTitle": "Impossible de mettre à jour la liste des éditeurs",
+        "catalogUpdateCached": "La liste des éditeurs enregistrée reste disponible. GitHub limite peut-être temporairement les requêtes. Attendez quelques minutes avant d'actualiser à nouveau.",
+        "catalogLoadFailed": "Impossible de charger la liste des éditeurs. Vérifiez votre connexion et réessayez dans quelques minutes.",
         "retryInline": "Veuillez réessayer. <Button>Réessayer</Button>",
         "noPlatformAsset": "Aucun fichier trouvé pour la plateforme",
         "invalidEditorVersion": "Version de l'éditeur invalide",
@@ -37,18 +54,19 @@
             "download": "Télécharger",
             "installed": "Installée"
         },
-        "gdscript": "(GDScript)",
-        "dotnet": "(.NET)",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "Installation...",
         "downloading": "téléchargement...",
         "tooltips": {
             "installed": "Installée - {{version}}",
-            "installedGDScript": "Installée - {{version}} (GDScript)",
-            "installedDotNet": "Installée - {{version}} .NET",
-            "downloadGDScript": "Télécharger {{version}} (GDScript)",
-            "downloadDotNet": "Télécharger {{version}} .NET",
-            "reinstallGDScript": "Réinstaller {{version}} (GDScript)",
-            "reinstallDotNet": "Réinstaller {{version}} .NET"
+            "installedGDScript": "Godot {{version}} Standard est installé",
+            "installedDotNet": "Godot {{version}} .NET est installé",
+            "installingVariant": "Installation de Godot {{version}} {{flavor}}",
+            "downloadGDScript": "Installer Godot {{version}} Standard",
+            "downloadDotNet": "Installer Godot {{version}} .NET",
+            "reinstallGDScript": "Réinstaller Godot {{version}} Standard",
+            "reinstallDotNet": "Réinstaller Godot {{version}} .NET"
         },
         "status": {
             "unavailable": "Indisponible"

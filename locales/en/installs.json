@@ -1,5 +1,11 @@
 {
     "title": "Editor Installs",
+    "emptyState": {
+        "heading": "Install your first Godot editor",
+        "description": "Choose a version and build. You can install more versions later.",
+        "chooseEditor": "Choose an editor",
+        "addCustomEditor": "Add a custom editor"
+    },
     "tabs": {},
     "buttons": {
         "install": "Install Editor",
@@ -12,6 +18,9 @@
     },
     "table": {
         "name": "Name"
+    },
+    "groups": {
+        "other": "Other"
     },
     "badges": {
         "dotNet": ".NET",

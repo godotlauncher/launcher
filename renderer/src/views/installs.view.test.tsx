@@ -1,11 +1,22 @@
 import type { InstalledRelease } from '@shared/contracts';
 import type React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InstallsView } from './installs.view';
 
 const addAlert = vi.fn();
+const releaseState = vi.hoisted(() => ({
+    installedReleases: [] as InstalledRelease[],
+    downloadingReleases: [] as Array<{
+        version: string;
+        mono: boolean;
+        prerelease: boolean;
+        published_at: string | null;
+    }>,
+    loading: false,
+    hasError: undefined as string | undefined,
+}));
 
 vi.mock('../hooks/useAlerts', () => ({
     useAlerts: () => ({
@@ -26,36 +37,28 @@ vi.mock('../hooks/usePreferences', () => ({
 }));
 
 vi.mock('../hooks/useRelease', () => {
-    const installedReleases: InstalledRelease[] = [
-        {
-            version: '4.2.0',
-            version_number: 40200,
-            install_path: '/Volumes/Encrypted/Godot4',
-            editor_path: '/Volumes/Encrypted/Godot4/Godot',
-            platform: 'darwin',
-            arch: 'arm64',
-            mono: false,
-            prerelease: false,
-            config_version: 5,
-            published_at: '2024-01-01T00:00:00Z',
-            valid: false,
-        },
-    ];
-
     return {
         useRelease: () => ({
-            installedReleases,
-            downloadingReleases: [],
+            availableReleases: [],
+            availablePrereleases: [],
+            installedReleases: releaseState.installedReleases,
+            downloadingReleases: releaseState.downloadingReleases,
             releaseInstallProgress: [],
             getReleaseInstallProgress: vi.fn(() => undefined),
+            getInstalledRelease: vi.fn(() => undefined),
+            refreshAvailableReleases: vi.fn(() => Promise.resolve()),
+            installRelease: vi.fn(() =>
+                Promise.resolve({ success: true, version: '4.2.0' }),
+            ),
             checkAllReleasesValid: vi.fn(() =>
-                Promise.resolve(installedReleases),
+                Promise.resolve(releaseState.installedReleases),
             ),
             reinstallRelease: vi.fn(() =>
                 Promise.resolve({ success: true, version: '4.2.0' }),
             ),
             removeRelease: vi.fn(),
-            loading: true,
+            loading: releaseState.loading,
+            hasError: releaseState.hasError,
         }),
     };
 });
@@ -70,6 +73,7 @@ vi.mock('react-i18next', () => {
             'Create custom editor manifest',
         'installs:search.placeholder': 'Search',
         'installs:table.name': 'Name',
+        'installs:groups.other': 'Other',
         'installs:status.installing': 'Installing...',
         'installs:status.unavailable': 'Unavailable',
         'installs:messages.unavailableHint':
@@ -79,6 +83,11 @@ vi.mock('react-i18next', () => {
         'installs:badges.dotNet': '.NET',
         'installs:badges.prerelease': 'prerelease',
         'installs:messages.noReleasesCta': 'No releases installed yet.',
+        'installs:emptyState.heading': 'Install your first Godot editor',
+        'installs:emptyState.description':
+            'Choose a version and build. You can install more versions later.',
+        'installs:emptyState.chooseEditor': 'Choose an editor',
+        'installs:emptyState.addCustomEditor': 'Add a custom editor',
         'installs:customEditor.waitingForDialog': 'Waiting for dialog...',
         'common:buttons.retry': 'Retry',
         'common:buttons.reinstall': 'Reinstall',
@@ -100,6 +109,27 @@ vi.mock('react-i18next', () => {
 });
 
 describe('InstallsView', () => {
+    beforeEach(() => {
+        releaseState.installedReleases = [
+            {
+                version: '4.2.0',
+                version_number: 40200,
+                install_path: '/Volumes/Encrypted/Godot4',
+                editor_path: '/Volumes/Encrypted/Godot4/Godot',
+                platform: 'darwin',
+                arch: 'arm64',
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: '2024-01-01T00:00:00Z',
+                valid: false,
+            },
+        ];
+        releaseState.downloadingReleases = [];
+        releaseState.loading = false;
+        releaseState.hasError = undefined;
+    });
+
     it('renders unavailable release guidance with retry/reinstall/remove actions', () => {
         const html = renderToStaticMarkup(<InstallsView />);
 
@@ -113,5 +143,21 @@ describe('InstallsView', () => {
         expect(html).toContain('Create custom editor manifest');
         expect(html).toContain('btn-primary');
         expect(html).toContain('btn-error');
+    });
+
+    it('renders the guided empty state without duplicate list controls', () => {
+        releaseState.installedReleases = [];
+
+        const html = renderToStaticMarkup(<InstallsView />);
+
+        expect(html).toContain('lucide-hard-drive-download');
+        expect(html).toContain('Install your first Godot editor');
+        expect(html).toContain('Choose an editor');
+        expect(html).toContain('Add a custom editor');
+        expect(html).toContain('/Users/test/GodotEditors');
+        expect(html).not.toContain('inputInstallSearch');
+        expect(html).not.toContain('btnInstallEditor');
+        expect(html).not.toContain('btnAddCustomEngineMenu');
+        expect(html).not.toContain('installedReleaseList');
     });
 });

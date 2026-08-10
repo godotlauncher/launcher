@@ -1,5 +1,11 @@
 {
     "title": "Editör Kurulumları",
+    "emptyState": {
+        "heading": "İlk Godot düzenleyicinizi kurun",
+        "description": "Bir sürüm ve derleme seçin. Daha sonra başka sürümler kurabilirsiniz.",
+        "chooseEditor": "Bir düzenleyici seç",
+        "addCustomEditor": "Özel düzenleyici ekle"
+    },
     "tabs": {},
     "buttons": {
         "install": "Editör Yükle",
@@ -12,6 +18,9 @@
     },
     "table": {
         "name": "İsim"
+    },
+    "groups": {
+        "other": "Diğer"
     },
     "badges": {
         "dotNet": ".NET",

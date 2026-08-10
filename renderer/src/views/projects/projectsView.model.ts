@@ -6,6 +6,56 @@ export type ProjectSections = {
     recentProjects: ProjectDetails[];
 };
 
+export type ProjectsViewState =
+    | 'loading'
+    | 'empty-without-editor'
+    | 'empty-installing-editor'
+    | 'empty-with-editor'
+    | 'list';
+
+type GetProjectsViewStateOptions = {
+    projectCount: number;
+    installedReleaseCount: number;
+    downloadingReleaseCount: number;
+    textSearch: string;
+    projectsLoading: boolean;
+    releasesLoading: boolean;
+    releasesInitialized: boolean;
+};
+
+/**
+ * Selects the projects content while keeping filtered and loading states
+ * separate from the first-project experience.
+ *
+ * @param options - Project, editor, search, and loading state.
+ * @returns The projects content state to render.
+ */
+export function getProjectsViewState({
+    projectCount,
+    installedReleaseCount,
+    downloadingReleaseCount,
+    textSearch,
+    projectsLoading,
+    releasesLoading,
+    releasesInitialized,
+}: GetProjectsViewStateOptions): ProjectsViewState {
+    if (projectsLoading || (releasesLoading && !releasesInitialized)) {
+        return 'loading';
+    }
+
+    if (projectCount > 0 || textSearch.trim().length > 0) {
+        return 'list';
+    }
+
+    if (installedReleaseCount > 0) {
+        return 'empty-with-editor';
+    }
+
+    return downloadingReleaseCount > 0
+        ? 'empty-installing-editor'
+        : 'empty-without-editor';
+}
+
 export function getInvalidProjectTableKey(project: ProjectDetails): string {
     switch (project.invalid_reason) {
         case 'missing_project_file':

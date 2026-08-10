@@ -2,7 +2,7 @@ import type { InstalledRelease } from '@shared/contracts';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRelease } from '../hooks/useRelease';
-import { InstallEditorSubView } from '../views/subViews/installEditor.subview';
+import { InstallEditorDrawer } from '../views/subViews/install-editor-drawer.subview.tsx';
 import { CloseButton } from './closeButton.component';
 import { getSelectableInstalledReleaseRows } from './selectInstalledRelease/selectInstalledRelease.model';
 import { SelectInstalledReleaseTable } from './selectInstalledRelease/selectInstalledReleaseTable.component';
@@ -14,6 +14,12 @@ type InstalledReleaseSelectorProps = {
     onClose: () => void;
 };
 
+/**
+ * Renders the installed editor selector and its install drawer.
+ *
+ * @param props - The current editor and selection actions.
+ * @returns The installed editor selector.
+ */
 export const InstalledReleaseSelector: React.FC<
     InstalledReleaseSelectorProps
 > = ({ title, currentRelease, onReleaseSelected, onClose }) => {
@@ -43,13 +49,10 @@ export const InstalledReleaseSelector: React.FC<
 
     return (
         <div className="absolute inset-0 z-20">
-            {showInstallEditor && (
-                <div className="absolute z-30 inset-0">
-                    <InstallEditorSubView
-                        onClose={() => setShowInstallEditor(false)}
-                    />
-                </div>
-            )}
+            <InstallEditorDrawer
+                open={showInstallEditor}
+                onOpenChange={setShowInstallEditor}
+            />
             <div className="bg-black/80 w-full h-full">
                 <div className="mx-10 mb-10 bg-base-100 p-4 rounded-md flex flex-col">
                     <div className="w-full flex flex-row items-center justify-between">

@@ -1,5 +1,11 @@
 {
     "title": "编辑器安装",
+    "emptyState": {
+        "heading": "安装您的第一个 Godot 编辑器",
+        "description": "选择版本和构建。您以后可以安装更多版本。",
+        "chooseEditor": "选择编辑器",
+        "addCustomEditor": "添加自定义编辑器"
+    },
     "tabs": {},
     "buttons": {
         "install": "安装编辑器",
@@ -12,6 +18,9 @@
     },
     "table": {
         "name": "名称"
+    },
+    "groups": {
+        "other": "其他"
     },
     "badges": {
         "dotNet": ".NET",

@@ -1,7 +1,18 @@
-import type { InstalledRelease } from '@shared/contracts';
-import { EllipsisVertical, TriangleAlert } from 'lucide-react';
+import type {
+    InstalledRelease,
+    ReleaseInstallProgress,
+} from '@shared/contracts';
+import {
+    EllipsisVertical,
+    FlaskConical,
+    TriangleAlert,
+    UserRound,
+} from 'lucide-react';
 import type React from 'react';
+import { EditorVersionGroup } from '../../../components/editor-version-group.component.tsx';
 import { ReleaseInstallProgressIndicator } from '../../../components/releaseInstallProgress.component';
+import { Tooltip } from '../../../components/ui/tooltip.component.tsx';
+import { groupEditorsByBaseVersion } from '../../../editor-version-group.model.ts';
 import { useRelease } from '../../../hooks/useRelease';
 import type { ReleaseAction } from '../installsView.model';
 
@@ -23,6 +34,12 @@ type InstalledReleaseListProps = {
     ) => void;
 };
 
+/**
+ * Renders installed editors in sticky version groups.
+ *
+ * @param props - The installed editors and their actions.
+ * @returns The grouped installed editor list.
+ */
 export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     rows,
     t,
@@ -33,195 +50,212 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     onOpenReleaseMoreOptions,
 }) => {
     const { getReleaseInstallProgress } = useRelease();
+    const groups = groupEditorsByBaseVersion(rows);
 
     return (
-        <div className="overflow-auto h-full">
-            <table className="table table-md">
-                <thead className="sticky top-0 bg-base-200 text-xs">
-                    <tr>
-                        <th>{t('table.name')}</th>
-                        <th></th>
-                    </tr>
-                </thead>
-
-                <tbody className="overflow-y-auto">
-                    {rows.map((row) => {
-                        const progress = getReleaseInstallProgress(
-                            row.version,
-                            row.mono,
-                        );
-
-                        return (
-                            <tr
-                                key={`installedReleaseRow_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                className="even:bg-base-100 hover:bg-base-content/10"
-                            >
-                                <td>
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex flex-row gap-2 flex-wrap items-center">
-                                            {row.valid === false && (
-                                                <TriangleAlert className="w-4 h-4 text-warning" />
-                                            )}
-                                            <span>
-                                                {row.name ?? row.version}
-                                            </span>
-                                            {row.source === 'custom' && (
-                                                <span className="badge badge-info">
-                                                    {t('badges.custom')}
-                                                </span>
-                                            )}
-                                            {row.mono && (
-                                                <span className="badge">
-                                                    {t('badges.dotNet')}
-                                                </span>
-                                            )}
-                                            {row.prerelease && (
-                                                <span className="badge badge-secondary">
-                                                    {t('badges.prerelease')}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {row.name && (
-                                            <div className="text-xs text-base-content/50">
-                                                {row.version}
-                                            </div>
-                                        )}
-                                        <div className="text-xs text-base-content/50 flex flex-col gap-1">
-                                            {row.valid === false ? (
-                                                <>
-                                                    <span>
-                                                        {row.source === 'custom'
-                                                            ? t(
-                                                                  'messages.unavailableCustomEditorHint',
-                                                              )
-                                                            : t(
-                                                                  'messages.unavailableHintWithReinstall',
-                                                              )}
-                                                    </span>
-                                                    <div className="flex flex-row flex-wrap gap-2">
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-xs flex items-center gap-2"
-                                                            onClick={() =>
-                                                                onRetry(row)
-                                                            }
-                                                            disabled={isReleaseActionBusy(
-                                                                row,
-                                                            )}
-                                                        >
-                                                            {isReleaseActionBusy(
-                                                                row,
-                                                                'retry',
-                                                            ) && (
-                                                                <span className="loading loading-spinner loading-xs"></span>
-                                                            )}
-                                                            {t(
-                                                                'buttons.retry',
-                                                                {
-                                                                    ns: 'common',
-                                                                },
-                                                            )}
-                                                        </button>
-                                                        {row.source !==
-                                                            'custom' && (
-                                                            <button
-                                                                type="button"
-                                                                data-testid={`btnReinstallRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                                className="btn btn-primary btn-xs flex items-center gap-2"
-                                                                onClick={() =>
-                                                                    onReinstall(
-                                                                        row,
-                                                                    )
-                                                                }
-                                                                disabled={isReleaseActionBusy(
-                                                                    row,
-                                                                )}
-                                                                aria-label={t(
-                                                                    'buttons.reinstall',
-                                                                    {
-                                                                        ns: 'common',
-                                                                    },
-                                                                )}
-                                                            >
-                                                                {isReleaseActionBusy(
-                                                                    row,
-                                                                    'reinstall',
-                                                                ) && (
-                                                                    <span className="loading loading-spinner loading-xs"></span>
-                                                                )}
-                                                                {t(
-                                                                    'buttons.reinstall',
-                                                                    {
-                                                                        ns: 'common',
-                                                                    },
-                                                                )}
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            type="button"
-                                                            data-testid={`btnRemoveRelease_${row.version}_${row.mono ? 'mono' : 'standard'}`}
-                                                            className="btn btn-error btn-xs"
-                                                            onClick={() =>
-                                                                onRemove(row)
-                                                            }
-                                                            disabled={isReleaseActionBusy(
-                                                                row,
-                                                            )}
-                                                        >
-                                                            {isReleaseActionBusy(
-                                                                row,
-                                                                'remove',
-                                                            ) && (
-                                                                <span className="loading loading-spinner loading-xs"></span>
-                                                            )}
-                                                            {t(
-                                                                'buttons.remove',
-                                                                {
-                                                                    ns: 'common',
-                                                                },
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            ) : row.install_path ? (
-                                                row.install_path
-                                            ) : progress ? (
-                                                <ReleaseInstallProgressIndicator
-                                                    progress={progress}
-                                                    className="max-w-72"
-                                                />
-                                            ) : (
-                                                <div className="flex flex-row gap-2 items-center">
-                                                    <div className="loading loading-ring loading-sm"></div>
-                                                    {t('status.installing')}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="flex flex-row justify-end">
-                                    {row.install_path &&
-                                        row.valid !== false && (
-                                            <button
-                                                type="button"
-                                                data-testid="btnReleaseMoreOptions"
-                                                onClick={(event) =>
-                                                    onOpenReleaseMoreOptions(
-                                                        event,
-                                                        row,
-                                                    )
-                                                }
-                                                className="select-none outline-none relative flex items-center justify-center w-10 h-10 hover:bg-base-content/20 rounded-lg"
-                                            >
-                                                <EllipsisVertical />
-                                            </button>
-                                        )}
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+        <div
+            className="flex h-full min-h-0 flex-col overflow-auto pb-4"
+            data-testid="installedReleaseList"
+        >
+            {groups.map((group) => (
+                <EditorVersionGroup
+                    key={group.baseVersion ?? 'other'}
+                    title={group.baseVersion ?? t('groups.other')}
+                    count={group.items.length}
+                    headingLevel="h2"
+                >
+                    {group.items.map((release) => (
+                        <InstalledReleaseRow
+                            key={`${release.version}_${release.mono ? 'mono' : (release.flavor ?? 'standard')}`}
+                            release={release}
+                            progress={getReleaseInstallProgress(
+                                release.version,
+                                release.mono,
+                            )}
+                            t={t}
+                            isReleaseActionBusy={isReleaseActionBusy}
+                            onRetry={onRetry}
+                            onReinstall={onReinstall}
+                            onRemove={onRemove}
+                            onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                        />
+                    ))}
+                </EditorVersionGroup>
+            ))}
         </div>
     );
 };
+
+type InstalledReleaseRowProps = {
+    release: InstalledRelease;
+    progress: ReleaseInstallProgress | undefined;
+    t: Translate;
+    isReleaseActionBusy: (
+        release: InstalledRelease,
+        action?: ReleaseAction,
+    ) => boolean;
+    onRetry: (release: InstalledRelease) => void;
+    onReinstall: (release: InstalledRelease) => void;
+    onRemove: (release: InstalledRelease) => void;
+    onOpenReleaseMoreOptions: (
+        event: React.MouseEvent,
+        release: InstalledRelease,
+    ) => void;
+};
+
+/**
+ * Renders one installed editor row and its current state.
+ *
+ * @param props - The editor, progress, labels, and row actions.
+ * @returns One borderless installed editor row.
+ */
+const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
+    release,
+    progress,
+    t,
+    isReleaseActionBusy,
+    onRetry,
+    onReinstall,
+    onRemove,
+    onOpenReleaseMoreOptions,
+}) => (
+    <article
+        className="flex min-h-14 items-center gap-3 rounded-box px-3 py-2 transition-colors hover:bg-base-content/10 focus-within:bg-base-content/10 motion-reduce:transition-none"
+        data-testid={`installedReleaseRow_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+    >
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                {release.valid === false && (
+                    <TriangleAlert
+                        className="size-4 shrink-0 text-warning"
+                        aria-hidden="true"
+                    />
+                )}
+                <span className="truncate text-lg font-semibold leading-tight text-base-content">
+                    {release.name ?? release.version}
+                </span>
+                {release.source === 'custom' && (
+                    <Tooltip
+                        placement="top"
+                        tip={t('badges.custom')}
+                        tone="info"
+                    >
+                        <span
+                            className="inline-flex size-5 shrink-0 items-center justify-center text-info"
+                            role="img"
+                            aria-label={t('badges.custom')}
+                        >
+                            <UserRound size={15} aria-hidden="true" />
+                        </span>
+                    </Tooltip>
+                )}
+                {release.prerelease && (
+                    <Tooltip
+                        placement="top"
+                        tip={t('badges.prerelease')}
+                        tone="secondary"
+                    >
+                        <span
+                            className="inline-flex size-5 shrink-0 items-center justify-center text-secondary"
+                            role="img"
+                            aria-label={t('badges.prerelease')}
+                        >
+                            <FlaskConical size={15} aria-hidden="true" />
+                        </span>
+                    </Tooltip>
+                )}
+                {release.mono && (
+                    <span className="shrink-0 text-xs font-medium text-base-content/60">
+                        {t('badges.dotNet')}
+                    </span>
+                )}
+            </div>
+
+            {release.name && (
+                <span className="text-xs text-base-content/50">
+                    {release.version}
+                </span>
+            )}
+
+            <div className="flex flex-col gap-1 text-xs text-base-content/50">
+                {release.valid === false ? (
+                    <>
+                        <span>
+                            {release.source === 'custom'
+                                ? t('messages.unavailableCustomEditorHint')
+                                : t('messages.unavailableHintWithReinstall')}
+                        </span>
+                        <div className="flex flex-row flex-wrap gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-xs flex items-center gap-2"
+                                onClick={() => onRetry(release)}
+                                disabled={isReleaseActionBusy(release)}
+                            >
+                                {isReleaseActionBusy(release, 'retry') && (
+                                    <span className="loading loading-spinner loading-xs" />
+                                )}
+                                {t('buttons.retry', { ns: 'common' })}
+                            </button>
+                            {release.source !== 'custom' && (
+                                <button
+                                    type="button"
+                                    data-testid={`btnReinstallRelease_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                                    className="btn btn-primary btn-xs flex items-center gap-2"
+                                    onClick={() => onReinstall(release)}
+                                    disabled={isReleaseActionBusy(release)}
+                                    aria-label={t('buttons.reinstall', {
+                                        ns: 'common',
+                                    })}
+                                >
+                                    {isReleaseActionBusy(
+                                        release,
+                                        'reinstall',
+                                    ) && (
+                                        <span className="loading loading-spinner loading-xs" />
+                                    )}
+                                    {t('buttons.reinstall', { ns: 'common' })}
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                data-testid={`btnRemoveRelease_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                                className="btn btn-error btn-xs"
+                                onClick={() => onRemove(release)}
+                                disabled={isReleaseActionBusy(release)}
+                            >
+                                {isReleaseActionBusy(release, 'remove') && (
+                                    <span className="loading loading-spinner loading-xs" />
+                                )}
+                                {t('buttons.remove', { ns: 'common' })}
+                            </button>
+                        </div>
+                    </>
+                ) : release.install_path ? (
+                    release.install_path
+                ) : progress ? (
+                    <ReleaseInstallProgressIndicator
+                        progress={progress}
+                        className="max-w-72"
+                    />
+                ) : (
+                    <div className="flex flex-row items-center gap-2">
+                        <div className="loading loading-ring loading-sm" />
+                        {t('status.installing')}
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {release.install_path && release.valid !== false && (
+            <button
+                type="button"
+                data-testid="btnReleaseMoreOptions"
+                onClick={(event) => onOpenReleaseMoreOptions(event, release)}
+                className="relative flex size-10 shrink-0 select-none items-center justify-center rounded-lg outline-none hover:bg-base-content/20"
+            >
+                <EllipsisVertical size={20} aria-hidden="true" />
+            </button>
+        )}
+    </article>
+);

@@ -3,6 +3,7 @@ import type {
     OnboardingRecommendedLocations,
     UserPreferences,
 } from '@shared/contracts';
+import { appRoutePaths } from '../../routes.ts';
 
 export const onboardingStepIds = [
     'welcome',
@@ -37,10 +38,18 @@ export function getPreviousOnboardingStep(
     return onboardingStepIds[Math.max(index - 1, 0)];
 }
 
-export function getOnboardingDestination(
+/**
+ * Selects the route shown after onboarding based on editor availability.
+ *
+ * @param installedReleases - Editors currently registered with the launcher.
+ * @returns The projects route or the install-editor drawer route.
+ */
+export function getOnboardingDestinationPath(
     installedReleases: InstalledRelease[],
-): 'installs' | 'projects' {
-    return installedReleases.length === 0 ? 'installs' : 'projects';
+): typeof appRoutePaths.installEditor | typeof appRoutePaths.projects {
+    return installedReleases.length === 0
+        ? appRoutePaths.installEditor
+        : appRoutePaths.projects;
 }
 
 export function isAbsoluteOnboardingPath(

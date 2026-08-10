@@ -91,12 +91,19 @@ test('reorders pinned projects with the keyboard and keeps the order after reloa
     ).toBeDisabled();
 });
 
+/**
+ * Installs project handlers that preserve pin and ordering changes across reloads.
+ *
+ * @param app - The Electron app that owns the project IPC handlers.
+ * @param projects - The initial project collection.
+ * @returns A promise that ends when the stateful handlers are installed.
+ */
 async function installStatefulPinnedOrderHandlers(
     app: ElectronApplication,
     projects: ProjectDetails[],
-) {
+): Promise<void> {
     await app.evaluate(
-        ({ ipcMain }, injectedProjects: ProjectDetails[]) => {
+        ({ ipcMain, BrowserWindow }, injectedProjects: ProjectDetails[]) => {
             let currentProjects = injectedProjects.map((project) => ({
                 ...project,
                 last_opened: project.last_opened
@@ -107,6 +114,18 @@ async function installStatefulPinnedOrderHandlers(
                 success: true as const,
                 data,
             });
+            const syncProjects = (nextProjects: ProjectDetails[]) => {
+                currentProjects = nextProjects;
+                for (const window of BrowserWindow.getAllWindows()) {
+                    const webContents = window.webContents as typeof window.webContents & {
+                        __docsProjects?: ProjectDetails[];
+                    };
+                    webContents.__docsProjects = currentProjects;
+                }
+                return success(currentProjects);
+            };
+
+            syncProjects(currentProjects);
 
             ipcMain.removeHandler('app.getProjectsDetails');
             ipcMain.handle('app.getProjectsDetails', async () =>
@@ -126,13 +145,14 @@ async function installStatefulPinnedOrderHandlers(
                             index,
                         ]),
                     );
-                    currentProjects = currentProjects.map((project) => ({
-                        ...project,
-                        pinned_order: project.pinned
-                            ? orderByPath.get(project.path)
-                            : undefined,
-                    }));
-                    return success(currentProjects);
+                    return syncProjects(
+                        currentProjects.map((project) => ({
+                            ...project,
+                            pinned_order: project.pinned
+                                ? orderByPath.get(project.path)
+                                : undefined,
+                        })),
+                    );
                 },
             );
             ipcMain.removeHandler('app.setProjectPinned');
@@ -160,18 +180,21 @@ async function installStatefulPinnedOrderHandlers(
                             index,
                         ]),
                     );
-                    currentProjects = currentProjects.map((candidate) => {
-                        const isTarget = candidate.path === project.path;
-                        const isPinned = isTarget ? pinned : candidate.pinned;
-                        return {
-                            ...candidate,
-                            pinned: isPinned,
-                            pinned_order: isPinned
-                                ? orderByPath.get(candidate.path)
-                                : undefined,
-                        };
-                    });
-                    return success(currentProjects);
+                    return syncProjects(
+                        currentProjects.map((candidate) => {
+                            const isTarget = candidate.path === project.path;
+                            const isPinned = isTarget
+                                ? pinned
+                                : candidate.pinned;
+                            return {
+                                ...candidate,
+                                pinned: isPinned,
+                                pinned_order: isPinned
+                                    ? orderByPath.get(candidate.path)
+                                    : undefined,
+                            };
+                        }),
+                    );
                 },
             );
         },

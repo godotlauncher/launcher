@@ -15,8 +15,15 @@ type ProjectsHeaderProps = {
     createLabel: string;
     copyPathLabel: string;
     copiedLabel: string;
+    showControls?: boolean;
 };
 
+/**
+ * Renders the projects title, location, and optional list controls.
+ *
+ * @param props - Header content, control visibility, and actions.
+ * @returns The projects header.
+ */
 export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     title,
     projectsLocation,
@@ -30,6 +37,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     createLabel,
     copyPathLabel,
     copiedLabel,
+    showControls = true,
 }) => (
     <div className="flex flex-col gap-2 w-full">
         <div className="flex flex-row justify-between items-start">
@@ -46,34 +54,38 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                     />
                 )}
             </div>
-            <div className="flex gap-2">
-                <button
-                    type="button"
-                    data-testid="btnProjectAdd"
-                    onClick={onAddProject}
-                    className="btn btn-neutral"
-                >
-                    {addLabel}
-                </button>
-                <button
-                    type="button"
-                    disabled={createDisabled}
-                    data-testid="btnProjectCreate"
-                    className="btn btn-primary"
-                    onClick={onCreateProject}
-                >
-                    {createLabel}
-                </button>
+            {showControls && (
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        data-testid="btnProjectAdd"
+                        onClick={onAddProject}
+                        className="btn btn-neutral"
+                    >
+                        {addLabel}
+                    </button>
+                    <button
+                        type="button"
+                        disabled={createDisabled}
+                        data-testid="btnProjectCreate"
+                        className="btn btn-primary"
+                        onClick={onCreateProject}
+                    >
+                        {createLabel}
+                    </button>
+                </div>
+            )}
+        </div>
+        {showControls && (
+            <div className="flex flex-row justify-end my-2 items-center">
+                <SearchField
+                    placeholder={searchPlaceholder}
+                    value={searchValue}
+                    onChange={onSearchChange}
+                    focusOnMount
+                    data-testid="inputProjectSearch"
+                />
             </div>
-        </div>
-        <div className="flex flex-row justify-end my-2 items-center">
-            <SearchField
-                placeholder={searchPlaceholder}
-                value={searchValue}
-                onChange={onSearchChange}
-                focusOnMount
-                data-testid="inputProjectSearch"
-            />
-        </div>
+        )}
     </div>
 );

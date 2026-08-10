@@ -1,5 +1,4 @@
 import type {
-    AvailableReleasesResult,
     InstalledRelease,
     InstallReleaseResult,
     ReleaseInstallProgress,
@@ -8,6 +7,8 @@ import type {
 } from '@shared/contracts';
 import React from 'react';
 import { appBridge, subscribeAppEvent } from '../bridge.ts';
+import { useEditorCatalog } from './editor-catalog.hook.ts';
+import { mapEditorCatalogResult } from './editor-catalog-release.mapper.ts';
 
 type ReleaseContext = {
     availableReleases: ReleaseSummary[];
@@ -65,9 +66,11 @@ export const useRelease = () => {
 
 type ReleaseProviderProps = React.PropsWithChildren;
 
+/** Provides catalog, installed editor, and install state to the renderer. */
 export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     children,
 }) => {
+    const { getCatalog, refreshCatalog } = useEditorCatalog();
     const [hasError, setHasError] = React.useState<string>();
     const [availableReleases, setAvailableReleases] = React.useState<
         ReleaseSummary[]
@@ -84,31 +87,34 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const [loading, setLoading] = React.useState<boolean>(true);
     const [initialized, setInitialized] = React.useState<boolean>(false);
 
-    const getRefreshError = (
-        ...results: AvailableReleasesResult[]
-    ): string | undefined => {
-        return results.find((result) => result.refreshError)?.refreshError;
-    };
-
-    const updateAllReleases = () => {
+    /**
+     * Loads the catalog and installed editors together.
+     *
+     * @param forceCatalogRefresh - Whether to fetch catalog updates now.
+     * @returns A promise that ends when both requests finish.
+     */
+    const updateAllReleases = async (
+        forceCatalogRefresh = false,
+    ): Promise<void> => {
         setLoading(true);
         setHasError(undefined);
-        Promise.all([
-            appBridge.getAvailableReleases(),
-            appBridge.getAvailablePrereleases(),
-            appBridge.getInstalledReleases(),
-        ])
-            .then(([releasesResult, prereleasesResult, installed]) => {
-                setAvailableReleases(releasesResult.releases);
-                setAvailablePrereleases(prereleasesResult.releases);
-                setInstalledReleases(installed);
-                setHasError(getRefreshError(releasesResult, prereleasesResult));
-            })
-            .catch((e) => setHasError(e.message))
-            .finally(() => {
-                setInitialized(true);
-                setLoading(false);
-            });
+        try {
+            const [catalogResult, installed] = await Promise.all([
+                forceCatalogRefresh ? refreshCatalog() : getCatalog(),
+                appBridge.getInstalledReleases(),
+            ]);
+            const catalog = mapEditorCatalogResult(catalogResult);
+
+            setAvailableReleases(catalog.availableReleases);
+            setAvailablePrereleases(catalog.availablePrereleases);
+            setHasError(catalog.refreshError);
+            setInstalledReleases(installed);
+        } catch (error) {
+            setHasError(error instanceof Error ? error.message : String(error));
+        } finally {
+            setInitialized(true);
+            setLoading(false);
+        }
     };
 
     const upsertInstalledRelease = React.useCallback(
@@ -154,7 +160,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 }
             },
         );
-        updateAllReleases();
+        void updateAllReleases();
 
         return () => {
             off();
@@ -162,15 +168,25 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         };
     }, []);
 
-    const refreshAvailableReleases = async () => {
-        updateAllReleases();
+    /**
+     * Refreshes catalog data and installed editor state.
+     *
+     * @returns A promise that ends when the refresh finishes.
+     */
+    const refreshAvailableReleases = async (): Promise<void> => {
+        await updateAllReleases(true);
     };
 
-    const clearReleaseCache = async () => {
+    /**
+     * Clears the legacy cache and refreshes the active catalog.
+     *
+     * @returns A promise that ends when both cache paths are current.
+     */
+    const clearReleaseCache = async (): Promise<void> => {
         setLoading(true);
         try {
             await appBridge.clearReleaseCache();
-            updateAllReleases();
+            await updateAllReleases(true);
         } finally {
             setLoading(false);
         }
@@ -215,18 +231,31 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         );
     };
 
+    /**
+     * Removes an installed editor and reloads release state after success.
+     *
+     * @param release - The installed editor to remove.
+     * @returns The remove result from the main process.
+     */
     const removeRelease = async (
         release: InstalledRelease,
     ): Promise<RemovedReleaseResult> => {
         const result = await appBridge.removeRelease(release);
 
         if (result.success) {
-            updateAllReleases();
+            void updateAllReleases();
         }
 
         return result;
     };
 
+    /**
+     * Installs an editor through the existing install bridge.
+     *
+     * @param release - The legacy release used by the current installer.
+     * @param mono - Whether to install the .NET editor variant.
+     * @returns The install result from the main process.
+     */
     const installRelease = async (
         release: ReleaseSummary,
         mono: boolean,
@@ -243,22 +272,18 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         }
 
         if (result.success) {
-            setLoading(true);
-
-            Promise.all([
-                appBridge.getAvailableReleases().then((result) => {
-                    setAvailableReleases(result.releases);
-                    if (result.refreshError) {
-                        setHasError(result.refreshError);
-                    }
-                }),
-                appBridge.getInstalledReleases().then(setInstalledReleases),
-            ]).finally(() => setLoading(false));
+            void updateAllReleases();
         }
 
         return result;
     };
 
+    /**
+     * Reinstalls an editor through the existing install bridge.
+     *
+     * @param release - The installed editor to reinstall.
+     * @returns The reinstall result from the main process.
+     */
     const reinstallRelease = async (
         release: InstalledRelease,
     ): Promise<InstallReleaseResult> => {
@@ -266,17 +291,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             const result = await appBridge.reinstallRelease(release);
 
             if (result.success) {
-                setLoading(true);
-
-                Promise.all([
-                    appBridge.getAvailableReleases().then((result) => {
-                        setAvailableReleases(result.releases);
-                        if (result.refreshError) {
-                            setHasError(result.refreshError);
-                        }
-                    }),
-                    appBridge.getInstalledReleases().then(setInstalledReleases),
-                ]).finally(() => setLoading(false));
+                void updateAllReleases();
             }
 
             return result;

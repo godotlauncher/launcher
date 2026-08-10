@@ -3,9 +3,40 @@ import { sortReleases } from '../../releaseStoring.utils';
 
 export type ReleaseAction = 'retry' | 'reinstall' | 'remove';
 
+export type InstallsViewState = 'loading' | 'empty' | 'list';
+
+type GetInstallsViewStateOptions = {
+    installedReleaseCount: number;
+    downloadingReleaseCount: number;
+    loading: boolean;
+    hasError: boolean;
+};
+
 export const SUPPORTED_CUSTOM_ENGINE_MANIFEST_NAMES = [
     'godotlauncher-editor-manifest.json',
 ];
+
+/**
+ * Selects the installs content without showing an empty state while loading or
+ * after a release error.
+ *
+ * @param options - Current release counts and request state.
+ * @returns The installs content state to render.
+ */
+export function getInstallsViewState({
+    installedReleaseCount,
+    downloadingReleaseCount,
+    loading,
+    hasError,
+}: GetInstallsViewStateOptions): InstallsViewState {
+    if (loading || hasError) {
+        return 'loading';
+    }
+
+    return installedReleaseCount === 0 && downloadingReleaseCount === 0
+        ? 'empty'
+        : 'list';
+}
 
 export function getReleaseActionKey(release: InstalledRelease): string {
     return `${release.version}_${release.mono ? 'mono' : 'standard'}`;

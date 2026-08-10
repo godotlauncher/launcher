@@ -8,6 +8,7 @@ import {
     Outlet,
     Route,
     Routes,
+    useLocation,
     useNavigate,
     useParams,
 } from 'react-router';
@@ -92,25 +93,24 @@ function WelcomeRoutes() {
 function MainAppRoutes() {
     return (
         <Routes>
-            <Route path={appRoutePaths.welcome} element={<DefaultRoute />} />
+            <Route
+                path={appRoutePaths.welcome}
+                element={<CompletedOnboardingRoute />}
+            />
             <Route path={appRoutePaths.root} element={<MainLayout />}>
                 <Route index element={<DefaultRoute />} />
                 <Route
                     path={routeSegment(appRoutePaths.projects)}
                     element={<ProjectsRoute />}
-                />
-                <Route
-                    path={routeSegment(appRoutePaths.projectNew)}
-                    element={<ProjectsRoute createOpen />}
-                />
+                >
+                    <Route path="new" element={null} />
+                </Route>
                 <Route
                     path={routeSegment(appRoutePaths.installs)}
                     element={<InstallsRoute />}
-                />
-                <Route
-                    path={routeSegment(appRoutePaths.installEditor)}
-                    element={<InstallsRoute installOpen />}
-                />
+                >
+                    <Route path="install" element={null} />
+                </Route>
                 <Route
                     path={routeSegment(appRoutePaths.settings)}
                     element={<DefaultSettingsRoute />}
@@ -145,14 +145,41 @@ function DefaultRoute() {
     );
 }
 
+/**
+ * Sends completed onboarding directly into the first useful workflow.
+ *
+ * @returns A redirect to the install drawer or projects view.
+ */
+function CompletedOnboardingRoute() {
+    const { installedReleases } = useRelease();
+
+    return (
+        <Navigate
+            to={
+                installedReleases.length < 1
+                    ? appRoutePaths.installEditor
+                    : appRoutePaths.projects
+            }
+            replace
+        />
+    );
+}
+
 function DefaultSettingsRoute() {
     return (
         <Navigate to={appRoutePaths.settingsTab(defaultSettingsTab)} replace />
     );
 }
 
-function ProjectsRoute({ createOpen = false }: { createOpen?: boolean }) {
+/**
+ * Keeps the projects view mounted while its route-controlled drawer changes.
+ *
+ * @returns The projects view with route-derived drawer state.
+ */
+function ProjectsRoute() {
+    const location = useLocation();
     const navigate = useNavigate();
+    const createOpen = location.pathname === appRoutePaths.projectNew;
 
     return (
         <ProjectsView
@@ -169,8 +196,15 @@ function ProjectsRoute({ createOpen = false }: { createOpen?: boolean }) {
     );
 }
 
-function InstallsRoute({ installOpen = false }: { installOpen?: boolean }) {
+/**
+ * Keeps the installs view mounted while its route-controlled drawer changes.
+ *
+ * @returns The installs view with route-derived drawer state.
+ */
+function InstallsRoute() {
+    const location = useLocation();
     const navigate = useNavigate();
+    const installOpen = location.pathname === appRoutePaths.installEditor;
 
     return (
         <InstallsView
@@ -205,10 +239,14 @@ function SettingsRoute() {
     );
 }
 
+/**
+ * Renders the main application navigation and active route.
+ *
+ * @returns The primary application layout.
+ */
 function MainLayout() {
     const { t } = useTranslation('common');
     const { currentView, openExternalLink } = useAppNavigation();
-    const { installedReleases } = useRelease();
     const {
         updateAvailable,
         installAndRelaunch,
@@ -244,9 +282,6 @@ function MainLayout() {
                             <HardDrive />
                             {t('app.navigation.installs')}
                         </NavLink>
-                        {installedReleases.length < 1 && (
-                            <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
-                        )}
                     </li>
                 </ul>
                 <div className="flex flex-1"></div>

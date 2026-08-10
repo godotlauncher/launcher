@@ -101,6 +101,7 @@ export const Tooltip: FC<TooltipProps> = ({
     const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const pointerInsideRef = useRef(false);
     const focusInsideRef = useRef(false);
+    const previousTipRef = useRef(tip);
     const [open, setOpen] = useState(false);
     const [position, setPosition] = useState<TooltipPosition | null>(null);
     const accessibilityProps =
@@ -222,6 +223,15 @@ export const Tooltip: FC<TooltipProps> = ({
         return () => clearOpenTimer();
     }, [clearOpenTimer]);
 
+    useEffect(() => {
+        if (previousTipRef.current === tip) {
+            return;
+        }
+
+        previousTipRef.current = tip;
+        closeTooltip();
+    }, [tip, closeTooltip]);
+
     const child = isValidElement(children)
         ? (children as ReactElement<{ 'aria-describedby'?: string }>)
         : null;
@@ -239,11 +249,20 @@ export const Tooltip: FC<TooltipProps> = ({
         <>
             <span
                 ref={triggerRef}
-                className={clsx('inline-flex', className)}
+                className={clsx(
+                    'inline-flex [&>:disabled]:pointer-events-none',
+                    className,
+                )}
                 data-tooltip-trigger=""
                 onPointerEnter={() => {
                     pointerInsideRef.current = true;
                     requestOpen();
+                }}
+                onPointerMove={() => {
+                    if (!pointerInsideRef.current) {
+                        pointerInsideRef.current = true;
+                        requestOpen();
+                    }
                 }}
                 onPointerLeave={() => {
                     pointerInsideRef.current = false;
@@ -267,7 +286,12 @@ export const Tooltip: FC<TooltipProps> = ({
                         closeTooltip();
                     }
                 }}
-                onClickCapture={closeTooltip}
+                onClickCapture={() => {
+                    // A clicked control can become disabled before it sends leave or blur.
+                    pointerInsideRef.current = false;
+                    focusInsideRef.current = false;
+                    closeTooltip();
+                }}
                 {...accessibilityProps}
             >
                 {describedChild}

@@ -1,5 +1,11 @@
 {
     "title": "Installations de l'éditeur",
+    "emptyState": {
+        "heading": "Installez votre premier éditeur Godot",
+        "description": "Choisissez une version et une compilation. Vous pourrez installer d'autres versions plus tard.",
+        "chooseEditor": "Choisir un éditeur",
+        "addCustomEditor": "Ajouter un éditeur personnalisé"
+    },
     "tabs": {},
     "buttons": {
         "install": "Installer l'éditeur",
@@ -12,6 +18,9 @@
     },
     "table": {
         "name": "Nom"
+    },
+    "groups": {
+        "other": "Autres"
     },
     "badges": {
         "dotNet": ".NET",

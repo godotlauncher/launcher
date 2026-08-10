@@ -1,5 +1,11 @@
 {
     "title": "Installazzjonijiet tal-Editur",
+    "emptyState": {
+        "heading": "Installa l-ewwel editur Godot tiegħek",
+        "description": "Agħżel verżjoni u build. Tista' tinstalla aktar verżjonijiet aktar tard.",
+        "chooseEditor": "Agħżel editur",
+        "addCustomEditor": "Żid editur personalizzat"
+    },
     "tabs": {},
     "buttons": {
         "install": "Installa Editur",
@@ -12,6 +18,9 @@
     },
     "table": {
         "name": "Isem"
+    },
+    "groups": {
+        "other": "Oħrajn"
     },
     "badges": {
         "dotNet": ".NET",

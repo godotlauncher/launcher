@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
     createDrawerCloseButtonClickHandler,
     Drawer,
+    focusDrawerElement,
     shouldCloseDrawerOnBackdropClick,
     shouldCloseDrawerOnEscape,
 } from './drawer.component';
@@ -198,5 +199,14 @@ describe('Drawer', () => {
 
         expect(onClick).toHaveBeenCalledTimes(2);
         expect(close).toHaveBeenCalledTimes(1);
+    });
+
+    it('focuses drawer elements without moving the page', () => {
+        const focus = vi.fn();
+        const element = { focus } as unknown as HTMLElement;
+
+        focusDrawerElement(element);
+
+        expect(focus).toHaveBeenCalledWith({ preventScroll: true });
     });
 });

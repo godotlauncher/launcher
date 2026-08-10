@@ -14,9 +14,10 @@ vi.mock('react-i18next', () => {
     const dictionary: Record<string, string> = {
         'installEditor:table.status.unavailable': 'Unavailable',
         'installEditor:table.downloading': 'downloading...',
-        'installEditor:table.dotnet': '(.NET)',
+        'installEditor:table.dotnet': '.NET',
         'installEditor:table.tooltips.installed': 'Installed',
-        'installEditor:table.tooltips.installedDotNet': 'Installed (.NET)',
+        'installEditor:table.tooltips.installedDotNet':
+            'Godot .NET is installed',
         'common:buttons.retry': 'Retry',
         'common:buttons.reinstall': 'Reinstall',
         'common:buttons.remove': 'Remove',

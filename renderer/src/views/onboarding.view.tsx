@@ -7,17 +7,19 @@ import { CircleX } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 import { appBridge } from '../bridge';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
 import { useRelease } from '../hooks/useRelease';
 import { useTheme } from '../hooks/useTheme';
 import { useTrayAvailability } from '../hooks/useTrayAvailability';
+import { appRoutePaths } from '../routes.ts';
 import { AppearanceStep } from './onboarding/appearance-step.component';
 import {
     applyOnboardingRecommendedLocations,
     getNextOnboardingStep,
-    getOnboardingDestination,
+    getOnboardingDestinationPath,
     getPreviousOnboardingStep,
     isAbsoluteOnboardingPath,
     ONBOARDING_STEP_STORAGE_KEY,
@@ -43,8 +45,14 @@ function readStoredStep(): OnboardingStepId {
     );
 }
 
+/**
+ * Renders the first-run onboarding flow and its completion navigation.
+ *
+ * @returns The active onboarding step.
+ */
 export const OnboardingView: React.FC = () => {
     const { t } = useTranslation(['welcome', 'common']);
+    const navigate = useNavigate();
     const {
         preferences,
         platform,
@@ -162,7 +170,7 @@ export const OnboardingView: React.FC = () => {
         return null;
     }
 
-    const destination = getOnboardingDestination(installedReleases);
+    const destinationPath = getOnboardingDestinationPath(installedReleases);
     const labels = {
         welcome: t('welcome:onboarding.steps.welcome'),
         appearance: t('welcome:onboarding.steps.appearance'),
@@ -241,7 +249,12 @@ export const OnboardingView: React.FC = () => {
         }
     };
 
-    const finishOnboarding = async () => {
+    /**
+     * Persists the completed setup and opens the appropriate first workflow.
+     *
+     * @returns A promise that ends after preferences and navigation update.
+     */
+    const finishOnboarding = async (): Promise<void> => {
         setPending(true);
         setOperationError(undefined);
         try {
@@ -260,6 +273,7 @@ export const OnboardingView: React.FC = () => {
                 first_run: false,
             });
             localStorage.removeItem(ONBOARDING_STEP_STORAGE_KEY);
+            navigate(destinationPath, { replace: true });
         } catch {
             setOperationError(t('welcome:onboarding.errors.finish'));
         } finally {
@@ -288,7 +302,7 @@ export const OnboardingView: React.FC = () => {
             ? t('common:buttons.continue')
             : step === 'setup'
               ? t('common:buttons.continue')
-              : destination === 'installs'
+              : destinationPath === appRoutePaths.installEditor
                 ? t('welcome:onboarding.navigation.finishInstall')
                 : t('welcome:onboarding.navigation.finishProjects');
 

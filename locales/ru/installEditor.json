@@ -8,13 +8,30 @@
         "prerelease": "Пререлиз"
     },
     "filters": {
+        "show": "Показать",
+        "latest": "Последние",
+        "all": "Все",
+        "channel": "Канал",
+        "stable": "Стабильные",
         "showInstalledOnly": "Показать только установленные"
+    },
+    "catalog": {
+        "loading": "Загрузка версий редактора...",
+        "empty": "Версии редактора не найдены.",
+        "latestStableRelease": "Последняя стабильная версия",
+        "latestPrerelease": "Последняя предварительная версия",
+        "olderReleases": "Предыдущие версии",
+        "cooldown": "Ожидание: {{seconds}} с",
+        "cooldownTooltip": "Обновлять список можно раз в минуту, чтобы сократить количество запросов к GitHub."
     },
     "buttons": {
         "reload": "Обновить список версий"
     },
     "errors": {
         "fetchError": "Произошла ошибка при получении версий.",
+        "catalogUpdateTitle": "Не удалось обновить список редакторов",
+        "catalogUpdateCached": "Сохранённый список редакторов по-прежнему доступен. Возможно, GitHub временно ограничивает запросы. Подождите несколько минут перед следующим обновлением.",
+        "catalogLoadFailed": "Не удалось загрузить список редакторов. Проверьте подключение и повторите попытку через несколько минут.",
         "retryInline": "Пожалуйста, попробуйте снова. <Button>Попробовать снова</Button>",
         "noPlatformAsset": "Не найден ресурс для платформы",
         "invalidEditorVersion": "Неверная версия редактора",
@@ -37,18 +54,19 @@
             "download": "Загрузка",
             "installed": "Установлено"
         },
-        "gdscript": "(GDScript)",
-        "dotnet": "(.NET)",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "Установка...",
         "downloading": "загрузка...",
         "tooltips": {
             "installed": "Установлено - {{version}}",
-            "installedGDScript": "Установлено - {{version}} (GDScript)",
-            "installedDotNet": "Установлено - {{version}} .NET",
-            "downloadGDScript": "Загрузить {{version}} (GDScript)",
-            "downloadDotNet": "Загрузить {{version}} .NET",
-            "reinstallGDScript": "Переустановить {{version}} (GDScript)",
-            "reinstallDotNet": "Переустановить {{version}} .NET"
+            "installedGDScript": "Godot {{version}} Standard установлен",
+            "installedDotNet": "Godot {{version}} .NET установлен",
+            "installingVariant": "Установка Godot {{version}} {{flavor}}",
+            "downloadGDScript": "Установить Godot {{version}} Standard",
+            "downloadDotNet": "Установить Godot {{version}} .NET",
+            "reinstallGDScript": "Переустановить Godot {{version}} Standard",
+            "reinstallDotNet": "Переустановить Godot {{version}} .NET"
         },
         "status": {
             "unavailable": "Недоступно"

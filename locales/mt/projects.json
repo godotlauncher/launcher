@@ -1,5 +1,20 @@
 {
     "title": "Proġetti",
+    "emptyState": {
+        "addExistingProject": "Żid proġett eżistenti",
+        "withoutEditor": {
+            "heading": "Installa Godot biex tibda proġett",
+            "description": "Godot Launcher jeħtieġ editur qabel ma jkun jista' joħloq jew iħaddem proġetti.",
+            "installEditor": "Installa editur",
+            "installingDescription": "L-editur tiegħek qed jiġi installat. Tista' toħloq proġett malli jkun lest.",
+            "installingEditor": "Qed jiġi installat l-editur..."
+        },
+        "withEditor": {
+            "heading": "Ibda l-ewwel proġett tiegħek",
+            "description": "Oħloq xi ħaġa ġdida, jew żid proġett li diġà jinsab fuq dan il-kompjuter.",
+            "newProject": "Proġett Ġdid"
+        }
+    },
     "buttons": {
         "add": "Żid",
         "newProject": "Proġett Ġdid"

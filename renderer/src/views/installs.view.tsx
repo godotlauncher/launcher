@@ -1,7 +1,13 @@
-import { TriangleAlert } from 'lucide-react';
+import { HardDriveDownload } from 'lucide-react';
 import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { appBridge } from '../bridge.ts';
+import {
+    ActionMenu,
+    type ActionMenuAnchorRect,
+    getActionMenuAnchorRect,
+} from '../components/ui/actionMenu.component.tsx';
+import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { usePreferences } from '../hooks/usePreferences';
@@ -16,9 +22,12 @@ import {
     createReleaseActions,
     useReleaseActions,
 } from './installs/hooks/useReleaseActions';
-import { getFilteredInstalledReleaseRows } from './installs/installsView.model';
+import {
+    getFilteredInstalledReleaseRows,
+    getInstallsViewState,
+} from './installs/installsView.model';
 import { CustomEditorManifestDrawer } from './subViews/customEditorManifestDrawer.subview';
-import { InstallEditorSubView } from './subViews/installEditor.subview';
+import { InstallEditorDrawer } from './subViews/install-editor-drawer.subview.tsx';
 
 export { createReleaseActions };
 
@@ -27,6 +36,12 @@ type InstallsViewProps = {
     onInstallOpenChange?: (open: boolean) => void;
 };
 
+/**
+ * Renders installed editors and the editor catalog drawer.
+ *
+ * @param props - Optional controlled drawer state and its change action.
+ * @returns The editor installs view.
+ */
 export const InstallsView: React.FC<InstallsViewProps> = ({
     installOpen: controlledInstallOpen,
     onInstallOpenChange,
@@ -35,6 +50,13 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const [textSearch, setTextSearch] = useState<string>('');
     const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
     const installOpen = controlledInstallOpen ?? localInstallOpen;
+
+    /**
+     * Updates the controlled or local drawer state.
+     *
+     * @param open - Whether the drawer should be open.
+     * @returns Nothing.
+     */
     const setInstallOpen = (open: boolean) => {
         if (onInstallOpenChange) {
             onInstallOpenChange(open);
@@ -47,6 +69,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         useState<boolean>(false);
     const [customEditorManifestDrawerOpen, setCustomEditorManifestDrawerOpen] =
         useState<boolean>(false);
+    const [customEditorMenuAnchorRect, setCustomEditorMenuAnchorRect] =
+        useState<ActionMenuAnchorRect | null>(null);
 
     const { addAlert, addConfirm } = useAlerts();
     const { preferences } = usePreferences();
@@ -57,6 +81,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         reinstallRelease,
         registerCustomEngine,
         removeRelease,
+        loading,
+        hasError,
     } = useRelease();
     const {
         releaseActionsMenu,
@@ -99,6 +125,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         downloadingReleases,
         textSearch,
     );
+    const viewState = getInstallsViewState({
+        installedReleaseCount: installedReleases.length,
+        downloadingReleaseCount: downloadingReleases.length,
+        loading,
+        hasError: Boolean(hasError),
+    });
 
     return (
         <>
@@ -138,42 +170,42 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     installLabel={t('buttons.install')}
                     copyPathLabel={t('common:buttons.copyPath')}
                     copiedLabel={t('common:success')}
+                    showControls={viewState !== 'empty'}
                     onSelectManifest={() => void handleAddCustomEngine()}
                     onCreateManifest={() =>
                         setCustomEditorManifestDrawerOpen(true)
                     }
                     onInstall={() => setInstallOpen(true)}
                 />
-                <div className="divider m-0"></div>
-
-                {installedReleases.length < 1 &&
-                downloadingReleases.length < 1 ? (
-                    <div className="text-warning flex gap-2">
-                        <TriangleAlert className="stroke-warning" />
-                        <Trans
-                            ns="installs"
-                            i18nKey="messages.noReleasesCta"
-                            components={{
-                                Link: (
-                                    <button
-                                        type="button"
-                                        onClick={() => setInstallOpen(true)}
-                                        className="underline"
-                                    />
-                                ),
-                            }}
-                        />
-                    </div>
-                ) : (
-                    <InstalledReleaseList
-                        rows={filteredRows}
-                        t={t}
-                        isReleaseActionBusy={isReleaseActionBusy}
-                        onRetry={(release) => void handleRetry(release)}
-                        onReinstall={(release) => void handleReinstall(release)}
-                        onRemove={(release) => void handleRemove(release)}
-                        onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                {viewState === 'empty' ? (
+                    <EmptyState
+                        icon={HardDriveDownload}
+                        heading={t('emptyState.heading')}
+                        description={t('emptyState.description')}
+                        primaryActionLabel={t('emptyState.chooseEditor')}
+                        secondaryActionLabel={t('emptyState.addCustomEditor')}
+                        onPrimaryAction={() => setInstallOpen(true)}
+                        onSecondaryAction={(event) =>
+                            setCustomEditorMenuAnchorRect(
+                                getActionMenuAnchorRect(event.currentTarget),
+                            )
+                        }
                     />
+                ) : (
+                    <>
+                        <div className="divider m-0"></div>
+                        <InstalledReleaseList
+                            rows={filteredRows}
+                            t={t}
+                            isReleaseActionBusy={isReleaseActionBusy}
+                            onRetry={(release) => void handleRetry(release)}
+                            onReinstall={(release) =>
+                                void handleReinstall(release)
+                            }
+                            onRemove={(release) => void handleRemove(release)}
+                            onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                        />
+                    </>
                 )}
             </section>
             <ReleaseActionsMenu
@@ -193,9 +225,30 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 }
                 onRemoveRelease={handleRemoveReleaseFromMenu}
             />
-            {installOpen && (
-                <InstallEditorSubView onClose={() => setInstallOpen(false)} />
-            )}
+            <ActionMenu
+                open={customEditorMenuAnchorRect !== null}
+                anchorRect={customEditorMenuAnchorRect}
+                ariaLabel={t('buttons.addCustomEditor')}
+                items={[
+                    {
+                        key: 'select-manifest',
+                        label: t('buttons.selectCustomEditorManifest'),
+                        testId: 'btnEmptyStateSelectCustomEditorManifest',
+                        onSelect: handleAddCustomEngine,
+                    },
+                    {
+                        key: 'create-manifest',
+                        label: t('buttons.createCustomEditorManifest'),
+                        testId: 'btnEmptyStateCreateCustomEditorManifest',
+                        onSelect: () => setCustomEditorManifestDrawerOpen(true),
+                    },
+                ]}
+                onClose={() => setCustomEditorMenuAnchorRect(null)}
+            />
+            <InstallEditorDrawer
+                open={installOpen}
+                onOpenChange={setInstallOpen}
+            />
             <CustomEditorManifestDrawer
                 open={customEditorManifestDrawerOpen}
                 onOpenChange={setCustomEditorManifestDrawerOpen}

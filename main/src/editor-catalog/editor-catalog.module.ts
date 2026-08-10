@@ -39,8 +39,8 @@ type EditorCatalogModuleAsyncOptions = Pick<
     ],
     exports: [EditorCatalogService],
 })
-// biome-ignore lint/complexity/noStaticOnlyClass: DI modules use static setup methods
 /** Registers the services used by the editor catalog. */
+// biome-ignore lint/complexity/noStaticOnlyClass: DI modules use static setup methods
 export class EditorCatalogModule {
     /**
      * Registers the catalog module with fixed storage options.

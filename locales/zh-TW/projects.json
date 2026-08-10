@@ -1,5 +1,20 @@
 {
     "title": "專案",
+    "emptyState": {
+        "addExistingProject": "新增現有專案",
+        "withoutEditor": {
+            "heading": "安裝 Godot 以開始專案",
+            "description": "Godot Launcher 需要編輯器才能建立或執行專案。",
+            "installEditor": "安裝編輯器",
+            "installingDescription": "編輯器正在安裝。安裝完成後即可建立專案。",
+            "installingEditor": "正在安裝編輯器..."
+        },
+        "withEditor": {
+            "heading": "開始您的第一個專案",
+            "description": "建立新專案，或新增此電腦上已有的專案。",
+            "newProject": "新增專案"
+        }
+    },
     "buttons": {
         "add": "新增",
         "newProject": "新專案"
