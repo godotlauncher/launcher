@@ -120,7 +120,7 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
     onOpenReleaseMoreOptions,
 }) => (
     <article
-        className="flex min-h-14 items-center gap-3 rounded-box px-3 py-2 hover:bg-base-200/65"
+        className="flex min-h-14 items-center gap-3 rounded-box px-3 py-2 transition-colors hover:bg-base-content/10 focus-within:bg-base-content/10 motion-reduce:transition-none"
         data-testid={`installedReleaseRow_${release.version}_${release.mono ? 'mono' : 'standard'}`}
     >
         <div className="flex min-w-0 flex-1 flex-col gap-1">
