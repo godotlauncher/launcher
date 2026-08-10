@@ -1,5 +1,18 @@
 {
     "title": "プロジェクト",
+    "emptyState": {
+        "addExistingProject": "既存のプロジェクトを追加",
+        "withoutEditor": {
+            "heading": "Godot をインストールしてプロジェクトを開始",
+            "description": "プロジェクトを作成または実行するには、Godot Launcher にエディターが必要です。",
+            "installEditor": "エディターをインストール"
+        },
+        "withEditor": {
+            "heading": "最初のプロジェクトを開始",
+            "description": "新しく作成するか、このコンピューターにあるプロジェクトを追加します。",
+            "newProject": "新しいプロジェクト"
+        }
+    },
     "buttons": {
         "add": "追加",
         "newProject": "新規プロジェクト"

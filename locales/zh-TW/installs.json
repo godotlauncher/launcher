@@ -1,5 +1,11 @@
 {
     "title": "編輯器安裝",
+    "emptyState": {
+        "heading": "安裝您的第一個 Godot 編輯器",
+        "description": "選擇版本和建置。您之後可以安裝更多版本。",
+        "chooseEditor": "選擇編輯器",
+        "addCustomEditor": "新增自訂編輯器"
+    },
     "tabs": {},
     "buttons": {
         "install": "安裝編輯器",

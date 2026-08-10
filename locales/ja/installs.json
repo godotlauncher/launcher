@@ -1,5 +1,11 @@
 {
     "title": "エディタのインストール",
+    "emptyState": {
+        "heading": "最初の Godot エディターをインストール",
+        "description": "バージョンとビルドを選択してください。後から別のバージョンもインストールできます。",
+        "chooseEditor": "エディターを選択",
+        "addCustomEditor": "カスタムエディターを追加"
+    },
     "tabs": {},
     "buttons": {
         "install": "エディタをインストール",

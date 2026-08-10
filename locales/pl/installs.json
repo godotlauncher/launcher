@@ -1,5 +1,11 @@
 {
     "title": "Instalacje edytora",
+    "emptyState": {
+        "heading": "Zainstaluj pierwszy edytor Godot",
+        "description": "Wybierz wersję i kompilację. Później możesz zainstalować kolejne wersje.",
+        "chooseEditor": "Wybierz edytor",
+        "addCustomEditor": "Dodaj własny edytor"
+    },
     "tabs": {},
     "buttons": {
         "install": "Zainstaluj edytor",

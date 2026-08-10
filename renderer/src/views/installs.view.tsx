@@ -1,7 +1,8 @@
-import { TriangleAlert } from 'lucide-react';
+import { HardDriveDownload } from 'lucide-react';
 import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { appBridge } from '../bridge.ts';
+import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { usePreferences } from '../hooks/usePreferences';
@@ -16,7 +17,10 @@ import {
     createReleaseActions,
     useReleaseActions,
 } from './installs/hooks/useReleaseActions';
-import { getFilteredInstalledReleaseRows } from './installs/installsView.model';
+import {
+    getFilteredInstalledReleaseRows,
+    getInstallsViewState,
+} from './installs/installsView.model';
 import { CustomEditorManifestDrawer } from './subViews/customEditorManifestDrawer.subview';
 import { InstallEditorDrawer } from './subViews/install-editor-drawer.subview.tsx';
 
@@ -70,6 +74,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         reinstallRelease,
         registerCustomEngine,
         removeRelease,
+        loading,
+        hasError,
     } = useRelease();
     const {
         releaseActionsMenu,
@@ -112,6 +118,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         downloadingReleases,
         textSearch,
     );
+    const viewState = getInstallsViewState({
+        installedReleaseCount: installedReleases.length,
+        downloadingReleaseCount: downloadingReleases.length,
+        loading,
+        hasError: Boolean(hasError),
+    });
 
     return (
         <>
@@ -151,42 +163,36 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     installLabel={t('buttons.install')}
                     copyPathLabel={t('common:buttons.copyPath')}
                     copiedLabel={t('common:success')}
+                    showControls={viewState !== 'empty'}
                     onSelectManifest={() => void handleAddCustomEngine()}
                     onCreateManifest={() =>
                         setCustomEditorManifestDrawerOpen(true)
                     }
                     onInstall={() => setInstallOpen(true)}
                 />
-                <div className="divider m-0"></div>
-
-                {installedReleases.length < 1 &&
-                downloadingReleases.length < 1 ? (
-                    <div className="text-warning flex gap-2">
-                        <TriangleAlert className="stroke-warning" />
-                        <Trans
-                            ns="installs"
-                            i18nKey="messages.noReleasesCta"
-                            components={{
-                                Link: (
-                                    <button
-                                        type="button"
-                                        onClick={() => setInstallOpen(true)}
-                                        className="underline"
-                                    />
-                                ),
-                            }}
-                        />
-                    </div>
-                ) : (
-                    <InstalledReleaseList
-                        rows={filteredRows}
-                        t={t}
-                        isReleaseActionBusy={isReleaseActionBusy}
-                        onRetry={(release) => void handleRetry(release)}
-                        onReinstall={(release) => void handleReinstall(release)}
-                        onRemove={(release) => void handleRemove(release)}
-                        onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                {viewState === 'empty' ? (
+                    <EmptyState
+                        icon={HardDriveDownload}
+                        heading={t('emptyState.heading')}
+                        description={t('emptyState.description')}
+                        primaryActionLabel={t('emptyState.chooseEditor')}
+                        secondaryActionLabel={t('emptyState.addCustomEditor')}
                     />
+                ) : (
+                    <>
+                        <div className="divider m-0"></div>
+                        <InstalledReleaseList
+                            rows={filteredRows}
+                            t={t}
+                            isReleaseActionBusy={isReleaseActionBusy}
+                            onRetry={(release) => void handleRetry(release)}
+                            onReinstall={(release) =>
+                                void handleReinstall(release)
+                            }
+                            onRemove={(release) => void handleRemove(release)}
+                            onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                        />
+                    </>
                 )}
             </section>
             <ReleaseActionsMenu

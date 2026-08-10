@@ -1,6 +1,6 @@
 import type { ProjectDetails } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
-import { getProjectSections } from './projectsView.model';
+import { getProjectSections, getProjectsViewState } from './projectsView.model';
 
 function project(
     name: string,
@@ -105,5 +105,70 @@ describe('getProjectSections', () => {
         expect(sections.newProjects).toEqual([]);
         expect(sections.pinnedProjects).toEqual([match]);
         expect(sections.recentProjects).toEqual([]);
+    });
+});
+
+describe('getProjectsViewState', () => {
+    it('selects the correct first-project state from editor availability', () => {
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 0,
+                textSearch: '',
+                projectsLoading: false,
+                releasesLoading: false,
+            }),
+        ).toBe('empty-without-editor');
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 1,
+                textSearch: '',
+                projectsLoading: false,
+                releasesLoading: false,
+            }),
+        ).toBe('empty-with-editor');
+    });
+
+    it('keeps existing and filtered project collections on the list path', () => {
+        expect(
+            getProjectsViewState({
+                projectCount: 1,
+                installedReleaseCount: 0,
+                textSearch: '',
+                projectsLoading: false,
+                releasesLoading: false,
+            }),
+        ).toBe('list');
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 1,
+                textSearch: 'missing',
+                projectsLoading: false,
+                releasesLoading: false,
+            }),
+        ).toBe('list');
+    });
+
+    it('does not select an empty state until both resources finish loading', () => {
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 0,
+                textSearch: '',
+                projectsLoading: true,
+                releasesLoading: false,
+            }),
+        ).toBe('loading');
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                installedReleaseCount: 0,
+                textSearch: '',
+                projectsLoading: false,
+                releasesLoading: true,
+            }),
+        ).toBe('loading');
     });
 });

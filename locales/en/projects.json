@@ -1,5 +1,18 @@
 {
     "title": "Projects",
+    "emptyState": {
+        "addExistingProject": "Add an existing project",
+        "withoutEditor": {
+            "heading": "Install Godot to start a project",
+            "description": "Godot Launcher needs an editor before it can create or run projects.",
+            "installEditor": "Install an editor"
+        },
+        "withEditor": {
+            "heading": "Start your first project",
+            "description": "Create something new, or add a project already on this computer.",
+            "newProject": "New Project"
+        }
+    },
     "buttons": {
         "add": "Add",
         "newProject": "New Project"

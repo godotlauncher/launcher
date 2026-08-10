@@ -1,5 +1,18 @@
 {
     "title": "Projeler",
+    "emptyState": {
+        "addExistingProject": "Mevcut bir proje ekle",
+        "withoutEditor": {
+            "heading": "Bir proje başlatmak için Godot'yu kurun",
+            "description": "Godot Launcher'ın proje oluşturabilmesi veya çalıştırabilmesi için bir düzenleyici gerekir.",
+            "installEditor": "Bir düzenleyici kur"
+        },
+        "withEditor": {
+            "heading": "İlk projenizi başlatın",
+            "description": "Yeni bir şey oluşturun veya bu bilgisayarda bulunan bir projeyi ekleyin.",
+            "newProject": "Yeni Proje"
+        }
+    },
     "buttons": {
         "add": "Ekle",
         "newProject": "Yeni Proje"

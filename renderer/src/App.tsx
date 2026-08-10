@@ -205,10 +205,14 @@ function SettingsRoute() {
     );
 }
 
+/**
+ * Renders the main application navigation and active route.
+ *
+ * @returns The primary application layout.
+ */
 function MainLayout() {
     const { t } = useTranslation('common');
     const { currentView, openExternalLink } = useAppNavigation();
-    const { installedReleases } = useRelease();
     const {
         updateAvailable,
         installAndRelaunch,
@@ -244,9 +248,6 @@ function MainLayout() {
                             <HardDrive />
                             {t('app.navigation.installs')}
                         </NavLink>
-                        {installedReleases.length < 1 && (
-                            <span className="absolute w-10 h-10 text-warning left-2 bottom-0 loading loading-ring"></span>
-                        )}
                     </li>
                 </ul>
                 <div className="flex flex-1"></div>

@@ -3,13 +3,14 @@ import type {
     InstalledRelease,
     ProjectDetails,
 } from '@shared/contracts';
-import { TriangleAlert } from 'lucide-react';
+import { FolderPlus, HardDriveDownload, TriangleAlert } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
 } from '../components/ui/actionMenu.component';
+import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -27,6 +28,7 @@ import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
 import {
     getInvalidProjectMessageKey,
     getProjectSections,
+    getProjectsViewState,
 } from './projects/projectsView.model';
 import { CreateProjectDrawer } from './subViews/createProjectDrawer.subview';
 import { ProjectSettingsDrawer } from './subViews/projectSettingsDrawer.subview';
@@ -41,6 +43,12 @@ type ProjectFoldersMenuState = {
     anchorRect: ActionMenuAnchorRect;
 };
 
+/**
+ * Renders projects and their project-management drawers.
+ *
+ * @param props - Optional controlled create-project drawer state.
+ * @returns The projects view.
+ */
 export const ProjectsView: React.FC<ProjectsViewProps> = ({
     createOpen: controlledCreateOpen,
     onCreateOpenChange,
@@ -241,6 +249,16 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     };
 
     const projectSections = getProjectSections(projects, textSearch);
+    const viewState = getProjectsViewState({
+        projectCount: projects.length,
+        installedReleaseCount: installedReleases.length,
+        textSearch,
+        projectsLoading: loading,
+        releasesLoading: releaseLoading,
+    });
+    const showEmptyState =
+        viewState === 'empty-without-editor' ||
+        viewState === 'empty-with-editor';
 
     return (
         <>
@@ -280,67 +298,114 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     createLabel={t('buttons.newProject')}
                     copyPathLabel={t('common:buttons.copyPath')}
                     copiedLabel={t('common:success')}
+                    showControls={!showEmptyState}
                 />
 
-                {!releaseLoading && installedReleases.length < 1 && (
-                    <div className="text-warning flex gap-2">
-                        <TriangleAlert className="stroke-warning" />
-                        <Trans
-                            ns="projects"
-                            i18nKey="messages.noReleasesCta"
-                            components={{
-                                Link: (
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setCurrentView('installs')
-                                        }
-                                        className="underline"
-                                    />
-                                ),
-                            }}
-                        />
-                    </div>
+                {viewState === 'list' &&
+                    projects.length > 0 &&
+                    installedReleases.length < 1 && (
+                        <div className="text-warning flex gap-2">
+                            <TriangleAlert className="stroke-warning" />
+                            <Trans
+                                ns="projects"
+                                i18nKey="messages.noReleasesCta"
+                                components={{
+                                    Link: (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setCurrentView('installs')
+                                            }
+                                            className="underline"
+                                        />
+                                    ),
+                                }}
+                            />
+                        </div>
+                    )}
+                {viewState === 'empty-without-editor' && (
+                    <EmptyState
+                        icon={HardDriveDownload}
+                        heading={t('emptyState.withoutEditor.heading')}
+                        description={t('emptyState.withoutEditor.description')}
+                        primaryActionLabel={t(
+                            'emptyState.withoutEditor.installEditor',
+                        )}
+                        secondaryActionLabel={t(
+                            'emptyState.addExistingProject',
+                        )}
+                    />
                 )}
-                <div className="divider m-0"></div>
-                <ProjectsList
-                    sections={projectSections}
-                    loading={loading}
-                    locale={i18n.resolvedLanguage ?? i18n.language ?? 'en'}
-                    busyProjects={busyProjects}
-                    codeEditorSettings={codeEditorSettings}
-                    highlightedPinnedProjectPath={highlightedPinnedProjectPath}
-                    pinnedReorderingDisabled={textSearch.trim().length > 0}
-                    onPinnedHighlightComplete={clearPinnedHighlight}
-                    onReorderPinnedProjects={async (orderedProjectPaths) => {
-                        try {
-                            await reorderPinnedProjects(orderedProjectPaths);
-                        } catch (error) {
-                            showProjectActionError(error);
-                            await refreshProjects();
-                        }
-                    }}
-                    isInstalledRelease={isInstalledRelease}
-                    isProjectEditorDownloading={isProjectEditorDownloading}
-                    onLaunchProject={(project) => void onLaunchProject(project)}
-                    onProjectFoldersOptions={(event, project) => {
-                        event.stopPropagation();
-                        setProjectActionsMenu(null);
-                        setProjectFoldersMenu({
-                            project,
-                            anchorRect: getActionMenuAnchorRect(
-                                event.currentTarget,
-                            ),
-                        });
-                    }}
-                    onTogglePinned={handleToggleProjectPinned}
-                    onProjectSettings={setEditProjectFor}
-                    onProjectMoreOptions={(event, project) => {
-                        setProjectFoldersMenu(null);
-                        void onProjectMoreOptions(event, project);
-                    }}
-                    t={t}
-                />
+                {viewState === 'empty-with-editor' && (
+                    <EmptyState
+                        icon={FolderPlus}
+                        heading={t('emptyState.withEditor.heading')}
+                        description={t('emptyState.withEditor.description')}
+                        primaryActionLabel={t(
+                            'emptyState.withEditor.newProject',
+                        )}
+                        secondaryActionLabel={t(
+                            'emptyState.addExistingProject',
+                        )}
+                    />
+                )}
+                {!showEmptyState && (
+                    <>
+                        <div className="divider m-0"></div>
+                        <ProjectsList
+                            sections={projectSections}
+                            loading={loading}
+                            locale={
+                                i18n.resolvedLanguage ?? i18n.language ?? 'en'
+                            }
+                            busyProjects={busyProjects}
+                            codeEditorSettings={codeEditorSettings}
+                            highlightedPinnedProjectPath={
+                                highlightedPinnedProjectPath
+                            }
+                            pinnedReorderingDisabled={
+                                textSearch.trim().length > 0
+                            }
+                            onPinnedHighlightComplete={clearPinnedHighlight}
+                            onReorderPinnedProjects={async (
+                                orderedProjectPaths,
+                            ) => {
+                                try {
+                                    await reorderPinnedProjects(
+                                        orderedProjectPaths,
+                                    );
+                                } catch (error) {
+                                    showProjectActionError(error);
+                                    await refreshProjects();
+                                }
+                            }}
+                            isInstalledRelease={isInstalledRelease}
+                            isProjectEditorDownloading={
+                                isProjectEditorDownloading
+                            }
+                            onLaunchProject={(project) =>
+                                void onLaunchProject(project)
+                            }
+                            onProjectFoldersOptions={(event, project) => {
+                                event.stopPropagation();
+                                setProjectActionsMenu(null);
+                                setProjectFoldersMenu({
+                                    project,
+                                    anchorRect: getActionMenuAnchorRect(
+                                        event.currentTarget,
+                                    ),
+                                });
+                            }}
+                            onTogglePinned={handleToggleProjectPinned}
+                            onProjectSettings={setEditProjectFor}
+                            onProjectMoreOptions={(event, project) => {
+                                setProjectFoldersMenu(null);
+                                void onProjectMoreOptions(event, project);
+                            }}
+                            t={t}
+                        />
+                    </>
+                )}
             </div>
             <ProjectFoldersMenu
                 project={projectFoldersMenu?.project ?? null}

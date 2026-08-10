@@ -15,11 +15,18 @@ type InstallsHeaderProps = {
     installLabel: string;
     copyPathLabel: string;
     copiedLabel: string;
+    showControls?: boolean;
     onSelectManifest: () => void;
     onCreateManifest: () => void;
     onInstall: () => void;
 };
 
+/**
+ * Renders the installs title, location, and optional list controls.
+ *
+ * @param props - Header content, control visibility, and actions.
+ * @returns The installs header.
+ */
 export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
     title,
     installLocation,
@@ -32,6 +39,7 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
     installLabel,
     copyPathLabel,
     copiedLabel,
+    showControls = true,
     onSelectManifest,
     onCreateManifest,
     onInstall,
@@ -51,56 +59,60 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
                     />
                 )}
             </div>
-            <div className="flex gap-2">
-                <div className="dropdown dropdown-end">
+            {showControls && (
+                <div className="flex gap-2">
+                    <div className="dropdown dropdown-end">
+                        <button
+                            type="button"
+                            tabIndex={0}
+                            data-testid="btnAddCustomEngineMenu"
+                            className="btn btn-neutral"
+                        >
+                            {addCustomEditorLabel}
+                            <ChevronDown size={14} aria-hidden="true" />
+                        </button>
+                        <ul className="dropdown-content menu bg-base-300 rounded-box z-1 min-w-64 p-1 shadow-sm border border-base-100">
+                            <li>
+                                <button
+                                    type="button"
+                                    data-testid="btnAddCustomEngine"
+                                    onClick={onSelectManifest}
+                                >
+                                    {selectManifestLabel}
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    data-testid="btnCreateCustomEditorManifest"
+                                    onClick={onCreateManifest}
+                                >
+                                    {createManifestLabel}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                     <button
                         type="button"
-                        tabIndex={0}
-                        data-testid="btnAddCustomEngineMenu"
-                        className="btn btn-neutral"
+                        data-testid="btnInstallEditor"
+                        className="btn btn-primary"
+                        onClick={onInstall}
                     >
-                        {addCustomEditorLabel}
-                        <ChevronDown size={14} aria-hidden="true" />
+                        {installLabel}
                     </button>
-                    <ul className="dropdown-content menu bg-base-300 rounded-box z-1 min-w-64 p-1 shadow-sm border border-base-100">
-                        <li>
-                            <button
-                                type="button"
-                                data-testid="btnAddCustomEngine"
-                                onClick={onSelectManifest}
-                            >
-                                {selectManifestLabel}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                type="button"
-                                data-testid="btnCreateCustomEditorManifest"
-                                onClick={onCreateManifest}
-                            >
-                                {createManifestLabel}
-                            </button>
-                        </li>
-                    </ul>
                 </div>
-                <button
-                    type="button"
-                    data-testid="btnInstallEditor"
-                    className="btn btn-primary"
-                    onClick={onInstall}
-                >
-                    {installLabel}
-                </button>
+            )}
+        </div>
+        {showControls && (
+            <div className="flex flex-row justify-end my-2 items-center">
+                <SearchField
+                    placeholder={searchPlaceholder}
+                    value={searchValue}
+                    onChange={onSearchChange}
+                    focusOnMount
+                    data-testid="inputInstallSearch"
+                />
             </div>
-        </div>
-        <div className="flex flex-row justify-end my-2 items-center">
-            <SearchField
-                placeholder={searchPlaceholder}
-                value={searchValue}
-                onChange={onSearchChange}
-                focusOnMount
-                data-testid="inputInstallSearch"
-            />
-        </div>
+        )}
     </div>
 );
