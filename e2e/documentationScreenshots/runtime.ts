@@ -88,18 +88,37 @@ const screenshotEditorArchitecture: EditorCatalogArchitecture =
 /**
  * Creates catalog data from the release fixtures used by screenshots.
  *
- * @param releases - The stable and prerelease fixtures to include.
+ * @param availableReleases - Releases from the stable provider.
+ * @param availablePrereleases - Releases from the prerelease provider.
  * @param refreshError - An optional mocked provider refresh error.
  * @returns Catalog data for the dedicated editor catalog bridge.
  */
 function createScreenshotEditorCatalog(
-    releases: ReleaseSummary[],
+    availableReleases: ReleaseSummary[],
+    availablePrereleases: ReleaseSummary[],
     refreshError?: string,
 ): EditorCatalogResult {
     const now = Date.now();
 
     return {
-        releases: releases.map(createScreenshotEditorCatalogRelease),
+        releases: [
+            ...availableReleases.map((release, releaseIndex) =>
+                createScreenshotEditorCatalogRelease(
+                    release,
+                    releaseIndex,
+                    'official-stable',
+                    false,
+                ),
+            ),
+            ...availablePrereleases.map((release, releaseIndex) =>
+                createScreenshotEditorCatalogRelease(
+                    release,
+                    releaseIndex,
+                    'official-prerelease',
+                    true,
+                ),
+            ),
+        ],
         providers: [
             {
                 id: 'official-stable',
@@ -121,15 +140,16 @@ function createScreenshotEditorCatalog(
  *
  * @param release - The release fixture to convert.
  * @param releaseIndex - The release position used for stable asset IDs.
+ * @param providerId - The provider that supplied the fixture.
+ * @param providerPrerelease - Whether the provider contains prereleases.
  * @returns A release for the dedicated editor catalog bridge.
  */
 function createScreenshotEditorCatalogRelease(
     release: ReleaseSummary,
     releaseIndex: number,
+    providerId: EditorCatalogRelease['providerId'],
+    providerPrerelease: boolean,
 ): EditorCatalogRelease {
-    const providerId = release.prerelease
-        ? 'official-prerelease'
-        : 'official-stable';
     const versionMatch = release.version.match(
         /^(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-z]+)(\d+)?)?/i,
     );
@@ -144,7 +164,7 @@ function createScreenshotEditorCatalogRelease(
         baseVersion,
         name: release.name,
         publishedAt: release.published_at,
-        prerelease: release.prerelease,
+        prerelease: providerPrerelease || release.prerelease,
         versionParts: {
             major: Number(versionMatch?.[1] ?? 0),
             minor: Number(versionMatch?.[2] ?? 0),
@@ -362,10 +382,11 @@ export async function stubAppData(
     catalogRefreshError?: string,
 ) {
     await ensureMainProcessNameHelperShim(electronApp);
-    const editorCatalog = createScreenshotEditorCatalog([
-        ...availableReleases,
-        ...availablePrereleases,
-    ], catalogRefreshError);
+    const editorCatalog = createScreenshotEditorCatalog(
+        availableReleases,
+        availablePrereleases,
+        catalogRefreshError,
+    );
     await electronApp.evaluate(
         (
             { ipcMain, BrowserWindow },
@@ -698,21 +719,68 @@ export async function prepareAppWithStubbedData(
         electronApp,
         options.projectLaunchResult ?? { launched: true },
     );
-    await stubAppData(
-        electronApp,
-        options.preferences ?? SAMPLE_PREFS,
-        options.projects ?? SAMPLE_PROJECTS,
-        options.installedReleases ?? SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
-        options.availableReleases ?? SAMPLE_AVAILABLE_RELEASES,
-        options.availablePrereleases ?? SAMPLE_AVAILABLE_PRERELEASES,
-        options.catalogRefreshError,
+    await retryCollectedElectronPromise(() =>
+        stubAppData(
+            electronApp,
+            options.preferences ?? SAMPLE_PREFS,
+            options.projects ?? SAMPLE_PROJECTS,
+            options.installedReleases ?? SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+            options.availableReleases ?? SAMPLE_AVAILABLE_RELEASES,
+            options.availablePrereleases ?? SAMPLE_AVAILABLE_PRERELEASES,
+            options.catalogRefreshError,
+        ),
     );
-    await stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS);
+    await retryCollectedElectronPromise(() =>
+        stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS),
+    );
     await reloadScreenshotPage(page);
     await expect(page.getByTestId('btnProjects')).toBeVisible({
         timeout: 15000,
     });
+    await focusElectronApp(electronApp);
     await setScreenshotViewport(page);
+}
+
+/**
+ * Activates the Electron app and its launcher window for keyboard interaction.
+ *
+ * @param electronApp - The Electron app to activate.
+ * @returns A promise that ends after the launcher window receives focus.
+ */
+async function focusElectronApp(
+    electronApp: ElectronApplication,
+): Promise<void> {
+    await electronApp.evaluate(({ app, BrowserWindow }) => {
+        app.focus({ steal: true });
+        const launcherWindow = BrowserWindow.getAllWindows().find((window) =>
+            window.webContents.getURL().startsWith('http://localhost:5123'),
+        );
+        launcherWindow?.focus();
+        return true;
+    });
+}
+
+/**
+ * Retries an idempotent Electron fixture operation if Chromium collects it.
+ *
+ * @param operation - The fixture operation to run.
+ * @returns A promise that ends after the operation succeeds.
+ */
+async function retryCollectedElectronPromise(
+    operation: () => Promise<unknown>,
+): Promise<void> {
+    try {
+        await operation();
+    } catch (error) {
+        if (
+            !(error instanceof Error) ||
+            !error.message.includes('Resulting promise was garbage collected')
+        ) {
+            throw error;
+        }
+
+        await operation();
+    }
 }
 
 const ONBOARDING_SCREENSHOT_PATHS: Record<

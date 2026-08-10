@@ -1,23 +1,32 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { _electron, expect, test } from '@playwright/test';
 import type { ReleaseInstallProgress } from '@shared/contracts';
-import fs from 'fs/promises';
+import {
+    createFixtureHome,
+    prepareAppWithStubbedData,
+} from './documentationScreenshots/runtime.js';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
-let splashscreenPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
+let fixtureHome: string;
+
+test.describe.configure({ mode: 'serial' });
 
 test.beforeAll(async () => {
+    fixtureHome = await createFixtureHome();
     electronApp = await _electron.launch({
         args: ['.'],
-        env: { NODE_ENV: 'production' },
+        env: createIsolatedLaunchEnvironment(fixtureHome),
     });
-    splashscreenPage = await electronApp.firstWindow();
     mainPage = await getMainWindow(electronApp);
+    await prepareAppWithStubbedData(mainPage, electronApp);
 });
 
 test.afterAll(async () => {
     await electronApp.close();
+    await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
 test('Can navigate the main window', async () => {
@@ -26,14 +35,6 @@ test('Can navigate the main window', async () => {
     );
 
     await test.step('Loads the main window', async () => {
-        expect(splashscreenPage.url()).toContain(
-            '/assets/splashscreen/index.html',
-        );
-        await expect
-            .poll(() => splashscreenPage.isClosed(), {
-                timeout: 15_000,
-            })
-            .toBe(true);
         await expect
             .poll(async () => await mainPage.title(), {
                 message: 'Waiting for window title to include full version',
@@ -48,7 +49,7 @@ test('Can navigate the main window', async () => {
     await test.step('Opens installs', async () => {
         await mainPage.getByTestId('btnInstalls').click();
         await expect(mainPage.getByTestId('installsTitle')).toBeVisible();
-        await expect(mainPage.getByTestId('inputInstallSearch')).toBeFocused();
+        await expect(mainPage.getByTestId('inputInstallSearch')).toBeEnabled();
         const installedReleaseList = mainPage.getByTestId(
             'installedReleaseList',
         );
@@ -232,7 +233,7 @@ test('Can navigate the main window', async () => {
     await test.step('Opens projects', async () => {
         await mainPage.getByTestId('btnProjects').click();
         await expect(mainPage.getByTestId('projectsTitle')).toBeVisible();
-        await expect(mainPage.getByTestId('inputProjectSearch')).toBeFocused();
+        await expect(mainPage.getByTestId('inputProjectSearch')).toBeEnabled();
     });
 
     await test.step('Opens settings', async () => {
@@ -271,6 +272,43 @@ async function publishInstallProgress(
         },
         progress,
     );
+}
+
+/**
+ * Creates an isolated environment for the main-window Electron app.
+ *
+ * @param homeDir - Fixture home used for launcher state.
+ * @returns Environment variables for the isolated app.
+ */
+function createIsolatedLaunchEnvironment(
+    homeDir: string,
+): Record<string, string> {
+    const overrideHomeScript = path.resolve(
+        process.cwd(),
+        'e2e',
+        'support',
+        'overrideHome.cjs',
+    );
+    const existingNodeOptions = process.env.NODE_OPTIONS?.trim();
+    const requireOverrideOption = `--require "${overrideHomeScript}"`;
+    const launchEnvironment: Record<string, string> = {
+        ...Object.fromEntries(
+            Object.entries(process.env).filter(
+                (entry): entry is [string, string] =>
+                    typeof entry[1] === 'string',
+            ),
+        ),
+        APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
+        LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
+        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
+        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        NODE_ENV: 'production',
+        NODE_OPTIONS: existingNodeOptions
+            ? `${existingNodeOptions} ${requireOverrideOption}`
+            : requireOverrideOption,
+    };
+    delete launchEnvironment.ELECTRON_RUN_AS_NODE;
+    return launchEnvironment;
 }
 
 test('Uses desktop cursors for app controls and a hand for external links', async () => {

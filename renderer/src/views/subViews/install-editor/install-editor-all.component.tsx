@@ -3,7 +3,7 @@ import type React from 'react';
 import { EditorVersionGroup } from '../../../components/editor-version-group.component.tsx';
 import { SearchField } from '../../../components/ui/searchField.component.tsx';
 import { groupEditorsByBaseVersion } from '../../../editor-version-group.model.ts';
-import { type InstallEditorChannel } from './install-editor.model.ts';
+import type { InstallEditorChannel } from './install-editor.model.ts';
 import { InstallEditorVariantAction } from './install-editor-variant-action.component.tsx';
 
 type InstallEditorAllProps = {
