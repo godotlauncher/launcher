@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CopyBadge } from '../../components/ui/copyBadge.component.tsx';
 import { Drawer } from '../../components/ui/drawer/drawer.component.tsx';
-import { SearchField } from '../../components/ui/searchField.component.tsx';
 import { useAlerts } from '../../hooks/useAlerts.tsx';
 import { usePreferences } from '../../hooks/usePreferences.tsx';
 import { useRelease } from '../../hooks/useRelease.tsx';
@@ -203,18 +202,6 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
                 scrollable={false}
                 className="flex min-h-0 flex-col gap-1 p-0"
             >
-                <div className="flex justify-end">
-                    <SearchField
-                        placeholder={t('search.placeholder')}
-                        value={search}
-                        onChange={setSearch}
-                        disabled={show === 'latest'}
-                        className="max-w-sm"
-                        inputClassName=""
-                        data-testid="inputInstallSearch"
-                    />
-                </div>
-
                 <InstallEditorFilters
                     show={show}
                     channel={channel}
@@ -263,20 +250,27 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
                         <div className="flex h-full items-center justify-center text-base-content/70">
                             {t('catalog.loading')}
                         </div>
-                    ) : rows.length === 0 ? (
-                        <div className="flex h-full items-center justify-center text-base-content/70">
-                            {t('catalog.empty')}
-                        </div>
                     ) : show === 'latest' ? (
-                        <InstallEditorLatest
-                            channel={channel}
-                            releases={rows}
-                            onInstall={handleInstall}
-                            onReinstall={handleReinstall}
-                        />
+                        rows.length === 0 ? (
+                            <div className="flex h-full items-center justify-center text-base-content/70">
+                                {t('catalog.empty')}
+                            </div>
+                        ) : (
+                            <InstallEditorLatest
+                                channel={channel}
+                                releases={rows}
+                                onInstall={handleInstall}
+                                onReinstall={handleReinstall}
+                            />
+                        )
                     ) : (
                         <InstallEditorAll
+                            channel={channel}
                             releases={rows}
+                            search={search}
+                            searchPlaceholder={t('search.placeholder')}
+                            emptyLabel={t('catalog.empty')}
+                            onSearchChange={setSearch}
                             onInstall={handleInstall}
                             onReinstall={handleReinstall}
                         />

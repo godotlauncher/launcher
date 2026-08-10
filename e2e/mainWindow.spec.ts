@@ -152,19 +152,21 @@ test('Can navigate the main window', async () => {
         });
         await drawer.getByTestId('tabInstallsLatest').click();
 
-        const drawerSearch = drawer.getByTestId('inputInstallSearch');
-        await expect(drawerSearch).toBeDisabled();
+        await expect(drawer.getByTestId('inputInstallSearch')).toHaveCount(0);
 
         await drawer.getByTestId('tabInstallsAll').click();
+        const drawerSearch = drawer.getByTestId('inputInstallSearch');
         await expect(drawerSearch).toBeEnabled();
+        await expect(drawerSearch).toBeFocused();
         await drawerSearch.fill('4.5');
         await drawer.getByTestId('tabInstallsPrerelease').click();
         await expect(
             drawer.getByTestId('tabInstallsPrerelease'),
         ).toHaveAttribute('aria-selected', 'true');
-        await drawer.getByTestId('tabInstallsLatest').click();
-        await expect(drawerSearch).toBeDisabled();
+        await expect(drawerSearch).toBeFocused();
         await expect(drawerSearch).toHaveValue('4.5');
+        await drawer.getByTestId('tabInstallsLatest').click();
+        await expect(drawer.getByTestId('inputInstallSearch')).toHaveCount(0);
 
         await drawer.getByTestId('btnCloseInstallEditor').click();
         await expect(drawer).toBeHidden();
@@ -179,7 +181,10 @@ test('Can navigate the main window', async () => {
             'aria-selected',
             'true',
         );
-        await expect(drawerSearch).toHaveValue('');
+        await expect(drawer.getByTestId('inputInstallSearch')).toHaveCount(0);
+        await drawer.getByTestId('tabInstallsAll').click();
+        await expect(drawer.getByTestId('inputInstallSearch')).toBeFocused();
+        await expect(drawer.getByTestId('inputInstallSearch')).toHaveValue('');
         await drawer.getByTestId('btnCloseInstallEditor').click();
     });
 

@@ -86,7 +86,7 @@ describe('InstallEditorDrawer', () => {
         expect(html).toContain('.NET');
         expect(html).not.toContain('(GDScript)');
         expect(html).not.toContain('(.NET)');
-        expect(html).toContain('disabled=""');
+        expect(html).not.toContain('inputInstallSearch');
         expect(html).toContain('btnCloseInstallEditor');
     });
 });
