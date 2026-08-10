@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     appBridge,
     codeEditorIntegrationBridge,
+    editorCatalogBridge,
     getPathForFile,
     subscribeAppEvent,
 } from './bridge.js';
@@ -30,6 +31,9 @@ type TestElectronApi = {
         integrationId: string,
         pathToValidate: string,
     ) => Promise<unknown>;
+    'editorCatalog.getCatalog': () => Promise<unknown>;
+    'editorCatalog.getReleaseById': (id: string) => Promise<unknown>;
+    'editorCatalog.refreshCatalog': () => Promise<unknown>;
 };
 
 describe('renderer bridge', () => {
@@ -49,6 +53,9 @@ describe('renderer bridge', () => {
     }));
     const setDefaultIntegration = vi.fn(async () => []);
     const validateIntegrationPath = vi.fn(async () => ({ valid: true }));
+    const getCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
+    const getReleaseById = vi.fn(async () => null);
+    const refreshCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
     const unsubscribe = vi.fn();
     let projectsListener: ((projects: unknown[]) => void) | undefined;
 
@@ -70,6 +77,9 @@ describe('renderer bridge', () => {
                 setDefaultIntegration,
             'codeEditorIntegration.validateIntegrationPath':
                 validateIntegrationPath,
+            'editorCatalog.getCatalog': getCatalog,
+            'editorCatalog.getReleaseById': getReleaseById,
+            'editorCatalog.refreshCatalog': refreshCatalog,
             subscribeProjects: (listener) => {
                 projectsListener = listener;
                 return unsubscribe;
@@ -127,6 +137,18 @@ describe('renderer bridge', () => {
             execFlagsOverride: '',
         });
         expect(setDefaultIntegration).toHaveBeenCalledWith('vscode');
+    });
+
+    it('delegates through the editor catalog namespace', async () => {
+        await editorCatalogBridge.getCatalog();
+        await editorCatalogBridge.getReleaseById('official-stable:4.5-stable');
+        await editorCatalogBridge.refreshCatalog();
+
+        expect(getCatalog).toHaveBeenCalledOnce();
+        expect(getReleaseById).toHaveBeenCalledWith(
+            'official-stable:4.5-stable',
+        );
+        expect(refreshCatalog).toHaveBeenCalledOnce();
     });
 
     it('subscribes and unsubscribes from application events', () => {
