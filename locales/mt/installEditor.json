@@ -8,7 +8,21 @@
         "prerelease": "Pre-rilaxx"
     },
     "filters": {
+        "show": "Uri",
+        "latest": "L-aħħar",
+        "all": "Kollha",
+        "channel": "Kanal",
+        "stable": "Stabbli",
         "showInstalledOnly": "Uri biss installati"
+    },
+    "catalog": {
+        "loading": "Qed jitgħabbew il-verżjonijiet tal-editur...",
+        "empty": "Ma nstabet l-ebda verżjoni tal-editur.",
+        "latestStableRelease": "L-aħħar verżjoni stabbli",
+        "latestPrerelease": "L-aħħar pre-rilaxx",
+        "olderReleases": "Verżjonijiet eqdem",
+        "cooldown": "{{seconds}}s stennija",
+        "cooldownTooltip": "Stennija ta' minuta tgħin biex tevita li GitHub jillimita t-talbiet."
     },
     "buttons": {
         "reload": "Erġa' llowdja l-Lista ta' Releases"
@@ -37,18 +51,19 @@
             "download": "Niżżel",
             "installed": "Installat"
         },
-        "gdscript": "(GDScript)",
-        "dotnet": "(.NET)",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "Qed jinstalla...",
         "downloading": "qed jinżel...",
         "tooltips": {
             "installed": "Installat - {{version}}",
-            "installedGDScript": "Installat - {{version}} (GDScript)",
-            "installedDotNet": "Installat - {{version}} .NET",
-            "downloadGDScript": "Niżżel {{version}} (GDScript)",
-            "downloadDotNet": "Niżżel {{version}} .NET",
-            "reinstallGDScript": "Erġa’ installa {{version}} (GDScript)",
-            "reinstallDotNet": "Erġa’ installa {{version}} .NET"
+            "installedGDScript": "Godot {{version}} Standard huwa installat",
+            "installedDotNet": "Godot {{version}} .NET huwa installat",
+            "installingVariant": "Qed jiġi installat Godot {{version}} {{flavor}}",
+            "downloadGDScript": "Installa Godot {{version}} Standard",
+            "downloadDotNet": "Installa Godot {{version}} .NET",
+            "reinstallGDScript": "Erġa' installa Godot {{version}} Standard",
+            "reinstallDotNet": "Erġa' installa Godot {{version}} .NET"
         },
         "status": {
             "unavailable": "Mhux disponibbli"

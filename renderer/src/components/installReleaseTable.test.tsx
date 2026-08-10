@@ -48,22 +48,22 @@ vi.mock('react-i18next', () => {
         'installEditor:table.headers.version': 'Version',
         'installEditor:table.headers.released': 'Released',
         'installEditor:table.headers.download': 'Download',
-        'installEditor:table.gdscript': '(GDScript)',
-        'installEditor:table.dotnet': '(.NET)',
+        'installEditor:table.gdscript': 'Standard',
+        'installEditor:table.dotnet': '.NET',
         'installEditor:table.installing': 'Installing...',
         'installEditor:table.status.unavailable': 'Unavailable',
         'installEditor:table.tooltips.installedGDScript':
-            'Installed - {{version}} (GDScript)',
+            'Godot {{version}} Standard is installed',
         'installEditor:table.tooltips.installedDotNet':
-            'Installed - {{version}} .NET',
+            'Godot {{version}} .NET is installed',
         'installEditor:table.tooltips.downloadGDScript':
-            'Download {{version}} (GDScript)',
+            'Install Godot {{version}} Standard',
         'installEditor:table.tooltips.downloadDotNet':
-            'Download {{version}} .NET',
+            'Install Godot {{version}} .NET',
         'installEditor:table.tooltips.reinstallGDScript':
-            'Reinstall {{version}} (GDScript)',
+            'Reinstall Godot {{version}} Standard',
         'installEditor:table.tooltips.reinstallDotNet':
-            'Reinstall {{version}} .NET',
+            'Reinstall Godot {{version}} .NET',
         'common:buttons.reinstall': 'Reinstall',
     };
 
@@ -107,9 +107,9 @@ describe('InstallReleaseTable', () => {
 
         expect(html).toContain('Reinstall');
         expect(html).toContain('text-warning');
-        expect(html).toContain('Reinstall 4.2.0 (GDScript)');
+        expect(html).toContain('Reinstall Godot 4.2.0 Standard');
         expect(html).not.toContain('Unavailable');
-        expect(html).not.toContain('Download 4.2.0 (GDScript)');
+        expect(html).not.toContain('Install Godot 4.2.0 Standard');
     });
 
     it('shows installing state when reinstall is in progress', () => {

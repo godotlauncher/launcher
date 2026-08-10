@@ -1,4 +1,5 @@
 import { _electron, expect, test } from '@playwright/test';
+import type { ReleaseInstallProgress } from '@shared/contracts';
 import fs from 'fs/promises';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
@@ -50,6 +51,138 @@ test('Can navigate the main window', async () => {
         await expect(mainPage.getByTestId('inputInstallSearch')).toBeFocused();
     });
 
+    await test.step('Opens the install editor drawer', async () => {
+        await mainPage.getByTestId('btnInstallEditor').click();
+        const drawer = mainPage.getByRole('dialog', {
+            name: 'Install Godot Editor',
+        });
+
+        await expect(drawer).toBeVisible();
+        await expect(drawer.getByTestId('tabInstallsLatest')).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        await expect(drawer.getByTestId('tabInstallsRelease')).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        const reloadButton = drawer.getByTestId(
+            'btnRefreshInstallEditorCatalog',
+        );
+        const [drawerBounds, reloadBounds] = await Promise.all([
+            drawer.boundingBox(),
+            reloadButton.boundingBox(),
+        ]);
+        expect(drawerBounds).not.toBeNull();
+        expect(reloadBounds).not.toBeNull();
+        expect(
+            drawerBounds!.x +
+                drawerBounds!.width -
+                (reloadBounds!.x + reloadBounds!.width),
+        ).toBeLessThanOrEqual(24);
+        await reloadButton.hover();
+        await expect(mainPage.getByRole('tooltip')).toHaveText(
+            'Reload Release List',
+        );
+        await reloadButton.click();
+        await expect(reloadButton).toBeDisabled();
+        await drawer.getByTestId('tabInstallsLatest').hover();
+        await expect(mainPage.getByRole('tooltip')).toBeHidden();
+        await reloadButton.locator('..').hover();
+        await expect(mainPage.getByRole('tooltip')).toContainText(
+            'GitHub request throttling',
+        );
+        await drawer.getByTestId('tabInstallsLatest').hover();
+        await expect(mainPage.getByRole('tooltip')).toBeHidden();
+
+        const installedAction = drawer
+            .locator('button[data-testid^="btnDownload"][disabled]')
+            .first();
+        await expect(installedAction).toBeVisible();
+        await installedAction.locator('..').hover();
+        await expect(mainPage.getByRole('tooltip')).toContainText('installed');
+        await drawer.getByTestId('tabInstallsLatest').hover();
+        await expect(mainPage.getByRole('tooltip')).toBeHidden();
+
+        await drawer.getByTestId('tabInstallsAll').click();
+        const installAction = drawer
+            .locator('button[data-testid^="btnDownload"]:not([disabled])')
+            .first();
+        await expect(installAction).toBeVisible();
+        const actionTestId = await installAction.getAttribute('data-testid');
+        expect(actionTestId).not.toBeNull();
+        const actionIdentity = actionTestId!.replace('btnDownload', '');
+        const mono = actionIdentity.endsWith('-mono');
+        const releaseVersion = mono
+            ? actionIdentity.slice(0, -'-mono'.length)
+            : actionIdentity;
+        const actionBounds = await installAction.boundingBox();
+        expect(actionBounds).not.toBeNull();
+
+        await installAction.hover();
+        await expect(mainPage.getByRole('tooltip')).toContainText(
+            'Install Godot',
+        );
+        const progress: ReleaseInstallProgress = {
+            id: `${releaseVersion}:${mono ? 'dotnet' : 'standard'}`,
+            version: releaseVersion,
+            mono,
+            prerelease: false,
+            published_at: null,
+            stage: 'downloading',
+            percent: 55,
+            receivedBytes: 55 * 1024 * 1024,
+            totalBytes: 100 * 1024 * 1024,
+        };
+        await publishInstallProgress(electronApp, progress);
+
+        const progressIndicator = drawer.getByTestId(
+            `installProgress${releaseVersion}${mono ? '-mono' : ''}`,
+        );
+        await expect(progressIndicator).toBeVisible();
+        await expect(mainPage.getByRole('tooltip')).toBeHidden();
+        const progressBounds = await progressIndicator.boundingBox();
+        expect(progressBounds).not.toBeNull();
+        expect(Math.abs(progressBounds!.width - actionBounds!.width)).toBeLessThanOrEqual(1);
+        expect(Math.abs(progressBounds!.height - actionBounds!.height)).toBeLessThanOrEqual(1);
+        await publishInstallProgress(electronApp, {
+            ...progress,
+            stage: 'complete',
+            percent: 100,
+        });
+        await drawer.getByTestId('tabInstallsLatest').click();
+
+        const drawerSearch = drawer.getByTestId('inputInstallSearch');
+        await expect(drawerSearch).toBeDisabled();
+
+        await drawer.getByTestId('tabInstallsAll').click();
+        await expect(drawerSearch).toBeEnabled();
+        await drawerSearch.fill('4.5');
+        await drawer.getByTestId('tabInstallsPrerelease').click();
+        await expect(
+            drawer.getByTestId('tabInstallsPrerelease'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await drawer.getByTestId('tabInstallsLatest').click();
+        await expect(drawerSearch).toBeDisabled();
+        await expect(drawerSearch).toHaveValue('4.5');
+
+        await drawer.getByTestId('btnCloseInstallEditor').click();
+        await expect(drawer).toBeHidden();
+
+        await mainPage.getByTestId('btnInstallEditor').click();
+        await expect(drawer).toBeVisible();
+        await expect(drawer.getByTestId('tabInstallsLatest')).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        await expect(drawer.getByTestId('tabInstallsRelease')).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        await expect(drawerSearch).toHaveValue('');
+        await drawer.getByTestId('btnCloseInstallEditor').click();
+    });
+
     await test.step('Opens projects', async () => {
         await mainPage.getByTestId('btnProjects').click();
         await expect(mainPage.getByTestId('projectsTitle')).toBeVisible();
@@ -66,6 +199,33 @@ test('Can navigate the main window', async () => {
         await expect(mainPage.getByTestId('helpTitle')).toBeVisible();
     });
 });
+
+/**
+ * Publishes one install progress event to every launcher window.
+ *
+ * @param app - The Electron app that owns the launcher windows.
+ * @param progress - The progress event to publish.
+ * @returns A promise that ends after the event is sent.
+ */
+async function publishInstallProgress(
+    app: Awaited<ReturnType<typeof _electron.launch>>,
+    progress: ReleaseInstallProgress,
+): Promise<void> {
+    await app.evaluate(
+        (
+            { BrowserWindow },
+            injectedProgress: ReleaseInstallProgress,
+        ) => {
+            for (const window of BrowserWindow.getAllWindows()) {
+                window.webContents.send(
+                    'release-install-progress',
+                    injectedProgress,
+                );
+            }
+        },
+        progress,
+    );
+}
 
 test('Uses desktop cursors for app controls and a hand for external links', async () => {
     await expect(mainPage.getByTestId('btnProjects')).toHaveCSS(

@@ -8,7 +8,21 @@
         "prerelease": "Prelanzamiento"
     },
     "filters": {
+        "show": "Mostrar",
+        "latest": "Últimas",
+        "all": "Todas",
+        "channel": "Canal",
+        "stable": "Estables",
         "showInstalledOnly": "Mostrar solo instaladas"
+    },
+    "catalog": {
+        "loading": "Cargando versiones del editor...",
+        "empty": "No se encontraron versiones del editor.",
+        "latestStableRelease": "Última versión estable",
+        "latestPrerelease": "Última versión preliminar",
+        "olderReleases": "Versiones anteriores",
+        "cooldown": "{{seconds}} s de espera",
+        "cooldownTooltip": "Una espera de un minuto ayuda a evitar la limitación de solicitudes de GitHub."
     },
     "buttons": {
         "reload": "Recargar lista de versiones"
@@ -37,18 +51,19 @@
             "download": "Descargar",
             "installed": "Instalada"
         },
-        "gdscript": "(GDScript)",
-        "dotnet": "(.NET)",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "Instalando...",
         "downloading": "descargando...",
         "tooltips": {
             "installed": "Instalada - {{version}}",
-            "installedGDScript": "Instalada - {{version}} (GDScript)",
-            "installedDotNet": "Instalada - {{version}} .NET",
-            "downloadGDScript": "Descargar {{version}} (GDScript)",
-            "downloadDotNet": "Descargar {{version}} .NET",
-            "reinstallGDScript": "Reinstalar {{version}} (GDScript)",
-            "reinstallDotNet": "Reinstalar {{version}} .NET"
+            "installedGDScript": "Godot {{version}} Standard está instalado",
+            "installedDotNet": "Godot {{version}} .NET está instalado",
+            "installingVariant": "Instalando Godot {{version}} {{flavor}}",
+            "downloadGDScript": "Instalar Godot {{version}} Standard",
+            "downloadDotNet": "Instalar Godot {{version}} .NET",
+            "reinstallGDScript": "Reinstalar Godot {{version}} Standard",
+            "reinstallDotNet": "Reinstalar Godot {{version}} .NET"
         },
         "status": {
             "unavailable": "No disponible"

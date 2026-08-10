@@ -8,6 +8,10 @@ import type {
     AppBridge,
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
+    EditorCatalogArchitecture,
+    EditorCatalogPlatform,
+    EditorCatalogRelease,
+    EditorCatalogResult,
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
@@ -66,6 +70,109 @@ type IpcSuccess<Data> = {
     success: true;
     data: Data;
 };
+
+const screenshotEditorPlatform: EditorCatalogPlatform =
+    process.platform === 'win32' ||
+    process.platform === 'darwin' ||
+    process.platform === 'linux'
+        ? process.platform
+        : 'linux';
+const screenshotEditorArchitecture: EditorCatalogArchitecture =
+    process.arch === 'x64' ||
+    process.arch === 'arm64' ||
+    process.arch === 'ia32' ||
+    process.arch === 'arm'
+        ? process.arch
+        : 'x64';
+
+/**
+ * Creates catalog data from the release fixtures used by screenshots.
+ *
+ * @param releases - The stable and prerelease fixtures to include.
+ * @returns Catalog data for the dedicated editor catalog bridge.
+ */
+function createScreenshotEditorCatalog(
+    releases: ReleaseSummary[],
+): EditorCatalogResult {
+    const now = Date.now();
+
+    return {
+        releases: releases.map(createScreenshotEditorCatalogRelease),
+        providers: [
+            {
+                id: 'official-stable',
+                lastFetchedAt: now,
+                isStale: false,
+            },
+            {
+                id: 'official-prerelease',
+                lastFetchedAt: now,
+                isStale: false,
+            },
+        ],
+    };
+}
+
+/**
+ * Converts one release fixture into the editor catalog shape.
+ *
+ * @param release - The release fixture to convert.
+ * @param releaseIndex - The release position used for stable asset IDs.
+ * @returns A release for the dedicated editor catalog bridge.
+ */
+function createScreenshotEditorCatalogRelease(
+    release: ReleaseSummary,
+    releaseIndex: number,
+): EditorCatalogRelease {
+    const providerId = release.prerelease
+        ? 'official-prerelease'
+        : 'official-stable';
+    const versionMatch = release.version.match(
+        /^(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-z]+)(\d+)?)?/i,
+    );
+    const baseVersion = release.version.split('-')[0];
+
+    return {
+        id: `${providerId}:${release.version}`,
+        sourceReleaseId: release.tag ?? release.version,
+        providerId,
+        tag: release.tag ?? release.version,
+        version: release.version,
+        baseVersion,
+        name: release.name,
+        publishedAt: release.published_at,
+        prerelease: release.prerelease,
+        versionParts: {
+            major: Number(versionMatch?.[1] ?? 0),
+            minor: Number(versionMatch?.[2] ?? 0),
+            patch: Number(versionMatch?.[3] ?? 0),
+            channel: versionMatch?.[4] ?? 'stable',
+            iteration: Number(versionMatch?.[5] ?? 0),
+        },
+        variants: [false, true].flatMap((mono) => {
+            const flavor = mono ? 'dotnet' : 'gdscript';
+            const assets = release.assets
+                .filter((asset) => asset.mono === mono)
+                .map((asset, assetIndex) => ({
+                    id: `${releaseIndex}:${flavor}:${assetIndex}`,
+                    name: asset.name,
+                    downloadUrl: asset.download_url,
+                    platform: screenshotEditorPlatform,
+                    architecture: screenshotEditorArchitecture,
+                }));
+
+            return assets.length > 0
+                ? [
+                      {
+                          id: `${providerId}:${release.version}:${flavor}`,
+                          flavor,
+                          assets,
+                      },
+                  ]
+                : [];
+        }),
+    };
+}
 
 export async function writeJson(file: string, data: unknown) {
     await fs.mkdir(path.dirname(file), { recursive: true });
@@ -230,6 +337,17 @@ async function ensureMainProcessNameHelperShim(
     shimmedElectronApps.add(electronApp);
 }
 
+/**
+ * Stubs launcher data requests for one screenshot state.
+ *
+ * @param electronApp - The Electron app to update.
+ * @param preferences - The preferences returned to the renderer.
+ * @param projects - The projects returned to the renderer.
+ * @param installedReleases - The installed editors returned to the renderer.
+ * @param availableReleases - The stable catalog fixtures to return.
+ * @param availablePrereleases - The prerelease catalog fixtures to return.
+ * @returns A promise that ends when the handlers are ready.
+ */
 export async function stubAppData(
     electronApp: ElectronApplication,
     preferences: UserPreferences,
@@ -239,6 +357,10 @@ export async function stubAppData(
     availablePrereleases: ReleaseSummary[],
 ) {
     await ensureMainProcessNameHelperShim(electronApp);
+    const editorCatalog = createScreenshotEditorCatalog([
+        ...availableReleases,
+        ...availablePrereleases,
+    ]);
     await electronApp.evaluate(
         (
             { ipcMain, BrowserWindow },
@@ -248,12 +370,14 @@ export async function stubAppData(
                 injectedInstalledReleases,
                 injectedAvailableReleases,
                 injectedAvailablePrereleases,
+                injectedEditorCatalog,
             }: {
                 injectedPreferences: UserPreferences;
                 injectedProjects: ProjectDetails[];
                 injectedInstalledReleases: InstalledRelease[];
                 injectedAvailableReleases: ReleaseSummary[];
                 injectedAvailablePrereleases: ReleaseSummary[];
+                injectedEditorCatalog: EditorCatalogResult;
             },
         ) => {
             const normalizedInstalledReleases = injectedInstalledReleases.map(
@@ -374,6 +498,27 @@ export async function stubAppData(
                 }),
             );
 
+            ipcMain.removeHandler('editorCatalog.getCatalog');
+            ipcMain.handle('editorCatalog.getCatalog', async () =>
+                ipcSuccess(injectedEditorCatalog),
+            );
+
+            ipcMain.removeHandler('editorCatalog.getReleaseById');
+            ipcMain.handle(
+                'editorCatalog.getReleaseById',
+                async (_, id: string) =>
+                    ipcSuccess(
+                        injectedEditorCatalog.releases.find(
+                            (release) => release.id === id,
+                        ) ?? null,
+                    ),
+            );
+
+            ipcMain.removeHandler('editorCatalog.refreshCatalog');
+            ipcMain.handle('editorCatalog.refreshCatalog', async () =>
+                ipcSuccess(injectedEditorCatalog),
+            );
+
             for (const win of BrowserWindow.getAllWindows()) {
                 const webContents = win.webContents as any;
                 webContents.__docsProjects = normalizedProjects;
@@ -415,6 +560,7 @@ export async function stubAppData(
             injectedInstalledReleases: installedReleases,
             injectedAvailableReleases: availableReleases,
             injectedAvailablePrereleases: availablePrereleases,
+            injectedEditorCatalog: editorCatalog,
         },
     );
 }

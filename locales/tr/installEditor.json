@@ -8,7 +8,21 @@
         "prerelease": "Ön Sürüm"
     },
     "filters": {
+        "show": "Göster",
+        "latest": "En Yeni",
+        "all": "Tümü",
+        "channel": "Kanal",
+        "stable": "Kararlı",
         "showInstalledOnly": "Yalnızca kurulu olanları göster"
+    },
+    "catalog": {
+        "loading": "Editör sürümleri yükleniyor...",
+        "empty": "Editör sürümü bulunamadı.",
+        "latestStableRelease": "En son kararlı sürüm",
+        "latestPrerelease": "En son ön sürüm",
+        "olderReleases": "Eski sürümler",
+        "cooldown": "{{seconds}} sn bekleme",
+        "cooldownTooltip": "Bir dakikalık bekleme, GitHub istek sınırlamasını önlemeye yardımcı olur."
     },
     "buttons": {
         "reload": "Sürüm Listesini Yeniden Yükle"
@@ -37,18 +51,19 @@
             "download": "İndir",
             "installed": "Kurulu"
         },
-        "gdscript": "(GDScript)",
-        "dotnet": "(.NET)",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "Yükleniyor...",
         "downloading": "indiriliyor...",
         "tooltips": {
             "installed": "Kuruldu - {{version}}",
-            "installedGDScript": "Kuruldu - {{version}} (GDScript)",
-            "installedDotNet": "Kuruldu - {{version}} .NET",
-            "downloadGDScript": "{{version}} İndir (GDScript)",
-            "downloadDotNet": "{{version}} .NET İndir",
-            "reinstallGDScript": "{{version}} sürümünü yeniden yükle (GDScript)",
-            "reinstallDotNet": "{{version}} .NET sürümünü yeniden yükle"
+            "installedGDScript": "Godot {{version}} Standard kurulu",
+            "installedDotNet": "Godot {{version}} .NET kurulu",
+            "installingVariant": "Godot {{version}} {{flavor}} kuruluyor",
+            "downloadGDScript": "Godot {{version}} Standard sürümünü kur",
+            "downloadDotNet": "Godot {{version}} .NET sürümünü kur",
+            "reinstallGDScript": "Godot {{version}} Standard sürümünü yeniden kur",
+            "reinstallDotNet": "Godot {{version}} .NET sürümünü yeniden kur"
         },
         "status": {
             "unavailable": "Kullanılamıyor"

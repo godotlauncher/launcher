@@ -18,7 +18,7 @@ import {
 } from './installs/hooks/useReleaseActions';
 import { getFilteredInstalledReleaseRows } from './installs/installsView.model';
 import { CustomEditorManifestDrawer } from './subViews/customEditorManifestDrawer.subview';
-import { InstallEditorSubView } from './subViews/installEditor.subview';
+import { InstallEditorDrawer } from './subViews/install-editor-drawer.subview.tsx';
 
 export { createReleaseActions };
 
@@ -27,6 +27,12 @@ type InstallsViewProps = {
     onInstallOpenChange?: (open: boolean) => void;
 };
 
+/**
+ * Renders installed editors and the editor catalog drawer.
+ *
+ * @param props - Optional controlled drawer state and its change action.
+ * @returns The editor installs view.
+ */
 export const InstallsView: React.FC<InstallsViewProps> = ({
     installOpen: controlledInstallOpen,
     onInstallOpenChange,
@@ -35,6 +41,13 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const [textSearch, setTextSearch] = useState<string>('');
     const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
     const installOpen = controlledInstallOpen ?? localInstallOpen;
+
+    /**
+     * Updates the controlled or local drawer state.
+     *
+     * @param open - Whether the drawer should be open.
+     * @returns Nothing.
+     */
     const setInstallOpen = (open: boolean) => {
         if (onInstallOpenChange) {
             onInstallOpenChange(open);
@@ -193,9 +206,10 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 }
                 onRemoveRelease={handleRemoveReleaseFromMenu}
             />
-            {installOpen && (
-                <InstallEditorSubView onClose={() => setInstallOpen(false)} />
-            )}
+            <InstallEditorDrawer
+                open={installOpen}
+                onOpenChange={setInstallOpen}
+            />
             <CustomEditorManifestDrawer
                 open={customEditorManifestDrawerOpen}
                 onOpenChange={setCustomEditorManifestDrawerOpen}

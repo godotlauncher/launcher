@@ -8,7 +8,21 @@
         "prerelease": "Prerelease"
     },
     "filters": {
+        "show": "Show",
+        "latest": "Latest",
+        "all": "All",
+        "channel": "Channel",
+        "stable": "Stable",
         "showInstalledOnly": "Show installed only"
+    },
+    "catalog": {
+        "loading": "Loading editor versions...",
+        "empty": "No editor versions found.",
+        "latestStableRelease": "Latest stable release",
+        "latestPrerelease": "Latest prerelease",
+        "olderReleases": "Older releases",
+        "cooldown": "{{seconds}}s cooldown",
+        "cooldownTooltip": "A one-minute cooldown helps prevent GitHub request throttling."
     },
     "buttons": {
         "reload": "Reload Release List"
@@ -37,18 +51,19 @@
             "download": "Download",
             "installed": "Installed"
         },
-        "gdscript": "(GDScript)",
-        "dotnet": "(.NET)",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "Installing...",
         "downloading": "downloading...",
         "tooltips": {
             "installed": "Installed - {{version}}",
-            "installedGDScript": "Installed - {{version}} (GDScript)",
-            "installedDotNet": "Installed - {{version}} .NET",
-            "downloadGDScript": "Download {{version}} (GDScript)",
-            "downloadDotNet": "Download {{version}} .NET",
-            "reinstallGDScript": "Reinstall {{version}} (GDScript)",
-            "reinstallDotNet": "Reinstall {{version}} .NET"
+            "installedGDScript": "Godot {{version}} Standard is installed",
+            "installedDotNet": "Godot {{version}} .NET is installed",
+            "installingVariant": "Installing Godot {{version}} {{flavor}}",
+            "downloadGDScript": "Install Godot {{version}} Standard",
+            "downloadDotNet": "Install Godot {{version}} .NET",
+            "reinstallGDScript": "Reinstall Godot {{version}} Standard",
+            "reinstallDotNet": "Reinstall Godot {{version}} .NET"
         },
         "status": {
             "unavailable": "Unavailable"

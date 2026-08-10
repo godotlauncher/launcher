@@ -294,10 +294,18 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
                 },
             ]);
 
-            await expect(page.getByText('Downloading').first()).toBeVisible({
-                timeout: 10000,
-            });
-            await expect(page.getByText('Queued #1').first()).toBeVisible({
+            const gdscriptProgress = page.getByTestId(
+                `installProgress${release.version}`,
+            );
+            const dotnetProgress = page.getByTestId(
+                `installProgress${release.version}-mono`,
+            );
+            await expect(gdscriptProgress).toHaveRole('status');
+            await expect(
+                gdscriptProgress.getByText('Downloading'),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(dotnetProgress).toHaveRole('status');
+            await expect(dotnetProgress.getByText('Queued #1')).toBeVisible({
                 timeout: 10000,
             });
             await page.waitForTimeout(400);

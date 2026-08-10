@@ -64,6 +64,12 @@ function getByteLabel(progress: ReleaseInstallProgress): string | undefined {
     )}`;
 }
 
+/**
+ * Renders the current editor installation stage and progress.
+ *
+ * @param props - The progress state and optional style classes.
+ * @returns The editor installation progress indicator.
+ */
 export const ReleaseInstallProgressIndicator: React.FC<
     ReleaseInstallProgressProps
 > = ({ progress, className }) => {
@@ -83,11 +89,12 @@ export const ReleaseInstallProgressIndicator: React.FC<
                 value={typeof percent === 'number' ? percent : undefined}
                 max={100}
             />
-            {byteLabel && (
-                <span className="text-[0.65rem] leading-none text-base-content/50">
-                    {byteLabel}
-                </span>
-            )}
+            <span
+                aria-hidden={byteLabel ? undefined : true}
+                className="text-[0.65rem] leading-none text-base-content/50"
+            >
+                {byteLabel ?? '\u00a0'}
+            </span>
         </div>
     );
 };

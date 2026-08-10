@@ -12,9 +12,16 @@ type SearchFieldProps = {
     className?: string;
     inputClassName?: string;
     focusOnMount?: boolean;
+    disabled?: boolean;
     'data-testid'?: string;
 };
 
+/**
+ * Renders a search input with a clear action.
+ *
+ * @param props - The search value, labels, and change action.
+ * @returns The search field.
+ */
 export const SearchField: React.FC<SearchFieldProps> = ({
     id,
     value,
@@ -24,6 +31,7 @@ export const SearchField: React.FC<SearchFieldProps> = ({
     className,
     inputClassName,
     focusOnMount = false,
+    disabled = false,
     'data-testid': dataTestId,
 }) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -47,9 +55,10 @@ export const SearchField: React.FC<SearchFieldProps> = ({
                 )}
                 onChange={(event) => onChange(event.target.value)}
                 value={value}
+                disabled={disabled}
                 data-testid={dataTestId}
             />
-            {value.length > 0 && (
+            {!disabled && value.length > 0 && (
                 <button
                     type="button"
                     tabIndex={-1}

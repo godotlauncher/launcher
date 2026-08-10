@@ -44,10 +44,17 @@ vi.mock('../hooks/useRelease', () => {
 
     return {
         useRelease: () => ({
+            availableReleases: [],
+            availablePrereleases: [],
             installedReleases,
             downloadingReleases: [],
             releaseInstallProgress: [],
             getReleaseInstallProgress: vi.fn(() => undefined),
+            getInstalledRelease: vi.fn(() => undefined),
+            refreshAvailableReleases: vi.fn(() => Promise.resolve()),
+            installRelease: vi.fn(() =>
+                Promise.resolve({ success: true, version: '4.2.0' }),
+            ),
             checkAllReleasesValid: vi.fn(() =>
                 Promise.resolve(installedReleases),
             ),
@@ -56,6 +63,7 @@ vi.mock('../hooks/useRelease', () => {
             ),
             removeRelease: vi.fn(),
             loading: true,
+            hasError: undefined,
         }),
     };
 });

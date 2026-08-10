@@ -8,7 +8,21 @@
         "prerelease": "預先釋出"
     },
     "filters": {
+        "show": "顯示",
+        "latest": "最新",
+        "all": "全部",
+        "channel": "頻道",
+        "stable": "穩定版",
         "showInstalledOnly": "僅顯示已安裝"
+    },
+    "catalog": {
+        "loading": "正在載入編輯器版本...",
+        "empty": "找不到編輯器版本。",
+        "latestStableRelease": "最新穩定版",
+        "latestPrerelease": "最新預先釋出版",
+        "olderReleases": "較舊版本",
+        "cooldown": "冷卻 {{seconds}} 秒",
+        "cooldownTooltip": "一分鐘的冷卻時間有助於防止 GitHub 限制請求。"
     },
     "buttons": {
         "reload": "重新載入發行清單"
@@ -37,18 +51,19 @@
             "download": "下載",
             "installed": "已安裝"
         },
-        "gdscript": "（GDScript）",
-        "dotnet": "（.NET）",
+        "gdscript": "Standard",
+        "dotnet": ".NET",
         "installing": "安裝中…",
         "downloading": "下載中…",
         "tooltips": {
             "installed": "已安裝 - {{version}}",
-            "installedGDScript": "已安裝 - {{version}}（GDScript）",
-            "installedDotNet": "已安裝 - {{version}} .NET",
-            "downloadGDScript": "下載 {{version}}（GDScript）",
-            "downloadDotNet": "下載 {{version}} .NET",
-            "reinstallGDScript": "重新安裝 {{version}} (GDScript)",
-            "reinstallDotNet": "重新安裝 {{version}} .NET"
+            "installedGDScript": "Godot {{version}} Standard 已安裝",
+            "installedDotNet": "Godot {{version}} .NET 已安裝",
+            "installingVariant": "正在安裝 Godot {{version}} {{flavor}}",
+            "downloadGDScript": "安裝 Godot {{version}} Standard",
+            "downloadDotNet": "安裝 Godot {{version}} .NET",
+            "reinstallGDScript": "重新安裝 Godot {{version}} Standard",
+            "reinstallDotNet": "重新安裝 Godot {{version}} .NET"
         },
         "status": {
             "unavailable": "無法使用"
