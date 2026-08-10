@@ -4,12 +4,13 @@ import {
     getPathForFile,
     type RendererIpcListener,
 } from '@mariodebono/di-electron/renderer';
-import type { AppBridgeNamespaces, AppEventMap } from '@shared/contracts';
+import type { AppEventMap, BridgeNamespaces } from '@shared/contracts';
 
-const rendererBridge = createRendererBridge<AppBridgeNamespaces>();
+const rendererBridge = createRendererBridge<BridgeNamespaces>();
 
 export const appBridge = rendererBridge.app;
 export const codeEditorIntegrationBridge = rendererBridge.codeEditorIntegration;
+export const editorCatalogBridge = rendererBridge.editorCatalog;
 
 const appEvents = createRendererEvents();
 

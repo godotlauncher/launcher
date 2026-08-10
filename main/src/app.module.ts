@@ -1,5 +1,5 @@
 import { Module } from '@mariodebono/di';
-import { ConfigModule } from '@mariodebono/di-config';
+import { ConfigModule, ConfigService } from '@mariodebono/di-config';
 import {
     I18nModule,
     type I18nModuleOptions,
@@ -13,6 +13,8 @@ import {
     AppConfigSchema,
     getCurrentAppConfig,
 } from './config/index.js';
+import { EDITOR_CATALOG_FILENAME } from './constants.js';
+import { EditorCatalogModule } from './editor-catalog/editor-catalog.module.js';
 import {
     DEFAULT_LOCALE,
     I18N_NAMESPACES,
@@ -32,6 +34,13 @@ import { TrayAvailabilityService } from './services/tray-availability.service.js
         }),
         AppMigrationsModule,
         CodeEditorIntegrationModule,
+        EditorCatalogModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService<AppConfig>) => ({
+                directory: configService.getOrThrow('paths.configDir'),
+                fileName: EDITOR_CATALOG_FILENAME,
+            }),
+        }),
         I18nModule.forRootAsync({
             useFactory: () =>
                 ({

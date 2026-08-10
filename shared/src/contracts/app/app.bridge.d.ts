@@ -1,7 +1,4 @@
-import type {
-    CodeEditorId,
-    CodeEditorIntegrationBridge,
-} from '../codeEditorIntegration/index.js';
+import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 import type { UserPreferences } from '../preferences/index.js';
 import type {
     AddProjectOptions,
@@ -175,9 +172,4 @@ export type AppBridge = {
     ): Promise<AppUpdateMessage>;
     changeLanguage(lang: string): Promise<string>;
     rendererReady(): Promise<void>;
-};
-
-export type AppBridgeNamespaces = {
-    app: AppBridge;
-    codeEditorIntegration: CodeEditorIntegrationBridge;
 };
