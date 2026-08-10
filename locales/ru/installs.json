@@ -13,6 +13,9 @@
     "table": {
         "name": "Название"
     },
+    "groups": {
+        "other": "Другие"
+    },
     "badges": {
         "dotNet": ".NET",
         "prerelease": "пререлиз",

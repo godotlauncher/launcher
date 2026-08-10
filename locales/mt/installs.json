@@ -13,6 +13,9 @@
     "table": {
         "name": "Isem"
     },
+    "groups": {
+        "other": "Oħrajn"
+    },
     "badges": {
         "dotNet": ".NET",
         "prerelease": "pre-rilaxx",

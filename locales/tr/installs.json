@@ -13,6 +13,9 @@
     "table": {
         "name": "İsim"
     },
+    "groups": {
+        "other": "Diğer"
+    },
     "badges": {
         "dotNet": ".NET",
         "prerelease": "ön sürüm",

@@ -13,6 +13,9 @@
     "table": {
         "name": "Nome"
     },
+    "groups": {
+        "other": "Outros"
+    },
     "badges": {
         "dotNet": ".NET",
         "prerelease": "pré-lançamento",

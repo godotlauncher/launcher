@@ -13,6 +13,9 @@
     "table": {
         "name": "名稱"
     },
+    "groups": {
+        "other": "其他"
+    },
     "badges": {
         "dotNet": ".NET",
         "prerelease": "預先釋出",

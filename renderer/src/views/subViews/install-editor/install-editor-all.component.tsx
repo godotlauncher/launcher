@@ -1,10 +1,9 @@
 import type { ReleaseSummary } from '@shared/contracts';
 import type React from 'react';
+import { EditorVersionGroup } from '../../../components/editor-version-group.component.tsx';
 import { SearchField } from '../../../components/ui/searchField.component.tsx';
-import {
-    groupInstallEditorReleases,
-    type InstallEditorChannel,
-} from './install-editor.model.ts';
+import { groupEditorsByBaseVersion } from '../../../editor-version-group.model.ts';
+import { type InstallEditorChannel } from './install-editor.model.ts';
 import { InstallEditorVariantAction } from './install-editor-variant-action.component.tsx';
 
 type InstallEditorAllProps = {
@@ -34,7 +33,7 @@ export const InstallEditorAll: React.FC<InstallEditorAllProps> = ({
     onInstall,
     onReinstall,
 }) => {
-    const releaseGroups = groupInstallEditorReleases(releases);
+    const releaseGroups = groupEditorsByBaseVersion(releases);
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-2">
@@ -61,21 +60,21 @@ export const InstallEditorAll: React.FC<InstallEditorAllProps> = ({
                     data-testid="installEditorAllList"
                 >
                     {releaseGroups.map((group) => (
-                        <section key={group.baseVersion} className="pb-3">
-                            <h3 className="sticky top-0 z-10 bg-base-100/95 px-3 py-2 text-base font-bold leading-tight text-base-content/80 backdrop-blur-sm">
-                                {group.baseVersion}
-                            </h3>
-                            <div className="flex flex-col gap-1">
-                                {group.releases.map((release) => (
-                                    <ReleaseRow
-                                        key={release.version}
-                                        release={release}
-                                        onInstall={onInstall}
-                                        onReinstall={onReinstall}
-                                    />
-                                ))}
-                            </div>
-                        </section>
+                        <EditorVersionGroup
+                            key={group.baseVersion}
+                            title={group.baseVersion ?? ''}
+                            count={group.items.length}
+                            headingLevel="h3"
+                        >
+                            {group.items.map((release) => (
+                                <ReleaseRow
+                                    key={release.version}
+                                    release={release}
+                                    onInstall={onInstall}
+                                    onReinstall={onReinstall}
+                                />
+                            ))}
+                        </EditorVersionGroup>
                     ))}
                 </div>
             )}

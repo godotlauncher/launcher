@@ -78,6 +78,7 @@ vi.mock('react-i18next', () => {
             'Create custom editor manifest',
         'installs:search.placeholder': 'Search',
         'installs:table.name': 'Name',
+        'installs:groups.other': 'Other',
         'installs:status.installing': 'Installing...',
         'installs:status.unavailable': 'Unavailable',
         'installs:messages.unavailableHint':

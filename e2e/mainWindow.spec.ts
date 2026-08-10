@@ -49,6 +49,31 @@ test('Can navigate the main window', async () => {
         await mainPage.getByTestId('btnInstalls').click();
         await expect(mainPage.getByTestId('installsTitle')).toBeVisible();
         await expect(mainPage.getByTestId('inputInstallSearch')).toBeFocused();
+        const installedReleaseList = mainPage.getByTestId(
+            'installedReleaseList',
+        );
+        await expect(installedReleaseList).toBeVisible();
+        await expect(installedReleaseList.getByRole('table')).toHaveCount(0);
+        const firstGroupHeading = installedReleaseList
+            .getByRole('heading', { level: 2 })
+            .first();
+        await expect(firstGroupHeading.locator('..')).toHaveCSS(
+            'position',
+            'sticky',
+        );
+        const firstInstalledEditorName = installedReleaseList
+            .locator('article')
+            .first()
+            .locator('span.text-lg')
+            .first();
+        await expect(firstInstalledEditorName).toHaveCSS(
+            'font-size',
+            '15.75px',
+        );
+        await expect(firstInstalledEditorName).toHaveCSS(
+            'font-weight',
+            '600',
+        );
     });
 
     await test.step('Opens the install editor drawer', async () => {
@@ -87,11 +112,13 @@ test('Can navigate the main window', async () => {
                 drawerBounds!.width -
                 (reloadBounds!.x + reloadBounds!.width),
         ).toBeLessThanOrEqual(24);
-        await reloadButton.hover();
+        const reloadTooltipTrigger = reloadButton.locator('..');
+        await mainPage.mouse.move(0, 0);
+        await reloadTooltipTrigger.hover();
         await expect(mainPage.getByRole('tooltip')).toHaveText(
             'Reload Release List',
         );
-        await drawer.getByTestId('tabInstallsLatest').hover();
+        await mainPage.mouse.move(0, 0);
         await expect(mainPage.getByRole('tooltip')).toBeHidden();
 
         const installedAction = drawer
@@ -162,10 +189,9 @@ test('Can navigate the main window', async () => {
         await expect(
             allReleaseList.getByTestId('inputInstallSearch'),
         ).toHaveCount(0);
-        await expect(allReleaseList.locator('h3').first()).toHaveCSS(
-            'position',
-            'sticky',
-        );
+        await expect(
+            allReleaseList.locator('h3').first().locator('..'),
+        ).toHaveCSS('position', 'sticky');
         const allVersionLabel = allReleaseList
             .locator('article')
             .first()
