@@ -815,6 +815,11 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
+            const createDrawer = page.getByRole('dialog', {
+                name: 'New Project',
+            });
+            await createDrawer.getByTestId('btnCloseCreateProject').click();
+            await expect(createDrawer).toBeHidden();
             await applyTheme(page, theme);
         },
     },
@@ -846,6 +851,11 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
+            const createDrawer = page.getByRole('dialog', {
+                name: 'New Project',
+            });
+            await createDrawer.getByTestId('btnCloseCreateProject').click();
+            await expect(createDrawer).toBeHidden();
             await applyTheme(page, theme);
         },
     },
