@@ -28,7 +28,7 @@ import { GithubEditorCatalogAdapter } from './github-editor-catalog.adapter.js';
 /** Reads, refreshes, and filters the editor catalog. */
 @Injectable()
 export class EditorCatalogService {
-    private refreshPromise: Promise<RefreshOutcome> | null = null;
+    private activeRefresh: ActiveRefresh | null = null;
 
     /**
      * Creates the catalog service.
@@ -56,10 +56,7 @@ export class EditorCatalogService {
         );
 
         if (options.refreshIfStale !== false && staleProviders.length > 0) {
-            return this.refresh(
-                [...EDITOR_CATALOG_PROVIDER_IDS],
-                options.query,
-            );
+            return this.refresh(staleProviders, options.query);
         }
 
         return this.createResult(catalog, options.query);
@@ -97,14 +94,58 @@ export class EditorCatalogService {
         providerIds: EditorCatalogProviderId[],
         query?: EditorCatalogQuery,
     ): Promise<EditorCatalogResult> {
-        if (!this.refreshPromise) {
-            this.refreshPromise = this.runRefresh(providerIds).finally(() => {
-                this.refreshPromise = null;
+        const outcome = await this.refreshProviders(providerIds);
+        return this.createResult(outcome.catalog, query, outcome.errors);
+    }
+
+    /**
+     * Shares the active refresh and queues provider IDs it does not cover.
+     *
+     * @param providerIds - The providers the caller needs refreshed.
+     * @returns The updated catalog and relevant provider errors.
+     */
+    private async refreshProviders(
+        providerIds: EditorCatalogProviderId[],
+    ): Promise<RefreshOutcome> {
+        if (!this.activeRefresh) {
+            const activeRefresh: ActiveRefresh = {
+                providerIds: new Set(providerIds),
+                promise: this.runRefresh(providerIds),
+            };
+            activeRefresh.promise = activeRefresh.promise.finally(() => {
+                if (this.activeRefresh === activeRefresh) {
+                    this.activeRefresh = null;
+                }
             });
+            this.activeRefresh = activeRefresh;
         }
 
-        const outcome = await this.refreshPromise;
-        return this.createResult(outcome.catalog, query, outcome.errors);
+        const activeRefresh = this.activeRefresh;
+        const missingProviderIds = providerIds.filter(
+            (providerId) => !activeRefresh.providerIds.has(providerId),
+        );
+        const outcome = await activeRefresh.promise;
+        const errors = new Map<EditorCatalogProviderId, string>();
+        for (const providerId of providerIds) {
+            const message = outcome.errors.get(providerId);
+            if (message !== undefined) {
+                errors.set(providerId, message);
+            }
+        }
+
+        if (missingProviderIds.length > 0) {
+            const missingOutcome =
+                await this.refreshProviders(missingProviderIds);
+            for (const [providerId, message] of missingOutcome.errors) {
+                errors.set(providerId, message);
+            }
+            return {
+                catalog: missingOutcome.catalog,
+                errors,
+            };
+        }
+
+        return { catalog: outcome.catalog, errors };
     }
 
     /**
@@ -249,6 +290,12 @@ function mergeProviderUpdates(
 type RefreshOutcome = {
     catalog: EditorCatalogFile;
     errors: Map<EditorCatalogProviderId, string>;
+};
+
+/** One active provider refresh shared by concurrent callers. */
+type ActiveRefresh = {
+    providerIds: Set<EditorCatalogProviderId>;
+    promise: Promise<RefreshOutcome>;
 };
 
 /**

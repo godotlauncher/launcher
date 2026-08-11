@@ -6,7 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEmptyEditorCatalog } from './editor-catalog.schema.js';
 import { EditorCatalogService } from './editor-catalog.service.js';
 import type { EditorCatalogStore } from './editor-catalog.store.js';
-import type { EditorCatalogFile } from './editor-catalog.types.js';
+import type {
+    EditorCatalogFile,
+    FetchedEditorCatalogProvider,
+} from './editor-catalog.types.js';
 import type { GithubEditorCatalogAdapter } from './github-editor-catalog.adapter.js';
 
 vi.mock('electron-log', () => ({
@@ -40,6 +43,89 @@ describe('EditorCatalogService', () => {
         await expect(
             service.getReleaseById('official-stable:4.5-stable'),
         ).resolves.toMatchObject({ version: '4.5-stable' });
+    });
+
+    it('automatically refreshes only stale providers', async () => {
+        const cached = createRelease('official-stable', '4.5-stable');
+        const catalog = createCatalogWithRelease(cached);
+        catalog.providers['official-stable'].lastFetchedAt = null;
+        const { service, githubAdapter } = createService(catalog);
+
+        await service.getCatalog();
+
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledOnce();
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledWith(
+            'official-stable',
+            cached.publishedAt,
+        );
+    });
+
+    it('explicitly refreshes every provider', async () => {
+        const catalog = createCatalogWithRelease(
+            createRelease('official-stable', '4.5-stable'),
+        );
+        const { service, githubAdapter } = createService(catalog);
+
+        await service.refreshCatalog();
+
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledWith(
+            'official-stable',
+            catalog.providers['official-stable'].lastPublishedAt,
+        );
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledWith(
+            'official-prerelease',
+            catalog.providers['official-prerelease'].lastPublishedAt,
+        );
+    });
+
+    it('fetches providers missing from an active automatic refresh', async () => {
+        const cached = createRelease('official-stable', '4.5-stable');
+        const catalog = createCatalogWithRelease(cached);
+        catalog.providers['official-stable'].lastFetchedAt = null;
+        const { service, githubAdapter } = createService(catalog);
+        let resolveStableRefresh: (
+            value: FetchedEditorCatalogProvider,
+        ) => void = () => undefined;
+        const stableRefresh = new Promise<FetchedEditorCatalogProvider>(
+            (resolve) => {
+                resolveStableRefresh = resolve;
+            },
+        );
+        githubAdapter.fetchProvider.mockImplementation(async (providerId) => {
+            if (providerId === 'official-stable') {
+                return stableRefresh;
+            }
+            return {
+                providerId,
+                lastPublishedAt: '2026-01-02T00:00:00.000Z',
+                releases: [createRelease(providerId, '4.6-beta1')],
+            };
+        });
+
+        const automaticRefresh = service.getCatalog();
+        await vi.waitFor(() =>
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledOnce(),
+        );
+        const explicitRefresh = service.refreshCatalog();
+        resolveStableRefresh({
+            providerId: 'official-stable',
+            lastPublishedAt: '2026-01-02T00:00:00.000Z',
+            releases: [createRelease('official-stable', '4.5-stable')],
+        });
+
+        const [, explicitResult] = await Promise.all([
+            automaticRefresh,
+            explicitRefresh,
+        ]);
+
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+        expect(githubAdapter.fetchProvider).toHaveBeenNthCalledWith(
+            2,
+            'official-prerelease',
+            null,
+        );
+        expect(explicitResult.releases).toHaveLength(2);
     });
 
     it('deduplicates concurrent stale refreshes', async () => {
@@ -87,6 +173,26 @@ describe('EditorCatalogService', () => {
             result.providers.find(({ id }) => id === 'official-prerelease')
                 ?.refreshError,
         ).toBe('builds unavailable');
+    });
+
+    it('updates the fetch time when no new releases are found', async () => {
+        const cached = createRelease('official-stable', '4.5-stable');
+        const catalog = createCatalogWithRelease(cached);
+        catalog.providers['official-stable'].lastFetchedAt = 0;
+        const { service, githubAdapter } = createService(catalog);
+        githubAdapter.fetchProvider.mockResolvedValue({
+            providerId: 'official-stable',
+            lastPublishedAt: cached.publishedAt,
+            releases: [],
+        });
+
+        const result = await service.getCatalog();
+
+        expect(result.releases).toContainEqual(cached);
+        expect(
+            result.providers.find(({ id }) => id === 'official-stable')
+                ?.lastFetchedAt,
+        ).toBe(Date.now());
     });
 
     it('rebuilds a malformed catalog during explicit refresh', async () => {

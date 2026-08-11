@@ -44,7 +44,11 @@ export class GithubEditorCatalogAdapter {
         publishedAfter: string | null,
     ): Promise<FetchedEditorCatalogProvider> {
         const provider = EDITOR_CATALOG_PROVIDERS[providerId];
-        const releases: GithubEditorRelease[] = [];
+        const releases: FetchedEditorCatalogProvider['releases'] = [];
+        const afterTime = publishedAfter
+            ? new Date(publishedAfter).getTime()
+            : 0;
+        let latestPublishedAt = publishedAfter;
 
         for (let page = 1; page <= EDITOR_CATALOG_PAGE_LIMIT; page += 1) {
             const url = new URL(
@@ -66,40 +70,47 @@ export class GithubEditorCatalogAdapter {
                 .array(GithubReleaseSchema)
                 .parse(await response.json())
                 .map(toGithubEditorRelease);
-            releases.push(...pageReleases);
+            const reachedBoundary =
+                publishedAfter !== null &&
+                pageReleases.some((release) => {
+                    if (!release.publishedAt) {
+                        return false;
+                    }
+                    return new Date(release.publishedAt).getTime() <= afterTime;
+                });
+            const mappedPage = pageReleases
+                .filter((release) => {
+                    if (!release.publishedAt) {
+                        return false;
+                    }
+                    return new Date(release.publishedAt).getTime() > afterTime;
+                })
+                .map((release) =>
+                    mapGithubEditorRelease(
+                        providerId,
+                        provider.prerelease,
+                        release,
+                    ),
+                )
+                .filter((release) => release !== null);
+            releases.push(...mappedPage);
+            latestPublishedAt = mappedPage.reduce<string | null>(
+                (latest, release) => laterDate(latest, release.publishedAt),
+                latestPublishedAt,
+            );
 
-            if (pageReleases.length < EDITOR_CATALOG_PAGE_SIZE) {
+            if (
+                pageReleases.length < EDITOR_CATALOG_PAGE_SIZE ||
+                reachedBoundary
+            ) {
                 break;
             }
         }
 
-        const afterTime = publishedAfter
-            ? new Date(publishedAfter).getTime()
-            : 0;
-        const mapped = releases
-            .filter((release) => {
-                const publishedTime = release.publishedAt
-                    ? new Date(release.publishedAt).getTime()
-                    : 0;
-                return publishedTime > afterTime;
-            })
-            .map((release) =>
-                mapGithubEditorRelease(
-                    providerId,
-                    provider.prerelease,
-                    release,
-                ),
-            )
-            .filter((release) => release !== null);
-        const latestPublishedAt = mapped.reduce<string | null>(
-            (latest, release) => laterDate(latest, release.publishedAt),
-            publishedAfter,
-        );
-
         return {
             providerId,
             lastPublishedAt: latestPublishedAt,
-            releases: mapped,
+            releases,
         };
     }
 }
