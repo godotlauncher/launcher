@@ -10,6 +10,7 @@ The Godot Launcher website has a dedicated [contributing section](https://godotl
 - [Proposing Features](#proposing-features)
 - [Contributing Translations](#contributing-translations)
 - [Contributing Pull Requests](#contributing-pull-requests)
+- [AI-Assisted Contributions](#ai-assisted-contributions)
 
 ## Reporting Bugs
 
@@ -59,6 +60,16 @@ Thank you for your interest in contributing! Here are a few things to keep in mi
 - **Your PR is still useful even if not merged** – Even if a PR isn't accepted, it may help guide future improvements.
 
 For bug fixes, if you're unsure about the best solution, discuss it first on [Discord](https://discord.gg/Ju9jkFJGvz).
+
+---
+
+## AI-Assisted Contributions
+
+AI-assisted tools may be used, but their output is treated as untrusted input.
+Contributors remain responsible for understanding, reviewing, adapting,
+testing, and maintaining everything they submit. Read the complete
+[AI-Assisted Contributions Policy](AI_POLICY.md) before submitting AI-assisted
+work.
 
 ---
 
