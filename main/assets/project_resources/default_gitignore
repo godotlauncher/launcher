@@ -1,22 +1,37 @@
-# Godot 4+ specific ignores
+# Godot 4.3+ generated cache and build directories.
 .godot/
+/android/
 
-# Godot-specific ignores
-.import/
-export.cfg
-export_presets.cfg
-
-# Imported translations (automatically generated from CSV files)
+# Imported translations generated from CSV files.
 *.translation
 
-# Mono-specific ignores
+# Godot .NET generated files.
 .mono/
 data_*/
 mono_crash.*.json
 
-# VSCode-Specific ignores
+# Godot Launcher code-editor configuration can contain local paths.
+# Remove this rule if the team intentionally shares VS Code configuration.
 .vscode/
 
-# other
+# Local build output.
 build/
 builds/
+
+# Godot 4.0 compatibility:
+# Godot 4.0 may store sensitive credentials in export_presets.cfg.
+# Uncomment this rule before using Godot 4.0.
+#
+# If the file is already tracked, remove it from Git's index while keeping
+# the local file:
+# git rm --cached -- export_presets.cfg
+#
+# Then commit the .gitignore change and staged removal.
+# This does not remove earlier versions from Git history. Rotate any
+# credentials that may already have been committed.
+# export_presets.cfg
+
+# Legacy or migrated-project compatibility:
+# Uncomment these only when the project still generates them.
+# .import/
+# export.cfg
