@@ -81,6 +81,8 @@ Pre-release builds include suffixes like `-beta.1` or `-rc.1`. Document notewort
 
 We warmly welcome contributions from the community! For detailed guidelines on submitting pull requests, best practices, and more, please see our [contribution guide](CONTRIBUTING.md).
 
+For responsible AI-assisted development and contribution standards, read our [AI-Assisted Contributions Policy](AI_POLICY.md).
+
 ### **Feature Proposals**
 
 For major changes or new features, please open an issue and clearly mark the title as a proposal [here](https://github.com/godotlauncher/launcher/issues).
