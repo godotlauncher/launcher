@@ -11,6 +11,7 @@ import type {
     AppOpenDialogProperty,
     CheckForUpdatesOptions,
     CodeEditorId,
+    CreateProjectGitOptions,
     CustomEngineManifest,
     InstalledRelease,
     LaunchProjectOptions,
@@ -87,6 +88,7 @@ import { getCachedTools, refreshToolCache } from './services/toolCache.js';
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
+import { gitConfigGetGlobalIdentity } from './utils/git.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { setAutoCheckUpdates } from './utils/prefs.utils.js';
 import { isDev } from './utils.js';
@@ -256,6 +258,28 @@ export class AppController implements AppBridge {
         return getProjectsDetails();
     }
 
+    /**
+     * Gets independently configured global Git identity values.
+     *
+     * @returns The global Git name and email, including partial identity.
+     */
+    @AppHandler('getGlobalGitIdentity')
+    getGlobalGitIdentity() {
+        return gitConfigGetGlobalIdentity();
+    }
+
+    /**
+     * Creates a project with the selected editor and Git setup.
+     *
+     * @param name - Display name for the new project.
+     * @param release - Godot editor release assigned to the project.
+     * @param renderer - Renderer selected for the project.
+     * @param codeEditorId - Optional code editor integration to apply.
+     * @param withGit - Whether to initialize Git when it is available.
+     * @param overwriteProjectPath - Optional target project path.
+     * @param gitOptions - Optional initial commit and identity setup choice.
+     * @returns The project creation result.
+     */
     @AppHandler('createProject')
     createProject(
         name: string,
@@ -264,6 +288,7 @@ export class AppController implements AppBridge {
         codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
+        gitOptions?: CreateProjectGitOptions,
     ) {
         return createProject(
             name,
@@ -273,6 +298,7 @@ export class AppController implements AppBridge {
             withGit,
             this.codeEditorIntegrationService,
             overwriteProjectPath,
+            gitOptions,
         );
     }
 

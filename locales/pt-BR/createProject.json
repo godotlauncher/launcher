@@ -52,6 +52,25 @@
         "initGit": "Inicializar repositório Git",
         "gitNotInstalled": "O Git não está instalado neste computador"
     },
+    "gitIdentity": {
+        "warningTitle": "Identidade do Git necessária",
+        "warningMessage": "O Git precisa de um nome e e-mail para criar o commit inicial.",
+        "skipCommit": "Pular commit inicial",
+        "addIdentity": "Adicionar identidade do Git",
+        "formTitle": "Adicionar identidade do Git",
+        "formMessage": "Escolha a identidade que o Git deve usar neste projeto.",
+        "name": "Nome",
+        "nameHelp": "Registrado como nome do autor do commit.",
+        "nameRequired": "O nome é obrigatório",
+        "email": "E-mail",
+        "emailHelp": "Registrado como e-mail do autor do commit.",
+        "emailRequired": "O e-mail é obrigatório",
+        "scope": "Salvar identidade para",
+        "repositoryScope": "Este repositório",
+        "globalScope": "Todos os repositórios neste computador",
+        "back": "Voltar",
+        "saveAndCreate": "Salvar e criar projeto"
+    },
     "buttons": {
         "editNow": "Editar agora",
         "create": "Criar projeto"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Falha ao obter a definição do projeto para a versão: {{version}}",
         "folderNotEmpty": "A pasta do projeto '{{name}}' já existe e não está vazia; você queria adicionar um projeto existente?",
         "failedCreateFile": "Falha ao criar o arquivo do projeto: {{error}}",
-        "pathNotDirectory": "O caminho selecionado já existe e não é uma pasta"
+        "pathNotDirectory": "O caminho selecionado já existe e não é uma pasta",
+        "failedGitInit": "Falha ao inicializar o repositório Git",
+        "failedGitBranch": "Falha ao renomear o branch Git para main",
+        "invalidGitIdentity": "O nome e o e-mail do Git são obrigatórios",
+        "failedGitIdentity": "Falha ao salvar a identidade do Git",
+        "failedGitCommit": "Falha ao criar o commit inicial do Git"
     }
 }

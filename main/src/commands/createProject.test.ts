@@ -45,7 +45,9 @@ vi.mock('../pathResolver.js', () => ({
 
 const gitMocks = vi.hoisted(() => ({
     gitAddAndCommit: vi.fn(),
+    gitConfigSetIdentity: vi.fn(),
     gitInit: vi.fn(),
+    gitRenameBranch: vi.fn(),
 }));
 
 vi.mock('../utils/git.utils.js', () => gitMocks);
@@ -130,6 +132,8 @@ describe('createProject', () => {
         fsMocks.promises.copyFile.mockResolvedValue(undefined);
         fsMocks.promises.rm.mockResolvedValue(undefined);
         gitMocks.gitInit.mockResolvedValue(true);
+        gitMocks.gitRenameBranch.mockResolvedValue(true);
+        gitMocks.gitConfigSetIdentity.mockResolvedValue(true);
         gitMocks.gitAddAndCommit.mockResolvedValue(true);
         installedToolsMocks.getInstalledTools.mockResolvedValue([]);
         userPreferencesMocks.getUserPreferences.mockResolvedValue({
@@ -308,16 +312,235 @@ describe('createProject', () => {
             path.resolve(projectPath, '.gitattributes'),
         );
         expect(gitMocks.gitInit).toHaveBeenCalledWith(projectPath);
+        expect(gitMocks.gitRenameBranch).toHaveBeenCalledWith(projectPath);
         expect(gitMocks.gitAddAndCommit).toHaveBeenCalledWith(projectPath);
+        expect(
+            projectLauncherConfigMocks.writeProjectLauncherConfig,
+        ).toHaveBeenCalledWith(projectPath, {
+            release,
+            launcherVersion: '1.0.0',
+        });
 
         const copyCallOrders =
             fsMocks.promises.copyFile.mock.invocationCallOrder;
+        const launcherConfigCallOrder =
+            projectLauncherConfigMocks.writeProjectLauncherConfig.mock
+                .invocationCallOrder[0];
         const initCallOrder = gitMocks.gitInit.mock.invocationCallOrder[0];
+        const renameCallOrder =
+            gitMocks.gitRenameBranch.mock.invocationCallOrder[0];
         const commitCallOrder =
             gitMocks.gitAddAndCommit.mock.invocationCallOrder[0];
         expect(copyCallOrders[0]).toBeLessThan(initCallOrder);
         expect(copyCallOrders[1]).toBeLessThan(initCallOrder);
-        expect(initCallOrder).toBeLessThan(commitCallOrder);
+        expect(launcherConfigCallOrder).toBeLessThan(initCallOrder);
+        expect(initCallOrder).toBeLessThan(renameCallOrder);
+        expect(renameCallOrder).toBeLessThan(commitCallOrder);
+    });
+
+    it('initializes main without staging or committing when commit is skipped', async () => {
+        installedToolsMocks.getInstalledTools.mockResolvedValue([
+            {
+                name: 'Git',
+                path: '/usr/bin/git',
+                version: 'git version 2.54.0',
+            },
+        ]);
+
+        const result = await createProject(
+            'Skip Commit',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            { initialCommit: 'skip' },
+        );
+
+        const projectPath = path.resolve('/projects/Skip-Commit');
+        expect(result.success).toBe(true);
+        expect(result.projectDetails?.withGit).toBe(true);
+        expect(gitMocks.gitInit).toHaveBeenCalledWith(projectPath);
+        expect(gitMocks.gitRenameBranch).toHaveBeenCalledWith(projectPath);
+        expect(gitMocks.gitConfigSetIdentity).not.toHaveBeenCalled();
+        expect(gitMocks.gitAddAndCommit).not.toHaveBeenCalled();
+    });
+
+    it.each(['repository', 'global'] as const)(
+        'sets %s identity before creating the initial commit',
+        async (scope) => {
+            installedToolsMocks.getInstalledTools.mockResolvedValue([
+                {
+                    name: 'Git',
+                    path: '/usr/bin/git',
+                    version: 'git version 2.54.0',
+                },
+            ]);
+
+            const result = await createProject(
+                'Identity Project',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                codeEditorIntegrationService,
+                undefined,
+                {
+                    initialCommit: 'create',
+                    identity: {
+                        name: '  John Doe  ',
+                        email: '  john.doe@example.com  ',
+                        scope,
+                    },
+                },
+            );
+
+            const projectPath = path.resolve('/projects/Identity-Project');
+            expect(result.success).toBe(true);
+            expect(gitMocks.gitConfigSetIdentity).toHaveBeenCalledWith(
+                'John Doe',
+                'john.doe@example.com',
+                scope,
+                projectPath,
+            );
+            expect(
+                gitMocks.gitRenameBranch.mock.invocationCallOrder[0],
+            ).toBeLessThan(
+                gitMocks.gitConfigSetIdentity.mock.invocationCallOrder[0],
+            );
+            expect(
+                gitMocks.gitConfigSetIdentity.mock.invocationCallOrder[0],
+            ).toBeLessThan(
+                gitMocks.gitAddAndCommit.mock.invocationCallOrder[0],
+            );
+        },
+    );
+
+    it('rejects blank Git identity before configuration or commit', async () => {
+        installedToolsMocks.getInstalledTools.mockResolvedValue([
+            {
+                name: 'Git',
+                path: '/usr/bin/git',
+                version: 'git version 2.54.0',
+            },
+        ]);
+
+        const result = await createProject(
+            'Blank Identity',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                identity: {
+                    name: ' ',
+                    email: 'john.doe@example.com',
+                    scope: 'repository',
+                },
+            },
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: 'createProject:errors.invalidGitIdentity',
+        });
+        expect(gitMocks.gitConfigSetIdentity).not.toHaveBeenCalled();
+        expect(gitMocks.gitAddAndCommit).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            stage: 'init',
+            mock: gitMocks.gitInit,
+            expectedRename: false,
+            expectedCommit: false,
+        },
+        {
+            stage: 'branch rename',
+            mock: gitMocks.gitRenameBranch,
+            expectedRename: true,
+            expectedCommit: false,
+        },
+        {
+            stage: 'commit',
+            mock: gitMocks.gitAddAndCommit,
+            expectedRename: true,
+            expectedCommit: true,
+        },
+    ])(
+        'cleans up when Git $stage fails',
+        async ({ mock, expectedRename, expectedCommit }) => {
+            installedToolsMocks.getInstalledTools.mockResolvedValue([
+                {
+                    name: 'Git',
+                    path: '/usr/bin/git',
+                    version: 'git version 2.54.0',
+                },
+            ]);
+            mock.mockResolvedValueOnce(false);
+
+            const result = await createProject(
+                'Failed Git',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                codeEditorIntegrationService,
+            );
+
+            expect(result.success).toBe(false);
+            expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+                path.resolve('/projects/Failed-Git'),
+                { recursive: true, force: true },
+            );
+            expect(gitMocks.gitRenameBranch).toHaveBeenCalledTimes(
+                expectedRename ? 1 : 0,
+            );
+            expect(gitMocks.gitAddAndCommit).toHaveBeenCalledTimes(
+                expectedCommit ? 1 : 0,
+            );
+        },
+    );
+
+    it('stops and cleans up when Git identity setup fails', async () => {
+        installedToolsMocks.getInstalledTools.mockResolvedValue([
+            {
+                name: 'Git',
+                path: '/usr/bin/git',
+                version: 'git version 2.54.0',
+            },
+        ]);
+        gitMocks.gitConfigSetIdentity.mockResolvedValueOnce(false);
+
+        const result = await createProject(
+            'Failed Identity',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                identity: {
+                    name: 'John Doe',
+                    email: 'john.doe@example.com',
+                    scope: 'repository',
+                },
+            },
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: 'createProject:errors.failedGitIdentity',
+        });
+        expect(gitMocks.gitAddAndCommit).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).toHaveBeenCalled();
     });
 
     it('does not add Git metadata when Git is disabled', async () => {

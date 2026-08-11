@@ -4,7 +4,9 @@ import type {
     AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
+    CreateProjectGitOptions,
     CreateProjectResult,
+    GitIdentity,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
@@ -105,6 +107,7 @@ export type AppBridge = {
     checkAllReleasesValid(): Promise<InstalledRelease[]>;
     clearReleaseCache(): Promise<void>;
     getProjectsDetails(): Promise<ProjectDetails[]>;
+    getGlobalGitIdentity(): Promise<GitIdentity>;
     createProject(
         name: string,
         release: InstalledRelease,
@@ -112,6 +115,7 @@ export type AppBridge = {
         codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
+        gitOptions?: CreateProjectGitOptions,
     ): Promise<CreateProjectResult>;
     removeProject(project: ProjectDetails): Promise<ProjectDetails[]>;
     renameProject(

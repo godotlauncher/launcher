@@ -8,6 +8,7 @@ import {
     getCreateProjectDirectorySegment,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
+    isGitIdentityComplete,
     isVerifiedToolAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
@@ -183,5 +184,13 @@ describe('create project model helpers', () => {
                 { ...availableDefault, isDefault: false },
             ]),
         ).toBeNull();
+    });
+
+    it.each([
+        [{ name: 'John Doe', email: 'john.doe@example.com' }, true],
+        [{ name: '', email: 'john.doe@example.com' }, false],
+        [{ name: 'John Doe', email: '   ' }, false],
+    ])('checks whether Git identity %j is complete', (identity, expected) => {
+        expect(isGitIdentityComplete(identity)).toBe(expected);
     });
 });

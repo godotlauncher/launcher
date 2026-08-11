@@ -52,6 +52,25 @@
         "initGit": "Inicializar repositorio Git",
         "gitNotInstalled": "Git no está instalado en este ordenador"
     },
+    "gitIdentity": {
+        "warningTitle": "Se requiere una identidad de Git",
+        "warningMessage": "Git necesita un nombre y un correo electrónico para crear el commit inicial.",
+        "skipCommit": "Omitir commit inicial",
+        "addIdentity": "Añadir identidad de Git",
+        "formTitle": "Añadir identidad de Git",
+        "formMessage": "Elige la identidad que Git debe usar para este proyecto.",
+        "name": "Nombre",
+        "nameHelp": "Se guardará como nombre del autor del commit.",
+        "nameRequired": "El nombre es obligatorio",
+        "email": "Correo electrónico",
+        "emailHelp": "Se guardará como correo del autor del commit.",
+        "emailRequired": "El correo electrónico es obligatorio",
+        "scope": "Guardar identidad para",
+        "repositoryScope": "Este repositorio",
+        "globalScope": "Todos los repositorios de este ordenador",
+        "back": "Atrás",
+        "saveAndCreate": "Guardar y crear proyecto"
+    },
     "buttons": {
         "editNow": "Editar ahora",
         "create": "Crear proyecto"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Error al obtener la definición del proyecto para la versión: {{version}}",
         "folderNotEmpty": "La carpeta del proyecto '{{name}}' ya existe y no está vacía, ¿querías añadir un proyecto existente?",
         "failedCreateFile": "Error al crear el archivo del proyecto: {{error}}",
-        "pathNotDirectory": "La ruta seleccionada ya existe y no es una carpeta"
+        "pathNotDirectory": "La ruta seleccionada ya existe y no es una carpeta",
+        "failedGitInit": "No se pudo inicializar el repositorio Git",
+        "failedGitBranch": "No se pudo renombrar la rama de Git a main",
+        "invalidGitIdentity": "El nombre y el correo de Git son obligatorios",
+        "failedGitIdentity": "No se pudo guardar la identidad de Git",
+        "failedGitCommit": "No se pudo crear el commit inicial de Git"
     }
 }

@@ -52,6 +52,25 @@
         "initGit": "Zainicjuj repozytorium Git",
         "gitNotInstalled": "Git nie jest zainstalowany na tym komputerze"
     },
+    "gitIdentity": {
+        "warningTitle": "Wymagana tożsamość Git",
+        "warningMessage": "Git wymaga nazwy i adresu e-mail, aby utworzyć pierwszy commit.",
+        "skipCommit": "Pomiń pierwszy commit",
+        "addIdentity": "Dodaj tożsamość Git",
+        "formTitle": "Dodaj tożsamość Git",
+        "formMessage": "Wybierz tożsamość, której Git ma używać w tym projekcie.",
+        "name": "Nazwa",
+        "nameHelp": "Zapisywana jako nazwa autora commitu.",
+        "nameRequired": "Nazwa jest wymagana",
+        "email": "E-mail",
+        "emailHelp": "Zapisywany jako e-mail autora commitu.",
+        "emailRequired": "E-mail jest wymagany",
+        "scope": "Zapisz tożsamość dla",
+        "repositoryScope": "Tego repozytorium",
+        "globalScope": "Wszystkich repozytoriów na tym komputerze",
+        "back": "Wstecz",
+        "saveAndCreate": "Zapisz i utwórz projekt"
+    },
     "buttons": {
         "editNow": "Edytuj teraz",
         "create": "Utwórz projekt"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Nie udało się uzyskać definicji projektu dla wersji: {{version}}",
         "folderNotEmpty": "Folder projektu '{{name}}' już istnieje i nie jest pusty, czy chciałeś dodać istniejący projekt?",
         "failedCreateFile": "Nie udało się utworzyć pliku projektu: {{error}}",
-        "pathNotDirectory": "Wybrana ścieżka już istnieje i nie jest folderem"
+        "pathNotDirectory": "Wybrana ścieżka już istnieje i nie jest folderem",
+        "failedGitInit": "Nie udało się zainicjować repozytorium Git",
+        "failedGitBranch": "Nie udało się zmienić nazwy gałęzi Git na main",
+        "invalidGitIdentity": "Nazwa i e-mail Git są wymagane",
+        "failedGitIdentity": "Nie udało się zapisać tożsamości Git",
+        "failedGitCommit": "Nie udało się utworzyć pierwszego commitu Git"
     }
 }

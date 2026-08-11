@@ -4,6 +4,7 @@ import type {
     ChangeProjectEditorResult,
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    CreateProjectGitOptions,
     CreateProjectResult,
     InstalledRelease,
     LaunchProjectResult,
@@ -88,6 +89,7 @@ interface ProjectsContext {
         codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
+        gitOptions?: CreateProjectGitOptions,
     ) => Promise<CreateProjectResult>;
 }
 
@@ -145,6 +147,18 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return updated;
     };
 
+    /**
+     * Creates a project and refreshes the project list after success.
+     *
+     * @param projectName - Display name for the new project.
+     * @param release - Godot editor release assigned to the project.
+     * @param renderer - Renderer selected for the project.
+     * @param codeEditorId - Optional code editor integration to apply.
+     * @param withGit - Whether to initialize Git when it is available.
+     * @param overwriteProjectPath - Optional target project path.
+     * @param gitOptions - Optional initial commit and identity setup choice.
+     * @returns The project creation result.
+     */
     const createProject = async (
         projectName: string,
         release: InstalledRelease,
@@ -152,6 +166,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         codeEditorId: CodeEditorId | null,
         withGit: boolean,
         overwriteProjectPath?: string,
+        gitOptions?: CreateProjectGitOptions,
     ) => {
         const result = await appBridge.createProject(
             projectName,
@@ -160,6 +175,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             codeEditorId,
             withGit,
             overwriteProjectPath,
+            gitOptions,
         );
 
         if (result.success) {

@@ -29,6 +29,7 @@ type DrawerProps = {
     side?: DrawerSide;
     closeOnBackdrop?: boolean;
     closeOnEscape?: boolean;
+    trapFocus?: boolean;
     ariaLabel?: string;
     children?: ReactNode;
     className?: string;
@@ -150,6 +151,20 @@ export function shouldCloseDrawerOnEscape(
         !event.defaultPrevented &&
         event.key === 'Escape'
     );
+}
+
+/**
+ * Determines whether a keyboard event should be handled by the drawer focus trap.
+ *
+ * @param event - Keyboard event to inspect.
+ * @param trapFocus - Whether the drawer focus trap is enabled.
+ * @returns Whether the drawer should handle the event as focus navigation.
+ */
+export function shouldTrapDrawerFocus(
+    event: DrawerEscapeEvent,
+    trapFocus = true,
+): boolean {
+    return trapFocus && event.key === 'Tab' && !event.defaultPrevented;
 }
 
 function hasOpenPopover(): boolean {
@@ -330,12 +345,19 @@ function containsDrawerTitle(children: ReactNode): boolean {
     return hasTitle;
 }
 
+/**
+ * Renders a controlled drawer and manages its backdrop and keyboard behavior.
+ *
+ * @param props - Drawer state, placement, interaction, and content properties.
+ * @returns The active drawer, its closing transition, or nothing when closed.
+ */
 const DrawerRoot: React.FC<DrawerProps> = ({
     open,
     onOpenChange,
     side = 'right',
     closeOnBackdrop = true,
     closeOnEscape = true,
+    trapFocus = true,
     ariaLabel,
     children,
     className,
@@ -446,7 +468,9 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 return;
             }
 
-            trapFocusInDrawer(event, panelRef.current);
+            if (shouldTrapDrawerFocus(event, trapFocus)) {
+                trapFocusInDrawer(event, panelRef.current);
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -454,7 +478,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [closeOnEscape, onOpenChange, open]);
+    }, [closeOnEscape, onOpenChange, open, trapFocus]);
 
     const handleBackdropClick = useCallback(
         (event: ReactMouseEvent<HTMLButtonElement>) => {

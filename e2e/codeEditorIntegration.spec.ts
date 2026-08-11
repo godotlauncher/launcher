@@ -11,6 +11,7 @@ import {
     createFixtureHome,
     prepareAppWithStubbedData,
     stubCodeEditorIntegrationSettings,
+    stubGlobalGitIdentity,
 } from './documentationScreenshots/runtime';
 import {
     SAMPLE_PROJECT_PROTOTYPE,
@@ -108,6 +109,10 @@ test('SelectField supports keyboard navigation and announces its selected code e
 test('Create Project submits both an integration and explicit None', async () => {
     const projectName = 'Code Editor E2E Project';
 
+    await stubGlobalGitIdentity(electronApp, {
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+    });
     await stubRecordedIpcHandler(electronApp, {
         key: 'createProject',
         channel: 'app.createProject',

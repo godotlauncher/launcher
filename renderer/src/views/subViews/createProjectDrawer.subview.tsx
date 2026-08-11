@@ -2,6 +2,8 @@ import type {
     CachedTool,
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    CreateProjectGitOptions,
+    GitIdentityScope,
     RendererType,
 } from '@shared/contracts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -14,6 +16,10 @@ import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
+import {
+    CreateProjectGitIdentityDialog,
+    type GitIdentityDialogPage,
+} from './createProject/components/create-project-git-identity-dialog.component';
 import { CreateProjectActions } from './createProject/components/createProjectActions.component';
 import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
 import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
@@ -23,6 +29,7 @@ import {
     getCreateProjectDirectorySegment,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
+    isGitIdentityComplete,
     isVerifiedToolAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
@@ -35,6 +42,12 @@ type SubViewProps = {
     onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * Renders the Create Project workflow.
+ *
+ * @param props - Drawer visibility and change callback.
+ * @returns The Create Project drawer.
+ */
 export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     open,
     onOpenChange,
@@ -51,6 +64,16 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const [editNow, setEditNow] = useState<boolean>(true);
     const [error, setError] = useState<string | undefined>();
     const [creating, setCreating] = useState<boolean>(false);
+    const [checkingGitIdentity, setCheckingGitIdentity] =
+        useState<boolean>(false);
+    const [gitIdentityDialogPage, setGitIdentityDialogPage] =
+        useState<GitIdentityDialogPage | null>(null);
+    const [gitIdentityName, setGitIdentityName] = useState('');
+    const [gitIdentityEmail, setGitIdentityEmail] = useState('');
+    const [gitIdentityScope, setGitIdentityScope] =
+        useState<GitIdentityScope>('repository');
+    const [showGitIdentityValidation, setShowGitIdentityValidation] =
+        useState(false);
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
     const [tools, setTools] = useState<CachedTool[]>([]);
     const [overwriteProjectPath, setOverwriteProjectPath] =
@@ -220,14 +243,15 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         };
     }, [open, overwriteBasePath, overwriteProjectPath, pathExists]);
 
-    const onCreateProject = async () => {
-        setError(undefined);
-
-        if (projectName === '') {
-            setError(t('project.nameRequired'));
-            return;
-        }
-
+    /**
+     * Creates the selected project with an optional Git setup choice.
+     *
+     * @param gitOptions - Optional initial commit and identity setup choice.
+     * @returns A promise that resolves after creation handling completes.
+     */
+    const createSelectedProject = async (
+        gitOptions?: CreateProjectGitOptions,
+    ) => {
         setCreating(true);
         const result = await createProject(
             projectName,
@@ -236,6 +260,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             codeEditorId,
             withGit,
             overwriteProjectPath ? overwriteSubmitPath : undefined,
+            gitOptions,
         );
 
         setCreating(false);
@@ -248,6 +273,70 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         } else {
             setError(result.error);
         }
+    };
+
+    /**
+     * Validates the form and checks Git identity before project creation.
+     *
+     * @returns A promise that resolves after preflight or creation completes.
+     */
+    const onCreateProject = async () => {
+        setError(undefined);
+
+        if (projectName === '') {
+            setError(t('project.nameRequired'));
+            return;
+        }
+
+        if (!withGit || !gitAvailable) {
+            await createSelectedProject();
+            return;
+        }
+
+        setCheckingGitIdentity(true);
+        let identity = { name: '', email: '' };
+        try {
+            identity = await appBridge.getGlobalGitIdentity();
+        } catch {
+            identity = { name: '', email: '' };
+        } finally {
+            setCheckingGitIdentity(false);
+        }
+
+        if (isGitIdentityComplete(identity)) {
+            await createSelectedProject();
+            return;
+        }
+
+        setGitIdentityName(identity.name);
+        setGitIdentityEmail(identity.email);
+        setGitIdentityScope('repository');
+        setShowGitIdentityValidation(false);
+        setGitIdentityDialogPage('warning');
+    };
+
+    /** Initializes the project repository without staging or committing. */
+    const handleSkipInitialCommit = () => {
+        setGitIdentityDialogPage(null);
+        void createSelectedProject({ initialCommit: 'skip' });
+    };
+
+    /** Validates and submits the entered Git identity. */
+    const handleSaveGitIdentity = () => {
+        const identity = {
+            name: gitIdentityName.trim(),
+            email: gitIdentityEmail.trim(),
+        };
+        if (!isGitIdentityComplete(identity)) {
+            setShowGitIdentityValidation(true);
+            return;
+        }
+
+        setGitIdentityDialogPage(null);
+        void createSelectedProject({
+            initialCommit: 'create',
+            identity: { ...identity, scope: gitIdentityScope },
+        });
     };
 
     const changeRelease = (index: number) => {
@@ -384,6 +473,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setEditNow(true);
         setError(undefined);
         setCreating(false);
+        setCheckingGitIdentity(false);
+        setGitIdentityDialogPage(null);
+        setGitIdentityName('');
+        setGitIdentityEmail('');
+        setGitIdentityScope('repository');
+        setShowGitIdentityValidation(false);
         setSelectingFolder(false);
         setTools([]);
         setOverwriteProjectPath(false);
@@ -399,107 +494,145 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         );
     }, [open]);
 
-    const closeDisabled = creating || selectingFolder;
+    const closeDisabled =
+        creating ||
+        checkingGitIdentity ||
+        selectingFolder ||
+        gitIdentityDialogPage !== null;
 
     return (
-        <Drawer
-            open={open}
-            onOpenChange={onOpenChange}
-            side="right"
-            closeOnBackdrop={!closeDisabled}
-            closeOnEscape={!closeDisabled}
-            width="min(900px, 100vw)"
-            panelClassName="max-w-[100vw]"
-        >
-            {selectingFolder && (
-                <WaitingForDialogOverlay
-                    className="z-60"
-                    message={t('projects:messages.waitingForDialog')}
+        <>
+            <Drawer
+                open={open}
+                onOpenChange={onOpenChange}
+                side="right"
+                closeOnBackdrop={!closeDisabled}
+                closeOnEscape={!closeDisabled}
+                trapFocus={gitIdentityDialogPage === null}
+                width="min(900px, 100vw)"
+                panelClassName={
+                    gitIdentityDialogPage
+                        ? 'max-w-[100vw] border-l-0'
+                        : 'max-w-[100vw]'
+                }
+            >
+                {selectingFolder && (
+                    <WaitingForDialogOverlay
+                        className="z-60"
+                        message={t('projects:messages.waitingForDialog')}
+                    />
+                )}
+                <Drawer.Header>
+                    <Drawer.Title>{t('title')}</Drawer.Title>
+                    <Drawer.CloseButton
+                        data-testid="btnCloseCreateProject"
+                        disabled={closeDisabled}
+                    />
+                </Drawer.Header>
+                <form className="flex min-h-0 flex-1 flex-col">
+                    <Drawer.Body className="flex flex-col gap-5">
+                        {error && (
+                            <div
+                                className="alert alert-error alert-soft"
+                                role="alert"
+                            >
+                                {error}
+                            </div>
+                        )}
+                        <CreateProjectProjectSection
+                            t={t}
+                            releases={allReleases}
+                            releaseIndex={releaseIndex}
+                            inputNameRef={inputNameRef}
+                            installedReleaseCount={installedReleases.length}
+                            projectName={projectName}
+                            derivedProjectPath={derivedProjectPath}
+                            overwriteProjectPath={overwriteProjectPath}
+                            overwriteBasePath={overwriteBasePath}
+                            overwriteDisplayPath={overwriteDisplayPath}
+                            overwritePathSuffixDisplay={
+                                overwritePathSuffixDisplay
+                            }
+                            showUseDefaultPathAction={showUseDefaultPathAction}
+                            showFolderCreateIcon={showFolderCreateIcon}
+                            overwriteBasePathMissing={overwriteBasePathMissing}
+                            isOverwritePathEmpty={isOverwritePathEmpty}
+                            onProjectNameChange={setProjectName}
+                            onReleaseChange={changeRelease}
+                            onOverwriteBasePathChange={setOverwriteBasePath}
+                            onUseDefaultPath={() =>
+                                setOverwriteBasePath(defaultOverwriteBasePath)
+                            }
+                            onSelectProjectFolder={() =>
+                                void handleSelectProjectFolder()
+                            }
+                            onOverwriteProjectPathChange={
+                                setOverwriteProjectPath
+                            }
+                        />
+                        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+                            <CreateProjectRendererSection
+                                t={t}
+                                renderer={renderer}
+                                versionNumber={
+                                    allReleases[releaseIndex]?.version_number ||
+                                    0
+                                }
+                                onRendererChange={setRenderer}
+                            />
+                            <CreateProjectToolOptionsSection
+                                t={t}
+                                loadingTools={loadingTools}
+                                gitAvailable={gitAvailable}
+                                withGit={withGit}
+                                loadingCodeEditors={loadingCodeEditors}
+                                codeEditorLoadFailed={codeEditorLoadFailed}
+                                onWithGitChange={setWithGit}
+                                codeEditorSettings={codeEditorSettings}
+                                codeEditorId={codeEditorId}
+                                onCodeEditorIdChange={setCodeEditorId}
+                            />
+                        </div>
+                    </Drawer.Body>
+                    <Drawer.Footer className="justify-between">
+                        <CreateProjectActions
+                            editNow={editNow}
+                            creating={creating || checkingGitIdentity}
+                            createDisabled={
+                                loadingTools ||
+                                installedReleases.length < 1 ||
+                                isOverwritePathEmpty
+                            }
+                            editNowLabel={t('buttons.editNow')}
+                            cancelLabel={t('common:buttons.cancel')}
+                            createLabel={t('buttons.create')}
+                            onEditNowChange={setEditNow}
+                            onCancel={() => onOpenChange(false)}
+                            onCreateProject={() => void onCreateProject()}
+                        />
+                    </Drawer.Footer>
+                </form>
+            </Drawer>
+            {gitIdentityDialogPage && (
+                <CreateProjectGitIdentityDialog
+                    page={gitIdentityDialogPage}
+                    name={gitIdentityName}
+                    email={gitIdentityEmail}
+                    scope={gitIdentityScope}
+                    showValidation={showGitIdentityValidation}
+                    t={t}
+                    onNameChange={setGitIdentityName}
+                    onEmailChange={setGitIdentityEmail}
+                    onScopeChange={setGitIdentityScope}
+                    onSkip={handleSkipInitialCommit}
+                    onAddIdentity={() => setGitIdentityDialogPage('identity')}
+                    onBack={() => {
+                        setShowGitIdentityValidation(false);
+                        setGitIdentityDialogPage('warning');
+                    }}
+                    onSave={handleSaveGitIdentity}
                 />
             )}
-            <Drawer.Header>
-                <Drawer.Title>{t('title')}</Drawer.Title>
-                <Drawer.CloseButton
-                    data-testid="btnCloseCreateProject"
-                    disabled={closeDisabled}
-                />
-            </Drawer.Header>
-            <form className="flex min-h-0 flex-1 flex-col">
-                <Drawer.Body className="flex flex-col gap-5">
-                    {error && (
-                        <div
-                            className="alert alert-error alert-soft"
-                            role="alert"
-                        >
-                            {error}
-                        </div>
-                    )}
-                    <CreateProjectProjectSection
-                        t={t}
-                        releases={allReleases}
-                        releaseIndex={releaseIndex}
-                        inputNameRef={inputNameRef}
-                        installedReleaseCount={installedReleases.length}
-                        projectName={projectName}
-                        derivedProjectPath={derivedProjectPath}
-                        overwriteProjectPath={overwriteProjectPath}
-                        overwriteBasePath={overwriteBasePath}
-                        overwriteDisplayPath={overwriteDisplayPath}
-                        overwritePathSuffixDisplay={overwritePathSuffixDisplay}
-                        showUseDefaultPathAction={showUseDefaultPathAction}
-                        showFolderCreateIcon={showFolderCreateIcon}
-                        overwriteBasePathMissing={overwriteBasePathMissing}
-                        isOverwritePathEmpty={isOverwritePathEmpty}
-                        onProjectNameChange={setProjectName}
-                        onReleaseChange={changeRelease}
-                        onOverwriteBasePathChange={setOverwriteBasePath}
-                        onUseDefaultPath={() =>
-                            setOverwriteBasePath(defaultOverwriteBasePath)
-                        }
-                        onSelectProjectFolder={() =>
-                            void handleSelectProjectFolder()
-                        }
-                        onOverwriteProjectPathChange={setOverwriteProjectPath}
-                    />
-                    <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                        <CreateProjectRendererSection
-                            t={t}
-                            renderer={renderer}
-                            versionNumber={
-                                allReleases[releaseIndex]?.version_number || 0
-                            }
-                            onRendererChange={setRenderer}
-                        />
-                        <CreateProjectToolOptionsSection
-                            t={t}
-                            loadingTools={loadingTools}
-                            gitAvailable={gitAvailable}
-                            withGit={withGit}
-                            loadingCodeEditors={loadingCodeEditors}
-                            codeEditorLoadFailed={codeEditorLoadFailed}
-                            onWithGitChange={setWithGit}
-                            codeEditorSettings={codeEditorSettings}
-                            codeEditorId={codeEditorId}
-                            onCodeEditorIdChange={setCodeEditorId}
-                        />
-                    </div>
-                </Drawer.Body>
-                <Drawer.Footer className="justify-between">
-                    <CreateProjectActions
-                        editNow={editNow}
-                        creating={creating}
-                        createDisabled={
-                            installedReleases.length < 1 || isOverwritePathEmpty
-                        }
-                        editNowLabel={t('buttons.editNow')}
-                        cancelLabel={t('common:buttons.cancel')}
-                        createLabel={t('buttons.create')}
-                        onEditNowChange={setEditNow}
-                        onCancel={() => onOpenChange(false)}
-                        onCreateProject={() => void onCreateProject()}
-                    />
-                </Drawer.Footer>
-            </form>
-        </Drawer>
+        </>
     );
 };

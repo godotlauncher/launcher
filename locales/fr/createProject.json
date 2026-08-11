@@ -52,6 +52,25 @@
         "initGit": "Initialiser le dépôt Git",
         "gitNotInstalled": "Git n'est pas installé sur cet ordinateur"
     },
+    "gitIdentity": {
+        "warningTitle": "Identité Git requise",
+        "warningMessage": "Git a besoin d'un nom et d'une adresse e-mail pour créer le commit initial.",
+        "skipCommit": "Ignorer le commit initial",
+        "addIdentity": "Ajouter une identité Git",
+        "formTitle": "Ajouter une identité Git",
+        "formMessage": "Choisissez l'identité que Git doit utiliser pour ce projet.",
+        "name": "Nom",
+        "nameHelp": "Enregistré comme nom de l'auteur du commit.",
+        "nameRequired": "Le nom est requis",
+        "email": "E-mail",
+        "emailHelp": "Enregistré comme e-mail de l'auteur du commit.",
+        "emailRequired": "L'e-mail est requis",
+        "scope": "Enregistrer l'identité pour",
+        "repositoryScope": "Ce dépôt",
+        "globalScope": "Tous les dépôts sur cet ordinateur",
+        "back": "Retour",
+        "saveAndCreate": "Enregistrer et créer le projet"
+    },
     "buttons": {
         "editNow": "Modifier maintenant",
         "create": "Créer le projet"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Échec de l'obtention de la définition du projet pour la version : {{version}}",
         "folderNotEmpty": "Le dossier du projet '{{name}}' existe déjà et n'est pas vide, vouliez-vous ajouter un projet existant ?",
         "failedCreateFile": "Échec de la création du fichier du projet : {{error}}",
-        "pathNotDirectory": "Le chemin sélectionné existe déjà et n’est pas un dossier"
+        "pathNotDirectory": "Le chemin sélectionné existe déjà et n’est pas un dossier",
+        "failedGitInit": "Échec de l'initialisation du dépôt Git",
+        "failedGitBranch": "Échec du renommage de la branche Git en main",
+        "invalidGitIdentity": "Le nom et l'e-mail Git sont requis",
+        "failedGitIdentity": "Échec de l'enregistrement de l'identité Git",
+        "failedGitCommit": "Échec de la création du commit Git initial"
     }
 }

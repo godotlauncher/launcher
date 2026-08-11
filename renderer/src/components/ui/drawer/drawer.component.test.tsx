@@ -7,6 +7,7 @@ import {
     focusDrawerElement,
     shouldCloseDrawerOnBackdropClick,
     shouldCloseDrawerOnEscape,
+    shouldTrapDrawerFocus,
 } from './drawer.component';
 
 const noop = () => {};
@@ -175,6 +176,15 @@ describe('Drawer', () => {
                 { key: 'Escape' },
                 { hasOpenPopover: true },
             ),
+        ).toBe(false);
+    });
+
+    it('suspends focus trapping while an app-level modal is open', () => {
+        expect(shouldTrapDrawerFocus({ key: 'Tab' })).toBe(true);
+        expect(shouldTrapDrawerFocus({ key: 'Tab' }, false)).toBe(false);
+        expect(shouldTrapDrawerFocus({ key: 'Escape' })).toBe(false);
+        expect(
+            shouldTrapDrawerFocus({ key: 'Tab', defaultPrevented: true }),
         ).toBe(false);
     });
 

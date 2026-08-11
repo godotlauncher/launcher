@@ -52,6 +52,25 @@
         "initGit": "Git Deposu Başlat",
         "gitNotInstalled": "Git bu bilgisayarda yüklü değil"
     },
+    "gitIdentity": {
+        "warningTitle": "Git kimliği gerekli",
+        "warningMessage": "İlk commit'i oluşturmak için Git'in bir ad ve e-posta adresine ihtiyacı var.",
+        "skipCommit": "İlk commit'i atla",
+        "addIdentity": "Git kimliği ekle",
+        "formTitle": "Git kimliği ekle",
+        "formMessage": "Git'in bu proje için kullanacağı kimliği seçin.",
+        "name": "Ad",
+        "nameHelp": "Commit yazarının adı olarak kaydedilir.",
+        "nameRequired": "Ad gerekli",
+        "email": "E-posta",
+        "emailHelp": "Commit yazarının e-postası olarak kaydedilir.",
+        "emailRequired": "E-posta gerekli",
+        "scope": "Kimliği şunun için kaydet",
+        "repositoryScope": "Bu depo",
+        "globalScope": "Bu bilgisayardaki tüm depolar",
+        "back": "Geri",
+        "saveAndCreate": "Kaydet ve proje oluştur"
+    },
     "buttons": {
         "editNow": "Şimdi düzenle",
         "create": "Proje Oluştur"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "{{version}} sürümü için proje tanımı alınamadı",
         "folderNotEmpty": "'{{name}}' proje klasörü zaten mevcut ve boş değil, mevcut bir projeyi eklemek mi istediniz?",
         "failedCreateFile": "Proje dosyası oluşturulamadı: {{error}}",
-        "pathNotDirectory": "Seçilen yol zaten var ve bir klasör değil"
+        "pathNotDirectory": "Seçilen yol zaten var ve bir klasör değil",
+        "failedGitInit": "Git deposu başlatılamadı",
+        "failedGitBranch": "Git dalı main olarak yeniden adlandırılamadı",
+        "invalidGitIdentity": "Git adı ve e-posta adresi gerekli",
+        "failedGitIdentity": "Git kimliği kaydedilemedi",
+        "failedGitCommit": "İlk Git commit'i oluşturulamadı"
     }
 }

@@ -8,6 +8,7 @@ import type {
     AppBridge,
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
+    GitIdentity,
     EditorCatalogArchitecture,
     EditorCatalogPlatform,
     EditorCatalogRelease,
@@ -624,6 +625,30 @@ export async function stubProjectLaunchResult(
             }));
         },
         result,
+    );
+}
+
+/**
+ * Stubs the global Git identity returned to Create Project.
+ *
+ * @param electronApp - The Electron app whose handler should be replaced.
+ * @param identity - Global Git identity values returned to the renderer.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubGlobalGitIdentity(
+    electronApp: ElectronApplication,
+    identity: GitIdentity,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedIdentity: GitIdentity) => {
+            const channel = 'app.getGlobalGitIdentity';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedIdentity,
+            }));
+        },
+        identity,
     );
 }
 
