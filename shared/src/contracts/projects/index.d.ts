@@ -13,6 +13,20 @@ export type LaunchPath = string;
 
 export type ProjectInvalidReason = 'missing_project_file' | 'missing_editor';
 
+export type GitIdentity = {
+    name: string;
+    email: string;
+};
+
+export type GitIdentityScope = 'repository' | 'global';
+
+export type CreateProjectGitOptions =
+    | { initialCommit: 'skip' }
+    | {
+          initialCommit: 'create';
+          identity?: GitIdentity & { scope: GitIdentityScope };
+      };
+
 export type LaunchProjectOptions = {
     allowMissingCodeEditor?: boolean;
 };

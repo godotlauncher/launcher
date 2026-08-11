@@ -52,6 +52,25 @@
         "initGit": "初始化 Git 仓库",
         "gitNotInstalled": "此电脑未安装 Git"
     },
+    "gitIdentity": {
+        "warningTitle": "需要 Git 身份信息",
+        "warningMessage": "Git 需要姓名和电子邮件地址才能创建初始提交。",
+        "skipCommit": "跳过初始提交",
+        "addIdentity": "添加 Git 身份信息",
+        "formTitle": "添加 Git 身份信息",
+        "formMessage": "选择 Git 用于此项目的身份信息。",
+        "name": "姓名",
+        "nameHelp": "记录为提交作者姓名。",
+        "nameRequired": "姓名为必填项",
+        "email": "电子邮件",
+        "emailHelp": "记录为提交作者电子邮件。",
+        "emailRequired": "电子邮件为必填项",
+        "scope": "身份信息保存范围",
+        "repositoryScope": "此仓库",
+        "globalScope": "此电脑上的所有仓库",
+        "back": "返回",
+        "saveAndCreate": "保存并创建项目"
+    },
     "buttons": {
         "editNow": "立即编辑",
         "create": "创建项目"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "获取版本 {{version}} 的项目定义失败",
         "folderNotEmpty": "项目文件夹 '{{name}}' 已存在且非空，是否要添加现有项目？",
         "failedCreateFile": "创建项目文件失败：{{error}}",
-        "pathNotDirectory": "所选路径已存在且不是文件夹"
+        "pathNotDirectory": "所选路径已存在且不是文件夹",
+        "failedGitInit": "无法初始化 Git 仓库",
+        "failedGitBranch": "无法将 Git 分支重命名为 main",
+        "invalidGitIdentity": "Git 姓名和电子邮件为必填项",
+        "failedGitIdentity": "无法保存 Git 身份信息",
+        "failedGitCommit": "无法创建初始 Git 提交"
     }
 }

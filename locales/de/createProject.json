@@ -52,6 +52,25 @@
         "initGit": "Git-Repository initialisieren",
         "gitNotInstalled": "Git ist auf diesem Computer nicht installiert"
     },
+    "gitIdentity": {
+        "warningTitle": "Git-Identität erforderlich",
+        "warningMessage": "Git benötigt einen Namen und eine E-Mail-Adresse, um den ersten Commit zu erstellen.",
+        "skipCommit": "Ersten Commit überspringen",
+        "addIdentity": "Git-Identität hinzufügen",
+        "formTitle": "Git-Identität hinzufügen",
+        "formMessage": "Wählen Sie die Git-Identität für dieses Projekt.",
+        "name": "Name",
+        "nameHelp": "Wird als Name des Commit-Autors gespeichert.",
+        "nameRequired": "Name ist erforderlich",
+        "email": "E-Mail",
+        "emailHelp": "Wird als E-Mail-Adresse des Commit-Autors gespeichert.",
+        "emailRequired": "E-Mail-Adresse ist erforderlich",
+        "scope": "Identität speichern für",
+        "repositoryScope": "Dieses Repository",
+        "globalScope": "Alle Repositorys auf diesem Computer",
+        "back": "Zurück",
+        "saveAndCreate": "Speichern und Projekt erstellen"
+    },
     "buttons": {
         "editNow": "Jetzt bearbeiten",
         "create": "Projekt erstellen"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Projektdefinition für Version {{version}} konnte nicht abgerufen werden",
         "folderNotEmpty": "Projektordner '{{name}}' existiert bereits und ist nicht leer, möchten Sie ein bestehendes Projekt hinzufügen?",
         "failedCreateFile": "Projektdatei konnte nicht erstellt werden: {{error}}",
-        "pathNotDirectory": "Der ausgewählte Pfad existiert bereits und ist kein Ordner"
+        "pathNotDirectory": "Der ausgewählte Pfad existiert bereits und ist kein Ordner",
+        "failedGitInit": "Das Git-Repository konnte nicht initialisiert werden",
+        "failedGitBranch": "Der Git-Branch konnte nicht in main umbenannt werden",
+        "invalidGitIdentity": "Git-Name und E-Mail-Adresse sind erforderlich",
+        "failedGitIdentity": "Die Git-Identität konnte nicht gespeichert werden",
+        "failedGitCommit": "Der erste Git-Commit konnte nicht erstellt werden"
     }
 }

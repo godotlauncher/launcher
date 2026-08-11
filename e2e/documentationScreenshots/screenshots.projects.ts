@@ -11,6 +11,7 @@ import {
     stubAddProjectEditorResolution,
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
+    stubGlobalGitIdentity,
     stubInstalledTools,
     stubProjectGitInitializationFailure,
 } from './runtime';
@@ -799,6 +800,56 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_new_project_git_identity_warning',
+        description: 'New Project missing Git identity warning',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectGitIdentityWarning(page, electronApp);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_git_identity_form',
+        description: 'New Project Git identity form',
+        viewportHeight: 720,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectGitIdentityWarning(page, electronApp);
+            await page
+                .getByRole('button', { name: 'Add Git identity' })
+                .click();
+            const dialog = page.getByRole('dialog', {
+                name: 'Add Git identity',
+            });
+            await expect(dialog).toBeVisible({ timeout: 10000 });
+            await dialog.locator('#createProjectGitName').fill('John Doe');
+            await dialog
+                .locator('#createProjectGitEmail')
+                .fill('john.doe@example.com');
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project_code_editor_options',
         description: 'New Project view with code editor options',
         navigate: async (
@@ -1119,3 +1170,30 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
 ];
+
+/**
+ * Opens Create Project and submits it with a missing global Git identity.
+ *
+ * @param page - Electron renderer page to drive.
+ * @param electronApp - Electron app whose bridge handlers should be stubbed.
+ * @returns A promise that ends when the warning dialog is visible.
+ */
+async function openNewProjectGitIdentityWarning(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+): Promise<void> {
+    await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+    await stubGlobalGitIdentity(electronApp, { name: '', email: '' });
+    await stubCodeEditorIntegrationSettings(electronApp, [
+        SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    ]);
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectCreate').click();
+    await page.getByTestId('inputProjectName').fill('My Next Awesome Game');
+    const createButton = page.getByTestId('btnCreateProject');
+    await expect(createButton).toBeEnabled({ timeout: 10000 });
+    await createButton.click();
+    await expect(
+        page.getByRole('dialog', { name: 'Git identity required' }),
+    ).toBeVisible({ timeout: 10000 });
+}

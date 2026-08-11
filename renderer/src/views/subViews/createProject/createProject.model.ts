@@ -2,6 +2,7 @@ import type {
     CachedTool,
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    GitIdentity,
     InstalledRelease,
     RendererType,
 } from '@shared/contracts';
@@ -187,3 +188,12 @@ export const resolveCreateProjectCodeEditorId = (
         ? eligibleSettings[0].integration.id
         : null;
 };
+
+/**
+ * Checks whether both required Git identity values contain text.
+ *
+ * @param identity - Git identity values to validate.
+ * @returns Whether name and email are both present.
+ */
+export const isGitIdentityComplete = (identity: GitIdentity): boolean =>
+    identity.name.trim().length > 0 && identity.email.trim().length > 0;

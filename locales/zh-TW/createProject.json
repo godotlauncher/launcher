@@ -52,6 +52,25 @@
         "initGit": "初始化 Git 儲存庫",
         "gitNotInstalled": "此電腦未安裝 Git"
     },
+    "gitIdentity": {
+        "warningTitle": "需要 Git 身分資訊",
+        "warningMessage": "Git 需要姓名和電子郵件地址才能建立初始提交。",
+        "skipCommit": "略過初始提交",
+        "addIdentity": "新增 Git 身分資訊",
+        "formTitle": "新增 Git 身分資訊",
+        "formMessage": "選擇 Git 用於此專案的身分資訊。",
+        "name": "姓名",
+        "nameHelp": "記錄為提交作者姓名。",
+        "nameRequired": "姓名為必填項目",
+        "email": "電子郵件",
+        "emailHelp": "記錄為提交作者電子郵件。",
+        "emailRequired": "電子郵件為必填項目",
+        "scope": "身分資訊儲存範圍",
+        "repositoryScope": "此儲存庫",
+        "globalScope": "此電腦上的所有儲存庫",
+        "back": "返回",
+        "saveAndCreate": "儲存並建立專案"
+    },
     "buttons": {
         "editNow": "立即編輯",
         "create": "建立專案"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "無法取得版本 {{version}} 的專案定義",
         "folderNotEmpty": "專案資料夾 '{{name}}' 已存在且非空，您是想新增現有專案嗎？",
         "failedCreateFile": "建立專案檔案失敗：{{error}}",
-        "pathNotDirectory": "所選路徑已存在且不是資料夾"
+        "pathNotDirectory": "所選路徑已存在且不是資料夾",
+        "failedGitInit": "無法初始化 Git 儲存庫",
+        "failedGitBranch": "無法將 Git 分支重新命名為 main",
+        "invalidGitIdentity": "Git 姓名和電子郵件為必填項目",
+        "failedGitIdentity": "無法儲存 Git 身分資訊",
+        "failedGitCommit": "無法建立初始 Git 提交"
     }
 }

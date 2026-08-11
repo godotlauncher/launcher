@@ -2,11 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     gitAddAndCommit,
     gitConfig,
+    gitConfigGetGlobalIdentity,
     gitConfigGetUser,
     gitConfigSetAutoCrlf,
+    gitConfigSetIdentity,
     gitConfigSetUser,
     gitExists,
     gitInit,
+    gitRenameBranch,
 } from './git.utils.js';
 
 const mocks = vi.hoisted(() => ({
@@ -66,8 +69,8 @@ describe('git.utils', () => {
     it('sets Git identity values as literal sequential arguments', async () => {
         completeGitCommand();
         completeGitCommand();
-        const name = 'Mario $(touch injected)';
-        const email = 'mario+test@example.com';
+        const name = 'John Doe $(touch injected)';
+        const email = 'john.doe+test@example.com';
 
         await expect(gitConfigSetUser(name, email)).resolves.toBe(true);
         expect(mocks.execFile).toHaveBeenNthCalledWith(
@@ -90,7 +93,7 @@ describe('git.utils', () => {
         completeGitCommand('', new Error('name failed'));
 
         await expect(
-            gitConfigSetUser('Mario', 'mario@example.com'),
+            gitConfigSetUser('John Doe', 'john.doe@example.com'),
         ).resolves.toBe(false);
         expect(mocks.execFile).toHaveBeenCalledOnce();
     });
@@ -100,18 +103,18 @@ describe('git.utils', () => {
         completeGitCommand('', new Error('email failed'));
 
         await expect(
-            gitConfigSetUser('Mario', 'mario@example.com'),
+            gitConfigSetUser('John Doe', 'john.doe@example.com'),
         ).resolves.toBe(false);
         expect(mocks.execFile).toHaveBeenCalledTimes(2);
     });
 
     it('reads global Git identity without trimming meaningful spaces', async () => {
-        completeGitCommand('  Mario Debono  \n');
-        completeGitCommand('mario@example.com\r\n');
+        completeGitCommand('  John Doe  \n');
+        completeGitCommand('john.doe@example.com\r\n');
 
         await expect(gitConfigGetUser()).resolves.toEqual({
-            name: '  Mario Debono  ',
-            email: 'mario@example.com',
+            name: '  John Doe  ',
+            email: 'john.doe@example.com',
         });
         expect(mocks.execFile).toHaveBeenNthCalledWith(
             1,
@@ -140,7 +143,7 @@ describe('git.utils', () => {
     });
 
     it('returns empty identity values when reading the email fails', async () => {
-        completeGitCommand('Mario\n');
+        completeGitCommand('John Doe\n');
         completeGitCommand('', new Error('email failed'));
 
         await expect(gitConfigGetUser()).resolves.toEqual({
@@ -148,6 +151,108 @@ describe('git.utils', () => {
             email: '',
         });
         expect(mocks.execFile).toHaveBeenCalledTimes(2);
+    });
+
+    it('reads partial global identity values without logging missing values', async () => {
+        completeGitCommand('John Doe\n');
+        completeGitCommand('', new Error('email is not configured'));
+
+        await expect(gitConfigGetGlobalIdentity()).resolves.toEqual({
+            name: 'John Doe',
+            email: '',
+        });
+        expect(mocks.execFile).toHaveBeenNthCalledWith(
+            1,
+            'git',
+            ['config', '--global', '--get', 'user.name'],
+            { cwd: undefined, windowsHide: true },
+            expect.any(Function),
+        );
+        expect(mocks.execFile).toHaveBeenNthCalledWith(
+            2,
+            'git',
+            ['config', '--global', '--get', 'user.email'],
+            { cwd: undefined, windowsHide: true },
+            expect.any(Function),
+        );
+        expect(mocks.loggerError).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            scope: 'repository' as const,
+            cwd: '/projects/space & symbols',
+            scopeArgs: [] as string[],
+        },
+        {
+            scope: 'global' as const,
+            cwd: undefined,
+            scopeArgs: ['--global'],
+        },
+    ])('sets $scope Git identity sequentially', async (testCase) => {
+        completeGitCommand();
+        completeGitCommand();
+        const name = 'John Doe $(literal)';
+        const email = 'john.doe+test@example.com';
+        const projectPath = '/projects/space & symbols';
+
+        await expect(
+            gitConfigSetIdentity(name, email, testCase.scope, projectPath),
+        ).resolves.toBe(true);
+        expect(mocks.execFile).toHaveBeenNthCalledWith(
+            1,
+            'git',
+            ['config', ...testCase.scopeArgs, 'user.name', name],
+            { cwd: testCase.cwd, windowsHide: true },
+            expect.any(Function),
+        );
+        expect(mocks.execFile).toHaveBeenNthCalledWith(
+            2,
+            'git',
+            ['config', ...testCase.scopeArgs, 'user.email', email],
+            { cwd: testCase.cwd, windowsHide: true },
+            expect.any(Function),
+        );
+    });
+
+    it('stops scoped identity setup when the name write fails', async () => {
+        completeGitCommand('', new Error('name failed'));
+
+        await expect(
+            gitConfigSetIdentity(
+                'John Doe',
+                'john.doe@example.com',
+                'repository',
+                '/projects/demo',
+            ),
+        ).resolves.toBe(false);
+        expect(mocks.execFile).toHaveBeenCalledOnce();
+        expect(mocks.loggerError).toHaveBeenCalledWith(
+            'Failed to set Git identity name',
+        );
+        expect(mocks.loggerError).not.toHaveBeenCalledWith(
+            expect.objectContaining({
+                cmd: expect.stringContaining('John Doe'),
+            }),
+        );
+    });
+
+    it('returns false when the scoped identity email write fails', async () => {
+        completeGitCommand();
+        completeGitCommand('', new Error('email failed'));
+
+        await expect(
+            gitConfigSetIdentity(
+                'John Doe',
+                'john.doe@example.com',
+                'global',
+                '/projects/demo',
+            ),
+        ).resolves.toBe(false);
+        expect(mocks.execFile).toHaveBeenCalledTimes(2);
+        expect(mocks.loggerError).toHaveBeenCalledWith(
+            'Failed to set Git identity email',
+        );
     });
 
     it.each([
@@ -172,10 +277,10 @@ describe('git.utils', () => {
     });
 
     it('returns Git configuration output unchanged', async () => {
-        completeGitCommand('user.name=Mario\ncore.autocrlf=false\n');
+        completeGitCommand('user.name=John Doe\ncore.autocrlf=false\n');
 
         await expect(gitConfig()).resolves.toBe(
-            'user.name=Mario\ncore.autocrlf=false\n',
+            'user.name=John Doe\ncore.autocrlf=false\n',
         );
         expect(mocks.execFile).toHaveBeenCalledWith(
             'git',
@@ -210,8 +315,20 @@ describe('git.utils', () => {
         await expect(gitInit('/projects/demo')).resolves.toBe(false);
     });
 
-    it('runs initial commit commands sequentially in the project cwd', async () => {
+    it('renames an unborn branch to main in the project cwd', async () => {
         completeGitCommand();
+        const projectPath = '/projects/space & symbols';
+
+        await expect(gitRenameBranch(projectPath)).resolves.toBe(true);
+        expect(mocks.execFile).toHaveBeenCalledWith(
+            'git',
+            ['branch', '-m', 'main'],
+            { cwd: projectPath, windowsHide: true },
+            expect.any(Function),
+        );
+    });
+
+    it('runs initial commit commands sequentially in the project cwd', async () => {
         completeGitCommand();
         completeGitCommand();
         const projectPath = '/projects/space & symbols';
@@ -231,19 +348,12 @@ describe('git.utils', () => {
             { cwd: projectPath, windowsHide: true },
             expect.any(Function),
         );
-        expect(mocks.execFile).toHaveBeenNthCalledWith(
-            3,
-            'git',
-            ['branch', '-m', 'main'],
-            { cwd: projectPath, windowsHide: true },
-            expect.any(Function),
-        );
+        expect(mocks.execFile).toHaveBeenCalledTimes(2);
     });
 
     it.each([
         { stage: 'add', commandsBeforeFailure: 0, expectedCalls: 1 },
         { stage: 'commit', commandsBeforeFailure: 1, expectedCalls: 2 },
-        { stage: 'branch', commandsBeforeFailure: 2, expectedCalls: 3 },
     ])(
         'stops initial commit setup when $stage fails',
         async ({ commandsBeforeFailure, expectedCalls }) => {

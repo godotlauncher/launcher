@@ -52,6 +52,25 @@
         "initGit": "Ibda Git Repository",
         "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter"
     },
+    "gitIdentity": {
+        "warningTitle": "L-identità ta' Git hija meħtieġa",
+        "warningMessage": "Git jeħtieġ isem u email biex joħloq l-ewwel commit.",
+        "skipCommit": "Aqbeż l-ewwel commit",
+        "addIdentity": "Żid identità ta' Git",
+        "formTitle": "Żid identità ta' Git",
+        "formMessage": "Agħżel l-identità li Git għandu juża għal dan il-proġett.",
+        "name": "Isem",
+        "nameHelp": "Jinżamm bħala l-isem tal-awtur tal-commit.",
+        "nameRequired": "L-isem huwa meħtieġ",
+        "email": "Email",
+        "emailHelp": "Tinżamm bħala l-email tal-awtur tal-commit.",
+        "emailRequired": "L-email hija meħtieġa",
+        "scope": "Żomm l-identità għal",
+        "repositoryScope": "Dan ir-repository",
+        "globalScope": "Ir-repositories kollha fuq dan il-kompjuter",
+        "back": "Lura",
+        "saveAndCreate": "Żomm u oħloq il-proġett"
+    },
     "buttons": {
         "editNow": "Editja issa",
         "create": "Oħloq Proġett"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Naqas milli jinkiseb id-definizzjoni tal-proġett għal verżjoni: {{version}}",
         "folderNotEmpty": "Folder tal-proġett '{{name}}' diġà jeżisti u mhuwiex vojt, ridt tgħid li żżid proġett eżistenti?",
         "failedCreateFile": "Naqas milli jinħoloq il-fajl tal-proġett: {{error}}",
-        "pathNotDirectory": "Il-perkors magħżul diġà jeżisti u mhux folder"
+        "pathNotDirectory": "Il-perkors magħżul diġà jeżisti u mhux folder",
+        "failedGitInit": "Ma rnexxiex jinbeda r-repository Git",
+        "failedGitBranch": "Ma rnexxiex jinbidel l-isem tal-branch Git għal main",
+        "invalidGitIdentity": "L-isem u l-email ta' Git huma meħtieġa",
+        "failedGitIdentity": "Ma rnexxiex tinżamm l-identità ta' Git",
+        "failedGitCommit": "Ma rnexxiex jinħoloq l-ewwel commit ta' Git"
     }
 }

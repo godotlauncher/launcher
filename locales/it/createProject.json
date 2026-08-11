@@ -52,6 +52,25 @@
         "initGit": "Inizializza repository Git",
         "gitNotInstalled": "Git non è installato su questo computer"
     },
+    "gitIdentity": {
+        "warningTitle": "Identità Git richiesta",
+        "warningMessage": "Git richiede un nome e un indirizzo email per creare il commit iniziale.",
+        "skipCommit": "Salta il commit iniziale",
+        "addIdentity": "Aggiungi identità Git",
+        "formTitle": "Aggiungi identità Git",
+        "formMessage": "Scegli l'identità che Git deve usare per questo progetto.",
+        "name": "Nome",
+        "nameHelp": "Registrato come nome dell'autore del commit.",
+        "nameRequired": "Il nome è obbligatorio",
+        "email": "Email",
+        "emailHelp": "Registrata come email dell'autore del commit.",
+        "emailRequired": "L'email è obbligatoria",
+        "scope": "Salva identità per",
+        "repositoryScope": "Questo repository",
+        "globalScope": "Tutti i repository su questo computer",
+        "back": "Indietro",
+        "saveAndCreate": "Salva e crea progetto"
+    },
     "buttons": {
         "editNow": "Modifica ora",
         "create": "Crea progetto"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Impossibile ottenere la definizione del progetto per la versione: {{version}}",
         "folderNotEmpty": "La cartella del progetto '{{name}}' esiste già e non è vuota, volevi aggiungere un progetto esistente?",
         "failedCreateFile": "Impossibile creare il file di progetto: {{error}}",
-        "pathNotDirectory": "Il percorso selezionato esiste già e non è una cartella"
+        "pathNotDirectory": "Il percorso selezionato esiste già e non è una cartella",
+        "failedGitInit": "Impossibile inizializzare il repository Git",
+        "failedGitBranch": "Impossibile rinominare il branch Git in main",
+        "invalidGitIdentity": "Nome ed email Git sono obbligatori",
+        "failedGitIdentity": "Impossibile salvare l'identità Git",
+        "failedGitCommit": "Impossibile creare il commit Git iniziale"
     }
 }

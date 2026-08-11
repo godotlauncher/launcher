@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
     CodeEditorId,
+    CreateProjectGitOptions,
     CreateProjectResult,
     InstalledRelease,
     RendererType,
@@ -18,7 +19,12 @@ import {
 } from '../constants.js';
 import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
-import { gitAddAndCommit, gitInit } from '../utils/git.utils.js';
+import {
+    gitAddAndCommit,
+    gitConfigSetIdentity,
+    gitInit,
+    gitRenameBranch,
+} from '../utils/git.utils.js';
 import {
     createProjectFile,
     DEFAULT_PROJECT_DEFINITION,
@@ -46,6 +52,7 @@ import { getUserPreferences } from './userPreferences.js';
  * @param withGit - Whether to initialize Git when it is available.
  * @param codeEditorIntegrationService - Service used to configure the code editor.
  * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+ * @param gitOptions - Optional initial commit and identity setup choice.
  * @returns The project creation result.
  */
 export async function createProject(
@@ -56,6 +63,7 @@ export async function createProject(
     withGit: boolean,
     codeEditorIntegrationService: CodeEditorIntegrationService,
     overwriteProjectPath?: string,
+    gitOptions?: CreateProjectGitOptions,
 ): Promise<CreateProjectResult> {
     if (codeEditorId) {
         try {
@@ -202,6 +210,11 @@ export async function createProject(
             release,
         );
 
+        await writeProjectLauncherConfig(projectPath, {
+            release,
+            launcherVersion: app.getVersion(),
+        });
+
         // Add the recommended Git metadata and initialize the repository.
         if (withGit && gitTool) {
             await fs.promises.copyFile(
@@ -212,8 +225,48 @@ export async function createProject(
                 path.resolve(projectResDir, 'default-gitattributes'),
                 path.resolve(projectPath, '.gitattributes'),
             );
-            await gitInit(projectPath);
-            await gitAddAndCommit(projectPath);
+            if (!(await gitInit(projectPath))) {
+                throw new Error(t('createProject:errors.failedGitInit'));
+            }
+            if (!(await gitRenameBranch(projectPath))) {
+                throw new Error(t('createProject:errors.failedGitBranch'));
+            }
+
+            const resolvedGitOptions = gitOptions ?? {
+                initialCommit: 'create',
+            };
+            if (resolvedGitOptions.initialCommit === 'create') {
+                if (resolvedGitOptions.identity) {
+                    const name = resolvedGitOptions.identity.name.trim();
+                    const email = resolvedGitOptions.identity.email.trim();
+                    const { scope } = resolvedGitOptions.identity;
+                    if (
+                        !name ||
+                        !email ||
+                        (scope !== 'repository' && scope !== 'global')
+                    ) {
+                        throw new Error(
+                            t('createProject:errors.invalidGitIdentity'),
+                        );
+                    }
+                    if (
+                        !(await gitConfigSetIdentity(
+                            name,
+                            email,
+                            scope,
+                            projectPath,
+                        ))
+                    ) {
+                        throw new Error(
+                            t('createProject:errors.failedGitIdentity'),
+                        );
+                    }
+                }
+
+                if (!(await gitAddAndCommit(projectPath))) {
+                    throw new Error(t('createProject:errors.failedGitCommit'));
+                }
+            }
         }
 
         let editorSettingsPath = path.resolve(
@@ -273,10 +326,6 @@ export async function createProject(
         if (!projectDetails) {
             throw new Error('Missing project details after creation');
         }
-        await writeProjectLauncherConfig(projectPath, {
-            release: projectDetails.release,
-            launcherVersion: app.getVersion(),
-        });
         await addProjectToList(
             path.resolve(configDir, PROJECTS_FILENAME),
             projectDetails,

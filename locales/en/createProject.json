@@ -52,6 +52,25 @@
         "initGit": "Initialize Git Repository",
         "gitNotInstalled": "Git is not installed on this computer"
     },
+    "gitIdentity": {
+        "warningTitle": "Git identity required",
+        "warningMessage": "Git needs a name and email to create the initial commit.",
+        "skipCommit": "Skip initial commit",
+        "addIdentity": "Add Git identity",
+        "formTitle": "Add Git identity",
+        "formMessage": "Choose the identity Git should use for this project.",
+        "name": "Name",
+        "nameHelp": "Recorded as the commit author name.",
+        "nameRequired": "Name is required",
+        "email": "Email",
+        "emailHelp": "Recorded as the commit author email.",
+        "emailRequired": "Email is required",
+        "scope": "Save identity for",
+        "repositoryScope": "This repository",
+        "globalScope": "All repositories on this computer",
+        "back": "Back",
+        "saveAndCreate": "Save and create project"
+    },
     "buttons": {
         "editNow": "Edit now",
         "create": "Create Project"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "Failed to get project definition for version: {{version}}",
         "folderNotEmpty": "Project folder '{{name}}' already exists and is not empty, did you mean to add an existing project?",
         "failedCreateFile": "Failed to create project file: {{error}}",
-        "pathNotDirectory": "Selected path already exists and is not a folder"
+        "pathNotDirectory": "Selected path already exists and is not a folder",
+        "failedGitInit": "Failed to initialize the Git repository",
+        "failedGitBranch": "Failed to rename the Git branch to main",
+        "invalidGitIdentity": "Git name and email are required",
+        "failedGitIdentity": "Failed to save the Git identity",
+        "failedGitCommit": "Failed to create the initial Git commit"
     }
 }

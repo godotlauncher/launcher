@@ -52,6 +52,25 @@
         "initGit": "Gitリポジトリを初期化",
         "gitNotInstalled": "Gitがこのコンピュータにインストールされていません"
     },
+    "gitIdentity": {
+        "warningTitle": "Git IDが必要です",
+        "warningMessage": "最初のコミットを作成するには、Gitの名前とメールアドレスが必要です。",
+        "skipCommit": "最初のコミットをスキップ",
+        "addIdentity": "Git IDを追加",
+        "formTitle": "Git IDを追加",
+        "formMessage": "このプロジェクトでGitが使用するIDを選択してください。",
+        "name": "名前",
+        "nameHelp": "コミット作成者の名前として記録されます。",
+        "nameRequired": "名前は必須です",
+        "email": "メールアドレス",
+        "emailHelp": "コミット作成者のメールアドレスとして記録されます。",
+        "emailRequired": "メールアドレスは必須です",
+        "scope": "IDの保存先",
+        "repositoryScope": "このリポジトリ",
+        "globalScope": "このコンピュータ上のすべてのリポジトリ",
+        "back": "戻る",
+        "saveAndCreate": "保存してプロジェクトを作成"
+    },
     "buttons": {
         "editNow": "今すぐ編集",
         "create": "プロジェクトを作成"
@@ -61,6 +80,11 @@
         "failedProjectDefinition": "バージョンのプロジェクト定義の取得に失敗しました：{{version}}",
         "folderNotEmpty": "プロジェクトフォルダ '{{name}}' は既に存在し、空ではありません。既存のプロジェクトを追加するつもりでしたか？",
         "failedCreateFile": "プロジェクトファイルの作成に失敗しました：{{error}}",
-        "pathNotDirectory": "選択したパスは既に存在し、フォルダーではありません"
+        "pathNotDirectory": "選択したパスは既に存在し、フォルダーではありません",
+        "failedGitInit": "Gitリポジトリを初期化できませんでした",
+        "failedGitBranch": "Gitブランチをmainに変更できませんでした",
+        "invalidGitIdentity": "Gitの名前とメールアドレスが必要です",
+        "failedGitIdentity": "Git IDを保存できませんでした",
+        "failedGitCommit": "最初のGitコミットを作成できませんでした"
     }
 }
