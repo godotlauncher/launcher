@@ -3,7 +3,7 @@
     "productName": "Godot Launcher",
     "desktopName": "org.godotlauncher.launcher.desktop",
     "private": true,
-    "version": "1.10.0",
+    "version": "1.11.0-beta.1",
     "packageManager": "npm@12.0.2",
     "description": "Godot Launcher is the companion app for managing Godot projects with per-project editor settings.",
     "keywords": [
