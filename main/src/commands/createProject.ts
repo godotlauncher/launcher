@@ -36,6 +36,18 @@ import { addProjectToList } from '../utils/projects.utils.js';
 import { getInstalledTools } from './installedTools.js';
 import { getUserPreferences } from './userPreferences.js';
 
+/**
+ * Creates a project and configures its selected editor integrations.
+ *
+ * @param projectName - Display name for the new project.
+ * @param release - Godot editor release assigned to the project.
+ * @param renderer - Renderer selected for the project.
+ * @param codeEditorId - Optional code editor integration to apply.
+ * @param withGit - Whether to initialize Git when it is available.
+ * @param codeEditorIntegrationService - Service used to configure the code editor.
+ * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+ * @returns The project creation result.
+ */
 export async function createProject(
     projectName: string,
     release: InstalledRelease,
@@ -190,11 +202,15 @@ export async function createProject(
             release,
         );
 
-        // add gitignore and init git
+        // Add the recommended Git metadata and initialize the repository.
         if (withGit && gitTool) {
             await fs.promises.copyFile(
                 path.resolve(projectResDir, 'default_gitignore'),
                 path.resolve(projectPath, '.gitignore'),
+            );
+            await fs.promises.copyFile(
+                path.resolve(projectResDir, 'default-gitattributes'),
+                path.resolve(projectPath, '.gitattributes'),
             );
             await gitInit(projectPath);
             await gitAddAndCommit(projectPath);

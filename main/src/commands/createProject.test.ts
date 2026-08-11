@@ -127,7 +127,10 @@ describe('createProject', () => {
         fsMocks.existsSync.mockReturnValue(false);
         fsMocks.promises.mkdir.mockResolvedValue(undefined);
         fsMocks.promises.writeFile.mockResolvedValue(undefined);
+        fsMocks.promises.copyFile.mockResolvedValue(undefined);
         fsMocks.promises.rm.mockResolvedValue(undefined);
+        gitMocks.gitInit.mockResolvedValue(true);
+        gitMocks.gitAddAndCommit.mockResolvedValue(true);
         installedToolsMocks.getInstalledTools.mockResolvedValue([]);
         userPreferencesMocks.getUserPreferences.mockResolvedValue({
             projects_location: '/projects',
@@ -272,6 +275,82 @@ describe('createProject', () => {
         expect(result.projectDetails?.editor_settings_file).toBe(
             '/configured/editor_settings.tres',
         );
+    });
+
+    it('adds Git metadata before initializing and committing', async () => {
+        installedToolsMocks.getInstalledTools.mockResolvedValue([
+            {
+                name: 'Git',
+                path: '/usr/bin/git',
+                version: 'git version 2.54.0',
+            },
+        ]);
+
+        const result = await createProject(
+            'Git Project',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+        );
+
+        const projectPath = path.resolve('/projects/Git-Project');
+        expect(result.success).toBe(true);
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            1,
+            path.resolve('/assets/project_resources/default_gitignore'),
+            path.resolve(projectPath, '.gitignore'),
+        );
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            2,
+            path.resolve('/assets/project_resources/default-gitattributes'),
+            path.resolve(projectPath, '.gitattributes'),
+        );
+        expect(gitMocks.gitInit).toHaveBeenCalledWith(projectPath);
+        expect(gitMocks.gitAddAndCommit).toHaveBeenCalledWith(projectPath);
+
+        const copyCallOrders =
+            fsMocks.promises.copyFile.mock.invocationCallOrder;
+        const initCallOrder = gitMocks.gitInit.mock.invocationCallOrder[0];
+        const commitCallOrder =
+            gitMocks.gitAddAndCommit.mock.invocationCallOrder[0];
+        expect(copyCallOrders[0]).toBeLessThan(initCallOrder);
+        expect(copyCallOrders[1]).toBeLessThan(initCallOrder);
+        expect(initCallOrder).toBeLessThan(commitCallOrder);
+    });
+
+    it('does not add Git metadata when Git is disabled', async () => {
+        const result = await createProject(
+            'No Git Project',
+            release,
+            'FORWARD_PLUS',
+            null,
+            false,
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
+        expect(gitMocks.gitInit).not.toHaveBeenCalled();
+        expect(gitMocks.gitAddAndCommit).not.toHaveBeenCalled();
+    });
+
+    it('does not add Git metadata when Git is unavailable', async () => {
+        const result = await createProject(
+            'Unavailable Git Project',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.projectDetails?.withGit).toBe(false);
+        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
+        expect(gitMocks.gitInit).not.toHaveBeenCalled();
+        expect(gitMocks.gitAddAndCommit).not.toHaveBeenCalled();
     });
 
     it.each(['disabled', 'unavailable'])(
