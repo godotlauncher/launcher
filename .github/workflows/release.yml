@@ -308,7 +308,7 @@ jobs:
           const crypto = require('crypto');
           const yaml = require('js-yaml');
           const { createReadStream } = require('fs');
-          const { executeAppBuilderAsJson } = require('app-builder-lib/out/util/appBuilder');
+          const { buildBlockMap } = require('app-builder-lib/out/targets/blockmap/blockmap');
 
           function hashFile(file) {
             return new Promise((resolve, reject) => {
@@ -382,7 +382,7 @@ jobs:
             for (const name of orderFromExisting(existing, artifacts)) {
               const artifactPath = path.join(distDir, name);
               const blockMapPath = `${artifactPath}.blockmap`;
-              await executeAppBuilderAsJson(['blockmap', '--input', artifactPath, '--output', blockMapPath]);
+              await buildBlockMap(artifactPath, 'gzip', blockMapPath);
 
               const [artifactStat, sha512] = await Promise.all([
                 fs.stat(artifactPath),
