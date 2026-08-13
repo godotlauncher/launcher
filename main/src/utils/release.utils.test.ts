@@ -86,6 +86,12 @@ vi.mock('../i18n/index.js', () => ({
                 return `localized download failed: ${options?.error}`;
             case 'installEditor:errors.downloadFailedUnknown':
                 return 'localized download failed unknown';
+            case 'installEditor:errors.downloadAssetNotFound':
+                return 'localized download asset not found';
+            case 'installEditor:errors.downloadRateLimited':
+                return 'localized download rate limited';
+            case 'installEditor:errors.downloadServiceUnavailable':
+                return 'localized download service unavailable';
             case 'installEditor:errors.downloadHttpError':
                 return `localized download http error: ${options?.status}`;
             case 'installEditor:errors.downloadEmptyResponse':
@@ -477,10 +483,47 @@ suite('Releases Utils', () => {
             ).rejects.toThrow('localized download http error: Network Error');
         });
 
+        test.each([
+            [404, 'localized download asset not found'],
+            [429, 'localized download rate limited'],
+            [503, 'localized download service unavailable'],
+        ])(
+            'should map HTTP %i download failures to a useful message',
+            async (status, expectedMessage) => {
+                vi.mocked(global.fetch).mockResolvedValueOnce({
+                    ok: false,
+                    status,
+                    statusText: 'Request failed',
+                    headers: {
+                        get: vi.fn(() => null),
+                    },
+                    body: null,
+                } as Response);
+
+                await expect(
+                    downloadReleaseAsset(mockAsset, downloadPath),
+                ).rejects.toThrow(expectedMessage);
+            },
+        );
+
         test('should show a retryable error if the download is interrupted before a response', async () => {
             vi.mocked(global.fetch).mockRejectedValueOnce(
                 new TypeError('terminated'),
             );
+
+            await expect(
+                downloadReleaseAsset(mockAsset, downloadPath),
+            ).rejects.toThrow('localized download interrupted');
+        });
+
+        test('should show a retryable error when fetch wraps a closed socket', async () => {
+            const socketError = Object.assign(new Error('other side closed'), {
+                code: 'UND_ERR_SOCKET',
+            });
+            const fetchError = new TypeError('fetch failed', {
+                cause: socketError,
+            });
+            vi.mocked(global.fetch).mockRejectedValueOnce(fetchError);
 
             await expect(
                 downloadReleaseAsset(mockAsset, downloadPath),

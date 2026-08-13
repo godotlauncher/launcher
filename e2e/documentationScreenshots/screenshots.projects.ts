@@ -643,9 +643,17 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             });
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
-            await expect(
-                page.getByText('Archive Prototype', { exact: true }),
-            ).toBeVisible({ timeout: 10000 });
+            const missingEditorProject = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText('Archive Prototype', { exact: true }),
+                })
+                .first();
+            await expect(missingEditorProject).toBeVisible({ timeout: 10000 });
+            await missingEditorProject.evaluate((element) =>
+                element.scrollIntoView({ block: 'center', inline: 'nearest' }),
+            );
+            await expect(missingEditorProject).toBeInViewport({ ratio: 1 });
             await page.waitForTimeout(600);
         },
         cleanup: async (
