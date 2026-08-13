@@ -8,7 +8,11 @@ Spend less time configuring your environment and more time creating amazing game
 ✅ **Cross-platform support, available on Windows, MacOS, and Linux.**\
 ✅ **Designed for modern Godot workflows, focusing on v4.0 and later.**
 
-![Screen shot of the project view with menu open](docs/screenshots/screen_projects_view_dark.webp)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/animations/create-project/create-project-anim_dark.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/animations/create-project/create-project-anim_light.gif">
+  <img alt="Creating a Godot project with Git and a code editor" src="docs/animations/create-project/create-project-anim_light.gif">
+</picture>
 
 ## How to Get Godot Launcher
 
