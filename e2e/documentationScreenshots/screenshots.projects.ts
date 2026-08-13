@@ -42,7 +42,8 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_view',
         description: 'Projects view',
-        viewportHeight: 960,
+        viewportHeight: 600,
+        fullPage: false,
         navigate: async (page: ElectronPage) => {
             await page.getByTestId('btnInstalls').click();
             await page.getByTestId('btnProjects').click();
@@ -64,7 +65,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             ).toBeVisible({ timeout: 10000 });
             await expect(
                 recentsSection.getByText('My Other Game', { exact: true }),
-            ).toBeInViewport({ timeout: 10000 });
+            ).toBeAttached({ timeout: 10000 });
             await page.waitForTimeout(600);
         },
     },

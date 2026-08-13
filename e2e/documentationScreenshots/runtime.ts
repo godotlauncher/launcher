@@ -2,7 +2,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type ElectronApplication, expect } from '@playwright/test';
+import {
+    type ElectronApplication,
+    expect,
+    type TestInfo,
+} from '@playwright/test';
 import type {
     AddProjectOptions,
     AppBridge,
@@ -1037,11 +1041,21 @@ export async function setScreenshotViewport(
     });
 }
 
+/**
+ * Captures one canonical documentation screenshot and converts it to WebP.
+ *
+ * @param page - Electron page containing the prepared screenshot state.
+ * @param testInfo - Playwright test metadata used to attach the output.
+ * @param baseName - Filename without its extension.
+ * @param description - Description shown for the Playwright attachment.
+ * @param fullPage - Whether to capture all scrollable content or only the viewport.
+ */
 export async function captureScreenshot(
     page: ElectronPage,
-    testInfo: any,
+    testInfo: TestInfo,
     baseName: string,
     description: string,
+    fullPage = true,
 ) {
     const outputDir = canonicalScreensDir;
     const pngPath = path.join(outputDir, `${baseName}.png`);
@@ -1052,7 +1066,7 @@ export async function captureScreenshot(
 
     await page.screenshot({
         path: pngPath,
-        fullPage: true,
+        fullPage,
     });
 
     await sharp(pngPath).webp({ lossless: true }).toFile(webpPath);
