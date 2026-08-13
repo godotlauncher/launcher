@@ -24,11 +24,21 @@ import type {
 } from './documentationScreenshots/types';
 
 process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS = '1';
+const requestedScreenshot =
+    process.env.GODOT_LAUNCHER_DOCS_SCREENSHOT?.trim();
 
 test.describe.configure({ mode: 'serial' });
 
 for (const theme of THEMES) {
     for (const group of SCREENSHOT_GROUPS) {
+        const screenshots = requestedScreenshot
+            ? group.screenshots.filter(
+                  (screenshot) => screenshot.fileBase === requestedScreenshot,
+              )
+            : group.screenshots;
+        if (screenshots.length === 0) {
+            continue;
+        }
         test(
             `captures ${group.name} documentation screenshots in ${theme.description}`,
             { tag: '@screenshots' },
@@ -42,7 +52,7 @@ for (const theme of THEMES) {
                         electronApp,
                         testInfo,
                         theme,
-                        group.screenshots,
+                        screenshots,
                     );
                 });
             },
@@ -173,6 +183,7 @@ async function captureScreenshotsForGroup(
             testInfo,
             themedFileName,
             themedDescription,
+            shot.fullPage,
         );
         if (shot.cleanup) {
             await shot.cleanup(mainPage, electronApp, theme);

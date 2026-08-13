@@ -39,6 +39,7 @@ export type ScreenshotConfig = {
     fileBase: string;
     description: string;
     viewportHeight?: number;
+    fullPage?: boolean;
     navigate: (
         page: ElectronPage,
         electronApp: ElectronApplication,
