@@ -8,10 +8,12 @@ body:
       value: |
         When submitting an issue or bug report, please follow these guidelines to help us address it more efficiently:
         
-        1. **Descriptive Title** – Keep it clear and concise.
-        2. **One Bug Per Issue** – Submit multiple reports separately if needed.
-        3. **Update First** – Confirm you’re using the latest version.
-        4. **Search Before Posting** – Check [open issues](https://github.com/godotlauncher/launcher/issues) and [closed issues](https://github.com/godotlauncher/launcher/issues?q=is%3Aissue+is%3Aclosed) first.
+        1. **Descriptive Title** - Keep it clear and concise.
+        2. **One Bug Per Issue** - Submit multiple reports separately if needed.
+        3. **Update First** - Confirm you're using the latest version.
+        4. **Search Before Posting** - Check [open issues](https://github.com/godotlauncher/launcher/issues) and [closed issues](https://github.com/godotlauncher/launcher/issues?q=is%3Aissue+is%3Aclosed) first.
+
+        **Security vulnerabilities:** Do not report them through this public form. Follow the [security policy](https://github.com/godotlauncher/launcher/security/policy) instead.
 
   - type: textarea
     id: description

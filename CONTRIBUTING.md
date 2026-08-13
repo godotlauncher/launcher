@@ -17,8 +17,11 @@ The Godot Launcher website has a dedicated [contributing section](https://godotl
 > [!IMPORTANT]  
 > Before creating a new bug report, please check the [open issues](https://github.com/godotlauncher/launcher/issues) and [closed issues](https://github.com/godotlauncher/launcher/issues?q=is%3Aissue%20state%3Aclosed) to see if it has already been reported.
 
-Submit bug reports [here](https://github.com/godotlauncher/launcher/issues/new?template=bug_report.md).  
+Submit bug reports [here](https://github.com/godotlauncher/launcher/issues/new?template=bug_report.yaml).
 Please follow the template instructions.
+
+> [!CAUTION]
+> Do not report security vulnerabilities through public issues. Follow the [security policy](SECURITY.md) instead.
 
 - Submit a **separate bug report for each issue** you encounter.  
 - Verify that the bug can be reproduced on the latest release. You can find all releases in the [GitHub Releases](https://github.com/godotlauncher/launcher/releases).  
@@ -31,8 +34,12 @@ Please follow the template instructions.
 > [!IMPORTANT]  
 > Before creating a new feature request, please check the [open issues](https://github.com/godotlauncher/launcher/issues) and [closed issues](https://github.com/godotlauncher/launcher/issues?q=is%3Aissue%20state%3Aclosed) to see if it has already been reported.
 
-Submit feature requests [here](https://github.com/godotlauncher/launcher/issues/new?template=feature_request.md).  
+Submit feature requests [here](https://github.com/godotlauncher/launcher/issues/new?template=feature_request.yaml).
 Please follow the template instructions.
+
+Opening a feature request starts public discussion. It does not place the work
+on the roadmap or commit it to a release. Maintainers may track roadmap work
+without a corresponding issue when public discussion is not needed.
 
 - **Create one proposal per feature** to keep discussions focused.  
 - If a feature feels too large or complex, discuss it first on [Discord](http://discord.gg/Ju9jkFJGvz).  

@@ -6,7 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Got an idea to improve Godot Launcher? Awesome — fill this out to help us understand and prioritize it.
+        Got an idea to improve Godot Launcher? Fill this out to help us understand and prioritize it.
+
+        A feature request starts a public discussion. It does not place the proposal on the roadmap or commit it to a release.
 
   - type: textarea
     id: problem
