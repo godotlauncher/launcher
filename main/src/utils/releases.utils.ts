@@ -149,21 +149,87 @@ export type DownloadReleaseAssetOptions = {
 };
 
 function getDownloadErrorMessage(error: unknown): string {
-    if (error instanceof Error) {
-        if (
-            error.name === 'AbortError' ||
-            error.message === 'terminated' ||
-            error.message.includes('terminated')
-        ) {
-            return t('installEditor:errors.downloadInterrupted');
-        }
+    if (isInterruptedDownloadError(error)) {
+        return t('installEditor:errors.downloadInterrupted');
+    }
 
+    if (error instanceof Error) {
         return t('installEditor:errors.downloadFailed', {
             error: error.message,
         });
     }
 
     return t('installEditor:errors.downloadFailedUnknown');
+}
+
+/**
+ * Checks whether an error or one of its causes describes an interrupted
+ * download connection.
+ *
+ * @param error - The error returned by fetch or the download stream.
+ * @returns Whether the user can retry the download after an interruption.
+ */
+function isInterruptedDownloadError(error: unknown): boolean {
+    const visited = new Set<unknown>();
+    let current = error;
+
+    while (current instanceof Error && !visited.has(current)) {
+        visited.add(current);
+        const message = current.message.toLowerCase();
+        const code = getErrorCode(current);
+
+        if (
+            current.name === 'AbortError' ||
+            message.includes('terminated') ||
+            message.includes('other side closed') ||
+            code === 'UND_ERR_SOCKET'
+        ) {
+            return true;
+        }
+
+        current = current.cause;
+    }
+
+    return false;
+}
+
+/**
+ * Reads an optional error code without depending on an Undici-specific type.
+ *
+ * @param error - An error that may include a code property.
+ * @returns The error code when it is a string.
+ */
+function getErrorCode(error: Error): string | undefined {
+    const code = (error as Error & { code?: unknown }).code;
+    return typeof code === 'string' ? code : undefined;
+}
+
+/**
+ * Returns a user-facing message for a failed release-asset response.
+ *
+ * @param status - The HTTP response status.
+ * @param statusText - The HTTP response status text.
+ * @returns A localized explanation suitable for the failed download.
+ */
+function getDownloadHttpErrorMessage(
+    status: number,
+    statusText: string,
+): string {
+    if (status === 404) {
+        return t('installEditor:errors.downloadAssetNotFound');
+    }
+
+    if (status === 429) {
+        return t('installEditor:errors.downloadRateLimited');
+    }
+
+    if (status >= 500 && status <= 599) {
+        return t('installEditor:errors.downloadServiceUnavailable');
+    }
+
+    return t('installEditor:errors.downloadHttpError', {
+        status: statusText || String(status),
+    });
 }
 
 type ReleaseSummaryCache = {
@@ -207,9 +273,7 @@ export async function downloadReleaseAsset(
     if (!res.ok) {
         clearIdleTimeout();
         throw new Error(
-            t('installEditor:errors.downloadHttpError', {
-                status: res.statusText || String(res.status),
-            }),
+            getDownloadHttpErrorMessage(res.status, res.statusText),
         );
     }
     if (!res.body) {
