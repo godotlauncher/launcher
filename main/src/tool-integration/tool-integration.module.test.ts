@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { createApplication, Injectable, Module } from '@mariodebono/di';
 import { ConfigModule, ConfigService } from '@mariodebono/di-config';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { AppConfig } from '../config/index.js';
 import {
     TOOL_INTEGRATION_MODULE_OPTIONS,
@@ -9,13 +9,16 @@ import {
 } from './tool-integration.constants.js';
 import { ToolIntegrationModule } from './tool-integration.module.js';
 import { ToolIntegrationRegistry } from './tool-integration.registry.js';
-import { ToolIntegrationService } from './tool-integration.service.js';
 import type {
     ToolInstallation,
     ToolIntegration,
     ToolIntegrationModuleOptions,
     ToolSettings,
 } from './tool-integration.types.js';
+
+vi.mock('../utils/platform.utils.js', () => ({
+    findExecutable: vi.fn(),
+}));
 
 @Injectable({ tags: [TOOL_INTEGRATION_TAG] })
 class LaterToolIntegration implements ToolIntegration {
@@ -81,7 +84,7 @@ class DuplicateToolIntegration extends LaterToolIntegration {
 class DuplicateToolModule {}
 
 describe('ToolIntegrationModule', () => {
-    it('boots without production providers', async () => {
+    it('boots with the production Git provider', async () => {
         const app = await createApplication(
             ToolIntegrationModule.forRoot({
                 directory: '/config',
@@ -90,8 +93,10 @@ describe('ToolIntegrationModule', () => {
             { logger: false },
         );
 
-        const service = app.get(ToolIntegrationService);
-        await expect(service.list()).resolves.toEqual([]);
+        const registry = app.get(ToolIntegrationRegistry);
+        expect(
+            registry.list().map((integration) => integration.metadata.id),
+        ).toEqual(['git']);
 
         await app.destroyAsync();
     });
@@ -104,7 +109,7 @@ describe('ToolIntegrationModule', () => {
 
         expect(
             integrations.map((integration) => integration.metadata.id),
-        ).toEqual(['earlier', 'later']);
+        ).toEqual(['earlier', 'later', 'git']);
         await app.destroyAsync();
     });
 

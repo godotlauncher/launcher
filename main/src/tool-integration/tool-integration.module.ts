@@ -5,6 +5,7 @@ import {
 } from '@mariodebono/di';
 import { JsonStoreModule } from '../json-store/json-store.module.js';
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
+import { GitToolIntegration } from './integrations/git/git-tool.integration.js';
 import { ToolInstallationCache } from './tool-installation.cache.js';
 import { TOOL_INTEGRATION_MODULE_OPTIONS } from './tool-integration.constants.js';
 import { ToolIntegrationRegistry } from './tool-integration.registry.js';
@@ -33,6 +34,7 @@ type ToolIntegrationModuleAsyncOptions = Pick<
                 options: ToolIntegrationModuleOptions,
             ) => new ToolIntegrationStore(coordinator, options),
         },
+        GitToolIntegration,
         ToolInstallationCache,
         ToolProcessExecutor,
         ToolIntegrationService,

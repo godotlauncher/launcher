@@ -13,9 +13,9 @@ import type {
 @Injectable()
 export class ToolProcessExecutor {
     /**
-     * Executes an exact validated tool command without invoking a shell.
+     * Executes an exact tool command without invoking a shell.
      *
-     * @param installation - Validated executable path and prefix arguments.
+     * @param installation - Executable path and prefix arguments to run.
      * @param request - Operation-specific arguments and process options.
      * @returns Structured process output and failure state.
      */
