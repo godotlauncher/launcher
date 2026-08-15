@@ -36,6 +36,11 @@ type CachedEntry = {
     needsPersistence?: boolean;
 };
 
+type LoadedValue<T> = {
+    value: T;
+    needsPersistence: boolean;
+};
+
 const storeCache = new Map<string, CachedEntry>();
 const operationQueue = new Map<string, Promise<void>>();
 
@@ -96,6 +101,12 @@ export type JsonStore<T> = {
     clearCache(): Promise<void>;
 };
 
+/**
+ * Creates a cached JSON store with serialized writes.
+ *
+ * @param options - Paths, defaults, and serialization rules for the store.
+ * @returns The configured JSON store.
+ */
 export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
     const parse =
         options.parse ?? (async (raw: string) => JSON.parse(raw) as T);
@@ -122,24 +133,48 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
         return cloneJson(normalized);
     }
 
-    async function readFromDisk(path: string): Promise<T> {
+    /**
+     * Reads a value or recovers it through the configured store policy.
+     *
+     * @param path - Store file path to read.
+     * @returns The loaded value and whether a later write must repair the file.
+     */
+    async function readFromDisk(path: string): Promise<LoadedValue<T>> {
         if (!fs.existsSync(path)) {
-            return getDefault();
+            return {
+                value: await getDefault(),
+                needsPersistence: true,
+            };
         }
 
         let data: string | undefined;
         try {
             data = await fs.promises.readFile(path, 'utf-8');
+            if (!data.trim()) {
+                return {
+                    value: await getDefault(),
+                    needsPersistence: true,
+                };
+            }
             const parsed = await parse(data);
-            return cloneJson(parsed);
+            return {
+                value: cloneJson(parsed),
+                needsPersistence: false,
+            };
         } catch (error) {
             if (data !== undefined && options.onParseError) {
                 const recovered = await options.onParseError(error, data);
-                return cloneJson(recovered);
+                return {
+                    value: cloneJson(recovered),
+                    needsPersistence: true,
+                };
             }
 
             logger.error(`Failed to read JSON store at ${path}`, error);
-            return getDefault();
+            return {
+                value: await getDefault(),
+                needsPersistence: true,
+            };
         }
     }
 
@@ -153,20 +188,27 @@ export function createJsonStore<T>(options: JsonStoreOptions<T>): JsonStore<T> {
         };
     }
 
+    /**
+     * Loads and normalizes a store value into the shared cache.
+     *
+     * @param path - Store file path to load.
+     * @returns A defensive snapshot of the cached value.
+     */
     async function loadValue(path: string): Promise<JsonStoreSnapshot<T>> {
         const cached = storeCache.get(path);
         if (cached) {
             return snapshotFromCache(path, cached);
         }
 
-        const fromDisk = await readFromDisk(path);
-        const normalized = await normalizeValue(fromDisk);
+        const loaded = await readFromDisk(path);
+        const normalized = await normalizeValue(loaded.value);
         const cachedValue = cloneJson(normalized);
         const hash = hashJson(cachedValue);
         const entry = {
             value: cachedValue,
             hash,
-            needsPersistence: hashJson(fromDisk) !== hash,
+            needsPersistence:
+                loaded.needsPersistence || hashJson(loaded.value) !== hash,
         };
         storeCache.set(path, entry);
         return snapshotFromCache(path, entry);

@@ -33,6 +33,24 @@ describe('ToolIntegrationStore', () => {
         });
     });
 
+    it('loads defaults from a whitespace-only store and repairs it on update', async () => {
+        const storePath = await createStorePath();
+        await fs.writeFile(storePath, '  \n', 'utf-8');
+        const store = createStore(storePath);
+
+        await expect(store.get('git')).resolves.toEqual({
+            enabled: true,
+            executablePathOverride: null,
+            executableArgsOverride: null,
+        });
+
+        await store.update('git', { enabled: false });
+
+        await expect(fs.readFile(storePath, 'utf-8')).resolves.toContain(
+            '"schemaVersion": 1',
+        );
+    });
+
     it('updates one tool without replacing other tool records', async () => {
         const storePath = await createStorePath();
         const store = createStore(storePath);

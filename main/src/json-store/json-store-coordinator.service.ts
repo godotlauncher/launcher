@@ -150,14 +150,14 @@ export class JsonStoreCoordinatorService {
         }
 
         const raw = await this.fileAdapter.read(filePath);
-        const parsed =
-            raw === undefined
-                ? await definition.defaultValue()
-                : await (definition.parse ?? defaultParse<T>)(raw);
+        const hasStoredValue = raw !== undefined && raw.trim().length > 0;
+        const parsed = hasStoredValue
+            ? await (definition.parse ?? defaultParse<T>)(raw)
+            : await definition.defaultValue();
         const normalized = await this.normalize(definition, parsed);
         const entry = createEntry(
             normalized,
-            raw === undefined || versionOf(parsed) !== versionOf(normalized),
+            !hasStoredValue || versionOf(parsed) !== versionOf(normalized),
         );
         this.cache.set(filePath, entry);
         return snapshot<T>(entry);

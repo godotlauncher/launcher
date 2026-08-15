@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { dialog } from 'electron';
 import {
     afterEach,
     beforeEach,
@@ -105,6 +106,7 @@ suite('prefs.util', (_test) => {
     afterEach(() => {
         __resetCurrentAppConfigForTesting();
         __resetPrefsCacheForTesting();
+        vi.clearAllMocks();
     });
     describe('should be able to get default data and config locations for Windows', () => {
         beforeEach(() => {
@@ -308,6 +310,18 @@ suite('prefs.util', (_test) => {
 
         expect(fsMock.existsSync).toBeCalledWith(prefsPath);
         expect(prefs).toEqual({ a: 1 });
+    });
+
+    it('should read default prefs from an empty file without a parse error dialog', async () => {
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce('  \n');
+
+        const prefs = await readPrefsFromDisk('/home/user/.godot/prefs.json', {
+            a: 1,
+        });
+
+        expect(prefs).toEqual({ a: 1 });
+        expect(dialog.showMessageBox).not.toHaveBeenCalled();
     });
 
     it('should write prefs to disk', async () => {
