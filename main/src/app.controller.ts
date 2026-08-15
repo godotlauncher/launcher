@@ -85,8 +85,9 @@ import { refreshMenu } from './helpers/menu.helper.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { GitService } from './tool-integration/integrations/git/git.service.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
-import { gitConfigGetGlobalIdentity } from './utils/git.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { setAutoCheckUpdates } from './utils/prefs.utils.js';
 import { isDev } from './utils.js';
@@ -103,12 +104,14 @@ export class AppController implements AppBridge {
      * @param i18nService - Main-process localization service.
      * @param appLifecycleService - Application lifecycle coordinator.
      * @param codeEditorIntegrationService - Code editor integration facade.
+     * @param gitService - Typed Git command service.
      * @param trayAvailabilityService - System tray availability service.
      */
     constructor(
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly gitService: GitService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
     @AppHandler('getUserPreferences')
@@ -265,16 +268,6 @@ export class AppController implements AppBridge {
     }
 
     /**
-     * Gets independently configured global Git identity values.
-     *
-     * @returns The global Git name and email, including partial identity.
-     */
-    @AppHandler('getGlobalGitIdentity')
-    getGlobalGitIdentity() {
-        return gitConfigGetGlobalIdentity();
-    }
-
-    /**
      * Creates a project with the selected editor and Git setup.
      *
      * @param name - Display name for the new project.
@@ -378,7 +371,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('initializeProjectGit')
     initializeProjectGit(project: ProjectDetails) {
-        return initializeProjectGit(project);
+        return initializeProjectGit(project, this.gitService);
     }
 
     @AppHandler('exportProjectEditorSettings')

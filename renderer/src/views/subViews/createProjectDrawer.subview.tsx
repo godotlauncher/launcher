@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
+import { useGit } from '../../hooks/git.hook';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
@@ -95,6 +96,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const { installedReleases, downloadingReleases } = useRelease();
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
+    const { getGlobalIdentity } = useGit();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
     const { preferences, platform } = usePreferences();
@@ -298,7 +300,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setCheckingGitIdentity(true);
         let identity = { name: '', email: '' };
         try {
-            identity = await appBridge.getGlobalGitIdentity();
+            identity = await getGlobalIdentity();
         } catch {
             identity = { name: '', email: '' };
         } finally {

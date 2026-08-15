@@ -4,6 +4,7 @@ import {
     codeEditorIntegrationBridge,
     editorCatalogBridge,
     getPathForFile,
+    gitBridge,
     subscribeAppEvent,
     toolIntegrationBridge,
 } from './bridge.js';
@@ -35,6 +36,7 @@ type TestElectronApi = {
     'editorCatalog.getCatalog': () => Promise<unknown>;
     'editorCatalog.getReleaseById': (id: string) => Promise<unknown>;
     'editorCatalog.refreshCatalog': () => Promise<unknown>;
+    'git.getGlobalIdentity': () => Promise<unknown>;
     'toolIntegration.listIntegrations': () => Promise<unknown[]>;
     'toolIntegration.rescanIntegrations': () => Promise<unknown[]>;
 };
@@ -59,6 +61,10 @@ describe('renderer bridge', () => {
     const getCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
     const getReleaseById = vi.fn(async () => null);
     const refreshCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
+    const getGlobalIdentity = vi.fn(async () => ({
+        name: 'Mario',
+        email: 'mario@example.com',
+    }));
     const listToolIntegrations = vi.fn(async () => []);
     const rescanToolIntegrations = vi.fn(async () => []);
     const unsubscribe = vi.fn();
@@ -85,6 +91,7 @@ describe('renderer bridge', () => {
             'editorCatalog.getCatalog': getCatalog,
             'editorCatalog.getReleaseById': getReleaseById,
             'editorCatalog.refreshCatalog': refreshCatalog,
+            'git.getGlobalIdentity': getGlobalIdentity,
             'toolIntegration.listIntegrations': listToolIntegrations,
             'toolIntegration.rescanIntegrations': rescanToolIntegrations,
             subscribeProjects: (listener) => {
@@ -164,6 +171,15 @@ describe('renderer bridge', () => {
 
         expect(listToolIntegrations).toHaveBeenCalledOnce();
         expect(rescanToolIntegrations).toHaveBeenCalledOnce();
+    });
+
+    it('delegates through the Git namespace', async () => {
+        await expect(gitBridge.getGlobalIdentity()).resolves.toEqual({
+            name: 'Mario',
+            email: 'mario@example.com',
+        });
+
+        expect(getGlobalIdentity).toHaveBeenCalledOnce();
     });
 
     it('subscribes and unsubscribes from application events', () => {

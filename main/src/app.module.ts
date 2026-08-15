@@ -25,6 +25,7 @@ import {
 } from './i18n/config.js';
 import { getLocalesPath } from './pathResolver.js';
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
+import { GitModule } from './tool-integration/integrations/git/git.module.js';
 import { ToolIntegrationModule } from './tool-integration/tool-integration.module.js';
 
 @Module({
@@ -64,6 +65,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
                 fileName: TOOL_INTEGRATIONS_FILENAME,
             }),
         }),
+        GitModule,
     ],
     providers: [AppController, AppLifecycleService, TrayAvailabilityService],
 })

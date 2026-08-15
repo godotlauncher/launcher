@@ -11,6 +11,7 @@ import type {
     ToolSettings,
 } from '../../tool-integration.types.js';
 import { ToolProcessExecutor } from '../../tool-process.executor.js';
+import { GitModule } from './git.module.js';
 import { GIT_TOOL_VALIDATION_TIMEOUT_MS } from './git-tool.constants.js';
 import { GitToolIntegration } from './git-tool.integration.js';
 
@@ -156,10 +157,15 @@ describe('GitToolIntegration', () => {
         platformMocks.findExecutable.mockResolvedValue(executablePath);
 
         const application = await createApplication(
-            ToolIntegrationModule.forRoot({
-                directory,
-                fileName: 'tool-integrations.json',
-            }),
+            {
+                module: GitModule,
+                imports: [
+                    ToolIntegrationModule.forRoot({
+                        directory,
+                        fileName: 'tool-integrations.json',
+                    }),
+                ],
+            },
             { logger: false },
         );
 

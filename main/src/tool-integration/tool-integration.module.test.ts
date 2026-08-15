@@ -89,7 +89,7 @@ class DuplicateToolIntegration extends LaterToolIntegration {
 class DuplicateToolModule {}
 
 describe('ToolIntegrationModule', () => {
-    it('boots with the production Git provider', async () => {
+    it('boots without requiring a production tool provider', async () => {
         const app = await createApplication(
             ToolIntegrationModule.forRoot({
                 directory: '/config',
@@ -99,9 +99,7 @@ describe('ToolIntegrationModule', () => {
         );
 
         const registry = app.get(ToolIntegrationRegistry);
-        expect(
-            registry.list().map((integration) => integration.metadata.id),
-        ).toEqual(['git']);
+        expect(registry.list()).toEqual([]);
 
         await app.destroyAsync();
     });
@@ -114,7 +112,7 @@ describe('ToolIntegrationModule', () => {
 
         expect(
             integrations.map((integration) => integration.metadata.id),
-        ).toEqual(['earlier', 'later', 'git']);
+        ).toEqual(['earlier', 'later']);
         await app.destroyAsync();
     });
 

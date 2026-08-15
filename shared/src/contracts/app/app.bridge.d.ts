@@ -6,7 +6,6 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectGitOptions,
     CreateProjectResult,
-    GitIdentity,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
@@ -106,7 +105,6 @@ export type AppBridge = {
     checkAllReleasesValid(): Promise<InstalledRelease[]>;
     clearReleaseCache(): Promise<void>;
     getProjectsDetails(): Promise<ProjectDetails[]>;
-    getGlobalGitIdentity(): Promise<GitIdentity>;
     createProject(
         name: string,
         release: InstalledRelease,

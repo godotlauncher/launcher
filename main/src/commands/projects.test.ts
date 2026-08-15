@@ -2,6 +2,7 @@ import path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import {
     getProjectGodotName,
@@ -67,12 +68,6 @@ const godotProjectMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../utils/godotProject.utils.js', () => godotProjectMocks);
-
-const gitUtilsMocks = vi.hoisted(() => ({
-    gitInit: vi.fn(),
-}));
-
-vi.mock('../utils/git.utils.js', () => gitUtilsMocks);
 
 const userPreferencesMocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
@@ -181,7 +176,6 @@ const { getProjectsSnapshot, removeProjectFromList, storeProjectsList } =
     projectUtilsMocks;
 const { getProjectDefinition, removeProjectEditor } = godotUtilsMocks;
 const { readGodotProjectName, updateGodotProjectName } = godotProjectMocks;
-const { gitInit } = gitUtilsMocks;
 const { getUserPreferences } = userPreferencesMocks;
 const { getAssetPath } = pathResolverMocks;
 const { ipcWebContentsSend } = utilsMocks;
@@ -200,6 +194,14 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
     applyToProject: ReturnType<typeof vi.fn>;
     disableForProject: ReturnType<typeof vi.fn>;
     rescanIntegration: ReturnType<typeof vi.fn>;
+};
+
+const gitService = {
+    init: vi.fn(),
+} as unknown as GitService;
+
+const gitServiceMocks = gitService as unknown as {
+    init: ReturnType<typeof vi.fn>;
 };
 
 const trayAvailabilityService = {
@@ -1730,16 +1732,19 @@ describe('initializeProjectGit', () => {
             async (_path, projects, _options) => projects,
         );
 
-        gitInit.mockResolvedValue(true);
+        gitServiceMocks.init.mockResolvedValue(true);
         existsSync.mockImplementation(
             (target: unknown) =>
                 typeof target === 'string' &&
                 target.endsWith(`${path.sep}.git`),
         );
 
-        const result = await initializeProjectGit({ ...storedProject });
+        const result = await initializeProjectGit(
+            { ...storedProject },
+            gitService,
+        );
 
-        expect(gitInit).toHaveBeenCalledWith(storedProject.path);
+        expect(gitServiceMocks.init).toHaveBeenCalledWith(storedProject.path);
         expect(storeProjectsList).toHaveBeenCalledWith(
             expect.stringContaining('projects.json'),
             expect.any(Array),
@@ -1796,11 +1801,11 @@ describe('initializeProjectGit', () => {
             projects: [storedProject],
             version: 'v1',
         });
-        gitInit.mockResolvedValue(false);
+        gitServiceMocks.init.mockResolvedValue(false);
         existsSync.mockReturnValue(false);
 
         await expect(
-            initializeProjectGit({ ...storedProject }),
+            initializeProjectGit({ ...storedProject }, gitService),
         ).rejects.toThrow('projects:initGit.errors.initFailed');
 
         expect(storeProjectsList).not.toHaveBeenCalled();
