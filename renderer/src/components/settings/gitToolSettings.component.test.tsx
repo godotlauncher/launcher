@@ -23,6 +23,11 @@ describe('GitToolSettings', () => {
         expect(html).toContain('tools.status.available');
         expect(html).toContain('badge-success');
         expect(html).toContain('git version 2.51.0');
+        expect(html).toContain(
+            'class="flex w-full flex-row items-center rounded-lg bg-base-200 p-4"',
+        );
+        expect(html).toContain('<table class="w-full">');
+        expect(html).not.toContain('max-w-xl');
     });
 
     it('renders invalid validation state', () => {
