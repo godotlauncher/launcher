@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { UserPreferences } from '@shared/contracts';
+import type { CachedTool, UserPreferences } from '@shared/contracts';
 import { dialog } from 'electron';
 import logger from 'electron-log';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
@@ -22,6 +22,10 @@ import { getDefaultDirs } from './platform.utils.js';
 export type StoredUserPreferences = Partial<UserPreferences> & {
     vs_code_path?: string;
     windows_symlink_win_notify?: boolean;
+    installed_tools?: {
+        last_scan: number;
+        tools: CachedTool[];
+    };
 };
 
 export type UserPreferencesSnapshot = {
