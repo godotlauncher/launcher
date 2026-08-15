@@ -17,7 +17,7 @@ import type {
 type ResolutionMode = 'refresh' | 'require' | 'rescan';
 
 type InstallationCacheEntry = ToolResolution & {
-    settingsKey: string;
+    settingsFingerprint: string;
 };
 
 @Injectable()
@@ -47,15 +47,18 @@ export class ToolInstallationCache {
         toolId: ToolId,
         settings: ToolSettings,
     ): Promise<ToolResolution> {
-        const settingsKey = this.createSettingsKey(settings);
-        const current = this.getCurrent(toolId, settingsKey);
+        const settingsFingerprint = this.createSettingsFingerprint(settings);
+        const current = this.getCurrent(toolId, settingsFingerprint);
         if (current) {
             return this.toResolution(current);
         }
 
         const persisted =
             await this.settingsStore.getDetectedInstallation(toolId);
-        if (!persisted || persisted.settingsKey !== settingsKey) {
+        if (
+            !persisted ||
+            persisted.settingsFingerprint !== settingsFingerprint
+        ) {
             return {
                 installation: null,
                 status: 'unchecked',
@@ -64,7 +67,7 @@ export class ToolInstallationCache {
         }
 
         const entry: InstallationCacheEntry = {
-            settingsKey,
+            settingsFingerprint,
             installation: persisted.installation,
             status: persisted.installation
                 ? 'unchecked'
@@ -141,52 +144,62 @@ export class ToolInstallationCache {
         settings: ToolSettings,
         mode: ResolutionMode,
     ): Promise<ToolResolution> {
-        const settingsKey = this.createSettingsKey(settings);
-        return this.runSingleFlight(toolId, settingsKey, mode, async () => {
-            if (mode === 'rescan') {
-                return this.discover(toolId, settings, settingsKey);
-            }
-
-            const snapshot = await this.getSnapshot(toolId, settings);
-            if (mode === 'refresh' && this.isFresh(snapshot)) {
-                return snapshot;
-            }
-
-            if (
-                mode === 'require' &&
-                !snapshot.installation &&
-                this.isFresh(snapshot)
-            ) {
-                return snapshot;
-            }
-
-            if (snapshot.installation) {
-                const validated = await this.registry
-                    .get(toolId)
-                    .validateInstallation(snapshot.installation);
-                if (validated) {
-                    return this.store(
-                        toolId,
-                        settingsKey,
-                        validated,
-                        'available',
-                    );
+        const settingsFingerprint = this.createSettingsFingerprint(settings);
+        return this.runSingleFlight(
+            toolId,
+            settingsFingerprint,
+            mode,
+            async () => {
+                if (mode === 'rescan') {
+                    return this.discover(toolId, settings, settingsFingerprint);
                 }
-                if (this.hasExecutionOverride(settings)) {
-                    return this.store(toolId, settingsKey, null, 'invalid');
+
+                const snapshot = await this.getSnapshot(toolId, settings);
+                if (mode === 'refresh' && this.isFresh(snapshot)) {
+                    return snapshot;
                 }
-            }
 
-            if (
-                mode === 'refresh' &&
-                snapshot.status === 'missing' &&
-                this.isFresh(snapshot)
-            ) {
-                return snapshot;
-            }
+                if (
+                    mode === 'require' &&
+                    !snapshot.installation &&
+                    this.isFresh(snapshot)
+                ) {
+                    return snapshot;
+                }
 
-            return this.discover(toolId, settings, settingsKey);
-        });
+                if (snapshot.installation) {
+                    const validated = await this.registry
+                        .get(toolId)
+                        .validateInstallation(snapshot.installation);
+                    if (validated) {
+                        return this.store(
+                            toolId,
+                            settingsFingerprint,
+                            validated,
+                            'available',
+                        );
+                    }
+                    if (this.hasExecutionOverride(settings)) {
+                        return this.store(
+                            toolId,
+                            settingsFingerprint,
+                            null,
+                            'invalid',
+                        );
+                    }
+                }
+
+                if (
+                    mode === 'refresh' &&
+                    snapshot.status === 'missing' &&
+                    this.isFresh(snapshot)
+                ) {
+                    return snapshot;
+                }
+
+                return this.discover(toolId, settings, settingsFingerprint);
+            },
+        );
     }
 
     /**
@@ -194,13 +207,13 @@ export class ToolInstallationCache {
      *
      * @param toolId - Stable tool ID to discover.
      * @param settings - Settings used by provider discovery.
-     * @param settingsKey - Fingerprint of settings used for discovery.
+     * @param settingsFingerprint - Fingerprint of settings used for discovery.
      * @returns The detected installation state.
      */
     private async discover(
         toolId: ToolId,
         settings: ToolSettings,
-        settingsKey: string,
+        settingsFingerprint: string,
     ): Promise<ToolResolution> {
         const integration = this.registry.get(toolId);
         const detected = await integration.detectInstallation(settings);
@@ -213,27 +226,27 @@ export class ToolInstallationCache {
               ? 'invalid'
               : 'missing';
 
-        return this.store(toolId, settingsKey, validated, status);
+        return this.store(toolId, settingsFingerprint, validated, status);
     }
 
     /**
      * Saves a resolution in memory and preferences.
      *
      * @param toolId - Stable tool ID whose state should be stored.
-     * @param settingsKey - Fingerprint of the settings used.
+     * @param settingsFingerprint - Fingerprint of the settings used.
      * @param installation - Valid installation or null.
      * @param status - Status derived from validation.
      * @returns The stored resolution.
      */
     private async store(
         toolId: ToolId,
-        settingsKey: string,
+        settingsFingerprint: string,
         installation: ToolInstallation | null,
         status: 'available' | 'invalid' | 'missing',
     ): Promise<ToolResolution> {
         const checkedAt = Date.now();
         const entry: InstallationCacheEntry = {
-            settingsKey,
+            settingsFingerprint,
             installation,
             status,
             checkedAt,
@@ -243,7 +256,7 @@ export class ToolInstallationCache {
             toolId,
             installation,
             checkedAt,
-            settingsKey,
+            settingsFingerprint,
         );
         return this.toResolution(entry);
     }
@@ -271,28 +284,30 @@ export class ToolInstallationCache {
      * Returns an entry only when it matches the current settings fingerprint.
      *
      * @param toolId - Stable tool ID to read.
-     * @param settingsKey - Current settings fingerprint.
+     * @param settingsFingerprint - Current settings fingerprint.
      * @returns A matching in-memory entry when present.
      */
     private getCurrent(
         toolId: ToolId,
-        settingsKey: string,
+        settingsFingerprint: string,
     ): InstallationCacheEntry | undefined {
         const entry = this.entries.get(toolId);
-        return entry?.settingsKey === settingsKey ? entry : undefined;
+        return entry?.settingsFingerprint === settingsFingerprint
+            ? entry
+            : undefined;
     }
 
     /**
      * Builds a deterministic fingerprint for installation-affecting settings.
      *
      * @param settings - Tool settings to fingerprint.
-     * @returns Stable serialized settings key.
+     * @returns Stable serialized settings fingerprint.
      */
-    private createSettingsKey(settings: ToolSettings): string {
-        return JSON.stringify([
-            settings.executablePathOverride,
-            settings.executableArgsOverride,
-        ]);
+    private createSettingsFingerprint(settings: ToolSettings): string {
+        return JSON.stringify({
+            executablePathOverride: settings.executablePathOverride,
+            executableArgsOverride: settings.executableArgsOverride,
+        });
     }
 
     /**
@@ -312,18 +327,18 @@ export class ToolInstallationCache {
      * Shares one in-flight resolution among concurrent callers.
      *
      * @param toolId - Stable tool ID being resolved.
-     * @param settingsKey - Current settings fingerprint.
+     * @param settingsFingerprint - Current settings fingerprint.
      * @param mode - Resolution mode used to separate forced rescans.
      * @param operation - Resolution operation to run once.
      * @returns The shared resolution promise.
      */
     private runSingleFlight(
         toolId: ToolId,
-        settingsKey: string,
+        settingsFingerprint: string,
         mode: ResolutionMode,
         operation: () => Promise<ToolResolution>,
     ): Promise<ToolResolution> {
-        const flightKey = `${toolId}\0${settingsKey}\0${mode}`;
+        const flightKey = `${toolId}\0${settingsFingerprint}\0${mode}`;
         const existing = this.inFlight.get(flightKey);
         if (existing) {
             return existing;

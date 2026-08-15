@@ -20,6 +20,11 @@ vi.mock('../utils/platform.utils.js', () => ({
     findExecutable: vi.fn(),
 }));
 
+vi.mock('@mariodebono/di-electron', () => ({
+    BridgeController: () => () => undefined,
+    createIpcHandleTyped: () => () => () => undefined,
+}));
+
 @Injectable({ tags: [TOOL_INTEGRATION_TAG] })
 class LaterToolIntegration implements ToolIntegration {
     readonly metadata = {

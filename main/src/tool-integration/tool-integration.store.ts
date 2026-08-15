@@ -106,13 +106,13 @@ export class ToolIntegrationStore extends JsonFileStore<ToolIntegrationStoreFile
      * @param toolId - Stable tool ID whose installation should be stored.
      * @param installation - Valid installation, or null for a negative scan.
      * @param checkedAt - Time at which resolution completed.
-     * @param settingsKey - Fingerprint of settings used for resolution.
+     * @param settingsFingerprint - Fingerprint of settings used for resolution.
      */
     async setDetectedInstallation(
         toolId: ToolId,
         installation: ToolInstallation | null,
         checkedAt: number,
-        settingsKey: string,
+        settingsFingerprint: string,
     ): Promise<void> {
         await this.updateValue((current) => {
             const currentTool =
@@ -130,7 +130,7 @@ export class ToolIntegrationStore extends JsonFileStore<ToolIntegrationStoreFile
                                 [process.arch]: {
                                     installation,
                                     checkedAt,
-                                    settingsKey,
+                                    settingsFingerprint,
                                 },
                             },
                         },

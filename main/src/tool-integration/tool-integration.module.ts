@@ -8,6 +8,7 @@ import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinato
 import { GitToolIntegration } from './integrations/git/git-tool.integration.js';
 import { ToolInstallationCache } from './tool-installation.cache.js';
 import { TOOL_INTEGRATION_MODULE_OPTIONS } from './tool-integration.constants.js';
+import { ToolIntegrationController } from './tool-integration.controller.js';
 import { ToolIntegrationRegistry } from './tool-integration.registry.js';
 import { ToolIntegrationService } from './tool-integration.service.js';
 import { ToolIntegrationStore } from './tool-integration.store.js';
@@ -38,6 +39,7 @@ type ToolIntegrationModuleAsyncOptions = Pick<
         ToolInstallationCache,
         ToolProcessExecutor,
         ToolIntegrationService,
+        ToolIntegrationController,
     ],
     exports: [ToolIntegrationService],
 })

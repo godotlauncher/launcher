@@ -85,7 +85,7 @@ describe('ToolIntegrationStore', () => {
                 source: 'override',
             },
             123,
-            'settings-key',
+            'settings-fingerprint',
         );
 
         await expect(store.getDetectedInstallation('git')).resolves.toEqual({
@@ -96,7 +96,45 @@ describe('ToolIntegrationStore', () => {
                 source: 'override',
             },
             checkedAt: 123,
-            settingsKey: 'settings-key',
+            settingsFingerprint: 'settings-fingerprint',
+        });
+    });
+
+    it('normalizes legacy installation settings keys', async () => {
+        const storePath = await createStorePath();
+        await fs.writeFile(
+            storePath,
+            JSON.stringify({
+                schemaVersion: 1,
+                tools: {
+                    git: {
+                        settings: {
+                            enabled: true,
+                            executablePathOverride: null,
+                            executableArgsOverride: null,
+                        },
+                        installations: {
+                            [process.platform]: {
+                                [process.arch]: {
+                                    installation: null,
+                                    checkedAt: 123,
+                                    settingsKey: '[null,null]',
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            'utf-8',
+        );
+
+        await expect(
+            createStore(storePath).getDetectedInstallation('git'),
+        ).resolves.toEqual({
+            installation: null,
+            checkedAt: 123,
+            settingsFingerprint:
+                '{"executablePathOverride":null,"executableArgsOverride":null}',
         });
     });
 

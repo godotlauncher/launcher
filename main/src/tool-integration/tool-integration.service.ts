@@ -91,6 +91,19 @@ export class ToolIntegrationService {
     }
 
     /**
+     * Refreshes every registered tool while respecting cached freshness.
+     *
+     * @returns Refreshed summaries in deterministic registry order.
+     */
+    async refreshAll(): Promise<ToolSummary[]> {
+        return Promise.all(
+            this.registry
+                .list()
+                .map((integration) => this.refresh(integration.metadata.id)),
+        );
+    }
+
+    /**
      * Forces discovery for one tool regardless of cached state.
      *
      * @param toolId - Stable tool ID to rescan.

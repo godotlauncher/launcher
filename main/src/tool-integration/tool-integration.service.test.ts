@@ -99,6 +99,33 @@ function createService(): {
 }
 
 describe('ToolIntegrationService', () => {
+    it('refreshes every registered integration in registry order', async () => {
+        const { service, installationCache } = createService();
+        vi.mocked(installationCache.refresh).mockResolvedValue({
+            installation,
+            status: 'available',
+            checkedAt: 123,
+        });
+
+        await expect(service.refreshAll()).resolves.toEqual([
+            {
+                metadata: {
+                    id: 'example',
+                    displayName: 'Example',
+                    order: 10,
+                },
+                settings,
+                installation,
+                status: 'available',
+                checkedAt: 123,
+            },
+        ]);
+        expect(installationCache.refresh).toHaveBeenCalledWith(
+            'example',
+            settings,
+        );
+    });
+
     it('revalidates and executes through the process boundary', async () => {
         const { service, installationCache, processExecutor } = createService();
         const request = { args: ['status'], cwd: '/project' };

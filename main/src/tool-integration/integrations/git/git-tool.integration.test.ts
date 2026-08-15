@@ -20,6 +20,11 @@ const platformMocks = vi.hoisted(() => ({
 
 vi.mock('../../../utils/platform.utils.js', () => platformMocks);
 
+vi.mock('@mariodebono/di-electron', () => ({
+    BridgeController: () => () => undefined,
+    createIpcHandleTyped: () => () => () => undefined,
+}));
+
 const defaultSettings: ToolSettings = {
     enabled: true,
     executablePathOverride: null,
@@ -194,7 +199,8 @@ describe('GitToolIntegration', () => {
                     version: 'git version 2.51.0',
                     source: 'detected',
                 },
-                settingsKey: '[null,null]',
+                settingsFingerprint:
+                    '{"executablePathOverride":null,"executableArgsOverride":null}',
             });
         } finally {
             await application.destroyAsync();

@@ -19,11 +19,27 @@ const ToolInstallationSchema = z.object({
     source: z.enum(['detected', 'override']),
 });
 
-const StoredToolInstallationSchema = z.object({
+const CurrentStoredToolInstallationSchema = z.object({
     installation: ToolInstallationSchema.nullable(),
     checkedAt: z.number().int().nonnegative(),
-    settingsKey: z.string(),
+    settingsFingerprint: z.string(),
 });
+
+const LegacyStoredToolInstallationSchema = z
+    .object({
+        installation: ToolInstallationSchema.nullable(),
+        checkedAt: z.number().int().nonnegative(),
+        settingsKey: z.string(),
+    })
+    .transform(({ settingsKey, ...snapshot }) => ({
+        ...snapshot,
+        settingsFingerprint: normalizeLegacySettingsFingerprint(settingsKey),
+    }));
+
+const StoredToolInstallationSchema = z.union([
+    CurrentStoredToolInstallationSchema,
+    LegacyStoredToolInstallationSchema,
+]);
 
 const StoredToolStateSchema = z.object({
     settings: ToolSettingsSchema,
@@ -148,4 +164,25 @@ function sortInstallations(
                 ),
             ]),
     );
+}
+
+/**
+ * Converts the first development fingerprint format to the named format.
+ *
+ * @param settingsKey - Legacy serialized path and argument tuple.
+ * @returns A named settings fingerprint, or the original value if unknown.
+ */
+function normalizeLegacySettingsFingerprint(settingsKey: string): string {
+    try {
+        const parsed: unknown = JSON.parse(settingsKey);
+        if (Array.isArray(parsed) && parsed.length === 2) {
+            return JSON.stringify({
+                executablePathOverride: parsed[0],
+                executableArgsOverride: parsed[1],
+            });
+        }
+    } catch {
+        return settingsKey;
+    }
+    return settingsKey;
 }

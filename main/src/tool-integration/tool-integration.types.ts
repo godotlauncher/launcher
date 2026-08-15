@@ -31,7 +31,7 @@ export type ToolInstallation = {
 export type StoredToolInstallation = {
     installation: ToolInstallation | null;
     checkedAt: number;
-    settingsKey: string;
+    settingsFingerprint: string;
 };
 
 export type StoredToolState = {

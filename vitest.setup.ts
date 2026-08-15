@@ -75,6 +75,7 @@ vi.mock('@mariodebono/di-electron/renderer', () => {
                 'codeEditorIntegration',
             ),
             editorCatalog: createBridgeNamespace('editorCatalog'),
+            toolIntegration: createBridgeNamespace('toolIntegration'),
         }),
         createRendererEvents: () => ({
             on: (
