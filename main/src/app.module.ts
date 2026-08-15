@@ -13,7 +13,10 @@ import {
     AppConfigSchema,
     getCurrentAppConfig,
 } from './config/index.js';
-import { EDITOR_CATALOG_FILENAME } from './constants.js';
+import {
+    EDITOR_CATALOG_FILENAME,
+    TOOL_INTEGRATIONS_FILENAME,
+} from './constants.js';
 import { EditorCatalogModule } from './editor-catalog/editor-catalog.module.js';
 import {
     DEFAULT_LOCALE,
@@ -22,6 +25,7 @@ import {
 } from './i18n/config.js';
 import { getLocalesPath } from './pathResolver.js';
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
+import { ToolIntegrationModule } from './tool-integration/tool-integration.module.js';
 
 @Module({
     imports: [
@@ -52,6 +56,13 @@ import { TrayAvailabilityService } from './services/tray-availability.service.js
                     systemLocale:
                         Intl.DateTimeFormat().resolvedOptions().locale,
                 }) satisfies I18nModuleOptions,
+        }),
+        ToolIntegrationModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService<AppConfig>) => ({
+                directory: configService.getOrThrow('paths.configDir'),
+                fileName: TOOL_INTEGRATIONS_FILENAME,
+            }),
         }),
     ],
     providers: [AppController, AppLifecycleService, TrayAvailabilityService],
