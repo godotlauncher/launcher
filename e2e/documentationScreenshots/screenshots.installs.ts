@@ -23,6 +23,34 @@ import {
 } from './sampleData';
 import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 
+const DOWNLOAD_ERROR_SCREENSHOTS: ScreenshotConfig[] = [
+    createDownloadErrorScreenshot({
+        fileBase: 'screen_installs_download_error',
+        description: 'Install New Version view with interrupted download error',
+        error: 'Download interrupted. The Godot download server may be busy or the connection was closed. Please try again in a few minutes.',
+        visibleError: 'Download interrupted.',
+    }),
+    createDownloadErrorScreenshot({
+        fileBase: 'screen_installs_download_asset_not_found',
+        description: 'Install New Version view with unavailable release asset error',
+        error: 'This release asset is no longer available. Refresh the release list and try again.',
+        visibleError: 'This release asset is no longer available.',
+    }),
+    createDownloadErrorScreenshot({
+        fileBase: 'screen_installs_download_rate_limited',
+        description: 'Install New Version view with GitHub rate limit error',
+        error: 'GitHub is temporarily limiting download requests. Please try again in a few minutes.',
+        visibleError: 'GitHub is temporarily limiting download requests.',
+    }),
+    createDownloadErrorScreenshot({
+        fileBase: 'screen_installs_download_service_unavailable',
+        description: 'Install New Version view with GitHub download service error',
+        error: "GitHub's download service is temporarily unavailable. Please try again in a few minutes. Check githubstatus.com for updates.",
+        visibleError: "GitHub's download service is temporarily unavailable.",
+        externalLinkLabel: 'githubstatus.com',
+    }),
+];
+
 export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_installs_view',
@@ -336,9 +364,29 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             await page.waitForTimeout(600);
         },
     },
-    {
-        fileBase: 'screen_installs_download_error',
-        description: 'Install New Version view with download error',
+    ...DOWNLOAD_ERROR_SCREENSHOTS,
+];
+
+type DownloadErrorScreenshotOptions = Pick<
+    ScreenshotConfig,
+    'fileBase' | 'description'
+> & {
+    error: string;
+    visibleError: string;
+    externalLinkLabel?: string;
+};
+
+/** Creates the common install-drawer screenshot for one download failure. */
+function createDownloadErrorScreenshot({
+    fileBase,
+    description,
+    error,
+    visibleError,
+    externalLinkLabel,
+}: DownloadErrorScreenshotOptions): ScreenshotConfig {
+    return {
+        fileBase,
+        description,
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
@@ -347,10 +395,7 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             await prepareAppWithStubbedData(page, electronApp, {
                 installedReleases: SAMPLE_INSTALLED_RELEASES_WITHOUT_LATEST,
             });
-            await stubInstallReleaseFailure(
-                electronApp,
-                'Download interrupted. The Godot download server may be busy or the connection was closed. Please try again in a few minutes.',
-            );
+            await stubInstallReleaseFailure(electronApp, error);
             await applyTheme(page, theme);
             await page.getByTestId('btnInstalls').click();
 
@@ -367,8 +412,14 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
                 .first()
                 .click();
             await expect(
-                page.getByText('Download interrupted.', { exact: false }),
+                page.getByText(visibleError, { exact: false }),
             ).toBeVisible({ timeout: 10000 });
+            if (externalLinkLabel) {
+                await expect(
+                    page.getByRole('button', { name: externalLinkLabel }),
+                ).toBeVisible({ timeout: 10000 });
+            }
+
             await page.waitForTimeout(400);
         },
         cleanup: async (
@@ -389,8 +440,8 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.waitForTimeout(600);
         },
-    },
-];
+    };
+}
 
 /**
  * Opens the editor drawer with a mocked catalog refresh error.

@@ -14,6 +14,7 @@ export const LAUNCHER_GITHUB_ISSUES_URL =
     'https://github.com/godotlauncher/launcher/issues';
 export const LAUNCHER_GITHUB_PROPOSALS_URL =
     'https://github.com/godotlauncher/launcher/issues';
+export const GITHUB_STATUS_URL = 'https://www.githubstatus.com/';
 
 // GODOT
 export const GODOT_PAGE_URL = 'https://godotengine.org';
