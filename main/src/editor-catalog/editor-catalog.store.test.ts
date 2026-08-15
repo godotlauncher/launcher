@@ -32,6 +32,20 @@ describe('EditorCatalogStore', () => {
         );
     });
 
+    it('repairs a whitespace-only catalog file with the default catalog', async () => {
+        const directory = await createTemporaryDirectory();
+        const catalogPath = path.join(directory, 'editor-catalog.json');
+        await fs.writeFile(catalogPath, '  \n', 'utf-8');
+        const store = createStore(catalogPath);
+
+        const catalog = await store.read();
+
+        expect(catalog.schemaVersion).toBe(1);
+        await expect(fs.readFile(catalogPath, 'utf-8')).resolves.toContain(
+            '"schemaVersion": 1',
+        );
+    });
+
     it('rejects malformed new catalog data', async () => {
         const directory = await createTemporaryDirectory();
         const catalogPath = path.join(directory, 'editor-catalog.json');

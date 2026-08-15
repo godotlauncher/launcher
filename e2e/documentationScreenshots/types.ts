@@ -6,19 +6,13 @@ import type {
     LaunchProjectResult,
     ProjectDetails,
     ReleaseSummary,
+    ToolIntegrationSummary,
     UserPreferences,
 } from '@shared/contracts';
 
 export type ElectronPage = Awaited<
     ReturnType<ElectronApplication['firstWindow']>
 >;
-
-export type CachedTool = {
-    name: string;
-    path: string;
-    version?: string;
-    verified: boolean;
-};
 
 export type ThemeConfig = {
     name: 'dark' | 'light';
@@ -64,7 +58,7 @@ export type StubbedAppDataOptions = {
     availableReleases?: ReleaseSummary[];
     availablePrereleases?: ReleaseSummary[];
     catalogRefreshError?: string;
-    tools?: CachedTool[];
+    toolIntegrations?: ToolIntegrationSummary[];
     codeEditorSettings?: CodeEditorIntegrationSettings[];
     projectLaunchResult?: LaunchProjectResult;
 };

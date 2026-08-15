@@ -21,7 +21,7 @@ import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
 import type { TrayAvailabilityService } from '../services/tray-availability.service.js';
-import { gitInit } from '../utils/git.utils.js';
+import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { removeProjectEditor } from '../utils/godot.utils.js';
 import {
     readGodotProjectName,
@@ -603,8 +603,16 @@ export {
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
 } from './projectCodeEditor.js';
+/**
+ * Initializes Git for an existing project and persists its updated metadata.
+ *
+ * @param project - Project selected for Git initialization.
+ * @param gitService - Typed Git command service.
+ * @returns The updated project details.
+ */
 export async function initializeProjectGit(
     project: ProjectDetails,
+    gitService: GitService,
 ): Promise<ProjectDetails> {
     const projectListPath = resolveProjectListPath();
 
@@ -627,7 +635,7 @@ export async function initializeProjectGit(
             return targetProject;
         }
 
-        const gitInitialized = await gitInit(targetProject.path);
+        const gitInitialized = await gitService.init(targetProject.path);
         const gitFolderExists = fs.existsSync(
             path.resolve(targetProject.path, '.git'),
         );

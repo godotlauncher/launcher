@@ -32,9 +32,10 @@ import { createTray } from './helpers/tray.helper.js';
 import { configureI18n } from './i18n/index.js';
 import { setMainWindow } from './mainWindow.js';
 import { getAppIconPath } from './pathResolver.js';
-import { isCacheStale, refreshToolCache } from './services/toolCache.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ToolIntegrationService } from './tool-integration/tool-integration.service.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { ensurePreferencesStorage } from './utils/prefs.utils.js';
 import { ipcWebContentsSend } from './utils.js';
@@ -45,12 +46,24 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
     private revealMainWindowOnRendererReady = false;
     private willClose = false;
 
+    /**
+     * Creates the application lifecycle coordinator.
+     *
+     * @param configService - Runtime application configuration.
+     * @param electronAppService - Electron application lifecycle facade.
+     * @param windowManager - Main-window lifecycle service.
+     * @param i18nService - Main-process localization service.
+     * @param codeEditorIntegrationService - Code editor lifecycle facade.
+     * @param toolIntegrationService - Command-line tool lifecycle facade.
+     * @param trayAvailabilityService - System tray availability service.
+     */
     constructor(
         private readonly configService: ConfigService<AppConfig>,
         private readonly electronAppService: ElectronAppService,
         private readonly windowManager: WindowManagerService,
         private readonly i18nService: I18nService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly toolIntegrationService: ToolIntegrationService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
 
@@ -78,6 +91,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         }
 
         await ensurePreferencesStorage();
+        this.refreshToolIntegrations();
 
         const userPrefs = await getUserPreferences();
         const requestedLocale = userPrefs.language || 'system';
@@ -88,7 +102,6 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         logger.debug('App ready, checking projects and releases');
         await checkAndUpdateProjects();
         await checkAndUpdateReleases();
-        await this.refreshToolCacheIfStale();
     }
 
     @AppReady({ order: AppReadyOrder.AfterWindow })
@@ -252,16 +265,11 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         return this.configService.getAll();
     }
 
-    private async refreshToolCacheIfStale(): Promise<void> {
-        logger.debug('Checking tool cache...');
-        if (!(await isCacheStale())) {
-            logger.debug('Tool cache is fresh');
-            return;
-        }
-
-        logger.debug('Tool cache is stale, refreshing in background...');
-        void refreshToolCache().catch((error) => {
-            logger.error('Failed to refresh tool cache:', error);
+    /** Starts stale-aware tool discovery without delaying window creation. */
+    private refreshToolIntegrations(): void {
+        logger.debug('Refreshing tool integrations in background...');
+        void this.toolIntegrationService.refreshAll().catch((error) => {
+            logger.error('Failed to refresh tool integrations:', error);
         });
     }
 

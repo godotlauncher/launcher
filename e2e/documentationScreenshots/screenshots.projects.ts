@@ -12,11 +12,11 @@ import {
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
     stubGlobalGitIdentity,
-    stubInstalledTools,
     stubProjectGitInitializationFailure,
+    stubToolIntegrations,
 } from './runtime';
 import {
-    DEFAULT_TOOLS,
+    DEFAULT_TOOL_INTEGRATIONS,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
     SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
@@ -27,9 +27,7 @@ import {
     SAMPLE_PROJECT_PROTOTYPE,
     SAMPLE_PROJECTS,
     SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
-    TOOLS_NO_GIT,
-    TOOLS_NO_VSCODE,
-    TOOLS_NONE,
+    TOOL_INTEGRATIONS_NO_GIT,
 } from './sampleData';
 import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import {
@@ -465,7 +463,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp, {
-                tools: TOOLS_NO_GIT,
+                toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
             });
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
@@ -788,7 +786,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_AVAILABLE,
@@ -803,7 +801,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
         },
@@ -875,7 +873,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 {
@@ -919,7 +917,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             electronApp: ElectronApplication,
         ) => {
             await page.keyboard.press('Escape');
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
         },
@@ -935,7 +933,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await prepareAppWithStubbedData(page, electronApp, {
                 installedReleases: SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
             });
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await applyTheme(page, theme);
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_AVAILABLE,
@@ -986,7 +984,10 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, TOOLS_NO_GIT);
+            await stubToolIntegrations(
+                electronApp,
+                TOOL_INTEGRATIONS_NO_GIT,
+            );
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_AVAILABLE,
@@ -1003,7 +1004,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
         },
     },
     {
@@ -1013,7 +1014,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, TOOLS_NO_VSCODE);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
@@ -1030,7 +1031,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
         },
     },
     {
@@ -1040,7 +1041,10 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, TOOLS_NONE);
+            await stubToolIntegrations(
+                electronApp,
+                TOOL_INTEGRATIONS_NO_GIT,
+            );
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
@@ -1057,7 +1061,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
         },
     },
     {
@@ -1067,7 +1071,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             page: ElectronPage,
             electronApp: ElectronApplication,
         ) => {
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_AVAILABLE,
@@ -1085,7 +1089,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await page.getByTestId('btnCloseCreateProject').click();
             await page.waitForTimeout(600);
-            await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
         },
     },
     {
@@ -1201,7 +1205,7 @@ async function openNewProjectGitIdentityWarning(
     page: ElectronPage,
     electronApp: ElectronApplication,
 ): Promise<void> {
-    await stubInstalledTools(electronApp, DEFAULT_TOOLS);
+    await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
     await stubGlobalGitIdentity(electronApp, { name: '', email: '' });
     await stubCodeEditorIntegrationSettings(electronApp, [
         SAMPLE_VSCODE_SETTINGS_AVAILABLE,

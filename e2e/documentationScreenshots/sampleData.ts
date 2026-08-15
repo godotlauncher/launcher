@@ -3,13 +3,13 @@ import type {
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
+    ToolIntegrationSummary,
     UserPreferences,
 } from '@shared/contracts';
 import prereleasesCache from '../fixtures/prereleases.json' with {
     type: 'json',
 };
 import releasesCache from '../fixtures/releases.json' with { type: 'json' };
-import type { CachedTool } from './types';
 
 export const SAMPLE_INSTALLED_RELEASES: InstalledRelease[] = [
     {
@@ -353,22 +353,20 @@ export const SAMPLE_VSCODIUM_SETTINGS_AVAILABLE: CodeEditorIntegrationSettings =
             '/Applications/VSCodium.app/Contents/MacOS/Electron',
     };
 
-export const DEFAULT_TOOLS: CachedTool[] = [
-    { name: 'Git', path: '/usr/bin/git', version: '2.45.0', verified: true },
+export const DEFAULT_TOOL_INTEGRATIONS: ToolIntegrationSummary[] = [
     {
-        name: 'VSCode',
-        path: '/Applications/Visual Studio Code.app',
-        version: '1.95.0',
-        verified: true,
+        id: 'git',
+        displayName: 'Git',
+        status: 'available',
+        version: 'git version 2.45.0',
     },
 ];
 
-export const TOOLS_NO_GIT: CachedTool[] = DEFAULT_TOOLS.filter(
-    (tool) => tool.name !== 'Git',
-);
-
-export const TOOLS_NO_VSCODE: CachedTool[] = DEFAULT_TOOLS.filter(
-    (tool) => tool.name !== 'VSCode',
-);
-
-export const TOOLS_NONE: CachedTool[] = [];
+export const TOOL_INTEGRATIONS_NO_GIT: ToolIntegrationSummary[] = [
+    {
+        id: 'git',
+        displayName: 'Git',
+        status: 'missing',
+        version: null,
+    },
+];

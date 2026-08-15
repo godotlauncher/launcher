@@ -1,5 +1,4 @@
 import type { CodeEditorId } from '../codeEditorIntegration/index.js';
-import type { CachedTool } from '../tools/index.js';
 
 export type CodeEditorDetectedInstallationPreferences = {
     path: string | null;
@@ -36,8 +35,4 @@ export type UserPreferences = {
     >;
     language?: string;
     skipped_app_update_version?: string;
-    installed_tools?: {
-        last_scan: number;
-        tools: CachedTool[];
-    };
 };

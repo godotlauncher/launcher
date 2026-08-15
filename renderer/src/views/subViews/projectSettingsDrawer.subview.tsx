@@ -11,7 +11,6 @@ import { GitBranch, PanelTop, Pin } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { appBridge } from '../../bridge.ts';
 import { getSelectableReleaseKey } from '../../components/selectInstalledRelease/selectInstalledRelease.model';
 import { CopyBadge } from '../../components/ui/copyBadge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
@@ -22,6 +21,7 @@ import {
 import { TextField } from '../../components/ui/textField.component';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
+import { useToolIntegrations } from '../../hooks/useToolIntegrations';
 import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
     canRenameGodotProject,
@@ -103,6 +103,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     ]);
     const { addCustomConfirm } = useAlerts();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
+    const { listIntegrations } = useToolIntegrations();
     const [activeTab, setActiveTab] = useState<ProjectSettingsTab>('project');
     const [initialName, setInitialName] = useState('');
     const [name, setName] = useState('');
@@ -189,13 +190,14 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setGitAvailable(false);
         setLoadingGitAvailability(true);
 
-        appBridge
-            .getCachedTools({ refreshIfStale: false })
+        listIntegrations()
             .then((tools) => {
                 if (!disposed) {
                     setGitAvailable(
                         tools.some(
-                            (tool) => tool.name === 'Git' && tool.verified,
+                            (tool) =>
+                                tool.id === 'git' &&
+                                tool.status === 'available',
                         ),
                     );
                 }
@@ -214,7 +216,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         return () => {
             disposed = true;
         };
-    }, [open]);
+    }, [listIntegrations, open]);
 
     useEffect(() => {
         if (!open || !project) {

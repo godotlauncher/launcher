@@ -6,7 +6,6 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectGitOptions,
     CreateProjectResult,
-    GitIdentity,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
@@ -25,7 +24,6 @@ import type {
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
-import type { CachedTool, InstalledTool } from '../tools/index.js';
 import type {
     AppUpdateMessage,
     CheckForUpdatesOptions,
@@ -107,7 +105,6 @@ export type AppBridge = {
     checkAllReleasesValid(): Promise<InstalledRelease[]>;
     clearReleaseCache(): Promise<void>;
     getProjectsDetails(): Promise<ProjectDetails[]>;
-    getGlobalGitIdentity(): Promise<GitIdentity>;
     createProject(
         name: string,
         release: InstalledRelease,
@@ -158,11 +155,6 @@ export type AppBridge = {
     ): Promise<LaunchProjectResult>;
     checkProjectValid(project: ProjectDetails): Promise<ProjectDetails>;
     checkAllProjectsValid(): Promise<ProjectDetails[]>;
-    getInstalledTools(): Promise<InstalledTool[]>;
-    getCachedTools(options?: {
-        refreshIfStale?: boolean;
-    }): Promise<CachedTool[]>;
-    refreshToolCache(): Promise<CachedTool[]>;
     getPlatform(): Promise<string>;
     getTrayAvailability(): Promise<boolean>;
     getAppVersion(): Promise<string>;

@@ -4,7 +4,9 @@ import {
     codeEditorIntegrationBridge,
     editorCatalogBridge,
     getPathForFile,
+    gitBridge,
     subscribeAppEvent,
+    toolIntegrationBridge,
 } from './bridge.js';
 
 type TestElectronApi = {
@@ -34,6 +36,9 @@ type TestElectronApi = {
     'editorCatalog.getCatalog': () => Promise<unknown>;
     'editorCatalog.getReleaseById': (id: string) => Promise<unknown>;
     'editorCatalog.refreshCatalog': () => Promise<unknown>;
+    'git.getGlobalIdentity': () => Promise<unknown>;
+    'toolIntegration.listIntegrations': () => Promise<unknown[]>;
+    'toolIntegration.rescanIntegrations': () => Promise<unknown[]>;
 };
 
 describe('renderer bridge', () => {
@@ -56,6 +61,12 @@ describe('renderer bridge', () => {
     const getCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
     const getReleaseById = vi.fn(async () => null);
     const refreshCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
+    const getGlobalIdentity = vi.fn(async () => ({
+        name: 'Mario',
+        email: 'mario@example.com',
+    }));
+    const listToolIntegrations = vi.fn(async () => []);
+    const rescanToolIntegrations = vi.fn(async () => []);
     const unsubscribe = vi.fn();
     let projectsListener: ((projects: unknown[]) => void) | undefined;
 
@@ -80,6 +91,9 @@ describe('renderer bridge', () => {
             'editorCatalog.getCatalog': getCatalog,
             'editorCatalog.getReleaseById': getReleaseById,
             'editorCatalog.refreshCatalog': refreshCatalog,
+            'git.getGlobalIdentity': getGlobalIdentity,
+            'toolIntegration.listIntegrations': listToolIntegrations,
+            'toolIntegration.rescanIntegrations': rescanToolIntegrations,
             subscribeProjects: (listener) => {
                 projectsListener = listener;
                 return unsubscribe;
@@ -149,6 +163,23 @@ describe('renderer bridge', () => {
             'official-stable:4.5-stable',
         );
         expect(refreshCatalog).toHaveBeenCalledOnce();
+    });
+
+    it('delegates through the tool integration namespace', async () => {
+        await toolIntegrationBridge.listIntegrations();
+        await toolIntegrationBridge.rescanIntegrations();
+
+        expect(listToolIntegrations).toHaveBeenCalledOnce();
+        expect(rescanToolIntegrations).toHaveBeenCalledOnce();
+    });
+
+    it('delegates through the Git namespace', async () => {
+        await expect(gitBridge.getGlobalIdentity()).resolves.toEqual({
+            name: 'Mario',
+            email: 'mario@example.com',
+        });
+
+        expect(getGlobalIdentity).toHaveBeenCalledOnce();
     });
 
     it('subscribes and unsubscribes from application events', () => {

@@ -1,19 +1,19 @@
 import type {
-    CachedTool,
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    ToolIntegrationSummary,
 } from '@shared/contracts';
 import clsx from 'clsx';
 import logger from 'electron-log';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { appBridge } from '../bridge.ts';
 import { useAlerts } from '../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useTheme } from '../hooks/useTheme';
+import { useToolIntegrations } from '../hooks/useToolIntegrations';
 import type { SettingsTab } from '../routes';
 import { getCodeEditorProjectUsage } from './projects/projectCodeEditorHealth.model';
 import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
@@ -57,6 +57,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setDefaultIntegration,
         validateIntegrationPath,
     } = useCodeEditorIntegrations();
+    const { listIntegrations, rescanIntegrations } = useToolIntegrations();
 
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -73,25 +74,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         Partial<Record<CodeEditorId, string>>
     >({});
 
-    const [cachedTools, setCachedTools] = useState<CachedTool[]>([]);
+    const [toolIntegrations, setToolIntegrations] = useState<
+        ToolIntegrationSummary[]
+    >([]);
     const [rescanCount, setRescanCount] = useState(0);
     const isRescanningTools = rescanCount > 0;
 
     const quickCheckTools = useCallback(async () => {
-        return await appBridge.getCachedTools({ refreshIfStale: false });
-    }, []);
+        return await listIntegrations();
+    }, [listIntegrations]);
 
     const rescanTools = useCallback(async () => {
         setRescanCount((count) => count + 1);
         try {
-            const tools = await appBridge.refreshToolCache();
-            setCachedTools(tools);
+            const tools = await rescanIntegrations();
+            setToolIntegrations(tools);
         } catch (error) {
             logger.error('Failed to refresh tool cache', error);
         } finally {
             setRescanCount((count) => Math.max(0, count - 1));
         }
-    }, []);
+    }, [rescanIntegrations]);
 
     useEffect(() => {
         if (activeTab !== 'tools') {
@@ -104,7 +107,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             try {
                 const tools = await quickCheckTools();
                 if (!disposed) {
-                    setCachedTools(tools);
+                    setToolIntegrations(tools);
                 }
             } catch (error) {
                 logger.error('Failed to load cached tools', error);
@@ -163,8 +166,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }, [activeTab, listIntegrationSettings]);
 
     const gitTool = useMemo(
-        () => cachedTools.find((tool) => tool.name === 'Git'),
-        [cachedTools],
+        () => toolIntegrations.find((tool) => tool.id === 'git'),
+        [toolIntegrations],
     );
 
     const replaceCodeEditorSettings = (

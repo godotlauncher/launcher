@@ -11,6 +11,8 @@ const rendererBridge = createRendererBridge<BridgeNamespaces>();
 export const appBridge = rendererBridge.app;
 export const codeEditorIntegrationBridge = rendererBridge.codeEditorIntegration;
 export const editorCatalogBridge = rendererBridge.editorCatalog;
+export const gitBridge = rendererBridge.git;
+export const toolIntegrationBridge = rendererBridge.toolIntegration;
 
 const appEvents = createRendererEvents();
 

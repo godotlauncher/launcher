@@ -1,10 +1,10 @@
 import type {
-    CachedTool,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     GitIdentity,
     InstalledRelease,
     RendererType,
+    ToolIntegrationSummary,
 } from '@shared/contracts';
 import { sortReleases } from '../../../releaseStoring.utils';
 
@@ -158,13 +158,18 @@ export const getDefaultRendererForReleaseVersion = (
     return undefined;
 };
 
-export const isVerifiedToolAvailable = (
-    tools: CachedTool[],
-    name: string,
-): boolean => {
-    const tool = tools.find((tool) => tool.name === name);
-    return tool?.verified === true && (tool.path?.length || 0) > 0;
-};
+/**
+ * Reports whether one stable tool integration is currently available.
+ *
+ * @param tools - Renderer-safe tool integration summaries.
+ * @param toolId - Stable tool integration ID to find.
+ * @returns Whether the integration is available for use.
+ */
+export const isToolIntegrationAvailable = (
+    tools: ToolIntegrationSummary[],
+    toolId: string,
+): boolean =>
+    tools.some((tool) => tool.id === toolId && tool.status === 'available');
 
 export const resolveCreateProjectCodeEditorId = (
     settings: CodeEditorIntegrationSettings[],

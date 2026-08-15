@@ -41,7 +41,6 @@ import {
     fileExists,
     pathExists,
 } from './commands/fileSystem.js';
-import { getInstalledTools } from './commands/installedTools.js';
 import { installRelease } from './commands/installRelease.js';
 import {
     exportProjectEditorSettings,
@@ -83,12 +82,12 @@ import {
 } from './commands/userPreferences.js';
 import { getCurrentAppConfig } from './config/index.js';
 import { refreshMenu } from './helpers/menu.helper.js';
-import { getCachedTools, refreshToolCache } from './services/toolCache.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { GitService } from './tool-integration/integrations/git/git.service.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
-import { gitConfigGetGlobalIdentity } from './utils/git.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { setAutoCheckUpdates } from './utils/prefs.utils.js';
 import { isDev } from './utils.js';
@@ -99,10 +98,20 @@ const AppHandler = createIpcHandleTyped<AppBridge>();
 export class AppController implements AppBridge {
     private clearReleaseCachePromise: Promise<void> | null = null;
 
+    /**
+     * Creates the application bridge controller.
+     *
+     * @param i18nService - Main-process localization service.
+     * @param appLifecycleService - Application lifecycle coordinator.
+     * @param codeEditorIntegrationService - Code editor integration facade.
+     * @param gitService - Typed Git command service.
+     * @param trayAvailabilityService - System tray availability service.
+     */
     constructor(
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly gitService: GitService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
     @AppHandler('getUserPreferences')
@@ -259,16 +268,6 @@ export class AppController implements AppBridge {
     }
 
     /**
-     * Gets independently configured global Git identity values.
-     *
-     * @returns The global Git name and email, including partial identity.
-     */
-    @AppHandler('getGlobalGitIdentity')
-    getGlobalGitIdentity() {
-        return gitConfigGetGlobalIdentity();
-    }
-
-    /**
      * Creates a project with the selected editor and Git setup.
      *
      * @param name - Display name for the new project.
@@ -297,6 +296,7 @@ export class AppController implements AppBridge {
             codeEditorId,
             withGit,
             this.codeEditorIntegrationService,
+            this.gitService,
             overwriteProjectPath,
             gitOptions,
         );
@@ -372,7 +372,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('initializeProjectGit')
     initializeProjectGit(project: ProjectDetails) {
-        return initializeProjectGit(project);
+        return initializeProjectGit(project, this.gitService);
     }
 
     @AppHandler('exportProjectEditorSettings')
@@ -403,23 +403,6 @@ export class AppController implements AppBridge {
     @AppHandler('checkAllProjectsValid')
     checkAllProjectsValid() {
         return checkAndUpdateProjects();
-    }
-
-    @AppHandler('getInstalledTools')
-    async getInstalledTools() {
-        const tools = await getInstalledTools();
-        await refreshToolCache(tools);
-        return tools;
-    }
-
-    @AppHandler('getCachedTools')
-    getCachedTools(options?: { refreshIfStale?: boolean }) {
-        return getCachedTools(options);
-    }
-
-    @AppHandler('refreshToolCache')
-    refreshToolCache() {
-        return refreshToolCache();
     }
 
     @AppHandler('getPlatform')

@@ -64,6 +64,25 @@ describe('JsonStoreCoordinatorService', () => {
         expect(JSON.parse(adapter.contents ?? '')).toEqual({ values: [] });
     });
 
+    it.each(['', '  \n\t'])(
+        'loads defaults from an empty file and repairs it on the next write',
+        async (contents) => {
+            const adapter = createFileAdapter(contents);
+            const coordinator = new JsonStoreCoordinatorService(adapter);
+            const definition = createDefinition();
+
+            const current = await coordinator.read(definition);
+
+            expect(current.value).toEqual({ values: [] });
+            expect(adapter.write).not.toHaveBeenCalled();
+
+            await coordinator.write(definition, current.value);
+
+            expect(adapter.write).toHaveBeenCalledOnce();
+            expect(JSON.parse(adapter.contents ?? '')).toEqual({ values: [] });
+        },
+    );
+
     it('serializes concurrent updates for the same path', async () => {
         const adapter = createFileAdapter();
         const coordinator = new JsonStoreCoordinatorService(adapter);

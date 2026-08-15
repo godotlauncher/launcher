@@ -8,7 +8,6 @@ const mocks = vi.hoisted(() => ({
     checkAndUpdateReleases: vi.fn(),
     launchProject: vi.fn(),
     ipcWebContentsSend: vi.fn(),
-    isCacheStale: vi.fn(),
     configureI18n: vi.fn(),
     getLocale: vi.fn(() => 'de-DE'),
     appQuit: vi.fn(),
@@ -90,10 +89,6 @@ vi.mock('./checks.js', () => ({
 vi.mock('./commands/projects.js', () => ({
     launchProject: mocks.launchProject,
 }));
-vi.mock('./services/toolCache.js', () => ({
-    isCacheStale: mocks.isCacheStale,
-    refreshToolCache: vi.fn(),
-}));
 vi.mock('./i18n/index.js', () => ({ configureI18n: mocks.configureI18n }));
 vi.mock('./autoUpdater.js', () => ({
     setupAutoUpdate: mocks.setupAutoUpdate,
@@ -159,6 +154,9 @@ describe('AppLifecycleService', () => {
         setLocale: vi.fn(),
     };
     const codeEditorIntegrationService = {};
+    const toolIntegrationService = {
+        refreshAll: vi.fn(),
+    };
 
     const trayAvailabilityService = {
         isAvailable: vi.fn(async () => true),
@@ -171,6 +169,7 @@ describe('AppLifecycleService', () => {
             windowManager as never,
             i18nService as never,
             codeEditorIntegrationService as never,
+            toolIntegrationService as never,
             trayAvailabilityService as never,
         );
     }
@@ -207,7 +206,7 @@ describe('AppLifecycleService', () => {
         });
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
         mocks.launchProject.mockResolvedValue({ launched: true });
-        mocks.isCacheStale.mockResolvedValue(false);
+        toolIntegrationService.refreshAll.mockResolvedValue([]);
         mocks.setupFocusRevalidation.mockReturnValue(
             mocks.disposeFocusRevalidation,
         );
@@ -235,6 +234,26 @@ describe('AppLifecycleService', () => {
         expect(i18nService.setLocale).toHaveBeenCalledWith('de-DE');
         expect(mocks.checkAndUpdateProjects).toHaveBeenCalledOnce();
         expect(mocks.checkAndUpdateReleases).toHaveBeenCalledOnce();
+    });
+
+    it('starts tool refresh before project checks without blocking startup', async () => {
+        let resolveRefresh: (() => void) | undefined;
+        toolIntegrationService.refreshAll.mockReturnValue(
+            new Promise<void>((resolve) => {
+                resolveRefresh = resolve;
+            }),
+        );
+        const service = createService();
+
+        await service.beforeWindowReady();
+
+        expect(toolIntegrationService.refreshAll).toHaveBeenCalledOnce();
+        expect(
+            toolIntegrationService.refreshAll.mock.invocationCallOrder[0],
+        ).toBeLessThan(
+            mocks.checkAndUpdateProjects.mock.invocationCallOrder[0],
+        );
+        resolveRefresh?.();
     });
 
     it('applies a stored concrete locale', async () => {

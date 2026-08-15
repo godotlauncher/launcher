@@ -1,4 +1,4 @@
-import type { CachedTool } from '@shared/contracts';
+import type { ToolIntegrationSummary } from '@shared/contracts';
 import type React from 'react';
 import { GitToolSettings } from '../../../components/settings/gitToolSettings.component';
 import { SettingsPanelSection } from './settingsPanelSection.component';
@@ -8,7 +8,7 @@ type Translate = (key: string) => string;
 type ToolsSettingsPanelProps = {
     active: boolean;
     t: Translate;
-    gitTool?: CachedTool;
+    gitTool?: ToolIntegrationSummary;
     isRescanningTools: boolean;
     onRescanTools: () => Promise<void>;
 };

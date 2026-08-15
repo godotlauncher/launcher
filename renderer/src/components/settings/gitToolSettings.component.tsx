@@ -1,23 +1,28 @@
-import type { CachedTool } from '@shared/contracts';
+import type { ToolIntegrationSummary } from '@shared/contracts';
 import { useTranslation } from 'react-i18next';
 
 type GitToolSettingsProps = {
-    tool?: CachedTool;
+    tool?: ToolIntegrationSummary;
 };
 
 export const GitToolSettings: React.FC<GitToolSettingsProps> = ({ tool }) => {
     const { t } = useTranslation('settings');
 
     const status = tool
-        ? tool.verified
+        ? tool.status === 'available'
             ? {
                   label: t('tools.status.available'),
                   appearance: 'badge-success',
               }
-            : {
-                  label: t('tools.status.invalid'),
-                  appearance: 'badge-warning',
-              }
+            : tool.status === 'invalid'
+              ? {
+                    label: t('tools.status.invalid'),
+                    appearance: 'badge-warning',
+                }
+              : {
+                    label: t('tools.status.missing'),
+                    appearance: 'badge-error',
+                }
         : {
               label: t('tools.status.missing'),
               appearance: 'badge-error',
@@ -39,8 +44,11 @@ export const GitToolSettings: React.FC<GitToolSettingsProps> = ({ tool }) => {
                 </p>
             </div>
             <div className="flex flex-col items-start justify-center gap-0">
-                <div className="flex flex-row items-center p-4 bg-base-200 rounded-lg w-full max-w-xl">
-                    <table>
+                <div
+                    className="flex w-full flex-row items-center rounded-lg bg-base-200 p-4"
+                    data-testid="gitToolCard"
+                >
+                    <table className="w-full">
                         <tbody>
                             <tr className="h-10">
                                 <td className="flex-1 pr-2">

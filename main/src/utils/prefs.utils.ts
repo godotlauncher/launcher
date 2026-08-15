@@ -22,6 +22,15 @@ import { getDefaultDirs } from './platform.utils.js';
 export type StoredUserPreferences = Partial<UserPreferences> & {
     vs_code_path?: string;
     windows_symlink_win_notify?: boolean;
+    installed_tools?: {
+        last_scan: number;
+        tools: Array<{
+            name: string;
+            path: string;
+            version: string | null;
+            verified: boolean;
+        }>;
+    };
 };
 
 export type UserPreferencesSnapshot = {

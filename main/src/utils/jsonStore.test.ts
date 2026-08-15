@@ -41,6 +41,31 @@ describe('jsonStore', () => {
         expect(fs.existsSync(filePath)).toBe(false);
     });
 
+    it.each(['', '  \n\t'])(
+        'loads defaults from an empty file without invoking parse recovery',
+        async (contents) => {
+            const filePath = createTempFile('empty.json');
+            fs.writeFileSync(filePath, contents, 'utf-8');
+            const onParseError = vi.fn(() => ({ count: -1 }));
+            const store = createJsonStore<{ count: number }>({
+                pathProvider: () => filePath,
+                defaultValue: () => ({ count: 42 }),
+                onParseError,
+            });
+
+            const snapshot = await store.read();
+
+            expect(snapshot.value).toEqual({ count: 42 });
+            expect(onParseError).not.toHaveBeenCalled();
+
+            await store.write(snapshot.value);
+
+            expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual({
+                count: 42,
+            });
+        },
+    );
+
     it('writes and reads values safely', async () => {
         const filePath = createTempFile('default.json');
         const store = createJsonStore<{ items: number[] }>({
