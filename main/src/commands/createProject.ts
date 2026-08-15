@@ -19,12 +19,7 @@ import {
 } from '../constants.js';
 import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
-import {
-    gitAddAndCommit,
-    gitConfigSetIdentity,
-    gitInit,
-    gitRenameBranch,
-} from '../utils/git.utils.js';
+import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import {
     createProjectFile,
     DEFAULT_PROJECT_DEFINITION,
@@ -39,7 +34,6 @@ import { getDefaultDirs } from '../utils/platform.utils.js';
 import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 import { addProjectToList } from '../utils/projects.utils.js';
-import { getInstalledTools } from './installedTools.js';
 import { getUserPreferences } from './userPreferences.js';
 
 /**
@@ -51,6 +45,7 @@ import { getUserPreferences } from './userPreferences.js';
  * @param codeEditorId - Optional code editor integration to apply.
  * @param withGit - Whether to initialize Git when it is available.
  * @param codeEditorIntegrationService - Service used to configure the code editor.
+ * @param gitService - Typed Git command service.
  * @param overwriteProjectPath - Optional path used to choose the project parent directory.
  * @param gitOptions - Optional initial commit and identity setup choice.
  * @returns The project creation result.
@@ -62,6 +57,7 @@ export async function createProject(
     codeEditorId: CodeEditorId | null,
     withGit: boolean,
     codeEditorIntegrationService: CodeEditorIntegrationService,
+    gitService: GitService,
     overwriteProjectPath?: string,
     gitOptions?: CreateProjectGitOptions,
 ): Promise<CreateProjectResult> {
@@ -78,11 +74,7 @@ export async function createProject(
         }
     }
 
-    const tools = await getInstalledTools();
-
-    const gitTool = tools.find((t) => t.name === 'Git');
-
-    if (withGit && !gitTool) {
+    if (withGit && !(await gitService.exists())) {
         logger.warn(
             'Create Project with Git, but Git is not installed. Setting withGit to false',
         );
@@ -216,7 +208,7 @@ export async function createProject(
         });
 
         // Add the recommended Git metadata and initialize the repository.
-        if (withGit && gitTool) {
+        if (withGit) {
             await fs.promises.copyFile(
                 path.resolve(projectResDir, 'default_gitignore'),
                 path.resolve(projectPath, '.gitignore'),
@@ -225,10 +217,10 @@ export async function createProject(
                 path.resolve(projectResDir, 'default-gitattributes'),
                 path.resolve(projectPath, '.gitattributes'),
             );
-            if (!(await gitInit(projectPath))) {
+            if (!(await gitService.init(projectPath))) {
                 throw new Error(t('createProject:errors.failedGitInit'));
             }
-            if (!(await gitRenameBranch(projectPath))) {
+            if (!(await gitService.renameBranch(projectPath))) {
                 throw new Error(t('createProject:errors.failedGitBranch'));
             }
 
@@ -250,7 +242,7 @@ export async function createProject(
                         );
                     }
                     if (
-                        !(await gitConfigSetIdentity(
+                        !(await gitService.setIdentity(
                             name,
                             email,
                             scope,
@@ -263,7 +255,7 @@ export async function createProject(
                     }
                 }
 
-                if (!(await gitAddAndCommit(projectPath))) {
+                if (!(await gitService.addAndCommit(projectPath))) {
                     throw new Error(t('createProject:errors.failedGitCommit'));
                 }
             }

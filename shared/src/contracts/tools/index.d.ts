@@ -1,9 +1,3 @@
-export type InstalledTool = {
-    name: string;
-    version: string | null;
-    path: string;
-};
-
 export type ToolIntegrationStatus =
     | 'available'
     | 'disabled'

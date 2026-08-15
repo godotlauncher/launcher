@@ -22,12 +22,13 @@ import type {
     ProjectDetails,
     ReleaseInstallProgress,
     ReleaseSummary,
+    ToolIntegrationSummary,
     UserPreferences,
 } from '@shared/contracts';
 import sharp from 'sharp';
 import {
     createPreferences,
-    DEFAULT_TOOLS,
+    DEFAULT_TOOL_INTEGRATIONS,
     SAMPLE_AVAILABLE_PRERELEASES,
     SAMPLE_AVAILABLE_RELEASES,
     SAMPLE_CUSTOM_RELEASE,
@@ -41,7 +42,6 @@ import {
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
 } from './sampleData';
 import type {
-    CachedTool,
     ElectronPage,
     OnboardingScreenshotPlatform,
     OnboardingScreenshotStep,
@@ -645,7 +645,7 @@ export async function stubGlobalGitIdentity(
 ) {
     await electronApp.evaluate(
         ({ ipcMain }, injectedIdentity: GitIdentity) => {
-            const channel = 'app.getGlobalGitIdentity';
+            const channel = 'git.getGlobalIdentity';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,
@@ -760,7 +760,10 @@ export async function prepareAppWithStubbedData(
         ),
     );
     await retryCollectedElectronPromise(() =>
-        stubInstalledTools(electronApp, options.tools ?? DEFAULT_TOOLS),
+        stubToolIntegrations(
+            electronApp,
+            options.toolIntegrations ?? DEFAULT_TOOL_INTEGRATIONS,
+        ),
     );
     await reloadScreenshotPage(page);
     await expect(page.getByTestId('btnProjects')).toBeVisible({
@@ -1408,40 +1411,25 @@ export async function stubCustomEditorDuplicateRegistration(
     );
 }
 
-export async function stubInstalledTools(
+export async function stubToolIntegrations(
     electronApp: ElectronApplication,
-    tools: CachedTool[],
+    integrations: ToolIntegrationSummary[],
 ) {
-    await electronApp.evaluate(({ ipcMain }, injectedTools: CachedTool[]) => {
-        const appChannel = <Method extends AppMethod>(method: Method) =>
-            `app.${method}` as `app.${Method}`;
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedIntegrations: ToolIntegrationSummary[]) => {
         const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
             success: true,
             data,
         });
 
-        const getInstalledToolsChannel = appChannel('getInstalledTools');
-        ipcMain.removeHandler(getInstalledToolsChannel);
-        ipcMain.handle(getInstalledToolsChannel, async () =>
-            ipcSuccess<AppResult<'getInstalledTools'>>(
-                injectedTools.map((tool) => ({
-                    name: tool.name,
-                    path: tool.path,
-                    version: tool.version ?? null,
-                })),
-            ),
-        );
-
-        const getCachedToolsChannel = appChannel('getCachedTools');
-        ipcMain.removeHandler(getCachedToolsChannel);
-        ipcMain.handle(getCachedToolsChannel, async () =>
-            ipcSuccess<AppResult<'getCachedTools'>>(
-                injectedTools.map((tool) => ({
-                    ...tool,
-                    version: tool.version ?? null,
-                    verified: true,
-                })),
-            ),
-        );
-    }, tools);
+            for (const method of ['listIntegrations', 'rescanIntegrations']) {
+                const channel = `toolIntegration.${method}`;
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, async () =>
+                    ipcSuccess(injectedIntegrations),
+                );
+            }
+        },
+        integrations,
+    );
 }

@@ -296,6 +296,7 @@ export class AppController implements AppBridge {
             codeEditorId,
             withGit,
             this.codeEditorIntegrationService,
+            this.gitService,
             overwriteProjectPath,
             gitOptions,
         );
