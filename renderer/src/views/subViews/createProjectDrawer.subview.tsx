@@ -1,12 +1,12 @@
 import type {
-    CachedTool,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
     GitIdentityScope,
     RendererType,
+    ToolIntegrationSummary,
 } from '@shared/contracts';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
@@ -16,6 +16,7 @@ import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
 import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
+import { useToolIntegrations } from '../../hooks/useToolIntegrations';
 import {
     CreateProjectGitIdentityDialog,
     type GitIdentityDialogPage,
@@ -30,7 +31,7 @@ import {
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
     isGitIdentityComplete,
-    isVerifiedToolAvailable,
+    isToolIntegrationAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
@@ -75,7 +76,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const [showGitIdentityValidation, setShowGitIdentityValidation] =
         useState(false);
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
-    const [tools, setTools] = useState<CachedTool[]>([]);
+    const [tools, setTools] = useState<ToolIntegrationSummary[]>([]);
     const [overwriteProjectPath, setOverwriteProjectPath] =
         useState<boolean>(false);
     const [withGit, setWithGit] = useState<boolean>(true);
@@ -95,6 +96,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
+    const { listIntegrations } = useToolIntegrations();
     const { preferences, platform } = usePreferences();
     const pathSeparator = platform === 'win32' ? '\\' : '/';
     const defaultOverwriteBasePath = preferences?.projects_location ?? '';
@@ -356,10 +358,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         }
     };
 
-    const hasTool = useCallback(
-        (name: string): boolean => isVerifiedToolAvailable(tools, name),
-        [tools],
-    );
+    const gitAvailable = isToolIntegrationAvailable(tools, 'git');
 
     useEffect(() => {
         if (!open) {
@@ -371,11 +370,10 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             inputNameRef.current?.focus();
         });
 
-        appBridge
-            .getCachedTools({ refreshIfStale: false })
-            .then((cachedTools) => {
+        listIntegrations()
+            .then((integrations) => {
                 if (active) {
-                    setTools(cachedTools);
+                    setTools(integrations);
                 }
             })
             .catch(() => {
@@ -393,7 +391,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             active = false;
             window.cancelAnimationFrame(animationFrameId);
         };
-    }, [open]);
+    }, [listIntegrations, open]);
 
     useEffect(() => {
         if (!open) {
@@ -429,10 +427,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     useEffect(() => {
         if (loadingTools || loadingCodeEditors) return;
 
-        const hasGit = hasTool('Git');
-        setWithGit(hasGit);
+        setWithGit(gitAvailable);
         setCodeEditorId(resolveCreateProjectCodeEditorId(codeEditorSettings));
-    }, [codeEditorSettings, hasTool, loadingCodeEditors, loadingTools]);
+    }, [codeEditorSettings, gitAvailable, loadingCodeEditors, loadingTools]);
 
     const handleSelectProjectFolder = async () => {
         setSelectingFolder(true);
@@ -456,8 +453,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             setSelectingFolder(false);
         }
     };
-
-    const gitAvailable = hasTool('Git');
 
     useEffect(() => {
         if (!open) {

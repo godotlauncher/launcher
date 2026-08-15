@@ -25,7 +25,6 @@ import type {
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
-import type { CachedTool, InstalledTool } from '../tools/index.js';
 import type {
     AppUpdateMessage,
     CheckForUpdatesOptions,
@@ -158,11 +157,6 @@ export type AppBridge = {
     ): Promise<LaunchProjectResult>;
     checkProjectValid(project: ProjectDetails): Promise<ProjectDetails>;
     checkAllProjectsValid(): Promise<ProjectDetails[]>;
-    getInstalledTools(): Promise<InstalledTool[]>;
-    getCachedTools(options?: {
-        refreshIfStale?: boolean;
-    }): Promise<CachedTool[]>;
-    refreshToolCache(): Promise<CachedTool[]>;
     getPlatform(): Promise<string>;
     getTrayAvailability(): Promise<boolean>;
     getAppVersion(): Promise<string>;

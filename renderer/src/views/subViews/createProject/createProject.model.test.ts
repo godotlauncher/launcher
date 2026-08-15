@@ -9,7 +9,7 @@ import {
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
     isGitIdentityComplete,
-    isVerifiedToolAvailable,
+    isToolIntegrationAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
     resolveCreateProjectCodeEditorId,
@@ -115,7 +115,7 @@ describe('create project model helpers', () => {
         });
     });
 
-    it('derives renderer defaults and verified tool availability', () => {
+    it('derives renderer defaults and tool integration availability', () => {
         expect(getDefaultRendererForReleaseVersion('4.3-stable')).toBe(
             'FORWARD_PLUS',
         );
@@ -123,29 +123,29 @@ describe('create project model helpers', () => {
             undefined,
         );
         expect(
-            isVerifiedToolAvailable(
+            isToolIntegrationAvailable(
                 [
                     {
-                        name: 'Git',
-                        verified: true,
-                        path: '/usr/bin/git',
+                        id: 'git',
+                        displayName: 'Git',
+                        status: 'available',
                         version: null,
                     },
                 ],
-                'Git',
+                'git',
             ),
         ).toBe(true);
         expect(
-            isVerifiedToolAvailable(
+            isToolIntegrationAvailable(
                 [
                     {
-                        name: 'VSCode',
-                        verified: true,
-                        path: '',
+                        id: 'git',
+                        displayName: 'Git',
+                        status: 'unchecked',
                         version: null,
                     },
                 ],
-                'VSCode',
+                'git',
             ),
         ).toBe(false);
     });

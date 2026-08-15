@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { CachedTool, UserPreferences } from '@shared/contracts';
+import type { UserPreferences } from '@shared/contracts';
 import { dialog } from 'electron';
 import logger from 'electron-log';
 import { startAutoUpdateChecks, stopAutoUpdateChecks } from '../autoUpdater.js';
@@ -24,7 +24,12 @@ export type StoredUserPreferences = Partial<UserPreferences> & {
     windows_symlink_win_notify?: boolean;
     installed_tools?: {
         last_scan: number;
-        tools: CachedTool[];
+        tools: Array<{
+            name: string;
+            path: string;
+            version: string | null;
+            verified: boolean;
+        }>;
     };
 };
 

@@ -85,12 +85,6 @@ import { refreshMenu } from './helpers/menu.helper.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { ToolIntegrationService } from './tool-integration/tool-integration.service.js';
-import {
-    mapToolSummariesToCachedTools,
-    mapToolSummariesToInstalledTools,
-} from './tool-integration/tool-integration-legacy.mapper.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { gitConfigGetGlobalIdentity } from './utils/git.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
@@ -109,14 +103,12 @@ export class AppController implements AppBridge {
      * @param i18nService - Main-process localization service.
      * @param appLifecycleService - Application lifecycle coordinator.
      * @param codeEditorIntegrationService - Code editor integration facade.
-     * @param toolIntegrationService - Command-line tool integration facade.
      * @param trayAvailabilityService - System tray availability service.
      */
     constructor(
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
-        private readonly toolIntegrationService: ToolIntegrationService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
     @AppHandler('getUserPreferences')
@@ -417,29 +409,6 @@ export class AppController implements AppBridge {
     @AppHandler('checkAllProjectsValid')
     checkAllProjectsValid() {
         return checkAndUpdateProjects();
-    }
-
-    @AppHandler('getInstalledTools')
-    async getInstalledTools() {
-        return mapToolSummariesToInstalledTools(
-            await this.toolIntegrationService.rescanAll(),
-        );
-    }
-
-    @AppHandler('getCachedTools')
-    async getCachedTools(options?: { refreshIfStale?: boolean }) {
-        const summaries =
-            options?.refreshIfStale === false
-                ? await this.toolIntegrationService.list()
-                : await this.toolIntegrationService.refreshAll();
-        return mapToolSummariesToCachedTools(summaries);
-    }
-
-    @AppHandler('refreshToolCache')
-    async refreshToolCache() {
-        return mapToolSummariesToCachedTools(
-            await this.toolIntegrationService.rescanAll(),
-        );
     }
 
     @AppHandler('getPlatform')
