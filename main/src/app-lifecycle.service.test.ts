@@ -130,7 +130,11 @@ describe('AppLifecycleService', () => {
     const onActivate = vi.fn();
     const offActivate = vi.fn();
     const configService = {
-        getAll: vi.fn(() => ({ isDev: false, startHidden: false })),
+        getAll: vi.fn(() => ({
+            isDev: false,
+            startHidden: false,
+            docsScreenshots: false,
+        })),
     };
     const electronAppService = {
         clearApplicationMenu: vi.fn(),
@@ -203,6 +207,7 @@ describe('AppLifecycleService', () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: false,
+            docsScreenshots: false,
         });
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
         mocks.launchProject.mockResolvedValue({ launched: true });
@@ -270,6 +275,10 @@ describe('AppLifecycleService', () => {
 
         await initializeLifecycle(service);
 
+        expect(mocks.setupFocusRevalidation).toHaveBeenCalledWith(
+            mainWindow,
+            expect.any(Function),
+        );
         expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
 
         service.revealInitialWindow();
@@ -278,10 +287,24 @@ describe('AppLifecycleService', () => {
         expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
     });
 
+    it('does not install focus revalidation for documentation screenshots', async () => {
+        configService.getAll.mockReturnValue({
+            isDev: false,
+            startHidden: false,
+            docsScreenshots: true,
+        });
+        const service = createService();
+
+        await initializeLifecycle(service);
+
+        expect(mocks.setupFocusRevalidation).not.toHaveBeenCalled();
+    });
+
     it('keeps a hidden launch hidden after the renderer is ready', async () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: true,
+            docsScreenshots: false,
         });
         const service = createService();
 
@@ -296,6 +319,7 @@ describe('AppLifecycleService', () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: true,
+            docsScreenshots: false,
         });
         trayAvailabilityService.isAvailable.mockResolvedValue(false);
         const service = createService();

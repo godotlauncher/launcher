@@ -49,6 +49,13 @@ const DOWNLOAD_ERROR_SCREENSHOTS: ScreenshotConfig[] = [
         visibleError: "GitHub's download service is temporarily unavailable.",
         externalLinkLabel: 'githubstatus.com',
     }),
+    createDownloadErrorScreenshot({
+        fileBase: 'screen_installs_archive_integrity_mismatch',
+        description: 'Install New Version view with archive integrity mismatch',
+        error: 'The downloaded editor archive failed its integrity check and was not installed.',
+        visibleError:
+            'The downloaded editor archive failed its integrity check and was not installed.',
+    }),
 ];
 
 export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
