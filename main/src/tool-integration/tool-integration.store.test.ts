@@ -47,7 +47,7 @@ describe('ToolIntegrationStore', () => {
         await store.update('git', { enabled: false });
 
         await expect(fs.readFile(storePath, 'utf-8')).resolves.toContain(
-            '"schemaVersion": 1',
+            '"schemaVersion": 2',
         );
     });
 
@@ -76,7 +76,7 @@ describe('ToolIntegrationStore', () => {
         });
         const persisted = JSON.parse(await fs.readFile(storePath, 'utf-8'));
         expect(persisted).toMatchObject({
-            schemaVersion: 1,
+            schemaVersion: 2,
             tools: {
                 git: {
                     settings: {
@@ -84,6 +84,7 @@ describe('ToolIntegrationStore', () => {
                         executablePathOverride: '/custom/git',
                         executableArgsOverride: ['--wrapper'],
                     },
+                    configuration: {},
                     installations: {},
                 },
             },
@@ -156,6 +157,123 @@ describe('ToolIntegrationStore', () => {
         });
     });
 
+    it('migrates schema version 1 without changing lifecycle data', async () => {
+        const storePath = await createStorePath();
+        await fs.writeFile(
+            storePath,
+            JSON.stringify({
+                schemaVersion: 1,
+                tools: {
+                    git: {
+                        settings: {
+                            enabled: false,
+                            executablePathOverride: '/custom/git',
+                            executableArgsOverride: ['--wrapper'],
+                        },
+                        installations: {
+                            [process.platform]: {
+                                [process.arch]: {
+                                    installation: {
+                                        executablePath: '/custom/git',
+                                        executableArgs: ['--wrapper'],
+                                        version: '2.0.0',
+                                        source: 'override',
+                                    },
+                                    checkedAt: 123,
+                                    settingsFingerprint: 'fingerprint',
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            'utf-8',
+        );
+        const store = createStore(storePath);
+
+        await expect(store.getConfiguration('git')).resolves.toEqual({});
+        await expect(store.get('git')).resolves.toEqual({
+            enabled: false,
+            executablePathOverride: '/custom/git',
+            executableArgsOverride: ['--wrapper'],
+        });
+        await expect(store.getDetectedInstallation('git')).resolves.toEqual({
+            installation: {
+                executablePath: '/custom/git',
+                executableArgs: ['--wrapper'],
+                version: '2.0.0',
+                source: 'override',
+            },
+            checkedAt: 123,
+            settingsFingerprint: 'fingerprint',
+        });
+
+        await store.updateConfiguration('git', (configuration) =>
+            Object.keys(configuration).length === 0
+                ? configuration
+                : { unexpected: true },
+        );
+
+        const persisted = JSON.parse(await fs.readFile(storePath, 'utf-8'));
+        expect(persisted).toMatchObject({
+            schemaVersion: 2,
+            tools: {
+                git: {
+                    settings: {
+                        enabled: false,
+                        executablePathOverride: '/custom/git',
+                        executableArgsOverride: ['--wrapper'],
+                    },
+                    configuration: {},
+                    installations: {
+                        [process.platform]: {
+                            [process.arch]: {
+                                checkedAt: 123,
+                                settingsFingerprint: 'fingerprint',
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    });
+
+    it('updates configuration without replacing lifecycle data', async () => {
+        const storePath = await createStorePath();
+        const store = createStore(storePath);
+        await store.update('git', { executablePathOverride: '/custom/git' });
+        await store.setDetectedInstallation(
+            'git',
+            {
+                executablePath: '/custom/git',
+                executableArgs: [],
+                version: '2.0.0',
+                source: 'override',
+            },
+            123,
+            'fingerprint',
+        );
+
+        await expect(
+            store.updateConfiguration('git', (configuration) => ({
+                ...configuration,
+                projectIdentityPreset: { name: 'Name' },
+            })),
+        ).resolves.toEqual({
+            projectIdentityPreset: { name: 'Name' },
+        });
+
+        await expect(store.get('git')).resolves.toMatchObject({
+            executablePathOverride: '/custom/git',
+        });
+        await expect(
+            store.getDetectedInstallation('git'),
+        ).resolves.toMatchObject({
+            checkedAt: 123,
+            settingsFingerprint: 'fingerprint',
+        });
+    });
+
     it('serializes concurrent updates through the shared JSON coordinator', async () => {
         const storePath = await createStorePath();
         const store = createStore(storePath);
@@ -179,7 +297,7 @@ describe('ToolIntegrationStore', () => {
         const storePath = await createStorePath();
         await fs.writeFile(
             storePath,
-            JSON.stringify({ schemaVersion: 2, tools: {} }),
+            JSON.stringify({ schemaVersion: 3, tools: {} }),
             'utf-8',
         );
 

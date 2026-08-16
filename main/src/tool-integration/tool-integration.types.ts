@@ -36,11 +36,12 @@ export type StoredToolInstallation = {
 
 export type StoredToolState = {
     settings: ToolSettings;
+    configuration: Record<string, unknown>;
     installations: Record<string, Record<string, StoredToolInstallation>>;
 };
 
 export type ToolIntegrationStoreFile = {
-    schemaVersion: 1;
+    schemaVersion: 2;
     tools: Record<ToolId, StoredToolState>;
 };
 

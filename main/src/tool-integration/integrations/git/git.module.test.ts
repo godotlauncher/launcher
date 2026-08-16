@@ -6,6 +6,7 @@ import { ToolIntegrationRegistry } from '../../tool-integration.registry.js';
 import { GitController } from './git.controller.js';
 import { GitModule } from './git.module.js';
 import { GitService } from './git.service.js';
+import { GitToolConfigurationService } from './git-tool-configuration.service.js';
 
 vi.mock('../../../utils/platform.utils.js', () => ({
     findExecutable: vi.fn(),
@@ -32,6 +33,9 @@ describe('GitModule', () => {
         const app = await createApplication(TestGitModule, { logger: false });
 
         expect(app.get(GitService)).toBeInstanceOf(GitService);
+        expect(app.get(GitToolConfigurationService)).toBeInstanceOf(
+            GitToolConfigurationService,
+        );
         expect(app.get(GitController)).toBeInstanceOf(GitController);
         expect(
             app

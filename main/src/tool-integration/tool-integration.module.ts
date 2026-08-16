@@ -39,7 +39,11 @@ type ToolIntegrationModuleAsyncOptions = Pick<
         ToolIntegrationService,
         ToolIntegrationController,
     ],
-    exports: [ToolIntegrationService, ToolProcessExecutor],
+    exports: [
+        ToolIntegrationService,
+        ToolIntegrationStore,
+        ToolProcessExecutor,
+    ],
 })
 // biome-ignore lint/complexity/noStaticOnlyClass: DI modules use static setup methods
 export class ToolIntegrationModule {

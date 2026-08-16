@@ -33,7 +33,7 @@ export class ToolIntegrationStore extends JsonFileStore<ToolIntegrationStoreFile
             pathProvider: () =>
                 path.resolve(options.directory, options.fileName),
             defaultValue: createEmptyToolIntegrationStore,
-            parse: (raw) => normalizeToolIntegrationStore(JSON.parse(raw)),
+            parse: (raw) => JSON.parse(raw) as ToolIntegrationStoreFile,
             normalize: normalizeToolIntegrationStore,
         });
     }
@@ -83,6 +83,48 @@ export class ToolIntegrationStore extends JsonFileStore<ToolIntegrationStoreFile
             };
         });
         return storedSettings;
+    }
+
+    /**
+     * Reads provider-owned configuration for one tool.
+     *
+     * @param toolId - Stable tool ID whose configuration should be read.
+     * @returns A safe copy of the stored provider configuration.
+     */
+    async getConfiguration(toolId: ToolId): Promise<Record<string, unknown>> {
+        const current = await this.readValue();
+        return current.value.tools[toolId]?.configuration ?? {};
+    }
+
+    /**
+     * Updates provider-owned configuration without replacing tool lifecycle data.
+     *
+     * @param toolId - Stable tool ID whose configuration should be updated.
+     * @param mutator - Function that returns the complete next configuration.
+     * @returns A safe copy of the normalized stored configuration.
+     */
+    async updateConfiguration(
+        toolId: ToolId,
+        mutator: (current: Record<string, unknown>) => Record<string, unknown>,
+    ): Promise<Record<string, unknown>> {
+        let storedConfiguration: Record<string, unknown> = {};
+        await this.updateValue((current) => {
+            const currentTool =
+                current.tools[toolId] ?? createDefaultStoredToolState();
+            storedConfiguration = mutator(currentTool.configuration);
+
+            return {
+                ...current,
+                tools: {
+                    ...current.tools,
+                    [toolId]: {
+                        ...currentTool,
+                        configuration: storedConfiguration,
+                    },
+                },
+            };
+        });
+        return storedConfiguration;
     }
 
     /**
