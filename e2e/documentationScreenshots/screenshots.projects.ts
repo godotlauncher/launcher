@@ -917,10 +917,12 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 name: 'Add Git identity',
             });
             await expect(dialog).toBeVisible({ timeout: 10000 });
-            await dialog.locator('#createProjectGitName').fill('John Doe');
-            await dialog
-                .locator('#createProjectGitEmail')
-                .fill('john.doe@example.com');
+            await expect(
+                dialog.locator('#createProjectGitName'),
+            ).toHaveValue('');
+            await expect(
+                dialog.locator('#createProjectGitEmail'),
+            ).toHaveValue('');
             await page.waitForTimeout(400);
         },
         cleanup: async (
