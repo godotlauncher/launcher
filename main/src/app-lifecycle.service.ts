@@ -35,6 +35,8 @@ import { getAppIconPath } from './pathResolver.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { GitService } from './tool-integration/integrations/git/git.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationService } from './tool-integration/tool-integration.service.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { ensurePreferencesStorage } from './utils/prefs.utils.js';
@@ -55,6 +57,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
      * @param i18nService - Main-process localization service.
      * @param codeEditorIntegrationService - Code editor lifecycle facade.
      * @param toolIntegrationService - Command-line tool lifecycle facade.
+     * @param gitService - Git repository inspection service.
      * @param trayAvailabilityService - System tray availability service.
      */
     constructor(
@@ -64,6 +67,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly i18nService: I18nService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
         private readonly toolIntegrationService: ToolIntegrationService,
+        private readonly gitService: GitService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
 
@@ -100,7 +104,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         );
 
         logger.debug('App ready, checking projects and releases');
-        await checkAndUpdateProjects();
+        await checkAndUpdateProjects({}, this.gitService);
         await checkAndUpdateReleases();
     }
 
@@ -163,6 +167,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
                 mainWindow,
                 () =>
                     this.codeEditorIntegrationService.revalidateIntegrationSettings(),
+                this.gitService,
             );
         }
         electronAutoUpdater.on(

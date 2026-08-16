@@ -6,6 +6,7 @@ import type {
     ChangeProjectEditorResult,
     CreateProjectGitOptions,
     CreateProjectResult,
+    InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
@@ -146,7 +147,9 @@ export type AppBridge = {
     resetProjectCodeEditorConfig(
         project: ProjectDetails,
     ): Promise<SetProjectCodeEditorResult>;
-    initializeProjectGit(project: ProjectDetails): Promise<ProjectDetails>;
+    initializeProjectGit(
+        project: ProjectDetails,
+    ): Promise<InitializeProjectGitResult>;
     exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;
     launchProject(

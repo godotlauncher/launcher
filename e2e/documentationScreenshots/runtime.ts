@@ -13,6 +13,7 @@ import type {
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
     GitIdentity,
+    InitializeProjectGitResult,
     EditorCatalogArchitecture,
     EditorCatalogPlatform,
     EditorCatalogRelease,
@@ -671,6 +672,30 @@ export async function stubProjectGitInitializationFailure(
             },
         }));
     }, error);
+}
+
+/**
+ * Stubs a successful project Git initialization result.
+ *
+ * @param electronApp - The Electron app whose handler should be replaced.
+ * @param result - Structured Git initialization result returned to the renderer.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubProjectGitInitializationResult(
+    electronApp: ElectronApplication,
+    result: InitializeProjectGitResult,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResult: InitializeProjectGitResult) => {
+            const channel = 'app.initializeProjectGit';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
 }
 
 export async function stubCodeEditorIntegrationRescan(

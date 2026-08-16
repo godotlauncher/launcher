@@ -1,9 +1,22 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Injectable } from '@mariodebono/di';
-import type { GitIdentity, GitIdentityScope } from '@shared/contracts';
+import type {
+    GitIdentity,
+    GitIdentityScope,
+    GitRepositoryInspection,
+    GitRepositoryKind,
+} from '@shared/contracts';
 import logger from 'electron-log';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationService } from '../../tool-integration.service.js';
-import type { ToolExecutionResult } from '../../tool-integration.types.js';
+import type {
+    ToolExecutionRequest,
+    ToolExecutionResult,
+} from '../../tool-integration.types.js';
+
+const GIT_INSPECTION_TIMEOUT_MS = 5000;
+const GIT_INSPECTION_ENV = { LC_ALL: 'C', LANG: 'C' } as const;
 
 @Injectable()
 export class GitService {
@@ -23,6 +36,93 @@ export class GitService {
      */
     async exists(): Promise<boolean> {
         return (await this.run(['--version'])).success;
+    }
+
+    /**
+     * Inspects the Git work tree that contains a project path.
+     *
+     * For a path that does not exist yet, Git runs from its nearest existing
+     * parent so project creation can detect an enclosing repository.
+     *
+     * @param projectPath - Existing or planned project directory to inspect.
+     * @returns A typed repository inspection result.
+     */
+    async inspectRepository(
+        projectPath: string,
+    ): Promise<GitRepositoryInspection> {
+        const inspectionDirectory =
+            await this.findInspectionDirectory(projectPath);
+        if (!inspectionDirectory) {
+            return { status: 'inspection-failed' };
+        }
+
+        const requestOptions = {
+            env: GIT_INSPECTION_ENV,
+            timeoutMs: GIT_INSPECTION_TIMEOUT_MS,
+        };
+        const insideResult = await this.run(
+            ['rev-parse', '--is-inside-work-tree'],
+            inspectionDirectory,
+            false,
+            requestOptions,
+        );
+        if (!insideResult.success) {
+            if (
+                insideResult.reason === 'disabled' ||
+                insideResult.reason === 'invalid' ||
+                insideResult.reason === 'unavailable'
+            ) {
+                return { status: 'git-unavailable' };
+            }
+            if (
+                insideResult.reason === 'command-failed' &&
+                insideResult.stderr
+                    .toLowerCase()
+                    .includes('not a git repository')
+            ) {
+                return { status: 'not-a-repository' };
+            }
+            return { status: 'inspection-failed' };
+        }
+        if (insideResult.stdout.trim() !== 'true') {
+            return { status: 'not-a-repository' };
+        }
+
+        const rootResult = await this.run(
+            ['rev-parse', '--show-toplevel'],
+            inspectionDirectory,
+            false,
+            requestOptions,
+        );
+        if (!rootResult.success || !rootResult.stdout.trim()) {
+            return { status: 'inspection-failed' };
+        }
+
+        const root = await this.normalizePath(rootResult.stdout.trim());
+        const normalizedProjectPath = await this.normalizePath(projectPath);
+        const superprojectResult = await this.run(
+            ['rev-parse', '--show-superproject-working-tree'],
+            inspectionDirectory,
+            false,
+            requestOptions,
+        );
+        if (!superprojectResult.success) {
+            return { status: 'inspection-failed' };
+        }
+
+        let kind: GitRepositoryKind = 'standard';
+        if (superprojectResult.stdout.trim()) {
+            kind = 'submodule';
+        } else if (await this.isGitFile(path.resolve(root, '.git'))) {
+            kind = 'linked-worktree';
+        }
+
+        return {
+            status: 'inside-work-tree',
+            root,
+            isProjectRoot: this.pathsEqual(root, normalizedProjectPath),
+            kind,
+        };
     }
 
     /**
@@ -127,6 +227,15 @@ export class GitService {
         scope: GitIdentityScope,
         dir: string,
     ): Promise<boolean> {
+        if (
+            scope === 'repository' &&
+            !(await this.isProjectRepositoryRoot(dir))
+        ) {
+            logger.error(
+                'Refusing to set repository identity outside the project repository root',
+            );
+            return false;
+        }
         const scopeArgs = scope === 'global' ? ['--global'] : [];
         const cwd = scope === 'repository' ? dir : undefined;
         const nameResult = await this.run(
@@ -185,7 +294,17 @@ export class GitService {
      * @returns Whether repository initialization succeeded.
      */
     async init(dir: string): Promise<boolean> {
-        return (await this.run(['init'], dir)).success;
+        const inspection = await this.inspectRepository(dir);
+        if (inspection.status !== 'not-a-repository') {
+            logger.error(
+                'Refusing to initialize Git inside an existing work tree',
+            );
+            return false;
+        }
+        if (!(await this.run(['init'], dir)).success) {
+            return false;
+        }
+        return await this.isProjectRepositoryRoot(dir);
     }
 
     /**
@@ -195,6 +314,12 @@ export class GitService {
      * @returns Whether the branch rename succeeded.
      */
     async renameBranch(dir: string): Promise<boolean> {
+        if (!(await this.isProjectRepositoryRoot(dir))) {
+            logger.error(
+                'Refusing to rename a branch outside the project repository root',
+            );
+            return false;
+        }
         return (await this.run(['branch', '-m', 'main'], dir)).success;
     }
 
@@ -205,8 +330,21 @@ export class GitService {
      * @returns Whether every initial commit command succeeded.
      */
     async addAndCommit(dir: string): Promise<boolean> {
+        if (!(await this.isProjectRepositoryRoot(dir))) {
+            logger.error(
+                'Refusing to stage files outside the project repository root',
+            );
+            return false;
+        }
         const addResult = await this.run(['add', '.'], dir);
         if (!addResult.success) {
+            return false;
+        }
+
+        if (!(await this.isProjectRepositoryRoot(dir))) {
+            logger.error(
+                'Refusing to commit outside the project repository root',
+            );
             return false;
         }
 
@@ -215,22 +353,131 @@ export class GitService {
     }
 
     /**
+     * Checks whether a directory is the root of its current Git work tree.
+     *
+     * @param dir - Project directory to inspect.
+     * @returns Whether the project is exactly the repository root.
+     */
+    private async isProjectRepositoryRoot(dir: string): Promise<boolean> {
+        const inspection = await this.inspectRepository(dir);
+        return (
+            inspection.status === 'inside-work-tree' && inspection.isProjectRoot
+        );
+    }
+
+    /**
+     * Finds the nearest existing directory that Git can inspect.
+     *
+     * @param targetPath - Existing or planned project path.
+     * @returns The nearest existing directory, or null when none can be read.
+     */
+    private async findInspectionDirectory(
+        targetPath: string,
+    ): Promise<string | null> {
+        let candidate = path.resolve(targetPath);
+        while (true) {
+            try {
+                const stat = await fs.promises.stat(candidate);
+                if (stat.isDirectory()) {
+                    return candidate;
+                }
+                candidate = path.dirname(candidate);
+            } catch (error) {
+                if (
+                    !(error instanceof Error) ||
+                    !('code' in error) ||
+                    (error.code !== 'ENOENT' && error.code !== 'ENOTDIR')
+                ) {
+                    return null;
+                }
+                candidate = path.dirname(candidate);
+            }
+
+            const parent = path.dirname(candidate);
+            if (parent === candidate) {
+                try {
+                    return (await fs.promises.stat(candidate)).isDirectory()
+                        ? candidate
+                        : null;
+                } catch {
+                    return null;
+                }
+            }
+        }
+    }
+
+    /**
+     * Normalizes an existing path or resolves a planned path through its
+     * nearest real parent directory.
+     *
+     * @param targetPath - Path to normalize.
+     * @returns An absolute path with resolved parent symlinks.
+     */
+    private async normalizePath(targetPath: string): Promise<string> {
+        const resolvedPath = path.resolve(targetPath);
+        try {
+            return path.normalize(await fs.promises.realpath(resolvedPath));
+        } catch {
+            const parent = await this.findInspectionDirectory(resolvedPath);
+            if (!parent) {
+                return path.normalize(resolvedPath);
+            }
+            const realParent = await fs.promises.realpath(parent);
+            return path.normalize(
+                path.resolve(realParent, path.relative(parent, resolvedPath)),
+            );
+        }
+    }
+
+    /**
+     * Checks whether a repository marker is a file.
+     *
+     * @param gitPath - Repository marker path.
+     * @returns Whether the marker exists as a file.
+     */
+    private async isGitFile(gitPath: string): Promise<boolean> {
+        try {
+            return (await fs.promises.stat(gitPath)).isFile();
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Compares normalized paths using platform case rules.
+     *
+     * @param left - First path.
+     * @param right - Second path.
+     * @returns Whether both paths identify the same location.
+     */
+    private pathsEqual(left: string, right: string): boolean {
+        const normalizedLeft = path.normalize(left);
+        const normalizedRight = path.normalize(right);
+        return process.platform === 'win32'
+            ? normalizedLeft.toLowerCase() === normalizedRight.toLowerCase()
+            : normalizedLeft === normalizedRight;
+    }
+
+    /**
      * Executes Git through its revalidated tool installation.
      *
      * @param args - Arguments passed to Git as separate process arguments.
      * @param cwd - Optional working directory for the Git process.
      * @param logError - Whether command failures should be logged.
+     * @param requestOptions - Optional environment and timeout overrides.
      * @returns Structured tool execution output.
      */
     private async run(
         args: readonly string[],
         cwd?: string,
         logError = true,
+        requestOptions: Omit<ToolExecutionRequest, 'args' | 'cwd'> = {},
     ): Promise<ToolExecutionResult> {
         try {
             const result = await this.toolIntegrationService.execute('git', {
                 args,
                 cwd,
+                ...requestOptions,
             });
             if (!result.success && logError) {
                 logger.error(`Git command failed: ${result.reason}`);

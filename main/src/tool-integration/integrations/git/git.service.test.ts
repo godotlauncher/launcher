@@ -30,6 +30,14 @@ const failure = (): ToolExecutionResult => ({
     exitCode: 1,
 });
 
+const notRepositoryFailure = (): ToolExecutionResult => ({
+    success: false,
+    reason: 'command-failed',
+    stdout: '',
+    stderr: 'fatal: not a git repository',
+    exitCode: 128,
+});
+
 describe('GitService', () => {
     let service: GitService;
 
@@ -40,6 +48,15 @@ describe('GitService', () => {
     });
 
     it('executes Git through the stable tool ID and explicit working directory', async () => {
+        vi.spyOn(service, 'inspectRepository')
+            .mockResolvedValueOnce({ status: 'not-a-repository' })
+            .mockResolvedValueOnce({
+                status: 'inside-work-tree',
+                root: '/projects/demo',
+                isProjectRoot: true,
+                kind: 'standard',
+            });
+
         await expect(service.init('/projects/demo')).resolves.toBe(true);
 
         expect(execute).toHaveBeenCalledWith('git', {
@@ -114,6 +131,14 @@ describe('GitService', () => {
     ])(
         'sets $scope identity with separate arguments',
         async ({ scope, expectedArgs, expectedCwd }) => {
+            if (scope === 'repository') {
+                vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+                    status: 'inside-work-tree',
+                    root: '/projects/demo',
+                    isProjectRoot: true,
+                    kind: 'standard',
+                });
+            }
             await expect(
                 service.setIdentity(
                     'Mario',
@@ -195,6 +220,12 @@ describe('GitService', () => {
     });
 
     it('renames the initial branch in the repository working directory', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects/demo',
+            isProjectRoot: true,
+            kind: 'standard',
+        });
         await expect(service.renameBranch('/projects/demo')).resolves.toBe(
             true,
         );
@@ -206,6 +237,12 @@ describe('GitService', () => {
     });
 
     it('stages and commits sequentially', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects/demo',
+            isProjectRoot: true,
+            kind: 'standard',
+        });
         await expect(service.addAndCommit('/projects/demo')).resolves.toBe(
             true,
         );
@@ -221,6 +258,12 @@ describe('GitService', () => {
     });
 
     it('does not commit when staging fails', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects/demo',
+            isProjectRoot: true,
+            kind: 'standard',
+        });
         execute.mockResolvedValueOnce(failure());
 
         await expect(service.addAndCommit('/projects/demo')).resolves.toBe(
@@ -230,11 +273,138 @@ describe('GitService', () => {
     });
 
     it('converts unexpected tool service failures into command failure', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValueOnce({
+            status: 'not-a-repository',
+        });
         execute.mockRejectedValueOnce(new Error('unexpected'));
 
         await expect(service.init('/projects/demo')).resolves.toBe(false);
         expect(logger.error).toHaveBeenCalledWith(
             'Git command failed unexpectedly',
         );
+    });
+
+    it('reports a project nested in a standard repository', async () => {
+        execute
+            .mockResolvedValueOnce(success('true\n'))
+            .mockResolvedValueOnce(success('/projects/parent\n'))
+            .mockResolvedValueOnce(success('\n'));
+
+        await expect(
+            service.inspectRepository('/projects/parent/demo'),
+        ).resolves.toEqual({
+            status: 'inside-work-tree',
+            root: '/projects/parent',
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+
+        expect(execute).toHaveBeenNthCalledWith(1, 'git', {
+            args: ['rev-parse', '--is-inside-work-tree'],
+            cwd: '/',
+            env: { LC_ALL: 'C', LANG: 'C' },
+            timeoutMs: 5000,
+        });
+    });
+
+    it('classifies a submodule before considering its .git file marker', async () => {
+        execute
+            .mockResolvedValueOnce(success('true\n'))
+            .mockResolvedValueOnce(success('/projects/parent/submodule\n'))
+            .mockResolvedValueOnce(success('/projects/parent\n'));
+
+        await expect(
+            service.inspectRepository('/projects/parent/submodule'),
+        ).resolves.toMatchObject({
+            status: 'inside-work-tree',
+            kind: 'submodule',
+        });
+    });
+
+    it('classifies a repository root with a .git file as a linked worktree', async () => {
+        vi.spyOn(
+            service as unknown as {
+                isGitFile: (gitPath: string) => Promise<boolean>;
+            },
+            'isGitFile',
+        ).mockResolvedValue(true);
+        execute
+            .mockResolvedValueOnce(success('true\n'))
+            .mockResolvedValueOnce(success('/projects/worktree\n'))
+            .mockResolvedValueOnce(success('\n'));
+
+        await expect(
+            service.inspectRepository('/projects/worktree'),
+        ).resolves.toEqual({
+            status: 'inside-work-tree',
+            root: '/projects/worktree',
+            isProjectRoot: true,
+            kind: 'linked-worktree',
+        });
+    });
+
+    it('distinguishes no repository from unavailable Git', async () => {
+        execute.mockResolvedValueOnce(notRepositoryFailure());
+        await expect(
+            service.inspectRepository('/projects/demo'),
+        ).resolves.toEqual({ status: 'not-a-repository' });
+
+        execute.mockResolvedValueOnce({
+            ...failure(),
+            reason: 'unavailable',
+        });
+        await expect(
+            service.inspectRepository('/projects/demo'),
+        ).resolves.toEqual({ status: 'git-unavailable' });
+    });
+
+    it('refuses repository mutations when the project is nested', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects/parent',
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+
+        await expect(
+            service.renameBranch('/projects/parent/demo'),
+        ).resolves.toBe(false);
+        await expect(
+            service.addAndCommit('/projects/parent/demo'),
+        ).resolves.toBe(false);
+        await expect(
+            service.setIdentity(
+                'Mario',
+                'mario@example.com',
+                'repository',
+                '/projects/parent/demo',
+            ),
+        ).resolves.toBe(false);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rechecks repository scope between staging and committing', async () => {
+        vi.spyOn(service, 'inspectRepository')
+            .mockResolvedValueOnce({
+                status: 'inside-work-tree',
+                root: '/projects/demo',
+                isProjectRoot: true,
+                kind: 'standard',
+            })
+            .mockResolvedValueOnce({
+                status: 'inside-work-tree',
+                root: '/projects',
+                isProjectRoot: false,
+                kind: 'standard',
+            });
+
+        await expect(service.addAndCommit('/projects/demo')).resolves.toBe(
+            false,
+        );
+        expect(execute).toHaveBeenCalledTimes(1);
+        expect(execute).toHaveBeenCalledWith('git', {
+            args: ['add', '.'],
+            cwd: '/projects/demo',
+        });
     });
 });

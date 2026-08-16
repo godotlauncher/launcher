@@ -3,9 +3,9 @@ import {
     type ChildProcessByStdio,
     spawn,
 } from 'node:child_process';
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
+    InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
@@ -298,10 +298,18 @@ export async function launchProject(
     return { launched: true };
 }
 
+/**
+ * Revalidates one project for an application bridge request.
+ *
+ * @param project - Project details to validate.
+ * @param gitService - Optional Git repository inspection service.
+ * @returns The updated project details.
+ */
 export async function checkProjectIsValid(
     project: ProjectDetails,
+    gitService?: GitService,
 ): Promise<ProjectDetails> {
-    return await checkProjectValid(project);
+    return await checkProjectValid(project, {}, gitService);
 }
 
 export async function setProjectWindowed(
@@ -613,7 +621,7 @@ export {
 export async function initializeProjectGit(
     project: ProjectDetails,
     gitService: GitService,
-): Promise<ProjectDetails> {
+): Promise<InitializeProjectGitResult> {
     const projectListPath = resolveProjectListPath();
 
     for (let attempt = 0; attempt < PROJECT_WRITE_MAX_ATTEMPTS; attempt++) {
@@ -631,16 +639,47 @@ export async function initializeProjectGit(
             release: { ...updatedProjects[projectIndex].release },
         };
 
-        if (targetProject.withGit) {
-            return targetProject;
-        }
-
-        const gitInitialized = await gitService.init(targetProject.path);
-        const gitFolderExists = fs.existsSync(
-            path.resolve(targetProject.path, '.git'),
-        );
-
-        if (!gitInitialized || !gitFolderExists) {
+        let inspection = await gitService.inspectRepository(targetProject.path);
+        let gitSetup: InitializeProjectGitResult['gitSetup'];
+        if (inspection.status === 'inside-work-tree') {
+            gitSetup = {
+                status: 'existing-repository',
+                root: inspection.root,
+                isProjectRoot: inspection.isProjectRoot,
+                kind: inspection.kind,
+            };
+        } else if (inspection.status === 'not-a-repository') {
+            if (!(await gitService.init(targetProject.path))) {
+                inspection = await gitService.inspectRepository(
+                    targetProject.path,
+                );
+                if (inspection.status !== 'inside-work-tree') {
+                    throw new Error(t('projects:initGit.errors.initFailed'));
+                }
+                gitSetup = {
+                    status: 'existing-repository',
+                    root: inspection.root,
+                    isProjectRoot: inspection.isProjectRoot,
+                    kind: inspection.kind,
+                };
+            } else {
+                inspection = await gitService.inspectRepository(
+                    targetProject.path,
+                );
+                if (
+                    inspection.status !== 'inside-work-tree' ||
+                    !inspection.isProjectRoot
+                ) {
+                    throw new Error(t('projects:initGit.errors.initFailed'));
+                }
+                gitSetup = {
+                    status: 'initialized',
+                    root: inspection.root,
+                    isProjectRoot: inspection.isProjectRoot,
+                    kind: inspection.kind,
+                };
+            }
+        } else {
             throw new Error(t('projects:initGit.errors.initFailed'));
         }
 
@@ -665,7 +704,7 @@ export async function initializeProjectGit(
 
             project.withGit = latestProject.withGit;
 
-            return latestProject;
+            return { project: latestProject, gitSetup };
         } catch (error) {
             if (
                 error instanceof JsonStoreConflictError &&

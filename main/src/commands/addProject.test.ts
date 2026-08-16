@@ -278,6 +278,30 @@ describe('addProject', () => {
         );
     });
 
+    it('marks an imported project as covered by an enclosing repository', async () => {
+        const gitService = {
+            inspectRepository: vi.fn().mockResolvedValue({
+                status: 'inside-work-tree',
+                root: '/fake',
+                isProjectRoot: false,
+                kind: 'standard',
+            }),
+        };
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            {},
+            gitService as never,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.withGit).toBe(true);
+        expect(gitService.inspectRepository).toHaveBeenCalledWith(
+            '/fake/project',
+        );
+    });
+
     it('sanitises only the imported editor directory name', async () => {
         getProjectNameFromParsed.mockResolvedValue('Example: Project');
 

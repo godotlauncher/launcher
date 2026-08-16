@@ -6,6 +6,7 @@ import type {
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
     CreateProjectResult,
+    InitializeProjectGitResult,
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
@@ -66,7 +67,9 @@ interface ProjectsContext {
     resetProjectCodeEditorConfig: (
         project: ProjectDetails,
     ) => Promise<SetProjectCodeEditorResult>;
-    initializeProjectGit: (project: ProjectDetails) => Promise<ProjectDetails>;
+    initializeProjectGit: (
+        project: ProjectDetails,
+    ) => Promise<InitializeProjectGitResult>;
     exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     openProjectFolder: (project: ProjectDetails) => Promise<void>;
@@ -267,9 +270,9 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const initializeProjectGit = async (project: ProjectDetails) => {
-        const updatedProject = await appBridge.initializeProjectGit(project);
-        updateProjectState(updatedProject);
-        return updatedProject;
+        const result = await appBridge.initializeProjectGit(project);
+        updateProjectState(result.project);
+        return result;
     };
 
     const exportProjectEditorSettings = async (project: ProjectDetails) => {

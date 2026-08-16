@@ -12,6 +12,7 @@ import { appBridge } from '../../bridge.ts';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useGit } from '../../hooks/git.hook';
+import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { useFileSystem } from '../../hooks/useFileSystem';
 import { usePreferences } from '../../hooks/usePreferences';
@@ -94,6 +95,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const defaultOverwriteBasePathRef = useRef('');
 
     const { installedReleases, downloadingReleases } = useRelease();
+    const { addAlert } = useAlerts();
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
     const { getGlobalIdentity } = useGit();
@@ -270,6 +272,21 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setCreating(false);
 
         if (result.success && result.projectDetails) {
+            if (result.gitSetup?.status === 'existing-repository') {
+                addAlert(
+                    t(
+                        'projects:editProject.sourceControl.existingRepositoryTitle',
+                    ),
+                    result.gitSetup.isProjectRoot
+                        ? t(
+                              'projects:editProject.sourceControl.existingRepositoryRoot',
+                          )
+                        : t(
+                              'projects:editProject.sourceControl.existingRepositoryParent',
+                              { root: result.gitSetup.root },
+                          ),
+                );
+            }
             onOpenChange(false);
             if (editNow) {
                 launchProject(result.projectDetails);

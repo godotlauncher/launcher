@@ -161,6 +161,9 @@ describe('AppLifecycleService', () => {
     const toolIntegrationService = {
         refreshAll: vi.fn(),
     };
+    const gitService = {
+        inspectRepository: vi.fn(),
+    };
 
     const trayAvailabilityService = {
         isAvailable: vi.fn(async () => true),
@@ -174,6 +177,7 @@ describe('AppLifecycleService', () => {
             i18nService as never,
             codeEditorIntegrationService as never,
             toolIntegrationService as never,
+            gitService as never,
             trayAvailabilityService as never,
         );
     }
@@ -278,6 +282,7 @@ describe('AppLifecycleService', () => {
         expect(mocks.setupFocusRevalidation).toHaveBeenCalledWith(
             mainWindow,
             expect.any(Function),
+            gitService,
         );
         expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
 

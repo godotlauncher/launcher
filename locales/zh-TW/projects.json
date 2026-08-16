@@ -161,7 +161,10 @@
             "active": "已啟用",
             "initialize": "初始化 Git",
             "initializing": "正在初始化...",
-            "initFailed": "無法初始化 Git。"
+            "initFailed": "無法初始化 Git。",
+            "existingRepositoryTitle": "偵測到現有 Git 儲存庫",
+            "existingRepositoryRoot": "此專案已經是 Git 儲存庫。未對 Git 設定進行任何變更。",
+            "existingRepositoryParent": "此專案已包含在 {{root}} 的 Git 儲存庫中。未對 Git 設定進行任何變更。"
         },
         "launch": {
             "title": "啟動",

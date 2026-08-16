@@ -161,7 +161,10 @@
             "active": "已启用",
             "initialize": "初始化 Git",
             "initializing": "正在初始化...",
-            "initFailed": "无法初始化 Git。"
+            "initFailed": "无法初始化 Git。",
+            "existingRepositoryTitle": "检测到现有 Git 仓库",
+            "existingRepositoryRoot": "此项目已经是 Git 仓库。未对 Git 设置进行任何更改。",
+            "existingRepositoryParent": "此项目已包含在 {{root}} 的 Git 仓库中。未对 Git 设置进行任何更改。"
         },
         "launch": {
             "title": "启动",

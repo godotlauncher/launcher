@@ -4,7 +4,9 @@ import type {
     CodeEditorId,
     CreateProjectGitOptions,
     CreateProjectResult,
+    GitRepositoryInfo,
     InstalledRelease,
+    ProjectGitSetupOutcome,
     RendererType,
 } from '@shared/contracts';
 import { app } from 'electron';
@@ -37,6 +39,28 @@ import { addProjectToList } from '../utils/projects.utils.js';
 import { getUserPreferences } from './userPreferences.js';
 
 /**
+ * Verifies that a project directory is exactly its current repository root.
+ *
+ * @param gitService - Typed Git command service.
+ * @param projectPath - Project directory to inspect.
+ * @returns Information about the verified project repository.
+ */
+async function requireProjectRepositoryRoot(
+    gitService: GitService,
+    projectPath: string,
+): Promise<GitRepositoryInfo> {
+    const inspection = await gitService.inspectRepository(projectPath);
+    if (inspection.status !== 'inside-work-tree' || !inspection.isProjectRoot) {
+        throw new Error(t('createProject:errors.failedGitInit'));
+    }
+    return {
+        root: inspection.root,
+        isProjectRoot: inspection.isProjectRoot,
+        kind: inspection.kind,
+    };
+}
+
+/**
  * Creates a project and configures its selected editor integrations.
  *
  * @param projectName - Display name for the new project.
@@ -61,6 +85,7 @@ export async function createProject(
     overwriteProjectPath?: string,
     gitOptions?: CreateProjectGitOptions,
 ): Promise<CreateProjectResult> {
+    let gitSetup: ProjectGitSetupOutcome = { status: 'not-requested' };
     if (codeEditorId) {
         try {
             await codeEditorIntegrationService.assertIntegrationSelectable(
@@ -79,6 +104,7 @@ export async function createProject(
             'Create Project with Git, but Git is not installed. Setting withGit to false',
         );
         withGit = false;
+        gitSetup = { status: 'git-unavailable' };
     }
 
     projectName = projectName.trim();
@@ -207,56 +233,105 @@ export async function createProject(
             launcherVersion: app.getVersion(),
         });
 
-        // Add the recommended Git metadata and initialize the repository.
+        // Initialize only when the project is not already covered by a work tree.
         if (withGit) {
-            await fs.promises.copyFile(
-                path.resolve(projectResDir, 'default_gitignore'),
-                path.resolve(projectPath, '.gitignore'),
-            );
-            await fs.promises.copyFile(
-                path.resolve(projectResDir, 'default-gitattributes'),
-                path.resolve(projectPath, '.gitattributes'),
-            );
-            if (!(await gitService.init(projectPath))) {
+            let inspection = await gitService.inspectRepository(projectPath);
+            if (inspection.status === 'inspection-failed') {
                 throw new Error(t('createProject:errors.failedGitInit'));
             }
-            if (!(await gitService.renameBranch(projectPath))) {
-                throw new Error(t('createProject:errors.failedGitBranch'));
+            if (inspection.status === 'git-unavailable') {
+                withGit = false;
+                gitSetup = { status: 'git-unavailable' };
+            } else if (inspection.status === 'inside-work-tree') {
+                gitSetup = {
+                    status: 'existing-repository',
+                    root: inspection.root,
+                    isProjectRoot: inspection.isProjectRoot,
+                    kind: inspection.kind,
+                };
+            } else {
+                if (!(await gitService.init(projectPath))) {
+                    inspection =
+                        await gitService.inspectRepository(projectPath);
+                    if (inspection.status === 'inside-work-tree') {
+                        gitSetup = {
+                            status: 'existing-repository',
+                            root: inspection.root,
+                            isProjectRoot: inspection.isProjectRoot,
+                            kind: inspection.kind,
+                        };
+                    } else {
+                        throw new Error(
+                            t('createProject:errors.failedGitInit'),
+                        );
+                    }
+                } else {
+                    const repository = await requireProjectRepositoryRoot(
+                        gitService,
+                        projectPath,
+                    );
+                    gitSetup = {
+                        status: 'initialized',
+                        ...repository,
+                    };
+                }
             }
 
-            const resolvedGitOptions = gitOptions ?? {
-                initialCommit: 'create',
-            };
-            if (resolvedGitOptions.initialCommit === 'create') {
-                if (resolvedGitOptions.identity) {
-                    const name = resolvedGitOptions.identity.name.trim();
-                    const email = resolvedGitOptions.identity.email.trim();
-                    const { scope } = resolvedGitOptions.identity;
-                    if (
-                        !name ||
-                        !email ||
-                        (scope !== 'repository' && scope !== 'global')
-                    ) {
-                        throw new Error(
-                            t('createProject:errors.invalidGitIdentity'),
-                        );
-                    }
-                    if (
-                        !(await gitService.setIdentity(
-                            name,
-                            email,
-                            scope,
-                            projectPath,
-                        ))
-                    ) {
-                        throw new Error(
-                            t('createProject:errors.failedGitIdentity'),
-                        );
-                    }
+            if (gitSetup.status === 'initialized') {
+                await requireProjectRepositoryRoot(gitService, projectPath);
+                await fs.promises.copyFile(
+                    path.resolve(projectResDir, 'default_gitignore'),
+                    path.resolve(projectPath, '.gitignore'),
+                );
+                await requireProjectRepositoryRoot(gitService, projectPath);
+                await fs.promises.copyFile(
+                    path.resolve(projectResDir, 'default-gitattributes'),
+                    path.resolve(projectPath, '.gitattributes'),
+                );
+                if (!(await gitService.renameBranch(projectPath))) {
+                    throw new Error(t('createProject:errors.failedGitBranch'));
                 }
 
-                if (!(await gitService.addAndCommit(projectPath))) {
-                    throw new Error(t('createProject:errors.failedGitCommit'));
+                const resolvedGitOptions = gitOptions ?? {
+                    initialCommit: 'create',
+                };
+                if (resolvedGitOptions.initialCommit === 'create') {
+                    if (resolvedGitOptions.identity) {
+                        const name = resolvedGitOptions.identity.name.trim();
+                        const email = resolvedGitOptions.identity.email.trim();
+                        const { scope } = resolvedGitOptions.identity;
+                        if (
+                            !name ||
+                            !email ||
+                            (scope !== 'repository' && scope !== 'global')
+                        ) {
+                            throw new Error(
+                                t('createProject:errors.invalidGitIdentity'),
+                            );
+                        }
+                        await requireProjectRepositoryRoot(
+                            gitService,
+                            projectPath,
+                        );
+                        if (
+                            !(await gitService.setIdentity(
+                                name,
+                                email,
+                                scope,
+                                projectPath,
+                            ))
+                        ) {
+                            throw new Error(
+                                t('createProject:errors.failedGitIdentity'),
+                            );
+                        }
+                    }
+
+                    if (!(await gitService.addAndCommit(projectPath))) {
+                        throw new Error(
+                            t('createProject:errors.failedGitCommit'),
+                        );
+                    }
                 }
             }
         }
@@ -289,6 +364,7 @@ export async function createProject(
         const result: CreateProjectResult = {
             success: true,
             projectPath,
+            gitSetup,
             projectDetails: {
                 name: projectName,
                 version: release.version,

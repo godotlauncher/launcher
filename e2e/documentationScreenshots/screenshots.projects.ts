@@ -13,6 +13,7 @@ import {
     stubCodeEditorIntegrationSettings,
     stubGlobalGitIdentity,
     stubProjectGitInitializationFailure,
+    stubProjectGitInitializationResult,
     stubToolIntegrations,
 } from './runtime';
 import {
@@ -542,6 +543,76 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             electronApp: ElectronApplication,
             theme: ThemeConfig,
         ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
+        fileBase:
+            'screen_projects_settings_source_control_existing_repository',
+        description: 'Project settings existing Git repository notice',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp);
+            await stubProjectGitInitializationResult(electronApp, {
+                project: {
+                    ...SAMPLE_PROJECT_PROTOTYPE,
+                    withGit: true,
+                },
+                gitSetup: {
+                    status: 'existing-repository',
+                    root: '/Users/docs/Godot/Projects',
+                    isProjectRoot: false,
+                    kind: 'standard',
+                },
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText(SAMPLE_PROJECT_PROTOTYPE.name, {
+                        exact: true,
+                    }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page
+                .getByTestId('tabProjectSettings_sourceControl')
+                .click();
+            await page
+                .getByRole('button', {
+                    name: 'Initialize Git',
+                    exact: true,
+                })
+                .click();
+            const notice = page.getByRole('dialog', {
+                name: 'Existing Git repository detected',
+            });
+            await expect(notice).toBeVisible({ timeout: 10000 });
+            await expect(notice).toContainText(
+                'This project is already covered by the Git repository at /Users/docs/Godot/Projects. No Git setup changes were made.',
+            );
+            await expect(
+                page.getByTestId('tabProjectSettings_sourceControl'),
+            ).toHaveAttribute('aria-selected', 'true');
+            await expect(page.getByTestId('projectGitActive')).toBeVisible();
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            const okButton = page.getByTestId('btnAlertOk');
+            if (await okButton.isVisible().catch(() => false)) {
+                await okButton.click();
+            }
             await page.keyboard.press('Escape');
             await page.waitForTimeout(200);
             await prepareAppWithStubbedData(page, electronApp);

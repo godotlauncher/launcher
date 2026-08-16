@@ -1,15 +1,16 @@
 import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    InitializeProjectGitResult,
     InstalledRelease,
     ProjectDetails,
     RenameProjectOptions,
     RenameProjectResult,
 } from '@shared/contracts';
 import clsx from 'clsx';
-import { GitBranch, PanelTop, Pin } from 'lucide-react';
+import { CircleCheck, GitBranch, PanelTop, Pin } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSelectableReleaseKey } from '../../components/selectInstalledRelease/selectInstalledRelease.model';
 import { CopyBadge } from '../../components/ui/copyBadge.component';
@@ -62,7 +63,7 @@ type ProjectSettingsDrawerProps = {
     ) => Promise<ProjectDetails>;
     onInitializeProjectGit: (
         project: ProjectDetails,
-    ) => Promise<ProjectDetails>;
+    ) => Promise<InitializeProjectGitResult>;
     onResetProjectCodeEditorConfig: (
         project: ProjectDetails,
     ) => Promise<ProjectDetails>;
@@ -101,7 +102,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         'installs',
         'createProject',
     ]);
-    const { addCustomConfirm } = useAlerts();
+    const { addAlert, addCustomConfirm } = useAlerts();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
     const [activeTab, setActiveTab] = useState<ProjectSettingsTab>('project');
@@ -133,9 +134,17 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     >([]);
     const [loadingCodeEditors, setLoadingCodeEditors] = useState(false);
     const [codeEditorLoadFailed, setCodeEditorLoadFailed] = useState(false);
+    const activeProjectPathRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!open || !project) {
+            activeProjectPathRef.current = null;
+            return;
+        }
+
+        const projectChanged = activeProjectPathRef.current !== project.path;
+        activeProjectPathRef.current = project.path;
+        if (!projectChanged) {
             return;
         }
 
@@ -337,8 +346,19 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setIsInitializingGit(true);
         setFormError(undefined);
         try {
-            const updatedProject = await onInitializeProjectGit(project);
-            setWithGit(updatedProject.withGit);
+            const result = await onInitializeProjectGit(project);
+            setWithGit(result.project.withGit);
+            if (result.gitSetup.status === 'existing-repository') {
+                addAlert(
+                    t('editProject.sourceControl.existingRepositoryTitle'),
+                    result.gitSetup.isProjectRoot
+                        ? t('editProject.sourceControl.existingRepositoryRoot')
+                        : t(
+                              'editProject.sourceControl.existingRepositoryParent',
+                              { root: result.gitSetup.root },
+                          ),
+                );
+            }
         } catch (error) {
             setFormError(
                 error instanceof Error
@@ -722,7 +742,14 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                     </div>
                                 </div>
                                 {withGit ? (
-                                    <span className="badge badge-success badge-outline">
+                                    <span
+                                        className="badge badge-success gap-1.5"
+                                        data-testid="projectGitActive"
+                                    >
+                                        <CircleCheck
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
                                         {t('editProject.sourceControl.active')}
                                     </span>
                                 ) : loadingGitAvailability ? (

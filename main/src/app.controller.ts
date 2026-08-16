@@ -323,6 +323,7 @@ export class AppController implements AppBridge {
             projectPath,
             this.codeEditorIntegrationService,
             options,
+            this.gitService,
         );
     }
 
@@ -397,12 +398,12 @@ export class AppController implements AppBridge {
 
     @AppHandler('checkProjectValid')
     checkProjectValid(project: ProjectDetails) {
-        return checkProjectIsValid(project);
+        return checkProjectIsValid(project, this.gitService);
     }
 
     @AppHandler('checkAllProjectsValid')
     checkAllProjectsValid() {
-        return checkAndUpdateProjects();
+        return checkAndUpdateProjects({}, this.gitService);
     }
 
     @AppHandler('getPlatform')

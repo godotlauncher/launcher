@@ -418,7 +418,7 @@ config/icon="res://assets/icon.svg"
         fs.rmSync(releaseDir, { recursive: true, force: true });
     });
 
-    it('updates withGit flag based on .git directory presence', async () => {
+    it('updates withGit from repository inspection', async () => {
         const projectDir = fs.mkdtempSync(
             path.join(os.tmpdir(), 'launcher-project-git-'),
         );
@@ -461,9 +461,22 @@ config/icon="res://assets/icon.svg"
         fs.writeFileSync(project.launch_path, '');
         fs.writeFileSync(project.release.editor_path, '');
 
-        const validatedProject = await checkProjectValid(project);
+        const gitService = {
+            inspectRepository: vi.fn().mockResolvedValue({
+                status: 'inside-work-tree',
+                root: projectDir,
+                isProjectRoot: true,
+                kind: 'standard',
+            }),
+        };
+        const validatedProject = await checkProjectValid(
+            project,
+            {},
+            gitService as never,
+        );
 
         expect(validatedProject.withGit).toBe(true);
+        expect(gitService.inspectRepository).toHaveBeenCalledWith(projectDir);
 
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });
