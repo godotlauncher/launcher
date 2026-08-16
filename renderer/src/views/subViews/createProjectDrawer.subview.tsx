@@ -30,6 +30,7 @@ import { CreateProjectRendererSection } from './createProject/components/createP
 import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
 import {
     buildCreateProjectReleaseRows,
+    type CreateProjectGitIdentitySaveChoice,
     getCreateProjectDirectorySegment,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
@@ -40,6 +41,7 @@ import {
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
+    resolveCreateProjectGitIdentitySave,
 } from './createProject/createProject.model';
 
 type SubViewProps = {
@@ -79,6 +81,13 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         useState<GitIdentityScope>('repository');
     const [showGitIdentityValidation, setShowGitIdentityValidation] =
         useState(false);
+    const [gitIdentitySaveChoice, setGitIdentitySaveChoice] =
+        useState<CreateProjectGitIdentitySaveChoice>('ask');
+    const [savingGitIdentityPreset, setSavingGitIdentityPreset] =
+        useState(false);
+    const [gitIdentitySaveError, setGitIdentitySaveError] = useState<
+        string | null
+    >(null);
     const [suggestedGitIdentityPreset, setSuggestedGitIdentityPreset] =
         useState<ProjectGitIdentityPreset | null>(null);
     const [preflightGlobalIdentity, setPreflightGlobalIdentity] = useState({
@@ -106,7 +115,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const { addAlert } = useAlerts();
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
-    const { getIdentitySettings } = useGit();
+    const { getIdentitySettings, saveProjectIdentityPreset } = useGit();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
     const { preferences, platform } = usePreferences();
@@ -364,6 +373,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             setGitIdentityEmail(decision.preset.email);
             setGitIdentityScope('repository');
             setShowGitIdentityValidation(false);
+            setGitIdentitySaveError(null);
             setGitIdentityDialogPage('preset');
             return;
         }
@@ -373,7 +383,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setGitIdentityName(decision.globalIdentity.name);
         setGitIdentityEmail(decision.globalIdentity.email);
         setGitIdentityScope('repository');
+        setGitIdentitySaveChoice('ask');
         setShowGitIdentityValidation(false);
+        setGitIdentitySaveError(null);
         setGitIdentityDialogPage('warning');
     };
 
@@ -383,8 +395,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         void createSelectedProject({ initialCommit: 'skip' });
     };
 
-    /** Validates and submits the entered Git identity. */
-    const handleSaveGitIdentity = () => {
+    /**
+     * Validates and submits the entered Git identity and selected default.
+     *
+     * @returns A promise that resolves after preset and project handling.
+     */
+    const handleSaveGitIdentity = async () => {
         const identity = {
             name: gitIdentityName.trim(),
             email: gitIdentityEmail.trim(),
@@ -394,10 +410,43 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             return;
         }
 
+        let scope = gitIdentityScope;
+        if (!suggestedGitIdentityPreset) {
+            const resolution = resolveCreateProjectGitIdentitySave(
+                identity,
+                gitIdentitySaveChoice,
+                suggestedGitIdentityPreset,
+            );
+            if (!resolution) {
+                setGitIdentitySaveError(t('errors.failedGitIdentity'));
+                return;
+            }
+            scope = resolution.scope;
+
+            if (resolution.preset) {
+                setSavingGitIdentityPreset(true);
+                setGitIdentitySaveError(null);
+                try {
+                    const result = await saveProjectIdentityPreset(
+                        resolution.preset,
+                    );
+                    if (!result.success) {
+                        setGitIdentitySaveError(t('errors.failedGitIdentity'));
+                        return;
+                    }
+                } catch {
+                    setGitIdentitySaveError(t('errors.failedGitIdentity'));
+                    return;
+                } finally {
+                    setSavingGitIdentityPreset(false);
+                }
+            }
+        }
+
         setGitIdentityDialogPage(null);
-        void createSelectedProject({
+        await createSelectedProject({
             initialCommit: 'create',
-            identity: { ...identity, scope: gitIdentityScope },
+            identity: { ...identity, scope },
         });
     };
 
@@ -412,6 +461,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setGitIdentityName(preflightGlobalIdentity.name);
         setGitIdentityEmail(preflightGlobalIdentity.email);
         setGitIdentityScope('repository');
+        setGitIdentitySaveError(null);
         setShowGitIdentityValidation(false);
         setGitIdentityDialogPage('identity');
     };
@@ -419,6 +469,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     /** Returns to the warning or suggested preset that opened the form. */
     const handleGitIdentityBack = () => {
         setShowGitIdentityValidation(false);
+        setGitIdentitySaveError(null);
         if (suggestedGitIdentityPreset) {
             setGitIdentityName(suggestedGitIdentityPreset.name);
             setGitIdentityEmail(suggestedGitIdentityPreset.email);
@@ -561,7 +612,10 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setGitIdentityName('');
         setGitIdentityEmail('');
         setGitIdentityScope('repository');
+        setGitIdentitySaveChoice('ask');
         setShowGitIdentityValidation(false);
+        setSavingGitIdentityPreset(false);
+        setGitIdentitySaveError(null);
         setSuggestedGitIdentityPreset(null);
         setPreflightGlobalIdentity({ name: '', email: '' });
         setSelectingFolder(false);
@@ -582,6 +636,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const closeDisabled =
         creating ||
         checkingGitIdentity ||
+        savingGitIdentityPreset ||
         selectingFolder ||
         gitIdentityDialogPage !== null;
 
@@ -708,16 +763,33 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     globalIdentityComplete={isGitIdentityComplete(
                         preflightGlobalIdentity,
                     )}
+                    showDefaultChoices={!suggestedGitIdentityPreset}
+                    saveChoice={gitIdentitySaveChoice}
+                    saving={savingGitIdentityPreset}
+                    saveError={gitIdentitySaveError}
                     t={t}
-                    onNameChange={setGitIdentityName}
-                    onEmailChange={setGitIdentityEmail}
-                    onScopeChange={setGitIdentityScope}
+                    onNameChange={(name) => {
+                        setGitIdentityName(name);
+                        setGitIdentitySaveError(null);
+                    }}
+                    onEmailChange={(email) => {
+                        setGitIdentityEmail(email);
+                        setGitIdentitySaveError(null);
+                    }}
+                    onScopeChange={(scope) => {
+                        setGitIdentityScope(scope);
+                        setGitIdentitySaveError(null);
+                    }}
+                    onSaveChoiceChange={(choice) => {
+                        setGitIdentitySaveChoice(choice);
+                        setGitIdentitySaveError(null);
+                    }}
                     onSkip={handleSkipInitialCommit}
                     onAddIdentity={() => setGitIdentityDialogPage('identity')}
                     onUseGlobal={handleUseGlobalGitIdentity}
                     onUseDifferentIdentity={handleUseDifferentGitIdentity}
                     onBack={handleGitIdentityBack}
-                    onSave={handleSaveGitIdentity}
+                    onSave={() => void handleSaveGitIdentity()}
                 />
             )}
         </>

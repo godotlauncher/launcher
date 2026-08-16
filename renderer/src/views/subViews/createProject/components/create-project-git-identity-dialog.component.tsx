@@ -3,6 +3,7 @@ import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { Dialog } from '../../../../components/dialog.component';
 import { TextField } from '../../../../components/ui/textField.component';
+import type { CreateProjectGitIdentitySaveChoice } from '../createProject.model';
 
 export type GitIdentityDialogPage = 'warning' | 'preset' | 'identity';
 
@@ -15,10 +16,15 @@ type CreateProjectGitIdentityDialogProps = {
     scope: GitIdentityScope;
     showValidation: boolean;
     globalIdentityComplete: boolean;
+    showDefaultChoices: boolean;
+    saveChoice: CreateProjectGitIdentitySaveChoice;
+    saving: boolean;
+    saveError: string | null;
     t: Translate;
     onNameChange: (name: string) => void;
     onEmailChange: (email: string) => void;
     onScopeChange: (scope: GitIdentityScope) => void;
+    onSaveChoiceChange: (choice: CreateProjectGitIdentitySaveChoice) => void;
     onSkip: () => void;
     onAddIdentity: () => void;
     onUseGlobal: () => void;
@@ -42,10 +48,15 @@ export const CreateProjectGitIdentityDialog: React.FC<
     scope,
     showValidation,
     globalIdentityComplete,
+    showDefaultChoices,
+    saveChoice,
+    saving,
+    saveError,
     t,
     onNameChange,
     onEmailChange,
     onScopeChange,
+    onSaveChoiceChange,
     onSkip,
     onAddIdentity,
     onUseGlobal,
@@ -134,6 +145,7 @@ export const CreateProjectGitIdentityDialog: React.FC<
                             type="button"
                             className="btn btn-ghost"
                             onClick={onBack}
+                            disabled={saving}
                         >
                             {t('gitIdentity.back')}
                         </button>
@@ -141,7 +153,11 @@ export const CreateProjectGitIdentityDialog: React.FC<
                             type="button"
                             className="btn btn-primary"
                             onClick={onSave}
+                            disabled={saving}
                         >
+                            {saving && (
+                                <span className="loading loading-spinner loading-xs" />
+                            )}
                             {t('gitIdentity.saveAndCreate')}
                         </button>
                     </>
@@ -156,12 +172,18 @@ export const CreateProjectGitIdentityDialog: React.FC<
                             : 'gitIdentity.formMessage',
                     )}
                 </p>
+                {saveError && (
+                    <p className="text-sm text-error" role="alert">
+                        {saveError}
+                    </p>
+                )}
                 <TextField
                     id="createProjectGitName"
                     label={t('gitIdentity.name')}
                     help={t('gitIdentity.nameHelp')}
                     value={name}
                     onChange={onNameChange}
+                    disabled={saving}
                     error={
                         showValidation && nameMissing
                             ? t('gitIdentity.nameRequired')
@@ -174,13 +196,43 @@ export const CreateProjectGitIdentityDialog: React.FC<
                     help={t('gitIdentity.emailHelp')}
                     value={email}
                     onChange={onEmailChange}
+                    disabled={saving}
                     error={
                         showValidation && emailMissing
                             ? t('gitIdentity.emailRequired')
                             : undefined
                     }
                 />
-                {!presetPage && (
+                {!presetPage && showDefaultChoices && (
+                    <fieldset className="flex flex-col gap-2">
+                        <legend className="font-medium">
+                            {t('gitIdentity.defaultChoice')}
+                        </legend>
+                        {(
+                            [
+                                ['ask', 'gitIdentity.alwaysAsk'],
+                                ['local-default', 'gitIdentity.localDefault'],
+                                ['global-default', 'gitIdentity.globalDefault'],
+                            ] as const
+                        ).map(([choice, labelKey]) => (
+                            <label
+                                key={choice}
+                                className="flex items-center gap-2"
+                            >
+                                <input
+                                    type="radio"
+                                    className="radio radio-primary radio-sm"
+                                    name="createProjectGitIdentitySaveChoice"
+                                    checked={saveChoice === choice}
+                                    onChange={() => onSaveChoiceChange(choice)}
+                                    disabled={saving}
+                                />
+                                <span>{t(labelKey)}</span>
+                            </label>
+                        ))}
+                    </fieldset>
+                )}
+                {!presetPage && !showDefaultChoices && (
                     <fieldset className="flex flex-col gap-2">
                         <legend className="font-medium">
                             {t('gitIdentity.scope')}
@@ -192,6 +244,7 @@ export const CreateProjectGitIdentityDialog: React.FC<
                                 name="createProjectGitIdentityScope"
                                 checked={scope === 'repository'}
                                 onChange={() => onScopeChange('repository')}
+                                disabled={saving}
                             />
                             <span>{t('gitIdentity.repositoryScope')}</span>
                         </label>
@@ -202,6 +255,7 @@ export const CreateProjectGitIdentityDialog: React.FC<
                                 name="createProjectGitIdentityScope"
                                 checked={scope === 'global'}
                                 onChange={() => onScopeChange('global')}
+                                disabled={saving}
                             />
                             <span>{t('gitIdentity.globalScope')}</span>
                         </label>

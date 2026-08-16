@@ -14,6 +14,7 @@ import {
     normalizeBasePathForJoin,
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
+    resolveCreateProjectGitIdentitySave,
 } from './createProject.model';
 
 const installedRelease = (
@@ -241,5 +242,59 @@ describe('create project model helpers', () => {
             action: 'apply-preset',
             preset: { ...preset, useForNewRepositories: true },
         });
+    });
+
+    it('resolves each first identity save choice without replacing a preset', () => {
+        const identity = {
+            name: ' Project User ',
+            email: ' project@example.com ',
+        };
+        const existingPreset = {
+            name: 'Existing User',
+            email: 'existing@example.com',
+            useForNewRepositories: true,
+        };
+
+        expect(
+            resolveCreateProjectGitIdentitySave(identity, 'ask', null),
+        ).toEqual({
+            scope: 'repository',
+            preset: null,
+        });
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                identity,
+                'local-default',
+                null,
+            ),
+        ).toEqual({
+            scope: 'repository',
+            preset: {
+                name: 'Project User',
+                email: 'project@example.com',
+                useForNewRepositories: true,
+            },
+        });
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                identity,
+                'global-default',
+                null,
+            ),
+        ).toEqual({ scope: 'global', preset: null });
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                identity,
+                'local-default',
+                existingPreset,
+            ),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                { name: '', email: identity.email },
+                'ask',
+                null,
+            ),
+        ).toBeNull();
     });
 });

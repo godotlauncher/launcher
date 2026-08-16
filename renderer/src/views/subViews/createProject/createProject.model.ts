@@ -2,6 +2,7 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     GitIdentity,
+    GitIdentityScope,
     InstalledRelease,
     ProjectGitIdentityPreset,
     RendererType,
@@ -214,6 +215,16 @@ export type CreateProjectGitIdentityDecision =
       }
     | { action: 'require-identity'; globalIdentity: GitIdentity };
 
+export type CreateProjectGitIdentitySaveChoice =
+    | 'ask'
+    | 'local-default'
+    | 'global-default';
+
+export type CreateProjectGitIdentitySaveResolution = {
+    scope: GitIdentityScope;
+    preset: ProjectGitIdentityPreset | null;
+};
+
 /**
  * Resolves Create Project behaviour from global Git state and the preset.
  *
@@ -239,4 +250,43 @@ export function resolveCreateProjectGitIdentityDecision(
         return { action: 'use-global' };
     }
     return { action: 'require-identity', globalIdentity };
+}
+
+/**
+ * Resolves how a first entered identity should be saved.
+ *
+ * @param identity - Complete identity entered during project creation.
+ * @param choice - Future default selected by the user.
+ * @param existingPreset - Preset already loaded before the form opened.
+ * @returns Git scope and optional new automatic preset, or null when invalid.
+ */
+export function resolveCreateProjectGitIdentitySave(
+    identity: GitIdentity,
+    choice: CreateProjectGitIdentitySaveChoice,
+    existingPreset: ProjectGitIdentityPreset | null,
+): CreateProjectGitIdentitySaveResolution | null {
+    if (!isGitIdentityComplete(identity)) {
+        return null;
+    }
+
+    if (choice === 'global-default') {
+        return { scope: 'global', preset: null };
+    }
+
+    if (choice === 'ask') {
+        return { scope: 'repository', preset: null };
+    }
+
+    if (existingPreset) {
+        return null;
+    }
+
+    return {
+        scope: 'repository',
+        preset: {
+            name: identity.name.trim(),
+            email: identity.email.trim(),
+            useForNewRepositories: true,
+        },
+    };
 }
