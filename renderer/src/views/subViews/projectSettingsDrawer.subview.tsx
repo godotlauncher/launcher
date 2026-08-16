@@ -645,11 +645,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const drawerTitle = project
         ? t('editProject.drawerTitle', { project: project.name })
         : t('editProject.title');
-    const gitIdentitySource =
-        gitIdentity?.status === 'available' &&
-        gitIdentity.name.source === gitIdentity.email.source
-            ? gitIdentity.name.source
-            : null;
 
     return (
         <Drawer
@@ -884,20 +879,11 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                 <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-semibold">
-                                                    {t(
-                                                        'editProject.sourceControl.identityTitle',
-                                                    )}
-                                                </h3>
-                                                {gitIdentitySource && (
-                                                    <span className="badge badge-ghost badge-sm capitalize">
-                                                        {t(
-                                                            `editProject.sourceControl.identitySource.${gitIdentitySource}`,
-                                                        )}
-                                                    </span>
+                                            <h3 className="font-semibold">
+                                                {t(
+                                                    'editProject.sourceControl.identityTitle',
                                                 )}
-                                            </div>
+                                            </h3>
                                             <p className="text-sm text-base-content/65">
                                                 {t(
                                                     'editProject.sourceControl.identityHelp',
@@ -996,10 +982,17 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                                     key={label}
                                                     className="min-w-0"
                                                 >
-                                                    <dt className="text-xs font-semibold uppercase text-base-content/55">
-                                                        {t(
-                                                            `editProject.sourceControl.${label}`,
-                                                        )}
+                                                    <dt className="flex items-center gap-2 text-xs font-semibold uppercase text-base-content/55">
+                                                        <span>
+                                                            {t(
+                                                                `editProject.sourceControl.${label}`,
+                                                            )}
+                                                        </span>
+                                                        <span className="badge badge-ghost badge-sm capitalize">
+                                                            {t(
+                                                                `editProject.sourceControl.identitySource.${value.source}`,
+                                                            )}
+                                                        </span>
                                                     </dt>
                                                     <dd className="mt-1 min-w-0">
                                                         <span className="truncate">
