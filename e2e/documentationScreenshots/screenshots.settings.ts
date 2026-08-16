@@ -97,15 +97,8 @@ async function navigateToGitSettings(
 ): Promise<void> {
     await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
     await stubGitIdentitySettings(electronApp, {
-        globalIdentity: {
-            name: 'Mario Debono',
-            email: 'mario@example.com',
-        },
-        projectPreset: {
-            name: 'Godot Launcher',
-            email: 'launcher@example.com',
-            useForNewRepositories: true,
-        },
+        globalIdentity: { name: '', email: '' },
+        projectPreset: null,
     });
     await page.getByTestId('btnSettings').click();
     await page.getByTestId('tabTools').click();
@@ -115,9 +108,7 @@ async function navigateToGitSettings(
     await expect(
         page.getByRole('dialog', { name: 'Git settings' }),
     ).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('#projectGitIdentityName')).toHaveValue(
-        'Godot Launcher',
-    );
+    await expect(page.locator('#projectGitIdentityName')).toHaveValue('');
     await page.waitForTimeout(400);
 }
 
