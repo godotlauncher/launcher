@@ -164,7 +164,27 @@
             "initFailed": "无法初始化 Git。",
             "existingRepositoryTitle": "检测到现有 Git 仓库",
             "existingRepositoryRoot": "此项目已经是 Git 仓库。未对 Git 设置进行任何更改。",
-            "existingRepositoryParent": "此项目已包含在 {{root}} 的 Git 仓库中。未对 Git 设置进行任何更改。"
+            "existingRepositoryParent": "此项目已包含在 {{root}} 的 Git 仓库中。未对 Git 设置进行任何更改。",
+            "identityTitle": "Commit identity",
+            "identityHelp": "Name and email Git uses for commits in this project.",
+            "identityName": "Name",
+            "identityNameHelp": "Author name stored in this repository.",
+            "identityEmail": "Email",
+            "identityEmailHelp": "Author email stored in this repository.",
+            "identityMissing": "Not configured",
+            "identitySource": {
+                "repository": "Repository",
+                "inherited": "Inherited",
+                "missing": "Missing"
+            },
+            "updateIdentity": "Update",
+            "saveIdentity": "Save identity",
+            "identityRequired": "Enter both a name and an email.",
+            "identityLoadFailed": "Could not load the Git identity.",
+            "updateFailed": "Could not update the Git identity.",
+            "updateNotAllowed": "Git identity cannot be updated for this project.",
+            "parentRepositoryReadOnly": "This project uses the parent repository at {{root}}. Its identity is read-only here.",
+            "linkedWorktreeReadOnly": "Linked worktree identities are read-only here."
         },
         "launch": {
             "title": "启动",

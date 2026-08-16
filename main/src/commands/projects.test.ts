@@ -5,6 +5,7 @@ import type { CodeEditorIntegrationService } from '../codeEditorIntegration/code
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import {
+    getProjectGitIdentity,
     getProjectGodotName,
     initializeProjectGit,
     launchProject,
@@ -13,6 +14,7 @@ import {
     reorderPinnedProjects,
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
+    setProjectGitIdentity,
     setProjectPinned,
 } from './projects.js';
 
@@ -197,13 +199,19 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
 };
 
 const gitService = {
+    getIdentity: vi.fn(),
+    getLocalIdentity: vi.fn(),
     init: vi.fn(),
     inspectRepository: vi.fn(),
+    setIdentity: vi.fn(),
 } as unknown as GitService;
 
 const gitServiceMocks = gitService as unknown as {
+    getIdentity: ReturnType<typeof vi.fn>;
+    getLocalIdentity: ReturnType<typeof vi.fn>;
     init: ReturnType<typeof vi.fn>;
     inspectRepository: ReturnType<typeof vi.fn>;
+    setIdentity: ReturnType<typeof vi.fn>;
 };
 
 const trayAvailabilityService = {
@@ -1849,5 +1857,128 @@ describe('initializeProjectGit', () => {
             kind: 'standard',
         });
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
+    });
+});
+
+describe('project Git identity', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        getDefaultDirs.mockReturnValue({ configDir: '/config' });
+    });
+
+    it('reports repository and inherited identity sources', async () => {
+        const project = createProjectDetails({
+            path: '/projects/demo',
+            withGit: true,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        gitServiceMocks.inspectRepository.mockResolvedValue({
+            status: 'inside-work-tree',
+            root: project.path,
+            isProjectRoot: true,
+            kind: 'standard',
+        });
+        gitServiceMocks.getIdentity.mockResolvedValue({
+            name: 'Local Name',
+            email: 'inherited@example.com',
+        });
+        gitServiceMocks.getLocalIdentity.mockResolvedValue({
+            name: 'Local Name',
+            email: '',
+        });
+
+        await expect(
+            getProjectGitIdentity(project, gitService),
+        ).resolves.toEqual(
+            expect.objectContaining({
+                status: 'available',
+                canUpdate: true,
+                name: { value: 'Local Name', source: 'repository' },
+                email: {
+                    value: 'inherited@example.com',
+                    source: 'inherited',
+                },
+            }),
+        );
+    });
+
+    it.each([
+        {
+            root: '/projects',
+            isProjectRoot: false,
+            kind: 'standard' as const,
+        },
+        {
+            root: '/projects/demo',
+            isProjectRoot: true,
+            kind: 'linked-worktree' as const,
+        },
+    ])('refuses local updates for $kind repositories', async (inspection) => {
+        const project = createProjectDetails({
+            path: '/projects/demo',
+            withGit: true,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        gitServiceMocks.inspectRepository.mockResolvedValue({
+            status: 'inside-work-tree',
+            ...inspection,
+        });
+
+        await expect(
+            setProjectGitIdentity(
+                project,
+                { name: 'Mario', email: 'mario@example.com' },
+                gitService,
+            ),
+        ).rejects.toThrow(
+            'projects:editProject.sourceControl.updateNotAllowed',
+        );
+        expect(gitServiceMocks.setIdentity).not.toHaveBeenCalled();
+    });
+
+    it('updates an exact repository root and returns refreshed identity', async () => {
+        const project = createProjectDetails({
+            path: '/projects/demo',
+            withGit: true,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        gitServiceMocks.inspectRepository.mockResolvedValue({
+            status: 'inside-work-tree',
+            root: project.path,
+            isProjectRoot: true,
+            kind: 'submodule',
+        });
+        gitServiceMocks.setIdentity.mockResolvedValue(true);
+        gitServiceMocks.getIdentity.mockResolvedValue({
+            name: 'Mario',
+            email: 'mario@example.com',
+        });
+        gitServiceMocks.getLocalIdentity.mockResolvedValue({
+            name: 'Mario',
+            email: 'mario@example.com',
+        });
+
+        const result = await setProjectGitIdentity(
+            project,
+            { name: ' Mario ', email: ' mario@example.com ' },
+            gitService,
+        );
+
+        expect(gitServiceMocks.setIdentity).toHaveBeenCalledWith(
+            ' Mario ',
+            ' mario@example.com ',
+            'repository',
+            project.path,
+        );
+        expect(result).toMatchObject({ status: 'available', canUpdate: true });
     });
 });

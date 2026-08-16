@@ -113,6 +113,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectCodeEditor,
         resetProjectCodeEditorConfig,
         initializeProjectGit,
+        getProjectGitIdentity,
+        setProjectGitIdentity,
         exportProjectEditorSettings,
         importProjectEditorSettings,
         addProject,
@@ -474,6 +476,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onSetProjectCodeEditor={onSetProjectCodeEditor}
                 onSetProjectWindowed={setProjectWindowed}
                 onInitializeProjectGit={initializeProjectGit}
+                getProjectGitIdentity={getProjectGitIdentity}
+                onSetProjectGitIdentity={setProjectGitIdentity}
                 onResetProjectCodeEditorConfig={onResetProjectCodeEditorConfig}
                 getProjectGodotName={getProjectGodotName}
             />

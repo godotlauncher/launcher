@@ -150,6 +150,13 @@ export type AppBridge = {
     initializeProjectGit(
         project: ProjectDetails,
     ): Promise<InitializeProjectGitResult>;
+    getProjectGitIdentity(
+        project: ProjectDetails,
+    ): Promise<ProjectGitIdentityResult>;
+    setProjectGitIdentity(
+        project: ProjectDetails,
+        identity: GitIdentity,
+    ): Promise<ProjectGitIdentityResult>;
     exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;
     launchProject(

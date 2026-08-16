@@ -12,6 +12,7 @@ import {
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
     stubGlobalGitIdentity,
+    stubProjectGitIdentity,
     stubProjectGitInitializationFailure,
     stubProjectGitInitializationResult,
     stubToolIntegrations,
@@ -422,6 +423,23 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             theme: ThemeConfig,
         ) => {
             await prepareAppWithStubbedData(page, electronApp);
+            await stubProjectGitIdentity(electronApp, {
+                status: 'available',
+                repository: {
+                    root: SAMPLE_PROJECTS[0].path,
+                    isProjectRoot: true,
+                    kind: 'standard',
+                },
+                name: {
+                    value: 'Project Contributor',
+                    source: 'repository',
+                },
+                email: {
+                    value: 'contributor@example.invalid',
+                    source: 'repository',
+                },
+                canUpdate: true,
+            });
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             const projectCard = page
@@ -441,6 +459,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             ).toBeVisible({ timeout: 10000 });
             await expect(
                 page.getByText('Active', { exact: true }),
+            ).toBeVisible();
+            await expect(
+                page.getByText('Project Contributor', { exact: true }),
             ).toBeVisible();
             await page.waitForTimeout(400);
         },

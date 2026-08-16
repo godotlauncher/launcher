@@ -22,6 +22,7 @@ import type {
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
+    ProjectGitIdentityResult,
     ReleaseInstallProgress,
     ReleaseSummary,
     ToolIntegrationSummary,
@@ -624,6 +625,30 @@ export async function stubProjectLaunchResult(
     await electronApp.evaluate(
         ({ ipcMain }, injectedResult: LaunchProjectResult) => {
             const channel = 'app.launchProject';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs the effective Git identity shown in Project Settings.
+ *
+ * @param electronApp - The Electron app whose handler should be replaced.
+ * @param result - Effective project identity result returned to the renderer.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubProjectGitIdentity(
+    electronApp: ElectronApplication,
+    result: ProjectGitIdentityResult,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResult: ProjectGitIdentityResult) => {
+            const channel = 'app.getProjectGitIdentity';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,
