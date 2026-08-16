@@ -161,7 +161,10 @@
             "active": "有効",
             "initialize": "Git を初期化",
             "initializing": "初期化中...",
-            "initFailed": "Git を初期化できませんでした。"
+            "initFailed": "Git を初期化できませんでした。",
+            "existingRepositoryTitle": "既存の Git リポジトリを検出しました",
+            "existingRepositoryRoot": "このプロジェクトはすでに Git リポジトリです。Git の設定は変更されませんでした。",
+            "existingRepositoryParent": "このプロジェクトはすでに {{root}} の Git リポジトリに含まれています。Git の設定は変更されませんでした。"
         },
         "launch": {
             "title": "起動",

@@ -198,10 +198,12 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
 
 const gitService = {
     init: vi.fn(),
+    inspectRepository: vi.fn(),
 } as unknown as GitService;
 
 const gitServiceMocks = gitService as unknown as {
     init: ReturnType<typeof vi.fn>;
+    inspectRepository: ReturnType<typeof vi.fn>;
 };
 
 const trayAvailabilityService = {
@@ -1733,11 +1735,14 @@ describe('initializeProjectGit', () => {
         );
 
         gitServiceMocks.init.mockResolvedValue(true);
-        existsSync.mockImplementation(
-            (target: unknown) =>
-                typeof target === 'string' &&
-                target.endsWith(`${path.sep}.git`),
-        );
+        gitServiceMocks.inspectRepository
+            .mockResolvedValueOnce({ status: 'not-a-repository' })
+            .mockResolvedValueOnce({
+                status: 'inside-work-tree',
+                root: storedProject.path,
+                isProjectRoot: true,
+                kind: 'standard',
+            });
 
         const result = await initializeProjectGit(
             { ...storedProject },
@@ -1763,7 +1768,8 @@ describe('initializeProjectGit', () => {
                 }),
             ]),
         );
-        expect(result.withGit).toBe(true);
+        expect(result.project.withGit).toBe(true);
+        expect(result.gitSetup.status).toBe('initialized');
     });
 
     it('throws when git initialization fails', async () => {
@@ -1802,7 +1808,9 @@ describe('initializeProjectGit', () => {
             version: 'v1',
         });
         gitServiceMocks.init.mockResolvedValue(false);
-        existsSync.mockReturnValue(false);
+        gitServiceMocks.inspectRepository.mockResolvedValue({
+            status: 'not-a-repository',
+        });
 
         await expect(
             initializeProjectGit({ ...storedProject }, gitService),
@@ -1810,5 +1818,36 @@ describe('initializeProjectGit', () => {
 
         expect(storeProjectsList).not.toHaveBeenCalled();
         expect(ipcWebContentsSend).not.toHaveBeenCalled();
+    });
+
+    it('accepts an enclosing repository without initializing Git', async () => {
+        const storedProject = createProjectDetails({
+            path: '/projects/parent/demo',
+            withGit: false,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [storedProject],
+            version: 'v1',
+        });
+        storeProjectsList.mockImplementation(
+            async (_path, projects, _options) => projects,
+        );
+        gitServiceMocks.inspectRepository.mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects/parent',
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+
+        const result = await initializeProjectGit(storedProject, gitService);
+
+        expect(result.project.withGit).toBe(true);
+        expect(result.gitSetup).toEqual({
+            status: 'existing-repository',
+            root: '/projects/parent',
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+        expect(gitServiceMocks.init).not.toHaveBeenCalled();
     });
 });

@@ -20,6 +20,26 @@ export type GitIdentity = {
 
 export type GitIdentityScope = 'repository' | 'global';
 
+export type GitRepositoryKind = 'standard' | 'linked-worktree' | 'submodule';
+
+export type GitRepositoryInfo = {
+    root: string;
+    isProjectRoot: boolean;
+    kind: GitRepositoryKind;
+};
+
+export type GitRepositoryInspection =
+    | ({ status: 'inside-work-tree' } & GitRepositoryInfo)
+    | { status: 'not-a-repository' }
+    | { status: 'git-unavailable' }
+    | { status: 'inspection-failed' };
+
+export type ProjectGitSetupOutcome =
+    | { status: 'not-requested' }
+    | { status: 'git-unavailable' }
+    | ({ status: 'initialized' } & GitRepositoryInfo)
+    | ({ status: 'existing-repository' } & GitRepositoryInfo);
+
 export type CreateProjectGitOptions =
     | { initialCommit: 'skip' }
     | {
@@ -65,6 +85,14 @@ export type ProjectDetails = {
 export type CreateProjectResult = BackendResult & {
     projectPath?: string;
     projectDetails?: ProjectDetails;
+    gitSetup?: ProjectGitSetupOutcome;
+};
+
+export type InitializeProjectGitResult = {
+    project: ProjectDetails;
+    gitSetup:
+        | ({ status: 'initialized' } & GitRepositoryInfo)
+        | ({ status: 'existing-repository' } & GitRepositoryInfo);
 };
 
 export type ProjectLauncherEditorRequest = {

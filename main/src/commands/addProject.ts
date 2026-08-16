@@ -17,6 +17,7 @@ import {
     PROJECTS_FILENAME,
 } from '../constants.js';
 import { t } from '../i18n/index.js';
+import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
@@ -184,10 +185,20 @@ function buildMissingRelease(
     };
 }
 
+/**
+ * Imports an existing Godot project into the Launcher project list.
+ *
+ * @param projectPath - Path to the project's project.godot file.
+ * @param codeEditorIntegrationService - Code editor integration service.
+ * @param options - Optional missing-editor resolution.
+ * @param gitService - Git service used to inspect repository coverage.
+ * @returns The project import result.
+ */
 export async function addProject(
     projectPath: string,
     codeEditorIntegrationService: CodeEditorIntegrationService,
     options: AddProjectOptions = {},
+    gitService?: GitService,
 ): Promise<AddProjectToListResult> {
     const { configDir } = getDefaultDirs();
     const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
@@ -439,7 +450,8 @@ export async function addProject(
         );
     }
 
-    const withGit = fs.existsSync(path.resolve(dirname, '.git'));
+    const gitInspection = await gitService?.inspectRepository(dirname);
+    const withGit = gitInspection?.status === 'inside-work-tree';
     const configuredIntegrationIds =
         await codeEditorIntegrationService.findConfiguredIntegrations(dirname);
     const codeEditorId =

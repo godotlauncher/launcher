@@ -61,6 +61,7 @@ const createMockBrowserWindow = () => {
 let mockWindow: ReturnType<typeof createMockBrowserWindow>;
 
 let refreshCodeEditorIntegrations: ReturnType<typeof vi.fn>;
+const gitService = { inspectRepository: vi.fn() };
 describe('setupFocusRevalidation', () => {
     beforeEach(() => {
         vi.useFakeTimers();
@@ -79,6 +80,7 @@ describe('setupFocusRevalidation', () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshCodeEditorIntegrations,
+            gitService as never,
         );
 
         mockWindow.emit('focus');
@@ -89,9 +91,10 @@ describe('setupFocusRevalidation', () => {
         expect(moduleMocks.checkAndUpdateReleases).toHaveBeenCalledTimes(1);
         expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledTimes(1);
         expect(refreshCodeEditorIntegrations).toHaveBeenCalledTimes(1);
-        expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledWith({
-            repairMissingLaunchPath: false,
-        });
+        expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledWith(
+            { repairMissingLaunchPath: false },
+            gitService,
+        );
 
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
             'releases-updated',
@@ -119,6 +122,7 @@ describe('setupFocusRevalidation', () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshCodeEditorIntegrations,
+            gitService as never,
         );
 
         mockWindow.emit('focus');
@@ -142,6 +146,7 @@ describe('setupFocusRevalidation', () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshCodeEditorIntegrations,
+            gitService as never,
         );
 
         mockWindow.emit('focus');

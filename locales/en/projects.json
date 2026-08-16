@@ -161,7 +161,10 @@
             "active": "Active",
             "initialize": "Initialize Git",
             "initializing": "Initializing...",
-            "initFailed": "Could not initialize Git."
+            "initFailed": "Could not initialize Git.",
+            "existingRepositoryTitle": "Existing Git repository detected",
+            "existingRepositoryRoot": "This project is already a Git repository. No Git setup changes were made.",
+            "existingRepositoryParent": "This project is already covered by the Git repository at {{root}}. No Git setup changes were made."
         },
         "launch": {
             "title": "Launch",

@@ -161,7 +161,10 @@
             "active": "Attiv",
             "initialize": "Inizjalizza Git",
             "initializing": "Qed jiġi inizjalizzat...",
-            "initFailed": "Ma setax jiġi inizjalizzat Git."
+            "initFailed": "Ma setax jiġi inizjalizzat Git.",
+            "existingRepositoryTitle": "Instab repożitorju Git eżistenti",
+            "existingRepositoryRoot": "Dan il-proġett diġà huwa repożitorju Git. Ma sar l-ebda tibdil fis-setup ta' Git.",
+            "existingRepositoryParent": "Dan il-proġett diġà jinsab fir-repożitorju Git f'{{root}}. Ma sar l-ebda tibdil fis-setup ta' Git."
         },
         "launch": {
             "title": "Tnedija",

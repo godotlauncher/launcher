@@ -161,7 +161,10 @@
             "active": "Etkin",
             "initialize": "Git'i başlat",
             "initializing": "Başlatılıyor...",
-            "initFailed": "Git başlatılamadı."
+            "initFailed": "Git başlatılamadı.",
+            "existingRepositoryTitle": "Mevcut bir Git deposu algılandı",
+            "existingRepositoryRoot": "Bu proje zaten bir Git deposudur. Git kurulumunda değişiklik yapılmadı.",
+            "existingRepositoryParent": "Bu proje zaten {{root}} konumundaki Git deposunun kapsamındadır. Git kurulumunda değişiklik yapılmadı."
         },
         "launch": {
             "title": "Başlatma",

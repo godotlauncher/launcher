@@ -5,6 +5,7 @@ import logger from 'electron-log';
 
 import { getCurrentAppConfig } from './config/index.js';
 import { PROJECTS_FILENAME } from './constants.js';
+import type { GitService } from './tool-integration/integrations/git/git.service.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import {
     getProjectIconUrlFromParsed,
@@ -88,8 +89,16 @@ export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
     return await saveStoredInstalledReleases(dedupeInstalledReleases(releases));
 }
 
+/**
+ * Revalidates stored projects and persists their current state.
+ *
+ * @param options - Project validation behavior.
+ * @param gitService - Optional Git service for repository inspection.
+ * @returns The validated project list.
+ */
 export async function checkAndUpdateProjects(
     options: ProjectValidationOptions = {},
+    gitService?: GitService,
 ): Promise<ProjectDetails[]> {
     logger.info('Checking and updating projects');
 
@@ -105,7 +114,9 @@ export async function checkAndUpdateProjects(
         const validated: ProjectDetails[] = [];
 
         for (const project of projects) {
-            validated.push(await checkProjectValid(project, options));
+            validated.push(
+                await checkProjectValid(project, options, gitService),
+            );
         }
 
         try {
@@ -129,9 +140,18 @@ export async function checkAndUpdateProjects(
     );
 }
 
+/**
+ * Revalidates one project and refreshes its derived metadata.
+ *
+ * @param project - Project details to validate.
+ * @param options - Project validation behavior.
+ * @param gitService - Optional Git service for repository inspection.
+ * @returns The updated project details.
+ */
 export async function checkProjectValid(
     project: ProjectDetails,
     options: ProjectValidationOptions = {},
+    gitService?: GitService,
 ): Promise<ProjectDetails> {
     if (getCurrentAppConfig().docsScreenshots) {
         return project;
@@ -193,8 +213,15 @@ export async function checkProjectValid(
         project.release.valid = true;
     }
 
-    const gitDirPath = path.resolve(project.path, '.git');
-    project.withGit = await pathExistsForValidation(gitDirPath);
+    if (gitService) {
+        const gitInspection = await gitService.inspectRepository(project.path);
+        if (
+            gitInspection.status === 'inside-work-tree' ||
+            gitInspection.status === 'not-a-repository'
+        ) {
+            project.withGit = gitInspection.status === 'inside-work-tree';
+        }
+    }
 
     return project;
 }

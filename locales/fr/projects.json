@@ -161,7 +161,10 @@
             "active": "Actif",
             "initialize": "Initialiser Git",
             "initializing": "Initialisation...",
-            "initFailed": "Impossible d'initialiser Git."
+            "initFailed": "Impossible d'initialiser Git.",
+            "existingRepositoryTitle": "Dépôt Git existant détecté",
+            "existingRepositoryRoot": "Ce projet est déjà un dépôt Git. Aucune modification de la configuration Git n'a été effectuée.",
+            "existingRepositoryParent": "Ce projet est déjà couvert par le dépôt Git situé dans {{root}}. Aucune modification de la configuration Git n'a été effectuée."
         },
         "launch": {
             "title": "Lancement",

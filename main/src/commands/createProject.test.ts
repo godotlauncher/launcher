@@ -104,6 +104,7 @@ const gitServiceMocks = {
     addAndCommit: vi.fn(),
     exists: vi.fn(),
     init: vi.fn(),
+    inspectRepository: vi.fn(),
     renameBranch: vi.fn(),
     setIdentity: vi.fn(),
 };
@@ -172,6 +173,17 @@ describe('createProject', () => {
         gitServiceMocks.renameBranch.mockResolvedValue(true);
         gitServiceMocks.setIdentity.mockResolvedValue(true);
         gitServiceMocks.addAndCommit.mockResolvedValue(true);
+        gitServiceMocks.inspectRepository.mockImplementation(
+            async (projectPath: string) =>
+                gitServiceMocks.init.mock.calls.length === 0
+                    ? { status: 'not-a-repository' as const }
+                    : {
+                          status: 'inside-work-tree' as const,
+                          root: projectPath,
+                          isProjectRoot: true,
+                          kind: 'standard' as const,
+                      },
+        );
         userPreferencesMocks.getUserPreferences.mockResolvedValue({
             projects_location: '/projects',
             install_location: '/install',
@@ -317,7 +329,7 @@ describe('createProject', () => {
         );
     });
 
-    it('adds Git metadata before initializing and committing', async () => {
+    it('initializes Git before adding metadata and committing', async () => {
         const result = await createProject(
             'Git Project',
             release,
@@ -359,8 +371,8 @@ describe('createProject', () => {
             gitServiceMocks.renameBranch.mock.invocationCallOrder[0];
         const commitCallOrder =
             gitServiceMocks.addAndCommit.mock.invocationCallOrder[0];
-        expect(copyCallOrders[0]).toBeLessThan(initCallOrder);
-        expect(copyCallOrders[1]).toBeLessThan(initCallOrder);
+        expect(initCallOrder).toBeLessThan(copyCallOrders[0]);
+        expect(initCallOrder).toBeLessThan(copyCallOrders[1]);
         expect(launcherConfigCallOrder).toBeLessThan(initCallOrder);
         expect(initCallOrder).toBeLessThan(renameCallOrder);
         expect(renameCallOrder).toBeLessThan(commitCallOrder);
@@ -480,6 +492,11 @@ describe('createProject', () => {
         'cleans up when Git $stage fails',
         async ({ mock, expectedRename, expectedCommit }) => {
             mock.mockResolvedValueOnce(false);
+            if (mock === gitServiceMocks.init) {
+                gitServiceMocks.inspectRepository
+                    .mockResolvedValueOnce({ status: 'not-a-repository' })
+                    .mockResolvedValueOnce({ status: 'not-a-repository' });
+            }
 
             const result = await createProject(
                 'Failed Git',
@@ -567,6 +584,40 @@ describe('createProject', () => {
         expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
         expect(gitServiceMocks.exists).toHaveBeenCalledOnce();
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
+        expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+    });
+
+    it('uses an enclosing repository without performing Git mutations', async () => {
+        const projectPath = path.resolve('/projects/Parent/Git-Project');
+        gitServiceMocks.inspectRepository.mockResolvedValue({
+            status: 'inside-work-tree',
+            root: path.resolve('/projects/Parent'),
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+
+        const result = await createProject(
+            'Git Project',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            projectPath,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.projectDetails?.withGit).toBe(true);
+        expect(result.gitSetup).toEqual({
+            status: 'existing-repository',
+            root: path.resolve('/projects/Parent'),
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
+        expect(gitServiceMocks.init).not.toHaveBeenCalled();
+        expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
+        expect(gitServiceMocks.setIdentity).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
     });
 

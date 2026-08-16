@@ -161,7 +161,10 @@
             "active": "Активен",
             "initialize": "Инициализировать Git",
             "initializing": "Инициализация...",
-            "initFailed": "Не удалось инициализировать Git."
+            "initFailed": "Не удалось инициализировать Git.",
+            "existingRepositoryTitle": "Обнаружен существующий репозиторий Git",
+            "existingRepositoryRoot": "Этот проект уже является репозиторием Git. Настройки Git не были изменены.",
+            "existingRepositoryParent": "Этот проект уже находится в репозитории Git по адресу {{root}}. Настройки Git не были изменены."
         },
         "launch": {
             "title": "Запуск",

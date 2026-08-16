@@ -161,7 +161,10 @@
             "active": "Ativo",
             "initialize": "Inicializar Git",
             "initializing": "Inicializando...",
-            "initFailed": "Não foi possível inicializar o Git."
+            "initFailed": "Não foi possível inicializar o Git.",
+            "existingRepositoryTitle": "Repositório Git existente detectado",
+            "existingRepositoryRoot": "Este projeto já é um repositório Git. Nenhuma alteração foi feita na configuração do Git.",
+            "existingRepositoryParent": "Este projeto já está incluído no repositório Git em {{root}}. Nenhuma alteração foi feita na configuração do Git."
         },
         "launch": {
             "title": "Inicialização",

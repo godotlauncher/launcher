@@ -1,6 +1,7 @@
 import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    InitializeProjectGitResult,
     InstalledRelease,
     ProjectDetails,
     RenameProjectOptions,
@@ -62,7 +63,7 @@ type ProjectSettingsDrawerProps = {
     ) => Promise<ProjectDetails>;
     onInitializeProjectGit: (
         project: ProjectDetails,
-    ) => Promise<ProjectDetails>;
+    ) => Promise<InitializeProjectGitResult>;
     onResetProjectCodeEditorConfig: (
         project: ProjectDetails,
     ) => Promise<ProjectDetails>;
@@ -101,7 +102,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         'installs',
         'createProject',
     ]);
-    const { addCustomConfirm } = useAlerts();
+    const { addAlert, addCustomConfirm } = useAlerts();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
     const [activeTab, setActiveTab] = useState<ProjectSettingsTab>('project');
@@ -337,8 +338,19 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setIsInitializingGit(true);
         setFormError(undefined);
         try {
-            const updatedProject = await onInitializeProjectGit(project);
-            setWithGit(updatedProject.withGit);
+            const result = await onInitializeProjectGit(project);
+            setWithGit(result.project.withGit);
+            if (result.gitSetup.status === 'existing-repository') {
+                addAlert(
+                    t('editProject.sourceControl.existingRepositoryTitle'),
+                    result.gitSetup.isProjectRoot
+                        ? t('editProject.sourceControl.existingRepositoryRoot')
+                        : t(
+                              'editProject.sourceControl.existingRepositoryParent',
+                              { root: result.gitSetup.root },
+                          ),
+                );
+            }
         } catch (error) {
             setFormError(
                 error instanceof Error
