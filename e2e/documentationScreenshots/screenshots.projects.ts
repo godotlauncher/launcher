@@ -598,6 +598,10 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await expect(notice).toContainText(
                 'This project is already covered by the Git repository at /Users/docs/Godot/Projects. No Git setup changes were made.',
             );
+            await expect(
+                page.getByTestId('tabProjectSettings_sourceControl'),
+            ).toHaveAttribute('aria-selected', 'true');
+            await expect(page.getByTestId('projectGitActive')).toBeVisible();
             await page.waitForTimeout(400);
         },
         cleanup: async (
