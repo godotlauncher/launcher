@@ -44,7 +44,11 @@
         "downloadFailed": "Pobieranie nie powiodło się: {{error}}",
         "downloadFailedUnknown": "Pobieranie nie powiodło się. Spróbuj ponownie za kilka minut.",
         "downloadHttpError": "Nie udało się pobrać zasobu: {{status}}",
-        "downloadEmptyResponse": "Pobieranie nie powiodło się: pusta odpowiedź z serwera"
+        "downloadEmptyResponse": "Pobieranie nie powiodło się: pusta odpowiedź z serwera",
+        "archiveIntegrityUnavailable": "To archiwum edytora nie zawiera obsługiwanych informacji o integralności. Odśwież listę edytorów i spróbuj ponownie.",
+        "archiveIntegrityMismatch": "Pobrane archiwum edytora nie przeszło kontroli integralności i nie zostało zainstalowane.",
+        "unsafeArchive": "Archiwum edytora zostało odrzucone, ponieważ zawiera niebezpieczne ścieżki.",
+        "invalidExtractedEditor": "Rozpakowane archiwum nie zawiera prawidłowego pliku wykonywalnego edytora."
     },
     "messages": {
         "installError": "Coś poszło nie tak podczas instalacji wydania",

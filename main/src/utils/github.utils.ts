@@ -111,6 +111,9 @@ export async function getReleases(
                 }
             })
             .map((release: Release) => {
+                const checksumManifestUrl = release.assets.find(
+                    (asset) => asset.name === 'SHA512-SUMS.txt',
+                )?.browser_download_url;
                 return {
                     tag: release.tag_name,
                     version: release.tag_name,
@@ -121,7 +124,9 @@ export async function getReleases(
                     published_at: release.published_at,
                     draft: release.draft,
                     prerelease: release.prerelease,
-                    assets: release.assets?.map(createAssetSummary),
+                    assets: release.assets?.map((asset) =>
+                        createAssetSummary(asset, checksumManifestUrl),
+                    ),
                 };
             });
 

@@ -9,9 +9,17 @@ import type {
     ReleaseSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
-import extractZip from 'extract-zip';
 import { checkAndUpdateProjects } from '../checks.js';
 import { t } from '../i18n/index.js';
+import {
+    isSafePathSegment,
+    resolveArchiveIntegrity,
+} from '../utils/archive-integrity.util.js';
+import { extractEditorArchive } from '../utils/editor-archive-extraction.adapter.js';
+import {
+    EditorInstallValidationError,
+    validateExtractedEditor,
+} from '../utils/editor-install-containment.util.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
@@ -166,27 +174,8 @@ async function extractReleaseArchive(
     archivePath: string,
     releasePath: string,
 ): Promise<void> {
-    let processedEntries = 0;
-    publishInstallProgress(job, 'extracting', { percent: 0 });
-
-    await extractZip(archivePath, {
-        dir: releasePath,
-        onEntry: (_entry, zipFile) => {
-            processedEntries += 1;
-            const percent =
-                zipFile.entryCount > 0
-                    ? Math.min(
-                          99,
-                          Math.round(
-                              (processedEntries / zipFile.entryCount) * 100,
-                          ),
-                      )
-                    : undefined;
-            publishInstallProgress(job, 'extracting', { percent });
-        },
-    });
-
-    publishInstallProgress(job, 'extracting', { percent: 100 });
+    publishInstallProgress(job, 'extracting');
+    await extractEditorArchive(archivePath, releasePath);
 }
 
 async function installReleaseInternal(
@@ -201,6 +190,10 @@ async function installReleaseInternal(
 
     try {
         publishInstallProgress(job, 'preparing', { percent: 0 });
+
+        if (!isSafePathSegment(release.version)) {
+            throw new Error(t('installEditor:errors.unsafeArchive'));
+        }
 
         // get install locations
         const { install_location: installLocation } =
@@ -232,6 +225,11 @@ async function installReleaseInternal(
             };
         }
 
+        const integrity = await resolveArchiveIntegrity(asset, {
+            expectedReleaseTag: release.tag ?? release.version,
+            timeoutMs: DOWNLOAD_IDLE_TIMEOUT_MS,
+        });
+
         // check if release already installed (folder name exists)
 
         if (fs.existsSync(releasePath)) {
@@ -258,6 +256,7 @@ async function installReleaseInternal(
             receivedBytes: 0,
         });
         await downloadReleaseAsset(asset, archivePath, {
+            integrity,
             idleTimeoutMs: DOWNLOAD_IDLE_TIMEOUT_MS,
             onProgress: ({ receivedBytes, totalBytes }) => {
                 publishInstallProgress(job, 'downloading', {
@@ -364,6 +363,27 @@ async function installReleaseInternal(
                 );
         }
 
+        try {
+            await validateExtractedEditor(
+                rootReleasePath,
+                editor_path,
+                os.platform(),
+            );
+        } catch (error) {
+            if (
+                error instanceof EditorInstallValidationError &&
+                error.reason === 'outside-install-root'
+            ) {
+                throw new Error(t('installEditor:errors.unsafeArchive'), {
+                    cause: error,
+                });
+            }
+            throw new Error(t('installEditor:errors.invalidExtractedEditor'), {
+                cause: error,
+            });
+        }
+        publishInstallProgress(job, 'extracting', { percent: 100 });
+
         const config = getProjectDefinition(
             release.version_number,
             DEFAULT_PROJECT_DEFINITION,
@@ -412,14 +432,14 @@ async function installReleaseInternal(
         logger.error('ERROR:', error);
         try {
             // if error delete folder and file
-            if (rootReleasePath && fs.existsSync(rootReleasePath)) {
+            if (rootReleasePath) {
                 // if installed return delete folder
                 await fs.promises.rm(rootReleasePath, {
                     recursive: true,
                     force: true,
                 });
             }
-            if (downloadPath && fs.existsSync(downloadPath)) {
+            if (downloadPath) {
                 await fs.promises.rm(downloadPath, {
                     recursive: true,
                     force: true,

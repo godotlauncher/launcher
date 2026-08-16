@@ -44,7 +44,11 @@
         "downloadFailed": "下載失敗：{{error}}",
         "downloadFailedUnknown": "下載失敗。請幾分鐘後再試。",
         "downloadHttpError": "無法下載資產：{{status}}",
-        "downloadEmptyResponse": "下載失敗：伺服器傳回空白回應"
+        "downloadEmptyResponse": "下載失敗：伺服器傳回空白回應",
+        "archiveIntegrityUnavailable": "此編輯器壓縮檔沒有受支援的完整性資訊。請重新整理編輯器清單後再試一次。",
+        "archiveIntegrityMismatch": "下載的編輯器壓縮檔未通過完整性檢查，因此未安裝。",
+        "unsafeArchive": "編輯器壓縮檔包含不安全的路徑，已被拒絕。",
+        "invalidExtractedEditor": "解壓縮後的檔案不包含有效的編輯器執行檔。"
     },
     "messages": {
         "installError": "安裝發行版本時發生問題",

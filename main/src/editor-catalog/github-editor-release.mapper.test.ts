@@ -33,6 +33,9 @@ describe('github editor release mapper', () => {
                         expect.objectContaining({
                             platform: 'win32',
                             architecture: 'x64',
+                            digest: `sha256:${'a'.repeat(64)}`,
+                            checksumManifestUrl:
+                                'https://example.com/SHA512-SUMS.txt',
                         }),
                         expect.objectContaining({
                             platform: 'darwin',
@@ -101,21 +104,31 @@ function createGithubRelease(): GithubEditorRelease {
                 id: 1,
                 name: 'Godot_v4.5-stable_win64.exe.zip',
                 browserDownloadUrl: 'https://example.com/windows.zip',
+                digest: `SHA256:${'A'.repeat(64)}`,
             },
             {
                 id: 2,
                 name: 'Godot_v4.5-stable_macos.universal.zip',
                 browserDownloadUrl: 'https://example.com/macos.zip',
+                digest: null,
             },
             {
                 id: 3,
                 name: 'Godot_v4.5-stable_mono_linux.x86_64.zip',
                 browserDownloadUrl: 'https://example.com/linux-dotnet.zip',
+                digest: null,
             },
             {
                 id: 4,
                 name: 'Godot_v4.5-stable_web_editor.zip',
                 browserDownloadUrl: 'https://example.com/web.zip',
+                digest: 'sha256:not-a-digest',
+            },
+            {
+                id: 5,
+                name: 'SHA512-SUMS.txt',
+                browserDownloadUrl: 'https://example.com/SHA512-SUMS.txt',
+                digest: null,
             },
         ],
     };

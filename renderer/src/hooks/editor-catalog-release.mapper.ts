@@ -32,6 +32,8 @@ export function mapEditorCatalogRelease(
             variant.assets.map((asset) => ({
                 name: asset.name,
                 download_url: asset.downloadUrl,
+                digest: asset.digest,
+                checksum_manifest_url: asset.checksumManifestUrl,
                 platform_tags: [asset.platform, asset.architecture],
                 mono: variant.flavor === 'dotnet',
             })),

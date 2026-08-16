@@ -44,7 +44,11 @@
         "downloadFailed": "Download failed: {{error}}",
         "downloadFailedUnknown": "Download failed. Please try again in a few minutes.",
         "downloadHttpError": "Failed to download asset: {{status}}",
-        "downloadEmptyResponse": "Download failed: empty response from server"
+        "downloadEmptyResponse": "Download failed: empty response from server",
+        "archiveIntegrityUnavailable": "This editor archive has no supported integrity information. Refresh the editor list and try again.",
+        "archiveIntegrityMismatch": "The downloaded editor archive failed its integrity check and was not installed.",
+        "unsafeArchive": "The editor archive was rejected because it contains unsafe paths.",
+        "invalidExtractedEditor": "The extracted archive does not contain a valid editor executable."
     },
     "messages": {
         "installError": "Something went wrong when installing release",

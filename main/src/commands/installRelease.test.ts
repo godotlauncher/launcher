@@ -34,11 +34,34 @@ vi.mock('os', () => ({
     },
 }));
 
-const extractZipMocks = vi.hoisted(() => ({
-    extractZip: vi.fn(),
+const archiveIntegrityMocks = vi.hoisted(() => ({
+    isSafePathSegment: vi.fn(() => true),
+    resolveArchiveIntegrity: vi.fn(),
 }));
 
-vi.mock('extract-zip', () => ({ default: extractZipMocks.extractZip }));
+vi.mock('../utils/archive-integrity.util.js', () => archiveIntegrityMocks);
+
+const extractionMocks = vi.hoisted(() => ({
+    extractEditorArchive: vi.fn(),
+}));
+
+vi.mock('../utils/editor-archive-extraction.adapter.js', () => extractionMocks);
+
+const containmentMocks = vi.hoisted(() => ({
+    validateExtractedEditor: vi.fn(),
+}));
+
+vi.mock('../utils/editor-install-containment.util.js', () => ({
+    ...containmentMocks,
+    EditorInstallValidationError: class extends Error {
+        reason: string;
+
+        constructor(reason: string, message: string) {
+            super(message);
+            this.reason = reason;
+        }
+    },
+}));
 
 const ipcMocks = vi.hoisted(() => ({
     ipcSendToMainWindowSync: vi.fn(),
@@ -151,7 +174,12 @@ describe('installRelease', () => {
             configVersion: 5,
         });
 
-        extractZipMocks.extractZip.mockResolvedValue(undefined);
+        archiveIntegrityMocks.resolveArchiveIntegrity.mockResolvedValue({
+            algorithm: 'sha256',
+            digest: 'a'.repeat(64),
+        });
+        extractionMocks.extractEditorArchive.mockResolvedValue(undefined);
+        containmentMocks.validateExtractedEditor.mockResolvedValue(undefined);
         checksMocks.checkAndUpdateProjects.mockResolvedValue(undefined);
 
         osMocks.platform.mockReturnValue('win32');
@@ -196,14 +224,21 @@ describe('installRelease', () => {
         expect(releasesUtilsMocks.downloadReleaseAsset).toHaveBeenCalledWith(
             arm64Asset,
             path.resolve(expectedDownloadPath, arm64Asset.name),
-            expect.any(Object),
-        );
-        expect(extractZipMocks.extractZip).toHaveBeenCalledWith(
-            path.resolve(expectedDownloadPath, arm64Asset.name),
             expect.objectContaining({
-                dir: expectedInstallPath,
-                onEntry: expect.any(Function),
+                integrity: {
+                    algorithm: 'sha256',
+                    digest: 'a'.repeat(64),
+                },
             }),
+        );
+        expect(extractionMocks.extractEditorArchive).toHaveBeenCalledWith(
+            path.resolve(expectedDownloadPath, arm64Asset.name),
+            expectedInstallPath,
+        );
+        expect(containmentMocks.validateExtractedEditor).toHaveBeenCalledWith(
+            expectedInstallPath,
+            expectedEditorPath,
+            'win32',
         );
         expect(
             releasesUtilsMocks.addStoredInstalledRelease,
@@ -414,6 +449,78 @@ describe('installRelease', () => {
         );
         expect(releasesUtilsMocks.downloadReleaseAsset).toHaveBeenCalledTimes(
             2,
+        );
+    });
+
+    it('fails closed before download when integrity metadata is unavailable', async () => {
+        const asset: AssetSummary = {
+            name: 'Godot_v4.5.7-stable_windows_arm64.exe.zip',
+            download_url: 'https://example.com/editor.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const release: ReleaseSummary = {
+            name: 'Godot_v4.5.7-stable',
+            version: 'Godot_v4.5.7-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-01T00:00:00Z',
+            assets: [asset],
+        };
+        archiveIntegrityMocks.resolveArchiveIntegrity.mockRejectedValueOnce(
+            new Error('installEditor:errors.archiveIntegrityUnavailable'),
+        );
+
+        const result = await installRelease(release, false);
+
+        expect(result).toMatchObject({
+            success: false,
+            error: 'installEditor:errors.archiveIntegrityUnavailable',
+        });
+        expect(releasesUtilsMocks.downloadReleaseAsset).not.toHaveBeenCalled();
+        expect(extractionMocks.extractEditorArchive).not.toHaveBeenCalled();
+        expect(
+            releasesUtilsMocks.addStoredInstalledRelease,
+        ).not.toHaveBeenCalled();
+    });
+
+    it('cleans up and refuses registration when the extracted editor is invalid', async () => {
+        const asset: AssetSummary = {
+            name: 'Godot_v4.5.8-stable_windows_arm64.exe.zip',
+            download_url: 'https://example.com/editor.zip',
+            platform_tags: ['win32', 'arm64'],
+            mono: false,
+        };
+        const release: ReleaseSummary = {
+            name: 'Godot_v4.5.8-stable',
+            version: 'Godot_v4.5.8-stable',
+            version_number: 4.5,
+            prerelease: false,
+            draft: false,
+            published_at: '2024-01-01T00:00:00Z',
+            assets: [asset],
+        };
+        containmentMocks.validateExtractedEditor.mockRejectedValueOnce(
+            new Error('missing editor'),
+        );
+
+        const result = await installRelease(release, false);
+
+        expect(result).toMatchObject({
+            success: false,
+            error: 'installEditor:errors.invalidExtractedEditor',
+        });
+        expect(
+            releasesUtilsMocks.addStoredInstalledRelease,
+        ).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.resolve('/installs', release.version),
+            { recursive: true, force: true },
+        );
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.resolve('/installs', 'tmp', release.version),
+            { recursive: true, force: true },
         );
     });
 });

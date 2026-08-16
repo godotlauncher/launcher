@@ -45,6 +45,25 @@ describe('EditorCatalogService', () => {
         ).resolves.toMatchObject({ version: '4.5-stable' });
     });
 
+    it('fully refreshes a fresh legacy cache without integrity metadata', async () => {
+        const cached = createRelease('official-stable', '4.5-stable');
+        delete cached.variants[0].assets[0].digest;
+        const catalog = createCatalogWithRelease(cached);
+        catalog.providers['official-stable'].integrityMetadataRefreshed = false;
+        const { service, githubAdapter } = createService(catalog);
+
+        await service.getCatalog();
+
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledWith(
+            'official-stable',
+            null,
+        );
+
+        await service.getCatalog();
+
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledOnce();
+    });
+
     it('automatically refreshes only stale providers', async () => {
         const cached = createRelease('official-stable', '4.5-stable');
         const catalog = createCatalogWithRelease(cached);
@@ -253,11 +272,13 @@ function createCatalogWithRelease(
 ): EditorCatalogFile {
     const catalog = createEmptyEditorCatalog();
     catalog.providers[release.providerId] = {
+        integrityMetadataRefreshed: true,
         lastFetchedAt: Date.now(),
         lastPublishedAt: release.publishedAt,
         releases: [release],
     };
     for (const provider of Object.values(catalog.providers)) {
+        provider.integrityMetadataRefreshed = true;
         provider.lastFetchedAt ??= Date.now();
     }
     return catalog;
@@ -295,6 +316,7 @@ function createRelease(
                         id: `${providerId}:${version}:${flavor}:win32:x64`,
                         name: `${version}.zip`,
                         downloadUrl: 'https://example.com/editor.zip',
+                        digest: `sha256:${'a'.repeat(64)}`,
                         platform: 'win32',
                         architecture: 'x64',
                     },

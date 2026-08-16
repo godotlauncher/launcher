@@ -44,7 +44,11 @@
         "downloadFailed": "Error en la descarga: {{error}}",
         "downloadFailedUnknown": "Error en la descarga. Inténtalo de nuevo en unos minutos.",
         "downloadHttpError": "No se pudo descargar el archivo: {{status}}",
-        "downloadEmptyResponse": "Error en la descarga: respuesta vacía del servidor"
+        "downloadEmptyResponse": "Error en la descarga: respuesta vacía del servidor",
+        "archiveIntegrityUnavailable": "Este archivo del editor no tiene información de integridad compatible. Actualiza la lista de editores e inténtalo de nuevo.",
+        "archiveIntegrityMismatch": "El archivo del editor descargado no superó la comprobación de integridad y no se instaló.",
+        "unsafeArchive": "El archivo del editor fue rechazado porque contiene rutas no seguras.",
+        "invalidExtractedEditor": "El archivo extraído no contiene un ejecutable de editor válido."
     },
     "messages": {
         "installError": "Algo salió mal al instalar la versión",

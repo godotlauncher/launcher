@@ -44,7 +44,11 @@
         "downloadFailed": "下载失败：{{error}}",
         "downloadFailedUnknown": "下载失败。请几分钟后重试。",
         "downloadHttpError": "无法下载资源：{{status}}",
-        "downloadEmptyResponse": "下载失败：服务器返回了空响应"
+        "downloadEmptyResponse": "下载失败：服务器返回了空响应",
+        "archiveIntegrityUnavailable": "此编辑器压缩包没有受支持的完整性信息。请刷新编辑器列表后重试。",
+        "archiveIntegrityMismatch": "下载的编辑器压缩包未通过完整性检查，因此未安装。",
+        "unsafeArchive": "编辑器压缩包包含不安全的路径，已被拒绝。",
+        "invalidExtractedEditor": "解压后的压缩包不包含有效的编辑器可执行文件。"
     },
     "messages": {
         "installError": "安装发行版本时出错",

@@ -44,7 +44,11 @@
         "downloadFailed": "Download fehlgeschlagen: {{error}}",
         "downloadFailedUnknown": "Download fehlgeschlagen. Bitte versuchen Sie es in einigen Minuten erneut.",
         "downloadHttpError": "Asset konnte nicht heruntergeladen werden: {{status}}",
-        "downloadEmptyResponse": "Download fehlgeschlagen: leere Antwort vom Server"
+        "downloadEmptyResponse": "Download fehlgeschlagen: leere Antwort vom Server",
+        "archiveIntegrityUnavailable": "Dieses Editor-Archiv enthält keine unterstützten Integritätsinformationen. Aktualisiere die Editor-Liste und versuche es erneut.",
+        "archiveIntegrityMismatch": "Die Integritätsprüfung des heruntergeladenen Editor-Archivs ist fehlgeschlagen. Der Editor wurde nicht installiert.",
+        "unsafeArchive": "Das Editor-Archiv wurde abgelehnt, weil es unsichere Pfade enthält.",
+        "invalidExtractedEditor": "Das entpackte Archiv enthält keine gültige Editor-Programmdatei."
     },
     "messages": {
         "installError": "Beim Installieren des Releases ist ein Fehler aufgetreten",

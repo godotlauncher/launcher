@@ -44,7 +44,11 @@
         "downloadFailed": "İndirme başarısız oldu: {{error}}",
         "downloadFailedUnknown": "İndirme başarısız oldu. Lütfen birkaç dakika sonra tekrar deneyin.",
         "downloadHttpError": "Varlık indirilemedi: {{status}}",
-        "downloadEmptyResponse": "İndirme başarısız oldu: sunucudan boş yanıt geldi"
+        "downloadEmptyResponse": "İndirme başarısız oldu: sunucudan boş yanıt geldi",
+        "archiveIntegrityUnavailable": "Bu düzenleyici arşivinde desteklenen bütünlük bilgisi yok. Düzenleyici listesini yenileyip tekrar deneyin.",
+        "archiveIntegrityMismatch": "İndirilen düzenleyici arşivi bütünlük denetiminden geçemedi ve yüklenmedi.",
+        "unsafeArchive": "Düzenleyici arşivi güvenli olmayan yollar içerdiği için reddedildi.",
+        "invalidExtractedEditor": "Çıkarılan arşiv geçerli bir düzenleyici yürütülebilir dosyası içermiyor."
     },
     "messages": {
         "installError": "Sürüm yüklenirken bir şeyler ters gitti",

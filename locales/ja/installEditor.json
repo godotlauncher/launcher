@@ -44,7 +44,11 @@
         "downloadFailed": "ダウンロードに失敗しました: {{error}}",
         "downloadFailedUnknown": "ダウンロードに失敗しました。数分後にもう一度お試しください。",
         "downloadHttpError": "アセットのダウンロードに失敗しました: {{status}}",
-        "downloadEmptyResponse": "ダウンロードに失敗しました: サーバーから空の応答が返されました"
+        "downloadEmptyResponse": "ダウンロードに失敗しました: サーバーから空の応答が返されました",
+        "archiveIntegrityUnavailable": "このエディターアーカイブには対応している整合性情報がありません。エディター一覧を更新して、もう一度お試しください。",
+        "archiveIntegrityMismatch": "ダウンロードしたエディターアーカイブは整合性チェックに失敗したため、インストールされませんでした。",
+        "unsafeArchive": "エディターアーカイブに安全でないパスが含まれているため、拒否されました。",
+        "invalidExtractedEditor": "展開したアーカイブに有効なエディター実行ファイルが含まれていません。"
     },
     "messages": {
         "installError": "リリースのインストール中に問題が発生しました",
