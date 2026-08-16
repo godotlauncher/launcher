@@ -20,12 +20,15 @@ describe('CreateProjectGitIdentityDialog', () => {
                 email=""
                 scope="repository"
                 showValidation={false}
+                globalIdentityComplete={false}
                 t={t}
                 onNameChange={noop}
                 onEmailChange={noop}
                 onScopeChange={noop}
                 onSkip={noop}
                 onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
             />,
@@ -45,12 +48,15 @@ describe('CreateProjectGitIdentityDialog', () => {
                 email="john.doe@example.com"
                 scope="repository"
                 showValidation={false}
+                globalIdentityComplete
                 t={t}
                 onNameChange={noop}
                 onEmailChange={noop}
                 onScopeChange={noop}
                 onSkip={noop}
                 onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
             />,
@@ -71,12 +77,15 @@ describe('CreateProjectGitIdentityDialog', () => {
                 email=""
                 scope="global"
                 showValidation
+                globalIdentityComplete={false}
                 t={t}
                 onNameChange={noop}
                 onEmailChange={noop}
                 onScopeChange={noop}
                 onSkip={noop}
                 onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
             />,
@@ -85,5 +94,55 @@ describe('CreateProjectGitIdentityDialog', () => {
         expect(html).toContain('gitIdentity.nameRequired');
         expect(html).toContain('gitIdentity.emailRequired');
         expect(html).toContain('gitIdentity.globalScope');
+    });
+
+    it('renders a repository-scoped preset suggestion with the right alternative', () => {
+        const completeGlobalHtml = renderToStaticMarkup(
+            <CreateProjectGitIdentityDialog
+                page="preset"
+                name="Project User"
+                email="project@example.com"
+                scope="repository"
+                showValidation={false}
+                globalIdentityComplete
+                t={t}
+                onNameChange={noop}
+                onEmailChange={noop}
+                onScopeChange={noop}
+                onSkip={noop}
+                onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
+                onBack={noop}
+                onSave={noop}
+            />,
+        );
+        expect(completeGlobalHtml).toContain('gitIdentity.presetTitle');
+        expect(completeGlobalHtml).toContain('gitIdentity.useGlobal');
+        expect(completeGlobalHtml).not.toContain('gitIdentity.scope');
+        expect(completeGlobalHtml).not.toContain('gitIdentity.skipCommit');
+
+        const missingGlobalHtml = renderToStaticMarkup(
+            <CreateProjectGitIdentityDialog
+                page="preset"
+                name="Project User"
+                email="project@example.com"
+                scope="repository"
+                showValidation={false}
+                globalIdentityComplete={false}
+                t={t}
+                onNameChange={noop}
+                onEmailChange={noop}
+                onScopeChange={noop}
+                onSkip={noop}
+                onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
+                onBack={noop}
+                onSave={noop}
+            />,
+        );
+        expect(missingGlobalHtml).toContain('gitIdentity.useDifferent');
+        expect(missingGlobalHtml).toContain('gitIdentity.skipCommit');
     });
 });

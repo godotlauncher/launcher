@@ -3,6 +3,7 @@ import type {
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
     GitIdentityScope,
+    ProjectGitIdentityPreset,
     RendererType,
     ToolIntegrationSummary,
 } from '@shared/contracts';
@@ -38,6 +39,7 @@ import {
     normalizeBasePathForJoin,
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
     resolveCreateProjectCodeEditorId,
+    resolveCreateProjectGitIdentityDecision,
 } from './createProject/createProject.model';
 
 type SubViewProps = {
@@ -77,6 +79,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         useState<GitIdentityScope>('repository');
     const [showGitIdentityValidation, setShowGitIdentityValidation] =
         useState(false);
+    const [suggestedGitIdentityPreset, setSuggestedGitIdentityPreset] =
+        useState<ProjectGitIdentityPreset | null>(null);
+    const [preflightGlobalIdentity, setPreflightGlobalIdentity] = useState({
+        name: '',
+        email: '',
+    });
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
     const [tools, setTools] = useState<ToolIntegrationSummary[]>([]);
     const [overwriteProjectPath, setOverwriteProjectPath] =
@@ -98,7 +106,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const { addAlert } = useAlerts();
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
-    const { getGlobalIdentity } = useGit();
+    const { getIdentitySettings } = useGit();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
     const { preferences, platform } = usePreferences();
@@ -315,22 +323,55 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         }
 
         setCheckingGitIdentity(true);
-        let identity = { name: '', email: '' };
+        let identitySettings = {
+            globalIdentity: { name: '', email: '' },
+            projectPreset: null as ProjectGitIdentityPreset | null,
+        };
         try {
-            identity = await getGlobalIdentity();
+            identitySettings = await getIdentitySettings();
         } catch {
-            identity = { name: '', email: '' };
+            identitySettings = {
+                globalIdentity: { name: '', email: '' },
+                projectPreset: null,
+            };
         } finally {
             setCheckingGitIdentity(false);
         }
 
-        if (isGitIdentityComplete(identity)) {
+        const decision = resolveCreateProjectGitIdentityDecision(
+            identitySettings.globalIdentity,
+            identitySettings.projectPreset,
+        );
+        if (decision.action === 'use-global') {
             await createSelectedProject();
             return;
         }
+        if (decision.action === 'apply-preset') {
+            await createSelectedProject({
+                initialCommit: 'create',
+                identity: {
+                    name: decision.preset.name,
+                    email: decision.preset.email,
+                    scope: 'repository',
+                },
+            });
+            return;
+        }
+        if (decision.action === 'suggest-preset') {
+            setSuggestedGitIdentityPreset(decision.preset);
+            setPreflightGlobalIdentity(decision.globalIdentity);
+            setGitIdentityName(decision.preset.name);
+            setGitIdentityEmail(decision.preset.email);
+            setGitIdentityScope('repository');
+            setShowGitIdentityValidation(false);
+            setGitIdentityDialogPage('preset');
+            return;
+        }
 
-        setGitIdentityName(identity.name);
-        setGitIdentityEmail(identity.email);
+        setSuggestedGitIdentityPreset(null);
+        setPreflightGlobalIdentity(decision.globalIdentity);
+        setGitIdentityName(decision.globalIdentity.name);
+        setGitIdentityEmail(decision.globalIdentity.email);
         setGitIdentityScope('repository');
         setShowGitIdentityValidation(false);
         setGitIdentityDialogPage('warning');
@@ -358,6 +399,34 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             initialCommit: 'create',
             identity: { ...identity, scope: gitIdentityScope },
         });
+    };
+
+    /** Uses the complete global identity without writing repository settings. */
+    const handleUseGlobalGitIdentity = () => {
+        setGitIdentityDialogPage(null);
+        void createSelectedProject();
+    };
+
+    /** Opens the existing identity form with the partial global values. */
+    const handleUseDifferentGitIdentity = () => {
+        setGitIdentityName(preflightGlobalIdentity.name);
+        setGitIdentityEmail(preflightGlobalIdentity.email);
+        setGitIdentityScope('repository');
+        setShowGitIdentityValidation(false);
+        setGitIdentityDialogPage('identity');
+    };
+
+    /** Returns to the warning or suggested preset that opened the form. */
+    const handleGitIdentityBack = () => {
+        setShowGitIdentityValidation(false);
+        if (suggestedGitIdentityPreset) {
+            setGitIdentityName(suggestedGitIdentityPreset.name);
+            setGitIdentityEmail(suggestedGitIdentityPreset.email);
+            setGitIdentityScope('repository');
+            setGitIdentityDialogPage('preset');
+            return;
+        }
+        setGitIdentityDialogPage('warning');
     };
 
     const changeRelease = (index: number) => {
@@ -493,6 +562,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setGitIdentityEmail('');
         setGitIdentityScope('repository');
         setShowGitIdentityValidation(false);
+        setSuggestedGitIdentityPreset(null);
+        setPreflightGlobalIdentity({ name: '', email: '' });
         setSelectingFolder(false);
         setTools([]);
         setOverwriteProjectPath(false);
@@ -634,16 +705,18 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     email={gitIdentityEmail}
                     scope={gitIdentityScope}
                     showValidation={showGitIdentityValidation}
+                    globalIdentityComplete={isGitIdentityComplete(
+                        preflightGlobalIdentity,
+                    )}
                     t={t}
                     onNameChange={setGitIdentityName}
                     onEmailChange={setGitIdentityEmail}
                     onScopeChange={setGitIdentityScope}
                     onSkip={handleSkipInitialCommit}
                     onAddIdentity={() => setGitIdentityDialogPage('identity')}
-                    onBack={() => {
-                        setShowGitIdentityValidation(false);
-                        setGitIdentityDialogPage('warning');
-                    }}
+                    onUseGlobal={handleUseGlobalGitIdentity}
+                    onUseDifferentIdentity={handleUseDifferentGitIdentity}
+                    onBack={handleGitIdentityBack}
                     onSave={handleSaveGitIdentity}
                 />
             )}

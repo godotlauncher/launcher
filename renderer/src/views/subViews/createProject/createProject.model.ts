@@ -3,6 +3,7 @@ import type {
     CodeEditorIntegrationSettings,
     GitIdentity,
     InstalledRelease,
+    ProjectGitIdentityPreset,
     RendererType,
     ToolIntegrationSummary,
 } from '@shared/contracts';
@@ -202,3 +203,40 @@ export const resolveCreateProjectCodeEditorId = (
  */
 export const isGitIdentityComplete = (identity: GitIdentity): boolean =>
     identity.name.trim().length > 0 && identity.email.trim().length > 0;
+
+export type CreateProjectGitIdentityDecision =
+    | { action: 'use-global' }
+    | { action: 'apply-preset'; preset: ProjectGitIdentityPreset }
+    | {
+          action: 'suggest-preset';
+          preset: ProjectGitIdentityPreset;
+          globalIdentity: GitIdentity;
+      }
+    | { action: 'require-identity'; globalIdentity: GitIdentity };
+
+/**
+ * Resolves Create Project behaviour from global Git state and the preset.
+ *
+ * @param globalIdentity - Independently read global Git name and email.
+ * @param projectPreset - Optional Launcher-owned project identity preset.
+ * @returns The next identity step before project creation.
+ */
+export function resolveCreateProjectGitIdentityDecision(
+    globalIdentity: GitIdentity,
+    projectPreset: ProjectGitIdentityPreset | null,
+): CreateProjectGitIdentityDecision {
+    if (projectPreset?.useForNewRepositories) {
+        return { action: 'apply-preset', preset: projectPreset };
+    }
+    if (projectPreset) {
+        return {
+            action: 'suggest-preset',
+            preset: projectPreset,
+            globalIdentity,
+        };
+    }
+    if (isGitIdentityComplete(globalIdentity)) {
+        return { action: 'use-global' };
+    }
+    return { action: 'require-identity', globalIdentity };
+}

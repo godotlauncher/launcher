@@ -69,7 +69,12 @@
         "repositoryScope": "Ce dépôt",
         "globalScope": "Tous les dépôts sur cet ordinateur",
         "back": "Retour",
-        "saveAndCreate": "Enregistrer et créer le projet"
+        "saveAndCreate": "Enregistrer et créer le projet",
+        "presetTitle": "Use project identity preset?",
+        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
+        "useGlobal": "Use global identity",
+        "useDifferent": "Enter a different identity",
+        "usePresetAndCreate": "Use preset and create project"
     },
     "buttons": {
         "editNow": "Modifier maintenant",

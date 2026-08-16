@@ -69,7 +69,12 @@
         "repositoryScope": "此仓库",
         "globalScope": "此电脑上的所有仓库",
         "back": "返回",
-        "saveAndCreate": "保存并创建项目"
+        "saveAndCreate": "保存并创建项目",
+        "presetTitle": "Use project identity preset?",
+        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
+        "useGlobal": "Use global identity",
+        "useDifferent": "Enter a different identity",
+        "usePresetAndCreate": "Use preset and create project"
     },
     "buttons": {
         "editNow": "立即编辑",

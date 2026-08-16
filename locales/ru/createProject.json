@@ -69,7 +69,12 @@
         "repositoryScope": "Этого репозитория",
         "globalScope": "Всех репозиториев на этом компьютере",
         "back": "Назад",
-        "saveAndCreate": "Сохранить и создать проект"
+        "saveAndCreate": "Сохранить и создать проект",
+        "presetTitle": "Use project identity preset?",
+        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
+        "useGlobal": "Use global identity",
+        "useDifferent": "Enter a different identity",
+        "usePresetAndCreate": "Use preset and create project"
     },
     "buttons": {
         "editNow": "Редактировать сейчас",

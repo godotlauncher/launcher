@@ -13,6 +13,7 @@ import {
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
     resolveCreateProjectCodeEditorId,
+    resolveCreateProjectGitIdentityDecision,
 } from './createProject.model';
 
 const installedRelease = (
@@ -194,5 +195,51 @@ describe('create project model helpers', () => {
         [{ name: 'John Doe', email: '   ' }, false],
     ])('checks whether Git identity %j is complete', (identity, expected) => {
         expect(isGitIdentityComplete(identity)).toBe(expected);
+    });
+
+    it('resolves every project identity preset and global identity state', () => {
+        const completeGlobal = {
+            name: 'Global User',
+            email: 'global@example.com',
+        };
+        const missingGlobal = { name: 'Global User', email: '' };
+        const preset = {
+            name: 'Project User',
+            email: 'project@example.com',
+            useForNewRepositories: false,
+        };
+
+        expect(
+            resolveCreateProjectGitIdentityDecision(completeGlobal, null),
+        ).toEqual({ action: 'use-global' });
+        expect(
+            resolveCreateProjectGitIdentityDecision(missingGlobal, null),
+        ).toEqual({
+            action: 'require-identity',
+            globalIdentity: missingGlobal,
+        });
+        expect(
+            resolveCreateProjectGitIdentityDecision(completeGlobal, preset),
+        ).toEqual({
+            action: 'suggest-preset',
+            preset,
+            globalIdentity: completeGlobal,
+        });
+        expect(
+            resolveCreateProjectGitIdentityDecision(missingGlobal, preset),
+        ).toEqual({
+            action: 'suggest-preset',
+            preset,
+            globalIdentity: missingGlobal,
+        });
+        expect(
+            resolveCreateProjectGitIdentityDecision(missingGlobal, {
+                ...preset,
+                useForNewRepositories: true,
+            }),
+        ).toEqual({
+            action: 'apply-preset',
+            preset: { ...preset, useForNewRepositories: true },
+        });
     });
 });

@@ -69,7 +69,12 @@
         "repositoryScope": "Bu depo",
         "globalScope": "Bu bilgisayardaki tüm depolar",
         "back": "Geri",
-        "saveAndCreate": "Kaydet ve proje oluştur"
+        "saveAndCreate": "Kaydet ve proje oluştur",
+        "presetTitle": "Use project identity preset?",
+        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
+        "useGlobal": "Use global identity",
+        "useDifferent": "Enter a different identity",
+        "usePresetAndCreate": "Use preset and create project"
     },
     "buttons": {
         "editNow": "Şimdi düzenle",
