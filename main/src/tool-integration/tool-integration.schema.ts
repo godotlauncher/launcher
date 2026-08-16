@@ -81,7 +81,7 @@ const CompatibleToolIntegrationStoreFileSchema = z.union([
 ]);
 
 /**
- * Creates the empty first-version tool integration store.
+ * Creates an empty store at the current tool integration schema version.
  *
  * @returns An empty valid store file.
  */
