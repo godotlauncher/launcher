@@ -17,6 +17,11 @@ const EditorCatalogAssetSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
     downloadUrl: z.url(),
+    digest: z
+        .string()
+        .regex(/^sha256:[0-9a-f]{64}$/)
+        .optional(),
+    checksumManifestUrl: z.url().optional(),
     platform: EditorCatalogPlatformSchema,
     architecture: EditorCatalogArchitectureSchema,
 });
@@ -49,6 +54,7 @@ export const EditorCatalogReleaseSchema = z.object({
 });
 
 const EditorCatalogProviderStateSchema = z.object({
+    integrityMetadataRefreshed: z.boolean().optional().default(false),
     lastFetchedAt: z.number().int().nonnegative().nullable(),
     lastPublishedAt: z.iso.datetime().nullable(),
     releases: z.array(EditorCatalogReleaseSchema),
@@ -108,6 +114,7 @@ export function normalizeEditorCatalog(value: unknown): EditorCatalogFile {
  */
 function createEmptyProviderState(): EditorCatalogProviderState {
     return {
+        integrityMetadataRefreshed: false,
         lastFetchedAt: null,
         lastPublishedAt: null,
         releases: [],
@@ -132,6 +139,7 @@ function normalizeProviderState(
     );
 
     return {
+        integrityMetadataRefreshed: state.integrityMetadataRefreshed ?? false,
         lastFetchedAt: state.lastFetchedAt,
         lastPublishedAt: state.lastPublishedAt,
         releases: [...releasesById.values()].sort(compareEditorReleases),

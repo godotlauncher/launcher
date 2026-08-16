@@ -10,11 +10,13 @@ describe('editor catalog schema', () => {
             schemaVersion: 1,
             providers: {
                 'official-stable': {
+                    integrityMetadataRefreshed: false,
                     lastFetchedAt: null,
                     lastPublishedAt: null,
                     releases: [],
                 },
                 'official-prerelease': {
+                    integrityMetadataRefreshed: false,
                     lastFetchedAt: null,
                     lastPublishedAt: null,
                     releases: [],

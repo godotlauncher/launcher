@@ -24,12 +24,15 @@ describe('editor catalog release mapper', () => {
             {
                 name: 'godot-windows.zip',
                 download_url: 'https://example.com/godot-windows.zip',
+                digest: `sha256:${'a'.repeat(64)}`,
+                checksum_manifest_url: 'https://example.com/SHA512-SUMS.txt',
                 platform_tags: ['win32', 'x64'],
                 mono: false,
             },
             {
                 name: 'godot-dotnet-linux.zip',
                 download_url: 'https://example.com/godot-dotnet-linux.zip',
+                checksum_manifest_url: 'https://example.com/SHA512-SUMS.txt',
                 platform_tags: ['linux', 'arm64'],
                 mono: true,
             },
@@ -102,6 +105,9 @@ function createRelease(
                         id: 'windows-x64',
                         name: 'godot-windows.zip',
                         downloadUrl: 'https://example.com/godot-windows.zip',
+                        digest: `sha256:${'a'.repeat(64)}`,
+                        checksumManifestUrl:
+                            'https://example.com/SHA512-SUMS.txt',
                         platform: 'win32',
                         architecture: 'x64',
                     },
@@ -116,6 +122,8 @@ function createRelease(
                         name: 'godot-dotnet-linux.zip',
                         downloadUrl:
                             'https://example.com/godot-dotnet-linux.zip',
+                        checksumManifestUrl:
+                            'https://example.com/SHA512-SUMS.txt',
                         platform: 'linux',
                         architecture: 'arm64',
                     },

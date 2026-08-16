@@ -178,6 +178,39 @@ describe('getAvailableReleases', () => {
             refreshError,
         );
     });
+
+    it('does not repeatedly refresh migrated caches with unavailable asset metadata', async () => {
+        const cachedRelease: ReleaseSummary = {
+            version: '4.4-stable',
+            version_number: 4.4,
+            name: '4.4-stable',
+            published_at: '2024-05-01T00:00:00.000Z',
+            draft: false,
+            prerelease: false,
+            assets: [
+                {
+                    name: 'Godot_v4.4-stable_win64.exe.zip',
+                    download_url: 'https://example.com/editor.zip',
+                },
+            ],
+        };
+
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.promises.readFile).mockResolvedValueOnce(
+            JSON.stringify({
+                integrityMetadataRefreshed: true,
+                lastUpdated: Date.now(),
+                lastPublishDate: '2024-05-01T00:00:00.000Z',
+                releases: [cachedRelease],
+            }),
+        );
+
+        await expect(getAvailableReleases()).resolves.toEqual({
+            releases: [cachedRelease],
+            refreshError: undefined,
+        });
+        expect(getReleases).not.toHaveBeenCalled();
+    });
 });
 
 describe('clearReleaseCaches', () => {
@@ -282,12 +315,14 @@ describe('clearReleaseCaches', () => {
             defaultDirs.releaseCachePath,
             new Date('2024-05-01T00:00:00.000Z'),
             [stableNew, stableOld],
+            true,
         );
         expect(storeAvailableReleases).toHaveBeenNthCalledWith(
             2,
             defaultDirs.prereleaseCachePath,
             new Date('2024-06-15T00:00:00.000Z'),
             [buildNew, buildOld],
+            true,
         );
 
         expect(loggerInfo).toHaveBeenCalledWith(

@@ -6,6 +6,7 @@ import type {
     EditorCatalogProviderId,
     EditorCatalogRelease,
 } from '@shared/contracts';
+import { normalizeGithubAssetDigest } from '../utils/archive-integrity.util.js';
 import { EDITOR_CATALOG_MIN_VERSION } from './editor-catalog.constants.js';
 import type {
     GithubEditorAsset,
@@ -41,8 +42,13 @@ export function mapGithubEditorRelease(
     }
 
     const releaseId = `${providerId}:${release.tagName}`;
+    const checksumManifestUrl = release.assets.find(
+        (asset) => asset.name === 'SHA512-SUMS.txt',
+    )?.browserDownloadUrl;
     const assetsByFlavor = Map.groupBy(
-        release.assets.flatMap((asset) => mapGithubAsset(releaseId, asset)),
+        release.assets.flatMap((asset) =>
+            mapGithubAsset(releaseId, asset, checksumManifestUrl),
+        ),
         ({ flavor }) => flavor,
     );
     const variants = (
@@ -113,11 +119,13 @@ export function parseEditorVersion(
  *
  * @param releaseId - The catalog ID of the parent release.
  * @param source - The GitHub asset to convert.
+ * @param checksumManifestUrl - The release checksum manifest URL, when present.
  * @returns Catalog assets for each supported architecture.
  */
 function mapGithubAsset(
     releaseId: string,
     source: GithubEditorAsset,
+    checksumManifestUrl?: string,
 ): Array<{ flavor: EditorCatalogFlavor; asset: EditorCatalogAsset }> {
     const target = getAssetTarget(source.name);
     if (!target) {
@@ -130,12 +138,15 @@ function mapGithubAsset(
         ? 'dotnet'
         : 'gdscript';
 
+    const digest = normalizeGithubAssetDigest(source.digest);
     return target.architectures.map((architecture) => ({
         flavor,
         asset: {
             id: `${releaseId}:${flavor}:${source.id}:${target.platform}:${architecture}`,
             name: source.name,
             downloadUrl: source.browserDownloadUrl,
+            ...(digest ? { digest } : {}),
+            ...(checksumManifestUrl ? { checksumManifestUrl } : {}),
             platform: target.platform,
             architecture,
         },

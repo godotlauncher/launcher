@@ -13,6 +13,8 @@ export type EditorCatalogAsset = {
     id: string;
     name: string;
     downloadUrl: string;
+    digest?: string;
+    checksumManifestUrl?: string;
     platform: EditorCatalogPlatform;
     architecture: EditorCatalogArchitecture;
 };

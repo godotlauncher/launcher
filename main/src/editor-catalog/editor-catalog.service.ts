@@ -167,11 +167,19 @@ export class EditorCatalogService {
             logger.error('Failed to read editor catalog before refresh', error);
         }
 
+        const integrityRefreshProviderIds = new Set(
+            providerIds.filter((providerId) =>
+                providerNeedsIntegrityRefresh(catalog.providers[providerId]),
+            ),
+        );
+
         const refreshResults = await Promise.allSettled(
             providerIds.map((providerId) =>
                 this.githubAdapter.fetchProvider(
                     providerId,
-                    catalog.providers[providerId].lastPublishedAt,
+                    integrityRefreshProviderIds.has(providerId)
+                        ? null
+                        : catalog.providers[providerId].lastPublishedAt,
                 ),
             ),
         );
@@ -195,7 +203,12 @@ export class EditorCatalogService {
 
         if (updates.length > 0) {
             const applyUpdates = (current: EditorCatalogFile) =>
-                mergeProviderUpdates(current, updates, Date.now());
+                mergeProviderUpdates(
+                    current,
+                    updates,
+                    Date.now(),
+                    integrityRefreshProviderIds,
+                );
             catalog = catalogReadable
                 ? await this.store.update(applyUpdates)
                 : await this.store.replace(applyUpdates(catalog));
@@ -249,9 +262,22 @@ export class EditorCatalogService {
         const lastFetchedAt = catalog.providers[providerId].lastFetchedAt;
         return (
             lastFetchedAt === null ||
-            lastFetchedAt + EDITOR_CATALOG_CACHE_TTL_MS < Date.now()
+            lastFetchedAt + EDITOR_CATALOG_CACHE_TTL_MS < Date.now() ||
+            providerNeedsIntegrityRefresh(catalog.providers[providerId])
         );
     }
+}
+
+/**
+ * Checks whether cached assets predate required integrity metadata.
+ *
+ * @param provider - The cached provider data to inspect.
+ * @returns Whether the provider needs one complete metadata refresh.
+ */
+function providerNeedsIntegrityRefresh(
+    provider: EditorCatalogFile['providers'][EditorCatalogProviderId],
+): boolean {
+    return provider.integrityMetadataRefreshed !== true;
 }
 
 /**
@@ -260,12 +286,14 @@ export class EditorCatalogService {
  * @param catalog - The current catalog.
  * @param updates - The provider updates to merge.
  * @param fetchedAt - The time when the updates were fetched.
+ * @param integrityRefreshProviderIds - Providers fetched from the beginning.
  * @returns A catalog containing the provider updates.
  */
 function mergeProviderUpdates(
     catalog: EditorCatalogFile,
     updates: FetchedEditorCatalogProvider[],
     fetchedAt: number,
+    integrityRefreshProviderIds: ReadonlySet<EditorCatalogProviderId>,
 ): EditorCatalogFile {
     const providers = { ...catalog.providers };
     for (const update of updates) {
@@ -277,6 +305,9 @@ function mergeProviderUpdates(
             ]),
         );
         providers[update.providerId] = {
+            integrityMetadataRefreshed:
+                current.integrityMetadataRefreshed === true ||
+                integrityRefreshProviderIds.has(update.providerId),
             lastFetchedAt: fetchedAt,
             lastPublishedAt: update.lastPublishedAt,
             releases: [...releasesById.values()],

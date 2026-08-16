@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type {
     AssetSummary,
     InstalledRelease,
@@ -44,6 +45,7 @@ vi.mock('node:fs', () => ({
         readFile: vi.fn(),
         writeFile: vi.fn(),
         mkdir: vi.fn(),
+        rm: vi.fn(),
     },
 }));
 
@@ -92,6 +94,8 @@ vi.mock('../i18n/index.js', () => ({
                 return 'localized download rate limited';
             case 'installEditor:errors.downloadServiceUnavailable':
                 return 'localized download service unavailable';
+            case 'installEditor:errors.archiveIntegrityMismatch':
+                return 'localized archive integrity mismatch';
             case 'installEditor:errors.downloadHttpError':
                 return `localized download http error: ${options?.status}`;
             case 'installEditor:errors.downloadEmptyResponse':
@@ -436,6 +440,10 @@ suite('Releases Utils', () => {
             mono: false,
         };
         const downloadPath = '/fake/path/test_asset.zip';
+        const emptyIntegrity = {
+            algorithm: 'sha256' as const,
+            digest: createHash('sha256').digest('hex'),
+        };
 
         beforeEach(() => {
             global.fetch = vi.fn().mockResolvedValue({
@@ -449,12 +457,15 @@ suite('Releases Utils', () => {
 
             // Reset mocks
             vi.mocked(fs.createWriteStream).mockClear();
+            vi.mocked(fs.promises.rm).mockResolvedValue(undefined);
             vi.mocked(streamPromises.pipeline).mockClear();
             vi.mocked(Readable.fromWeb).mockClear();
         });
 
         test('should download and save an asset successfully', async () => {
-            await downloadReleaseAsset(mockAsset, downloadPath);
+            await downloadReleaseAsset(mockAsset, downloadPath, {
+                integrity: emptyIntegrity,
+            });
 
             expect(global.fetch).toHaveBeenCalledWith(
                 mockAsset.download_url,
@@ -479,7 +490,9 @@ suite('Releases Utils', () => {
             } as Response);
 
             await expect(
-                downloadReleaseAsset(mockAsset, downloadPath),
+                downloadReleaseAsset(mockAsset, downloadPath, {
+                    integrity: emptyIntegrity,
+                }),
             ).rejects.toThrow('localized download http error: Network Error');
         });
 
@@ -501,7 +514,9 @@ suite('Releases Utils', () => {
                 } as Response);
 
                 await expect(
-                    downloadReleaseAsset(mockAsset, downloadPath),
+                    downloadReleaseAsset(mockAsset, downloadPath, {
+                        integrity: emptyIntegrity,
+                    }),
                 ).rejects.toThrow(expectedMessage);
             },
         );
@@ -512,7 +527,9 @@ suite('Releases Utils', () => {
             );
 
             await expect(
-                downloadReleaseAsset(mockAsset, downloadPath),
+                downloadReleaseAsset(mockAsset, downloadPath, {
+                    integrity: emptyIntegrity,
+                }),
             ).rejects.toThrow('localized download interrupted');
         });
 
@@ -526,7 +543,9 @@ suite('Releases Utils', () => {
             vi.mocked(global.fetch).mockRejectedValueOnce(fetchError);
 
             await expect(
-                downloadReleaseAsset(mockAsset, downloadPath),
+                downloadReleaseAsset(mockAsset, downloadPath, {
+                    integrity: emptyIntegrity,
+                }),
             ).rejects.toThrow('localized download interrupted');
         });
 
@@ -536,7 +555,9 @@ suite('Releases Utils', () => {
             );
 
             await expect(
-                downloadReleaseAsset(mockAsset, downloadPath),
+                downloadReleaseAsset(mockAsset, downloadPath, {
+                    integrity: emptyIntegrity,
+                }),
             ).rejects.toThrow('localized download interrupted');
         });
 
@@ -560,7 +581,15 @@ suite('Releases Utils', () => {
                 },
             );
 
-            await downloadReleaseAsset(mockAsset, downloadPath, { onProgress });
+            await downloadReleaseAsset(mockAsset, downloadPath, {
+                integrity: {
+                    algorithm: 'sha256',
+                    digest: createHash('sha256')
+                        .update(Buffer.alloc(10))
+                        .digest('hex'),
+                },
+                onProgress,
+            });
 
             expect(onProgress).toHaveBeenLastCalledWith({
                 receivedBytes: 10,
@@ -577,11 +606,37 @@ suite('Releases Utils', () => {
                 },
             );
 
-            await downloadReleaseAsset(mockAsset, downloadPath, { onProgress });
+            await downloadReleaseAsset(mockAsset, downloadPath, {
+                integrity: {
+                    algorithm: 'sha256',
+                    digest: createHash('sha256')
+                        .update(Buffer.alloc(4))
+                        .digest('hex'),
+                },
+                onProgress,
+            });
 
             expect(onProgress).toHaveBeenCalledWith({
                 receivedBytes: 4,
                 totalBytes: undefined,
+            });
+        });
+
+        test('should remove and reject an archive with a mismatched digest', async () => {
+            vi.mocked(streamPromises.pipeline).mockImplementationOnce(
+                async (...streams: unknown[]) => {
+                    const progressStream = streams[1] as NodeJS.WritableStream;
+                    progressStream.write(Buffer.from('tampered'));
+                },
+            );
+
+            await expect(
+                downloadReleaseAsset(mockAsset, downloadPath, {
+                    integrity: emptyIntegrity,
+                }),
+            ).rejects.toThrow('localized archive integrity mismatch');
+            expect(fs.promises.rm).toHaveBeenCalledWith(downloadPath, {
+                force: true,
             });
         });
     });
@@ -618,6 +673,7 @@ suite('Releases Utils', () => {
             expect(cached.lastPublishDate).toEqual(testDate);
             expect(cached.releases).toEqual(releases);
             expect(cached.lastUpdated).toBeGreaterThan(0);
+            expect(cached.integrityMetadataRefreshed).toBe(false);
         });
 
         test('should get stored available releases when file exists', async () => {
@@ -642,6 +698,7 @@ suite('Releases Utils', () => {
             expect(result.lastPublishDate).toEqual(new Date(testDateStr));
             expect(result.releases).toEqual([{ version: '4.4-stable' }]);
             expect(result.lastUpdated).toBe(123456);
+            expect(result.integrityMetadataRefreshed).toBe(false);
         });
 
         test('should return empty releases when file does not exist', async () => {
@@ -651,6 +708,7 @@ suite('Releases Utils', () => {
                 await getStoredAvailableReleases('/tmp/releases.json');
 
             expect(result).toEqual({
+                integrityMetadataRefreshed: false,
                 lastPublishDate: new Date(0),
                 lastUpdated: 0,
                 releases: [],
@@ -667,6 +725,7 @@ suite('Releases Utils', () => {
                 await getStoredAvailableReleases('/tmp/releases.json');
 
             expect(result).toEqual({
+                integrityMetadataRefreshed: false,
                 lastPublishDate: new Date(0),
                 lastUpdated: 0,
                 releases: [],

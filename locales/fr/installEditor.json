@@ -44,7 +44,11 @@
         "downloadFailed": "Échec du téléchargement : {{error}}",
         "downloadFailedUnknown": "Échec du téléchargement. Veuillez réessayer dans quelques minutes.",
         "downloadHttpError": "Impossible de télécharger le fichier : {{status}}",
-        "downloadEmptyResponse": "Échec du téléchargement : réponse vide du serveur"
+        "downloadEmptyResponse": "Échec du téléchargement : réponse vide du serveur",
+        "archiveIntegrityUnavailable": "Cette archive de l'éditeur ne contient aucune information d'intégrité prise en charge. Actualisez la liste des éditeurs et réessayez.",
+        "archiveIntegrityMismatch": "L'archive de l'éditeur téléchargée a échoué au contrôle d'intégrité et n'a pas été installée.",
+        "unsafeArchive": "L'archive de l'éditeur a été rejetée car elle contient des chemins non sécurisés.",
+        "invalidExtractedEditor": "L'archive extraite ne contient aucun exécutable d'éditeur valide."
     },
     "messages": {
         "installError": "Quelque chose s'est mal passé lors de l'installation de la version",

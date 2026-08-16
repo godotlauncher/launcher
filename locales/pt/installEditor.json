@@ -44,7 +44,11 @@
         "downloadFailed": "A transferência falhou: {{error}}",
         "downloadFailedUnknown": "A transferência falhou. Tente novamente dentro de alguns minutos.",
         "downloadHttpError": "Não foi possível transferir o recurso: {{status}}",
-        "downloadEmptyResponse": "A transferência falhou: resposta vazia do servidor"
+        "downloadEmptyResponse": "A transferência falhou: resposta vazia do servidor",
+        "archiveIntegrityUnavailable": "Este arquivo do editor não tem informações de integridade suportadas. Atualize a lista de editores e tente novamente.",
+        "archiveIntegrityMismatch": "O arquivo do editor transferido falhou na verificação de integridade e não foi instalado.",
+        "unsafeArchive": "O arquivo do editor foi rejeitado porque contém caminhos inseguros.",
+        "invalidExtractedEditor": "O arquivo extraído não contém um executável de editor válido."
     },
     "messages": {
         "installError": "Ocorreu um problema ao instalar a versão",

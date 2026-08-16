@@ -10,6 +10,7 @@ export interface ReleaseAsset {
     label: string | null;
     uploader: User | null;
     browser_download_url: string;
+    digest?: string | null;
     created_at: string;
     updated_at: string;
 }

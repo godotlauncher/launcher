@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import type {
     AvailableReleasesResult,
     InstalledRelease,
+    ReleaseSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
 import { CACHE_LENGTH, MIN_VERSION } from '../constants.js';
@@ -30,25 +31,35 @@ export async function getAvailableReleases(): Promise<AvailableReleasesResult> {
 
     let releases = await getStoredAvailableReleases(releaseCachePath);
     let refreshError: string | undefined;
+    const requiresIntegrityRefresh =
+        releases.integrityMetadataRefreshed !== true;
 
-    if (releases.lastUpdated + CACHE_LENGTH < Date.now()) {
+    if (
+        requiresIntegrityRefresh ||
+        releases.lastUpdated + CACHE_LENGTH < Date.now()
+    ) {
         try {
             const newReleases = await getReleases(
                 'RELEASES',
-                releases.lastPublishDate,
+                requiresIntegrityRefresh
+                    ? new Date(0)
+                    : releases.lastPublishDate,
                 MIN_VERSION,
                 1,
                 100,
             );
 
-            const allReleases = newReleases.releases
-                .concat(releases.releases)
-                .sort(sortByPublishDate);
+            const allReleases = (
+                requiresIntegrityRefresh
+                    ? newReleases.releases
+                    : newReleases.releases.concat(releases.releases)
+            ).sort(sortByPublishDate);
 
             releases = await storeAvailableReleases(
                 releaseCachePath,
                 newReleases.lastPublishDate,
                 allReleases,
+                true,
             );
         } catch (error) {
             logger.error(
@@ -67,25 +78,35 @@ export async function getAvailablePrereleases(): Promise<AvailableReleasesResult
 
     let releases = await getStoredAvailableReleases(prereleaseCachePath);
     let refreshError: string | undefined;
+    const requiresIntegrityRefresh =
+        releases.integrityMetadataRefreshed !== true;
 
-    if (releases.lastUpdated + CACHE_LENGTH < Date.now()) {
+    if (
+        requiresIntegrityRefresh ||
+        releases.lastUpdated + CACHE_LENGTH < Date.now()
+    ) {
         try {
             const newReleases = await getReleases(
                 'BUILDS',
-                releases.lastPublishDate,
+                requiresIntegrityRefresh
+                    ? new Date(0)
+                    : releases.lastPublishDate,
                 MIN_VERSION,
                 1,
                 100,
             );
 
-            const allReleases = newReleases.releases
-                .concat(releases.releases)
-                .sort(sortByPublishDate);
+            const allReleases = (
+                requiresIntegrityRefresh
+                    ? newReleases.releases
+                    : newReleases.releases.concat(releases.releases)
+            ).sort(sortByPublishDate);
 
             releases = await storeAvailableReleases(
                 prereleaseCachePath,
                 newReleases.lastPublishDate,
                 allReleases,
+                true,
             );
         } catch (error) {
             logger.error(
@@ -140,11 +161,13 @@ export async function clearReleaseCaches(): Promise<void> {
                 releaseCachePath,
                 latestReleases.lastPublishDate,
                 [...latestReleases.releases].sort(sortByPublishDate),
+                true,
             ),
             storeAvailableReleases(
                 prereleaseCachePath,
                 latestPrereleases.lastPublishDate,
                 [...latestPrereleases.releases].sort(sortByPublishDate),
+                true,
             ),
         ]);
         logger.info('Release caches rebuilt successfully');

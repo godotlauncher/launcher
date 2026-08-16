@@ -44,7 +44,11 @@
         "downloadFailed": "It-tniżżil falla: {{error}}",
         "downloadFailedUnknown": "It-tniżżil falla. Erġa' pprova fi ftit minuti.",
         "downloadHttpError": "Ma setax jitniżżel l-assett: {{status}}",
-        "downloadEmptyResponse": "It-tniżżil falla: tweġiba vojta mis-server"
+        "downloadEmptyResponse": "It-tniżżil falla: tweġiba vojta mis-server",
+        "archiveIntegrityUnavailable": "Dan l-arkivju tal-editur m'għandux informazzjoni ta' integrità appoġġjata. Aġġorna l-lista tal-edituri u erġa' pprova.",
+        "archiveIntegrityMismatch": "L-arkivju tal-editur imniżżel falla mill-kontroll tal-integrità u ma ġiex installat.",
+        "unsafeArchive": "L-arkivju tal-editur ġie miċħud għax fih mogħdijiet mhux siguri.",
+        "invalidExtractedEditor": "L-arkivju estratt ma fihx fajl eżegwibbli validu tal-editur."
     },
     "messages": {
         "installError": "Xi ħaġa marret ħażin meta nstalla r-release",

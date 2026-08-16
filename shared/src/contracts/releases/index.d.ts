@@ -24,6 +24,8 @@ export type ReleaseSummary = {
 export type AssetSummary = {
     name: string;
     download_url: string;
+    digest?: string;
+    checksum_manifest_url?: string;
     platform_tags: string[];
     mono: boolean;
 };

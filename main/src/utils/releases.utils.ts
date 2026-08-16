@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Readable, Transform } from 'node:stream';
@@ -12,6 +13,11 @@ import logger from 'electron-log';
 import { PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
 import type { ReleaseAsset } from '../types/github.js';
+import {
+    type ArchiveIntegrity,
+    archiveDigestsMatch,
+    normalizeGithubAssetDigest,
+} from './archive-integrity.util.js';
 import { removeProjectEditor } from './godot.utils.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
@@ -29,6 +35,7 @@ export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
  * Creates a summary of a release asset with relevant tags and download URL.
  *
  * @param asset - The release asset to summarize.
+ * @param checksumManifestUrl - The same release's checksum manifest URL.
  * @returns An object containing the asset name, platform tags, download URL, and a flag indicating if it's a Mono version.
  *
  * @remarks
@@ -50,10 +57,14 @@ export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
  * // }
  * ```
  */
-export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
+export function createAssetSummary(
+    asset: ReleaseAsset,
+    checksumManifestUrl?: string,
+): AssetSummary {
     // Check if it's mono by name
     const name = asset.name.toLowerCase();
     const mono = name.includes('mono');
+    const digest = normalizeGithubAssetDigest(asset.digest);
 
     // Default to empty tags
     let platform_tags: string[] = [];
@@ -111,6 +122,10 @@ export function createAssetSummary(asset: ReleaseAsset): AssetSummary {
     return {
         name: asset.name,
         download_url: asset.browser_download_url,
+        ...(digest ? { digest } : {}),
+        ...(checksumManifestUrl
+            ? { checksum_manifest_url: checksumManifestUrl }
+            : {}),
         platform_tags,
         mono,
     };
@@ -144,6 +159,7 @@ export type DownloadReleaseAssetProgress = {
 };
 
 export type DownloadReleaseAssetOptions = {
+    integrity: ArchiveIntegrity;
     idleTimeoutMs?: number;
     onProgress?: (progress: DownloadReleaseAssetProgress) => void;
 };
@@ -233,6 +249,7 @@ function getDownloadHttpErrorMessage(
 }
 
 type ReleaseSummaryCache = {
+    integrityMetadataRefreshed?: boolean;
     lastPublishDate: Date;
     lastUpdated: number;
     releases: ReleaseSummary[];
@@ -241,7 +258,7 @@ type ReleaseSummaryCache = {
 export async function downloadReleaseAsset(
     asset: AssetSummary,
     downloadPath: string,
-    options: DownloadReleaseAssetOptions = {},
+    options: DownloadReleaseAssetOptions,
 ): Promise<void> {
     const idleTimeoutMs = options.idleTimeoutMs ?? 120_000;
     const controller = new AbortController();
@@ -289,10 +306,12 @@ export async function downloadReleaseAsset(
         ? parsedTotalBytes
         : undefined;
     let receivedBytes = 0;
+    const hash = createHash(options.integrity.algorithm);
     const progressStream = new Transform({
         transform(chunk: Buffer, _encoding, callback) {
             resetIdleTimeout();
             receivedBytes += chunk.length;
+            hash.update(chunk);
             options.onProgress?.({
                 receivedBytes,
                 totalBytes,
@@ -309,9 +328,16 @@ export async function downloadReleaseAsset(
             fileStream,
         );
     } catch (error) {
+        await fs.promises.rm(downloadPath, { force: true }).catch(() => {});
         throw new Error(getDownloadErrorMessage(error), { cause: error });
     } finally {
         clearIdleTimeout();
+    }
+
+    const calculatedDigest = hash.digest('hex');
+    if (!archiveDigestsMatch(calculatedDigest, options.integrity.digest)) {
+        await fs.promises.rm(downloadPath, { force: true });
+        throw new Error(t('installEditor:errors.archiveIntegrityMismatch'));
     }
 }
 
@@ -327,6 +353,7 @@ function normalizeReleaseCache(
 ): ReleaseSummaryCache {
     return {
         ...cache,
+        integrityMetadataRefreshed: cache.integrityMetadataRefreshed === true,
         lastPublishDate:
             cache.lastPublishDate instanceof Date
                 ? cache.lastPublishDate
@@ -356,6 +383,7 @@ function createReleaseStore(
         logLabel,
         pathProvider: () => cachePath,
         defaultValue: async () => ({
+            integrityMetadataRefreshed: false,
             lastPublishDate: new Date(0),
             lastUpdated: 0,
             releases: [],
@@ -364,6 +392,7 @@ function createReleaseStore(
         onParseError: () => {
             logger.error(`Failed to read ${logLabel}`);
             return {
+                integrityMetadataRefreshed: false,
                 lastPublishDate: new Date(0),
                 lastUpdated: 0,
                 releases: [],
@@ -392,10 +421,20 @@ export async function getStoredAvailableReleases(
     return normalizeReleaseCache(cache);
 }
 
+/**
+ * Stores fetched release metadata.
+ *
+ * @param releasesCachePath - The cache file path.
+ * @param lastPublishDate - The latest fetched release publication date.
+ * @param releases - The releases to persist.
+ * @param integrityMetadataRefreshed - Whether a complete integrity metadata refresh has completed.
+ * @returns The normalized persisted cache.
+ */
 export async function storeAvailableReleases(
     releasesCachePath: string,
     lastPublishDate: Date,
     releases: ReleaseSummary[],
+    integrityMetadataRefreshed = false,
 ): Promise<ReleaseSummaryCache> {
     const store = createReleaseStore(
         releasesCachePath,
@@ -403,6 +442,7 @@ export async function storeAvailableReleases(
         'available releases cache',
     );
     const persisted = await store.write({
+        integrityMetadataRefreshed,
         lastPublishDate,
         lastUpdated: Date.now(),
         releases,

@@ -44,7 +44,11 @@
         "downloadFailed": "Download non riuscito: {{error}}",
         "downloadFailedUnknown": "Download non riuscito. Riprova tra qualche minuto.",
         "downloadHttpError": "Impossibile scaricare la risorsa: {{status}}",
-        "downloadEmptyResponse": "Download non riuscito: risposta vuota dal server"
+        "downloadEmptyResponse": "Download non riuscito: risposta vuota dal server",
+        "archiveIntegrityUnavailable": "Questo archivio dell'editor non dispone di informazioni di integrità supportate. Aggiorna l'elenco degli editor e riprova.",
+        "archiveIntegrityMismatch": "Il controllo di integrità dell'archivio scaricato non è riuscito. L'editor non è stato installato.",
+        "unsafeArchive": "L'archivio dell'editor è stato rifiutato perché contiene percorsi non sicuri.",
+        "invalidExtractedEditor": "L'archivio estratto non contiene un eseguibile dell'editor valido."
     },
     "messages": {
         "installError": "Qualcosa è andato storto durante l'installazione della versione",
