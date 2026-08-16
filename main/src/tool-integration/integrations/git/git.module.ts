@@ -2,6 +2,7 @@ import { Module } from '@mariodebono/di';
 import { ToolIntegrationModule } from '../../tool-integration.module.js';
 import { GitController } from './git.controller.js';
 import { GitService } from './git.service.js';
+import { GitIdentitySettingsService } from './git-identity-settings.service.js';
 import { GitToolIntegration } from './git-tool.integration.js';
 import { GitToolConfigurationService } from './git-tool-configuration.service.js';
 
@@ -11,8 +12,13 @@ import { GitToolConfigurationService } from './git-tool-configuration.service.js
         GitToolIntegration,
         GitToolConfigurationService,
         GitService,
+        GitIdentitySettingsService,
         GitController,
     ],
-    exports: [GitToolConfigurationService, GitService],
+    exports: [
+        GitToolConfigurationService,
+        GitService,
+        GitIdentitySettingsService,
+    ],
 })
 export class GitModule {}

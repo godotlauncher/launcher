@@ -218,18 +218,18 @@ export class GitService {
      * @param name - Git user name to set.
      * @param email - Git user email to set.
      * @param scope - Configuration scope to update.
-     * @param dir - Project directory used for repository-scoped configuration.
+     * @param dir - Project directory required for repository-scoped configuration.
      * @returns Whether both configuration commands succeeded.
      */
     async setIdentity(
         name: string,
         email: string,
         scope: GitIdentityScope,
-        dir: string,
+        dir?: string,
     ): Promise<boolean> {
         if (
             scope === 'repository' &&
-            !(await this.isProjectRepositoryRoot(dir))
+            (!dir || !(await this.isProjectRepositoryRoot(dir)))
         ) {
             logger.error(
                 'Refusing to set repository identity outside the project repository root',

@@ -1,17 +1,11 @@
 import { Injectable } from '@mariodebono/di';
 import type { ProjectGitIdentityPreset } from '@shared/contracts';
-import { z } from 'zod';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationStore } from '../../tool-integration.store.js';
+import { ProjectGitIdentityPresetSchema } from './git-identity.schema.js';
 import { GIT_TOOL_ID } from './git-tool.constants.js';
 
 const PROJECT_IDENTITY_PRESET_KEY = 'projectIdentityPreset';
-
-const ProjectGitIdentityPresetSchema = z.object({
-    name: z.string().trim().min(1),
-    email: z.string().trim().min(1),
-    useForNewRepositories: z.boolean(),
-});
 
 @Injectable()
 export class GitToolConfigurationService {
