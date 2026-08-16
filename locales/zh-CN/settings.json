@@ -145,19 +145,75 @@
         "overview": "当此选项卡获得焦点时，启动器会快速验证缓存的工具路径。如果你在此系统上更改了安装，请运行完整重新扫描。",
         "actions": {
             "refresh": "重新扫描工具",
-            "scanning": "正在重新扫描..."
+            "scanning": "正在重新扫描...",
+            "loading": "Loading tools...",
+            "rescan": "Rescan",
+            "rescanTool": "Rescan {{tool}}",
+            "editTool": "Edit {{tool}}"
         },
         "status": {
             "available": "可用",
             "missing": "未找到",
             "invalid": "路径未找到",
-            "unknown": "未知"
+            "unknown": "未知",
+            "disabled": "Disabled",
+            "unknownPath": "Executable path unavailable",
+            "unknownVersion": "Version unavailable"
         },
         "git": {
             "title": "Git",
             "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",
             "installed": "已安装：",
-            "version": "版本："
+            "version": "版本：",
+            "drawer": {
+                "title": "Git settings"
+            },
+            "installation": {
+                "title": "Installation",
+                "description": "Godot Launcher validates this executable before every Git operation.",
+                "status": "Status",
+                "path": "Executable path",
+                "version": "Version"
+            },
+            "identity": {
+                "loading": "Loading Git identity settings...",
+                "name": "Name",
+                "email": "Email",
+                "global": {
+                    "title": "Global Git identity",
+                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
+                    "unavailable": "Install or restore Git before editing the global identity.",
+                    "nameHelp": "The author name Git uses when a repository has no local override.",
+                    "emailHelp": "The author email Git uses when a repository has no local override."
+                },
+                "preset": {
+                    "title": "Project identity preset",
+                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
+                    "nameHelp": "The author name suggested for a new repository-local identity.",
+                    "emailHelp": "The author email suggested for a new repository-local identity.",
+                    "automaticTitle": "Use automatically for new repositories",
+                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                },
+                "actions": {
+                    "saveGlobal": "Save global identity",
+                    "savePreset": "Save preset",
+                    "clearPreset": "Clear preset",
+                    "saving": "Saving..."
+                },
+                "errors": {
+                    "load": "Unable to load Git identity settings.",
+                    "required": "Enter both a name and email.",
+                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
+                    "savePreset": "Unable to save the project identity preset."
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "Rescanning {{tool}}"
+        },
+        "errors": {
+            "load": "Unable to load tool integrations.",
+            "rescan": "Unable to rescan this tool."
         }
     },
     "updates": {

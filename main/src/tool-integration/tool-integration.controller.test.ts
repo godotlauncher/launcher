@@ -31,6 +31,8 @@ describe('ToolIntegrationController', () => {
         const service = {
             refreshAll: vi.fn(async () => [summary]),
             rescanAll: vi.fn(async () => [summary]),
+            refresh: vi.fn(async () => summary),
+            rescan: vi.fn(async () => summary),
         } as unknown as ToolIntegrationService;
         const controller = new ToolIntegrationController(service);
         const expected = [
@@ -39,6 +41,7 @@ describe('ToolIntegrationController', () => {
                 displayName: 'Git',
                 status: 'available',
                 version: 'git version 2.51.0',
+                executablePath: '/system/bin/git',
             },
         ];
 
@@ -48,5 +51,13 @@ describe('ToolIntegrationController', () => {
         );
         expect(service.refreshAll).toHaveBeenCalledOnce();
         expect(service.rescanAll).toHaveBeenCalledOnce();
+        await expect(controller.refreshIntegration('git')).resolves.toEqual(
+            expected[0],
+        );
+        await expect(controller.rescanIntegration('git')).resolves.toEqual(
+            expected[0],
+        );
+        expect(service.refresh).toHaveBeenCalledWith('git');
+        expect(service.rescan).toHaveBeenCalledWith('git');
     });
 });

@@ -43,4 +43,26 @@ export class ToolIntegrationController implements ToolIntegrationBridge {
         const summaries = await this.service.rescanAll();
         return summaries.map(mapToolIntegrationSummary);
     }
+
+    /**
+     * Refreshes one registered tool while respecting cached freshness.
+     *
+     * @param toolId - Stable ID of the integration to refresh.
+     * @returns The refreshed renderer-safe summary.
+     */
+    @ToolIntegrationHandler('refreshIntegration')
+    async refreshIntegration(toolId: string): Promise<ToolIntegrationSummary> {
+        return mapToolIntegrationSummary(await this.service.refresh(toolId));
+    }
+
+    /**
+     * Forces one registered tool integration to rescan.
+     *
+     * @param toolId - Stable ID of the integration to rescan.
+     * @returns The rescanned renderer-safe summary.
+     */
+    @ToolIntegrationHandler('rescanIntegration')
+    async rescanIntegration(toolId: string): Promise<ToolIntegrationSummary> {
+        return mapToolIntegrationSummary(await this.service.rescan(toolId));
+    }
 }

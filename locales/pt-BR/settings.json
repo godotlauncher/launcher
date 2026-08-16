@@ -145,19 +145,75 @@
         "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma varredura completa se você alterou instalações neste sistema.",
         "actions": {
             "refresh": "Reescaneie ferramentas",
-            "scanning": "Reescaneando..."
+            "scanning": "Reescaneando...",
+            "loading": "Loading tools...",
+            "rescan": "Rescan",
+            "rescanTool": "Rescan {{tool}}",
+            "editTool": "Edit {{tool}}"
         },
         "status": {
             "available": "Disponível",
             "missing": "Não encontrado",
             "invalid": "Caminho não encontrado",
-            "unknown": "Desconhecido"
+            "unknown": "Desconhecido",
+            "disabled": "Disabled",
+            "unknownPath": "Executable path unavailable",
+            "unknownVersion": "Version unavailable"
         },
         "git": {
             "title": "Git",
             "description": "Git é um sistema de controle de versão distribuído para gerenciar alterações de código e colaboração.",
             "installed": "Instalado:",
-            "version": "Versão:"
+            "version": "Versão:",
+            "drawer": {
+                "title": "Git settings"
+            },
+            "installation": {
+                "title": "Installation",
+                "description": "Godot Launcher validates this executable before every Git operation.",
+                "status": "Status",
+                "path": "Executable path",
+                "version": "Version"
+            },
+            "identity": {
+                "loading": "Loading Git identity settings...",
+                "name": "Name",
+                "email": "Email",
+                "global": {
+                    "title": "Global Git identity",
+                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
+                    "unavailable": "Install or restore Git before editing the global identity.",
+                    "nameHelp": "The author name Git uses when a repository has no local override.",
+                    "emailHelp": "The author email Git uses when a repository has no local override."
+                },
+                "preset": {
+                    "title": "Project identity preset",
+                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
+                    "nameHelp": "The author name suggested for a new repository-local identity.",
+                    "emailHelp": "The author email suggested for a new repository-local identity.",
+                    "automaticTitle": "Use automatically for new repositories",
+                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                },
+                "actions": {
+                    "saveGlobal": "Save global identity",
+                    "savePreset": "Save preset",
+                    "clearPreset": "Clear preset",
+                    "saving": "Saving..."
+                },
+                "errors": {
+                    "load": "Unable to load Git identity settings.",
+                    "required": "Enter both a name and email.",
+                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
+                    "savePreset": "Unable to save the project identity preset."
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "Rescanning {{tool}}"
+        },
+        "errors": {
+            "load": "Unable to load tool integrations.",
+            "rescan": "Unable to rescan this tool."
         }
     },
     "updates": {

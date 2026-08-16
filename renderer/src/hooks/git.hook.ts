@@ -1,9 +1,22 @@
-import type { GitIdentity } from '@shared/contracts';
+import type {
+    GitIdentity,
+    GitIdentitySettings,
+    ProjectGitIdentityPreset,
+    SaveGlobalGitIdentityResult,
+    SaveProjectGitIdentityPresetResult,
+} from '@shared/contracts';
 import { useCallback } from 'react';
 import { gitBridge } from '../bridge.ts';
 
 export type GitHook = {
     getGlobalIdentity: () => Promise<GitIdentity>;
+    getIdentitySettings: () => Promise<GitIdentitySettings>;
+    saveGlobalIdentity: (
+        identity: GitIdentity,
+    ) => Promise<SaveGlobalGitIdentityResult>;
+    saveProjectIdentityPreset: (
+        preset: ProjectGitIdentityPreset | null,
+    ) => Promise<SaveProjectGitIdentityPresetResult>;
 };
 
 /**
@@ -16,6 +29,24 @@ export function useGit(): GitHook {
         () => gitBridge.getGlobalIdentity(),
         [],
     );
+    const getIdentitySettings = useCallback(
+        () => gitBridge.getIdentitySettings(),
+        [],
+    );
+    const saveGlobalIdentity = useCallback(
+        (identity: GitIdentity) => gitBridge.saveGlobalIdentity(identity),
+        [],
+    );
+    const saveProjectIdentityPreset = useCallback(
+        (preset: ProjectGitIdentityPreset | null) =>
+            gitBridge.saveProjectIdentityPreset(preset),
+        [],
+    );
 
-    return { getGlobalIdentity };
+    return {
+        getGlobalIdentity,
+        getIdentitySettings,
+        saveGlobalIdentity,
+        saveProjectIdentityPreset,
+    };
 }

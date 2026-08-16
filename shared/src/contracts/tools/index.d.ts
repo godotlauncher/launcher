@@ -10,6 +10,7 @@ export type ToolIntegrationSummary = {
     displayName: string;
     status: ToolIntegrationStatus;
     version: string | null;
+    executablePath: string | null;
 };
 
 export type ToolIntegrationBridge = {
@@ -26,4 +27,20 @@ export type ToolIntegrationBridge = {
      * @returns Renderer-safe tool integration summaries.
      */
     rescanIntegrations(): Promise<ToolIntegrationSummary[]>;
+
+    /**
+     * Refreshes one tool integration when its cached state is stale.
+     *
+     * @param toolId - Stable ID of the integration to refresh.
+     * @returns The refreshed renderer-safe summary.
+     */
+    refreshIntegration(toolId: string): Promise<ToolIntegrationSummary>;
+
+    /**
+     * Forces one tool integration to rescan.
+     *
+     * @param toolId - Stable ID of the integration to rescan.
+     * @returns The rescanned renderer-safe summary.
+     */
+    rescanIntegration(toolId: string): Promise<ToolIntegrationSummary>;
 };
