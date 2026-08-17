@@ -146,19 +146,19 @@
         "actions": {
             "refresh": "重新扫描工具",
             "scanning": "正在重新扫描...",
-            "loading": "Loading tools...",
-            "rescan": "Rescan",
-            "rescanTool": "Rescan {{tool}}",
-            "editTool": "Edit {{tool}}"
+            "loading": "正在加载工具...",
+            "rescan": "重新扫描",
+            "rescanTool": "重新扫描 {{tool}}",
+            "editTool": "编辑{{tool}}"
         },
         "status": {
             "available": "可用",
             "missing": "未找到",
             "invalid": "路径未找到",
             "unknown": "未知",
-            "disabled": "Disabled",
-            "unknownPath": "Executable path unavailable",
-            "unknownVersion": "Version unavailable"
+            "disabled": "残疾人",
+            "unknownPath": "可执行路径不可用",
+            "unknownVersion": "版本不可用"
         },
         "git": {
             "title": "Git",
@@ -166,54 +166,54 @@
             "installed": "已安装：",
             "version": "版本：",
             "drawer": {
-                "title": "Git settings"
+                "title": "Git 设置"
             },
             "installation": {
-                "title": "Installation",
-                "description": "Godot Launcher validates this executable before every Git operation.",
-                "status": "Status",
-                "path": "Executable path",
-                "version": "Version"
+                "title": "安装",
+                "description": "Godot Launcher 在每次 Git 操作之前都会验证此可执行文件。",
+                "status": "地位",
+                "path": "可执行路径",
+                "version": "版本"
             },
             "identity": {
-                "loading": "Loading Git identity settings...",
-                "name": "Name",
-                "email": "Email",
+                "loading": "正在加载 Git 身份设置...",
+                "name": "姓名",
+                "email": "电子邮件",
                 "global": {
-                    "title": "Global Git identity",
-                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
-                    "unavailable": "Install or restore Git before editing the global identity.",
-                    "nameHelp": "The author name Git uses when a repository has no local override.",
-                    "emailHelp": "The author email Git uses when a repository has no local override."
+                    "title": "全球 Git 身份",
+                    "description": "这会将 user.name 和 user.email 写入机器范围的全局 Git 配置。",
+                    "unavailable": "在编辑全局身份之前安装或恢复 Git。",
+                    "nameHelp": "当存储库没有本地覆盖时，Git 使用的作者名称。",
+                    "emailHelp": "当存储库没有本地覆盖时，Git 使用的作者电子邮件。"
                 },
                 "preset": {
-                    "title": "Project identity preset",
-                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
-                    "nameHelp": "The author name suggested for a new repository-local identity.",
-                    "emailHelp": "The author email suggested for a new repository-local identity.",
-                    "automaticTitle": "Use automatically for new repositories",
-                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                    "title": "项目标识预设",
+                    "description": "为 Godot Launcher 创建的存储库保存一个身份。在您在项目创建期间选择或自动应用它之前，它不会产生任何影响。",
+                    "nameHelp": "新存储库本地 Git 身份的建议作者名称。",
+                    "emailHelp": "新存储库本地 Git 身份的建议作者电子邮件。",
+                    "automaticTitle": "自动用于新存储库",
+                    "automaticDescription": "在初始 Git 提交之前将此预设写入存储库本地 Git 标识。"
                 },
                 "actions": {
-                    "saveGlobal": "Save global identity",
-                    "savePreset": "Save preset",
-                    "clearPreset": "Clear preset",
-                    "saving": "Saving..."
+                    "saveGlobal": "保存全局 Git 身份",
+                    "savePreset": "保存预设",
+                    "clearPreset": "清除预设",
+                    "saving": "正在保存更改..."
                 },
                 "errors": {
-                    "load": "Unable to load Git identity settings.",
-                    "required": "Enter both a name and email.",
-                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
-                    "savePreset": "Unable to save the project identity preset."
+                    "load": "无法加载 Git 身份设置。",
+                    "required": "输入姓名和电子邮件。",
+                    "saveGlobal": "无法保存全局 Git 身份。显示的值是从 Git 刷新的。",
+                    "savePreset": "无法保存项目标识预设。"
                 }
             }
         },
         "accessibility": {
-            "scanning": "Rescanning {{tool}}"
+            "scanning": "重新扫描 {{tool}}"
         },
         "errors": {
-            "load": "Unable to load tool integrations.",
-            "rescan": "Unable to rescan this tool."
+            "load": "无法加载工具集成。",
+            "rescan": "无法重新扫描此工具。"
         }
     },
     "updates": {

@@ -74,11 +74,11 @@
         "globalScope": "Всех репозиториев на этом компьютере",
         "back": "Назад",
         "saveAndCreate": "Сохранить и создать проект",
-        "presetTitle": "Use project identity preset?",
-        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
-        "useGlobal": "Use global identity",
-        "useDifferent": "Enter a different identity",
-        "usePresetAndCreate": "Use preset and create project"
+        "presetTitle": "Использовать настройки идентификации проекта?",
+        "presetMessage": "Этот пресет будет записан только в новый репозиторий до первого коммита Git.",
+        "useGlobal": "Использовать глобальную идентификацию",
+        "useDifferent": "Введите другое удостоверение",
+        "usePresetAndCreate": "Использовать пресет и создать проект"
     },
     "buttons": {
         "editNow": "Редактировать сейчас",

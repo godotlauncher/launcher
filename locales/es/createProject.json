@@ -74,11 +74,11 @@
         "globalScope": "Todos los repositorios de este ordenador",
         "back": "Atrás",
         "saveAndCreate": "Guardar y crear proyecto",
-        "presetTitle": "Use project identity preset?",
-        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
-        "useGlobal": "Use global identity",
-        "useDifferent": "Enter a different identity",
-        "usePresetAndCreate": "Use preset and create project"
+        "presetTitle": "¿Utilizar la identidad del proyecto preestablecida?",
+        "presetMessage": "Este ajuste preestablecido se escribirá solo en el nuevo repositorio antes de su commit inicial de Git.",
+        "useGlobal": "Usar identidad global",
+        "useDifferent": "Introduzca una identidad diferente",
+        "usePresetAndCreate": "Usar preset y crear proyecto"
     },
     "buttons": {
         "editNow": "Editar ahora",

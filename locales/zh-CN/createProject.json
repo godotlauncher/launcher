@@ -74,11 +74,11 @@
         "globalScope": "此电脑上的所有仓库",
         "back": "返回",
         "saveAndCreate": "保存并创建项目",
-        "presetTitle": "Use project identity preset?",
-        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
-        "useGlobal": "Use global identity",
-        "useDifferent": "Enter a different identity",
-        "usePresetAndCreate": "Use preset and create project"
+        "presetTitle": "使用项目标识预设？",
+        "presetMessage": "此预设仅在初始 Git 提交之前写入新存储库。",
+        "useGlobal": "使用全球身份",
+        "useDifferent": "输入不同的身份",
+        "usePresetAndCreate": "使用预设并创建项目"
     },
     "buttons": {
         "editNow": "立即编辑",

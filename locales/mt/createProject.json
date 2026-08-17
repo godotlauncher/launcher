@@ -74,11 +74,11 @@
         "globalScope": "Ir-repositories kollha fuq dan il-kompjuter",
         "back": "Lura",
         "saveAndCreate": "Żomm u oħloq il-proġett",
-        "presetTitle": "Use project identity preset?",
-        "presetMessage": "This preset will be written only to the new repository before its initial commit.",
-        "useGlobal": "Use global identity",
-        "useDifferent": "Enter a different identity",
-        "usePresetAndCreate": "Use preset and create project"
+        "presetTitle": "Uża l-identità tal-proġett issettjata minn qabel?",
+        "presetMessage": "Dan il-preset jinkiteb biss fir-repożitorju l-ġdid qabel l-ewwel commit ta' Git.",
+        "useGlobal": "Uża identità globali",
+        "useDifferent": "Daħħal identità differenti",
+        "usePresetAndCreate": "Uża ssettjat minn qabel u oħloq proġett"
     },
     "buttons": {
         "editNow": "Editja issa",

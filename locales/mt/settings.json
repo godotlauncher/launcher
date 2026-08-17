@@ -146,19 +146,19 @@
         "actions": {
             "refresh": "Skannja mill-ġdid l-għodod",
             "scanning": "Qed jerskanna...",
-            "loading": "Loading tools...",
-            "rescan": "Rescan",
-            "rescanTool": "Rescan {{tool}}",
-            "editTool": "Edit {{tool}}"
+            "loading": "Tagħbija għodda...",
+            "rescan": "Scanner mill-ġdid",
+            "rescanTool": "Scanner mill-ġdid {{tool}}",
+            "editTool": "Editja {{tool}}"
         },
         "status": {
             "available": "Disponibbli",
             "missing": "Ma nstabx",
             "invalid": "Path mhux misjub",
             "unknown": "Mhux magħruf",
-            "disabled": "Disabled",
-            "unknownPath": "Executable path unavailable",
-            "unknownVersion": "Version unavailable"
+            "disabled": "B'diżabilità",
+            "unknownPath": "Passaġġ eżekubbli mhux disponibbli",
+            "unknownVersion": "Verżjoni mhux disponibbli"
         },
         "git": {
             "title": "Git",
@@ -166,54 +166,54 @@
             "installed": "Installat:",
             "version": "Verżjoni:",
             "drawer": {
-                "title": "Git settings"
+                "title": "Settings tal-Git"
             },
             "installation": {
-                "title": "Installation",
-                "description": "Godot Launcher validates this executable before every Git operation.",
+                "title": "Installazzjoni",
+                "description": "Godot Launcher jivvalida dan l-eżekutibbli qabel kull operazzjoni Git.",
                 "status": "Status",
-                "path": "Executable path",
-                "version": "Version"
+                "path": "Mogħdija eżegwibbli",
+                "version": "Verżjoni"
             },
             "identity": {
-                "loading": "Loading Git identity settings...",
-                "name": "Name",
+                "loading": "Tagħbija l-issettjar tal-identità Git...",
+                "name": "Isem",
                 "email": "Email",
                 "global": {
-                    "title": "Global Git identity",
-                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
-                    "unavailable": "Install or restore Git before editing the global identity.",
-                    "nameHelp": "The author name Git uses when a repository has no local override.",
-                    "emailHelp": "The author email Git uses when a repository has no local override."
+                    "title": "Identità Globali Git",
+                    "description": "Dan jikteb user.name u user.email għall-konfigurazzjoni globali Git mal-magna kollha.",
+                    "unavailable": "Installa jew irrestawra Git qabel teditja l-identità globali.",
+                    "nameHelp": "Isem tal-awtur li Git juża meta repożitorju m'għandux override lokali.",
+                    "emailHelp": "Awtur email li Git juża meta repożitorju ma jkollu l-ebda override lokali."
                 },
                 "preset": {
-                    "title": "Project identity preset",
-                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
-                    "nameHelp": "The author name suggested for a new repository-local identity.",
-                    "emailHelp": "The author email suggested for a new repository-local identity.",
-                    "automaticTitle": "Use automatically for new repositories",
-                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                    "title": "Issettjat minn qabel tal-identità tal-proġett",
+                    "description": "Ħlief identità waħda għal repożitorji maħluqa minn Godot Launcher. M'għandu l-ebda effett sakemm tagħżel jew tapplikaha awtomatikament waqt il-ħolqien tal-proġett.",
+                    "nameHelp": "Isem tal-awtur suġġerit għal identità Git ta' repożitorju ġdid lokali.",
+                    "emailHelp": "Imejl suġġerit tal-awtur għal identità Git ta' repożitorju ġdid lokali.",
+                    "automaticTitle": "Uża awtomatikament għal repożitorji ġodda",
+                    "automaticDescription": "Ikteb dan il-preset bħala identità Git lokali għar-repożitorju qabel l-ewwel commit ta' Git."
                 },
                 "actions": {
-                    "saveGlobal": "Save global identity",
-                    "savePreset": "Save preset",
-                    "clearPreset": "Clear preset",
-                    "saving": "Saving..."
+                    "saveGlobal": "Issejvja l-identità globali Git",
+                    "savePreset": "Ħlief issettjat minn qabel",
+                    "clearPreset": "Issettjat minn qabel ċar",
+                    "saving": "Jissejvja l-bidliet..."
                 },
                 "errors": {
-                    "load": "Unable to load Git identity settings.",
-                    "required": "Enter both a name and email.",
-                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
-                    "savePreset": "Unable to save the project identity preset."
+                    "load": "Ma tistax tagħbija is-settings tal-identità Git.",
+                    "required": "Daħħal kemm isem kif ukoll email.",
+                    "saveGlobal": "Ma tistax tissejvja l-identità globali tal-Git. Il-valuri murija ġew aggornati minn Git.",
+                    "savePreset": "Ma tistax tissejvja l-identità tal-proġett issettjata minn qabel."
                 }
             }
         },
         "accessibility": {
-            "scanning": "Rescanning {{tool}}"
+            "scanning": "Skannjar mill-ġdid {{tool}}"
         },
         "errors": {
-            "load": "Unable to load tool integrations.",
-            "rescan": "Unable to rescan this tool."
+            "load": "Ma tistax tgħabbi l-integrazzjonijiet tal-għodda.",
+            "rescan": "Ma tistax tiskennja mill-ġdid din l-għodda."
         }
     },
     "updates": {

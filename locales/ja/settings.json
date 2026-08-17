@@ -146,19 +146,19 @@
         "actions": {
             "refresh": "ツールを再スキャン",
             "scanning": "再スキャン中...",
-            "loading": "Loading tools...",
-            "rescan": "Rescan",
-            "rescanTool": "Rescan {{tool}}",
-            "editTool": "Edit {{tool}}"
+            "loading": "ツールを読み込み中...",
+            "rescan": "再スキャン",
+            "rescanTool": "{{tool}} を再スキャンします",
+            "editTool": "{{tool}}を編集"
         },
         "status": {
             "available": "利用可能",
             "missing": "見つかりません",
             "invalid": "パスが見つかりません",
             "unknown": "不明",
-            "disabled": "Disabled",
-            "unknownPath": "Executable path unavailable",
-            "unknownVersion": "Version unavailable"
+            "disabled": "無効",
+            "unknownPath": "実行可能パスが使用できません",
+            "unknownVersion": "バージョンが利用できません"
         },
         "git": {
             "title": "Git",
@@ -166,54 +166,54 @@
             "installed": "インストール済み：",
             "version": "バージョン：",
             "drawer": {
-                "title": "Git settings"
+                "title": "Gitの設定"
             },
             "installation": {
-                "title": "Installation",
-                "description": "Godot Launcher validates this executable before every Git operation.",
-                "status": "Status",
-                "path": "Executable path",
-                "version": "Version"
+                "title": "インストール",
+                "description": "Godot Launcher は、Git 操作の前にこの実行可能ファイルを検証します。",
+                "status": "状態",
+                "path": "実行可能パス",
+                "version": "バージョン"
             },
             "identity": {
-                "loading": "Loading Git identity settings...",
-                "name": "Name",
-                "email": "Email",
+                "loading": "Git ID 設定を読み込んでいます...",
+                "name": "名前",
+                "email": "電子メール",
                 "global": {
-                    "title": "Global Git identity",
-                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
-                    "unavailable": "Install or restore Git before editing the global identity.",
-                    "nameHelp": "The author name Git uses when a repository has no local override.",
-                    "emailHelp": "The author email Git uses when a repository has no local override."
+                    "title": "グローバル Git ID",
+                    "description": "これにより、user.name および user.email がマシン全体のグローバル Git 構成に書き込まれます。",
+                    "unavailable": "グローバル ID を編集する前に、Git をインストールまたは復元します。",
+                    "nameHelp": "リポジトリにローカル オーバーライドがない場合に Git が使用する作成者名。",
+                    "emailHelp": "リポジトリにローカル オーバーライドがない場合に Git が使用する電子メールを作成します。"
                 },
                 "preset": {
-                    "title": "Project identity preset",
-                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
-                    "nameHelp": "The author name suggested for a new repository-local identity.",
-                    "emailHelp": "The author email suggested for a new repository-local identity.",
-                    "automaticTitle": "Use automatically for new repositories",
-                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                    "title": "プロジェクト ID プリセット",
+                    "description": "Godot Launcher によって作成されたリポジトリに 1 つの ID を保存します。プロジェクトの作成時に選択するか、自動的に適用するまでは効果がありません。",
+                    "nameHelp": "新しいリポジトリローカル Git ID の推奨される作成者名。",
+                    "emailHelp": "新しいリポジトリローカル Git ID の推奨される作成者の電子メール。",
+                    "automaticTitle": "新しいリポジトリに自動的に使用",
+                    "automaticDescription": "最初の Git コミットの前に、このプリセットをリポジトリ ローカルの Git ID として書き込みます。"
                 },
                 "actions": {
-                    "saveGlobal": "Save global identity",
-                    "savePreset": "Save preset",
-                    "clearPreset": "Clear preset",
-                    "saving": "Saving..."
+                    "saveGlobal": "グローバル Git ID を保存する",
+                    "savePreset": "プリセットの保存",
+                    "clearPreset": "プリセットをクリア",
+                    "saving": "変更を保存しています..."
                 },
                 "errors": {
-                    "load": "Unable to load Git identity settings.",
-                    "required": "Enter both a name and email.",
-                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
-                    "savePreset": "Unable to save the project identity preset."
+                    "load": "Git ID 設定をロードできません。",
+                    "required": "名前とメールアドレスの両方を入力します。",
+                    "saveGlobal": "グローバル Git ID を保存できません。表示された値は Git から更新されました。",
+                    "savePreset": "プロジェクト ID プリセットを保存できません。"
                 }
             }
         },
         "accessibility": {
-            "scanning": "Rescanning {{tool}}"
+            "scanning": "{{tool}} を再スキャンしています"
         },
         "errors": {
-            "load": "Unable to load tool integrations.",
-            "rescan": "Unable to rescan this tool."
+            "load": "ツール統合をロードできません。",
+            "rescan": "このツールを再スキャンできません。"
         }
     },
     "updates": {

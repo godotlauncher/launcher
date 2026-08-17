@@ -146,19 +146,19 @@
         "actions": {
             "refresh": "Araçları yeniden tara",
             "scanning": "Yeniden taranıyor...",
-            "loading": "Loading tools...",
-            "rescan": "Rescan",
-            "rescanTool": "Rescan {{tool}}",
-            "editTool": "Edit {{tool}}"
+            "loading": "Araçlar yükleniyor...",
+            "rescan": "Yeniden tara",
+            "rescanTool": "{{tool}}'yu yeniden tarayın",
+            "editTool": "{{tool}}'yu düzenleyin"
         },
         "status": {
             "available": "Mevcut",
             "missing": "Bulunamadı",
             "invalid": "Yol bulunamadı",
             "unknown": "Bilinmiyor",
-            "disabled": "Disabled",
-            "unknownPath": "Executable path unavailable",
-            "unknownVersion": "Version unavailable"
+            "disabled": "Engelli",
+            "unknownPath": "Yürütülebilir yol kullanılamıyor",
+            "unknownVersion": "Sürüm kullanılamıyor"
         },
         "git": {
             "title": "Git",
@@ -166,54 +166,54 @@
             "installed": "Kurulu:",
             "version": "Sürüm:",
             "drawer": {
-                "title": "Git settings"
+                "title": "Git ayarları"
             },
             "installation": {
-                "title": "Installation",
-                "description": "Godot Launcher validates this executable before every Git operation.",
-                "status": "Status",
-                "path": "Executable path",
-                "version": "Version"
+                "title": "Kurulum",
+                "description": "Godot Launcher, her Git işleminden önce bu yürütülebilir dosyayı doğrular.",
+                "status": "Durum",
+                "path": "Yürütülebilir yol",
+                "version": "Sürüm"
             },
             "identity": {
-                "loading": "Loading Git identity settings...",
-                "name": "Name",
-                "email": "Email",
+                "loading": "Git kimlik ayarları yükleniyor...",
+                "name": "İsim",
+                "email": "E-posta",
                 "global": {
-                    "title": "Global Git identity",
-                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
-                    "unavailable": "Install or restore Git before editing the global identity.",
-                    "nameHelp": "The author name Git uses when a repository has no local override.",
-                    "emailHelp": "The author email Git uses when a repository has no local override."
+                    "title": "Küresel Git kimliği",
+                    "description": "Bu, user.name ve user.email'yu makine çapındaki genel Git yapılandırmasına yazar.",
+                    "unavailable": "Genel kimliği düzenlemeden önce Git'i yükleyin veya geri yükleyin.",
+                    "nameHelp": "Bir depoda yerel geçersiz kılma olmadığında Git'nun kullandığı yazar adı.",
+                    "emailHelp": "Bir depoda yerel geçersiz kılma olmadığında Git'nun kullandığı e-postayı yazın."
                 },
                 "preset": {
-                    "title": "Project identity preset",
-                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
-                    "nameHelp": "The author name suggested for a new repository-local identity.",
-                    "emailHelp": "The author email suggested for a new repository-local identity.",
-                    "automaticTitle": "Use automatically for new repositories",
-                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                    "title": "Proje kimliği ön ayarı",
+                    "description": "Godot Launcher tarafından oluşturulan depolar için bir kimlik kaydedin. Proje oluşturma sırasında siz onu seçene veya otomatik olarak uygulayana kadar hiçbir etkisi yoktur.",
+                    "nameHelp": "Yeni bir depo yerel Git kimliği için önerilen yazar adı.",
+                    "emailHelp": "Yeni bir depo yerel Git kimliği için önerilen yazar e-postası.",
+                    "automaticTitle": "Yeni kod depoları için otomatik olarak kullan",
+                    "automaticDescription": "Bu ön ayarı ilk Git commit'inden önce depoya yerel bir Git kimliği olarak yazın."
                 },
                 "actions": {
-                    "saveGlobal": "Save global identity",
-                    "savePreset": "Save preset",
-                    "clearPreset": "Clear preset",
-                    "saving": "Saving..."
+                    "saveGlobal": "Genel Git kimliğini kaydet",
+                    "savePreset": "Ön ayarı kaydet",
+                    "clearPreset": "Ön ayarı temizle",
+                    "saving": "Değişiklikler kaydediliyor..."
                 },
                 "errors": {
-                    "load": "Unable to load Git identity settings.",
-                    "required": "Enter both a name and email.",
-                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
-                    "savePreset": "Unable to save the project identity preset."
+                    "load": "Git kimlik ayarları yüklenemiyor.",
+                    "required": "Hem adı hem de e-posta adresini girin.",
+                    "saveGlobal": "Genel Git kimliği kaydedilemiyor. Görüntülenen değerler Git'ten yenilendi.",
+                    "savePreset": "Proje kimliği ön ayarı kaydedilemiyor."
                 }
             }
         },
         "accessibility": {
-            "scanning": "Rescanning {{tool}}"
+            "scanning": "{{tool}} yeniden taranıyor"
         },
         "errors": {
-            "load": "Unable to load tool integrations.",
-            "rescan": "Unable to rescan this tool."
+            "load": "Araç entegrasyonları yüklenemiyor.",
+            "rescan": "Bu araç yeniden taranamıyor."
         }
     },
     "updates": {

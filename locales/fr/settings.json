@@ -146,19 +146,19 @@
         "actions": {
             "refresh": "Réanalyser les outils",
             "scanning": "Réanalyse en cours...",
-            "loading": "Loading tools...",
-            "rescan": "Rescan",
-            "rescanTool": "Rescan {{tool}}",
-            "editTool": "Edit {{tool}}"
+            "loading": "Chargement des outils...",
+            "rescan": "Nouvelle analyse",
+            "rescanTool": "Nouvelle analyse {{tool}}",
+            "editTool": "Modifier {{tool}}"
         },
         "status": {
             "available": "Disponible",
             "missing": "Introuvable",
             "invalid": "Chemin introuvable",
             "unknown": "Inconnu",
-            "disabled": "Disabled",
-            "unknownPath": "Executable path unavailable",
-            "unknownVersion": "Version unavailable"
+            "disabled": "Désactivé",
+            "unknownPath": "Chemin d'accès exécutable indisponible",
+            "unknownVersion": "Version indisponible"
         },
         "git": {
             "title": "Git",
@@ -166,54 +166,54 @@
             "installed": "Installé :",
             "version": "Version :",
             "drawer": {
-                "title": "Git settings"
+                "title": "Paramètres Git"
             },
             "installation": {
                 "title": "Installation",
-                "description": "Godot Launcher validates this executable before every Git operation.",
-                "status": "Status",
-                "path": "Executable path",
+                "description": "Godot Launcher valide cet exécutable avant chaque opération Git.",
+                "status": "Statut",
+                "path": "Chemin d'accès exécutable",
                 "version": "Version"
             },
             "identity": {
-                "loading": "Loading Git identity settings...",
-                "name": "Name",
-                "email": "Email",
+                "loading": "Chargement des paramètres d'identité Git...",
+                "name": "Nom",
+                "email": "E-mail",
                 "global": {
-                    "title": "Global Git identity",
-                    "description": "This writes user.name and user.email to Git's machine-wide global configuration.",
-                    "unavailable": "Install or restore Git before editing the global identity.",
-                    "nameHelp": "The author name Git uses when a repository has no local override.",
-                    "emailHelp": "The author email Git uses when a repository has no local override."
+                    "title": "Identité Git globale",
+                    "description": "Cela écrit user.name et user.email dans la configuration globale Git à l'échelle de la machine.",
+                    "unavailable": "Installez ou restaurez Git avant de modifier l'identité globale.",
+                    "nameHelp": "Nom d'auteur que Git utilise lorsqu'un référentiel n'a pas de remplacement local.",
+                    "emailHelp": "E-mail d'auteur que Git utilise lorsqu'un référentiel n'a pas de remplacement local."
                 },
                 "preset": {
-                    "title": "Project identity preset",
-                    "description": "Save one identity for repositories created by Godot Launcher. It has no effect until you select or automatically apply it during project creation.",
-                    "nameHelp": "The author name suggested for a new repository-local identity.",
-                    "emailHelp": "The author email suggested for a new repository-local identity.",
-                    "automaticTitle": "Use automatically for new repositories",
-                    "automaticDescription": "Write this preset as a repository-local identity before the initial commit."
+                    "title": "Préréglage d'identité de projet",
+                    "description": "Enregistrez une identité pour les référentiels créés par Godot Launcher. Il n'a aucun effet jusqu'à ce que vous le sélectionniez ou l'appliquiez automatiquement lors de la création du projet.",
+                    "nameHelp": "Nom d'auteur suggéré pour une nouvelle identité Git locale au référentiel.",
+                    "emailHelp": "Adresse e-mail de l'auteur suggérée pour une nouvelle identité Git locale au référentiel.",
+                    "automaticTitle": "Utiliser automatiquement pour les nouveaux référentiels",
+                    "automaticDescription": "Écrivez ce préréglage comme identité Git locale du dépôt avant le commit Git initial."
                 },
                 "actions": {
-                    "saveGlobal": "Save global identity",
-                    "savePreset": "Save preset",
-                    "clearPreset": "Clear preset",
-                    "saving": "Saving..."
+                    "saveGlobal": "Enregistrer l'identité globale Git",
+                    "savePreset": "Enregistrer le préréglage",
+                    "clearPreset": "Effacer le préréglage",
+                    "saving": "Enregistrement des modifications..."
                 },
                 "errors": {
-                    "load": "Unable to load Git identity settings.",
-                    "required": "Enter both a name and email.",
-                    "saveGlobal": "Unable to save the global Git identity. The displayed values were refreshed from Git.",
-                    "savePreset": "Unable to save the project identity preset."
+                    "load": "Impossible de charger les paramètres d'identité Git.",
+                    "required": "Entrez à la fois un nom et une adresse e-mail.",
+                    "saveGlobal": "Impossible d'enregistrer l'identité Git globale. Les valeurs affichées ont été actualisées depuis Git.",
+                    "savePreset": "Impossible d'enregistrer le préréglage d'identité du projet."
                 }
             }
         },
         "accessibility": {
-            "scanning": "Rescanning {{tool}}"
+            "scanning": "Nouvelle analyse de {{tool}}"
         },
         "errors": {
-            "load": "Unable to load tool integrations.",
-            "rescan": "Unable to rescan this tool."
+            "load": "Impossible de charger les intégrations d'outils.",
+            "rescan": "Impossible de réanalyser cet outil."
         }
     },
     "updates": {
