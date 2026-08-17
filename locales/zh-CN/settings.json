@@ -160,6 +160,14 @@
             "unknownPath": "可执行路径不可用",
             "unknownVersion": "版本不可用"
         },
+        "installation": {
+            "drawerTitle": "{{tool}} 设置",
+            "title": "安装",
+            "description": "Godot Launcher 会检测并验证此安装，但不会安装或更新 {{tool}}。",
+            "status": "状态",
+            "path": "可执行路径",
+            "version": "版本"
+        },
         "git": {
             "title": "Git",
             "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",

@@ -160,6 +160,14 @@
             "unknownPath": "実行可能パスが使用できません",
             "unknownVersion": "バージョンが利用できません"
         },
+        "installation": {
+            "drawerTitle": "{{tool}} の設定",
+            "title": "インストール",
+            "description": "Godot Launcher はこのインストールを検出して検証します。{{tool}} のインストールや更新は行いません。",
+            "status": "状態",
+            "path": "実行可能パス",
+            "version": "バージョン"
+        },
         "git": {
             "title": "Git",
             "description": "Gitは、コードの変更管理とコラボレーションのための分散型バージョン管理システムです。",

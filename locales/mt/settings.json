@@ -160,6 +160,14 @@
             "unknownPath": "Passaġġ eżekubbli mhux disponibbli",
             "unknownVersion": "Verżjoni mhux disponibbli"
         },
+        "installation": {
+            "drawerTitle": "Issettjar ta' {{tool}}",
+            "title": "Installazzjoni",
+            "description": "Godot Launcher jiskopri u jivvalida din l-installazzjoni. Ma jinstallax jew jaġġornax {{tool}}.",
+            "status": "Status",
+            "path": "Mogħdija eżegwibbli",
+            "version": "Verżjoni"
+        },
         "git": {
             "title": "Git",
             "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",

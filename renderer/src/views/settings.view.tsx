@@ -26,6 +26,7 @@ import { ToolsSettingsPanel } from './settings/components/toolsSettingsPanel.com
 import { UpdatesSettingsPanel } from './settings/components/updatesSettingsPanel.component';
 import { CodeEditorSettingsDrawer } from './subViews/codeEditorSettingsDrawer.subview';
 import { GitToolSettingsDrawer } from './subViews/git-tool-settings-drawer.subview';
+import { ToolInstallationSettingsDrawer } from './subViews/tool-installation-settings-drawer.subview';
 
 type SettingsViewProps = {
     activeTab?: SettingsTab;
@@ -535,6 +536,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onSaved={replaceCodeEditorSettings}
             />
             <GitToolSettingsDrawer
+                tool={selectedTool}
+                open={Boolean(selectedTool)}
+                onOpenChange={(drawerOpen) => {
+                    if (!drawerOpen) {
+                        setSelectedToolId(null);
+                    }
+                }}
+                onRescan={rescanToolById}
+            />
+            <ToolInstallationSettingsDrawer
                 tool={selectedTool}
                 open={Boolean(selectedTool)}
                 onOpenChange={(drawerOpen) => {

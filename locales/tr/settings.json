@@ -160,6 +160,14 @@
             "unknownPath": "Yürütülebilir yol kullanılamıyor",
             "unknownVersion": "Sürüm kullanılamıyor"
         },
+        "installation": {
+            "drawerTitle": "{{tool}} ayarları",
+            "title": "Kurulum",
+            "description": "Godot Launcher bu kurulumu algılar ve doğrular. {{tool}} aracını yüklemez veya güncellemez.",
+            "status": "Durum",
+            "path": "Yürütülebilir yol",
+            "version": "Sürüm"
+        },
         "git": {
             "title": "Git",
             "description": "Git, kod değişikliklerini yönetmek ve işbirliği yapmak için dağıtık bir sürüm kontrol sistemidir.",
