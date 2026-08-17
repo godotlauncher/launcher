@@ -1,8 +1,10 @@
 import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    CreateProjectGitOptions,
     GitIdentity,
     GitIdentityScope,
+    GitLfsTrackingPolicy,
     InstalledRelease,
     ProjectGitIdentityPreset,
     RendererType,
@@ -172,6 +174,27 @@ export const isToolIntegrationAvailable = (
     toolId: string,
 ): boolean =>
     tools.some((tool) => tool.id === toolId && tool.status === 'available');
+
+/**
+ * Adds the selected Git LFS policy to a Create Project Git request.
+ *
+ * @param gitOptions - Existing initial commit and identity choice.
+ * @param trackingPolicy - Main-owned Git LFS policy selected for setup.
+ * @returns The original choice or a request with the documentation defaults.
+ */
+export const addCreateProjectGitLfsOptions = (
+    gitOptions: CreateProjectGitOptions | undefined,
+    trackingPolicy: GitLfsTrackingPolicy | undefined,
+): CreateProjectGitOptions | undefined => {
+    if (!trackingPolicy) {
+        return gitOptions;
+    }
+
+    return {
+        ...(gitOptions ?? { initialCommit: 'create' }),
+        gitLfs: { trackingPolicy },
+    };
+};
 
 export const resolveCreateProjectCodeEditorId = (
     settings: CodeEditorIntegrationSettings[],

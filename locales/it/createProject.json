@@ -50,7 +50,21 @@
             "notFound": "Non trovato"
         },
         "initGit": "Inizializza repository Git",
-        "gitNotInstalled": "Git non è installato su questo computer"
+        "gitNotInstalled": "Git non è installato su questo computer",
+        "gitLfs": {
+            "label": "Usa Git LFS",
+            "description": "Configura come punto di partenza i modelli di file della documentazione di Godot.",
+            "unavailable": "Installa e abilita Git LFS in Impostazioni > Strumenti per utilizzarlo.",
+            "patternsTitle": "Tipi di file tracciati",
+            "groups": {
+                "models": "Modelli 3D",
+                "images": "Immagini",
+                "audio": "Audio",
+                "fontsAndIcons": "Caratteri e icone",
+                "godot": "Risorse Godot"
+            },
+            "storageAndBandwidth": "Questi modelli non tengono conto delle dimensioni. L'archiviazione e i download di Git LFS possono essere conteggiati nei limiti di spazio e larghezza di banda del provider di hosting."
+        }
     },
     "gitIdentity": {
         "warningTitle": "Identità Git richiesta",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Modifica ora",
-        "create": "Crea progetto"
+        "create": "Crea progetto",
+        "creating": "Creazione del progetto..."
     },
     "errors": {
         "invalidEditorVersion": "Versione editor non valida: {{version}}",

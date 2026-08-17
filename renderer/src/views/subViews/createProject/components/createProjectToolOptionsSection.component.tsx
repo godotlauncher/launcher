@@ -32,14 +32,10 @@ const getCodeEditorOptions = (
 
 type CreateProjectToolOptionsSectionProps = {
     t: Translate;
-    loadingTools: boolean;
     loadingCodeEditors: boolean;
     codeEditorLoadFailed: boolean;
-    gitAvailable: boolean;
     codeEditorSettings: CodeEditorIntegrationSettings[];
     codeEditorId: CodeEditorId | null;
-    withGit: boolean;
-    onWithGitChange: (enabled: boolean) => void;
     onCodeEditorIdChange: (codeEditorId: CodeEditorId | null) => void;
 };
 
@@ -47,50 +43,26 @@ export const CreateProjectToolOptionsSection: React.FC<
     CreateProjectToolOptionsSectionProps
 > = ({
     t,
-    loadingTools,
     loadingCodeEditors,
     codeEditorLoadFailed,
-    gitAvailable,
     codeEditorSettings,
     codeEditorId,
-    withGit,
-    onWithGitChange,
     onCodeEditorIdChange,
 }) => (
     <div>
         <div className="flex flex-col gap-2">
             <h2 className="text-md flex items-center gap-4">
                 {t('otherSettings.title')}{' '}
-                {(loadingTools || loadingCodeEditors) && (
+                {loadingCodeEditors && (
                     <span className="loading loading-dots loading-xs"></span>
                 )}
             </h2>
 
             <div
                 className={clsx('flex flex-col gap-4 py-2', {
-                    invisible: loadingTools || loadingCodeEditors,
+                    invisible: loadingCodeEditors,
                 })}
             >
-                <label className="flex gap-2 items-center">
-                    <input
-                        type="checkbox"
-                        className="checkbox"
-                        disabled={!gitAvailable}
-                        checked={withGit}
-                        onChange={(event) =>
-                            onWithGitChange(event.target.checked)
-                        }
-                    />
-                    <span className="">{t('otherSettings.initGit')}</span>
-                </label>
-                {!gitAvailable && (
-                    <span className="text-sm text-warning">
-                        {t('otherSettings.gitNotInstalled')}
-                    </span>
-                )}
-
-                <div className="divider m-0"></div>
-
                 <SelectField
                     id="selectCreateProjectCodeEditor"
                     testId="selectCreateProjectCodeEditor"

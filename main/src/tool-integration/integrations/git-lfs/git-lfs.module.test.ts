@@ -9,7 +9,9 @@ import { ToolIntegrationRegistry } from '../../tool-integration.registry.js';
 import { ToolIntegrationService } from '../../tool-integration.service.js';
 import { ToolProcessExecutor } from '../../tool-process.executor.js';
 import { GitModule } from '../git/git.module.js';
+import { GitLfsController } from './git-lfs.controller.js';
 import { GitLfsModule } from './git-lfs.module.js';
+import { GitLfsService } from './git-lfs.service.js';
 
 const platformMocks = vi.hoisted(() => ({
     findExecutable: vi.fn(),
@@ -54,6 +56,8 @@ describe('GitLfsModule', () => {
             { id: 'git', displayName: 'Git', order: 100 },
             { id: 'git-lfs', displayName: 'Git LFS', order: 200 },
         ]);
+        expect(app.get(GitLfsService)).toBeInstanceOf(GitLfsService);
+        expect(app.get(GitLfsController)).toBeInstanceOf(GitLfsController);
 
         await app.destroyAsync();
     });

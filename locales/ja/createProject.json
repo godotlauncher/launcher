@@ -50,7 +50,21 @@
             "notFound": "見つかりません"
         },
         "initGit": "Gitリポジトリを初期化",
-        "gitNotInstalled": "Gitがこのコンピュータにインストールされていません"
+        "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
+        "gitLfs": {
+            "label": "Git LFSを使用",
+            "description": "Godotドキュメントのファイルパターンを出発点として設定します。",
+            "unavailable": "使用するには、設定 > ツールでGit LFSをインストールして有効にしてください。",
+            "patternsTitle": "追跡するファイル形式",
+            "groups": {
+                "models": "3Dモデル",
+                "images": "画像",
+                "audio": "オーディオ",
+                "fontsAndIcons": "フォントとアイコン",
+                "godot": "Godotリソース"
+            },
+            "storageAndBandwidth": "これらのパターンはファイルサイズを考慮しません。Git LFSのストレージとダウンロードは、ホスティングプロバイダーのストレージおよび帯域幅の上限に算入される場合があります。"
+        }
     },
     "gitIdentity": {
         "warningTitle": "Git IDが必要です",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "今すぐ編集",
-        "create": "プロジェクトを作成"
+        "create": "プロジェクトを作成",
+        "creating": "プロジェクトを作成中..."
     },
     "errors": {
         "invalidEditorVersion": "無効なエディタバージョン：{{version}}",

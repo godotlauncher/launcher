@@ -50,7 +50,21 @@
             "notFound": "Não encontrado"
         },
         "initGit": "Inicializar repositório Git",
-        "gitNotInstalled": "O Git não está instalado neste computador"
+        "gitNotInstalled": "O Git não está instalado neste computador",
+        "gitLfs": {
+            "label": "Utilizar Git LFS",
+            "description": "Configure como ponto de partida os padrões de ficheiros da documentação do Godot.",
+            "unavailable": "Instale e ative o Git LFS em Definições > Ferramentas para o utilizar.",
+            "patternsTitle": "Tipos de ficheiros monitorizados",
+            "groups": {
+                "models": "Modelos 3D",
+                "images": "Imagens",
+                "audio": "Áudio",
+                "fontsAndIcons": "Tipos de letra e ícones",
+                "godot": "Recursos do Godot"
+            },
+            "storageAndBandwidth": "Estes padrões não consideram o tamanho dos ficheiros. O armazenamento e as transferências do Git LFS podem contar para os limites de armazenamento e largura de banda do seu fornecedor de alojamento."
+        }
     },
     "gitIdentity": {
         "warningTitle": "Identidade Git necessária",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Editar agora",
-        "create": "Criar projeto"
+        "create": "Criar projeto",
+        "creating": "A criar projeto..."
     },
     "errors": {
         "invalidEditorVersion": "Versão de editor inválida: {{version}}",

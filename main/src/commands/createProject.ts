@@ -71,7 +71,7 @@ async function requireProjectRepositoryRoot(
  * @param codeEditorIntegrationService - Service used to configure the code editor.
  * @param gitService - Typed Git command service.
  * @param overwriteProjectPath - Optional path used to choose the project parent directory.
- * @param gitOptions - Optional initial commit and identity setup choice.
+ * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
  * @returns The project creation result.
  */
 export async function createProject(

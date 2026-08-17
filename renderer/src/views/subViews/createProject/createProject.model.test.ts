@@ -4,6 +4,7 @@ import type {
 } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
+    addCreateProjectGitLfsOptions,
     buildCreateProjectReleaseRows,
     getCreateProjectDirectorySegment,
     getDefaultRendererForReleaseVersion,
@@ -152,6 +153,30 @@ describe('create project model helpers', () => {
                 'git',
             ),
         ).toBe(false);
+    });
+
+    it('adds Git LFS policy without changing the initial commit choice', () => {
+        expect(
+            addCreateProjectGitLfsOptions(undefined, undefined),
+        ).toBeUndefined();
+        expect(
+            addCreateProjectGitLfsOptions(
+                undefined,
+                'godot-documentation-defaults',
+            ),
+        ).toEqual({
+            initialCommit: 'create',
+            gitLfs: { trackingPolicy: 'godot-documentation-defaults' },
+        });
+        expect(
+            addCreateProjectGitLfsOptions(
+                { initialCommit: 'skip' },
+                'godot-documentation-defaults',
+            ),
+        ).toEqual({
+            initialCommit: 'skip',
+            gitLfs: { trackingPolicy: 'godot-documentation-defaults' },
+        });
     });
 
     it('uses only an eligible explicit default or one unambiguous eligible integration', () => {

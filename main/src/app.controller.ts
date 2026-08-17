@@ -287,7 +287,7 @@ export class AppController implements AppBridge {
      * @param codeEditorId - Optional code editor integration to apply.
      * @param withGit - Whether to initialize Git when it is available.
      * @param overwriteProjectPath - Optional target project path.
-     * @param gitOptions - Optional initial commit and identity setup choice.
+     * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
      * @returns The project creation result.
      */
     @AppHandler('createProject')

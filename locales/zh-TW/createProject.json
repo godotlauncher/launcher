@@ -50,7 +50,21 @@
             "notFound": "未找到"
         },
         "initGit": "初始化 Git 儲存庫",
-        "gitNotInstalled": "此電腦未安裝 Git"
+        "gitNotInstalled": "此電腦未安裝 Git",
+        "gitLfs": {
+            "label": "使用 Git LFS",
+            "description": "將 Godot 文件中的檔案模式設定為起點。",
+            "unavailable": "請在設定 > 工具中安裝並啟用 Git LFS 後使用。",
+            "patternsTitle": "追蹤的檔案類型",
+            "groups": {
+                "models": "3D 模型",
+                "images": "圖片",
+                "audio": "音訊",
+                "fontsAndIcons": "字型和圖示",
+                "godot": "Godot 資源"
+            },
+            "storageAndBandwidth": "這些模式不會考慮檔案大小。Git LFS 儲存和下載可能會計入託管服務商的儲存空間和頻寬限制。"
+        }
     },
     "gitIdentity": {
         "warningTitle": "需要 Git 身分資訊",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "立即編輯",
-        "create": "建立專案"
+        "create": "建立專案",
+        "creating": "正在建立專案..."
     },
     "errors": {
         "invalidEditorVersion": "無效的編輯器版本：{{version}}",
