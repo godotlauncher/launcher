@@ -62,17 +62,22 @@ export type CreateProjectGitLfsOptions = {
     trackingPolicy: GitLfsTrackingPolicy;
 };
 
+export type ProjectGitLfsRecovery = 'not-required' | 'completed' | 'failed';
+
 export type ProjectGitLfsSetupOutcome =
     | { status: 'not-requested' }
     | {
           status: 'configured';
           trackingPolicy: GitLfsTrackingPolicy;
       }
-    | { status: 'unavailable' }
+    | {
+          status: 'unavailable';
+          recovery: ProjectGitLfsRecovery;
+      }
     | {
           status: 'failed';
-          stage: 'install' | 'track' | 'verify' | 'recovery';
-          recovery: 'not-required' | 'completed' | 'failed';
+          stage: 'install' | 'track' | 'verify';
+          recovery: ProjectGitLfsRecovery;
       };
 
 export type CreateProjectGitOptions = {

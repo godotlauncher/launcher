@@ -109,6 +109,13 @@
         "failedGitBranch": "Failed to rename the Git branch to main",
         "invalidGitIdentity": "Git name and email are required",
         "failedGitIdentity": "Failed to save the Git identity",
-        "failedGitCommit": "Failed to create the initial Git commit"
+        "failedGitCommit": "Failed to create the initial Git commit",
+        "gitLfsRequiresGit": "Git LFS requires a new Git repository",
+        "gitLfsExistingRepository": "Git LFS cannot be configured because the project is inside an existing Git repository",
+        "gitLfsUnavailable": "Git LFS is unavailable. Check Settings > Tools and try again",
+        "failedGitLfsInstall": "Failed to install Git LFS for the new repository",
+        "failedGitLfsTrack": "Failed to add the Git LFS tracking rules",
+        "failedGitLfsVerify": "Failed to verify the Git LFS configuration",
+        "failedProjectRecovery": "Git LFS setup failed and Launcher could not restore the project folder. Review '{{path}}' before trying again"
     }
 }

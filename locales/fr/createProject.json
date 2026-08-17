@@ -109,6 +109,13 @@
         "failedGitBranch": "Échec du renommage de la branche Git en main",
         "invalidGitIdentity": "Le nom et l'e-mail Git sont requis",
         "failedGitIdentity": "Échec de l'enregistrement de l'identité Git",
-        "failedGitCommit": "Échec de la création du commit Git initial"
+        "failedGitCommit": "Échec de la création du commit Git initial",
+        "gitLfsRequiresGit": "Git LFS nécessite un nouveau dépôt Git",
+        "gitLfsExistingRepository": "Git LFS ne peut pas être configuré car le projet se trouve dans un dépôt Git existant",
+        "gitLfsUnavailable": "Git LFS n'est pas disponible. Vérifiez Paramètres > Outils et réessayez",
+        "failedGitLfsInstall": "Échec de l'installation de Git LFS pour le nouveau dépôt",
+        "failedGitLfsTrack": "Échec de l'ajout des règles de suivi Git LFS",
+        "failedGitLfsVerify": "Échec de la vérification de la configuration Git LFS",
+        "failedProjectRecovery": "La configuration de Git LFS a échoué et Launcher n'a pas pu restaurer le dossier du projet. Vérifiez '{{path}}' avant de réessayer"
     }
 }

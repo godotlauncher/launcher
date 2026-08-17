@@ -4,8 +4,11 @@ import type {
     CodeEditorId,
     CreateProjectGitOptions,
     CreateProjectResult,
+    GitLfsTrackingPolicy,
     GitRepositoryInfo,
     InstalledRelease,
+    ProjectGitLfsRecovery,
+    ProjectGitLfsSetupOutcome,
     ProjectGitSetupOutcome,
     RendererType,
 } from '@shared/contracts';
@@ -22,6 +25,8 @@ import {
 import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
+import type { GitLfsService } from '../tool-integration/integrations/git-lfs/git-lfs.service.js';
+import type { GitLfsConfigurationResult } from '../tool-integration/integrations/git-lfs/git-lfs.types.js';
 import {
     createProjectFile,
     DEFAULT_PROJECT_DEFINITION,
@@ -50,7 +55,11 @@ async function requireProjectRepositoryRoot(
     projectPath: string,
 ): Promise<GitRepositoryInfo> {
     const inspection = await gitService.inspectRepository(projectPath);
-    if (inspection.status !== 'inside-work-tree' || !inspection.isProjectRoot) {
+    if (
+        inspection.status !== 'inside-work-tree' ||
+        !inspection.isProjectRoot ||
+        inspection.kind !== 'standard'
+    ) {
         throw new Error(t('createProject:errors.failedGitInit'));
     }
     return {
@@ -58,6 +67,99 @@ async function requireProjectRepositoryRoot(
         isProjectRoot: inspection.isProjectRoot,
         kind: inspection.kind,
     };
+}
+
+/**
+ * Records the directly contained top-level entry created for one project path.
+ *
+ * @param entries - Attempt-owned top-level entry names.
+ * @param projectPath - Exact project root.
+ * @param createdPath - File or directory created by the attempt.
+ */
+function recordCreatedEntry(
+    entries: Set<string>,
+    projectPath: string,
+    createdPath: string,
+): void {
+    const relativePath = path.relative(projectPath, createdPath);
+    if (
+        !relativePath ||
+        path.isAbsolute(relativePath) ||
+        relativePath === '..' ||
+        relativePath.startsWith(`..${path.sep}`)
+    ) {
+        throw new Error('Invalid project recovery target');
+    }
+    entries.add(relativePath.split(path.sep)[0]);
+}
+
+/**
+ * Restores a failed project attempt without inspecting or changing its parent.
+ *
+ * @param projectPath - Exact project root.
+ * @param rootExisted - Whether the user supplied an existing empty root.
+ * @param entries - Attempt-owned top-level entry names.
+ * @returns Whether recovery completed without an error.
+ */
+async function recoverProjectAttempt(
+    projectPath: string,
+    rootExisted: boolean,
+    entries: ReadonlySet<string>,
+): Promise<boolean> {
+    try {
+        if (!rootExisted) {
+            await fs.promises.rm(projectPath, { recursive: true, force: true });
+            return true;
+        }
+
+        for (const entry of entries) {
+            const target = path.resolve(projectPath, entry);
+            if (path.dirname(target) !== projectPath) {
+                return false;
+            }
+            await fs.promises.rm(target, { recursive: true, force: true });
+        }
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Maps an internal Git LFS result to the shared project setup contract.
+ *
+ * @param result - Internal Git LFS configuration result.
+ * @param recovery - Recovery state for the failed attempt.
+ * @returns Renderer-safe Git LFS setup outcome.
+ */
+function toGitLfsSetupOutcome(
+    result: Exclude<GitLfsConfigurationResult, { status: 'configured' }>,
+    recovery: ProjectGitLfsRecovery,
+): ProjectGitLfsSetupOutcome {
+    return result.status === 'unavailable'
+        ? { status: 'unavailable', recovery }
+        : { ...result, recovery };
+}
+
+/**
+ * Selects the translated error for one Git LFS configuration result.
+ *
+ * @param result - Internal Git LFS configuration result.
+ * @returns Localised setup failure message.
+ */
+function getGitLfsFailureMessage(
+    result: Exclude<GitLfsConfigurationResult, { status: 'configured' }>,
+): string {
+    if (result.status === 'unavailable') {
+        return t('createProject:errors.gitLfsUnavailable');
+    }
+    if (result.stage === 'install') {
+        return t('createProject:errors.failedGitLfsInstall');
+    }
+    if (result.stage === 'track') {
+        return t('createProject:errors.failedGitLfsTrack');
+    }
+    return t('createProject:errors.failedGitLfsVerify');
 }
 
 /**
@@ -70,6 +172,7 @@ async function requireProjectRepositoryRoot(
  * @param withGit - Whether to initialize Git when it is available.
  * @param codeEditorIntegrationService - Service used to configure the code editor.
  * @param gitService - Typed Git command service.
+ * @param gitLfsService - Guarded Git LFS project configuration service.
  * @param overwriteProjectPath - Optional path used to choose the project parent directory.
  * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
  * @returns The project creation result.
@@ -82,10 +185,15 @@ export async function createProject(
     withGit: boolean,
     codeEditorIntegrationService: CodeEditorIntegrationService,
     gitService: GitService,
+    gitLfsService: GitLfsService,
     overwriteProjectPath?: string,
     gitOptions?: CreateProjectGitOptions,
 ): Promise<CreateProjectResult> {
     let gitSetup: ProjectGitSetupOutcome = { status: 'not-requested' };
+    let gitLfsSetup: ProjectGitLfsSetupOutcome = { status: 'not-requested' };
+    const gitLfsRequested = gitOptions?.gitLfs !== undefined;
+    const requestedGitLfsPolicy = gitOptions?.gitLfs?.trackingPolicy;
+    let validatedGitLfsPolicy: GitLfsTrackingPolicy | null = null;
     if (codeEditorId) {
         try {
             await codeEditorIntegrationService.assertIntegrationSelectable(
@@ -99,7 +207,31 @@ export async function createProject(
         }
     }
 
+    if (gitLfsRequested && !withGit) {
+        return {
+            success: false,
+            error: t('createProject:errors.gitLfsRequiresGit'),
+            gitLfsSetup: {
+                status: 'failed',
+                stage: 'verify',
+                recovery: 'not-required',
+            },
+        };
+    }
+
     if (withGit && !(await gitService.exists())) {
+        if (gitLfsRequested) {
+            return {
+                success: false,
+                error: t('createProject:errors.gitLfsRequiresGit'),
+                gitSetup: { status: 'git-unavailable' },
+                gitLfsSetup: {
+                    status: 'failed',
+                    stage: 'verify',
+                    recovery: 'not-required',
+                },
+            };
+        }
         logger.warn(
             'Create Project with Git, but Git is not installed. Setting withGit to false',
         );
@@ -118,9 +250,10 @@ export async function createProject(
     const projectPath = overwriteProjectPath
         ? path.resolve(path.dirname(overwriteProjectPath), projectDirectoryName)
         : path.resolve(projectDir, projectDirectoryName);
+    const projectRootExisted = fs.existsSync(projectPath);
 
     // If the target exists, allow it only when it's an empty directory.
-    if (fs.existsSync(projectPath)) {
+    if (projectRootExisted) {
         const stat = await fs.promises.lstat(projectPath);
 
         if (!stat.isDirectory()) {
@@ -137,6 +270,60 @@ export async function createProject(
                 error: t('createProject:errors.folderNotEmpty', {
                     name: projectName,
                 }),
+            };
+        }
+    }
+
+    if (gitLfsRequested) {
+        if (!gitLfsService.supportsTrackingPolicy(requestedGitLfsPolicy)) {
+            return {
+                success: false,
+                error: t('createProject:errors.failedGitLfsVerify'),
+                gitLfsSetup: {
+                    status: 'failed',
+                    stage: 'verify',
+                    recovery: 'not-required',
+                },
+            };
+        }
+        validatedGitLfsPolicy = requestedGitLfsPolicy;
+        if (!(await gitLfsService.isAvailable())) {
+            return {
+                success: false,
+                error: t('createProject:errors.gitLfsUnavailable'),
+                gitLfsSetup: {
+                    status: 'unavailable',
+                    recovery: 'not-required',
+                },
+            };
+        }
+        const inspection = await gitService.inspectRepository(projectPath);
+        if (inspection.status === 'inside-work-tree') {
+            return {
+                success: false,
+                error: t('createProject:errors.gitLfsExistingRepository'),
+                gitSetup: {
+                    status: 'existing-repository',
+                    root: inspection.root,
+                    isProjectRoot: inspection.isProjectRoot,
+                    kind: inspection.kind,
+                },
+                gitLfsSetup: {
+                    status: 'failed',
+                    stage: 'verify',
+                    recovery: 'not-required',
+                },
+            };
+        }
+        if (inspection.status !== 'not-a-repository') {
+            return {
+                success: false,
+                error: t('createProject:errors.failedGitLfsVerify'),
+                gitLfsSetup: {
+                    status: 'failed',
+                    stage: 'verify',
+                    recovery: 'not-required',
+                },
             };
         }
     }
@@ -168,6 +355,8 @@ export async function createProject(
         };
     }
 
+    const createdEntries = new Set<string>();
+
     try {
         // create project file
         let projectFile: string;
@@ -192,6 +381,11 @@ export async function createProject(
 
         await fs.promises.mkdir(projectPath, { recursive: true });
         // write project file
+        recordCreatedEntry(
+            createdEntries,
+            projectPath,
+            path.resolve(projectPath, config.projectFilename),
+        );
         await fs.promises.writeFile(
             path.resolve(projectPath, config.projectFilename),
             projectFile,
@@ -213,21 +407,15 @@ export async function createProject(
                 await fs.promises.mkdir(dstDir, { recursive: true });
             }
 
+            recordCreatedEntry(createdEntries, projectPath, dst);
             await fs.promises.copyFile(src, dst);
         }
 
-        // set the editor symlink
-        const projectEditorPath = path.resolve(
-            installDir,
-            EDITOR_CONFIG_DIRNAME,
-            projectDirectoryName,
+        recordCreatedEntry(
+            createdEntries,
+            projectPath,
+            path.resolve(projectPath, '.godotlauncher'),
         );
-        // const launch_path = await setEditorSymlink(projectEditorPath, release.editor_path);
-        const launch_path = await SetProjectEditorRelease(
-            projectEditorPath,
-            release,
-        );
-
         await writeProjectLauncherConfig(projectPath, {
             release,
             launcherVersion: app.getVersion(),
@@ -250,6 +438,11 @@ export async function createProject(
                     kind: inspection.kind,
                 };
             } else {
+                recordCreatedEntry(
+                    createdEntries,
+                    projectPath,
+                    path.resolve(projectPath, '.git'),
+                );
                 if (!(await gitService.init(projectPath))) {
                     inspection =
                         await gitService.inspectRepository(projectPath);
@@ -277,17 +470,81 @@ export async function createProject(
                 }
             }
 
+            if (gitLfsRequested && gitSetup.status !== 'initialized') {
+                const recovered = await recoverProjectAttempt(
+                    projectPath,
+                    projectRootExisted,
+                    createdEntries,
+                );
+                return {
+                    success: false,
+                    projectPath: recovered ? undefined : projectPath,
+                    error: recovered
+                        ? t('createProject:errors.gitLfsExistingRepository')
+                        : t('createProject:errors.failedProjectRecovery', {
+                              path: projectPath,
+                          }),
+                    gitSetup,
+                    gitLfsSetup: {
+                        status: 'failed',
+                        stage: 'verify',
+                        recovery: recovered ? 'completed' : 'failed',
+                    },
+                };
+            }
+
             if (gitSetup.status === 'initialized') {
                 await requireProjectRepositoryRoot(gitService, projectPath);
+                recordCreatedEntry(
+                    createdEntries,
+                    projectPath,
+                    path.resolve(projectPath, '.gitignore'),
+                );
                 await fs.promises.copyFile(
                     path.resolve(projectResDir, 'default_gitignore'),
                     path.resolve(projectPath, '.gitignore'),
                 );
                 await requireProjectRepositoryRoot(gitService, projectPath);
+                recordCreatedEntry(
+                    createdEntries,
+                    projectPath,
+                    path.resolve(projectPath, '.gitattributes'),
+                );
                 await fs.promises.copyFile(
                     path.resolve(projectResDir, 'default-gitattributes'),
                     path.resolve(projectPath, '.gitattributes'),
                 );
+                if (validatedGitLfsPolicy) {
+                    const lfsResult =
+                        await gitLfsService.configureProjectRepository(
+                            projectPath,
+                            validatedGitLfsPolicy,
+                        );
+                    if (lfsResult.status !== 'configured') {
+                        const recovered = await recoverProjectAttempt(
+                            projectPath,
+                            projectRootExisted,
+                            createdEntries,
+                        );
+                        const recovery = recovered ? 'completed' : 'failed';
+                        return {
+                            success: false,
+                            projectPath: recovered ? undefined : projectPath,
+                            error: recovered
+                                ? getGitLfsFailureMessage(lfsResult)
+                                : t(
+                                      'createProject:errors.failedProjectRecovery',
+                                      { path: projectPath },
+                                  ),
+                            gitSetup,
+                            gitLfsSetup: toGitLfsSetupOutcome(
+                                lfsResult,
+                                recovery,
+                            ),
+                        };
+                    }
+                    gitLfsSetup = lfsResult;
+                }
                 if (!(await gitService.renameBranch(projectPath))) {
                     throw new Error(t('createProject:errors.failedGitBranch'));
                 }
@@ -336,6 +593,17 @@ export async function createProject(
             }
         }
 
+        // Configure the editor only after all requested repository setup succeeds.
+        const projectEditorPath = path.resolve(
+            installDir,
+            EDITOR_CONFIG_DIRNAME,
+            projectDirectoryName,
+        );
+        const launch_path = await SetProjectEditorRelease(
+            projectEditorPath,
+            release,
+        );
+
         let editorSettingsPath = path.resolve(
             path.dirname(launch_path),
             'editor_data',
@@ -365,6 +633,7 @@ export async function createProject(
             success: true,
             projectPath,
             gitSetup,
+            gitLfsSetup,
             projectDetails: {
                 name: projectName,
                 version: release.version,
@@ -400,8 +669,28 @@ export async function createProject(
         );
         return result;
     } catch (error) {
-        // clean folder
-        await fs.promises.rm(projectPath, { recursive: true, force: true });
+        const recovered = await recoverProjectAttempt(
+            projectPath,
+            projectRootExisted,
+            createdEntries,
+        );
+        if (gitLfsRequested && gitLfsSetup.status === 'not-requested') {
+            return {
+                success: false,
+                projectPath: recovered ? undefined : projectPath,
+                error: recovered
+                    ? (error as Error).message
+                    : t('createProject:errors.failedProjectRecovery', {
+                          path: projectPath,
+                      }),
+                gitSetup,
+                gitLfsSetup: {
+                    status: 'failed',
+                    stage: 'verify',
+                    recovery: recovered ? 'completed' : 'failed',
+                },
+            };
+        }
         return {
             success: false,
             error: (error as Error).message,

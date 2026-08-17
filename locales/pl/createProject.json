@@ -109,6 +109,13 @@
         "failedGitBranch": "Nie udało się zmienić nazwy gałęzi Git na main",
         "invalidGitIdentity": "Nazwa i e-mail Git są wymagane",
         "failedGitIdentity": "Nie udało się zapisać tożsamości Git",
-        "failedGitCommit": "Nie udało się utworzyć pierwszego commitu Git"
+        "failedGitCommit": "Nie udało się utworzyć pierwszego commitu Git",
+        "gitLfsRequiresGit": "Git LFS wymaga nowego repozytorium Git",
+        "gitLfsExistingRepository": "Nie można skonfigurować Git LFS, ponieważ projekt znajduje się w istniejącym repozytorium Git",
+        "gitLfsUnavailable": "Git LFS jest niedostępny. Sprawdź Ustawienia > Narzędzia i spróbuj ponownie",
+        "failedGitLfsInstall": "Nie udało się zainstalować Git LFS w nowym repozytorium",
+        "failedGitLfsTrack": "Nie udało się dodać reguł śledzenia Git LFS",
+        "failedGitLfsVerify": "Nie udało się zweryfikować konfiguracji Git LFS",
+        "failedProjectRecovery": "Konfiguracja Git LFS nie powiodła się, a Launcher nie mógł przywrócić folderu projektu. Sprawdź '{{path}}' przed ponowną próbą"
     }
 }

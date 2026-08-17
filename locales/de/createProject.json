@@ -109,6 +109,13 @@
         "failedGitBranch": "Der Git-Branch konnte nicht in main umbenannt werden",
         "invalidGitIdentity": "Git-Name und E-Mail-Adresse sind erforderlich",
         "failedGitIdentity": "Die Git-Identität konnte nicht gespeichert werden",
-        "failedGitCommit": "Der erste Git-Commit konnte nicht erstellt werden"
+        "failedGitCommit": "Der erste Git-Commit konnte nicht erstellt werden",
+        "gitLfsRequiresGit": "Git LFS erfordert ein neues Git-Repository",
+        "gitLfsExistingRepository": "Git LFS kann nicht konfiguriert werden, da sich das Projekt in einem vorhandenen Git-Repository befindet",
+        "gitLfsUnavailable": "Git LFS ist nicht verfügbar. Prüfen Sie Einstellungen > Werkzeuge und versuchen Sie es erneut",
+        "failedGitLfsInstall": "Git LFS konnte für das neue Repository nicht installiert werden",
+        "failedGitLfsTrack": "Die Git-LFS-Tracking-Regeln konnten nicht hinzugefügt werden",
+        "failedGitLfsVerify": "Die Git-LFS-Konfiguration konnte nicht überprüft werden",
+        "failedProjectRecovery": "Die Git-LFS-Einrichtung ist fehlgeschlagen und Launcher konnte den Projektordner nicht wiederherstellen. Prüfen Sie '{{path}}', bevor Sie es erneut versuchen"
     }
 }

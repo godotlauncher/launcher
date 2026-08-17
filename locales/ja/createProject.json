@@ -109,6 +109,13 @@
         "failedGitBranch": "Gitブランチをmainに変更できませんでした",
         "invalidGitIdentity": "Gitの名前とメールアドレスが必要です",
         "failedGitIdentity": "Git IDを保存できませんでした",
-        "failedGitCommit": "最初のGitコミットを作成できませんでした"
+        "failedGitCommit": "最初のGitコミットを作成できませんでした",
+        "gitLfsRequiresGit": "Git LFSには新しいGitリポジトリが必要です",
+        "gitLfsExistingRepository": "プロジェクトが既存のGitリポジトリ内にあるため、Git LFSを設定できません",
+        "gitLfsUnavailable": "Git LFSを利用できません。設定 > ツールを確認して、もう一度お試しください",
+        "failedGitLfsInstall": "新しいリポジトリへのGit LFSのインストールに失敗しました",
+        "failedGitLfsTrack": "Git LFS追跡ルールの追加に失敗しました",
+        "failedGitLfsVerify": "Git LFS設定の検証に失敗しました",
+        "failedProjectRecovery": "Git LFSの設定に失敗し、Launcherはプロジェクトフォルダーを復元できませんでした。再試行する前に'{{path}}'を確認してください"
     }
 }

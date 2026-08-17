@@ -109,6 +109,13 @@
         "failedGitBranch": "Falha ao mudar o nome do ramo Git para main",
         "invalidGitIdentity": "O nome e o e-mail do Git são obrigatórios",
         "failedGitIdentity": "Falha ao guardar a identidade Git",
-        "failedGitCommit": "Falha ao criar o commit inicial do Git"
+        "failedGitCommit": "Falha ao criar o commit inicial do Git",
+        "gitLfsRequiresGit": "O Git LFS requer um novo repositório Git",
+        "gitLfsExistingRepository": "O Git LFS não pode ser configurado porque o projeto está dentro de um repositório Git existente",
+        "gitLfsUnavailable": "O Git LFS não está disponível. Verifique Definições > Ferramentas e tente novamente",
+        "failedGitLfsInstall": "Falha ao instalar o Git LFS no novo repositório",
+        "failedGitLfsTrack": "Falha ao adicionar as regras de rastreio do Git LFS",
+        "failedGitLfsVerify": "Falha ao verificar a configuração do Git LFS",
+        "failedProjectRecovery": "A configuração do Git LFS falhou e o Launcher não conseguiu restaurar a pasta do projeto. Verifique '{{path}}' antes de tentar novamente"
     }
 }

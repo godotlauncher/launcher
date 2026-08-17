@@ -109,6 +109,13 @@
         "failedGitBranch": "Impossibile rinominare il branch Git in main",
         "invalidGitIdentity": "Nome ed email Git sono obbligatori",
         "failedGitIdentity": "Impossibile salvare l'identità Git",
-        "failedGitCommit": "Impossibile creare il commit Git iniziale"
+        "failedGitCommit": "Impossibile creare il commit Git iniziale",
+        "gitLfsRequiresGit": "Git LFS richiede un nuovo repository Git",
+        "gitLfsExistingRepository": "Git LFS non può essere configurato perché il progetto si trova in un repository Git esistente",
+        "gitLfsUnavailable": "Git LFS non è disponibile. Controlla Impostazioni > Strumenti e riprova",
+        "failedGitLfsInstall": "Impossibile installare Git LFS per il nuovo repository",
+        "failedGitLfsTrack": "Impossibile aggiungere le regole di tracciamento Git LFS",
+        "failedGitLfsVerify": "Impossibile verificare la configurazione Git LFS",
+        "failedProjectRecovery": "La configurazione di Git LFS non è riuscita e Launcher non ha potuto ripristinare la cartella del progetto. Controlla '{{path}}' prima di riprovare"
     }
 }

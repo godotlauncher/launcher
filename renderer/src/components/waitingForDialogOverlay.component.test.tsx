@@ -9,7 +9,7 @@ describe('WaitingForDialogOverlay', () => {
         );
 
         expect(html).toContain('Waiting for dialog...');
-        expect(html).toContain('loading-infinity');
+        expect(html).toContain('loading-circle');
         expect(html).toContain('bg-black/80');
     });
 });

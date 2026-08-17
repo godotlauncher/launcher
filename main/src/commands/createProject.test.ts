@@ -8,6 +8,7 @@ import type {
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
+import type { GitLfsService } from '../tool-integration/integrations/git-lfs/git-lfs.service.js';
 import { createProject as createProjectCommand } from './createProject.js';
 
 const fsMocks = vi.hoisted(() => ({
@@ -109,6 +110,12 @@ const gitServiceMocks = {
     setIdentity: vi.fn(),
 };
 const gitService = gitServiceMocks as unknown as GitService;
+const gitLfsServiceMocks = {
+    configureProjectRepository: vi.fn(),
+    isAvailable: vi.fn(),
+    supportsTrackingPolicy: vi.fn(),
+};
+const gitLfsService = gitLfsServiceMocks as unknown as GitLfsService;
 
 /**
  * Calls Create Project with the test-owned Git service.
@@ -141,6 +148,7 @@ function createProject(
         withGit,
         codeEditorService,
         gitService,
+        gitLfsService,
         overwriteProjectPath,
         gitOptions,
     );
@@ -173,6 +181,12 @@ describe('createProject', () => {
         gitServiceMocks.renameBranch.mockResolvedValue(true);
         gitServiceMocks.setIdentity.mockResolvedValue(true);
         gitServiceMocks.addAndCommit.mockResolvedValue(true);
+        gitLfsServiceMocks.isAvailable.mockResolvedValue(true);
+        gitLfsServiceMocks.supportsTrackingPolicy.mockReturnValue(true);
+        gitLfsServiceMocks.configureProjectRepository.mockResolvedValue({
+            status: 'configured',
+            trackingPolicy: 'godot-recommended-v1',
+        });
         gitServiceMocks.inspectRepository.mockImplementation(
             async (projectPath: string) =>
                 gitServiceMocks.init.mock.calls.length === 0
@@ -397,6 +411,304 @@ describe('createProject', () => {
         expect(gitServiceMocks.renameBranch).toHaveBeenCalledWith(projectPath);
         expect(gitServiceMocks.setIdentity).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+    });
+
+    it('configures requested Git LFS before branch rename and commit', async () => {
+        const result = await createProject(
+            'LFS Project',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        expect(result.gitLfsSetup).toEqual({
+            status: 'configured',
+            trackingPolicy: 'godot-recommended-v1',
+        });
+        expect(
+            gitLfsServiceMocks.configureProjectRepository,
+        ).toHaveBeenCalledWith(
+            path.resolve('/projects/LFS-Project'),
+            'godot-recommended-v1',
+        );
+        expect(
+            gitLfsServiceMocks.configureProjectRepository.mock
+                .invocationCallOrder[0],
+        ).toBeLessThan(
+            gitServiceMocks.renameBranch.mock.invocationCallOrder[0],
+        );
+        expect(
+            gitLfsServiceMocks.configureProjectRepository.mock
+                .invocationCallOrder[0],
+        ).toBeLessThan(
+            gitServiceMocks.addAndCommit.mock.invocationCallOrder[0],
+        );
+    });
+
+    it('configures Git LFS when the initial commit is skipped', async () => {
+        const result = await createProject(
+            'LFS Skip Commit',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'skip',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        expect(result.success).toBe(true);
+        expect(
+            gitLfsServiceMocks.configureProjectRepository,
+        ).toHaveBeenCalledOnce();
+        expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            name: 'Git',
+            prepare: () => gitServiceMocks.exists.mockResolvedValueOnce(false),
+            error: 'createProject:errors.gitLfsRequiresGit',
+        },
+        {
+            name: 'Git LFS',
+            prepare: () =>
+                gitLfsServiceMocks.isAvailable.mockResolvedValueOnce(false),
+            error: 'createProject:errors.gitLfsUnavailable',
+        },
+    ])(
+        'fails before writing project files when $name is unavailable',
+        async ({ prepare, error }) => {
+            prepare();
+            const result = await createProject(
+                'Unavailable LFS',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                codeEditorIntegrationService,
+                undefined,
+                {
+                    initialCommit: 'create',
+                    gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+                },
+            );
+
+            expect(result.success).toBe(false);
+            expect(result.error).toBe(error);
+            expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+            expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(gitServiceMocks.init).not.toHaveBeenCalled();
+        },
+    );
+
+    it('refuses an enclosing repository before project or Git mutation', async () => {
+        gitServiceMocks.inspectRepository.mockResolvedValueOnce({
+            status: 'inside-work-tree',
+            root: '/projects',
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+
+        const result = await createProject(
+            'Nested LFS',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        expect(result.error).toBe(
+            'createProject:errors.gitLfsExistingRepository',
+        );
+        expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        expect(gitServiceMocks.init).not.toHaveBeenCalled();
+        expect(
+            gitLfsServiceMocks.configureProjectRepository,
+        ).not.toHaveBeenCalled();
+    });
+
+    it.each(['install', 'track', 'verify'] as const)(
+        'rolls back and stops after Git LFS %s failure',
+        async (stage) => {
+            gitLfsServiceMocks.configureProjectRepository.mockResolvedValueOnce(
+                { status: 'failed', stage },
+            );
+
+            const result = await createProject(
+                'Failed LFS',
+                release,
+                'FORWARD_PLUS',
+                'vscode',
+                true,
+                codeEditorIntegrationService,
+                undefined,
+                {
+                    initialCommit: 'create',
+                    gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+                },
+            );
+
+            expect(result.gitLfsSetup).toEqual({
+                status: 'failed',
+                stage,
+                recovery: 'completed',
+            });
+            expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
+            expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+            expect(
+                codeEditorIntegrationServiceMocks.applyToProject,
+            ).not.toHaveBeenCalled();
+            expect(
+                godotUtilsMocks.SetProjectEditorRelease,
+            ).not.toHaveBeenCalled();
+            expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
+            expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+                path.resolve('/projects/Failed-LFS'),
+                { recursive: true, force: true },
+            );
+        },
+    );
+
+    it('fails closed when Git LFS becomes unavailable during setup', async () => {
+        gitLfsServiceMocks.configureProjectRepository.mockResolvedValueOnce({
+            status: 'unavailable',
+        });
+
+        const result = await createProject(
+            'Lost LFS',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        expect(result.gitLfsSetup).toEqual({
+            status: 'unavailable',
+            recovery: 'completed',
+        });
+        expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
+        expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+    });
+
+    it('reports verification recovery when the new Git root cannot be created', async () => {
+        gitServiceMocks.init.mockResolvedValueOnce(false);
+        gitServiceMocks.inspectRepository
+            .mockResolvedValueOnce({ status: 'not-a-repository' })
+            .mockResolvedValueOnce({ status: 'not-a-repository' })
+            .mockResolvedValueOnce({ status: 'not-a-repository' });
+
+        const result = await createProject(
+            'No Git Root',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        expect(result.gitLfsSetup).toEqual({
+            status: 'failed',
+            stage: 'verify',
+            recovery: 'completed',
+        });
+        expect(
+            gitLfsServiceMocks.configureProjectRepository,
+        ).not.toHaveBeenCalled();
+        expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
+    });
+
+    it('preserves a user-supplied empty root and removes only attempt entries', async () => {
+        fsMocks.existsSync.mockReturnValue(true);
+        fsMocks.promises.lstat.mockResolvedValue({ isDirectory: () => true });
+        fsMocks.promises.readdir.mockResolvedValue([]);
+        gitLfsServiceMocks.configureProjectRepository.mockResolvedValueOnce({
+            status: 'failed',
+            stage: 'track',
+        });
+
+        await createProject(
+            'Existing Empty',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        const projectPath = path.resolve('/projects/Existing-Empty');
+        expect(fsMocks.promises.rm).not.toHaveBeenCalledWith(projectPath, {
+            recursive: true,
+            force: true,
+        });
+        for (const [target] of fsMocks.promises.rm.mock.calls) {
+            expect(path.dirname(target)).toBe(projectPath);
+        }
+    });
+
+    it('reports the original stage and manual path when recovery fails', async () => {
+        gitLfsServiceMocks.configureProjectRepository.mockResolvedValueOnce({
+            status: 'failed',
+            stage: 'install',
+        });
+        fsMocks.promises.rm.mockRejectedValueOnce(new Error('busy'));
+
+        const result = await createProject(
+            'Manual Recovery',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            codeEditorIntegrationService,
+            undefined,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+        );
+
+        expect(result).toMatchObject({
+            success: false,
+            projectPath: path.resolve('/projects/Manual-Recovery'),
+            error: 'createProject:errors.failedProjectRecovery',
+            gitLfsSetup: {
+                status: 'failed',
+                stage: 'install',
+                recovery: 'failed',
+            },
+        });
     });
 
     it.each(['repository', 'global'] as const)(

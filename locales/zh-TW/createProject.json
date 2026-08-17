@@ -109,6 +109,13 @@
         "failedGitBranch": "無法將 Git 分支重新命名為 main",
         "invalidGitIdentity": "Git 姓名和電子郵件為必填項目",
         "failedGitIdentity": "無法儲存 Git 身分資訊",
-        "failedGitCommit": "無法建立初始 Git 提交"
+        "failedGitCommit": "無法建立初始 Git 提交",
+        "gitLfsRequiresGit": "Git LFS 需要新的 Git 儲存庫",
+        "gitLfsExistingRepository": "專案位於現有 Git 儲存庫中，因此無法設定 Git LFS",
+        "gitLfsUnavailable": "Git LFS 無法使用。請檢查「設定 > 工具」後再試一次",
+        "failedGitLfsInstall": "無法為新的儲存庫安裝 Git LFS",
+        "failedGitLfsTrack": "無法新增 Git LFS 追蹤規則",
+        "failedGitLfsVerify": "無法驗證 Git LFS 設定",
+        "failedProjectRecovery": "Git LFS 設定失敗，Launcher 無法還原專案資料夾。請先檢查 '{{path}}'，然後再試一次"
     }
 }

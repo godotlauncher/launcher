@@ -109,6 +109,13 @@
         "failedGitBranch": "Не удалось переименовать ветку Git в main",
         "invalidGitIdentity": "Необходимо указать имя и электронную почту Git",
         "failedGitIdentity": "Не удалось сохранить профиль Git",
-        "failedGitCommit": "Не удалось создать первый коммит Git"
+        "failedGitCommit": "Не удалось создать первый коммит Git",
+        "gitLfsRequiresGit": "Для Git LFS требуется новый репозиторий Git",
+        "gitLfsExistingRepository": "Git LFS нельзя настроить, поскольку проект находится внутри существующего репозитория Git",
+        "gitLfsUnavailable": "Git LFS недоступен. Проверьте Настройки > Инструменты и повторите попытку",
+        "failedGitLfsInstall": "Не удалось установить Git LFS для нового репозитория",
+        "failedGitLfsTrack": "Не удалось добавить правила отслеживания Git LFS",
+        "failedGitLfsVerify": "Не удалось проверить конфигурацию Git LFS",
+        "failedProjectRecovery": "Настройка Git LFS завершилась ошибкой, и Launcher не смог восстановить папку проекта. Проверьте '{{path}}' перед повторной попыткой"
     }
 }

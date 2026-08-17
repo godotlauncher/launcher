@@ -109,6 +109,13 @@
         "failedGitBranch": "Ma rnexxiex jinbidel l-isem tal-branch Git għal main",
         "invalidGitIdentity": "L-isem u l-email ta' Git huma meħtieġa",
         "failedGitIdentity": "Ma rnexxiex tinżamm l-identità ta' Git",
-        "failedGitCommit": "Ma rnexxiex jinħoloq l-ewwel commit ta' Git"
+        "failedGitCommit": "Ma rnexxiex jinħoloq l-ewwel commit ta' Git",
+        "gitLfsRequiresGit": "Git LFS jeħtieġ repository Git ġdid",
+        "gitLfsExistingRepository": "Git LFS ma jistax jiġi kkonfigurat għax il-proġett jinsab ġewwa repository Git eżistenti",
+        "gitLfsUnavailable": "Git LFS mhux disponibbli. Iċċekkja Settings > Tools u erġa' pprova",
+        "failedGitLfsInstall": "Ma rnexxiex jiġi installat Git LFS għar-repository il-ġdid",
+        "failedGitLfsTrack": "Ma rnexxiex jiżdiedu r-regoli ta' traċċar ta' Git LFS",
+        "failedGitLfsVerify": "Ma rnexxiex tiġi vverifikata l-konfigurazzjoni ta' Git LFS",
+        "failedProjectRecovery": "Il-konfigurazzjoni ta' Git LFS falliet u Launcher ma setax jirrestawra l-folder tal-proġett. Iċċekkja '{{path}}' qabel terġa' tipprova"
     }
 }
