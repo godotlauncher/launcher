@@ -10,7 +10,10 @@ import type {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
-import { Drawer } from '../../components/ui/drawer/drawer.component';
+import {
+    Drawer,
+    focusDrawerElement,
+} from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useGit } from '../../hooks/git.hook';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -506,7 +509,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
 
         let active = true;
         const animationFrameId = window.requestAnimationFrame(() => {
-            inputNameRef.current?.focus();
+            if (inputNameRef.current) {
+                focusDrawerElement(inputNameRef.current);
+            }
         });
 
         listIntegrations()
