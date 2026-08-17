@@ -477,6 +477,61 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase:
+            'screen_projects_settings_source_control_identity_unavailable',
+        description:
+            'Project settings Git identity while Git is unavailable',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await prepareAppWithStubbedData(page, electronApp, {
+                toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
+            });
+            await stubProjectGitIdentity(electronApp, {
+                status: 'git-unavailable',
+            });
+            await applyTheme(page, theme);
+            await page.getByTestId('btnProjects').click();
+            const projectCard = page
+                .locator('[data-project-path]')
+                .filter({
+                    has: page.getByText('My Awesome Game', { exact: true }),
+                })
+                .first();
+            await projectCard.getByTestId('btnProjectSettings').click();
+            await page
+                .getByTestId('tabProjectSettings_sourceControl')
+                .click();
+            await expect(
+                page.getByText(
+                    'Install Git or rescan it in Settings > Tools > Git to view and update this identity.',
+                    { exact: true },
+                ),
+            ).toBeVisible({ timeout: 10000 });
+            await expect(
+                page
+                    .getByRole('button', { name: 'Update', exact: true })
+                    .first(),
+            ).toBeDisabled();
+            await expect(
+                page.getByText('Unavailable', { exact: true }),
+            ).toHaveCount(2);
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+            theme: ThemeConfig,
+        ) => {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(200);
+            await prepareAppWithStubbedData(page, electronApp);
+            await applyTheme(page, theme);
+        },
+    },
+    {
         fileBase: 'screen_projects_settings_source_control_no_git',
         description: 'Project settings source control without Git installed',
         navigate: async (

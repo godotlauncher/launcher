@@ -181,6 +181,8 @@
             "saveIdentity": "Save identity",
             "identityRequired": "Enter both a name and an email.",
             "identityLoadFailed": "Could not load the Git identity.",
+            "identityUnavailable": "Unavailable",
+            "identityUnavailableHelp": "Install Git or rescan it in Settings > Tools > Git to view and update this identity.",
             "updateFailed": "Could not update the Git identity.",
             "updateNotAllowed": "Git identity cannot be updated for this project.",
             "parentRepositoryReadOnly": "This project uses the parent repository at {{root}}. Its identity is read-only here.",

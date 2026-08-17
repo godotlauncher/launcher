@@ -1022,6 +1022,56 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                     )}
                                 </div>
                             )}
+                            {withGit &&
+                                gitIdentity?.status === 'git-unavailable' && (
+                                    <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h3 className="font-semibold">
+                                                    {t(
+                                                        'editProject.sourceControl.identityTitle',
+                                                    )}
+                                                </h3>
+                                                <p className="text-sm text-base-content/65">
+                                                    {t(
+                                                        'editProject.sourceControl.identityUnavailableHelp',
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline btn-sm"
+                                                disabled
+                                            >
+                                                {t(
+                                                    'editProject.sourceControl.updateIdentity',
+                                                )}
+                                            </button>
+                                        </div>
+                                        <dl className="grid gap-3 sm:grid-cols-2">
+                                            {[
+                                                'identityName',
+                                                'identityEmail',
+                                            ].map((label) => (
+                                                <div
+                                                    key={label}
+                                                    className="min-w-0"
+                                                >
+                                                    <dt className="text-xs font-semibold uppercase text-base-content/55">
+                                                        {t(
+                                                            `editProject.sourceControl.${label}`,
+                                                        )}
+                                                    </dt>
+                                                    <dd className="mt-1 text-base-content/55">
+                                                        {t(
+                                                            'editProject.sourceControl.identityUnavailable',
+                                                        )}
+                                                    </dd>
+                                                </div>
+                                            ))}
+                                        </dl>
+                                    </div>
+                                )}
                             {gitIdentityError && (
                                 <p className="text-sm text-error">
                                     {gitIdentityError}
