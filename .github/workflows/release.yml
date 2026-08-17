@@ -16,7 +16,7 @@ on:
       signpath_signing_policy_slug:
         description: "SignPath Windows signing policy slug"
         required: true
-        default: "test-signing"
+        default: "release-signing"
         type: string
       signpath_windows_artifact_configuration_slug:
         description: "SignPath Windows artifact configuration slug"
@@ -524,7 +524,7 @@ jobs:
           echo "Deleting tag $TAG due to workflow failure."
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git push origin :refs/tags/$TAG || true
+          git push origin ":refs/tags/$TAG" || true
 
           if command -v gh >/dev/null 2>&1; then
             release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate --jq ".[] | select(.tag_name == \"$TAG\") | .id" 2>/dev/null | head -n 1 || true)
