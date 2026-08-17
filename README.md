@@ -1,11 +1,11 @@
 # Godot Launcher
 
-**Godot Launcher** is a streamlined, open-source tool designed to simplify and accelerate your Godot game development workflow. It automates Git initialization, configures VSCode instantly, manages multiple Godot versions and custom editor builds seamlessly, and keeps project settings isolated. Quickly prototype ideas, access projects effortlessly from the system tray, and stay up-to-date with automatic updates.
+**Godot Launcher** is an open-source companion app for Godot Engine. It manages official releases and custom Godot builds, initializes Git, configures Visual Studio Code or VSCodium for each project, and keeps project settings isolated. Open projects from the system tray and receive notifications when a new launcher version is available.
 
 Spend less time configuring your environment and more time creating amazing games.
 
 ✅ **Free, Open Source, and Community-Driven.**\
-✅ **Cross-platform support, available on Windows, MacOS, and Linux.**\
+✅ **Cross-platform support, available on Windows, macOS, and Linux.**\
 ✅ **Designed for modern Godot workflows, focusing on v4.0 and later.**
 
 <picture>
@@ -20,10 +20,10 @@ The best way to get the latest installer is from [the Godot Launcher website](ht
 
 ## Features
 
-### **Quick Project Setup with Git and VSCode**
+### **Quick Project Setup with Git and Code Editors**
 
-- **Instant Git Initialization:** Start a new project with Git automatically initialized, complete with an initial commit—no extra steps required.
-- **VSCode Configuration:** Essential paths and settings for VSCode are ready out of the box. Say goodbye to manual editor setups and get to coding faster.
+- **Instant Git Initialization:** Start a new project with Git automatically initialized, complete with an initial commit.
+- **Visual Studio Code and VSCodium:** Detect either editor, choose a default for new projects, and select an editor per project. Godot Launcher configures the project for the selected editor while preserving unrelated settings. See [Code Editor Settings](https://docs.godotlauncher.org/settings/code-editors/) for setup details.
 
 ### **Effortless Godot Version Management**
 
@@ -119,8 +119,10 @@ Godot Launcher is licensed under the [MIT License](./LICENSE.txt). A copy of the
 
 This project also includes third-party assets and libraries, which are licensed under their respective terms. For details, please refer to [`COPYRIGHT.txt`](./COPYRIGHT.txt).
 
-## Signing Policy
+## Code Signing Policy
 
 Windows releases signed by SignPath.
 
 Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
+
+macOS builds are signed with a Developer ID Application certificate issued to Mario DEBONO and notarized by Apple.
