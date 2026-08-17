@@ -31,7 +31,7 @@ export type TooltipTone =
     | 'info';
 
 type TooltipProps = {
-    tip: string;
+    tip: ReactNode;
     children: ReactNode;
     placement?: TooltipPlacement;
     tone?: TooltipTone;
@@ -84,6 +84,12 @@ const getArrowStyle = (position: TooltipPosition): CSSProperties => {
     }
 };
 
+/**
+ * Renders accessible text or rich help content on pointer hover and focus.
+ *
+ * @param props - Tooltip content, trigger, placement, tone, and accessibility properties.
+ * @returns The trigger and its lazily mounted tooltip portal.
+ */
 export const Tooltip: FC<TooltipProps> = ({
     tip,
     children,
@@ -101,7 +107,7 @@ export const Tooltip: FC<TooltipProps> = ({
     const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const pointerInsideRef = useRef(false);
     const focusInsideRef = useRef(false);
-    const previousTipRef = useRef(tip);
+    const previousTipRef = useRef<ReactNode>(tip);
     const [open, setOpen] = useState(false);
     const [position, setPosition] = useState<TooltipPosition | null>(null);
     const accessibilityProps =

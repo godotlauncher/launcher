@@ -38,21 +38,23 @@ const policy: GitLfsTrackingPolicyDescriptor = {
 const t = (key: string) => labels[key] ?? key;
 
 describe('CreateProjectGitLfsOption', () => {
-    it('renders the main-owned tracking descriptor when selected', () => {
+    it('keeps the tracking descriptor behind an accessible help trigger', () => {
         const html = renderToStaticMarkup(
             <CreateProjectGitLfsOption
                 t={t}
                 available
                 policy={policy}
-                selected
+                selected={false}
                 onSelectedChange={vi.fn()}
             />,
         );
 
-        expect(html).toContain('Tracked file types');
-        expect(html).toContain('*.fbx *.gltf *.glb *.blend *.obj');
-        expect(html).toContain('*.scn *.res *.material *.anim *.mesh *.lmbake');
-        expect(html).toContain('Git LFS uses remote storage and bandwidth.');
+        expect(html).toContain('data-tooltip-trigger=""');
+        expect(html).toContain('aria-label="Tracked file types"');
+        expect(html).not.toContain('*.fbx *.gltf *.glb *.blend *.obj');
+        expect(html).not.toContain(
+            '*.scn *.res *.material *.anim *.mesh *.lmbake',
+        );
     });
 
     it('disables selection when Git LFS is unavailable', () => {
