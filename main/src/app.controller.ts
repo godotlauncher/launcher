@@ -84,6 +84,8 @@ import {
     setUserPreferences,
 } from './commands/userPreferences.js';
 import { getCurrentAppConfig } from './config/index.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { EditorCatalogService } from './editor-catalog/editor-catalog.service.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
@@ -107,6 +109,7 @@ export class AppController implements AppBridge {
      * @param i18nService - Main-process localization service.
      * @param appLifecycleService - Application lifecycle coordinator.
      * @param codeEditorIntegrationService - Code editor integration facade.
+     * @param editorCatalogService - Official editor catalogue service.
      * @param gitService - Typed Git command service.
      * @param trayAvailabilityService - System tray availability service.
      */
@@ -114,6 +117,7 @@ export class AppController implements AppBridge {
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly editorCatalogService: EditorCatalogService,
         private readonly gitService: GitService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
@@ -226,7 +230,11 @@ export class AppController implements AppBridge {
 
     @AppHandler('reinstallRelease')
     reinstallRelease(release: InstalledRelease) {
-        return reinstallRelease(release, this.codeEditorIntegrationService);
+        return reinstallRelease(
+            release,
+            this.codeEditorIntegrationService,
+            this.editorCatalogService,
+        );
     }
 
     @AppHandler('registerCustomEngine')
