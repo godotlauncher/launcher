@@ -30,6 +30,8 @@ import {
     SAMPLE_PROJECTS,
     SAMPLE_PROJECTS_WITH_MISSING_EDITOR,
     TOOL_INTEGRATIONS_NO_GIT,
+    TOOL_INTEGRATIONS_NO_GIT_LFS,
+    TOOL_INTEGRATIONS_MISSING,
 } from './sampleData';
 import type { ElectronPage, ScreenshotConfig, ThemeConfig } from './types';
 import {
@@ -998,6 +1000,67 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_new_project_git_lfs',
+        description: 'New Project Git LFS tracking policy help',
+        preservePointer: true,
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My Next Awesome Game');
+            await page.getByRole('checkbox', { name: 'Use Git LFS' }).check();
+            await page
+                .getByRole('button', { name: 'Tracked file types' })
+                .hover();
+            const tooltip = page.getByRole('tooltip');
+            await expect(tooltip).toBeVisible({ timeout: 10000 });
+            await expect(tooltip).toContainText('3D models');
+            await expect(tooltip).toContainText('*.fbx *.gltf *.glb');
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await page.mouse.move(0, 0);
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(400);
+        },
+    },
+    {
+        fileBase: 'screen_projects_new_project_no_git_lfs',
+        description: 'New Project view when Git LFS is not installed',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await stubToolIntegrations(
+                electronApp,
+                TOOL_INTEGRATIONS_NO_GIT_LFS,
+            );
+            await page.getByTestId('btnProjects').click();
+            await page.getByTestId('btnProjectCreate').click();
+            await page
+                .getByTestId('inputProjectName')
+                .fill('My Next Awesome Game');
+            await expect(
+                page.getByRole('checkbox', { name: 'Use Git LFS' }),
+            ).toBeDisabled();
+            await expect(
+                page.getByText(
+                    'Install and enable Git LFS in Settings > Tools to use it.',
+                ),
+            ).toBeVisible();
+            await page.waitForTimeout(400);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await page.getByTestId('btnCloseCreateProject').click();
+            await page.waitForTimeout(400);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project_git_identity_form',
         description: 'New Project Git identity form',
         viewportHeight: 720,
@@ -1212,7 +1275,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         ) => {
             await stubToolIntegrations(
                 electronApp,
-                TOOL_INTEGRATIONS_NO_GIT,
+                TOOL_INTEGRATIONS_MISSING,
             );
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [

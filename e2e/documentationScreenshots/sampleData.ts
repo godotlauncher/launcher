@@ -1,5 +1,6 @@
 import type {
     CodeEditorIntegrationSettings,
+    GitLfsTrackingPolicyDescriptor,
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
@@ -361,7 +362,49 @@ export const DEFAULT_TOOL_INTEGRATIONS: ToolIntegrationSummary[] = [
         version: 'git version 2.45.0',
         executablePath: '/usr/bin/git',
     },
+    {
+        id: 'git-lfs',
+        displayName: 'Git LFS',
+        status: 'available',
+        version: 'git-lfs/3.7.1',
+        executablePath: '/usr/local/bin/git-lfs',
+    },
 ];
+
+export const SAMPLE_GIT_LFS_TRACKING_POLICY: GitLfsTrackingPolicyDescriptor = {
+    id: 'godot-documentation-defaults',
+    groups: [
+        { id: 'models', patterns: ['*.fbx', '*.gltf', '*.glb', '*.blend', '*.obj'] },
+        {
+            id: 'images',
+            patterns: [
+                '*.png',
+                '*.svg',
+                '*.jpg',
+                '*.jpeg',
+                '*.gif',
+                '*.tga',
+                '*.webp',
+                '*.exr',
+                '*.hdr',
+                '*.dds',
+            ],
+        },
+        { id: 'audio', patterns: ['*.mp3', '*.wav', '*.ogg'] },
+        { id: 'fontsAndIcons', patterns: ['*.ttf', '*.otf', '*.ico'] },
+        {
+            id: 'godot',
+            patterns: [
+                '*.scn',
+                '*.res',
+                '*.material',
+                '*.anim',
+                '*.mesh',
+                '*.lmbake',
+            ],
+        },
+    ],
+};
 
 export const TOOL_INTEGRATIONS_NO_GIT: ToolIntegrationSummary[] = [
     {
@@ -371,4 +414,21 @@ export const TOOL_INTEGRATIONS_NO_GIT: ToolIntegrationSummary[] = [
         version: null,
         executablePath: null,
     },
+    DEFAULT_TOOL_INTEGRATIONS[1],
+];
+
+export const TOOL_INTEGRATIONS_NO_GIT_LFS: ToolIntegrationSummary[] = [
+    DEFAULT_TOOL_INTEGRATIONS[0],
+    {
+        id: 'git-lfs',
+        displayName: 'Git LFS',
+        status: 'missing',
+        version: null,
+        executablePath: null,
+    },
+];
+
+export const TOOL_INTEGRATIONS_MISSING: ToolIntegrationSummary[] = [
+    TOOL_INTEGRATIONS_NO_GIT[0],
+    TOOL_INTEGRATIONS_NO_GIT_LFS[1],
 ];

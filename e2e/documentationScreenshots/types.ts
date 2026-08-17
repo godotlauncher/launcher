@@ -2,6 +2,7 @@ import type { ElectronApplication } from '@playwright/test';
 import type {
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
+    GitLfsTrackingPolicyDescriptor,
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
@@ -34,6 +35,7 @@ export type ScreenshotConfig = {
     description: string;
     viewportHeight?: number;
     fullPage?: boolean;
+    preservePointer?: boolean;
     navigate: (
         page: ElectronPage,
         electronApp: ElectronApplication,
@@ -61,4 +63,5 @@ export type StubbedAppDataOptions = {
     toolIntegrations?: ToolIntegrationSummary[];
     codeEditorSettings?: CodeEditorIntegrationSettings[];
     projectLaunchResult?: LaunchProjectResult;
+    gitLfsTrackingPolicy?: GitLfsTrackingPolicyDescriptor;
 };
