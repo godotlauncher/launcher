@@ -230,11 +230,16 @@ export const Tooltip: FC<TooltipProps> = ({
     }, [clearOpenTimer]);
 
     useEffect(() => {
-        if (previousTipRef.current === tip) {
+        const previousTip = previousTipRef.current;
+        previousTipRef.current = tip;
+        if (
+            previousTip === tip ||
+            typeof previousTip !== 'string' ||
+            typeof tip !== 'string'
+        ) {
             return;
         }
 
-        previousTipRef.current = tip;
         closeTooltip();
     }, [tip, closeTooltip]);
 
