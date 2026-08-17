@@ -1,10 +1,12 @@
 import type {
+    EditorCatalogRelease,
     InstalledRelease,
     ProjectDetails,
     ReleaseSummary,
 } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import type { EditorCatalogService } from '../editor-catalog/editor-catalog.service.js';
 
 const checksMocks = vi.hoisted(() => ({
     checkAndUpdateProjects: vi.fn(),
@@ -12,13 +14,6 @@ const checksMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../checks.js', () => checksMocks);
-
-const releasesCommandMocks = vi.hoisted(() => ({
-    getAvailableReleases: vi.fn(),
-    getAvailablePrereleases: vi.fn(),
-}));
-
-vi.mock('./releases.js', () => releasesCommandMocks);
 
 const installReleaseMocks = vi.hoisted(() => ({
     installRelease: vi.fn(),
@@ -104,13 +99,56 @@ const validRelease: InstalledRelease = {
 };
 
 const releaseSummary: ReleaseSummary = {
+    tag: invalidRelease.version,
     version: invalidRelease.version,
     version_number: invalidRelease.version_number,
     name: 'Godot 4.2.0-stable',
     published_at: invalidRelease.published_at,
     draft: false,
     prerelease: false,
-    assets: [],
+    assets: [
+        {
+            name: 'Godot_v4.2.0-stable_macos.universal.zip',
+            download_url:
+                'https://github.com/godotengine/godot/releases/download/4.2.0-stable/Godot_v4.2.0-stable_macos.universal.zip',
+            platform_tags: ['darwin', 'arm64'],
+            mono: false,
+        },
+    ],
+};
+
+const catalogRelease: EditorCatalogRelease = {
+    id: `official-stable:${invalidRelease.version}`,
+    sourceReleaseId: '42',
+    providerId: 'official-stable',
+    tag: invalidRelease.version,
+    version: invalidRelease.version,
+    baseVersion: '4.2',
+    name: releaseSummary.name,
+    publishedAt: invalidRelease.published_at,
+    prerelease: false,
+    versionParts: {
+        major: 4,
+        minor: 2,
+        patch: 0,
+        channel: 'stable',
+        iteration: 0,
+    },
+    variants: [
+        {
+            id: `official-stable:${invalidRelease.version}:gdscript`,
+            flavor: 'gdscript',
+            assets: [
+                {
+                    id: `official-stable:${invalidRelease.version}:gdscript:asset:darwin:arm64`,
+                    name: releaseSummary.assets[0].name,
+                    downloadUrl: releaseSummary.assets[0].download_url,
+                    platform: 'darwin',
+                    architecture: 'arm64',
+                },
+            ],
+        },
+    ],
 };
 
 const project: ProjectDetails = {
@@ -131,6 +169,10 @@ const project: ProjectDetails = {
 };
 
 const codeEditorIntegrationService = {} as CodeEditorIntegrationService;
+const editorCatalogService = {
+    getCatalog: vi.fn(),
+} as unknown as EditorCatalogService;
+
 describe('reinstallRelease', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -140,11 +182,9 @@ describe('reinstallRelease', () => {
             success: true,
             projects: [],
         });
-        releasesCommandMocks.getAvailableReleases.mockResolvedValue({
+        vi.mocked(editorCatalogService.getCatalog).mockResolvedValue({
             releases: [],
-        });
-        releasesCommandMocks.getAvailablePrereleases.mockResolvedValue({
-            releases: [],
+            providers: [],
         });
     });
 
@@ -155,11 +195,13 @@ describe('reinstallRelease', () => {
         const result = await reinstallRelease(
             invalidRelease,
             codeEditorIntegrationService,
+            editorCatalogService,
         );
 
         expect(result.success).toBe(true);
         expect(result.release).toBe(validRelease);
         expect(installReleaseMocks.installRelease).not.toHaveBeenCalled();
+        expect(editorCatalogService.getCatalog).not.toHaveBeenCalled();
         expect(setProjectEditorMocks.setProjectEditor).toHaveBeenCalledWith(
             project,
             validRelease,
@@ -169,8 +211,9 @@ describe('reinstallRelease', () => {
 
     it('installs matching release metadata and repairs projects', async () => {
         checksMocks.checkAndUpdateReleases.mockResolvedValue([invalidRelease]);
-        releasesCommandMocks.getAvailableReleases.mockResolvedValue({
-            releases: [releaseSummary],
+        vi.mocked(editorCatalogService.getCatalog).mockResolvedValue({
+            releases: [catalogRelease],
+            providers: [],
         });
         installReleaseMocks.installRelease.mockResolvedValue({
             success: true,
@@ -182,6 +225,7 @@ describe('reinstallRelease', () => {
         const result = await reinstallRelease(
             invalidRelease,
             codeEditorIntegrationService,
+            editorCatalogService,
         );
 
         expect(installReleaseMocks.installRelease).toHaveBeenCalledWith(
@@ -197,12 +241,76 @@ describe('reinstallRelease', () => {
         expect(result.release).toBe(validRelease);
     });
 
+    it('reinstalls a prerelease from matching catalogue metadata', async () => {
+        const invalidPrerelease: InstalledRelease = {
+            ...invalidRelease,
+            version: '4.8-dev3',
+            version_number: 4.8,
+            prerelease: true,
+        };
+        const prereleaseCatalog: EditorCatalogRelease = {
+            ...catalogRelease,
+            id: 'official-prerelease:4.8-dev3',
+            providerId: 'official-prerelease',
+            tag: '4.8-dev3',
+            version: '4.8-dev3',
+            baseVersion: '4.8',
+            name: '4.8-dev3',
+            prerelease: true,
+            versionParts: {
+                major: 4,
+                minor: 8,
+                patch: 0,
+                channel: 'dev',
+                iteration: 3,
+            },
+        };
+        const installedPrerelease: InstalledRelease = {
+            ...invalidPrerelease,
+            install_path: '/valid/prerelease',
+            editor_path: '/valid/prerelease/Godot.app',
+            valid: true,
+        };
+        checksMocks.checkAndUpdateReleases.mockResolvedValue([
+            invalidPrerelease,
+        ]);
+        vi.mocked(editorCatalogService.getCatalog).mockResolvedValue({
+            releases: [catalogRelease, prereleaseCatalog],
+            providers: [],
+        });
+        installReleaseMocks.installRelease.mockResolvedValue({
+            success: true,
+            version: installedPrerelease.version,
+            release: installedPrerelease,
+        });
+
+        const result = await reinstallRelease(
+            invalidPrerelease,
+            codeEditorIntegrationService,
+            editorCatalogService,
+        );
+
+        expect(installReleaseMocks.installRelease).toHaveBeenCalledWith(
+            expect.objectContaining({
+                version: '4.8-dev3',
+                prerelease: true,
+            }),
+            false,
+        );
+        expect(result).toEqual({
+            success: true,
+            version: installedPrerelease.version,
+            release: installedPrerelease,
+        });
+    });
+
     it('returns a clear failure when release metadata is unavailable', async () => {
         checksMocks.checkAndUpdateReleases.mockResolvedValue([invalidRelease]);
 
         const result = await reinstallRelease(
             invalidRelease,
             codeEditorIntegrationService,
+            editorCatalogService,
         );
 
         expect(result.success).toBe(false);

@@ -1,5 +1,6 @@
 import * as path from 'node:path';
 import type {
+    EditorCatalogRelease,
     InstalledRelease,
     InstallReleaseResult,
     ProjectDetails,
@@ -9,23 +10,55 @@ import logger from 'electron-log';
 import { checkAndUpdateProjects, checkAndUpdateReleases } from '../checks.js';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { PROJECTS_FILENAME } from '../constants.js';
+import type { EditorCatalogService } from '../editor-catalog/editor-catalog.service.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import { getStoredProjectsList } from '../utils/projects.utils.js';
 import { hasSameInstalledReleaseIdentity } from '../utils/releases.utils.js';
 import { installRelease } from './installRelease.js';
-import { getAvailablePrereleases, getAvailableReleases } from './releases.js';
 import { setProjectEditor } from './setProjectEditor.js';
 
 async function getReleaseSummary(
     release: InstalledRelease,
+    editorCatalogService: EditorCatalogService,
 ): Promise<ReleaseSummary | undefined> {
-    const [availableReleasesResult, availablePrereleasesResult] =
-        await Promise.all([getAvailableReleases(), getAvailablePrereleases()]);
+    const catalog = await editorCatalogService.getCatalog();
+    const catalogRelease = catalog.releases.find(
+        (candidate) =>
+            candidate.version === release.version &&
+            candidate.prerelease === release.prerelease,
+    );
 
-    return [
-        ...availableReleasesResult.releases,
-        ...availablePrereleasesResult.releases,
-    ].find((candidate) => candidate.version === release.version);
+    return catalogRelease
+        ? mapEditorCatalogReleaseToSummary(catalogRelease)
+        : undefined;
+}
+
+/**
+ * Converts one editor catalogue release into the installer's release shape.
+ *
+ * @param release - The catalogue release to convert.
+ * @returns A release summary accepted by the existing installer.
+ */
+function mapEditorCatalogReleaseToSummary(
+    release: EditorCatalogRelease,
+): ReleaseSummary {
+    return {
+        tag: release.tag,
+        version: release.version,
+        version_number: Number.parseFloat(release.baseVersion),
+        name: release.name,
+        published_at: release.publishedAt,
+        draft: false,
+        prerelease: release.prerelease,
+        assets: release.variants.flatMap((variant) =>
+            variant.assets.map((asset) => ({
+                name: asset.name,
+                download_url: asset.downloadUrl,
+                platform_tags: [asset.platform, asset.architecture],
+                mono: variant.flavor === 'dotnet',
+            })),
+        ),
+    };
 }
 
 function projectUsesRelease(
@@ -69,6 +102,7 @@ async function repairProjectsUsingRelease(
 export async function reinstallRelease(
     release: InstalledRelease,
     codeEditorIntegrationService: CodeEditorIntegrationService,
+    editorCatalogService: EditorCatalogService,
 ): Promise<InstallReleaseResult> {
     try {
         logger.info(`Reinstalling release '${release.version}'`);
@@ -119,7 +153,10 @@ export async function reinstallRelease(
             };
         }
 
-        const releaseSummary = await getReleaseSummary(release);
+        const releaseSummary = await getReleaseSummary(
+            release,
+            editorCatalogService,
+        );
         if (!releaseSummary) {
             return {
                 success: false,
