@@ -68,6 +68,17 @@ jobs:
             throw "Release '$tag' is a draft. Winget submissions must use public installer URLs."
           }
 
+          if ([string]::IsNullOrWhiteSpace($release.html_url)) {
+            throw "Release '$tag' does not provide a release notes URL."
+          }
+
+          if ([string]::IsNullOrWhiteSpace($release.published_at)) {
+            throw "Release '$tag' does not provide a publication date."
+          }
+
+          $releaseNotesUrl = [string] $release.html_url
+          $releaseDate = ([DateTimeOffset] $release.published_at).UtcDateTime.ToString('yyyy-MM-dd')
+
           function Get-ReleaseAssetUrl {
             param([string] $Name)
 
@@ -95,6 +106,8 @@ jobs:
           .\wingetcreate.exe update $env:PACKAGE_IDENTIFIER `
             --version $version `
             --urls "$x64Url|x64" "$arm64Url|arm64" `
+            --release-notes-url $releaseNotesUrl `
+            --release-date $releaseDate `
             --out $manifestDir
 
           if ($LASTEXITCODE -ne 0) {
@@ -104,6 +117,27 @@ jobs:
           $manifestPath = Join-Path $manifestDir "manifests\g\GodotLauncher\Launcher\$version"
           if (-not (Test-Path -LiteralPath $manifestPath -PathType Container)) {
             throw "WingetCreate did not generate the expected manifest directory '$manifestPath'."
+          }
+
+          $installerManifestPath = Join-Path $manifestPath "$env:PACKAGE_IDENTIFIER.installer.yaml"
+          $localeManifestPath = Join-Path $manifestPath "$env:PACKAGE_IDENTIFIER.locale.en-US.yaml"
+
+          if (-not (Test-Path -LiteralPath $installerManifestPath -PathType Leaf)) {
+            throw "WingetCreate did not generate the expected installer manifest '$installerManifestPath'."
+          }
+
+          if (-not (Test-Path -LiteralPath $localeManifestPath -PathType Leaf)) {
+            throw "WingetCreate did not generate the expected locale manifest '$localeManifestPath'."
+          }
+
+          $installerManifest = Get-Content -LiteralPath $installerManifestPath
+          if ($installerManifest -notcontains "ReleaseDate: $releaseDate") {
+            throw "The generated installer manifest does not contain the expected release date '$releaseDate'."
+          }
+
+          $localeManifest = Get-Content -LiteralPath $localeManifestPath
+          if ($localeManifest -notcontains "ReleaseNotesUrl: $releaseNotesUrl") {
+            throw "The generated locale manifest does not contain the expected release notes URL '$releaseNotesUrl'."
           }
 
       - name: Upload generated WinGet manifest
