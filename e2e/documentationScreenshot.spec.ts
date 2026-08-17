@@ -184,6 +184,7 @@ async function captureScreenshotsForGroup(
             themedFileName,
             themedDescription,
             shot.fullPage,
+            shot.preservePointer,
         );
         if (shot.cleanup) {
             await shot.cleanup(mainPage, electronApp, theme);

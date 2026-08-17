@@ -160,6 +160,14 @@
             "unknownPath": "Ruta ejecutable no disponible",
             "unknownVersion": "Versión no disponible"
         },
+        "installation": {
+            "drawerTitle": "Configuración de {{tool}}",
+            "title": "Instalación",
+            "description": "Godot Launcher detecta y valida esta instalación. No instala ni actualiza {{tool}}.",
+            "status": "Estado",
+            "path": "Ruta ejecutable",
+            "version": "Versión"
+        },
         "git": {
             "title": "Git",
             "description": "Git es un sistema de control de versiones distribuido para gestionar cambios en el código y colaboración.",

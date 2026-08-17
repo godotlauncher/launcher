@@ -92,6 +92,8 @@ import { TrayAvailabilityService } from './services/tray-availability.service.js
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from './tool-integration/integrations/git/git.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { GitLfsService } from './tool-integration/integrations/git-lfs/git-lfs.service.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { setAutoCheckUpdates } from './utils/prefs.utils.js';
@@ -111,6 +113,7 @@ export class AppController implements AppBridge {
      * @param codeEditorIntegrationService - Code editor integration facade.
      * @param editorCatalogService - Official editor catalogue service.
      * @param gitService - Typed Git command service.
+     * @param gitLfsService - Guarded Git LFS project configuration service.
      * @param trayAvailabilityService - System tray availability service.
      */
     constructor(
@@ -119,6 +122,7 @@ export class AppController implements AppBridge {
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
         private readonly editorCatalogService: EditorCatalogService,
         private readonly gitService: GitService,
+        private readonly gitLfsService: GitLfsService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
     @AppHandler('getUserPreferences')
@@ -287,7 +291,7 @@ export class AppController implements AppBridge {
      * @param codeEditorId - Optional code editor integration to apply.
      * @param withGit - Whether to initialize Git when it is available.
      * @param overwriteProjectPath - Optional target project path.
-     * @param gitOptions - Optional initial commit and identity setup choice.
+     * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
      * @returns The project creation result.
      */
     @AppHandler('createProject')
@@ -308,6 +312,7 @@ export class AppController implements AppBridge {
             withGit,
             this.codeEditorIntegrationService,
             this.gitService,
+            this.gitLfsService,
             overwriteProjectPath,
             gitOptions,
         );

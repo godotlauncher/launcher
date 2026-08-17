@@ -3,6 +3,7 @@ import type {
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
     GitIdentityScope,
+    GitLfsTrackingPolicyDescriptor,
     ProjectGitIdentityPreset,
     RendererType,
     ToolIntegrationSummary,
@@ -10,12 +11,14 @@ import type {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
+import { BusyOverlay } from '../../components/busy-overlay.component';
 import {
     Drawer,
     focusDrawerElement,
 } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useGit } from '../../hooks/git.hook';
+import { useGitLfs } from '../../hooks/git-lfs.hook';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { useFileSystem } from '../../hooks/useFileSystem';
@@ -27,11 +30,13 @@ import {
     CreateProjectGitIdentityDialog,
     type GitIdentityDialogPage,
 } from './createProject/components/create-project-git-identity-dialog.component';
+import { CreateProjectSourceControlSection } from './createProject/components/create-project-source-control-section.component';
 import { CreateProjectActions } from './createProject/components/createProjectActions.component';
 import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
 import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
 import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
 import {
+    addCreateProjectGitLfsOptions,
     buildCreateProjectReleaseRows,
     type CreateProjectGitIdentitySaveChoice,
     getCreateProjectDirectorySegment,
@@ -102,6 +107,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const [overwriteProjectPath, setOverwriteProjectPath] =
         useState<boolean>(false);
     const [withGit, setWithGit] = useState<boolean>(true);
+    const [withGitLfs, setWithGitLfs] = useState<boolean>(false);
+    const [gitLfsPolicy, setGitLfsPolicy] =
+        useState<GitLfsTrackingPolicyDescriptor | null>(null);
+    const [loadingGitLfsPolicy, setLoadingGitLfsPolicy] =
+        useState<boolean>(true);
     const [codeEditorId, setCodeEditorId] = useState<CodeEditorId | null>(null);
     const [loadingTools, setLoadingTools] = useState<boolean>(true);
     const [codeEditorSettings, setCodeEditorSettings] = useState<
@@ -119,6 +129,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const { createProject, launchProject } = useProjects();
     const { pathExists } = useFileSystem();
     const { getIdentitySettings, saveProjectIdentityPreset } = useGit();
+    const { getTrackingPolicy: getGitLfsTrackingPolicy } = useGitLfs();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
     const { preferences, platform } = usePreferences();
@@ -272,7 +283,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     /**
      * Creates the selected project with an optional Git setup choice.
      *
-     * @param gitOptions - Optional initial commit and identity setup choice.
+     * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
      * @returns A promise that resolves after creation handling completes.
      */
     const createSelectedProject = async (
@@ -286,7 +297,10 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             codeEditorId,
             withGit,
             overwriteProjectPath ? overwriteSubmitPath : undefined,
-            gitOptions,
+            addCreateProjectGitLfsOptions(
+                gitOptions,
+                withGitLfs ? gitLfsPolicy?.id : undefined,
+            ),
         );
 
         setCreating(false);
@@ -501,6 +515,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     };
 
     const gitAvailable = isToolIntegrationAvailable(tools, 'git');
+    const gitLfsAvailable =
+        isToolIntegrationAvailable(tools, 'git-lfs') && gitLfsPolicy !== null;
 
     useEffect(() => {
         if (!open) {
@@ -544,6 +560,35 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
 
         let active = true;
 
+        getGitLfsTrackingPolicy()
+            .then((policy) => {
+                if (active) {
+                    setGitLfsPolicy(policy);
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setGitLfsPolicy(null);
+                }
+            })
+            .finally(() => {
+                if (active) {
+                    setLoadingGitLfsPolicy(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [getGitLfsTrackingPolicy, open]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        let active = true;
+
         listIntegrationSettings()
             .then((settings) => {
                 if (active) {
@@ -574,6 +619,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setWithGit(gitAvailable);
         setCodeEditorId(resolveCreateProjectCodeEditorId(codeEditorSettings));
     }, [codeEditorSettings, gitAvailable, loadingCodeEditors, loadingTools]);
+
+    useEffect(() => {
+        if (!withGit || !gitLfsAvailable) {
+            setWithGitLfs(false);
+        }
+    }, [gitLfsAvailable, withGit]);
 
     const handleSelectProjectFolder = async () => {
         setSelectingFolder(true);
@@ -627,6 +678,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setTools([]);
         setOverwriteProjectPath(false);
         setWithGit(true);
+        setWithGitLfs(false);
+        setGitLfsPolicy(null);
+        setLoadingGitLfsPolicy(true);
         setCodeEditorId(null);
         setLoadingTools(true);
         setCodeEditorSettings([]);
@@ -665,6 +719,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     <WaitingForDialogOverlay
                         className="z-60"
                         message={t('projects:messages.waitingForDialog')}
+                    />
+                )}
+                {creating && (
+                    <BusyOverlay
+                        className="z-60"
+                        message={t('buttons.creating')}
                     />
                 )}
                 <Drawer.Header>
@@ -725,18 +785,30 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                                 }
                                 onRendererChange={setRenderer}
                             />
-                            <CreateProjectToolOptionsSection
-                                t={t}
-                                loadingTools={loadingTools}
-                                gitAvailable={gitAvailable}
-                                withGit={withGit}
-                                loadingCodeEditors={loadingCodeEditors}
-                                codeEditorLoadFailed={codeEditorLoadFailed}
-                                onWithGitChange={setWithGit}
-                                codeEditorSettings={codeEditorSettings}
-                                codeEditorId={codeEditorId}
-                                onCodeEditorIdChange={setCodeEditorId}
-                            />
+                            <div className="flex flex-col gap-5">
+                                <CreateProjectSourceControlSection
+                                    t={t}
+                                    loading={
+                                        loadingTools || loadingGitLfsPolicy
+                                    }
+                                    gitAvailable={gitAvailable}
+                                    gitLfsAvailable={gitLfsAvailable}
+                                    gitLfsPolicy={gitLfsPolicy}
+                                    withGit={withGit}
+                                    withGitLfs={withGitLfs}
+                                    onWithGitChange={setWithGit}
+                                    onWithGitLfsChange={setWithGitLfs}
+                                />
+                                <div className="divider m-0"></div>
+                                <CreateProjectToolOptionsSection
+                                    t={t}
+                                    loadingCodeEditors={loadingCodeEditors}
+                                    codeEditorLoadFailed={codeEditorLoadFailed}
+                                    codeEditorSettings={codeEditorSettings}
+                                    codeEditorId={codeEditorId}
+                                    onCodeEditorIdChange={setCodeEditorId}
+                                />
+                            </div>
                         </div>
                     </Drawer.Body>
                     <Drawer.Footer className="justify-between">
@@ -745,6 +817,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             creating={creating || checkingGitIdentity}
                             createDisabled={
                                 loadingTools ||
+                                loadingGitLfsPolicy ||
                                 installedReleases.length < 1 ||
                                 isOverwritePathEmpty
                             }

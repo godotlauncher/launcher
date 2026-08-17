@@ -14,6 +14,7 @@ import type {
     CodeEditorIntegrationSettings,
     GitIdentity,
     GitIdentitySettings,
+    GitLfsTrackingPolicyDescriptor,
     InitializeProjectGitResult,
     EditorCatalogArchitecture,
     EditorCatalogPlatform,
@@ -37,6 +38,7 @@ import {
     SAMPLE_CUSTOM_RELEASE,
     SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+    SAMPLE_GIT_LFS_TRACKING_POLICY,
     SAMPLE_PREFS,
     SAMPLE_PRERELEASE_CACHE_FILE,
     SAMPLE_PROJECT_ICON_PATH,
@@ -840,6 +842,12 @@ export async function prepareAppWithStubbedData(
             options.toolIntegrations ?? DEFAULT_TOOL_INTEGRATIONS,
         ),
     );
+    await retryCollectedElectronPromise(() =>
+        stubGitLfsTrackingPolicy(
+            electronApp,
+            options.gitLfsTrackingPolicy ?? SAMPLE_GIT_LFS_TRACKING_POLICY,
+        ),
+    );
     await reloadScreenshotPage(page);
     await expect(page.getByTestId('btnProjects')).toBeVisible({
         timeout: 15000,
@@ -1127,6 +1135,7 @@ export async function setScreenshotViewport(
  * @param baseName - Filename without its extension.
  * @param description - Description shown for the Playwright attachment.
  * @param fullPage - Whether to capture all scrollable content or only the viewport.
+ * @param preservePointer - Whether the prepared pointer-hover state should remain visible.
  */
 export async function captureScreenshot(
     page: ElectronPage,
@@ -1134,13 +1143,16 @@ export async function captureScreenshot(
     baseName: string,
     description: string,
     fullPage = true,
+    preservePointer = false,
 ) {
     const outputDir = canonicalScreensDir;
     const pngPath = path.join(outputDir, `${baseName}.png`);
     const webpPath = path.join(outputDir, `${baseName}.webp`);
     await fs.mkdir(outputDir, { recursive: true });
 
-    await page.mouse.move(0, 0);
+    if (!preservePointer) {
+        await page.mouse.move(0, 0);
+    }
 
     await page.screenshot({
         path: pngPath,
@@ -1520,5 +1532,30 @@ export async function stubToolIntegrations(
             }
         },
         integrations,
+    );
+}
+
+/**
+ * Stubs the main-owned Git LFS policy used by Create Project.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param policy - Deterministic tracking policy returned to the renderer.
+ */
+export async function stubGitLfsTrackingPolicy(
+    electronApp: ElectronApplication,
+    policy: GitLfsTrackingPolicyDescriptor,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedPolicy: GitLfsTrackingPolicyDescriptor,
+        ) => {
+            ipcMain.removeHandler('gitLfs.getTrackingPolicy');
+            ipcMain.handle('gitLfs.getTrackingPolicy', async () => ({
+                success: true,
+                data: injectedPolicy,
+            }));
+        },
+        policy,
     );
 }

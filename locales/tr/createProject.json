@@ -50,7 +50,21 @@
             "notFound": "Bulunamadı"
         },
         "initGit": "Git Deposu Başlat",
-        "gitNotInstalled": "Git bu bilgisayarda yüklü değil"
+        "gitNotInstalled": "Git bu bilgisayarda yüklü değil",
+        "gitLfs": {
+            "label": "Git LFS kullan",
+            "description": "Godot belgelerindeki dosya kalıplarını başlangıç noktası olarak yapılandır.",
+            "unavailable": "Kullanmak için Ayarlar > Araçlar bölümünde Git LFS'yi yükleyip etkinleştirin.",
+            "patternsTitle": "İzlenen dosya türleri",
+            "groups": {
+                "models": "3D modeller",
+                "images": "Görseller",
+                "audio": "Ses",
+                "fontsAndIcons": "Yazı tipleri ve simgeler",
+                "godot": "Godot kaynakları"
+            },
+            "storageAndBandwidth": "Bu kalıplar dosya boyutunu dikkate almaz. Git LFS depolaması ve indirmeleri, barındırma sağlayıcınızın depolama ve bant genişliği sınırlarına dahil edilebilir."
+        }
     },
     "gitIdentity": {
         "warningTitle": "Git kimliği gerekli",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Şimdi düzenle",
-        "create": "Proje Oluştur"
+        "create": "Proje Oluştur",
+        "creating": "Proje oluşturuluyor..."
     },
     "errors": {
         "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "Git dalı main olarak yeniden adlandırılamadı",
         "invalidGitIdentity": "Git adı ve e-posta adresi gerekli",
         "failedGitIdentity": "Git kimliği kaydedilemedi",
-        "failedGitCommit": "İlk Git commit'i oluşturulamadı"
+        "failedGitCommit": "İlk Git commit'i oluşturulamadı",
+        "gitLfsRequiresGit": "Git LFS yeni bir Git deposu gerektirir",
+        "gitLfsExistingRepository": "Proje mevcut bir Git deposunun içinde olduğu için Git LFS yapılandırılamıyor",
+        "gitLfsUnavailable": "Git LFS kullanılamıyor. Ayarlar > Araçlar bölümünü kontrol edip tekrar deneyin",
+        "failedGitLfsInstall": "Yeni depo için Git LFS yüklenemedi",
+        "failedGitLfsTrack": "Git LFS izleme kuralları eklenemedi",
+        "failedGitLfsVerify": "Git LFS yapılandırması doğrulanamadı",
+        "failedProjectRecovery": "Git LFS kurulumu başarısız oldu ve Launcher proje klasörünü geri yükleyemedi. Tekrar denemeden önce '{{path}}' yolunu inceleyin"
     }
 }

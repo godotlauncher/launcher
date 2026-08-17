@@ -5,8 +5,6 @@ import { CreateProjectToolOptionsSection } from './createProjectToolOptionsSecti
 
 const labels: Record<string, string> = {
     'otherSettings.title': 'Other Settings',
-    'otherSettings.initGit': 'Initialize Git Repository',
-    'otherSettings.gitNotInstalled': 'Git is not installed',
     'otherSettings.codeEditor.label': 'Code Editor',
     'otherSettings.codeEditor.none': 'None',
     'otherSettings.codeEditor.disabled': 'Disabled',
@@ -47,14 +45,10 @@ function renderSection(
     return renderToStaticMarkup(
         <CreateProjectToolOptionsSection
             t={t}
-            loadingTools={false}
             loadingCodeEditors={false}
             codeEditorLoadFailed={codeEditorLoadFailed}
-            gitAvailable
             codeEditorSettings={codeEditorSettings}
             codeEditorId={codeEditorId}
-            withGit
-            onWithGitChange={vi.fn()}
             onCodeEditorIdChange={vi.fn()}
         />,
     );

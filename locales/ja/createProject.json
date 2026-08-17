@@ -50,7 +50,21 @@
             "notFound": "見つかりません"
         },
         "initGit": "Gitリポジトリを初期化",
-        "gitNotInstalled": "Gitがこのコンピュータにインストールされていません"
+        "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
+        "gitLfs": {
+            "label": "Git LFSを使用",
+            "description": "Godotドキュメントのファイルパターンを出発点として設定します。",
+            "unavailable": "使用するには、設定 > ツールでGit LFSをインストールして有効にしてください。",
+            "patternsTitle": "追跡するファイル形式",
+            "groups": {
+                "models": "3Dモデル",
+                "images": "画像",
+                "audio": "オーディオ",
+                "fontsAndIcons": "フォントとアイコン",
+                "godot": "Godotリソース"
+            },
+            "storageAndBandwidth": "これらのパターンはファイルサイズを考慮しません。Git LFSのストレージとダウンロードは、ホスティングプロバイダーのストレージおよび帯域幅の上限に算入される場合があります。"
+        }
     },
     "gitIdentity": {
         "warningTitle": "Git IDが必要です",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "今すぐ編集",
-        "create": "プロジェクトを作成"
+        "create": "プロジェクトを作成",
+        "creating": "プロジェクトを作成中..."
     },
     "errors": {
         "invalidEditorVersion": "無効なエディタバージョン：{{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "Gitブランチをmainに変更できませんでした",
         "invalidGitIdentity": "Gitの名前とメールアドレスが必要です",
         "failedGitIdentity": "Git IDを保存できませんでした",
-        "failedGitCommit": "最初のGitコミットを作成できませんでした"
+        "failedGitCommit": "最初のGitコミットを作成できませんでした",
+        "gitLfsRequiresGit": "Git LFSには新しいGitリポジトリが必要です",
+        "gitLfsExistingRepository": "プロジェクトが既存のGitリポジトリ内にあるため、Git LFSを設定できません",
+        "gitLfsUnavailable": "Git LFSを利用できません。設定 > ツールを確認して、もう一度お試しください",
+        "failedGitLfsInstall": "新しいリポジトリへのGit LFSのインストールに失敗しました",
+        "failedGitLfsTrack": "Git LFS追跡ルールの追加に失敗しました",
+        "failedGitLfsVerify": "Git LFS設定の検証に失敗しました",
+        "failedProjectRecovery": "Git LFSの設定に失敗し、Launcherはプロジェクトフォルダーを復元できませんでした。再試行する前に'{{path}}'を確認してください"
     }
 }

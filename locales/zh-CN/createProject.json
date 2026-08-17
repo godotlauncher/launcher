@@ -50,7 +50,21 @@
             "notFound": "未找到"
         },
         "initGit": "初始化 Git 仓库",
-        "gitNotInstalled": "此电脑未安装 Git"
+        "gitNotInstalled": "此电脑未安装 Git",
+        "gitLfs": {
+            "label": "使用 Git LFS",
+            "description": "将 Godot 文档中的文件模式配置为起点。",
+            "unavailable": "请在设置 > 工具中安装并启用 Git LFS 后使用。",
+            "patternsTitle": "跟踪的文件类型",
+            "groups": {
+                "models": "3D 模型",
+                "images": "图像",
+                "audio": "音频",
+                "fontsAndIcons": "字体和图标",
+                "godot": "Godot 资源"
+            },
+            "storageAndBandwidth": "这些模式不会考虑文件大小。Git LFS 存储和下载可能会计入托管服务商的存储和带宽限额。"
+        }
     },
     "gitIdentity": {
         "warningTitle": "需要 Git 身份信息",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "立即编辑",
-        "create": "创建项目"
+        "create": "创建项目",
+        "creating": "正在创建项目..."
     },
     "errors": {
         "invalidEditorVersion": "无效的编辑器版本：{{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "无法将 Git 分支重命名为 main",
         "invalidGitIdentity": "Git 姓名和电子邮件为必填项",
         "failedGitIdentity": "无法保存 Git 身份信息",
-        "failedGitCommit": "无法创建初始 Git 提交"
+        "failedGitCommit": "无法创建初始 Git 提交",
+        "gitLfsRequiresGit": "Git LFS 需要一个新的 Git 仓库",
+        "gitLfsExistingRepository": "项目位于现有 Git 仓库中，因此无法配置 Git LFS",
+        "gitLfsUnavailable": "Git LFS 不可用。请检查“设置 > 工具”后重试",
+        "failedGitLfsInstall": "无法为新仓库安装 Git LFS",
+        "failedGitLfsTrack": "无法添加 Git LFS 跟踪规则",
+        "failedGitLfsVerify": "无法验证 Git LFS 配置",
+        "failedProjectRecovery": "Git LFS 设置失败，Launcher 无法还原项目文件夹。请先检查 '{{path}}'，然后重试"
     }
 }

@@ -50,7 +50,21 @@
             "notFound": "Not found"
         },
         "initGit": "Initialize Git Repository",
-        "gitNotInstalled": "Git is not installed on this computer"
+        "gitNotInstalled": "Git is not installed on this computer",
+        "gitLfs": {
+            "label": "Use Git LFS",
+            "description": "Configure the file patterns from the Godot documentation as a starting point.",
+            "unavailable": "Install and enable Git LFS in Settings > Tools to use it.",
+            "patternsTitle": "Tracked file types",
+            "groups": {
+                "models": "3D models",
+                "images": "Images",
+                "audio": "Audio",
+                "fontsAndIcons": "Fonts and icons",
+                "godot": "Godot resources"
+            },
+            "storageAndBandwidth": "These patterns are not size-aware. Git LFS storage and downloads can count towards your hosting provider's storage and bandwidth limits."
+        }
     },
     "gitIdentity": {
         "warningTitle": "Git identity required",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Edit now",
-        "create": "Create Project"
+        "create": "Create Project",
+        "creating": "Creating project..."
     },
     "errors": {
         "invalidEditorVersion": "Invalid editor version: {{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "Failed to rename the Git branch to main",
         "invalidGitIdentity": "Git name and email are required",
         "failedGitIdentity": "Failed to save the Git identity",
-        "failedGitCommit": "Failed to create the initial Git commit"
+        "failedGitCommit": "Failed to create the initial Git commit",
+        "gitLfsRequiresGit": "Git LFS requires a new Git repository",
+        "gitLfsExistingRepository": "Git LFS cannot be configured because the project is inside an existing Git repository",
+        "gitLfsUnavailable": "Git LFS is unavailable. Check Settings > Tools and try again",
+        "failedGitLfsInstall": "Failed to install Git LFS for the new repository",
+        "failedGitLfsTrack": "Failed to add the Git LFS tracking rules",
+        "failedGitLfsVerify": "Failed to verify the Git LFS configuration",
+        "failedProjectRecovery": "Git LFS setup failed and Launcher could not restore the project folder. Review '{{path}}' before trying again"
     }
 }

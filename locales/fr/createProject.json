@@ -50,7 +50,21 @@
             "notFound": "Introuvable"
         },
         "initGit": "Initialiser le dépôt Git",
-        "gitNotInstalled": "Git n'est pas installé sur cet ordinateur"
+        "gitNotInstalled": "Git n'est pas installé sur cet ordinateur",
+        "gitLfs": {
+            "label": "Utiliser Git LFS",
+            "description": "Configurer comme point de départ les motifs de fichiers de la documentation Godot.",
+            "unavailable": "Installez et activez Git LFS dans Paramètres > Outils pour l'utiliser.",
+            "patternsTitle": "Types de fichiers suivis",
+            "groups": {
+                "models": "Modèles 3D",
+                "images": "Images",
+                "audio": "Audio",
+                "fontsAndIcons": "Polices et icônes",
+                "godot": "Ressources Godot"
+            },
+            "storageAndBandwidth": "Ces motifs ne tiennent pas compte de la taille. Le stockage et les téléchargements Git LFS peuvent être décomptés des limites de stockage et de bande passante de votre hébergeur."
+        }
     },
     "gitIdentity": {
         "warningTitle": "Identité Git requise",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Modifier maintenant",
-        "create": "Créer le projet"
+        "create": "Créer le projet",
+        "creating": "Création du projet..."
     },
     "errors": {
         "invalidEditorVersion": "Version de l'éditeur invalide : {{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "Échec du renommage de la branche Git en main",
         "invalidGitIdentity": "Le nom et l'e-mail Git sont requis",
         "failedGitIdentity": "Échec de l'enregistrement de l'identité Git",
-        "failedGitCommit": "Échec de la création du commit Git initial"
+        "failedGitCommit": "Échec de la création du commit Git initial",
+        "gitLfsRequiresGit": "Git LFS nécessite un nouveau dépôt Git",
+        "gitLfsExistingRepository": "Git LFS ne peut pas être configuré car le projet se trouve dans un dépôt Git existant",
+        "gitLfsUnavailable": "Git LFS n'est pas disponible. Vérifiez Paramètres > Outils et réessayez",
+        "failedGitLfsInstall": "Échec de l'installation de Git LFS pour le nouveau dépôt",
+        "failedGitLfsTrack": "Échec de l'ajout des règles de suivi Git LFS",
+        "failedGitLfsVerify": "Échec de la vérification de la configuration Git LFS",
+        "failedProjectRecovery": "La configuration de Git LFS a échoué et Launcher n'a pas pu restaurer le dossier du projet. Vérifiez '{{path}}' avant de réessayer"
     }
 }

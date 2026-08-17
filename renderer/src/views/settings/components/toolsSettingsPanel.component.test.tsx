@@ -11,6 +11,14 @@ const git: ToolIntegrationSummary = {
     executablePath: '/usr/bin/git',
 };
 
+const gitLfs: ToolIntegrationSummary = {
+    id: 'git-lfs',
+    displayName: 'Git LFS',
+    status: 'missing',
+    version: null,
+    executablePath: null,
+};
+
 /** Renders a Tools panel with stable test translations. */
 function renderPanel(
     overrides: Partial<React.ComponentProps<typeof ToolsSettingsPanel>> = {},
@@ -35,10 +43,12 @@ function renderPanel(
 
 describe('ToolsSettingsPanel', () => {
     it('renders a generic tool card with display-safe installation data', () => {
-        const html = renderPanel();
+        const html = renderPanel({ tools: [git, gitLfs] });
 
         expect(html).toContain('tool-integration-git');
+        expect(html).toContain('tool-integration-git-lfs');
         expect(html).toContain('Git');
+        expect(html).toContain('Git LFS');
         expect(html).toContain('/usr/bin/git');
         expect(html).toContain('git version 2.51.0');
         expect(html).toContain('tools.status.available');

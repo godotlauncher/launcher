@@ -50,7 +50,21 @@
             "notFound": "Ma nstabx"
         },
         "initGit": "Ibda Git Repository",
-        "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter"
+        "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",
+        "gitLfs": {
+            "label": "Uża Git LFS",
+            "description": "Ikkonfigura l-mudelli tal-fajls mid-dokumentazzjoni ta' Godot bħala punt tat-tluq.",
+            "unavailable": "Installa u attiva Git LFS f'Settings > Tools biex tużah.",
+            "patternsTitle": "Tipi ta' fajls segwiti",
+            "groups": {
+                "models": "Mudelli 3D",
+                "images": "Stampi",
+                "audio": "Awdjo",
+                "fontsAndIcons": "Fonts u ikoni",
+                "godot": "Riżorsi ta' Godot"
+            },
+            "storageAndBandwidth": "Dawn il-mudelli ma jqisux id-daqs. Il-ħażna u d-downloads ta' Git LFS jistgħu jingħaddu mal-limiti tal-ħażna u tal-bandwidth tal-fornitur tal-hosting tiegħek."
+        }
     },
     "gitIdentity": {
         "warningTitle": "L-identità ta' Git hija meħtieġa",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Editja issa",
-        "create": "Oħloq Proġett"
+        "create": "Oħloq Proġett",
+        "creating": "Qed jinħoloq il-proġett..."
     },
     "errors": {
         "invalidEditorVersion": "Verżjoni tal-editur invalida: {{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "Ma rnexxiex jinbidel l-isem tal-branch Git għal main",
         "invalidGitIdentity": "L-isem u l-email ta' Git huma meħtieġa",
         "failedGitIdentity": "Ma rnexxiex tinżamm l-identità ta' Git",
-        "failedGitCommit": "Ma rnexxiex jinħoloq l-ewwel commit ta' Git"
+        "failedGitCommit": "Ma rnexxiex jinħoloq l-ewwel commit ta' Git",
+        "gitLfsRequiresGit": "Git LFS jeħtieġ repository Git ġdid",
+        "gitLfsExistingRepository": "Git LFS ma jistax jiġi kkonfigurat għax il-proġett jinsab ġewwa repository Git eżistenti",
+        "gitLfsUnavailable": "Git LFS mhux disponibbli. Iċċekkja Settings > Tools u erġa' pprova",
+        "failedGitLfsInstall": "Ma rnexxiex jiġi installat Git LFS għar-repository il-ġdid",
+        "failedGitLfsTrack": "Ma rnexxiex jiżdiedu r-regoli ta' traċċar ta' Git LFS",
+        "failedGitLfsVerify": "Ma rnexxiex tiġi vverifikata l-konfigurazzjoni ta' Git LFS",
+        "failedProjectRecovery": "Il-konfigurazzjoni ta' Git LFS falliet u Launcher ma setax jirrestawra l-folder tal-proġett. Iċċekkja '{{path}}' qabel terġa' tipprova"
     }
 }

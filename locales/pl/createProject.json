@@ -50,7 +50,21 @@
             "notFound": "Nie znaleziono"
         },
         "initGit": "Zainicjuj repozytorium Git",
-        "gitNotInstalled": "Git nie jest zainstalowany na tym komputerze"
+        "gitNotInstalled": "Git nie jest zainstalowany na tym komputerze",
+        "gitLfs": {
+            "label": "Użyj Git LFS",
+            "description": "Skonfiguruj wzorce plików z dokumentacji Godot jako punkt wyjścia.",
+            "unavailable": "Zainstaluj i włącz Git LFS w Ustawienia > Narzędzia, aby go używać.",
+            "patternsTitle": "Śledzone typy plików",
+            "groups": {
+                "models": "Modele 3D",
+                "images": "Obrazy",
+                "audio": "Dźwięk",
+                "fontsAndIcons": "Czcionki i ikony",
+                "godot": "Zasoby Godot"
+            },
+            "storageAndBandwidth": "Te wzorce nie uwzględniają rozmiaru plików. Przechowywanie i pobieranie przez Git LFS może wliczać się do limitów przestrzeni i transferu dostawcy hostingu."
+        }
     },
     "gitIdentity": {
         "warningTitle": "Wymagana tożsamość Git",
@@ -82,7 +96,8 @@
     },
     "buttons": {
         "editNow": "Edytuj teraz",
-        "create": "Utwórz projekt"
+        "create": "Utwórz projekt",
+        "creating": "Tworzenie projektu..."
     },
     "errors": {
         "invalidEditorVersion": "Nieprawidłowa wersja edytora: {{version}}",
@@ -94,6 +109,13 @@
         "failedGitBranch": "Nie udało się zmienić nazwy gałęzi Git na main",
         "invalidGitIdentity": "Nazwa i e-mail Git są wymagane",
         "failedGitIdentity": "Nie udało się zapisać tożsamości Git",
-        "failedGitCommit": "Nie udało się utworzyć pierwszego commitu Git"
+        "failedGitCommit": "Nie udało się utworzyć pierwszego commitu Git",
+        "gitLfsRequiresGit": "Git LFS wymaga nowego repozytorium Git",
+        "gitLfsExistingRepository": "Nie można skonfigurować Git LFS, ponieważ projekt znajduje się w istniejącym repozytorium Git",
+        "gitLfsUnavailable": "Git LFS jest niedostępny. Sprawdź Ustawienia > Narzędzia i spróbuj ponownie",
+        "failedGitLfsInstall": "Nie udało się zainstalować Git LFS w nowym repozytorium",
+        "failedGitLfsTrack": "Nie udało się dodać reguł śledzenia Git LFS",
+        "failedGitLfsVerify": "Nie udało się zweryfikować konfiguracji Git LFS",
+        "failedProjectRecovery": "Konfiguracja Git LFS nie powiodła się, a Launcher nie mógł przywrócić folderu projektu. Sprawdź '{{path}}' przed ponowną próbą"
     }
 }

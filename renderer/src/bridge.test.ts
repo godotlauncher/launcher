@@ -5,6 +5,7 @@ import {
     editorCatalogBridge,
     getPathForFile,
     gitBridge,
+    gitLfsBridge,
     subscribeAppEvent,
     toolIntegrationBridge,
 } from './bridge.js';
@@ -40,6 +41,7 @@ type TestElectronApi = {
     'git.getIdentitySettings': () => Promise<unknown>;
     'git.saveGlobalIdentity': (identity: unknown) => Promise<unknown>;
     'git.saveProjectIdentityPreset': (preset: unknown) => Promise<unknown>;
+    'gitLfs.getTrackingPolicy': () => Promise<unknown>;
     'toolIntegration.listIntegrations': () => Promise<unknown[]>;
     'toolIntegration.rescanIntegrations': () => Promise<unknown[]>;
     'toolIntegration.refreshIntegration': (toolId: string) => Promise<unknown>;
@@ -82,6 +84,10 @@ describe('renderer bridge', () => {
         success: true,
         preset,
     }));
+    const getGitLfsTrackingPolicy = vi.fn(async () => ({
+        id: 'godot-documentation-defaults',
+        groups: [],
+    }));
     const listToolIntegrations = vi.fn(async () => []);
     const rescanToolIntegrations = vi.fn(async () => []);
     const refreshToolIntegration = vi.fn(async () => ({}));
@@ -114,6 +120,7 @@ describe('renderer bridge', () => {
             'git.getIdentitySettings': getIdentitySettings,
             'git.saveGlobalIdentity': saveGlobalIdentity,
             'git.saveProjectIdentityPreset': saveProjectIdentityPreset,
+            'gitLfs.getTrackingPolicy': getGitLfsTrackingPolicy,
             'toolIntegration.listIntegrations': listToolIntegrations,
             'toolIntegration.rescanIntegrations': rescanToolIntegrations,
             'toolIntegration.refreshIntegration': refreshToolIntegration,
@@ -219,6 +226,15 @@ describe('renderer bridge', () => {
         expect(getIdentitySettings).toHaveBeenCalledOnce();
         expect(saveGlobalIdentity).toHaveBeenCalledOnce();
         expect(saveProjectIdentityPreset).toHaveBeenCalledWith(null);
+    });
+
+    it('delegates through the Git LFS namespace', async () => {
+        await expect(gitLfsBridge.getTrackingPolicy()).resolves.toEqual({
+            id: 'godot-documentation-defaults',
+            groups: [],
+        });
+
+        expect(getGitLfsTrackingPolicy).toHaveBeenCalledOnce();
     });
 
     it('subscribes and unsubscribes from application events', () => {

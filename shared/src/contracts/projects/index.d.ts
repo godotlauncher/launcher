@@ -3,6 +3,7 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSummary,
 } from '../codeEditorIntegration/index.js';
+import type { GitLfsTrackingPolicy } from '../git-lfs/index.js';
 import type {
     EditorChannel,
     EditorFlavor,
@@ -57,12 +58,37 @@ export type ProjectGitSetupOutcome =
     | ({ status: 'initialized' } & GitRepositoryInfo)
     | ({ status: 'existing-repository' } & GitRepositoryInfo);
 
-export type CreateProjectGitOptions =
+export type CreateProjectGitLfsOptions = {
+    trackingPolicy: GitLfsTrackingPolicy;
+};
+
+export type ProjectGitLfsRecovery = 'not-required' | 'completed' | 'failed';
+
+export type ProjectGitLfsSetupOutcome =
+    | { status: 'not-requested' }
+    | {
+          status: 'configured';
+          trackingPolicy: GitLfsTrackingPolicy;
+      }
+    | {
+          status: 'unavailable';
+          recovery: ProjectGitLfsRecovery;
+      }
+    | {
+          status: 'failed';
+          stage: 'install' | 'track' | 'verify';
+          recovery: ProjectGitLfsRecovery;
+      };
+
+export type CreateProjectGitOptions = {
+    gitLfs?: CreateProjectGitLfsOptions;
+} & (
     | { initialCommit: 'skip' }
     | {
           initialCommit: 'create';
           identity?: GitIdentity & { scope: GitIdentityScope };
-      };
+      }
+);
 
 export type LaunchProjectOptions = {
     allowMissingCodeEditor?: boolean;
@@ -103,6 +129,7 @@ export type CreateProjectResult = BackendResult & {
     projectPath?: string;
     projectDetails?: ProjectDetails;
     gitSetup?: ProjectGitSetupOutcome;
+    gitLfsSetup?: ProjectGitLfsSetupOutcome;
 };
 
 export type InitializeProjectGitResult = {

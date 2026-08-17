@@ -26,6 +26,7 @@ import {
 import { getLocalesPath } from './pathResolver.js';
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { GitModule } from './tool-integration/integrations/git/git.module.js';
+import { GitLfsModule } from './tool-integration/integrations/git-lfs/git-lfs.module.js';
 import { ToolIntegrationModule } from './tool-integration/tool-integration.module.js';
 
 @Module({
@@ -66,6 +67,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
             }),
         }),
         GitModule,
+        GitLfsModule,
     ],
     providers: [AppController, AppLifecycleService, TrayAvailabilityService],
 })

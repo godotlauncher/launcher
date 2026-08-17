@@ -160,6 +160,14 @@
             "unknownPath": "Ścieżka pliku wykonywalnego jest niedostępna",
             "unknownVersion": "Wersja niedostępna"
         },
+        "installation": {
+            "drawerTitle": "Ustawienia {{tool}}",
+            "title": "Instalacja",
+            "description": "Godot Launcher wykrywa i sprawdza tę instalację. Nie instaluje ani nie aktualizuje narzędzia {{tool}}.",
+            "status": "Status",
+            "path": "Ścieżka wykonywalna",
+            "version": "Wersja"
+        },
         "git": {
             "title": "Git",
             "description": "Git to rozproszony system kontroli wersji do zarządzania zmianami w kodzie i współpracy.",
