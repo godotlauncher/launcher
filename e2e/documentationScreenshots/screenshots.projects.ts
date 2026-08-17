@@ -650,6 +650,23 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     kind: 'standard',
                 },
             });
+            await stubProjectGitIdentity(electronApp, {
+                status: 'available',
+                repository: {
+                    root: '/Users/docs/Godot/Projects',
+                    isProjectRoot: false,
+                    kind: 'standard',
+                },
+                name: {
+                    value: 'Docs Contributor',
+                    source: 'global',
+                },
+                email: {
+                    value: 'docs@example.invalid',
+                    source: 'global',
+                },
+                canUpdate: false,
+            });
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             const projectCard = page
