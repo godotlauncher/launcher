@@ -157,6 +157,7 @@
             "title": "Source Control",
             "help": "Manage version control for this project.",
             "enabled": "Git is initialized for this project.",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "No Git repository is configured.",
             "active": "Active",
             "initialize": "Initialize Git",

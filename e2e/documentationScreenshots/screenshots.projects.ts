@@ -516,8 +516,11 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     .first(),
             ).toBeDisabled();
             await expect(
+                page.getByTestId('projectGitUnavailable'),
+            ).toHaveText('Unavailable');
+            await expect(
                 page.getByText('Unavailable', { exact: true }),
-            ).toHaveCount(2);
+            ).toHaveCount(3);
             await page.waitForTimeout(400);
         },
         cleanup: async (

@@ -157,6 +157,7 @@
             "title": "Sürüm kontrolü",
             "help": "Bu proje için sürüm kontrolünü yönetin.",
             "enabled": "Git bu proje için başlatıldı.",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "Git deposu yapılandırılmadı.",
             "active": "Etkin",
             "initialize": "Git'i başlat",

@@ -157,6 +157,7 @@
             "title": "源代码管理",
             "help": "管理此项目的版本控制。",
             "enabled": "此项目已初始化 Git。",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "尚未配置 Git 仓库。",
             "active": "已启用",
             "initialize": "初始化 Git",

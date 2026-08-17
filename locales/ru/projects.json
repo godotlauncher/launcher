@@ -157,6 +157,7 @@
             "title": "Контроль версий",
             "help": "Настройте контроль версий для этого проекта.",
             "enabled": "Git инициализирован для этого проекта.",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "Репозиторий Git не настроен.",
             "active": "Активен",
             "initialize": "Инициализировать Git",

@@ -157,6 +157,7 @@
             "title": "Controlo de versões",
             "help": "Gira o controlo de versões deste projeto.",
             "enabled": "O Git está inicializado para este projeto.",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "Nenhum repositório Git está configurado.",
             "active": "Ativo",
             "initialize": "Inicializar Git",

@@ -157,6 +157,7 @@
             "title": "ソース管理",
             "help": "このプロジェクトのバージョン管理を設定します。",
             "enabled": "このプロジェクトでは Git が初期化されています。",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "Git リポジトリは設定されていません。",
             "active": "有効",
             "initialize": "Git を初期化",

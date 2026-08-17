@@ -157,6 +157,7 @@
             "title": "Kontroll tas-sors",
             "help": "Immaniġġja l-kontroll tal-verżjoni għal dan il-proġett.",
             "enabled": "Git huwa inizjalizzat għal dan il-proġett.",
+            "enabledUnavailable": "This project is configured for Git, but Git is unavailable.",
             "notConfigured": "L-ebda repożitorju Git mhu kkonfigurat.",
             "active": "Attiv",
             "initialize": "Inizjalizza Git",

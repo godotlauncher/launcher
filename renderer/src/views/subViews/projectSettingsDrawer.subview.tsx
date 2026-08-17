@@ -645,6 +645,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const drawerTitle = project
         ? t('editProject.drawerTitle', { project: project.name })
         : t('editProject.title');
+    const gitUnavailable = withGit && gitIdentity?.status === 'git-unavailable';
 
     return (
         <Drawer
@@ -820,7 +821,9 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                         <span className="text-sm text-base-content/65">
                                             {t(
                                                 withGit
-                                                    ? 'editProject.sourceControl.enabled'
+                                                    ? gitUnavailable
+                                                        ? 'editProject.sourceControl.enabledUnavailable'
+                                                        : 'editProject.sourceControl.enabled'
                                                     : 'editProject.sourceControl.notConfigured',
                                             )}
                                         </span>
@@ -835,7 +838,16 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                             )}
                                     </div>
                                 </div>
-                                {withGit ? (
+                                {gitUnavailable ? (
+                                    <span
+                                        className="badge badge-warning"
+                                        data-testid="projectGitUnavailable"
+                                    >
+                                        {t(
+                                            'editProject.sourceControl.identityUnavailable',
+                                        )}
+                                    </span>
+                                ) : withGit ? (
                                     <span
                                         className="badge badge-success gap-1.5"
                                         data-testid="projectGitActive"
