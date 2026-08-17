@@ -157,6 +157,7 @@
             "title": "Versionskontrolle",
             "help": "Verwalten Sie die Versionskontrolle für dieses Projekt.",
             "enabled": "Git ist für dieses Projekt initialisiert.",
+            "enabledUnavailable": "Dieses Projekt ist für Git konfiguriert, aber Git ist nicht verfügbar.",
             "notConfigured": "Kein Git-Repository konfiguriert.",
             "active": "Aktiv",
             "initialize": "Git initialisieren",
@@ -164,7 +165,29 @@
             "initFailed": "Git konnte nicht initialisiert werden.",
             "existingRepositoryTitle": "Vorhandenes Git-Repository erkannt",
             "existingRepositoryRoot": "Dieses Projekt ist bereits ein Git-Repository. Es wurden keine Änderungen an der Git-Einrichtung vorgenommen.",
-            "existingRepositoryParent": "Dieses Projekt wird bereits durch das Git-Repository unter {{root}} verwaltet. Es wurden keine Änderungen an der Git-Einrichtung vorgenommen."
+            "existingRepositoryParent": "Dieses Projekt wird bereits durch das Git-Repository unter {{root}} verwaltet. Es wurden keine Änderungen an der Git-Einrichtung vorgenommen.",
+            "identityTitle": "Git-Commit-Identität",
+            "identityHelp": "Name und E-Mail, die Git für Commits in diesem Projekt verwendet.",
+            "identityName": "Name",
+            "identityNameHelp": "Der in diesem Repository gespeicherte Autorenname.",
+            "identityEmail": "E-Mail",
+            "identityEmailHelp": "In diesem Repository gespeicherte E-Mail-Adresse des Autors.",
+            "identityMissing": "Nicht konfiguriert",
+            "identitySource": {
+                "repository": "Git-Repository",
+                "inherited": "Geerbt",
+                "missing": "Fehlender Wert"
+            },
+            "updateIdentity": "Aktualisieren",
+            "saveIdentity": "Identität speichern",
+            "identityRequired": "Geben Sie sowohl einen Namen als auch eine E-Mail-Adresse ein.",
+            "identityLoadFailed": "Die Git-Identität konnte nicht geladen werden.",
+            "identityUnavailable": "Nicht verfügbar",
+            "identityUnavailableHelp": "Installieren Sie Git oder scannen Sie es erneut unter Einstellungen > Tools > Git, um diese Identität anzuzeigen und zu aktualisieren.",
+            "updateFailed": "Die Git-Identität konnte nicht aktualisiert werden.",
+            "updateNotAllowed": "Die Git-Identität kann für dieses Projekt nicht aktualisiert werden.",
+            "parentRepositoryReadOnly": "Dieses Projekt verwendet das übergeordnete Repository unter {{root}}. Seine Identität ist hier schreibgeschützt.",
+            "linkedWorktreeReadOnly": "Identitäten für verknüpfte Git-Arbeitsbäume sind hier schreibgeschützt."
         },
         "launch": {
             "title": "Starten",

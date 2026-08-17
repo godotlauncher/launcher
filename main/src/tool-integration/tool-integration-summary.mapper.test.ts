@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mapToolIntegrationSummary } from './tool-integration-summary.mapper.js';
 
 describe('mapToolIntegrationSummary', () => {
-    it('omits executable and settings details from the bridge summary', () => {
+    it('exposes the display path but omits executable arguments and settings', () => {
         expect(
             mapToolIntegrationSummary({
                 metadata: { id: 'git', displayName: 'Git', order: 100 },
@@ -25,6 +25,7 @@ describe('mapToolIntegrationSummary', () => {
             displayName: 'Git',
             status: 'available',
             version: 'git version 2.51.0',
+            executablePath: '/system/bin/git',
         });
     });
 });

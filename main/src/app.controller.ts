@@ -13,6 +13,7 @@ import type {
     CodeEditorId,
     CreateProjectGitOptions,
     CustomEngineManifest,
+    GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
     ProjectDetails,
@@ -48,6 +49,7 @@ import {
 } from './commands/projectEditorSettings.js';
 import {
     checkProjectIsValid,
+    getProjectGitIdentity,
     getProjectGodotName,
     getProjectsDetails,
     initializeProjectGit,
@@ -57,6 +59,7 @@ import {
     reorderPinnedProjects,
     resetProjectCodeEditorConfig,
     setProjectCodeEditor,
+    setProjectGitIdentity,
     setProjectPinned,
     setProjectWindowed,
 } from './commands/projects.js';
@@ -374,6 +377,16 @@ export class AppController implements AppBridge {
     @AppHandler('initializeProjectGit')
     initializeProjectGit(project: ProjectDetails) {
         return initializeProjectGit(project, this.gitService);
+    }
+
+    @AppHandler('getProjectGitIdentity')
+    getProjectGitIdentity(project: ProjectDetails) {
+        return getProjectGitIdentity(project, this.gitService);
+    }
+
+    @AppHandler('setProjectGitIdentity')
+    setProjectGitIdentity(project: ProjectDetails, identity: GitIdentity) {
+        return setProjectGitIdentity(project, identity, this.gitService);
     }
 
     @AppHandler('exportProjectEditorSettings')

@@ -5,10 +5,13 @@ import {
 } from 'node:child_process';
 import * as path from 'node:path';
 import type {
+    GitIdentity,
     InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
+    ProjectGitIdentityResult,
+    ProjectGitIdentityValue,
     RenameProjectOptions,
     RenameProjectResult,
 } from '@shared/contracts';
@@ -717,4 +720,95 @@ export async function initializeProjectGit(
     }
 
     throw new Error('Failed to initialise git for project');
+}
+
+/**
+ * Gets the effective Git identity for a stored project.
+ *
+ * @param project - Project selected in Launcher settings.
+ * @param gitService - Typed Git command service.
+ * @returns Effective identity values and whether local updates are allowed.
+ */
+export async function getProjectGitIdentity(
+    project: ProjectDetails,
+    gitService: GitService,
+): Promise<ProjectGitIdentityResult> {
+    const { projects } = await getProjectsSnapshot(resolveProjectListPath());
+    const storedProject = projects.find((item) => item.path === project.path);
+    if (!storedProject) {
+        throw new Error(t('projects:initGit.errors.projectNotFound'));
+    }
+
+    const inspection = await gitService.inspectRepository(storedProject.path);
+    if (inspection.status !== 'inside-work-tree') {
+        return inspection;
+    }
+
+    const [effectiveIdentity, localIdentity] = await Promise.all([
+        gitService.getIdentity(storedProject.path),
+        gitService.getLocalIdentity(storedProject.path),
+    ]);
+    const identityValue = (
+        effectiveValue: string,
+        localValue: string,
+    ): ProjectGitIdentityValue => ({
+        value: effectiveValue,
+        source: localValue
+            ? 'repository'
+            : effectiveValue
+              ? 'inherited'
+              : 'missing',
+    });
+
+    return {
+        status: 'available',
+        repository: inspection,
+        name: identityValue(effectiveIdentity.name, localIdentity.name),
+        email: identityValue(effectiveIdentity.email, localIdentity.email),
+        canUpdate:
+            inspection.isProjectRoot && inspection.kind !== 'linked-worktree',
+    };
+}
+
+/**
+ * Sets a repository-local Git identity for a stored project.
+ *
+ * @param project - Project selected in Launcher settings.
+ * @param identity - Name and email to save in the project repository.
+ * @param gitService - Typed Git command service.
+ * @returns Refreshed effective identity values.
+ */
+export async function setProjectGitIdentity(
+    project: ProjectDetails,
+    identity: GitIdentity,
+    gitService: GitService,
+): Promise<ProjectGitIdentityResult> {
+    const { projects } = await getProjectsSnapshot(resolveProjectListPath());
+    const storedProject = projects.find((item) => item.path === project.path);
+    if (!storedProject) {
+        throw new Error(t('projects:initGit.errors.projectNotFound'));
+    }
+
+    const inspection = await gitService.inspectRepository(storedProject.path);
+    if (
+        inspection.status !== 'inside-work-tree' ||
+        !inspection.isProjectRoot ||
+        inspection.kind === 'linked-worktree'
+    ) {
+        throw new Error(
+            t('projects:editProject.sourceControl.updateNotAllowed'),
+        );
+    }
+
+    const saved = await gitService.setIdentity(
+        identity.name,
+        identity.email,
+        'repository',
+        storedProject.path,
+    );
+    if (!saved) {
+        throw new Error(t('projects:editProject.sourceControl.updateFailed'));
+    }
+
+    return getProjectGitIdentity(storedProject, gitService);
 }

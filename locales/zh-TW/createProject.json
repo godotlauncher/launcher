@@ -66,10 +66,19 @@
         "emailHelp": "記錄為提交作者電子郵件。",
         "emailRequired": "電子郵件為必填項目",
         "scope": "身分資訊儲存範圍",
+        "defaultChoice": "用於未來專案",
+        "alwaysAsk": "一律詢問我",
+        "localDefault": "儲存為預設本機身分",
+        "globalDefault": "儲存為預設全域身分",
         "repositoryScope": "此儲存庫",
         "globalScope": "此電腦上的所有儲存庫",
         "back": "返回",
-        "saveAndCreate": "儲存並建立專案"
+        "saveAndCreate": "儲存並建立專案",
+        "presetTitle": "使用專案標識預設？",
+        "presetMessage": "此預設僅在初始 Git 提交之前寫入新儲存庫。",
+        "useGlobal": "使用全球身份",
+        "useDifferent": "輸入不同的身份",
+        "usePresetAndCreate": "使用預設並建立項目"
     },
     "buttons": {
         "editNow": "立即編輯",

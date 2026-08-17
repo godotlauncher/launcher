@@ -6,10 +6,12 @@ import type {
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
     CreateProjectResult,
+    GitIdentity,
     InitializeProjectGitResult,
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
+    ProjectGitIdentityResult,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
@@ -70,6 +72,13 @@ interface ProjectsContext {
     initializeProjectGit: (
         project: ProjectDetails,
     ) => Promise<InitializeProjectGitResult>;
+    getProjectGitIdentity: (
+        project: ProjectDetails,
+    ) => Promise<ProjectGitIdentityResult>;
+    setProjectGitIdentity: (
+        project: ProjectDetails,
+        identity: GitIdentity,
+    ) => Promise<ProjectGitIdentityResult>;
     exportProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     importProjectEditorSettings: (project: ProjectDetails) => Promise<void>;
     openProjectFolder: (project: ProjectDetails) => Promise<void>;
@@ -275,6 +284,14 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return result;
     };
 
+    const getProjectGitIdentity = (project: ProjectDetails) =>
+        appBridge.getProjectGitIdentity(project);
+
+    const setProjectGitIdentity = (
+        project: ProjectDetails,
+        identity: GitIdentity,
+    ) => appBridge.setProjectGitIdentity(project, identity);
+
     const exportProjectEditorSettings = async (project: ProjectDetails) => {
         await appBridge.exportProjectEditorSettings(project);
     };
@@ -446,6 +463,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 setProjectCodeEditor,
                 resetProjectCodeEditorConfig,
                 initializeProjectGit,
+                getProjectGitIdentity,
+                setProjectGitIdentity,
                 exportProjectEditorSettings,
                 importProjectEditorSettings,
                 openProjectFolder,

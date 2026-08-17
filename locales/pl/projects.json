@@ -157,6 +157,7 @@
             "title": "Kontrola wersji",
             "help": "Zarządzaj kontrolą wersji dla tego projektu.",
             "enabled": "Git jest zainicjalizowany dla tego projektu.",
+            "enabledUnavailable": "Ten projekt jest skonfigurowany dla Git, ale Git jest niedostępny.",
             "notConfigured": "Repozytorium Git nie jest skonfigurowane.",
             "active": "Aktywne",
             "initialize": "Zainicjalizuj Git",
@@ -164,7 +165,29 @@
             "initFailed": "Nie można zainicjalizować Git.",
             "existingRepositoryTitle": "Wykryto istniejące repozytorium Git",
             "existingRepositoryRoot": "Ten projekt jest już repozytorium Git. Nie wprowadzono żadnych zmian w konfiguracji Git.",
-            "existingRepositoryParent": "Ten projekt znajduje się już w repozytorium Git w {{root}}. Nie wprowadzono żadnych zmian w konfiguracji Git."
+            "existingRepositoryParent": "Ten projekt znajduje się już w repozytorium Git w {{root}}. Nie wprowadzono żadnych zmian w konfiguracji Git.",
+            "identityTitle": "Tożsamość autora commitów Git",
+            "identityHelp": "Imię i adres e-mail, którego Git używa do zatwierdzeń w tym projekcie.",
+            "identityName": "Nazwa",
+            "identityNameHelp": "Nazwisko autora zapisane w tym repozytorium.",
+            "identityEmail": "E-mail",
+            "identityEmailHelp": "Adres e-mail autora przechowywany w tym repozytorium.",
+            "identityMissing": "Nie skonfigurowano",
+            "identitySource": {
+                "repository": "Repozytorium Git",
+                "inherited": "Dziedziczny",
+                "missing": "Brakująca wartość"
+            },
+            "updateIdentity": "Aktualizuj",
+            "saveIdentity": "Zapisz tożsamość",
+            "identityRequired": "Wpisz imię i adres e-mail.",
+            "identityLoadFailed": "Nie można załadować tożsamości Git.",
+            "identityUnavailable": "Nie płynny",
+            "identityUnavailableHelp": "Zainstaluj Git lub przeskanuj go ponownie w Ustawieniach > Narzędzia > Git, aby wyświetlić i zaktualizować tę tożsamość.",
+            "updateFailed": "Nie można zaktualizować tożsamości Git.",
+            "updateNotAllowed": "Nie można zaktualizować tożsamości Git dla tego projektu.",
+            "parentRepositoryReadOnly": "Ten projekt korzysta z repozytorium nadrzędnego pod adresem {{root}}. Jego tożsamość jest tutaj tylko do odczytu.",
+            "linkedWorktreeReadOnly": "Tożsamości dla połączonych drzew roboczych Git są tutaj tylko do odczytu."
         },
         "launch": {
             "title": "Uruchamianie",

@@ -1,9 +1,11 @@
 import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    GitIdentity,
     InitializeProjectGitResult,
     InstalledRelease,
     ProjectDetails,
+    ProjectGitIdentityResult,
     RenameProjectOptions,
     RenameProjectResult,
 } from '@shared/contracts';
@@ -64,6 +66,13 @@ type ProjectSettingsDrawerProps = {
     onInitializeProjectGit: (
         project: ProjectDetails,
     ) => Promise<InitializeProjectGitResult>;
+    getProjectGitIdentity: (
+        project: ProjectDetails,
+    ) => Promise<ProjectGitIdentityResult>;
+    onSetProjectGitIdentity: (
+        project: ProjectDetails,
+        identity: GitIdentity,
+    ) => Promise<ProjectGitIdentityResult>;
     onResetProjectCodeEditorConfig: (
         project: ProjectDetails,
     ) => Promise<ProjectDetails>;
@@ -93,6 +102,8 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     onSetProjectCodeEditor,
     onSetProjectWindowed,
     onInitializeProjectGit,
+    getProjectGitIdentity,
+    onSetProjectGitIdentity,
     onResetProjectCodeEditorConfig,
     getProjectGodotName,
 }) => {
@@ -116,6 +127,14 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const [gitAvailable, setGitAvailable] = useState(false);
     const [loadingGitAvailability, setLoadingGitAvailability] = useState(false);
     const [isInitializingGit, setIsInitializingGit] = useState(false);
+    const [gitIdentity, setGitIdentity] =
+        useState<ProjectGitIdentityResult | null>(null);
+    const [loadingGitIdentity, setLoadingGitIdentity] = useState(false);
+    const [editingGitIdentity, setEditingGitIdentity] = useState(false);
+    const [gitIdentityName, setGitIdentityName] = useState('');
+    const [gitIdentityEmail, setGitIdentityEmail] = useState('');
+    const [savingGitIdentity, setSavingGitIdentity] = useState(false);
+    const [gitIdentityError, setGitIdentityError] = useState<string>();
     const [godotProjectName, setGodotProjectName] = useState<string | null>(
         null,
     );
@@ -160,6 +179,9 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setWindowed(Boolean(project.open_windowed));
         setWithGit(project.withGit);
         setIsInitializingGit(false);
+        setGitIdentity(null);
+        setEditingGitIdentity(false);
+        setGitIdentityError(undefined);
         setGodotProjectName(null);
         setRenameGodotProject(false);
         setNameError(undefined);
@@ -226,6 +248,40 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             disposed = true;
         };
     }, [listIntegrations, open]);
+
+    useEffect(() => {
+        if (!open || !project || activeTab !== 'sourceControl' || !withGit) {
+            return;
+        }
+
+        let disposed = false;
+        setLoadingGitIdentity(true);
+        setGitIdentityError(undefined);
+        getProjectGitIdentity(project)
+            .then((identity) => {
+                if (!disposed) {
+                    setGitIdentity(identity);
+                }
+            })
+            .catch((error) => {
+                if (!disposed) {
+                    setGitIdentityError(
+                        error instanceof Error
+                            ? error.message
+                            : t('editProject.sourceControl.identityLoadFailed'),
+                    );
+                }
+            })
+            .finally(() => {
+                if (!disposed) {
+                    setLoadingGitIdentity(false);
+                }
+            });
+
+        return () => {
+            disposed = true;
+        };
+    }, [activeTab, getProjectGitIdentity, open, project, t, withGit]);
 
     useEffect(() => {
         if (!open || !project) {
@@ -367,6 +423,44 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             );
         } finally {
             setIsInitializingGit(false);
+        }
+    };
+
+    const handleEditGitIdentity = () => {
+        if (gitIdentity?.status !== 'available' || !gitIdentity.canUpdate) {
+            return;
+        }
+        setGitIdentityName(gitIdentity.name.value);
+        setGitIdentityEmail(gitIdentity.email.value);
+        setGitIdentityError(undefined);
+        setEditingGitIdentity(true);
+    };
+
+    const handleSaveGitIdentity = async () => {
+        if (!project || !gitIdentityName.trim() || !gitIdentityEmail.trim()) {
+            setGitIdentityError(
+                t('editProject.sourceControl.identityRequired'),
+            );
+            return;
+        }
+
+        setSavingGitIdentity(true);
+        setGitIdentityError(undefined);
+        try {
+            const identity = await onSetProjectGitIdentity(project, {
+                name: gitIdentityName,
+                email: gitIdentityEmail,
+            });
+            setGitIdentity(identity);
+            setEditingGitIdentity(false);
+        } catch (error) {
+            setGitIdentityError(
+                error instanceof Error
+                    ? error.message
+                    : t('editProject.sourceControl.updateFailed'),
+            );
+        } finally {
+            setSavingGitIdentity(false);
         }
     };
 
@@ -551,6 +645,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const drawerTitle = project
         ? t('editProject.drawerTitle', { project: project.name })
         : t('editProject.title');
+    const gitUnavailable = withGit && gitIdentity?.status === 'git-unavailable';
 
     return (
         <Drawer
@@ -726,7 +821,9 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                         <span className="text-sm text-base-content/65">
                                             {t(
                                                 withGit
-                                                    ? 'editProject.sourceControl.enabled'
+                                                    ? gitUnavailable
+                                                        ? 'editProject.sourceControl.enabledUnavailable'
+                                                        : 'editProject.sourceControl.enabled'
                                                     : 'editProject.sourceControl.notConfigured',
                                             )}
                                         </span>
@@ -741,7 +838,16 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                             )}
                                     </div>
                                 </div>
-                                {withGit ? (
+                                {gitUnavailable ? (
+                                    <span
+                                        className="badge badge-warning"
+                                        data-testid="projectGitUnavailable"
+                                    >
+                                        {t(
+                                            'editProject.sourceControl.identityUnavailable',
+                                        )}
+                                    </span>
+                                ) : withGit ? (
                                     <span
                                         className="badge badge-success gap-1.5"
                                         data-testid="projectGitActive"
@@ -776,6 +882,213 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                     </button>
                                 ) : null}
                             </div>
+                            {withGit && loadingGitIdentity && (
+                                <div className="flex justify-center py-4">
+                                    <span className="loading loading-spinner loading-sm" />
+                                </div>
+                            )}
+                            {withGit && gitIdentity?.status === 'available' && (
+                                <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h3 className="font-semibold">
+                                                {t(
+                                                    'editProject.sourceControl.identityTitle',
+                                                )}
+                                            </h3>
+                                            <p className="text-sm text-base-content/65">
+                                                {t(
+                                                    'editProject.sourceControl.identityHelp',
+                                                )}
+                                            </p>
+                                        </div>
+                                        {!editingGitIdentity &&
+                                            gitIdentity.canUpdate && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline btn-sm"
+                                                    onClick={
+                                                        handleEditGitIdentity
+                                                    }
+                                                >
+                                                    {t(
+                                                        'editProject.sourceControl.updateIdentity',
+                                                    )}
+                                                </button>
+                                            )}
+                                    </div>
+                                    {editingGitIdentity ? (
+                                        <div className="flex flex-col gap-3">
+                                            <TextField
+                                                id="projectGitIdentityName"
+                                                label={t(
+                                                    'editProject.sourceControl.identityName',
+                                                )}
+                                                help={t(
+                                                    'editProject.sourceControl.identityNameHelp',
+                                                )}
+                                                value={gitIdentityName}
+                                                onChange={setGitIdentityName}
+                                                disabled={savingGitIdentity}
+                                            />
+                                            <TextField
+                                                id="projectGitIdentityEmail"
+                                                label={t(
+                                                    'editProject.sourceControl.identityEmail',
+                                                )}
+                                                help={t(
+                                                    'editProject.sourceControl.identityEmailHelp',
+                                                )}
+                                                value={gitIdentityEmail}
+                                                onChange={setGitIdentityEmail}
+                                                disabled={savingGitIdentity}
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-ghost btn-sm"
+                                                    disabled={savingGitIdentity}
+                                                    onClick={() => {
+                                                        setEditingGitIdentity(
+                                                            false,
+                                                        );
+                                                        setGitIdentityError(
+                                                            undefined,
+                                                        );
+                                                    }}
+                                                >
+                                                    {t('common:buttons.cancel')}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary btn-sm"
+                                                    disabled={savingGitIdentity}
+                                                    onClick={() =>
+                                                        void handleSaveGitIdentity()
+                                                    }
+                                                >
+                                                    {savingGitIdentity && (
+                                                        <span className="loading loading-spinner loading-xs" />
+                                                    )}
+                                                    {t(
+                                                        'editProject.sourceControl.saveIdentity',
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <dl className="grid gap-3 sm:grid-cols-2">
+                                            {(
+                                                [
+                                                    [
+                                                        'identityName',
+                                                        gitIdentity.name,
+                                                    ],
+                                                    [
+                                                        'identityEmail',
+                                                        gitIdentity.email,
+                                                    ],
+                                                ] as const
+                                            ).map(([label, value]) => (
+                                                <div
+                                                    key={label}
+                                                    className="min-w-0"
+                                                >
+                                                    <dt className="flex items-center gap-2 text-xs font-semibold uppercase text-base-content/55">
+                                                        <span>
+                                                            {t(
+                                                                `editProject.sourceControl.${label}`,
+                                                            )}
+                                                        </span>
+                                                        <span className="badge badge-ghost badge-sm capitalize">
+                                                            {t(
+                                                                `editProject.sourceControl.identitySource.${value.source}`,
+                                                            )}
+                                                        </span>
+                                                    </dt>
+                                                    <dd className="mt-1 min-w-0">
+                                                        <span className="truncate">
+                                                            {value.value ||
+                                                                t(
+                                                                    'editProject.sourceControl.identityMissing',
+                                                                )}
+                                                        </span>
+                                                    </dd>
+                                                </div>
+                                            ))}
+                                        </dl>
+                                    )}
+                                    {!gitIdentity.canUpdate && (
+                                        <p className="text-sm text-base-content/65">
+                                            {t(
+                                                gitIdentity.repository.kind ===
+                                                    'linked-worktree'
+                                                    ? 'editProject.sourceControl.linkedWorktreeReadOnly'
+                                                    : 'editProject.sourceControl.parentRepositoryReadOnly',
+                                                {
+                                                    root: gitIdentity.repository
+                                                        .root,
+                                                },
+                                            )}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                            {withGit &&
+                                gitIdentity?.status === 'git-unavailable' && (
+                                    <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h3 className="font-semibold">
+                                                    {t(
+                                                        'editProject.sourceControl.identityTitle',
+                                                    )}
+                                                </h3>
+                                                <p className="text-sm text-base-content/65">
+                                                    {t(
+                                                        'editProject.sourceControl.identityUnavailableHelp',
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline btn-sm"
+                                                disabled
+                                            >
+                                                {t(
+                                                    'editProject.sourceControl.updateIdentity',
+                                                )}
+                                            </button>
+                                        </div>
+                                        <dl className="grid gap-3 sm:grid-cols-2">
+                                            {[
+                                                'identityName',
+                                                'identityEmail',
+                                            ].map((label) => (
+                                                <div
+                                                    key={label}
+                                                    className="min-w-0"
+                                                >
+                                                    <dt className="text-xs font-semibold uppercase text-base-content/55">
+                                                        {t(
+                                                            `editProject.sourceControl.${label}`,
+                                                        )}
+                                                    </dt>
+                                                    <dd className="mt-1 text-base-content/55">
+                                                        {t(
+                                                            'editProject.sourceControl.identityUnavailable',
+                                                        )}
+                                                    </dd>
+                                                </div>
+                                            ))}
+                                        </dl>
+                                    </div>
+                                )}
+                            {gitIdentityError && (
+                                <p className="text-sm text-error">
+                                    {gitIdentityError}
+                                </p>
+                            )}
                         </section>
                     )}
 

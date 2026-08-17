@@ -359,6 +359,7 @@ export const DEFAULT_TOOL_INTEGRATIONS: ToolIntegrationSummary[] = [
         displayName: 'Git',
         status: 'available',
         version: 'git version 2.45.0',
+        executablePath: '/usr/bin/git',
     },
 ];
 
@@ -368,5 +369,6 @@ export const TOOL_INTEGRATIONS_NO_GIT: ToolIntegrationSummary[] = [
         displayName: 'Git',
         status: 'missing',
         version: null,
+        executablePath: null,
     },
 ];

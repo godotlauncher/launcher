@@ -41,7 +41,9 @@ const StoredToolInstallationSchema = z.union([
     LegacyStoredToolInstallationSchema,
 ]);
 
-const StoredToolStateSchema = z.object({
+const ToolConfigurationSchema = z.record(z.string().min(1), z.json());
+
+const StoredToolStateV1Schema = z.object({
     settings: ToolSettingsSchema,
     installations: z.record(
         z.string().min(1),
@@ -49,13 +51,37 @@ const StoredToolStateSchema = z.object({
     ),
 });
 
+const StoredToolStateSchema = StoredToolStateV1Schema.extend({
+    configuration: ToolConfigurationSchema,
+});
+
 export const ToolIntegrationStoreFileSchema = z.object({
     schemaVersion: z.literal(TOOL_INTEGRATION_SCHEMA_VERSION),
     tools: z.record(z.string().min(1), StoredToolStateSchema),
 });
 
+const LegacyToolIntegrationStoreFileSchema = z
+    .object({
+        schemaVersion: z.literal(1),
+        tools: z.record(z.string().min(1), StoredToolStateV1Schema),
+    })
+    .transform((legacy) => ({
+        schemaVersion: TOOL_INTEGRATION_SCHEMA_VERSION,
+        tools: Object.fromEntries(
+            Object.entries(legacy.tools).map(([toolId, state]) => [
+                toolId,
+                { ...state, configuration: {} },
+            ]),
+        ),
+    }));
+
+const CompatibleToolIntegrationStoreFileSchema = z.union([
+    ToolIntegrationStoreFileSchema,
+    LegacyToolIntegrationStoreFileSchema,
+]);
+
 /**
- * Creates the empty first-version tool integration store.
+ * Creates an empty store at the current tool integration schema version.
  *
  * @returns An empty valid store file.
  */
@@ -74,6 +100,7 @@ export function createEmptyToolIntegrationStore(): ToolIntegrationStoreFile {
 export function createDefaultStoredToolState(): StoredToolState {
     return {
         settings: createDefaultToolSettings(),
+        configuration: {},
         installations: {},
     };
 }
@@ -124,7 +151,7 @@ export function normalizeToolSettings(
 export function normalizeToolIntegrationStore(
     value: unknown,
 ): ToolIntegrationStoreFile {
-    const parsed = ToolIntegrationStoreFileSchema.parse(value);
+    const parsed = CompatibleToolIntegrationStoreFileSchema.parse(value);
     const tools = Object.fromEntries(
         Object.entries(parsed.tools)
             .sort(([left], [right]) => left.localeCompare(right))
@@ -132,6 +159,7 @@ export function normalizeToolIntegrationStore(
                 toolId,
                 {
                     settings: normalizeToolSettings(state.settings),
+                    configuration: state.configuration,
                     installations: sortInstallations(state.installations),
                 },
             ]),

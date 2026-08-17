@@ -5,8 +5,11 @@ import {
     releasePendingCodeEditorIntegrationRescan,
     stubCodeEditorIntegrationRescan,
     stubCodeEditorIntegrationSettings,
+    stubGitIdentitySettings,
+    stubToolIntegrations,
 } from './runtime';
 import {
+    DEFAULT_TOOL_INTEGRATIONS,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODE_SETTINGS_DISABLED,
     SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
@@ -77,6 +80,43 @@ async function closeCodeEditorSettingsDrawer(page: ElectronPage) {
         page.getByRole('dialog', {
             name: 'Visual Studio Code settings',
         }),
+    ).not.toBeVisible();
+    await page.waitForTimeout(200);
+}
+
+/**
+ * Opens the focused Git settings drawer with deterministic identity values.
+ *
+ * @param page - Electron renderer page to drive.
+ * @param electronApp - Electron app whose bridge handlers should be stubbed.
+ * @returns A promise that ends when the drawer is ready to capture.
+ */
+async function navigateToGitSettings(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+): Promise<void> {
+    await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
+    await stubGitIdentitySettings(electronApp, {
+        globalIdentity: { name: '', email: '' },
+        projectPreset: null,
+    });
+    await page.getByTestId('btnSettings').click();
+    await page.getByTestId('tabTools').click();
+    const git = page.getByTestId('tool-integration-git');
+    await expect(git).toBeVisible({ timeout: 10000 });
+    await git.getByRole('button', { name: 'Edit Git' }).click();
+    await expect(
+        page.getByRole('dialog', { name: 'Git settings' }),
+    ).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#projectGitIdentityName')).toHaveValue('');
+    await page.waitForTimeout(400);
+}
+
+/** Closes the focused Git settings drawer after capture. */
+async function closeGitSettingsDrawer(page: ElectronPage): Promise<void> {
+    await page.keyboard.press('Escape');
+    await expect(
+        page.getByRole('dialog', { name: 'Git settings' }),
     ).not.toBeVisible();
     await page.waitForTimeout(200);
 }
@@ -302,6 +342,14 @@ export const SETTINGS_SCREENSHOTS: ScreenshotConfig[] = [
             await page.getByTestId('tabTools').click();
             await page.waitForTimeout(600);
         },
+    },
+    {
+        fileBase: 'screen_settings_git_identity',
+        description: 'Settings (Git identity settings drawer)',
+        viewportHeight: 1100,
+        fullPage: true,
+        navigate: navigateToGitSettings,
+        cleanup: closeGitSettingsDrawer,
     },
     {
         fileBase: 'screen_settings_updates',

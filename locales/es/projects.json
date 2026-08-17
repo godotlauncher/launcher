@@ -157,6 +157,7 @@
             "title": "Control de versiones",
             "help": "Gestiona el control de versiones de este proyecto.",
             "enabled": "Git está inicializado para este proyecto.",
+            "enabledUnavailable": "Este proyecto está configurado para Git, pero Git no está disponible.",
             "notConfigured": "No hay ningún repositorio Git configurado.",
             "active": "Activo",
             "initialize": "Inicializar Git",
@@ -164,7 +165,29 @@
             "initFailed": "No se pudo inicializar Git.",
             "existingRepositoryTitle": "Se detectó un repositorio de Git existente",
             "existingRepositoryRoot": "Este proyecto ya es un repositorio de Git. No se realizaron cambios en la configuración de Git.",
-            "existingRepositoryParent": "Este proyecto ya está incluido en el repositorio de Git de {{root}}. No se realizaron cambios en la configuración de Git."
+            "existingRepositoryParent": "Este proyecto ya está incluido en el repositorio de Git de {{root}}. No se realizaron cambios en la configuración de Git.",
+            "identityTitle": "Identidad para commits de Git",
+            "identityHelp": "Nombre y correo electrónico que utiliza Git para las confirmaciones en este proyecto.",
+            "identityName": "Nombre",
+            "identityNameHelp": "Nombre del autor almacenado en este repositorio.",
+            "identityEmail": "Correo electrónico",
+            "identityEmailHelp": "Correo electrónico del autor almacenado en este repositorio.",
+            "identityMissing": "No configurado",
+            "identitySource": {
+                "repository": "Repositorio Git",
+                "inherited": "Heredado",
+                "missing": "Valor ausente"
+            },
+            "updateIdentity": "Actualizar",
+            "saveIdentity": "Guardar identidad",
+            "identityRequired": "Introduzca un nombre y un correo electrónico.",
+            "identityLoadFailed": "No se pudo cargar la identidad de Git.",
+            "identityUnavailable": "Indisponible",
+            "identityUnavailableHelp": "Instale Git o vuelva a escanearlo en Configuración > Herramientas > Git para ver y actualizar esta identidad.",
+            "updateFailed": "No se pudo actualizar la identidad de Git.",
+            "updateNotAllowed": "La identidad de Git no se puede actualizar para este proyecto.",
+            "parentRepositoryReadOnly": "Este proyecto utiliza el repositorio principal en {{root}}. Su identidad es de sólo lectura aquí.",
+            "linkedWorktreeReadOnly": "Las identidades de los árboles de trabajo Git vinculados son de solo lectura aquí."
         },
         "launch": {
             "title": "Inicio",

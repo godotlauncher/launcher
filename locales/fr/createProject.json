@@ -66,10 +66,19 @@
         "emailHelp": "Enregistré comme e-mail de l'auteur du commit.",
         "emailRequired": "L'e-mail est requis",
         "scope": "Enregistrer l'identité pour",
+        "defaultChoice": "Pour les futurs projets",
+        "alwaysAsk": "Toujours me demander",
+        "localDefault": "Enregistrer comme identité locale par défaut",
+        "globalDefault": "Enregistrer comme identité globale par défaut",
         "repositoryScope": "Ce dépôt",
         "globalScope": "Tous les dépôts sur cet ordinateur",
         "back": "Retour",
-        "saveAndCreate": "Enregistrer et créer le projet"
+        "saveAndCreate": "Enregistrer et créer le projet",
+        "presetTitle": "Utiliser le préréglage d'identité de projet ?",
+        "presetMessage": "Ce préréglage sera écrit uniquement dans le nouveau dépôt avant son commit Git initial.",
+        "useGlobal": "Utiliser l'identité globale",
+        "useDifferent": "Entrez une autre identité",
+        "usePresetAndCreate": "Utiliser le préréglage et créer un projet"
     },
     "buttons": {
         "editNow": "Modifier maintenant",

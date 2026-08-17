@@ -5,6 +5,8 @@ import { toolIntegrationBridge } from '../bridge.ts';
 export type ToolIntegrationsHook = {
     listIntegrations: () => Promise<ToolIntegrationSummary[]>;
     rescanIntegrations: () => Promise<ToolIntegrationSummary[]>;
+    refreshIntegration: (toolId: string) => Promise<ToolIntegrationSummary>;
+    rescanIntegration: (toolId: string) => Promise<ToolIntegrationSummary>;
 };
 
 /**
@@ -21,6 +23,19 @@ export function useToolIntegrations(): ToolIntegrationsHook {
         () => toolIntegrationBridge.rescanIntegrations(),
         [],
     );
+    const refreshIntegration = useCallback(
+        (toolId: string) => toolIntegrationBridge.refreshIntegration(toolId),
+        [],
+    );
+    const rescanIntegration = useCallback(
+        (toolId: string) => toolIntegrationBridge.rescanIntegration(toolId),
+        [],
+    );
 
-    return { listIntegrations, rescanIntegrations };
+    return {
+        listIntegrations,
+        rescanIntegrations,
+        refreshIntegration,
+        rescanIntegration,
+    };
 }

@@ -145,19 +145,75 @@
         "overview": "Launcher szybko sprawdza pamiętane ścieżki narzędzi, gdy ta karta otrzymuje fokus. Wykonaj pełne ponowne skanowanie, jeśli zmieniłeś instalacje na tym systemie.",
         "actions": {
             "refresh": "Ponownie przeskanuj narzędzia",
-            "scanning": "Ponowne skanowanie..."
+            "scanning": "Ponowne skanowanie...",
+            "loading": "Ładowanie narzędzi...",
+            "rescan": "Skanuj ponownie",
+            "rescanTool": "Przeskanuj ponownie {{tool}}",
+            "editTool": "Edytuj {{tool}}"
         },
         "status": {
             "available": "Dostępne",
             "missing": "Nie znaleziono",
             "invalid": "Ścieżka nie znaleziona",
-            "unknown": "Nieznane"
+            "unknown": "Nieznane",
+            "disabled": "Wyłączony",
+            "unknownPath": "Ścieżka pliku wykonywalnego jest niedostępna",
+            "unknownVersion": "Wersja niedostępna"
         },
         "git": {
             "title": "Git",
             "description": "Git to rozproszony system kontroli wersji do zarządzania zmianami w kodzie i współpracy.",
             "installed": "Zainstalowany:",
-            "version": "Wersja:"
+            "version": "Wersja:",
+            "drawer": {
+                "title": "Ustawienia Gita"
+            },
+            "installation": {
+                "title": "Instalacja",
+                "description": "Godot Launcher sprawdza ten plik wykonywalny przed każdą operacją Git.",
+                "status": "Status",
+                "path": "Ścieżka wykonywalna",
+                "version": "Wersja"
+            },
+            "identity": {
+                "loading": "Ładowanie ustawień tożsamości Git...",
+                "name": "Nazwa",
+                "email": "E-mail",
+                "global": {
+                    "title": "Globalna tożsamość Git",
+                    "description": "Spowoduje to zapisanie user.name i user.email w globalnej konfiguracji Git obejmującej całą maszynę.",
+                    "unavailable": "Zainstaluj lub przywróć Git przed edycją tożsamości globalnej.",
+                    "nameHelp": "Nazwa autora używana przez Git, gdy repozytorium nie ma lokalnego nadpisania.",
+                    "emailHelp": "Adres e-mail autora, którego używa Git, gdy repozytorium nie ma lokalnego nadpisania."
+                },
+                "preset": {
+                    "title": "Wstępnie ustawiona tożsamość projektu",
+                    "description": "Zapisz jedną tożsamość dla repozytoriów utworzonych przez Godot Launcher. Nie ma to żadnego efektu, dopóki nie zostanie wybrane lub automatycznie zastosowane podczas tworzenia projektu.",
+                    "nameHelp": "Sugerowana nazwa autora nowej tożsamości Git w lokalnym repozytorium.",
+                    "emailHelp": "Sugerowany adres e-mail autora dla nowej tożsamości lokalnej Git w repozytorium.",
+                    "automaticTitle": "Używaj automatycznie w przypadku nowych repozytoriów",
+                    "automaticDescription": "Zapisz to ustawienie wstępne jako lokalną tożsamość Git w repozytorium przed pierwszym commitem Git."
+                },
+                "actions": {
+                    "saveGlobal": "Zapisz globalną tożsamość Git",
+                    "savePreset": "Zapisz ustawienie wstępne",
+                    "clearPreset": "Wyczyść ustawienie wstępne",
+                    "saving": "Zapisywanie zmian..."
+                },
+                "errors": {
+                    "load": "Nie można załadować ustawień tożsamości Git.",
+                    "required": "Wpisz imię i nazwisko oraz adres e-mail.",
+                    "saveGlobal": "Nie można zapisać globalnej tożsamości Git. Wyświetlane wartości zostały odświeżone z Git.",
+                    "savePreset": "Nie można zapisać gotowych ustawień tożsamości projektu."
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "Ponowne skanowanie {{tool}}"
+        },
+        "errors": {
+            "load": "Nie można załadować integracji narzędzi.",
+            "rescan": "Nie można ponownie przeskanować tego narzędzia."
         }
     },
     "updates": {

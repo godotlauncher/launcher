@@ -66,10 +66,19 @@
         "emailHelp": "コミット作成者のメールアドレスとして記録されます。",
         "emailRequired": "メールアドレスは必須です",
         "scope": "IDの保存先",
+        "defaultChoice": "今後のプロジェクト",
+        "alwaysAsk": "常に確認する",
+        "localDefault": "ローカルのデフォルトIDとして保存",
+        "globalDefault": "グローバルのデフォルトIDとして保存",
         "repositoryScope": "このリポジトリ",
         "globalScope": "このコンピュータ上のすべてのリポジトリ",
         "back": "戻る",
-        "saveAndCreate": "保存してプロジェクトを作成"
+        "saveAndCreate": "保存してプロジェクトを作成",
+        "presetTitle": "プロジェクト ID プリセットを使用しますか?",
+        "presetMessage": "このプリセットは、最初の Git コミットの前に、新しいリポジトリにのみ書き込まれます。",
+        "useGlobal": "グローバル ID を使用する",
+        "useDifferent": "別の ID を入力してください",
+        "usePresetAndCreate": "プリセットを使用してプロジェクトを作成する"
     },
     "buttons": {
         "editNow": "今すぐ編集",

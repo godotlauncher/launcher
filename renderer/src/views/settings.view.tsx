@@ -25,6 +25,7 @@ import { SettingsTabs } from './settings/components/settingsTabs.component';
 import { ToolsSettingsPanel } from './settings/components/toolsSettingsPanel.component';
 import { UpdatesSettingsPanel } from './settings/components/updatesSettingsPanel.component';
 import { CodeEditorSettingsDrawer } from './subViews/codeEditorSettingsDrawer.subview';
+import { GitToolSettingsDrawer } from './subViews/git-tool-settings-drawer.subview';
 
 type SettingsViewProps = {
     activeTab?: SettingsTab;
@@ -57,7 +58,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setDefaultIntegration,
         validateIntegrationPath,
     } = useCodeEditorIntegrations();
-    const { listIntegrations, rescanIntegrations } = useToolIntegrations();
+    const { listIntegrations, rescanIntegration } = useToolIntegrations();
 
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -77,24 +78,93 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const [toolIntegrations, setToolIntegrations] = useState<
         ToolIntegrationSummary[]
     >([]);
-    const [rescanCount, setRescanCount] = useState(0);
-    const isRescanningTools = rescanCount > 0;
+    const [toolsLoading, setToolsLoading] = useState(false);
+    const [toolsLoadError, setToolsLoadError] = useState(false);
+    const [pendingToolId, setPendingToolId] = useState<string | null>(null);
+    const [toolActionErrors, setToolActionErrors] = useState<
+        Record<string, string | undefined>
+    >({});
+    const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
 
     const quickCheckTools = useCallback(async () => {
         return await listIntegrations();
     }, [listIntegrations]);
 
-    const rescanTools = useCallback(async () => {
-        setRescanCount((count) => count + 1);
+    const replaceToolIntegration = useCallback(
+        (updated: ToolIntegrationSummary) => {
+            setToolIntegrations((current) =>
+                current.map((tool) =>
+                    tool.id === updated.id ? updated : tool,
+                ),
+            );
+            setToolActionErrors((current) => ({
+                ...current,
+                [updated.id]: undefined,
+            }));
+        },
+        [],
+    );
+
+    const rescanTool = useCallback(
+        async (tool: ToolIntegrationSummary): Promise<boolean> => {
+            if (pendingToolId) {
+                return false;
+            }
+            setPendingToolId(tool.id);
+            setToolActionErrors((current) => ({
+                ...current,
+                [tool.id]: undefined,
+            }));
+            try {
+                replaceToolIntegration(await rescanIntegration(tool.id));
+                return true;
+            } catch {
+                logger.error('Failed to rescan tool integration');
+                setToolActionErrors((current) => ({
+                    ...current,
+                    [tool.id]: t('tools.errors.rescan'),
+                }));
+                return false;
+            } finally {
+                setPendingToolId(null);
+            }
+        },
+        [pendingToolId, replaceToolIntegration, rescanIntegration, t],
+    );
+
+    const rescanToolById = useCallback(
+        async (toolId: string): Promise<boolean> => {
+            const tool = toolIntegrations.find(
+                (integration) => integration.id === toolId,
+            );
+            if (tool) {
+                return await rescanTool(tool);
+            }
+            return false;
+        },
+        [rescanTool, toolIntegrations],
+    );
+
+    const selectedTool = useMemo(
+        () =>
+            toolIntegrations.find((tool) => tool.id === selectedToolId) ?? null,
+        [selectedToolId, toolIntegrations],
+    );
+
+    const syncTools = useCallback(async () => {
+        setToolsLoading(true);
+        setToolsLoadError(false);
         try {
-            const tools = await rescanIntegrations();
+            const tools = await quickCheckTools();
             setToolIntegrations(tools);
-        } catch (error) {
-            logger.error('Failed to refresh tool cache', error);
+            setToolActionErrors({});
+        } catch {
+            logger.error('Failed to load tool integrations');
+            setToolsLoadError(true);
         } finally {
-            setRescanCount((count) => Math.max(0, count - 1));
+            setToolsLoading(false);
         }
-    }, [rescanIntegrations]);
+    }, [quickCheckTools]);
 
     useEffect(() => {
         if (activeTab !== 'tools') {
@@ -103,21 +173,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         let disposed = false;
 
-        const syncTools = async () => {
-            try {
-                const tools = await quickCheckTools();
-                if (!disposed) {
-                    setToolIntegrations(tools);
-                }
-            } catch (error) {
-                logger.error('Failed to load cached tools', error);
-            }
+        const syncVisibleTools = async () => {
+            await syncTools();
         };
 
-        void syncTools();
+        void syncVisibleTools();
 
         const handleFocus = () => {
-            void syncTools();
+            if (!disposed) {
+                void syncVisibleTools();
+            }
         };
 
         window.addEventListener('focus', handleFocus);
@@ -126,7 +191,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             disposed = true;
             window.removeEventListener('focus', handleFocus);
         };
-    }, [activeTab, quickCheckTools]);
+    }, [activeTab, syncTools]);
 
     useEffect(() => {
         if (activeTab !== 'codeEditors') {
@@ -164,11 +229,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             disposed = true;
         };
     }, [activeTab, listIntegrationSettings]);
-
-    const gitTool = useMemo(
-        () => toolIntegrations.find((tool) => tool.id === 'git'),
-        [toolIntegrations],
-    );
 
     const replaceCodeEditorSettings = (
         updatedSettings: CodeEditorIntegrationSettings,
@@ -447,9 +507,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         <ToolsSettingsPanel
                             active={activeTab === 'tools'}
                             t={t}
-                            gitTool={gitTool}
-                            isRescanningTools={isRescanningTools}
-                            onRescanTools={rescanTools}
+                            tools={toolIntegrations}
+                            loading={toolsLoading}
+                            loadError={toolsLoadError}
+                            pendingToolId={pendingToolId}
+                            actionErrors={toolActionErrors}
+                            onEdit={(tool) => setSelectedToolId(tool.id)}
+                            onRescan={rescanTool}
                         />
                         <UpdatesSettingsPanel
                             active={activeTab === 'updates'}
@@ -469,6 +533,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onSave={updateIntegrationSettings}
                 onConfirmDisable={confirmCodeEditorDisable}
                 onSaved={replaceCodeEditorSettings}
+            />
+            <GitToolSettingsDrawer
+                tool={selectedTool}
+                open={Boolean(selectedTool)}
+                onOpenChange={(drawerOpen) => {
+                    if (!drawerOpen) {
+                        setSelectedToolId(null);
+                    }
+                }}
+                onRescan={rescanToolById}
             />
         </div>
     );

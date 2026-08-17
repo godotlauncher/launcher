@@ -66,10 +66,19 @@
         "emailHelp": "Zapisywany jako e-mail autora commitu.",
         "emailRequired": "E-mail jest wymagany",
         "scope": "Zapisz tożsamość dla",
+        "defaultChoice": "Dla przyszłych projektów",
+        "alwaysAsk": "Zawsze pytaj",
+        "localDefault": "Zapisz jako domyślną tożsamość lokalną",
+        "globalDefault": "Zapisz jako domyślną tożsamość globalną",
         "repositoryScope": "Tego repozytorium",
         "globalScope": "Wszystkich repozytoriów na tym komputerze",
         "back": "Wstecz",
-        "saveAndCreate": "Zapisz i utwórz projekt"
+        "saveAndCreate": "Zapisz i utwórz projekt",
+        "presetTitle": "Użyć gotowej tożsamości projektu?",
+        "presetMessage": "To ustawienie wstępne zostanie zapisane tylko w nowym repozytorium przed pierwszym commitem Git.",
+        "useGlobal": "Użyj globalnej tożsamości",
+        "useDifferent": "Wprowadź inną tożsamość",
+        "usePresetAndCreate": "Użyj gotowych ustawień i utwórz projekt"
     },
     "buttons": {
         "editNow": "Edytuj teraz",

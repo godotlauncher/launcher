@@ -145,19 +145,75 @@
         "overview": "O launcher valida rapidamente os caminhos de ferramentas em cache quando esta aba recebe foco. Execute uma nova procura completa se alterou instalações neste sistema.",
         "actions": {
             "refresh": "Reescanear ferramentas",
-            "scanning": "Reescanear..."
+            "scanning": "Reescanear...",
+            "loading": "Ferramentas de carregamento...",
+            "rescan": "Digitalizar novamente",
+            "rescanTool": "Digitalizar novamente {{tool}}",
+            "editTool": "Editar {{tool}}"
         },
         "status": {
             "available": "Disponível",
             "missing": "Não encontrado",
             "invalid": "Caminho não encontrado",
-            "unknown": "Desconhecido"
+            "unknown": "Desconhecido",
+            "disabled": "Desativado",
+            "unknownPath": "Caminho executável indisponível",
+            "unknownVersion": "Versão indisponível"
         },
         "git": {
             "title": "Git",
             "description": "O Git é um sistema de controlo de versões distribuído para gerir alterações de código e colaboração.",
             "installed": "Instalado:",
-            "version": "Versão:"
+            "version": "Versão:",
+            "drawer": {
+                "title": "Configurações do Git"
+            },
+            "installation": {
+                "title": "Instalação",
+                "description": "O Godot Launcher valida este executável antes de cada operação Git.",
+                "status": "Estatuto",
+                "path": "Caminho executável",
+                "version": "Versão"
+            },
+            "identity": {
+                "loading": "A carregar as definições de identidade do Git...",
+                "name": "Nome",
+                "email": "E-mail",
+                "global": {
+                    "title": "Identidade global do Git",
+                    "description": "Isto escreve user.name e user.email na configuração global Git em toda a máquina.",
+                    "unavailable": "Instale ou restaure o Git antes de editar a identidade global.",
+                    "nameHelp": "Nome do autor que o Git utiliza quando um repositório não tem substituição local.",
+                    "emailHelp": "E-mail do autor que o Git utiliza quando um repositório não tem substituição local."
+                },
+                "preset": {
+                    "title": "Predefinição de identidade do projeto",
+                    "description": "Guarde uma identidade para os repositórios criados pelo Godot Launcher. Não terá efeito até que a selecione ou aplique automaticamente durante a criação do projeto.",
+                    "nameHelp": "Nome de autor sugerido para uma nova identidade Git local do repositório.",
+                    "emailHelp": "E-mail de autor sugerido para uma nova identidade Git local do repositório.",
+                    "automaticTitle": "Utilizar automaticamente para novos repositórios",
+                    "automaticDescription": "Escreva esta predefinição como uma identidade Git local do repositório antes do commit inicial do Git."
+                },
+                "actions": {
+                    "saveGlobal": "Guardar identidade global Git",
+                    "savePreset": "Guardar predefinição",
+                    "clearPreset": "Limpar predefinição",
+                    "saving": "A guardar alterações..."
+                },
+                "errors": {
+                    "load": "Não foi possível carregar as definições de identidade do Git.",
+                    "required": "Introduza um nome e um e-mail.",
+                    "saveGlobal": "Não foi possível guardar a identidade global do Git. Os valores apresentados foram atualizados no Git.",
+                    "savePreset": "Não foi possível guardar a predefinição de identidade do projeto."
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "Verificando novamente {{tool}}"
+        },
+        "errors": {
+            "load": "Não foi possível carregar integrações de ferramentas.",
+            "rescan": "Não foi possível verificar novamente esta ferramenta."
         }
     },
     "updates": {

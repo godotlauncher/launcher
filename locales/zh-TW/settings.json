@@ -145,19 +145,75 @@
         "overview": "當此索引標籤獲得焦點時，啟動器會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
         "actions": {
             "refresh": "重新掃描工具",
-            "scanning": "正在重新掃描..."
+            "scanning": "正在重新掃描...",
+            "loading": "正在載入工具...",
+            "rescan": "重新掃描",
+            "rescanTool": "重新掃描 {{tool}}",
+            "editTool": "編輯{{tool}}"
         },
         "status": {
             "available": "可用",
             "missing": "未找到",
             "invalid": "找不到路徑",
-            "unknown": "未知"
+            "unknown": "未知",
+            "disabled": "殘障人士",
+            "unknownPath": "可執行路徑不可用",
+            "unknownVersion": "版本不可用"
         },
         "git": {
             "title": "Git",
             "description": "Git 是分散式版本控制系統，用於管理程式碼變更與協作。",
             "installed": "已安裝：",
-            "version": "版本："
+            "version": "版本：",
+            "drawer": {
+                "title": "Git 設定"
+            },
+            "installation": {
+                "title": "安裝",
+                "description": "Godot Launcher 在每次 Git 操作之前都會驗證此可執行檔。",
+                "status": "地位",
+                "path": "可執行路徑",
+                "version": "版本"
+            },
+            "identity": {
+                "loading": "正在載入 Git 身份設定...",
+                "name": "姓名",
+                "email": "電子郵件",
+                "global": {
+                    "title": "全球 Git 身份",
+                    "description": "這會將 user.name 和 user.email 寫入機器範圍的全域 Git 設定。",
+                    "unavailable": "在編輯全域身分之前安裝或還原 Git。",
+                    "nameHelp": "當儲存庫沒有本地覆蓋時，Git 使用的作者名稱。",
+                    "emailHelp": "當儲存庫沒有本地覆蓋時，Git 使用的作者電子郵件。"
+                },
+                "preset": {
+                    "title": "專案標識預設",
+                    "description": "為 Godot Launcher 建立的儲存庫保存一個身分。在您在專案建立期間選擇或自動套用它之前，它不會產生任何影響。",
+                    "nameHelp": "新儲存庫本機 Git 身分的建議作者名稱。",
+                    "emailHelp": "新儲存庫本機 Git 身分的建議作者電子郵件。",
+                    "automaticTitle": "自動用於新儲存庫",
+                    "automaticDescription": "在初始 Git 提交之前將此預設寫入儲存庫本機 Git 標識。"
+                },
+                "actions": {
+                    "saveGlobal": "保存全域 Git 身份",
+                    "savePreset": "儲存預設",
+                    "clearPreset": "清除預設",
+                    "saving": "正在儲存變更..."
+                },
+                "errors": {
+                    "load": "無法載入 Git 身份設定。",
+                    "required": "輸入姓名和電子郵件。",
+                    "saveGlobal": "無法儲存全域 Git 身分。顯示的值是從 Git 刷新的。",
+                    "savePreset": "無法儲存項目標識預設。"
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "重新掃描 {{tool}}"
+        },
+        "errors": {
+            "load": "無法載入工具整合。",
+            "rescan": "無法重新掃描此工具。"
         }
     },
     "updates": {

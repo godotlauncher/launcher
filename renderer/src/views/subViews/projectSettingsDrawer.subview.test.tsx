@@ -106,6 +106,8 @@ describe('ProjectSettingsDrawer', () => {
                 onSetProjectCodeEditor={vi.fn()}
                 onSetProjectWindowed={vi.fn()}
                 onInitializeProjectGit={vi.fn()}
+                getProjectGitIdentity={vi.fn()}
+                onSetProjectGitIdentity={vi.fn()}
                 onResetProjectCodeEditorConfig={vi.fn()}
                 getProjectGodotName={vi.fn()}
             />,

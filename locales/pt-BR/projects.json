@@ -157,6 +157,7 @@
             "title": "Controle de versão",
             "help": "Gerencie o controle de versão deste projeto.",
             "enabled": "O Git está inicializado para este projeto.",
+            "enabledUnavailable": "Este projeto está configurado para Git, mas o Git não está disponível.",
             "notConfigured": "Nenhum repositório Git está configurado.",
             "active": "Ativo",
             "initialize": "Inicializar Git",
@@ -164,7 +165,29 @@
             "initFailed": "Não foi possível inicializar o Git.",
             "existingRepositoryTitle": "Repositório Git existente detectado",
             "existingRepositoryRoot": "Este projeto já é um repositório Git. Nenhuma alteração foi feita na configuração do Git.",
-            "existingRepositoryParent": "Este projeto já está incluído no repositório Git em {{root}}. Nenhuma alteração foi feita na configuração do Git."
+            "existingRepositoryParent": "Este projeto já está incluído no repositório Git em {{root}}. Nenhuma alteração foi feita na configuração do Git.",
+            "identityTitle": "Identidade para commits do Git",
+            "identityHelp": "Nome e email que Git usa para commits neste projeto.",
+            "identityName": "Nome",
+            "identityNameHelp": "Nome do autor armazenado neste repositório.",
+            "identityEmail": "E-mail",
+            "identityEmailHelp": "Email do autor armazenado neste repositório.",
+            "identityMissing": "Não configurado",
+            "identitySource": {
+                "repository": "Repositório Git",
+                "inherited": "Herdado",
+                "missing": "Valor ausente"
+            },
+            "updateIdentity": "Atualizar",
+            "saveIdentity": "Salvar identidade",
+            "identityRequired": "Digite um nome e um e-mail.",
+            "identityLoadFailed": "Não foi possível carregar a identidade do Git.",
+            "identityUnavailable": "Indisponível",
+            "identityUnavailableHelp": "Instale o Git ou verifique-o novamente em Configurações > Ferramentas > Git para visualizar e atualizar esta identidade.",
+            "updateFailed": "Não foi possível atualizar a identidade do Git.",
+            "updateNotAllowed": "A identidade do Git não pode ser atualizada para este projeto.",
+            "parentRepositoryReadOnly": "Este projeto usa o repositório pai em {{root}}. Sua identidade é somente leitura aqui.",
+            "linkedWorktreeReadOnly": "As identidades das árvores de trabalho Git vinculadas são somente leitura aqui."
         },
         "launch": {
             "title": "Inicialização",

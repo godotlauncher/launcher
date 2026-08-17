@@ -157,6 +157,7 @@
             "title": "原始碼管理",
             "help": "管理此專案的版本控制。",
             "enabled": "此專案已初始化 Git。",
+            "enabledUnavailable": "該項目已配置為 Git，但 Git 不可用。",
             "notConfigured": "尚未設定 Git 儲存庫。",
             "active": "已啟用",
             "initialize": "初始化 Git",
@@ -164,7 +165,29 @@
             "initFailed": "無法初始化 Git。",
             "existingRepositoryTitle": "偵測到現有 Git 儲存庫",
             "existingRepositoryRoot": "此專案已經是 Git 儲存庫。未對 Git 設定進行任何變更。",
-            "existingRepositoryParent": "此專案已包含在 {{root}} 的 Git 儲存庫中。未對 Git 設定進行任何變更。"
+            "existingRepositoryParent": "此專案已包含在 {{root}} 的 Git 儲存庫中。未對 Git 設定進行任何變更。",
+            "identityTitle": "Git 提交身份",
+            "identityHelp": "Git 用於在此項目中提交的名稱和電子郵件。",
+            "identityName": "姓名",
+            "identityNameHelp": "作者姓名儲存在此儲存庫中。",
+            "identityEmail": "電子郵件",
+            "identityEmailHelp": "作者電子郵件儲存在此儲存庫中。",
+            "identityMissing": "未配置",
+            "identitySource": {
+                "repository": "Git 儲存庫",
+                "inherited": "遺傳",
+                "missing": "缺失值"
+            },
+            "updateIdentity": "更新",
+            "saveIdentity": "保存身分",
+            "identityRequired": "輸入姓名和電子郵件。",
+            "identityLoadFailed": "無法載入 Git 身份。",
+            "identityUnavailable": "不可用",
+            "identityUnavailableHelp": "安裝 Git 或在“設定”>“工具”>“Git”中重新掃描它以查看和更新​​此身分。",
+            "updateFailed": "無法更新 Git 身分。",
+            "updateNotAllowed": "無法更新此項目的 Git 身分。",
+            "parentRepositoryReadOnly": "此專案使用 {{root}} 的父存儲庫。它的身分在這裡是唯讀的。",
+            "linkedWorktreeReadOnly": "連結的 Git 工作樹的標識在此是唯讀的。"
         },
         "launch": {
             "title": "啟動",

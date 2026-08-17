@@ -37,8 +37,13 @@ type TestElectronApi = {
     'editorCatalog.getReleaseById': (id: string) => Promise<unknown>;
     'editorCatalog.refreshCatalog': () => Promise<unknown>;
     'git.getGlobalIdentity': () => Promise<unknown>;
+    'git.getIdentitySettings': () => Promise<unknown>;
+    'git.saveGlobalIdentity': (identity: unknown) => Promise<unknown>;
+    'git.saveProjectIdentityPreset': (preset: unknown) => Promise<unknown>;
     'toolIntegration.listIntegrations': () => Promise<unknown[]>;
     'toolIntegration.rescanIntegrations': () => Promise<unknown[]>;
+    'toolIntegration.refreshIntegration': (toolId: string) => Promise<unknown>;
+    'toolIntegration.rescanIntegration': (toolId: string) => Promise<unknown>;
 };
 
 describe('renderer bridge', () => {
@@ -65,8 +70,22 @@ describe('renderer bridge', () => {
         name: 'Mario',
         email: 'mario@example.com',
     }));
+    const getIdentitySettings = vi.fn(async () => ({
+        globalIdentity: await getGlobalIdentity(),
+        projectPreset: null,
+    }));
+    const saveGlobalIdentity = vi.fn(async (identity) => ({
+        success: true,
+        identity,
+    }));
+    const saveProjectIdentityPreset = vi.fn(async (preset) => ({
+        success: true,
+        preset,
+    }));
     const listToolIntegrations = vi.fn(async () => []);
     const rescanToolIntegrations = vi.fn(async () => []);
+    const refreshToolIntegration = vi.fn(async () => ({}));
+    const rescanToolIntegration = vi.fn(async () => ({}));
     const unsubscribe = vi.fn();
     let projectsListener: ((projects: unknown[]) => void) | undefined;
 
@@ -92,8 +111,13 @@ describe('renderer bridge', () => {
             'editorCatalog.getReleaseById': getReleaseById,
             'editorCatalog.refreshCatalog': refreshCatalog,
             'git.getGlobalIdentity': getGlobalIdentity,
+            'git.getIdentitySettings': getIdentitySettings,
+            'git.saveGlobalIdentity': saveGlobalIdentity,
+            'git.saveProjectIdentityPreset': saveProjectIdentityPreset,
             'toolIntegration.listIntegrations': listToolIntegrations,
             'toolIntegration.rescanIntegrations': rescanToolIntegrations,
+            'toolIntegration.refreshIntegration': refreshToolIntegration,
+            'toolIntegration.rescanIntegration': rescanToolIntegration,
             subscribeProjects: (listener) => {
                 projectsListener = listener;
                 return unsubscribe;
@@ -168,9 +192,13 @@ describe('renderer bridge', () => {
     it('delegates through the tool integration namespace', async () => {
         await toolIntegrationBridge.listIntegrations();
         await toolIntegrationBridge.rescanIntegrations();
+        await toolIntegrationBridge.refreshIntegration('git');
+        await toolIntegrationBridge.rescanIntegration('git');
 
         expect(listToolIntegrations).toHaveBeenCalledOnce();
         expect(rescanToolIntegrations).toHaveBeenCalledOnce();
+        expect(refreshToolIntegration).toHaveBeenCalledWith('git');
+        expect(rescanToolIntegration).toHaveBeenCalledWith('git');
     });
 
     it('delegates through the Git namespace', async () => {
@@ -180,6 +208,17 @@ describe('renderer bridge', () => {
         });
 
         expect(getGlobalIdentity).toHaveBeenCalledOnce();
+
+        await gitBridge.getIdentitySettings();
+        await gitBridge.saveGlobalIdentity({
+            name: 'Mario',
+            email: 'mario@example.com',
+        });
+        await gitBridge.saveProjectIdentityPreset(null);
+
+        expect(getIdentitySettings).toHaveBeenCalledOnce();
+        expect(saveGlobalIdentity).toHaveBeenCalledOnce();
+        expect(saveProjectIdentityPreset).toHaveBeenCalledWith(null);
     });
 
     it('subscribes and unsubscribes from application events', () => {

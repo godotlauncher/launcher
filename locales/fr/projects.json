@@ -157,6 +157,7 @@
             "title": "Contrôle de version",
             "help": "Gérez le contrôle de version de ce projet.",
             "enabled": "Git est initialisé pour ce projet.",
+            "enabledUnavailable": "Ce projet est configuré pour Git, mais Git n'est pas disponible.",
             "notConfigured": "Aucun dépôt Git n'est configuré.",
             "active": "Actif",
             "initialize": "Initialiser Git",
@@ -164,7 +165,29 @@
             "initFailed": "Impossible d'initialiser Git.",
             "existingRepositoryTitle": "Dépôt Git existant détecté",
             "existingRepositoryRoot": "Ce projet est déjà un dépôt Git. Aucune modification de la configuration Git n'a été effectuée.",
-            "existingRepositoryParent": "Ce projet est déjà couvert par le dépôt Git situé dans {{root}}. Aucune modification de la configuration Git n'a été effectuée."
+            "existingRepositoryParent": "Ce projet est déjà couvert par le dépôt Git situé dans {{root}}. Aucune modification de la configuration Git n'a été effectuée.",
+            "identityTitle": "Identité pour les commits Git",
+            "identityHelp": "Nom et adresse e-mail que Git utilise pour les validations dans ce projet.",
+            "identityName": "Nom",
+            "identityNameHelp": "Nom de l'auteur stocké dans ce référentiel.",
+            "identityEmail": "E-mail",
+            "identityEmailHelp": "E-mail de l'auteur stocké dans ce référentiel.",
+            "identityMissing": "Non configuré",
+            "identitySource": {
+                "repository": "Dépôt Git",
+                "inherited": "Hérité",
+                "missing": "Valeur manquante"
+            },
+            "updateIdentity": "Mettre à jour",
+            "saveIdentity": "Enregistrer l'identité",
+            "identityRequired": "Entrez à la fois un nom et un e-mail.",
+            "identityLoadFailed": "Impossible de charger l'identité Git.",
+            "identityUnavailable": "Indisponible",
+            "identityUnavailableHelp": "Installez Git ou analysez-le à nouveau dans Paramètres > Outils > Git pour afficher et mettre à jour cette identité.",
+            "updateFailed": "Impossible de mettre à jour l'identité Git.",
+            "updateNotAllowed": "L'identité Git ne peut pas être mise à jour pour ce projet.",
+            "parentRepositoryReadOnly": "Ce projet utilise le dépôt parent situé dans {{root}}. Son identité est ici en lecture seule.",
+            "linkedWorktreeReadOnly": "Les identités des arbres de travail Git liés sont ici en lecture seule."
         },
         "launch": {
             "title": "Lancement",

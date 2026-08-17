@@ -145,19 +145,75 @@
         "overview": "このタブにフォーカスが当たると、ランチャーはキャッシュされたツールのパスを素早く検証します。システムでインストールを変更した場合は、完全な再スキャンを実行してください。",
         "actions": {
             "refresh": "ツールを再スキャン",
-            "scanning": "再スキャン中..."
+            "scanning": "再スキャン中...",
+            "loading": "ツールを読み込み中...",
+            "rescan": "再スキャン",
+            "rescanTool": "{{tool}} を再スキャンします",
+            "editTool": "{{tool}}を編集"
         },
         "status": {
             "available": "利用可能",
             "missing": "見つかりません",
             "invalid": "パスが見つかりません",
-            "unknown": "不明"
+            "unknown": "不明",
+            "disabled": "無効",
+            "unknownPath": "実行可能パスが使用できません",
+            "unknownVersion": "バージョンが利用できません"
         },
         "git": {
             "title": "Git",
             "description": "Gitは、コードの変更管理とコラボレーションのための分散型バージョン管理システムです。",
             "installed": "インストール済み：",
-            "version": "バージョン："
+            "version": "バージョン：",
+            "drawer": {
+                "title": "Gitの設定"
+            },
+            "installation": {
+                "title": "インストール",
+                "description": "Godot Launcher は、Git 操作の前にこの実行可能ファイルを検証します。",
+                "status": "状態",
+                "path": "実行可能パス",
+                "version": "バージョン"
+            },
+            "identity": {
+                "loading": "Git ID 設定を読み込んでいます...",
+                "name": "名前",
+                "email": "電子メール",
+                "global": {
+                    "title": "グローバル Git ID",
+                    "description": "これにより、user.name および user.email がマシン全体のグローバル Git 構成に書き込まれます。",
+                    "unavailable": "グローバル ID を編集する前に、Git をインストールまたは復元します。",
+                    "nameHelp": "リポジトリにローカル オーバーライドがない場合に Git が使用する作成者名。",
+                    "emailHelp": "リポジトリにローカル オーバーライドがない場合に Git が使用する電子メールを作成します。"
+                },
+                "preset": {
+                    "title": "プロジェクト ID プリセット",
+                    "description": "Godot Launcher によって作成されたリポジトリに 1 つの ID を保存します。プロジェクトの作成時に選択するか、自動的に適用するまでは効果がありません。",
+                    "nameHelp": "新しいリポジトリローカル Git ID の推奨される作成者名。",
+                    "emailHelp": "新しいリポジトリローカル Git ID の推奨される作成者の電子メール。",
+                    "automaticTitle": "新しいリポジトリに自動的に使用",
+                    "automaticDescription": "最初の Git コミットの前に、このプリセットをリポジトリ ローカルの Git ID として書き込みます。"
+                },
+                "actions": {
+                    "saveGlobal": "グローバル Git ID を保存する",
+                    "savePreset": "プリセットの保存",
+                    "clearPreset": "プリセットをクリア",
+                    "saving": "変更を保存しています..."
+                },
+                "errors": {
+                    "load": "Git ID 設定をロードできません。",
+                    "required": "名前とメールアドレスの両方を入力します。",
+                    "saveGlobal": "グローバル Git ID を保存できません。表示された値は Git から更新されました。",
+                    "savePreset": "プロジェクト ID プリセットを保存できません。"
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "{{tool}} を再スキャンしています"
+        },
+        "errors": {
+            "load": "ツール統合をロードできません。",
+            "rescan": "このツールを再スキャンできません。"
         }
     },
     "updates": {

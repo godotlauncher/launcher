@@ -145,19 +145,75 @@
         "overview": "Il launcher verifica rapidamente i percorsi degli strumenti memorizzati nella cache quando questa scheda riceve il focus. Esegui una scansione completa se hai modificato le installazioni su questo sistema.",
         "actions": {
             "refresh": "Riscansiona gli strumenti",
-            "scanning": "Riscansionamento..."
+            "scanning": "Riscansionamento...",
+            "loading": "Caricamento strumenti...",
+            "rescan": "Nuova scansione",
+            "rescanTool": "Eseguire nuovamente la scansione {{tool}}",
+            "editTool": "Modifica {{tool}}"
         },
         "status": {
             "available": "Disponibile",
             "missing": "Non trovato",
             "invalid": "Percorso non trovato",
-            "unknown": "Sconosciuto"
+            "unknown": "Sconosciuto",
+            "disabled": "Disabilitato",
+            "unknownPath": "Percorso eseguibile non disponibile",
+            "unknownVersion": "Versione non disponibile"
         },
         "git": {
             "title": "Git",
             "description": "Git è un sistema di controllo versione distribuito per gestire modifiche al codice e collaborazioni.",
             "installed": "Installato:",
-            "version": "Versione:"
+            "version": "Versione:",
+            "drawer": {
+                "title": "Impostazioni di Git"
+            },
+            "installation": {
+                "title": "Installazione",
+                "description": "Godot Launcher convalida questo eseguibile prima di ogni operazione Git.",
+                "status": "Stato",
+                "path": "Percorso eseguibile",
+                "version": "Versione"
+            },
+            "identity": {
+                "loading": "Caricamento delle impostazioni dell'identità Git...",
+                "name": "Nome",
+                "email": "E-mail",
+                "global": {
+                    "title": "Identità Git globale",
+                    "description": "Questo scrive user.name e user.email nella configurazione Git globale a livello di macchina.",
+                    "unavailable": "Installa o ripristina Git prima di modificare l'identità globale.",
+                    "nameHelp": "Nome dell'autore utilizzato da Git quando un repository non dispone di override locale.",
+                    "emailHelp": "E-mail di autore che Git utilizza quando un repository non dispone di override locale."
+                },
+                "preset": {
+                    "title": "Preimpostazione dell'identità del progetto",
+                    "description": "Salva un'identità per i repository creati da Godot Launcher. Non ha alcun effetto finché non lo selezioni o lo applichi automaticamente durante la creazione del progetto.",
+                    "nameHelp": "Nome dell'autore suggerito per una nuova identità Git locale del repository.",
+                    "emailHelp": "E-mail dell'autore suggerita per una nuova identità Git locale del repository.",
+                    "automaticTitle": "Utilizza automaticamente per i nuovi repository",
+                    "automaticDescription": "Scrivi questa preimpostazione come identità Git locale del repository prima del commit Git iniziale."
+                },
+                "actions": {
+                    "saveGlobal": "Salva l'identità Git globale",
+                    "savePreset": "Salva preimpostazione",
+                    "clearPreset": "Cancella preimpostazione",
+                    "saving": "Salvataggio modifiche..."
+                },
+                "errors": {
+                    "load": "Impossibile caricare le impostazioni dell'identità Git.",
+                    "required": "Inserisci sia un nome che un'e-mail.",
+                    "saveGlobal": "Impossibile salvare l'identità Git globale. I valori visualizzati sono stati aggiornati da Git.",
+                    "savePreset": "Impossibile salvare la preimpostazione dell'identità del progetto."
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "Nuova scansione in corso {{tool}}"
+        },
+        "errors": {
+            "load": "Impossibile caricare le integrazioni dello strumento.",
+            "rescan": "Impossibile eseguire nuovamente la scansione di questo strumento."
         }
     },
     "updates": {

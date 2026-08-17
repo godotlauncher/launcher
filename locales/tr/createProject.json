@@ -66,10 +66,19 @@
         "emailHelp": "Commit yazarının e-postası olarak kaydedilir.",
         "emailRequired": "E-posta gerekli",
         "scope": "Kimliği şunun için kaydet",
+        "defaultChoice": "Gelecekteki projeler için",
+        "alwaysAsk": "Her zaman sor",
+        "localDefault": "Varsayılan yerel kimlik olarak kaydet",
+        "globalDefault": "Varsayılan genel kimlik olarak kaydet",
         "repositoryScope": "Bu depo",
         "globalScope": "Bu bilgisayardaki tüm depolar",
         "back": "Geri",
-        "saveAndCreate": "Kaydet ve proje oluştur"
+        "saveAndCreate": "Kaydet ve proje oluştur",
+        "presetTitle": "Proje kimliği ön ayarı kullanılsın mı?",
+        "presetMessage": "Bu ön ayar yalnızca ilk Git commit'inden önce yeni depoya yazılır.",
+        "useGlobal": "Küresel kimliği kullan",
+        "useDifferent": "Farklı bir kimlik girin",
+        "usePresetAndCreate": "Ön ayarı kullanın ve proje oluşturun"
     },
     "buttons": {
         "editNow": "Şimdi düzenle",

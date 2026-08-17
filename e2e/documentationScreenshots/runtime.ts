@@ -13,6 +13,7 @@ import type {
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
     GitIdentity,
+    GitIdentitySettings,
     InitializeProjectGitResult,
     EditorCatalogArchitecture,
     EditorCatalogPlatform,
@@ -21,6 +22,7 @@ import type {
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
+    ProjectGitIdentityResult,
     ReleaseInstallProgress,
     ReleaseSummary,
     ToolIntegrationSummary,
@@ -634,6 +636,30 @@ export async function stubProjectLaunchResult(
 }
 
 /**
+ * Stubs the effective Git identity shown in Project Settings.
+ *
+ * @param electronApp - The Electron app whose handler should be replaced.
+ * @param result - Effective project identity result returned to the renderer.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubProjectGitIdentity(
+    electronApp: ElectronApplication,
+    result: ProjectGitIdentityResult,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResult: ProjectGitIdentityResult) => {
+            const channel = 'app.getProjectGitIdentity';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
  * Stubs the global Git identity returned to Create Project.
  *
  * @param electronApp - The Electron app whose handler should be replaced.
@@ -644,16 +670,40 @@ export async function stubGlobalGitIdentity(
     electronApp: ElectronApplication,
     identity: GitIdentity,
 ) {
+    await stubGitIdentitySettings(electronApp, {
+        globalIdentity: identity,
+        projectPreset: null,
+    });
+}
+
+/**
+ * Stubs the Git identity settings returned to Settings and Create Project.
+ *
+ * @param electronApp - The Electron app whose handlers should be replaced.
+ * @param settings - Combined global identity and Launcher preset values.
+ * @returns A promise that ends when both compatibility handlers are ready.
+ */
+export async function stubGitIdentitySettings(
+    electronApp: ElectronApplication,
+    settings: GitIdentitySettings,
+) {
     await electronApp.evaluate(
-        ({ ipcMain }, injectedIdentity: GitIdentity) => {
-            const channel = 'git.getGlobalIdentity';
-            ipcMain.removeHandler(channel);
-            ipcMain.handle(channel, async () => ({
+        ({ ipcMain }, injectedSettings: GitIdentitySettings) => {
+            const globalChannel = 'git.getGlobalIdentity';
+            ipcMain.removeHandler(globalChannel);
+            ipcMain.handle(globalChannel, async () => ({
                 success: true,
-                data: injectedIdentity,
+                data: injectedSettings.globalIdentity,
+            }));
+
+            const settingsChannel = 'git.getIdentitySettings';
+            ipcMain.removeHandler(settingsChannel);
+            ipcMain.handle(settingsChannel, async () => ({
+                success: true,
+                data: injectedSettings,
             }));
         },
-        identity,
+        settings,
     );
 }
 
@@ -1453,6 +1503,20 @@ export async function stubToolIntegrations(
                 ipcMain.handle(channel, async () =>
                     ipcSuccess(injectedIntegrations),
                 );
+            }
+
+            for (const method of ['refreshIntegration', 'rescanIntegration']) {
+                const channel = `toolIntegration.${method}`;
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, async (_, toolId: string) => {
+                    const integration = injectedIntegrations.find(
+                        (candidate) => candidate.id === toolId,
+                    );
+                    if (!integration) {
+                        throw new Error(`Unknown tool integration: ${toolId}`);
+                    }
+                    return ipcSuccess(integration);
+                });
             }
         },
         integrations,

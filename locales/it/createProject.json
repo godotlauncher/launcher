@@ -66,10 +66,19 @@
         "emailHelp": "Registrata come email dell'autore del commit.",
         "emailRequired": "L'email è obbligatoria",
         "scope": "Salva identità per",
+        "defaultChoice": "Per i progetti futuri",
+        "alwaysAsk": "Chiedi sempre",
+        "localDefault": "Salva come identità locale predefinita",
+        "globalDefault": "Salva come identità globale predefinita",
         "repositoryScope": "Questo repository",
         "globalScope": "Tutti i repository su questo computer",
         "back": "Indietro",
-        "saveAndCreate": "Salva e crea progetto"
+        "saveAndCreate": "Salva e crea progetto",
+        "presetTitle": "Utilizzare l'identità del progetto preimpostata?",
+        "presetMessage": "Questa preimpostazione verrà scritta solo nel nuovo repository prima del commit Git iniziale.",
+        "useGlobal": "Utilizza l'identità globale",
+        "useDifferent": "Inserisci un'identità diversa",
+        "usePresetAndCreate": "Utilizza le preimpostazioni e crea un progetto"
     },
     "buttons": {
         "editNow": "Modifica ora",

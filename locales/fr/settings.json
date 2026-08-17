@@ -145,19 +145,75 @@
         "overview": "Le lanceur valide rapidement les chemins d'outils mis en cache lorsque cet onglet reçoit le focus. Lancez une nouvelle analyse complète si vous avez modifié des installations sur ce système.",
         "actions": {
             "refresh": "Réanalyser les outils",
-            "scanning": "Réanalyse en cours..."
+            "scanning": "Réanalyse en cours...",
+            "loading": "Chargement des outils...",
+            "rescan": "Nouvelle analyse",
+            "rescanTool": "Nouvelle analyse {{tool}}",
+            "editTool": "Modifier {{tool}}"
         },
         "status": {
             "available": "Disponible",
             "missing": "Introuvable",
             "invalid": "Chemin introuvable",
-            "unknown": "Inconnu"
+            "unknown": "Inconnu",
+            "disabled": "Désactivé",
+            "unknownPath": "Chemin d'accès exécutable indisponible",
+            "unknownVersion": "Version indisponible"
         },
         "git": {
             "title": "Git",
             "description": "Git est un système de contrôle de version distribué pour gérer les modifications du code et la collaboration.",
             "installed": "Installé :",
-            "version": "Version :"
+            "version": "Version :",
+            "drawer": {
+                "title": "Paramètres Git"
+            },
+            "installation": {
+                "title": "Installation",
+                "description": "Godot Launcher valide cet exécutable avant chaque opération Git.",
+                "status": "Statut",
+                "path": "Chemin d'accès exécutable",
+                "version": "Version"
+            },
+            "identity": {
+                "loading": "Chargement des paramètres d'identité Git...",
+                "name": "Nom",
+                "email": "E-mail",
+                "global": {
+                    "title": "Identité Git globale",
+                    "description": "Cela écrit user.name et user.email dans la configuration globale Git à l'échelle de la machine.",
+                    "unavailable": "Installez ou restaurez Git avant de modifier l'identité globale.",
+                    "nameHelp": "Nom d'auteur que Git utilise lorsqu'un référentiel n'a pas de remplacement local.",
+                    "emailHelp": "E-mail d'auteur que Git utilise lorsqu'un référentiel n'a pas de remplacement local."
+                },
+                "preset": {
+                    "title": "Préréglage d'identité de projet",
+                    "description": "Enregistrez une identité pour les référentiels créés par Godot Launcher. Il n'a aucun effet jusqu'à ce que vous le sélectionniez ou l'appliquiez automatiquement lors de la création du projet.",
+                    "nameHelp": "Nom d'auteur suggéré pour une nouvelle identité Git locale au référentiel.",
+                    "emailHelp": "Adresse e-mail de l'auteur suggérée pour une nouvelle identité Git locale au référentiel.",
+                    "automaticTitle": "Utiliser automatiquement pour les nouveaux référentiels",
+                    "automaticDescription": "Écrivez ce préréglage comme identité Git locale du dépôt avant le commit Git initial."
+                },
+                "actions": {
+                    "saveGlobal": "Enregistrer l'identité globale Git",
+                    "savePreset": "Enregistrer le préréglage",
+                    "clearPreset": "Effacer le préréglage",
+                    "saving": "Enregistrement des modifications..."
+                },
+                "errors": {
+                    "load": "Impossible de charger les paramètres d'identité Git.",
+                    "required": "Entrez à la fois un nom et une adresse e-mail.",
+                    "saveGlobal": "Impossible d'enregistrer l'identité Git globale. Les valeurs affichées ont été actualisées depuis Git.",
+                    "savePreset": "Impossible d'enregistrer le préréglage d'identité du projet."
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "Nouvelle analyse de {{tool}}"
+        },
+        "errors": {
+            "load": "Impossible de charger les intégrations d'outils.",
+            "rescan": "Impossible de réanalyser cet outil."
         }
     },
     "updates": {

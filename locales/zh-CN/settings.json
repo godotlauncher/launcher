@@ -145,19 +145,75 @@
         "overview": "当此选项卡获得焦点时，启动器会快速验证缓存的工具路径。如果你在此系统上更改了安装，请运行完整重新扫描。",
         "actions": {
             "refresh": "重新扫描工具",
-            "scanning": "正在重新扫描..."
+            "scanning": "正在重新扫描...",
+            "loading": "正在加载工具...",
+            "rescan": "重新扫描",
+            "rescanTool": "重新扫描 {{tool}}",
+            "editTool": "编辑{{tool}}"
         },
         "status": {
             "available": "可用",
             "missing": "未找到",
             "invalid": "路径未找到",
-            "unknown": "未知"
+            "unknown": "未知",
+            "disabled": "残疾人",
+            "unknownPath": "可执行路径不可用",
+            "unknownVersion": "版本不可用"
         },
         "git": {
             "title": "Git",
             "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",
             "installed": "已安装：",
-            "version": "版本："
+            "version": "版本：",
+            "drawer": {
+                "title": "Git 设置"
+            },
+            "installation": {
+                "title": "安装",
+                "description": "Godot Launcher 在每次 Git 操作之前都会验证此可执行文件。",
+                "status": "地位",
+                "path": "可执行路径",
+                "version": "版本"
+            },
+            "identity": {
+                "loading": "正在加载 Git 身份设置...",
+                "name": "姓名",
+                "email": "电子邮件",
+                "global": {
+                    "title": "全球 Git 身份",
+                    "description": "这会将 user.name 和 user.email 写入机器范围的全局 Git 配置。",
+                    "unavailable": "在编辑全局身份之前安装或恢复 Git。",
+                    "nameHelp": "当存储库没有本地覆盖时，Git 使用的作者名称。",
+                    "emailHelp": "当存储库没有本地覆盖时，Git 使用的作者电子邮件。"
+                },
+                "preset": {
+                    "title": "项目标识预设",
+                    "description": "为 Godot Launcher 创建的存储库保存一个身份。在您在项目创建期间选择或自动应用它之前，它不会产生任何影响。",
+                    "nameHelp": "新存储库本地 Git 身份的建议作者名称。",
+                    "emailHelp": "新存储库本地 Git 身份的建议作者电子邮件。",
+                    "automaticTitle": "自动用于新存储库",
+                    "automaticDescription": "在初始 Git 提交之前将此预设写入存储库本地 Git 标识。"
+                },
+                "actions": {
+                    "saveGlobal": "保存全局 Git 身份",
+                    "savePreset": "保存预设",
+                    "clearPreset": "清除预设",
+                    "saving": "正在保存更改..."
+                },
+                "errors": {
+                    "load": "无法加载 Git 身份设置。",
+                    "required": "输入姓名和电子邮件。",
+                    "saveGlobal": "无法保存全局 Git 身份。显示的值是从 Git 刷新的。",
+                    "savePreset": "无法保存项目标识预设。"
+                }
+            }
+        },
+        "accessibility": {
+            "scanning": "重新扫描 {{tool}}"
+        },
+        "errors": {
+            "load": "无法加载工具集成。",
+            "rescan": "无法重新扫描此工具。"
         }
     },
     "updates": {

@@ -117,6 +117,34 @@ describe('GitService', () => {
         expect(logger.error).not.toHaveBeenCalled();
     });
 
+    it('reads effective and repository-local identity independently', async () => {
+        execute
+            .mockResolvedValueOnce(success('Inherited Name\n'))
+            .mockResolvedValueOnce(success('inherited@example.com\n'))
+            .mockResolvedValueOnce(success('Local Name\n'))
+            .mockResolvedValueOnce(failure());
+
+        await expect(service.getIdentity('/projects/demo')).resolves.toEqual({
+            name: 'Inherited Name',
+            email: 'inherited@example.com',
+        });
+        await expect(
+            service.getLocalIdentity('/projects/demo'),
+        ).resolves.toEqual({ name: 'Local Name', email: '' });
+
+        expect(execute).toHaveBeenNthCalledWith(3, 'git', {
+            args: ['config', '--local', '--get', 'user.name'],
+            cwd: '/projects/demo',
+        });
+    });
+
+    it('rejects empty identity values before running Git', async () => {
+        await expect(
+            service.setIdentity(' ', 'email@example.com', 'global'),
+        ).resolves.toBe(false);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it.each([
         {
             scope: 'repository' as const,

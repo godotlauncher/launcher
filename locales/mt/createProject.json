@@ -66,10 +66,19 @@
         "emailHelp": "Tinżamm bħala l-email tal-awtur tal-commit.",
         "emailRequired": "L-email hija meħtieġa",
         "scope": "Żomm l-identità għal",
+        "defaultChoice": "Għall-proġetti futuri",
+        "alwaysAsk": "Dejjem staqsini",
+        "localDefault": "Żomm bħala identità lokali default",
+        "globalDefault": "Żomm bħala identità globali default",
         "repositoryScope": "Dan ir-repository",
         "globalScope": "Ir-repositories kollha fuq dan il-kompjuter",
         "back": "Lura",
-        "saveAndCreate": "Żomm u oħloq il-proġett"
+        "saveAndCreate": "Żomm u oħloq il-proġett",
+        "presetTitle": "Uża l-identità tal-proġett issettjata minn qabel?",
+        "presetMessage": "Dan il-preset jinkiteb biss fir-repożitorju l-ġdid qabel l-ewwel commit ta' Git.",
+        "useGlobal": "Uża identità globali",
+        "useDifferent": "Daħħal identità differenti",
+        "usePresetAndCreate": "Uża ssettjat minn qabel u oħloq proġett"
     },
     "buttons": {
         "editNow": "Editja issa",

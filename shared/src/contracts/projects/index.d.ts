@@ -34,6 +34,23 @@ export type GitRepositoryInspection =
     | { status: 'git-unavailable' }
     | { status: 'inspection-failed' };
 
+export type ProjectGitIdentityValue = {
+    value: string;
+    source: 'repository' | 'inherited' | 'missing';
+};
+
+export type ProjectGitIdentityResult =
+    | {
+          status: 'available';
+          repository: GitRepositoryInfo;
+          name: ProjectGitIdentityValue;
+          email: ProjectGitIdentityValue;
+          canUpdate: boolean;
+      }
+    | { status: 'not-a-repository' }
+    | { status: 'git-unavailable' }
+    | { status: 'inspection-failed' };
+
 export type ProjectGitSetupOutcome =
     | { status: 'not-requested' }
     | { status: 'git-unavailable' }

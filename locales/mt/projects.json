@@ -157,6 +157,7 @@
             "title": "Kontroll tas-sors",
             "help": "Immaniġġja l-kontroll tal-verżjoni għal dan il-proġett.",
             "enabled": "Git huwa inizjalizzat għal dan il-proġett.",
+            "enabledUnavailable": "Dan il-proġett huwa kkonfigurat għal Git, iżda Git mhux disponibbli.",
             "notConfigured": "L-ebda repożitorju Git mhu kkonfigurat.",
             "active": "Attiv",
             "initialize": "Inizjalizza Git",
@@ -164,7 +165,29 @@
             "initFailed": "Ma setax jiġi inizjalizzat Git.",
             "existingRepositoryTitle": "Instab repożitorju Git eżistenti",
             "existingRepositoryRoot": "Dan il-proġett diġà huwa repożitorju Git. Ma sar l-ebda tibdil fis-setup ta' Git.",
-            "existingRepositoryParent": "Dan il-proġett diġà jinsab fir-repożitorju Git f'{{root}}. Ma sar l-ebda tibdil fis-setup ta' Git."
+            "existingRepositoryParent": "Dan il-proġett diġà jinsab fir-repożitorju Git f'{{root}}. Ma sar l-ebda tibdil fis-setup ta' Git.",
+            "identityTitle": "Identità tal-commit ta' Git",
+            "identityHelp": "Isem u email li Git juża għall-impenji f'dan il-proġett.",
+            "identityName": "Isem",
+            "identityNameHelp": "Isem tal-awtur maħżun f'dan ir-repożitorju.",
+            "identityEmail": "Email",
+            "identityEmailHelp": "Email tal-awtur maħżuna f'dan ir-repożitorju.",
+            "identityMissing": "Mhux ikkonfigurat",
+            "identitySource": {
+                "repository": "Repożitorju Git",
+                "inherited": "Wiret",
+                "missing": "Valur nieqes"
+            },
+            "updateIdentity": "Aġġorna",
+            "saveIdentity": "Issejvja l-identità",
+            "identityRequired": "Daħħal kemm isem kif ukoll email.",
+            "identityLoadFailed": "Ma setgħetx tagħbija l-identità Git.",
+            "identityUnavailable": "Mhux disponibbli",
+            "identityUnavailableHelp": "Installa Git jew skanja mill-ġdid f'Settings > Għodda > Git biex tara u taġġorna din l-identità.",
+            "updateFailed": "Ma setgħetx taġġorna l-identità Git.",
+            "updateNotAllowed": "L-identità Git ma tistax tiġi aġġornata għal dan il-proġett.",
+            "parentRepositoryReadOnly": "Dan il-proġett juża r-repożitorju ġenitur f'{{root}}. L-identità tagħha tinqara biss hawn.",
+            "linkedWorktreeReadOnly": "L-identitajiet għal siġar tax-xogħol Git marbuta huma jinqraw biss hawn."
         },
         "launch": {
             "title": "Tnedija",

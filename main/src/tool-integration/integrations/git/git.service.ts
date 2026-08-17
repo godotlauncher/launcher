@@ -213,23 +213,48 @@ export class GitService {
     }
 
     /**
+     * Gets effective Git identity values for a working directory.
+     *
+     * @param dir - Working directory whose effective configuration is read.
+     * @returns The effective name and email, including partial identity.
+     */
+    async getIdentity(dir: string): Promise<GitIdentity> {
+        return this.readIdentity([], dir);
+    }
+
+    /**
+     * Gets repository-local Git identity values for a working directory.
+     *
+     * @param dir - Working directory whose local configuration is read.
+     * @returns The local name and email, including partial identity.
+     */
+    async getLocalIdentity(dir: string): Promise<GitIdentity> {
+        return this.readIdentity(['--local'], dir);
+    }
+
+    /**
      * Sets Git identity for one repository or the global user configuration.
      *
      * @param name - Git user name to set.
      * @param email - Git user email to set.
      * @param scope - Configuration scope to update.
-     * @param dir - Project directory used for repository-scoped configuration.
+     * @param dir - Project directory required for repository-scoped configuration.
      * @returns Whether both configuration commands succeeded.
      */
     async setIdentity(
         name: string,
         email: string,
         scope: GitIdentityScope,
-        dir: string,
+        dir?: string,
     ): Promise<boolean> {
+        const normalizedName = name.trim();
+        const normalizedEmail = email.trim();
+        if (!normalizedName || !normalizedEmail) {
+            return false;
+        }
         if (
             scope === 'repository' &&
-            !(await this.isProjectRepositoryRoot(dir))
+            (!dir || !(await this.isProjectRepositoryRoot(dir)))
         ) {
             logger.error(
                 'Refusing to set repository identity outside the project repository root',
@@ -239,7 +264,7 @@ export class GitService {
         const scopeArgs = scope === 'global' ? ['--global'] : [];
         const cwd = scope === 'repository' ? dir : undefined;
         const nameResult = await this.run(
-            ['config', ...scopeArgs, 'user.name', name],
+            ['config', ...scopeArgs, 'user.name', normalizedName],
             cwd,
             false,
         );
@@ -249,7 +274,7 @@ export class GitService {
         }
 
         const emailResult = await this.run(
-            ['config', ...scopeArgs, 'user.email', email],
+            ['config', ...scopeArgs, 'user.email', normalizedEmail],
             cwd,
             false,
         );
@@ -259,6 +284,38 @@ export class GitService {
         }
 
         return true;
+    }
+
+    /**
+     * Reads Git identity values independently for one configuration scope.
+     *
+     * @param scopeArgs - Optional Git configuration scope arguments.
+     * @param dir - Working directory used to resolve the configuration.
+     * @returns The configured name and email, including partial identity.
+     */
+    private async readIdentity(
+        scopeArgs: string[],
+        dir: string,
+    ): Promise<GitIdentity> {
+        const nameResult = await this.run(
+            ['config', ...scopeArgs, '--get', 'user.name'],
+            dir,
+            false,
+        );
+        const emailResult = await this.run(
+            ['config', ...scopeArgs, '--get', 'user.email'],
+            dir,
+            false,
+        );
+
+        return {
+            name: nameResult.success
+                ? this.removeLineTerminator(nameResult.stdout)
+                : '',
+            email: emailResult.success
+                ? this.removeLineTerminator(emailResult.stdout)
+                : '',
+        };
     }
 
     /**

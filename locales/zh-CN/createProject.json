@@ -66,10 +66,19 @@
         "emailHelp": "记录为提交作者电子邮件。",
         "emailRequired": "电子邮件为必填项",
         "scope": "身份信息保存范围",
+        "defaultChoice": "用于未来项目",
+        "alwaysAsk": "始终询问我",
+        "localDefault": "保存为默认本地身份",
+        "globalDefault": "保存为默认全局身份",
         "repositoryScope": "此仓库",
         "globalScope": "此电脑上的所有仓库",
         "back": "返回",
-        "saveAndCreate": "保存并创建项目"
+        "saveAndCreate": "保存并创建项目",
+        "presetTitle": "使用项目标识预设？",
+        "presetMessage": "此预设仅在初始 Git 提交之前写入新存储库。",
+        "useGlobal": "使用全球身份",
+        "useDifferent": "输入不同的身份",
+        "usePresetAndCreate": "使用预设并创建项目"
     },
     "buttons": {
         "editNow": "立即编辑",

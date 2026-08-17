@@ -20,12 +20,20 @@ describe('CreateProjectGitIdentityDialog', () => {
                 email=""
                 scope="repository"
                 showValidation={false}
+                globalIdentityComplete={false}
+                showDefaultChoices={false}
+                saveChoice="ask"
+                saving={false}
+                saveError={null}
                 t={t}
                 onNameChange={noop}
                 onEmailChange={noop}
                 onScopeChange={noop}
+                onSaveChoiceChange={noop}
                 onSkip={noop}
                 onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
             />,
@@ -45,12 +53,20 @@ describe('CreateProjectGitIdentityDialog', () => {
                 email="john.doe@example.com"
                 scope="repository"
                 showValidation={false}
+                globalIdentityComplete
+                showDefaultChoices={false}
+                saveChoice="ask"
+                saving={false}
+                saveError={null}
                 t={t}
                 onNameChange={noop}
                 onEmailChange={noop}
                 onScopeChange={noop}
+                onSaveChoiceChange={noop}
                 onSkip={noop}
                 onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
             />,
@@ -71,12 +87,20 @@ describe('CreateProjectGitIdentityDialog', () => {
                 email=""
                 scope="global"
                 showValidation
+                globalIdentityComplete={false}
+                showDefaultChoices={false}
+                saveChoice="ask"
+                saving={false}
+                saveError={null}
                 t={t}
                 onNameChange={noop}
                 onEmailChange={noop}
                 onScopeChange={noop}
+                onSaveChoiceChange={noop}
                 onSkip={noop}
                 onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
             />,
@@ -85,5 +109,99 @@ describe('CreateProjectGitIdentityDialog', () => {
         expect(html).toContain('gitIdentity.nameRequired');
         expect(html).toContain('gitIdentity.emailRequired');
         expect(html).toContain('gitIdentity.globalScope');
+    });
+
+    it('renders a repository-scoped preset suggestion with the right alternative', () => {
+        const completeGlobalHtml = renderToStaticMarkup(
+            <CreateProjectGitIdentityDialog
+                page="preset"
+                name="Project User"
+                email="project@example.com"
+                scope="repository"
+                showValidation={false}
+                globalIdentityComplete
+                showDefaultChoices={false}
+                saveChoice="ask"
+                saving={false}
+                saveError={null}
+                t={t}
+                onNameChange={noop}
+                onEmailChange={noop}
+                onScopeChange={noop}
+                onSaveChoiceChange={noop}
+                onSkip={noop}
+                onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
+                onBack={noop}
+                onSave={noop}
+            />,
+        );
+        expect(completeGlobalHtml).toContain('gitIdentity.presetTitle');
+        expect(completeGlobalHtml).toContain('gitIdentity.useGlobal');
+        expect(completeGlobalHtml).not.toContain('gitIdentity.scope');
+        expect(completeGlobalHtml).not.toContain('gitIdentity.skipCommit');
+
+        const missingGlobalHtml = renderToStaticMarkup(
+            <CreateProjectGitIdentityDialog
+                page="preset"
+                name="Project User"
+                email="project@example.com"
+                scope="repository"
+                showValidation={false}
+                globalIdentityComplete={false}
+                showDefaultChoices={false}
+                saveChoice="ask"
+                saving={false}
+                saveError={null}
+                t={t}
+                onNameChange={noop}
+                onEmailChange={noop}
+                onScopeChange={noop}
+                onSaveChoiceChange={noop}
+                onSkip={noop}
+                onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
+                onBack={noop}
+                onSave={noop}
+            />,
+        );
+        expect(missingGlobalHtml).toContain('gitIdentity.useDifferent');
+        expect(missingGlobalHtml).toContain('gitIdentity.skipCommit');
+    });
+
+    it('offers explicit future defaults when no identity source exists', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectGitIdentityDialog
+                page="identity"
+                name="Project User"
+                email="project@example.com"
+                scope="repository"
+                showValidation={false}
+                globalIdentityComplete={false}
+                showDefaultChoices
+                saveChoice="local-default"
+                saving={false}
+                saveError={null}
+                t={t}
+                onNameChange={noop}
+                onEmailChange={noop}
+                onScopeChange={noop}
+                onSaveChoiceChange={noop}
+                onSkip={noop}
+                onAddIdentity={noop}
+                onUseGlobal={noop}
+                onUseDifferentIdentity={noop}
+                onBack={noop}
+                onSave={noop}
+            />,
+        );
+
+        expect(html).toContain('gitIdentity.alwaysAsk');
+        expect(html).toContain('gitIdentity.localDefault');
+        expect(html).toContain('gitIdentity.globalDefault');
+        expect(html).not.toContain('gitIdentity.repositoryScope');
+        expect(html).toContain('checked=""');
     });
 });
