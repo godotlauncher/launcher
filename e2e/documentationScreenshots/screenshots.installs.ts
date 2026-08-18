@@ -323,6 +323,7 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
                     prerelease: release.prerelease,
                     published_at: release.published_at,
                     stage: 'downloading',
+                    canCancel: true,
                     percent: 55,
                     receivedBytes: 56 * 1024 * 1024,
                     totalBytes: 102 * 1024 * 1024,
@@ -334,6 +335,7 @@ export const INSTALLS_SCREENSHOTS: ScreenshotConfig[] = [
                     prerelease: release.prerelease,
                     published_at: release.published_at,
                     stage: 'queued',
+                    canCancel: true,
                     queuePosition: 1,
                 },
             ]);
