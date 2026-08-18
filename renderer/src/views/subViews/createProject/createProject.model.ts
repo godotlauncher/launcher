@@ -7,6 +7,7 @@ import type {
     GitLfsTrackingPolicy,
     InstalledRelease,
     ProjectGitIdentityPreset,
+    ReleaseInstallProgressStage,
     RendererType,
     ToolIntegrationSummary,
 } from '@shared/contracts';
@@ -21,6 +22,13 @@ export type DownloadingCreateProjectRelease = {
     mono: boolean;
     prerelease: boolean;
     published_at: string | null;
+    stage: ReleaseInstallProgressStage;
+    queuePosition?: number;
+};
+
+export type CreateProjectReleaseRow = InstalledRelease & {
+    installStage?: ReleaseInstallProgressStage;
+    queuePosition?: number;
 };
 
 const RESERVED_WINDOWS_NAME =
@@ -128,27 +136,71 @@ export const getProjectPathSuffixDisplay = (
     return `${separator}${segment}`;
 };
 
+/**
+ * Builds installed editors and unavailable in-progress install rows.
+ *
+ * @param installedReleases - Persisted installed editor records.
+ * @param downloadingReleases - Active editor install jobs.
+ * @returns Deduplicated rows for the Create Project editor selector.
+ */
 export const buildCreateProjectReleaseRows = (
     installedReleases: InstalledRelease[],
     downloadingReleases: DownloadingCreateProjectRelease[],
-): InstalledRelease[] =>
-    installedReleases
-        .concat(
-            downloadingReleases.map((release) => ({
-                version: release.version,
-                version_number: -1,
-                install_path: '',
-                mono: release.mono,
-                platform: '',
-                arch: '',
-                editor_path: '',
-                prerelease: release.prerelease,
-                config_version: 5,
-                published_at: release.published_at,
-                valid: true,
-            })),
-        )
-        .sort(sortReleases);
+): CreateProjectReleaseRow[] => {
+    const rowsByIdentity = new Map<string, CreateProjectReleaseRow>(
+        installedReleases.map((release) => [
+            `${release.version}:${release.mono ? 'mono' : 'std'}`,
+            release,
+        ]),
+    );
+
+    for (const release of downloadingReleases) {
+        const identity = `${release.version}:${release.mono ? 'mono' : 'std'}`;
+        const installed = rowsByIdentity.get(identity);
+        if (installed && installed.valid !== false) {
+            continue;
+        }
+
+        rowsByIdentity.set(identity, {
+            version: release.version,
+            version_number: -1,
+            install_path: '',
+            mono: release.mono,
+            platform: '',
+            arch: '',
+            editor_path: '',
+            prerelease: release.prerelease,
+            config_version: 5,
+            published_at: release.published_at,
+            valid: true,
+            installStage: release.stage,
+            queuePosition: release.queuePosition,
+        });
+    }
+
+    return [...rowsByIdentity.values()].sort(sortReleases);
+};
+
+/**
+ * Resolves a usable editor selection without selecting disabled rows.
+ *
+ * @param releases - Create Project editor rows.
+ * @param preferredIndex - Current selection to preserve when still usable.
+ * @returns A usable row index, or -1 when no installed editor is available.
+ */
+export function resolveCreateProjectReleaseIndex(
+    releases: CreateProjectReleaseRow[],
+    preferredIndex: number,
+): number {
+    const preferred = releases[preferredIndex];
+    if (preferred?.valid !== false && preferred?.editor_path) {
+        return preferredIndex;
+    }
+
+    return releases.findIndex(
+        (release) => release.valid !== false && Boolean(release.editor_path),
+    );
+}
 
 export const getDefaultRendererForReleaseVersion = (
     releaseVersion: string,

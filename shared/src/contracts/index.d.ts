@@ -2,6 +2,7 @@ export type * from './app/index.js';
 export type * from './bridge.types.js';
 export type * from './codeEditorIntegration/index.js';
 export type * from './editor-catalog/index.js';
+export type * from './editor-installs/index.js';
 export type * from './git/index.js';
 export type * from './git-lfs/index.js';
 export type * from './ipc/index.js';

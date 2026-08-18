@@ -14,7 +14,14 @@ describe('createReleaseActions', () => {
         const reinstallRelease = vi.fn(() =>
             Promise.resolve({ success: true, version: '4.2.0' }),
         );
-        const removeRelease = vi.fn(() => Promise.resolve());
+        const removeRelease = vi.fn(() =>
+            Promise.resolve({
+                success: true,
+                version: '4.2.0',
+                mono: false,
+                releases: [],
+            }),
+        );
 
         const releaseActions = createReleaseActions({
             checkAllReleasesValid,

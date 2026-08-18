@@ -21,7 +21,7 @@ type ReleaseActionDependencies = {
     reinstallRelease: (
         release: InstalledRelease,
     ) => Promise<InstallReleaseResult>;
-    removeRelease: (release: InstalledRelease) => Promise<unknown>;
+    removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
 };
 
 type UseReleaseActionsArgs = {
@@ -43,6 +43,7 @@ type UseReleaseActionsArgs = {
         release: InstalledRelease,
     ) => Promise<InstallReleaseResult>;
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
+    getProjectUsageCount: (release: InstalledRelease) => number;
 };
 
 export const createReleaseActions = (
@@ -53,7 +54,7 @@ export const createReleaseActions = (
         return await dependencies.reinstallRelease(release);
     },
     remove: async (release: InstalledRelease) => {
-        await dependencies.removeRelease(release);
+        return await dependencies.removeRelease(release);
     },
 });
 
@@ -64,6 +65,7 @@ export function useReleaseActions({
     checkAllReleasesValid,
     reinstallRelease,
     removeRelease,
+    getProjectUsageCount,
 }: UseReleaseActionsArgs) {
     const [releaseActionsMenu, setReleaseActionsMenu] = useState<{
         release: InstalledRelease;
@@ -122,7 +124,31 @@ export function useReleaseActions({
         void action().catch(showReleaseActionError);
     };
 
+    /**
+     * Removes one editor while exposing its busy state to the list.
+     *
+     * @param release - Editor to remove.
+     * @returns The removal result, or undefined when already busy.
+     */
+    const handleRemove = async (
+        release: InstalledRelease,
+    ): Promise<RemovedReleaseResult | undefined> => {
+        if (isReleaseActionBusy(release)) {
+            return undefined;
+        }
+        setBusyAction({
+            releaseKey: getReleaseActionKey(release),
+            action: 'remove',
+        });
+        try {
+            return await releaseActions.remove(release);
+        } finally {
+            setBusyAction(null);
+        }
+    };
+
     const handleRemoveReleaseFromMenu = (release: InstalledRelease) => {
+        const projectUsageCount = getProjectUsageCount(release);
         addConfirm(
             release.source === 'custom'
                 ? t('dialogs:removeCustomEditor.title')
@@ -142,11 +168,16 @@ export function useReleaseActions({
                         ? t('dialogs:removeCustomEditor.detail')
                         : t('dialogs:removeRelease.detail')}
                 </p>
+                <p className="font-medium">
+                    {t('dialogs:removeRelease.usage', {
+                        count: projectUsageCount,
+                    })}
+                </p>
             </div>,
             async () => {
                 try {
-                    const result = await removeRelease(release);
-                    if (!result.success) {
+                    const result = await handleRemove(release);
+                    if (result && !result.success) {
                         addAlert(
                             t('dialogs:removeRelease.error'),
                             result.error ??
@@ -265,7 +296,7 @@ export function useReleaseActions({
         try {
             const result = await releaseActions.reinstall(release);
 
-            if (result.success) {
+            if (result.success || result.cancelled) {
                 return;
             }
 
@@ -286,21 +317,6 @@ export function useReleaseActions({
         }
     };
 
-    const handleRemove = async (release: InstalledRelease) => {
-        if (isReleaseActionBusy(release)) {
-            return;
-        }
-        setBusyAction({
-            releaseKey: getReleaseActionKey(release),
-            action: 'remove',
-        });
-        try {
-            await releaseActions.remove(release);
-        } finally {
-            setBusyAction(null);
-        }
-    };
-
     return {
         releaseActionsMenu,
         setReleaseActionsMenu,
@@ -310,6 +326,5 @@ export function useReleaseActions({
         handleRemoveReleaseFromMenu,
         handleRetry,
         handleReinstall,
-        handleRemove,
     };
 }

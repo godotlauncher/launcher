@@ -25,7 +25,8 @@ export const InstallEditorVariantAction: React.FC<
     InstallEditorVariantActionProps
 > = ({ release, mono, tone = 'outline', onInstall, onReinstall }) => {
     const { t } = useTranslation('installEditor');
-    const { getInstalledRelease, getReleaseInstallProgress } = useRelease();
+    const { cancelInstall, getInstalledRelease, getReleaseInstallProgress } =
+        useRelease();
     const installedRelease = getInstalledRelease(release.version, mono);
     const progress = getReleaseInstallProgress(release.version, mono);
     const hasAsset = release.assets.some((asset) => asset.mono === mono);
@@ -73,6 +74,7 @@ export const InstallEditorVariantAction: React.FC<
                     <ReleaseInstallProgressIndicator
                         progress={progress}
                         className="w-full"
+                        onCancel={(jobId) => void cancelInstall(jobId)}
                     />
                 </div>
             </Tooltip>

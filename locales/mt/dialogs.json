@@ -24,6 +24,7 @@
         "title": "Neħħi Release",
         "message": "Int żgur li trid tħassar ir-release \"{{version}}\"?",
         "detail": "Dan se jħassar ir-release mit-tagħmir tiegħek. Tista' tinstallah mill-ġdid aktar tard.",
+        "usage": "Proġetti li jużaw dan l-editur: {{count}}.",
         "ok": "Ok",
         "cancel": "Ikkanċella",
         "error": "Żball",

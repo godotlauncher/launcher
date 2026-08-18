@@ -24,6 +24,7 @@
         "title": "Usuń wydanie",
         "message": "Czy na pewno chcesz usunąć wydanie \"{{version}}\"?",
         "detail": "Spowoduje to usunięcie wydania z Twojego urządzenia. Możesz zainstalować je ponownie później.",
+        "usage": "Projekty używające tego edytora: {{count}}.",
         "ok": "Ok",
         "cancel": "Anuluj",
         "error": "Błąd",

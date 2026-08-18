@@ -1,16 +1,10 @@
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { ReadableStream } from 'node:stream/web';
-import type {
-    AssetSummary,
-    InstalledRelease,
-    ReleaseSummary,
-} from '@shared/contracts';
+import type { AssetSummary, ReleaseSummary } from '@shared/contracts';
 import logger from 'electron-log';
-import { PROJECTS_FILENAME } from '../constants.js';
 import { t } from '../i18n/index.js';
 import type { ReleaseAsset } from '../types/github.js';
 import {
@@ -18,16 +12,12 @@ import {
     archiveDigestsMatch,
     normalizeGithubAssetDigest,
 } from './archive-integrity.util.js';
-import { removeProjectEditor } from './godot.utils.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
     __resetJsonStoreFactoryForTesting,
     createTypedJsonStore,
     type TypedJsonStore,
 } from './jsonStoreFactory.js';
-import { getDefaultDirs } from './platform.utils.js';
-import { getReleaseBaseVersion } from './projectLauncherConfig.utils.js';
-import { getStoredProjectsList } from './projects.utils.js';
 
 export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
 
@@ -161,6 +151,7 @@ export type DownloadReleaseAssetProgress = {
 export type DownloadReleaseAssetOptions = {
     integrity: ArchiveIntegrity;
     idleTimeoutMs?: number;
+    signal?: AbortSignal;
     onProgress?: (progress: DownloadReleaseAssetProgress) => void;
 };
 
@@ -262,6 +253,14 @@ export async function downloadReleaseAsset(
 ): Promise<void> {
     const idleTimeoutMs = options.idleTimeoutMs ?? 120_000;
     const controller = new AbortController();
+    const abortFromCaller = () => controller.abort(options.signal?.reason);
+    if (options.signal?.aborted) {
+        abortFromCaller();
+    } else {
+        options.signal?.addEventListener('abort', abortFromCaller, {
+            once: true,
+        });
+    }
     let idleTimeout: NodeJS.Timeout | undefined;
     const clearIdleTimeout = () => {
         if (idleTimeout) {
@@ -284,17 +283,23 @@ export async function downloadReleaseAsset(
         });
     } catch (error) {
         clearIdleTimeout();
+        options.signal?.removeEventListener('abort', abortFromCaller);
+        if (options.signal?.aborted) {
+            throw options.signal.reason ?? error;
+        }
         throw new Error(getDownloadErrorMessage(error), { cause: error });
     }
 
     if (!res.ok) {
         clearIdleTimeout();
+        options.signal?.removeEventListener('abort', abortFromCaller);
         throw new Error(
             getDownloadHttpErrorMessage(res.status, res.statusText),
         );
     }
     if (!res.body) {
         clearIdleTimeout();
+        options.signal?.removeEventListener('abort', abortFromCaller);
         throw new Error(t('installEditor:errors.downloadEmptyResponse'));
     }
 
@@ -326,12 +331,17 @@ export async function downloadReleaseAsset(
             Readable.fromWeb(res.body as unknown as ReadableStream),
             progressStream,
             fileStream,
+            { signal: controller.signal },
         );
     } catch (error) {
         await fs.promises.rm(downloadPath, { force: true }).catch(() => {});
+        if (options.signal?.aborted) {
+            throw options.signal.reason ?? error;
+        }
         throw new Error(getDownloadErrorMessage(error), { cause: error });
     } finally {
         clearIdleTimeout();
+        options.signal?.removeEventListener('abort', abortFromCaller);
     }
 
     const calculatedDigest = hash.digest('hex');
@@ -450,172 +460,6 @@ export async function storeAvailableReleases(
     return normalizeReleaseCache(persisted);
 }
 
-let installedReleasesStore: TypedJsonStore<InstalledRelease[]> | null = null;
-let installedReleasesPath: string | null = null;
-
-type InstalledReleaseIdentity = Pick<InstalledRelease, 'version' | 'mono'>;
-
-export function getInstalledReleaseIdentity(
-    release: InstalledReleaseIdentity,
-): string {
-    return `${release.version}:${release.mono ? 'mono' : 'standard'}`;
-}
-
-export function hasSameInstalledReleaseIdentity(
-    a: InstalledReleaseIdentity,
-    b: InstalledReleaseIdentity,
-): boolean {
-    return getInstalledReleaseIdentity(a) === getInstalledReleaseIdentity(b);
-}
-
-function preferInstalledRelease(
-    current: InstalledRelease,
-    candidate: InstalledRelease,
-): InstalledRelease {
-    if (current.valid === false && candidate.valid !== false) {
-        return candidate;
-    }
-
-    if (current.valid !== false && candidate.valid === false) {
-        return current;
-    }
-
-    return candidate;
-}
-
-export function dedupeInstalledReleases(
-    releases: InstalledRelease[],
-): InstalledRelease[] {
-    const releasesByIdentity = new Map<string, InstalledRelease>();
-
-    for (const release of releases) {
-        const normalizedRelease = {
-            ...release,
-            valid: typeof release.valid === 'boolean' ? release.valid : true,
-            base_version: getReleaseBaseVersion(release),
-        };
-        const identity = getInstalledReleaseIdentity(normalizedRelease);
-        const existing = releasesByIdentity.get(identity);
-
-        releasesByIdentity.set(
-            identity,
-            existing
-                ? preferInstalledRelease(existing, normalizedRelease)
-                : normalizedRelease,
-        );
-    }
-
-    return [...releasesByIdentity.values()].sort(
-        (a, b) => a.version_number - b.version_number,
-    );
-}
-
-function normalizeInstalledReleases(
-    releases: InstalledRelease[],
-): InstalledRelease[] {
-    return releases
-        .map((release) => ({
-            ...release,
-            valid: typeof release.valid === 'boolean' ? release.valid : true,
-            base_version: getReleaseBaseVersion(release),
-        }))
-        .sort((a, b) => a.version_number - b.version_number);
-}
-
-function ensureInstalledReleasesPath(): string {
-    if (installedReleasesPath) {
-        return installedReleasesPath;
-    }
-
-    const { installedReleasesCachePath } = getDefaultDirs();
-    installedReleasesPath = installedReleasesCachePath;
-    return installedReleasesPath;
-}
-
-function ensureInstalledReleasesStore(): TypedJsonStore<InstalledRelease[]> {
-    if (installedReleasesStore) {
-        return installedReleasesStore;
-    }
-
-    const path = ensureInstalledReleasesPath();
-    installedReleasesStore = createTypedJsonStore<InstalledRelease[]>({
-        id: 'installed-releases',
-        logLabel: 'installed releases',
-        pathProvider: () => path,
-        defaultValue: () => [],
-        normalize: async (releases) => normalizeInstalledReleases(releases),
-        onParseError: (error) => {
-            logger.error('Failed to read installed releases', error);
-            return [];
-        },
-    });
-
-    return installedReleasesStore;
-}
-
-export async function getStoredInstalledReleases(): Promise<
-    InstalledRelease[]
-> {
-    return ensureInstalledReleasesStore().read();
-}
-
-export async function addStoredInstalledRelease(
-    release: InstalledRelease,
-): Promise<InstalledRelease[]> {
-    return ensureInstalledReleasesStore().update((releases) => {
-        const nextReleases = releases.filter(
-            (storedRelease) =>
-                !hasSameInstalledReleaseIdentity(storedRelease, release),
-        );
-        nextReleases.push(release);
-        return nextReleases;
-    });
-}
-
-function matchesReleaseLocation(
-    storedRelease: InstalledRelease,
-    releaseToRemove: InstalledRelease,
-): boolean {
-    if (releaseToRemove.editor_path) {
-        return storedRelease.editor_path === releaseToRemove.editor_path;
-    }
-
-    if (releaseToRemove.install_path) {
-        return storedRelease.install_path === releaseToRemove.install_path;
-    }
-
-    return true;
-}
-
-export async function removeStoredInstalledRelease(
-    release: InstalledRelease,
-): Promise<InstalledRelease[]> {
-    return ensureInstalledReleasesStore().update((releases) =>
-        releases.filter(
-            (r) =>
-                !(
-                    hasSameInstalledReleaseIdentity(r, release) &&
-                    matchesReleaseLocation(r, release)
-                ),
-        ),
-    );
-}
-
-export async function saveStoredInstalledReleases(
-    releases: InstalledRelease[],
-): Promise<InstalledRelease[]> {
-    return ensureInstalledReleasesStore().write(releases);
-}
-
-export function __resetInstalledReleasesStoreForTesting(): void {
-    __resetJsonStoreFactoryForTesting();
-    __resetJsonStoreForTesting();
-    installedReleasesStore = null;
-    installedReleasesPath = null;
-    availableReleaseStores.clear();
-    prereleaseStores.clear();
-}
-
 export function __resetReleaseCachesForTesting(): void {
     availableReleaseStores.forEach((store) => {
         void store.clear();
@@ -627,18 +471,4 @@ export function __resetReleaseCachesForTesting(): void {
     prereleaseStores.clear();
     __resetJsonStoreFactoryForTesting();
     __resetJsonStoreForTesting();
-}
-
-export async function removeProjectEditorUsingRelease(
-    release: InstalledRelease,
-): Promise<void> {
-    const { configDir } = getDefaultDirs();
-    const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
-    const projects = await getStoredProjectsList(projectListPath);
-
-    for (const project of projects) {
-        if (project.release.editor_path === release.editor_path) {
-            await removeProjectEditor(project);
-        }
-    }
 }

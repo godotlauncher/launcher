@@ -165,8 +165,8 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
         release: ReleaseSummary,
         mono: boolean,
     ): Promise<void> => {
-        const result = await installRelease(release, mono);
-        if (!result.success) {
+        const result = await installRelease(release, mono, 'installs');
+        if (!result.success && !result.cancelled) {
             showInstallError(result.error || t('messages.installError'));
         }
     };
@@ -188,7 +188,7 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
         }
 
         const result = await reinstallRelease(installedRelease);
-        if (!result.success) {
+        if (!result.success && !result.cancelled) {
             showInstallError(result.error || t('messages.reinstallError'));
         }
     };

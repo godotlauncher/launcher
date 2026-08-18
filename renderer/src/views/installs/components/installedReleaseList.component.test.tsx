@@ -14,6 +14,16 @@ vi.mock('../../../hooks/useRelease', () => ({
     }),
 }));
 
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string) =>
+            ({
+                'progress.downloading': 'Downloading',
+                'progress.cancelLabel': 'Cancel install',
+            })[key] ?? key,
+    }),
+}));
+
 describe('InstalledReleaseList', () => {
     beforeEach(() => {
         installProgress = undefined;
@@ -48,6 +58,7 @@ describe('InstalledReleaseList', () => {
             prerelease: false,
             published_at: '2026-06-18T00:00:00Z',
             stage: 'downloading',
+            canCancel: true,
             percent: 55,
             receivedBytes: 55 * 1024 * 1024,
             totalBytes: 100 * 1024 * 1024,
@@ -61,15 +72,25 @@ describe('InstalledReleaseList', () => {
         expect(html).toContain('55%');
         expect(html).toContain('55 MB / 100 MB');
     });
+
+    it('marks the whole editor row busy while removal is running', () => {
+        const html = renderList([createInstalledRelease('4.7-stable')], true);
+
+        expect(html).toContain('aria-busy="true"');
+        expect(html).toContain('loading-spinner');
+        expect(html).toContain('pointer-events-none');
+        expect(html).not.toContain('btnReleaseMoreOptions');
+    });
 });
 
 /**
  * Renders installed editors with focused test labels.
  *
  * @param rows - The installed editors to render.
+ * @param removing - Whether the first editor removal is active.
  * @returns The rendered installed editor list.
  */
-function renderList(rows: InstalledRelease[]): string {
+function renderList(rows: InstalledRelease[], removing = false): string {
     const labels: Record<string, string> = {
         'groups.other': 'Other',
         'badges.custom': 'Custom',
@@ -89,7 +110,9 @@ function renderList(rows: InstalledRelease[]): string {
             t={(key, options) =>
                 labels[options?.ns ? `${options.ns}:${key}` : key] ?? key
             }
-            isReleaseActionBusy={vi.fn(() => false)}
+            isReleaseActionBusy={vi.fn((_release, action) =>
+                removing ? action === 'remove' : false,
+            )}
             onRetry={vi.fn()}
             onReinstall={vi.fn()}
             onRemove={vi.fn()}

@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
+import type { ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
 
 import { getCurrentAppConfig } from './config/index.js';
@@ -17,11 +17,6 @@ import {
     getProjectsSnapshot,
     storeProjectsList,
 } from './utils/projects.utils.js';
-import {
-    dedupeInstalledReleases,
-    getStoredInstalledReleases,
-    saveStoredInstalledReleases,
-} from './utils/releases.utils.js';
 
 const PROJECT_VALIDATION_MAX_ATTEMPTS = 2;
 const VALIDATION_PATH_CHECK_TIMEOUT_MS = 1500;
@@ -61,32 +56,6 @@ async function pathExistsForValidation(pathToCheck: string): Promise<boolean> {
     } finally {
         clearTimeout(timeout);
     }
-}
-
-export async function checkAndUpdateReleases(): Promise<InstalledRelease[]> {
-    logger.info('Checking and updating releases');
-
-    // get releases
-    const releases = await getStoredInstalledReleases();
-
-    // check that release path exist
-    for (const release of releases) {
-        if (getCurrentAppConfig().docsScreenshots) {
-            release.valid = true;
-            continue;
-        }
-
-        const editorPathExists = await pathExistsForValidation(
-            release.editor_path,
-        );
-        if (!editorPathExists) {
-            logger.warn(`Release '${release.version}' has an invalid path`);
-        }
-        release.valid = editorPathExists;
-    }
-
-    // persist all unique releases, including invalid ones for recovery scenarios
-    return await saveStoredInstalledReleases(dedupeInstalledReleases(releases));
 }
 
 /**

@@ -3,6 +3,7 @@ import {
     appBridge,
     codeEditorIntegrationBridge,
     editorCatalogBridge,
+    editorInstallsBridge,
     getPathForFile,
     gitBridge,
     gitLfsBridge,
@@ -37,6 +38,16 @@ type TestElectronApi = {
     'editorCatalog.getCatalog': () => Promise<unknown>;
     'editorCatalog.getReleaseById': (id: string) => Promise<unknown>;
     'editorCatalog.refreshCatalog': () => Promise<unknown>;
+    'editorInstalls.getInstalledEditors': () => Promise<unknown[]>;
+    'editorInstalls.installEditor': (...args: unknown[]) => Promise<unknown>;
+    'editorInstalls.reinstallEditor': (...args: unknown[]) => Promise<unknown>;
+    'editorInstalls.cancelInstall': (jobId: string) => Promise<unknown>;
+    'editorInstalls.removeEditor': (...args: unknown[]) => Promise<unknown>;
+    'editorInstalls.registerCustomEditor': (
+        ...args: unknown[]
+    ) => Promise<unknown>;
+    'editorInstalls.openProjectManager': (...args: unknown[]) => Promise<void>;
+    'editorInstalls.revalidateInstalledEditors': () => Promise<unknown[]>;
     'git.getGlobalIdentity': () => Promise<unknown>;
     'git.getIdentitySettings': () => Promise<unknown>;
     'git.saveGlobalIdentity': (identity: unknown) => Promise<unknown>;
@@ -68,6 +79,17 @@ describe('renderer bridge', () => {
     const getCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
     const getReleaseById = vi.fn(async () => null);
     const refreshCatalog = vi.fn(async () => ({ releases: [], providers: [] }));
+    const getInstalledEditors = vi.fn(async () => []);
+    const installEditor = vi.fn(async () => ({ success: true }));
+    const reinstallEditor = vi.fn(async () => ({ success: true }));
+    const cancelInstall = vi.fn(async (jobId: string) => ({
+        jobId,
+        status: 'cancelled',
+    }));
+    const removeEditor = vi.fn(async () => ({ success: true }));
+    const registerCustomEditor = vi.fn(async () => ({ success: true }));
+    const openProjectManager = vi.fn(async () => undefined);
+    const revalidateInstalledEditors = vi.fn(async () => []);
     const getGlobalIdentity = vi.fn(async () => ({
         name: 'Mario',
         email: 'mario@example.com',
@@ -116,6 +138,15 @@ describe('renderer bridge', () => {
             'editorCatalog.getCatalog': getCatalog,
             'editorCatalog.getReleaseById': getReleaseById,
             'editorCatalog.refreshCatalog': refreshCatalog,
+            'editorInstalls.getInstalledEditors': getInstalledEditors,
+            'editorInstalls.installEditor': installEditor,
+            'editorInstalls.reinstallEditor': reinstallEditor,
+            'editorInstalls.cancelInstall': cancelInstall,
+            'editorInstalls.removeEditor': removeEditor,
+            'editorInstalls.registerCustomEditor': registerCustomEditor,
+            'editorInstalls.openProjectManager': openProjectManager,
+            'editorInstalls.revalidateInstalledEditors':
+                revalidateInstalledEditors,
             'git.getGlobalIdentity': getGlobalIdentity,
             'git.getIdentitySettings': getIdentitySettings,
             'git.saveGlobalIdentity': saveGlobalIdentity,
@@ -194,6 +225,16 @@ describe('renderer bridge', () => {
             'official-stable:4.5-stable',
         );
         expect(refreshCatalog).toHaveBeenCalledOnce();
+    });
+
+    it('delegates through the editor installs namespace', async () => {
+        await editorInstallsBridge.getInstalledEditors();
+        await editorInstallsBridge.cancelInstall('editor-install-1');
+        await editorInstallsBridge.revalidateInstalledEditors();
+
+        expect(getInstalledEditors).toHaveBeenCalledOnce();
+        expect(cancelInstall).toHaveBeenCalledWith('editor-install-1');
+        expect(revalidateInstalledEditors).toHaveBeenCalledOnce();
     });
 
     it('delegates through the tool integration namespace', async () => {

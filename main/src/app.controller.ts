@@ -17,7 +17,6 @@ import type {
     InstalledRelease,
     LaunchProjectOptions,
     ProjectDetails,
-    ReleaseSummary,
     RenameProjectOptions,
     RendererType,
     UserPreferences,
@@ -32,7 +31,7 @@ import {
     installUpdateAndRestart,
     setBetaChannel,
 } from './autoUpdater.js';
-import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
+import { checkAndUpdateProjects } from './checks.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
 import { addProject } from './commands/addProject.js';
@@ -42,7 +41,6 @@ import {
     fileExists,
     pathExists,
 } from './commands/fileSystem.js';
-import { installRelease } from './commands/installRelease.js';
 import {
     exportProjectEditorSettings,
     importProjectEditorSettings,
@@ -63,16 +61,11 @@ import {
     setProjectPinned,
     setProjectWindowed,
 } from './commands/projects.js';
-import { registerCustomEngine } from './commands/registerCustomEngine.js';
-import { reinstallRelease } from './commands/reinstallRelease.js';
 import {
     clearReleaseCaches,
     getAvailablePrereleases,
     getAvailableReleases,
-    getInstalledReleases,
-    openProjectManager,
 } from './commands/releases.js';
-import { removeRelease } from './commands/removeRelease.js';
 import { setProjectEditor } from './commands/setProjectEditor.js';
 import {
     openDirectoryDialog,
@@ -85,7 +78,7 @@ import {
 } from './commands/userPreferences.js';
 import { getCurrentAppConfig } from './config/index.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { EditorCatalogService } from './editor-catalog/editor-catalog.service.js';
+import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
@@ -111,7 +104,7 @@ export class AppController implements AppBridge {
      * @param i18nService - Main-process localization service.
      * @param appLifecycleService - Application lifecycle coordinator.
      * @param codeEditorIntegrationService - Code editor integration facade.
-     * @param editorCatalogService - Official editor catalogue service.
+     * @param installedEditorService - Installed editor query service.
      * @param gitService - Typed Git command service.
      * @param gitLfsService - Guarded Git LFS project configuration service.
      * @param trayAvailabilityService - System tray availability service.
@@ -120,7 +113,7 @@ export class AppController implements AppBridge {
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
-        private readonly editorCatalogService: EditorCatalogService,
+        private readonly installedEditorService: InstalledEditorService,
         private readonly gitService: GitService,
         private readonly gitLfsService: GitLfsService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
@@ -217,54 +210,12 @@ export class AppController implements AppBridge {
         return getAvailablePrereleases();
     }
 
-    @AppHandler('getInstalledReleases')
-    getInstalledReleases() {
-        return getInstalledReleases();
-    }
-
-    @AppHandler('installRelease')
-    installRelease(release: ReleaseSummary, mono: boolean) {
-        return installRelease(release, mono);
-    }
-
-    @AppHandler('removeRelease')
-    removeRelease(release: InstalledRelease) {
-        return removeRelease(release);
-    }
-
-    @AppHandler('reinstallRelease')
-    reinstallRelease(release: InstalledRelease) {
-        return reinstallRelease(
-            release,
-            this.codeEditorIntegrationService,
-            this.editorCatalogService,
-        );
-    }
-
-    @AppHandler('registerCustomEngine')
-    registerCustomEngine(
-        manifestPath: string,
-        options?: { replaceExisting?: boolean },
-    ) {
-        return registerCustomEngine(manifestPath, options);
-    }
-
     @AppHandler('createCustomEngineManifest')
     createCustomEngineManifest(
         outputDirectory: string,
         manifest: CustomEngineManifest,
     ) {
         return createCustomEngineManifest(outputDirectory, manifest);
-    }
-
-    @AppHandler('openEditorProjectManager')
-    openEditorProjectManager(release: InstalledRelease) {
-        return openProjectManager(release);
-    }
-
-    @AppHandler('checkAllReleasesValid')
-    checkAllReleasesValid() {
-        return checkAndUpdateReleases();
     }
 
     @AppHandler('clearReleaseCache')
@@ -338,6 +289,7 @@ export class AppController implements AppBridge {
         return addProject(
             projectPath,
             this.codeEditorIntegrationService,
+            this.installedEditorService,
             options,
             this.gitService,
         );

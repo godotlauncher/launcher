@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Recharger la liste des versions"
     },
+    "progress": {
+        "queued": "En attente",
+        "queuedPosition": "En attente n° {{position}}",
+        "preparing": "Préparation",
+        "downloading": "Téléchargement",
+        "cancelling": "Annulation",
+        "extracting": "Extraction",
+        "registering": "Enregistrement",
+        "validating": "Validation",
+        "complete": "Terminé",
+        "cancelled": "Annulé",
+        "failed": "Échec",
+        "cancelLabel": "Annuler l'installation de {{version}}"
+    },
     "errors": {
         "fetchError": "Une erreur s'est produite lors de la récupération des versions.",
         "catalogUpdateTitle": "Impossible de mettre à jour la liste des éditeurs",

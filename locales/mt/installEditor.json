@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Erġa' llowdja l-Lista ta' Releases"
     },
+    "progress": {
+        "queued": "Fil-kju",
+        "queuedPosition": "Fil-kju #{{position}}",
+        "preparing": "Qed jitħejja",
+        "downloading": "Qed jitniżżel",
+        "cancelling": "Qed jiġi kkanċellat",
+        "extracting": "Qed jiġi estratt",
+        "registering": "Qed jiġi rreġistrat",
+        "validating": "Qed jiġi vvalidat",
+        "complete": "Lest",
+        "cancelled": "Ikkanċellat",
+        "failed": "Falla",
+        "cancelLabel": "Ikkanċella l-installazzjoni ta' {{version}}"
+    },
     "errors": {
         "fetchError": "Kien hemm żball waqt li qed jinġibu r-releases.",
         "catalogUpdateTitle": "Ma setgħetx tiġi aġġornata l-lista tal-edituri",

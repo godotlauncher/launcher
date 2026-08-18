@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "重新載入發行清單"
     },
+    "progress": {
+        "queued": "排隊中",
+        "queuedPosition": "佇列第 {{position}} 位",
+        "preparing": "準備中",
+        "downloading": "下載中",
+        "cancelling": "正在取消",
+        "extracting": "解壓縮中",
+        "registering": "註冊中",
+        "validating": "驗證中",
+        "complete": "已完成",
+        "cancelled": "已取消",
+        "failed": "失敗",
+        "cancelLabel": "取消安裝 {{version}}"
+    },
     "errors": {
         "fetchError": "擷取發行版本時發生錯誤。",
         "catalogUpdateTitle": "無法更新編輯器清單",

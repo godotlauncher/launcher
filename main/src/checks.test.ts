@@ -2,13 +2,8 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import path from 'node:path';
-import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
+import type { ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-const releaseUtilsMocks = vi.hoisted(() => ({
-    getStoredInstalledReleases: vi.fn(),
-    saveStoredInstalledReleases: vi.fn(),
-}));
 
 const godotUtilsMocks = vi.hoisted(() => ({
     SetProjectEditorRelease: vi.fn(),
@@ -18,17 +13,6 @@ const projectsUtilsMocks = vi.hoisted(() => ({
     getProjectsSnapshot: vi.fn(),
     storeProjectsList: vi.fn(),
 }));
-
-vi.mock('./utils/releases.utils.js', async () => {
-    const actual = await vi.importActual<
-        typeof import('./utils/releases.utils.js')
-    >('./utils/releases.utils.js');
-    return {
-        ...actual,
-        ...releaseUtilsMocks,
-    };
-});
-
 vi.mock('./utils/platform.utils.js', () => ({
     getDefaultDirs: vi.fn(() => ({
         configDir: '/tmp/godot-launcher',
@@ -56,144 +40,11 @@ vi.mock('electron-log', () => ({
     },
 }));
 
-import {
-    checkAndUpdateProjects,
-    checkAndUpdateReleases,
-    checkProjectValid,
-} from './checks.js';
+import { checkAndUpdateProjects, checkProjectValid } from './checks.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import { JsonStoreConflictError } from './utils/jsonStore.js';
-import {
-    getStoredInstalledReleases,
-    saveStoredInstalledReleases,
-} from './utils/releases.utils.js';
 
 const { getProjectsSnapshot, storeProjectsList } = projectsUtilsMocks;
-
-describe('checkAndUpdateReleases', () => {
-    beforeEach(() => {
-        vi.mocked(getStoredInstalledReleases).mockReset();
-        vi.mocked(saveStoredInstalledReleases).mockReset();
-    });
-
-    it('marks invalid releases but keeps them stored for recovery', async () => {
-        const tempDir = fs.mkdtempSync(
-            path.join(os.tmpdir(), 'launcher-release-valid-'),
-        );
-        const validEditorPath = path.join(tempDir, 'Godot');
-        fs.mkdirSync(validEditorPath, { recursive: true });
-
-        const validRelease: InstalledRelease = {
-            version: '4.2.0',
-            version_number: 40200,
-            install_path: tempDir,
-            editor_path: validEditorPath,
-            platform: 'darwin',
-            arch: 'arm64',
-            mono: false,
-            prerelease: false,
-            config_version: 5,
-            published_at: '2024-01-01T00:00:00Z',
-            valid: true,
-        };
-
-        const invalidRelease: InstalledRelease = {
-            version: '4.1.0',
-            version_number: 40100,
-            install_path: path.join(os.tmpdir(), 'launcher-missing-install'),
-            editor_path: path.join(os.tmpdir(), 'launcher-missing-editor'),
-            platform: 'darwin',
-            arch: 'arm64',
-            mono: false,
-            prerelease: false,
-            config_version: 5,
-            published_at: '2023-01-01T00:00:00Z',
-            valid: true,
-        };
-
-        vi.mocked(getStoredInstalledReleases).mockResolvedValueOnce([
-            { ...validRelease },
-            { ...invalidRelease },
-        ]);
-        vi.mocked(saveStoredInstalledReleases).mockImplementation(
-            async (releases: InstalledRelease[]) => releases,
-        );
-
-        const result = await checkAndUpdateReleases();
-
-        expect(saveStoredInstalledReleases).toHaveBeenCalledTimes(1);
-
-        const savedReleases = vi.mocked(saveStoredInstalledReleases).mock
-            .calls[0][0] as InstalledRelease[];
-        expect(savedReleases).toHaveLength(2);
-        expect(savedReleases.find((r) => r.version === '4.2.0')?.valid).toBe(
-            true,
-        );
-        expect(savedReleases.find((r) => r.version === '4.1.0')?.valid).toBe(
-            false,
-        );
-
-        expect(result).toHaveLength(2);
-        expect(result.find((r) => r.version === '4.1.0')?.valid).toBe(false);
-
-        fs.rmSync(tempDir, { recursive: true, force: true });
-    });
-
-    it('dedupes releases by version and mono after validation', async () => {
-        const tempDir = fs.mkdtempSync(
-            path.join(os.tmpdir(), 'launcher-release-dedupe-'),
-        );
-        const validEditorPath = path.join(tempDir, 'Godot');
-        fs.mkdirSync(validEditorPath, { recursive: true });
-
-        const invalidRelease: InstalledRelease = {
-            version: '4.2.0',
-            version_number: 40200,
-            install_path: path.join(os.tmpdir(), 'launcher-old-install'),
-            editor_path: path.join(os.tmpdir(), 'launcher-old-editor'),
-            platform: 'darwin',
-            arch: 'arm64',
-            mono: false,
-            prerelease: false,
-            config_version: 5,
-            published_at: '2024-01-01T00:00:00Z',
-            valid: true,
-        };
-        const validRelease: InstalledRelease = {
-            ...invalidRelease,
-            install_path: tempDir,
-            editor_path: validEditorPath,
-        };
-        const dotNetRelease: InstalledRelease = {
-            ...validRelease,
-            mono: true,
-            install_path: path.join(tempDir, 'mono'),
-            editor_path: path.join(tempDir, 'Godot_mono'),
-        };
-        fs.mkdirSync(dotNetRelease.editor_path, { recursive: true });
-
-        vi.mocked(getStoredInstalledReleases).mockResolvedValueOnce([
-            invalidRelease,
-            validRelease,
-            dotNetRelease,
-        ]);
-        vi.mocked(saveStoredInstalledReleases).mockImplementation(
-            async (releases: InstalledRelease[]) => releases,
-        );
-
-        const result = await checkAndUpdateReleases();
-
-        expect(result).toHaveLength(2);
-        expect(
-            result.find((r) => r.version === '4.2.0' && !r.mono)?.editor_path,
-        ).toBe(validEditorPath);
-        expect(
-            result.find((r) => r.version === '4.2.0' && r.mono),
-        ).toBeDefined();
-
-        fs.rmSync(tempDir, { recursive: true, force: true });
-    });
-});
 
 describe('checkProjectValid', () => {
     beforeEach(() => {

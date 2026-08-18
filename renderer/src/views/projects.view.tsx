@@ -255,9 +255,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     };
 
     const projectSections = getProjectSections(projects, textSearch);
+    const validInstalledReleaseCount = installedReleases.filter(
+        (release) => release.valid !== false,
+    ).length;
     const viewState = getProjectsViewState({
         projectCount: projects.length,
-        installedReleaseCount: installedReleases.length,
+        installedReleaseCount: validInstalledReleaseCount,
         downloadingReleaseCount: downloadingReleases.length,
         textSearch,
         projectsLoading: loading,
@@ -302,7 +305,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     onSearchChange={setTextSearch}
                     onAddProject={() => void onAddProject()}
                     onCreateProject={() => setCreateOpen(true)}
-                    createDisabled={installedReleases.length < 1}
+                    createDisabled={validInstalledReleaseCount < 1}
                     addLabel={t('buttons.add')}
                     createLabel={t('buttons.newProject')}
                     copyPathLabel={t('common:buttons.copyPath')}
@@ -312,7 +315,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
                 {viewState === 'list' &&
                     projects.length > 0 &&
-                    installedReleases.length < 1 && (
+                    validInstalledReleaseCount < 1 && (
                         <div className="text-warning flex gap-2">
                             <TriangleAlert className="stroke-warning" />
                             <Trans

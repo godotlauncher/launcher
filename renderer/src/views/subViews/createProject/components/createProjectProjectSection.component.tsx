@@ -1,13 +1,16 @@
-import type { InstalledRelease } from '@shared/contracts';
 import { Folder, FolderPlus } from 'lucide-react';
 import type React from 'react';
 import { Tooltip } from '../../../../components/ui/tooltip.component';
+import type { CreateProjectReleaseRow } from '../createProject.model';
 
-type Translate = (key: string) => string;
+type Translate = (
+    key: string,
+    options?: { ns?: string; position?: number },
+) => string;
 
 type CreateProjectProjectSectionProps = {
     t: Translate;
-    releases: InstalledRelease[];
+    releases: CreateProjectReleaseRow[];
     releaseIndex: number;
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     installedReleaseCount: number;
@@ -56,6 +59,28 @@ export const CreateProjectProjectSection: React.FC<
 }) => {
     const selectedRelease = releases[releaseIndex];
 
+    /**
+     * Gets the translated status for one editor install option.
+     *
+     * @param release - Create Project editor option.
+     * @returns The current translated install stage.
+     */
+    const getInstallStatus = (release: CreateProjectReleaseRow): string => {
+        if (
+            release.installStage === 'queued' &&
+            release.queuePosition !== undefined
+        ) {
+            return t('progress.queuedPosition', {
+                ns: 'installEditor',
+                position: release.queuePosition,
+            });
+        }
+
+        return t(`progress.${release.installStage ?? 'preparing'}`, {
+            ns: 'installEditor',
+        });
+    };
+
     return (
         <div className="flex flex-col gap-2">
             <div className="flex flex-row gap-2 items-center">
@@ -96,15 +121,23 @@ export const CreateProjectProjectSection: React.FC<
                             onReleaseChange(+event.target.value)
                         }
                     >
+                        <option value={-1} disabled hidden>
+                            {t('project.noVersionsInstalled')}
+                        </option>
                         {releases.map((release, index) => (
                             <option
-                                disabled={release.editor_path?.length === 0}
+                                disabled={
+                                    release.valid === false ||
+                                    release.editor_path?.length === 0
+                                }
                                 key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
                                 value={index}
                             >
-                                {release.editor_path?.length > 0
-                                    ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
-                                    : `${release.name ?? release.version} ${t('project.downloading')}`}
+                                {release.valid === false
+                                    ? `${release.name ?? release.version} - ${t('table.status.unavailable', { ns: 'installEditor' })}`
+                                    : release.editor_path?.length > 0
+                                      ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
+                                      : `${release.name ?? release.version} - ${getInstallStatus(release)}`}
                             </option>
                         ))}
                     </select>

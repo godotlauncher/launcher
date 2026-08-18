@@ -49,7 +49,7 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     onRemove,
     onOpenReleaseMoreOptions,
 }) => {
-    const { getReleaseInstallProgress } = useRelease();
+    const { cancelInstall, getReleaseInstallProgress } = useRelease();
     const groups = groupEditorsByBaseVersion(rows);
 
     return (
@@ -72,12 +72,14 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                                 release.version,
                                 release.mono,
                             )}
+                            removing={isReleaseActionBusy(release, 'remove')}
                             t={t}
                             isReleaseActionBusy={isReleaseActionBusy}
                             onRetry={onRetry}
                             onReinstall={onReinstall}
                             onRemove={onRemove}
                             onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                            onCancel={(jobId) => void cancelInstall(jobId)}
                         />
                     ))}
                 </EditorVersionGroup>
@@ -89,6 +91,7 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
 type InstalledReleaseRowProps = {
     release: InstalledRelease;
     progress: ReleaseInstallProgress | undefined;
+    removing: boolean;
     t: Translate;
     isReleaseActionBusy: (
         release: InstalledRelease,
@@ -101,6 +104,7 @@ type InstalledReleaseRowProps = {
         event: React.MouseEvent,
         release: InstalledRelease,
     ) => void;
+    onCancel: (jobId: string) => void;
 };
 
 /**
@@ -112,22 +116,31 @@ type InstalledReleaseRowProps = {
 const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
     release,
     progress,
+    removing,
     t,
     isReleaseActionBusy,
     onRetry,
     onReinstall,
     onRemove,
     onOpenReleaseMoreOptions,
+    onCancel,
 }) => (
     <article
-        className="flex min-h-14 items-center gap-3 rounded-box px-3 py-2 transition-colors hover:bg-base-content/10 focus-within:bg-base-content/10 motion-reduce:transition-none"
+        className={`flex min-h-14 items-center gap-3 rounded-box px-3 py-2 transition-colors hover:bg-base-content/10 focus-within:bg-base-content/10 motion-reduce:transition-none ${removing ? 'pointer-events-none opacity-60' : ''}`}
         data-testid={`installedReleaseRow_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+        aria-busy={removing}
     >
         <div className="flex min-w-0 flex-1 flex-col gap-1">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
                 {release.valid === false && (
                     <TriangleAlert
                         className="size-4 shrink-0 text-warning"
+                        aria-hidden="true"
+                    />
+                )}
+                {removing && (
+                    <span
+                        className="loading loading-spinner loading-sm shrink-0"
                         aria-hidden="true"
                     />
                 )}
@@ -237,6 +250,7 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                     <ReleaseInstallProgressIndicator
                         progress={progress}
                         className="max-w-72"
+                        onCancel={onCancel}
                     />
                 ) : (
                     <div className="flex flex-row items-center gap-2">
@@ -247,7 +261,7 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
             </div>
         </div>
 
-        {release.install_path && release.valid !== false && (
+        {release.install_path && release.valid !== false && !removing && (
             <button
                 type="button"
                 data-testid="btnReleaseMoreOptions"

@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Atualizar lista de versões"
     },
+    "progress": {
+        "queued": "Na fila",
+        "queuedPosition": "Na fila nº {{position}}",
+        "preparing": "Preparando",
+        "downloading": "Baixando",
+        "cancelling": "Cancelando",
+        "extracting": "Extraindo",
+        "registering": "Registrando",
+        "validating": "Validando",
+        "complete": "Concluído",
+        "cancelled": "Cancelado",
+        "failed": "Falhou",
+        "cancelLabel": "Cancelar a instalação do {{version}}"
+    },
     "errors": {
         "fetchError": "Ocorreu um erro ao obter as versões.",
         "catalogUpdateTitle": "Não foi possível atualizar a lista de editores",

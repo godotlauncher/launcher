@@ -1,4 +1,4 @@
-import type { InstalledRelease } from '@shared/contracts';
+import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { sortReleases } from '../../releaseStoring.utils';
 
 export type ReleaseAction = 'retry' | 'reinstall' | 'remove';
@@ -40,6 +40,26 @@ export function getInstallsViewState({
 
 export function getReleaseActionKey(release: InstalledRelease): string {
     return `${release.version}_${release.mono ? 'mono' : 'standard'}`;
+}
+
+/**
+ * Counts projects assigned to one installed editor.
+ *
+ * @param release - Installed editor being inspected.
+ * @param projects - Current renderer project records.
+ * @returns The number of projects using the editor.
+ */
+export function getEditorProjectUsageCount(
+    release: InstalledRelease,
+    projects: ProjectDetails[],
+): number {
+    return projects.filter(
+        (project) =>
+            (Boolean(release.editor_path) &&
+                project.release.editor_path === release.editor_path) ||
+            (project.release.version === release.version &&
+                project.release.mono === release.mono),
+    ).length;
 }
 
 export function isSupportedCustomEngineManifestName(fileName: string): boolean {

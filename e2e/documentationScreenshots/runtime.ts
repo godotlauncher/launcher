@@ -20,6 +20,7 @@ import type {
     EditorCatalogPlatform,
     EditorCatalogRelease,
     EditorCatalogResult,
+    EditorInstallsBridge,
     InstalledRelease,
     LaunchProjectResult,
     ProjectDetails,
@@ -75,6 +76,10 @@ const canonicalScreensDir = path.join(
 type AppMethod = Extract<keyof AppBridge, string>;
 type AppResult<Method extends AppMethod> = Awaited<
     ReturnType<AppBridge[Method]>
+>;
+type EditorInstallsMethod = Extract<keyof EditorInstallsBridge, string>;
+type EditorInstallsResult<Method extends EditorInstallsMethod> = Awaited<
+    ReturnType<EditorInstallsBridge[Method]>
 >;
 type IpcSuccess<Data> = {
     success: true;
@@ -436,6 +441,9 @@ export async function stubAppData(
 
             const appChannel = <Method extends AppMethod>(method: Method) =>
                 `app.${method}` as `app.${Method}`;
+            const editorInstallsChannel = <Method extends EditorInstallsMethod>(
+                method: Method,
+            ) => `editorInstalls.${method}` as `editorInstalls.${Method}`;
             const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
                 success: true,
                 data,
@@ -502,20 +510,28 @@ export async function stubAppData(
                 },
             );
 
-            ipcMain.removeHandler(appChannel('getInstalledReleases'));
+            ipcMain.removeHandler(
+                editorInstallsChannel('getInstalledEditors'),
+            );
             ipcMain.handle(
-                appChannel('getInstalledReleases'),
+                editorInstallsChannel('getInstalledEditors'),
                 async () =>
-                    ipcSuccess<AppResult<'getInstalledReleases'>>(
+                    ipcSuccess<
+                        EditorInstallsResult<'getInstalledEditors'>
+                    >(
                         normalizedInstalledReleases,
                     ),
             );
 
-            ipcMain.removeHandler(appChannel('checkAllReleasesValid'));
+            ipcMain.removeHandler(
+                editorInstallsChannel('revalidateInstalledEditors'),
+            );
             ipcMain.handle(
-                appChannel('checkAllReleasesValid'),
+                editorInstallsChannel('revalidateInstalledEditors'),
                 async () =>
-                    ipcSuccess<AppResult<'checkAllReleasesValid'>>(
+                    ipcSuccess<
+                        EditorInstallsResult<'revalidateInstalledEditors'>
+                    >(
                         normalizedInstalledReleases,
                     ),
             );
@@ -1231,17 +1247,18 @@ export async function stubInstallReleaseFailure(
     error: string,
 ) {
     await electronApp.evaluate(({ ipcMain }, message: string) => {
-        const appChannel = <Method extends AppMethod>(method: Method) =>
-            `app.${method}` as `app.${Method}`;
+        const editorInstallsChannel = <Method extends EditorInstallsMethod>(
+            method: Method,
+        ) => `editorInstalls.${method}` as `editorInstalls.${Method}`;
         const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
             success: true,
             data,
         });
 
-        const channel = appChannel('installRelease');
+        const channel = editorInstallsChannel('installEditor');
         ipcMain.removeHandler(channel);
         ipcMain.handle(channel, async (_, release: ReleaseSummary) =>
-            ipcSuccess<AppResult<'installRelease'>>({
+            ipcSuccess<EditorInstallsResult<'installEditor'>>({
                 success: false,
                 error: message,
                 version: release.version,
@@ -1453,6 +1470,9 @@ export async function stubCustomEditorDuplicateRegistration(
         ({ ipcMain }, duplicateRelease: InstalledRelease) => {
             const appChannel = <Method extends AppMethod>(method: Method) =>
                 `app.${method}` as `app.${Method}`;
+            const editorInstallsChannel = <Method extends EditorInstallsMethod>(
+                method: Method,
+            ) => `editorInstalls.${method}` as `editorInstalls.${Method}`;
             const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
                 success: true,
                 data,
@@ -1470,7 +1490,8 @@ export async function stubCustomEditorDuplicateRegistration(
                 }),
             );
 
-            const registerChannel = appChannel('registerCustomEngine');
+            const registerChannel =
+                editorInstallsChannel('registerCustomEditor');
             ipcMain.removeHandler(registerChannel);
             ipcMain.handle(
                 registerChannel,
@@ -1480,14 +1501,18 @@ export async function stubCustomEditorDuplicateRegistration(
                     options?: { replaceExisting?: boolean },
                 ) => {
                     if (options?.replaceExisting) {
-                        return ipcSuccess<AppResult<'registerCustomEngine'>>({
+                        return ipcSuccess<
+                            EditorInstallsResult<'registerCustomEditor'>
+                        >({
                             success: true,
                             release: duplicateRelease,
                             releases: [duplicateRelease],
                         });
                     }
 
-                    return ipcSuccess<AppResult<'registerCustomEngine'>>({
+                    return ipcSuccess<
+                        EditorInstallsResult<'registerCustomEditor'>
+                    >({
                         success: false,
                         duplicate: duplicateRelease,
                     });

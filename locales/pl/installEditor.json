@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Przeładuj listę wydań"
     },
+    "progress": {
+        "queued": "W kolejce",
+        "queuedPosition": "W kolejce nr {{position}}",
+        "preparing": "Przygotowywanie",
+        "downloading": "Pobieranie",
+        "cancelling": "Anulowanie",
+        "extracting": "Rozpakowywanie",
+        "registering": "Rejestrowanie",
+        "validating": "Sprawdzanie",
+        "complete": "Ukończono",
+        "cancelled": "Anulowano",
+        "failed": "Niepowodzenie",
+        "cancelLabel": "Anuluj instalację {{version}}"
+    },
     "errors": {
         "fetchError": "Wystąpił błąd podczas pobierania wydań.",
         "catalogUpdateTitle": "Nie udało się zaktualizować listy edytorów",

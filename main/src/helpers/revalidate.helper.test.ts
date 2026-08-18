@@ -2,13 +2,11 @@ import type { BrowserWindow } from 'electron';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const moduleMocks = vi.hoisted(() => ({
-    checkAndUpdateReleases: vi.fn(),
     checkAndUpdateProjects: vi.fn(),
     ipcWebContentsSend: vi.fn(),
 }));
 
 vi.mock('../checks.js', () => ({
-    checkAndUpdateReleases: moduleMocks.checkAndUpdateReleases,
     checkAndUpdateProjects: moduleMocks.checkAndUpdateProjects,
 }));
 
@@ -61,24 +59,25 @@ const createMockBrowserWindow = () => {
 let mockWindow: ReturnType<typeof createMockBrowserWindow>;
 
 let refreshCodeEditorIntegrations: ReturnType<typeof vi.fn>;
+let refreshInstalledEditors: ReturnType<typeof vi.fn>;
 const gitService = { inspectRepository: vi.fn() };
 describe('setupFocusRevalidation', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         moduleMocks.checkAndUpdateProjects.mockReset();
-        moduleMocks.checkAndUpdateReleases.mockReset();
         moduleMocks.ipcWebContentsSend.mockReset();
 
         moduleMocks.checkAndUpdateProjects.mockResolvedValue([]);
-        moduleMocks.checkAndUpdateReleases.mockResolvedValue([]);
 
         mockWindow = createMockBrowserWindow();
+        refreshInstalledEditors = vi.fn().mockResolvedValue([]);
         refreshCodeEditorIntegrations = vi.fn().mockResolvedValue([]);
     });
 
     it('debounces focus-triggered revalidation and broadcasts updates', async () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
+            refreshInstalledEditors,
             refreshCodeEditorIntegrations,
             gitService as never,
         );
@@ -88,7 +87,7 @@ describe('setupFocusRevalidation', () => {
 
         await vi.runOnlyPendingTimersAsync();
 
-        expect(moduleMocks.checkAndUpdateReleases).toHaveBeenCalledTimes(1);
+        expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
         expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledTimes(1);
         expect(refreshCodeEditorIntegrations).toHaveBeenCalledTimes(1);
         expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledWith(
@@ -121,6 +120,7 @@ describe('setupFocusRevalidation', () => {
         );
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
+            refreshInstalledEditors,
             refreshCodeEditorIntegrations,
             gitService as never,
         );
@@ -145,6 +145,7 @@ describe('setupFocusRevalidation', () => {
     it('stops scheduling once disposed', async () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
+            refreshInstalledEditors,
             refreshCodeEditorIntegrations,
             gitService as never,
         );
@@ -152,13 +153,13 @@ describe('setupFocusRevalidation', () => {
         mockWindow.emit('focus');
         await vi.runOnlyPendingTimersAsync();
 
-        expect(moduleMocks.checkAndUpdateReleases).toHaveBeenCalledTimes(1);
+        expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
 
         dispose();
         vi.advanceTimersByTime(5 * 60 * 1000);
         await Promise.resolve();
 
-        expect(moduleMocks.checkAndUpdateReleases).toHaveBeenCalledTimes(1);
+        expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
     });
 
     afterEach(() => {

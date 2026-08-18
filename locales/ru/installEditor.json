@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Обновить список версий"
     },
+    "progress": {
+        "queued": "В очереди",
+        "queuedPosition": "В очереди № {{position}}",
+        "preparing": "Подготовка",
+        "downloading": "Загрузка",
+        "cancelling": "Отмена",
+        "extracting": "Распаковка",
+        "registering": "Регистрация",
+        "validating": "Проверка",
+        "complete": "Завершено",
+        "cancelled": "Отменено",
+        "failed": "Ошибка",
+        "cancelLabel": "Отменить установку {{version}}"
+    },
     "errors": {
         "fetchError": "Произошла ошибка при получении версий.",
         "catalogUpdateTitle": "Не удалось обновить список редакторов",

@@ -18,6 +18,7 @@ import {
     TOOL_INTEGRATIONS_FILENAME,
 } from './constants.js';
 import { EditorCatalogModule } from './editor-catalog/editor-catalog.module.js';
+import { EditorInstallsModule } from './editor-installs/editor-installs.module.js';
 import {
     DEFAULT_LOCALE,
     I18N_NAMESPACES,
@@ -47,6 +48,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
                 fileName: EDITOR_CATALOG_FILENAME,
             }),
         }),
+        EditorInstallsModule,
         I18nModule.forRootAsync({
             useFactory: () =>
                 ({

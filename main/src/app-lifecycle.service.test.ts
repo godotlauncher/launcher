@@ -5,7 +5,6 @@ const mocks = vi.hoisted(() => ({
     ensurePreferencesStorage: vi.fn(),
     getUserPreferences: vi.fn(),
     checkAndUpdateProjects: vi.fn(),
-    checkAndUpdateReleases: vi.fn(),
     launchProject: vi.fn(),
     ipcWebContentsSend: vi.fn(),
     configureI18n: vi.fn(),
@@ -84,7 +83,6 @@ vi.mock('./commands/userPreferences.js', () => ({
 }));
 vi.mock('./checks.js', () => ({
     checkAndUpdateProjects: mocks.checkAndUpdateProjects,
-    checkAndUpdateReleases: mocks.checkAndUpdateReleases,
 }));
 vi.mock('./commands/projects.js', () => ({
     launchProject: mocks.launchProject,
@@ -158,6 +156,9 @@ describe('AppLifecycleService', () => {
         setLocale: vi.fn(),
     };
     const codeEditorIntegrationService = {};
+    const installedEditorService = {
+        revalidateInstalledEditors: vi.fn(),
+    };
     const toolIntegrationService = {
         refreshAll: vi.fn(),
     };
@@ -176,6 +177,7 @@ describe('AppLifecycleService', () => {
             windowManager as never,
             i18nService as never,
             codeEditorIntegrationService as never,
+            installedEditorService as never,
             toolIntegrationService as never,
             gitService as never,
             trayAvailabilityService as never,
@@ -216,6 +218,7 @@ describe('AppLifecycleService', () => {
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
         mocks.launchProject.mockResolvedValue({ launched: true });
         toolIntegrationService.refreshAll.mockResolvedValue([]);
+        installedEditorService.revalidateInstalledEditors.mockResolvedValue([]);
         mocks.setupFocusRevalidation.mockReturnValue(
             mocks.disposeFocusRevalidation,
         );
@@ -242,7 +245,9 @@ describe('AppLifecycleService', () => {
         expect(mocks.ensurePreferencesStorage).toHaveBeenCalledOnce();
         expect(i18nService.setLocale).toHaveBeenCalledWith('de-DE');
         expect(mocks.checkAndUpdateProjects).toHaveBeenCalledOnce();
-        expect(mocks.checkAndUpdateReleases).toHaveBeenCalledOnce();
+        expect(
+            installedEditorService.revalidateInstalledEditors,
+        ).toHaveBeenCalledOnce();
     });
 
     it('starts tool refresh before project checks without blocking startup', async () => {
@@ -281,6 +286,7 @@ describe('AppLifecycleService', () => {
 
         expect(mocks.setupFocusRevalidation).toHaveBeenCalledWith(
             mainWindow,
+            expect.any(Function),
             expect.any(Function),
             gitService,
         );

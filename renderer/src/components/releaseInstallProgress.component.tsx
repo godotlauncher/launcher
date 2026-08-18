@@ -1,8 +1,11 @@
 import type { ReleaseInstallProgress } from '@shared/contracts';
+import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type ReleaseInstallProgressProps = {
     progress: ReleaseInstallProgress;
     className?: string;
+    onCancel?: (jobId: string) => void;
 };
 
 function formatBytes(bytes: number): string {
@@ -13,26 +16,37 @@ function formatBytes(bytes: number): string {
     return `${Math.round(bytes / (1024 * 1024))} MB`;
 }
 
-function getStageLabel(progress: ReleaseInstallProgress): string {
+type Translate = (
+    key: string,
+    options?: Record<string, string | number>,
+) => string;
+
+function getStageLabel(progress: ReleaseInstallProgress, t: Translate): string {
     switch (progress.stage) {
         case 'queued':
             return progress.queuePosition
-                ? `Queued #${progress.queuePosition}`
-                : 'Queued';
+                ? t('progress.queuedPosition', {
+                      position: progress.queuePosition,
+                  })
+                : t('progress.queued');
         case 'preparing':
-            return 'Preparing';
+            return t('progress.preparing');
         case 'downloading':
-            return 'Downloading';
+            return t('progress.downloading');
+        case 'cancelling':
+            return t('progress.cancelling');
         case 'extracting':
-            return 'Extracting';
+            return t('progress.extracting');
         case 'registering':
-            return 'Registering';
+            return t('progress.registering');
         case 'validating':
-            return 'Validating';
+            return t('progress.validating');
         case 'complete':
-            return 'Complete';
+            return t('progress.complete');
+        case 'cancelled':
+            return t('progress.cancelled');
         case 'error':
-            return 'Failed';
+            return t('progress.failed');
     }
 }
 
@@ -72,17 +86,37 @@ function getByteLabel(progress: ReleaseInstallProgress): string | undefined {
  */
 export const ReleaseInstallProgressIndicator: React.FC<
     ReleaseInstallProgressProps
-> = ({ progress, className }) => {
+> = ({ progress, className, onCancel }) => {
+    const { t } = useTranslation('installEditor');
     const percent = getDisplayPercent(progress);
     const byteLabel = getByteLabel(progress);
+    const cancelLabel = t('progress.cancelLabel', {
+        version: progress.version,
+    });
 
     return (
         <div className={`flex min-w-36 flex-col gap-1 ${className ?? ''}`}>
             <div className="flex items-center justify-between gap-2 text-xs text-info">
-                <span>{getStageLabel(progress)}</span>
-                {typeof percent === 'number' && (
-                    <span>{Math.round(percent)}%</span>
-                )}
+                <span>{getStageLabel(progress, t)}</span>
+                <span className="flex items-center gap-1">
+                    {typeof percent === 'number' && (
+                        <span>{Math.round(percent)}%</span>
+                    )}
+                    {progress.canCancel && onCancel && (
+                        <button
+                            type="button"
+                            className="btn btn-ghost btn-xs size-5 min-h-0 p-0 text-base-content/70 hover:text-error"
+                            aria-label={cancelLabel}
+                            title={cancelLabel}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onCancel(progress.id);
+                            }}
+                        >
+                            <X size={14} aria-hidden="true" />
+                        </button>
+                    )}
+                </span>
             </div>
             <progress
                 className="progress progress-info h-1 w-full"
