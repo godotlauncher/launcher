@@ -1,9 +1,5 @@
 import { createHash } from 'node:crypto';
-import type {
-    AssetSummary,
-    InstalledRelease,
-    ReleaseSummary,
-} from '@shared/contracts';
+import type { AssetSummary, ReleaseSummary } from '@shared/contracts';
 import {
     afterEach,
     beforeEach,
@@ -15,18 +11,12 @@ import {
 } from 'vitest';
 import type { ReleaseAsset } from '../types/github.js';
 import {
-    __resetInstalledReleasesStoreForTesting,
     __resetReleaseCachesForTesting,
-    addStoredInstalledRelease,
     createAssetSummary,
     downloadReleaseAsset,
     getPlatformAsset,
     getStoredAvailableReleases,
-    getStoredInstalledReleases,
     parseReleaseName,
-    removeProjectEditorUsingRelease,
-    removeStoredInstalledRelease,
-    saveStoredInstalledReleases,
     sortReleases,
     storeAvailableReleases,
 } from './releases.utils.js';
@@ -106,28 +96,6 @@ vi.mock('../i18n/index.js', () => ({
     }),
 }));
 
-vi.mock('./projects.utils.js', () => ({
-    getStoredProjectsList: vi.fn().mockResolvedValue([]),
-}));
-
-const platformUtilsMocks = vi.hoisted(() => ({
-    getDefaultDirs: vi.fn().mockReturnValue({
-        configDir: '/fake/config/dir',
-        dataDir: '/fake/data/dir',
-        projectDir: '/fake/project/dir',
-        prefsPath: '/fake/config/dir/prefs.json',
-        releaseCachePath: '/fake/config/dir/releases.json',
-        installedReleasesCachePath: '/fake/config/dir/installed.json',
-        prereleaseCachePath: '/fake/config/dir/prereleases.json',
-    }),
-}));
-
-vi.mock('./platform.utils.js', () => platformUtilsMocks);
-
-vi.mock('./godot.utils.js', () => ({
-    removeProjectEditor: vi.fn().mockResolvedValue(undefined),
-}));
-
 vi.mock('electron', () => ({
     Menu: {
         setApplicationMenu: vi.fn(),
@@ -162,9 +130,6 @@ import { Readable } from 'node:stream';
 import * as streamPromises from 'node:stream/promises';
 // Import modules for direct access to mocks in tests
 import logger from 'electron-log';
-import { removeProjectEditor } from './godot.utils.js';
-import { getDefaultDirs } from './platform.utils.js';
-import { getStoredProjectsList } from './projects.utils.js';
 
 // Test data
 const versions = [
@@ -731,252 +696,6 @@ suite('Releases Utils', () => {
                 releases: [],
             });
             expect(logger.error).toHaveBeenCalled();
-        });
-    });
-
-    describe('Installed releases management', () => {
-        beforeEach(() => {
-            vi.mocked(fs.existsSync).mockReset();
-            vi.mocked(fs.promises.readFile).mockReset();
-            vi.mocked(fs.promises.writeFile).mockReset();
-            __resetInstalledReleasesStoreForTesting();
-            platformUtilsMocks.getDefaultDirs.mockReturnValue({
-                configDir: '/fake/config/dir',
-                dataDir: '/fake/data/dir',
-                projectDir: '/fake/project/dir',
-                prefsPath: '/fake/config/dir/prefs.json',
-                releaseCachePath: '/fake/config/dir/releases.json',
-                installedReleasesCachePath: '/tmp/installed.json',
-                prereleaseCachePath: '/fake/config/dir/prereleases.json',
-            });
-        });
-
-        test('should get stored installed releases when file exists', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(true);
-            const mockReleases = [
-                { version: '4.4-stable', mono: false, version_number: 1 },
-                { version: '4.5-beta1', mono: true, version_number: 2 },
-            ];
-            vi.mocked(fs.promises.readFile).mockResolvedValueOnce(
-                JSON.stringify(mockReleases),
-            );
-
-            const result = await getStoredInstalledReleases();
-
-            expect(result).toEqual(
-                mockReleases.map((release) => ({
-                    ...release,
-                    base_version:
-                        release.version.match(/(\d+\.\d+)/)?.[1] ?? '0.0',
-                    valid: true,
-                })),
-            );
-        });
-
-        test('should get empty array when installed releases file does not exist', async () => {
-            vi.mocked(fs.existsSync).mockReturnValueOnce(false);
-
-            const result = await getStoredInstalledReleases();
-
-            expect(result).toEqual([]);
-        });
-
-        test('should add a release to installed releases', async () => {
-            vi.mocked(fs.existsSync).mockReturnValue(true);
-            const existingReleases = [
-                {
-                    version: '4.4-stable',
-                    mono: true,
-                    version_number: 1,
-                    valid: true,
-                },
-            ];
-            vi.mocked(fs.promises.readFile).mockResolvedValueOnce(
-                JSON.stringify(existingReleases),
-            );
-            vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(
-                undefined as unknown as undefined,
-            );
-
-            const newRelease = {
-                version: '4.5-beta1',
-                mono: false,
-                version_number: 2,
-                valid: true,
-            } as InstalledRelease;
-            const result = await addStoredInstalledRelease(newRelease);
-
-            expect(fs.promises.writeFile).toHaveBeenCalledWith(
-                '/tmp/installed.json',
-                expect.stringContaining('4.5-beta1'),
-                'utf-8',
-            );
-            expect(result).toHaveLength(2);
-            expect(
-                result.some((release) => release.version === '4.4-stable'),
-            ).toBe(true);
-            expect(
-                result.some((release) => release.version === '4.5-beta1'),
-            ).toBe(true);
-        });
-
-        test('should remove a release from installed releases', async () => {
-            vi.mocked(fs.existsSync).mockReturnValue(true);
-            const existingReleases = [
-                {
-                    version: '4.4-stable',
-                    mono: true,
-                    version_number: 1,
-                    valid: true,
-                },
-                {
-                    version: '4.5-beta1',
-                    mono: false,
-                    version_number: 2,
-                    valid: true,
-                },
-            ];
-            vi.mocked(fs.promises.readFile).mockResolvedValueOnce(
-                JSON.stringify(existingReleases),
-            );
-            vi.mocked(fs.promises.writeFile).mockResolvedValueOnce(
-                undefined as unknown as undefined,
-            );
-
-            const releaseToRemove = {
-                version: '4.4-stable',
-                mono: true,
-            } as InstalledRelease;
-            const result = await removeStoredInstalledRelease(releaseToRemove);
-
-            expect(result).toHaveLength(1);
-            expect(result[0].version).toBe('4.5-beta1');
-        });
-
-        test('should save installed releases directly', async () => {
-            const releases = [
-                { version: '4.6-stable', mono: false, version_number: 3 },
-            ] as InstalledRelease[];
-
-            await saveStoredInstalledReleases(releases);
-
-            expect(fs.promises.writeFile).toHaveBeenCalledTimes(1);
-            const call = vi.mocked(fs.promises.writeFile).mock.calls[0];
-            expect(call[0]).toBe('/tmp/installed.json');
-            expect(call[2]).toBe('utf-8');
-
-            const payload = JSON.parse(call[1] as string) as InstalledRelease[];
-            expect(payload).toEqual(
-                releases.map((release) => ({
-                    ...release,
-                    base_version:
-                        release.version.match(/(\d+\.\d+)/)?.[1] ?? '0.0',
-                    valid: true,
-                })),
-            );
-        });
-    });
-
-    describe('removeProjectEditorUsingRelease', () => {
-        const mockRelease = {
-            version: '4.4-stable',
-            mono: false,
-            editor_path: '/fake/path/godot',
-        } as InstalledRelease;
-        beforeEach(() => {
-            vi.mocked(getDefaultDirs).mockReturnValue({
-                configDir: '/fake/config/dir',
-                dataDir: '/fake/data/dir',
-                projectDir: '/fake/project/dir',
-                prefsPath: '/fake/config/dir/prefs.json',
-                releaseCachePath: '/fake/config/dir/releases.json',
-                installedReleasesCachePath: '/fake/config/dir/installed.json',
-                prereleaseCachePath: '/fake/config/dir/prereleases.json',
-                migrationStatePath: '/fake/config/dir/migrations.json',
-            } satisfies ReturnType<typeof getDefaultDirs>);
-
-            vi.mocked(getStoredProjectsList).mockResolvedValue([
-                {
-                    name: 'Project1',
-                    config_version: 5,
-                    editor_settings_file: 'settings.cfg',
-                    launch_path: '',
-                    editor_settings_path: '',
-                    last_opened: null,
-                    path: '',
-                    renderer: '',
-                    version: '',
-                    version_number: 0,
-                    withGit: false,
-                    codeEditorId: null,
-                    valid: true,
-                    release: {
-                        editor_path: '/fake/path/godot',
-                        arch: 'x64',
-                        config_version: 5,
-                        install_path: '',
-                        platform: 'win32',
-                        prerelease: false,
-                        published_at: null,
-                        valid: true,
-                        version: '4.4-stable',
-                        version_number: 4.4,
-                        mono: false,
-                    },
-                },
-                {
-                    name: 'Project2',
-                    config_version: 5,
-                    editor_settings_file: 'settings.cfg',
-                    launch_path: '',
-                    editor_settings_path: '',
-                    last_opened: null,
-                    path: '',
-                    renderer: '',
-                    version: '',
-                    version_number: 0,
-                    withGit: false,
-                    codeEditorId: null,
-                    valid: true,
-                    release: {
-                        arch: 'x64',
-                        editor_path: '/other/path/godot',
-                        config_version: 5,
-                        install_path: '',
-                        platform: 'win32',
-                        prerelease: false,
-                        published_at: null,
-                        valid: true,
-                        version: '4.5-stable',
-                        version_number: 4.5,
-                        mono: false,
-                    },
-                },
-            ]);
-
-            vi.mocked(removeProjectEditor).mockResolvedValue(undefined);
-        });
-        test('should remove editor from projects using the release', async () => {
-            await removeProjectEditorUsingRelease(mockRelease);
-
-            // Instead of checking the exact path, just verify it was called
-            expect(getStoredProjectsList).toHaveBeenCalled();
-            expect(removeProjectEditor).toHaveBeenCalledTimes(1);
-            expect(removeProjectEditor).toHaveBeenCalledWith(
-                expect.objectContaining({ name: 'Project1' }),
-            );
-        });
-
-        test('should not call removeProjectEditor if no projects use the release', async () => {
-            const mockReleaseUnused = {
-                version: '4.4-stable',
-                mono: false,
-                editor_path: '/unused/path/godot',
-            } as InstalledRelease;
-
-            await removeProjectEditorUsingRelease(mockReleaseUnused);
-
-            expect(removeProjectEditor).not.toHaveBeenCalled();
         });
     });
 });

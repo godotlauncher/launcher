@@ -16,6 +16,7 @@ import {
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
+    resolveCreateProjectReleaseIndex,
 } from './createProject.model';
 
 const installedRelease = (
@@ -104,6 +105,7 @@ describe('create project model helpers', () => {
                     mono: true,
                     prerelease: true,
                     published_at: '2026-01-01T00:00:00.000Z',
+                    stage: 'downloading',
                 },
             ],
         );
@@ -115,7 +117,71 @@ describe('create project model helpers', () => {
             mono: true,
             prerelease: true,
             valid: true,
+            installStage: 'downloading',
         });
+    });
+
+    it('keeps invalid editors visible when no matching install is active', () => {
+        const invalid = installedRelease('4.8-dev3', { valid: false });
+
+        expect(buildCreateProjectReleaseRows([invalid], [])).toEqual([invalid]);
+    });
+
+    it('replaces an invalid editor with one matching queued install', () => {
+        const rows = buildCreateProjectReleaseRows(
+            [
+                installedRelease('4.7', { valid: true }),
+                installedRelease('4.8-dev3', { valid: false }),
+            ],
+            [
+                {
+                    version: '4.8-dev3',
+                    mono: false,
+                    prerelease: true,
+                    published_at: '2026-08-07T00:00:00.000Z',
+                    stage: 'queued',
+                    queuePosition: 2,
+                },
+            ],
+        );
+
+        expect(rows).toHaveLength(2);
+        expect(rows.filter((row) => row.version === '4.8-dev3')).toEqual([
+            expect.objectContaining({
+                editor_path: '',
+                installStage: 'queued',
+                queuePosition: 2,
+            }),
+        ]);
+    });
+
+    it('keeps a valid installed editor selectable while its replacement installs', () => {
+        const installed = installedRelease('4.8-dev3', { valid: true });
+
+        const rows = buildCreateProjectReleaseRows(
+            [installed],
+            [
+                {
+                    version: '4.8-dev3',
+                    mono: false,
+                    prerelease: true,
+                    published_at: '2026-08-07T00:00:00.000Z',
+                    stage: 'extracting',
+                },
+            ],
+        );
+
+        expect(rows).toEqual([installed]);
+    });
+
+    it('selects the first usable editor instead of a leading invalid row', () => {
+        const rows = [
+            installedRelease('4.8-dev3', { valid: false }),
+            installedRelease('4.7.1-stable', { valid: true }),
+        ];
+
+        expect(resolveCreateProjectReleaseIndex(rows, 0)).toBe(1);
+        expect(resolveCreateProjectReleaseIndex([rows[0]], 0)).toBe(-1);
     });
 
     it('derives renderer defaults and tool integration availability', () => {

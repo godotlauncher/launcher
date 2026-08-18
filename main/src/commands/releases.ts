@@ -1,12 +1,5 @@
-import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
-import type {
-    AvailableReleasesResult,
-    InstalledRelease,
-    ReleaseSummary,
-} from '@shared/contracts';
+import type { AvailableReleasesResult } from '@shared/contracts';
 import logger from 'electron-log';
 import { CACHE_LENGTH, MIN_VERSION } from '../constants.js';
 import { getReleases } from '../utils/github.utils.js';
@@ -14,13 +7,8 @@ import { getDefaultDirs } from '../utils/platform.utils.js';
 import { sortByPublishDate } from '../utils/releaseSorting.utils.js';
 import {
     getStoredAvailableReleases,
-    getStoredInstalledReleases,
     storeAvailableReleases,
 } from '../utils/releases.utils.js';
-
-export async function getInstalledReleases(): Promise<InstalledRelease[]> {
-    return getStoredInstalledReleases();
-}
 
 function getRefreshErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
@@ -175,24 +163,4 @@ export async function clearReleaseCaches(): Promise<void> {
         logger.error('Failed to rebuild release caches', error);
         throw error;
     }
-}
-
-export async function openProjectManager(
-    release: InstalledRelease,
-): Promise<void> {
-    let launchPath = release.editor_path;
-    if (os.platform() === 'darwin') {
-        launchPath = path.resolve(
-            release.editor_path,
-            'Contents',
-            'MacOS',
-            'Godot',
-        );
-    }
-
-    const editor = spawn(launchPath, ['-p'], {
-        detached: true,
-        stdio: 'ignore',
-    });
-    editor.unref();
 }

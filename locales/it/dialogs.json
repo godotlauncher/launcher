@@ -24,6 +24,7 @@
         "title": "Rimuovi versione",
         "message": "Sei sicuro di voler eliminare la versione \"{{version}}\"?",
         "detail": "La versione verrà eliminata dal tuo dispositivo. Potrai installarla di nuovo in seguito.",
+        "usage": "Progetti che usano questo editor: {{count}}.",
         "ok": "OK",
         "cancel": "Annulla",
         "error": "Errore",

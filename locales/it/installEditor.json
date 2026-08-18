@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Ricarica elenco versioni"
     },
+    "progress": {
+        "queued": "In coda",
+        "queuedPosition": "In coda n. {{position}}",
+        "preparing": "Preparazione",
+        "downloading": "Download",
+        "cancelling": "Annullamento",
+        "extracting": "Estrazione",
+        "registering": "Registrazione",
+        "validating": "Convalida",
+        "complete": "Completato",
+        "cancelled": "Annullato",
+        "failed": "Non riuscito",
+        "cancelLabel": "Annulla l'installazione di {{version}}"
+    },
     "errors": {
         "fetchError": "Si è verificato un errore durante il recupero delle versioni.",
         "catalogUpdateTitle": "Impossibile aggiornare l'elenco degli editor",

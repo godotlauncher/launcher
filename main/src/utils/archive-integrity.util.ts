@@ -17,6 +17,7 @@ export type ArchiveIntegrity = {
 export type ResolveArchiveIntegrityOptions = {
     expectedReleaseTag: string;
     timeoutMs?: number;
+    signal?: AbortSignal;
 };
 
 /**
@@ -96,6 +97,7 @@ export async function resolveArchiveIntegrity(
     const manifest = await fetchChecksumManifest(
         asset.checksum_manifest_url,
         options.timeoutMs ?? 120_000,
+        options.signal,
     );
     const digest = findSha512Digest(manifest, asset.name);
     if (!digest) {
@@ -182,14 +184,22 @@ export function archiveDigestsMatch(
  *
  * @param url - The official checksum manifest URL.
  * @param timeoutMs - Maximum request duration.
+ * @param signal - Optional caller cancellation signal.
  * @returns The manifest text.
  */
 async function fetchChecksumManifest(
     url: string,
     timeoutMs: number,
+    signal?: AbortSignal,
 ): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const abortFromCaller = () => controller.abort(signal?.reason);
+    if (signal?.aborted) {
+        abortFromCaller();
+    } else {
+        signal?.addEventListener('abort', abortFromCaller, { once: true });
+    }
 
     try {
         const response = await fetch(url, { signal: controller.signal });
@@ -233,6 +243,9 @@ async function fetchChecksumManifest(
 
         return Buffer.concat(chunks).toString('utf8');
     } catch (error) {
+        if (signal?.aborted) {
+            throw signal.reason ?? error;
+        }
         if (
             error instanceof Error &&
             error.message ===
@@ -245,6 +258,7 @@ async function fetchChecksumManifest(
         });
     } finally {
         clearTimeout(timeout);
+        signal?.removeEventListener('abort', abortFromCaller);
     }
 }
 

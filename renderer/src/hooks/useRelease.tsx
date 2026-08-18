@@ -1,4 +1,5 @@
 import type {
+    EditorInstallOrigin,
     InstalledRelease,
     InstallReleaseResult,
     ReleaseInstallProgress,
@@ -6,7 +7,11 @@ import type {
     RemovedReleaseResult,
 } from '@shared/contracts';
 import React from 'react';
-import { appBridge, subscribeAppEvent } from '../bridge.ts';
+import {
+    appBridge,
+    editorInstallsBridge,
+    subscribeAppEvent,
+} from '../bridge.ts';
 import { useEditorCatalog } from './editor-catalog.hook.ts';
 import { mapEditorCatalogResult } from './editor-catalog-release.mapper.ts';
 
@@ -24,7 +29,9 @@ type ReleaseContext = {
     installRelease: (
         release: ReleaseSummary,
         mono: boolean,
+        origin: EditorInstallOrigin,
     ) => Promise<InstallReleaseResult>;
+    cancelInstall: (jobId: string) => Promise<void>;
     reinstallRelease: (
         release: InstalledRelease,
     ) => Promise<InstallReleaseResult>;
@@ -101,7 +108,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         try {
             const [catalogResult, installed] = await Promise.all([
                 forceCatalogRefresh ? refreshCatalog() : getCatalog(),
-                appBridge.getInstalledReleases(),
+                editorInstallsBridge.getInstalledEditors(),
             ]);
             const catalog = mapEditorCatalogResult(catalogResult);
 
@@ -140,13 +147,12 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             (progress) => {
                 setReleaseInstallProgress((prevProgress) => {
                     const nextProgress = prevProgress.filter(
-                        (candidate) =>
-                            candidate.version !== progress.version ||
-                            candidate.mono !== progress.mono,
+                        (candidate) => candidate.id !== progress.id,
                     );
 
                     if (
                         progress.stage === 'complete' ||
+                        progress.stage === 'cancelled' ||
                         progress.stage === 'error'
                     ) {
                         return nextProgress;
@@ -196,7 +202,9 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         () =>
             releaseInstallProgress.filter(
                 (progress) =>
-                    progress.stage !== 'complete' && progress.stage !== 'error',
+                    progress.stage !== 'complete' &&
+                    progress.stage !== 'error' &&
+                    progress.stage !== 'cancelled',
             ),
         [releaseInstallProgress],
     );
@@ -240,10 +248,10 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const removeRelease = async (
         release: InstalledRelease,
     ): Promise<RemovedReleaseResult> => {
-        const result = await appBridge.removeRelease(release);
+        const result = await editorInstallsBridge.removeEditor(release);
 
         if (result.success) {
-            void updateAllReleases();
+            setInstalledReleases(result.releases);
         }
 
         return result;
@@ -254,15 +262,21 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
      *
      * @param release - The legacy release used by the current installer.
      * @param mono - Whether to install the .NET editor variant.
+     * @param origin - Workflow requesting the install.
      * @returns The install result from the main process.
      */
     const installRelease = async (
         release: ReleaseSummary,
         mono: boolean,
+        origin: EditorInstallOrigin,
     ): Promise<InstallReleaseResult> => {
         let result: InstallReleaseResult;
         try {
-            result = await appBridge.installRelease(release, mono);
+            result = await editorInstallsBridge.installEditor(
+                release,
+                mono,
+                origin,
+            );
         } catch (error) {
             return {
                 success: false,
@@ -279,6 +293,16 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     };
 
     /**
+     * Requests cancellation for one exact editor install job.
+     *
+     * @param jobId - Process-local install job ID.
+     * @returns A promise that ends when the request is accepted or rejected.
+     */
+    const cancelInstall = async (jobId: string): Promise<void> => {
+        await editorInstallsBridge.cancelInstall(jobId);
+    };
+
+    /**
      * Reinstalls an editor through the existing install bridge.
      *
      * @param release - The installed editor to reinstall.
@@ -288,7 +312,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         release: InstalledRelease,
     ): Promise<InstallReleaseResult> => {
         try {
-            const result = await appBridge.reinstallRelease(release);
+            const result = await editorInstallsBridge.reinstallEditor(release);
 
             if (result.success) {
                 void updateAllReleases();
@@ -308,14 +332,15 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         manifestPath: string,
         options?: { replaceExisting?: boolean },
     ) => {
-        const result = await appBridge.registerCustomEngine(
+        const result = await editorInstallsBridge.registerCustomEditor(
             manifestPath,
             options,
         );
 
         if (result.success) {
             setInstalledReleases(
-                result.releases ?? (await appBridge.getInstalledReleases()),
+                result.releases ??
+                    (await editorInstallsBridge.getInstalledEditors()),
             );
         }
 
@@ -325,7 +350,8 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const checkAllReleasesValid = async (): Promise<InstalledRelease[]> => {
         setLoading(true);
         try {
-            const releases = await appBridge.checkAllReleasesValid();
+            const releases =
+                await editorInstallsBridge.revalidateInstalledEditors();
             setInstalledReleases(releases);
             return releases;
         } finally {
@@ -347,6 +373,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 refreshAvailableReleases,
                 clearReleaseCache,
                 installRelease,
+                cancelInstall,
                 reinstallRelease,
                 registerCustomEngine,
                 getInstalledRelease,

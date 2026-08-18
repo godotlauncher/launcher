@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Release-Liste neu laden"
     },
+    "progress": {
+        "queued": "In der Warteschlange",
+        "queuedPosition": "Warteschlange Nr. {{position}}",
+        "preparing": "Wird vorbereitet",
+        "downloading": "Wird heruntergeladen",
+        "cancelling": "Wird abgebrochen",
+        "extracting": "Wird entpackt",
+        "registering": "Wird registriert",
+        "validating": "Wird überprüft",
+        "complete": "Abgeschlossen",
+        "cancelled": "Abgebrochen",
+        "failed": "Fehlgeschlagen",
+        "cancelLabel": "Installation von {{version}} abbrechen"
+    },
     "errors": {
         "fetchError": "Beim Abrufen der Releases ist ein Fehler aufgetreten.",
         "catalogUpdateTitle": "Editorliste konnte nicht aktualisiert werden",

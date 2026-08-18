@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { addProject } from './addProject.js';
+import { addProject as addProjectCommand } from './addProject.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -41,12 +41,6 @@ const projectUtilsMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
-
-const releasesMocks = vi.hoisted(() => ({
-    getInstalledReleases: vi.fn(),
-}));
-
-vi.mock('./releases.js', () => releasesMocks);
 
 const userPreferencesMocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
@@ -151,7 +145,10 @@ const {
 } = godotProjectMocks;
 const { getDefaultDirs } = platformMocks;
 const { addProjectToList } = projectUtilsMocks;
-const { getInstalledReleases } = releasesMocks;
+const getInstalledReleases = vi.fn();
+const installedEditorService = {
+    getInstalledEditors: getInstalledReleases,
+};
 const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsDetails } = projectsMocks;
 const codeEditorIntegrationService = {
@@ -172,6 +169,30 @@ const {
 } = godotUtilsMocks;
 const { readProjectLauncherConfig, writeProjectLauncherConfig } =
     projectLauncherConfigMocks;
+
+/**
+ * Calls the project command with its installed editor dependency.
+ *
+ * @param projectPath - Path to the project file.
+ * @param integrationService - Code editor integration service.
+ * @param options - Optional missing-editor resolution.
+ * @param gitService - Optional Git inspection service.
+ * @returns The project import result.
+ */
+function addProject(
+    projectPath: string,
+    integrationService: CodeEditorIntegrationService,
+    options: Parameters<typeof addProjectCommand>[3] = {},
+    gitService?: Parameters<typeof addProjectCommand>[4],
+) {
+    return addProjectCommand(
+        projectPath,
+        integrationService,
+        installedEditorService as never,
+        options,
+        gitService,
+    );
+}
 
 describe('addProject', () => {
     beforeEach(() => {

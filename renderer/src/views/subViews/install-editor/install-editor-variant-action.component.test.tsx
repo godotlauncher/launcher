@@ -7,6 +7,7 @@ let installProgress: ReleaseInstallProgress | undefined;
 
 vi.mock('../../../hooks/useRelease.tsx', () => ({
     useRelease: () => ({
+        cancelInstall: vi.fn(),
         getInstalledRelease: vi.fn(() => undefined),
         getReleaseInstallProgress: vi.fn(() => installProgress),
     }),
@@ -25,6 +26,8 @@ vi.mock('react-i18next', () => ({
                         'Install Godot {{version}} .NET',
                     'table.tooltips.installingVariant':
                         'Installing Godot {{version}} {{flavor}}',
+                    'progress.downloading': 'Downloading',
+                    'progress.cancelLabel': 'Cancel install',
                 }[key] ?? key;
 
             return value
@@ -57,6 +60,7 @@ describe('InstallEditorVariantAction', () => {
             prerelease: false,
             published_at: '2026-06-18T00:00:00Z',
             stage: 'downloading',
+            canCancel: true,
             percent: 55,
         };
 
@@ -71,7 +75,7 @@ describe('InstallEditorVariantAction', () => {
         expect(html).toContain('role="status"');
         expect(html).toContain('installProgress4.7-stable');
         expect(html).toContain('aria-hidden="true"');
-        expect(html).not.toContain('<button');
+        expect(html).toContain('aria-label="Cancel install"');
         expect(html).not.toContain('loading-spinner');
     });
 });

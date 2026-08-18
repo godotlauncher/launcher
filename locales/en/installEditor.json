@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Reload Release List"
     },
+    "progress": {
+        "queued": "Queued",
+        "queuedPosition": "Queued #{{position}}",
+        "preparing": "Preparing",
+        "downloading": "Downloading",
+        "cancelling": "Cancelling",
+        "extracting": "Extracting",
+        "registering": "Registering",
+        "validating": "Validating",
+        "complete": "Complete",
+        "cancelled": "Cancelled",
+        "failed": "Failed",
+        "cancelLabel": "Cancel installation of {{version}}"
+    },
     "errors": {
         "fetchError": "There was an error fetching releases.",
         "catalogUpdateTitle": "Could not update editor list",

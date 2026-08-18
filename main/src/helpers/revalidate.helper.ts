@@ -1,8 +1,11 @@
-import type { CodeEditorIntegrationSettings } from '@shared/contracts';
+import type {
+    CodeEditorIntegrationSettings,
+    InstalledRelease,
+} from '@shared/contracts';
 import type { BrowserWindow } from 'electron';
 import logger from 'electron-log';
 
-import { checkAndUpdateProjects, checkAndUpdateReleases } from '../checks.js';
+import { checkAndUpdateProjects } from '../checks.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { ipcWebContentsSend } from '../utils.js';
 
@@ -12,17 +15,20 @@ const BACKGROUND_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 type RefreshCodeEditorIntegrations = () => Promise<
     CodeEditorIntegrationSettings[]
 >;
+type RefreshInstalledEditors = () => Promise<InstalledRelease[]>;
 
 /**
  * Refreshes project, release, and code editor state for a visible window.
  *
  * @param targetWindow - Window that receives refreshed state.
+ * @param refreshInstalledEditors - Installed editor refresh callback.
  * @param refreshCodeEditorIntegrations - Code editor refresh callback.
  * @param gitService - Git repository inspection service.
  * @returns A promise that resolves after revalidation.
  */
 async function performRevalidation(
     targetWindow: BrowserWindow,
+    refreshInstalledEditors: RefreshInstalledEditors,
     refreshCodeEditorIntegrations: RefreshCodeEditorIntegrations,
     gitService: GitService,
 ): Promise<void> {
@@ -35,7 +41,7 @@ async function performRevalidation(
 
     try {
         const [releases, projects, codeEditorSettings] = await Promise.all([
-            checkAndUpdateReleases(),
+            refreshInstalledEditors(),
             checkAndUpdateProjects(
                 { repairMissingLaunchPath: false },
                 gitService,
@@ -75,12 +81,14 @@ async function performRevalidation(
  * Schedules revalidation when the main window regains focus.
  *
  * @param mainWindow - Main application window.
+ * @param refreshInstalledEditors - Installed editor refresh callback.
  * @param refreshCodeEditorIntegrations - Code editor refresh callback.
  * @param gitService - Git repository inspection service.
  * @returns A callback that removes listeners and timers.
  */
 export function setupFocusRevalidation(
     mainWindow: BrowserWindow,
+    refreshInstalledEditors: RefreshInstalledEditors,
     refreshCodeEditorIntegrations: RefreshCodeEditorIntegrations,
     gitService: GitService,
 ): () => void {
@@ -108,6 +116,7 @@ export function setupFocusRevalidation(
             try {
                 await performRevalidation(
                     mainWindow,
+                    refreshInstalledEditors,
                     refreshCodeEditorIntegrations,
                     gitService,
                 );

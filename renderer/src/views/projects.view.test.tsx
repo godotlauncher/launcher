@@ -203,6 +203,15 @@ describe('ProjectsView', () => {
         expect(html).not.toContain('btnProjectCreate');
     });
 
+    it('does not treat an invalid editor as available for project creation', () => {
+        releaseState.installedReleases = [{ valid: false } as InstalledRelease];
+
+        const html = renderToStaticMarkup(<ProjectsView />);
+
+        expect(html).toContain('Install Godot to start a project');
+        expect(html).not.toContain('Start your first project');
+    });
+
     it('waits for an installing editor without exposing project list chrome', () => {
         releaseState.downloadingReleases = [
             { version: '4.7-stable', mono: false },

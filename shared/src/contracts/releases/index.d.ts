@@ -80,16 +80,19 @@ export type InstalledRelease = {
 export type InstallReleaseResult = BackendResult & {
     version: string;
     release?: InstalledRelease;
+    cancelled?: true;
 };
 
 export type ReleaseInstallProgressStage =
     | 'queued'
     | 'preparing'
     | 'downloading'
+    | 'cancelling'
     | 'extracting'
     | 'registering'
     | 'validating'
     | 'complete'
+    | 'cancelled'
     | 'error';
 
 export type ReleaseInstallProgress = {
@@ -99,6 +102,7 @@ export type ReleaseInstallProgress = {
     prerelease: boolean;
     published_at: string | null;
     stage: ReleaseInstallProgressStage;
+    canCancel: boolean;
     percent?: number;
     queuePosition?: number;
     receivedBytes?: number;

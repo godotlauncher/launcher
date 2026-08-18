@@ -20,12 +20,14 @@ import { I18nService } from '@mariodebono/di-electron-i18n';
 import { app, dialog, autoUpdater as electronAutoUpdater } from 'electron';
 import logger from 'electron-log/main.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
-import { checkAndUpdateProjects, checkAndUpdateReleases } from './checks.js';
+import { checkAndUpdateProjects } from './checks.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
 import { launchProject } from './commands/projects.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
 import { createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
@@ -56,6 +58,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
      * @param windowManager - Main-window lifecycle service.
      * @param i18nService - Main-process localization service.
      * @param codeEditorIntegrationService - Code editor lifecycle facade.
+     * @param installedEditorService - Installed editor lifecycle facade.
      * @param toolIntegrationService - Command-line tool lifecycle facade.
      * @param gitService - Git repository inspection service.
      * @param trayAvailabilityService - System tray availability service.
@@ -66,6 +69,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly windowManager: WindowManagerService,
         private readonly i18nService: I18nService,
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly installedEditorService: InstalledEditorService,
         private readonly toolIntegrationService: ToolIntegrationService,
         private readonly gitService: GitService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
@@ -105,7 +109,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
 
         logger.debug('App ready, checking projects and releases');
         await checkAndUpdateProjects({}, this.gitService);
-        await checkAndUpdateReleases();
+        await this.installedEditorService.revalidateInstalledEditors();
     }
 
     @AppReady({ order: AppReadyOrder.AfterWindow })
@@ -165,6 +169,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         if (!this.config.docsScreenshots) {
             this.disposeFocusRevalidation = setupFocusRevalidation(
                 mainWindow,
+                () => this.installedEditorService.revalidateInstalledEditors(),
                 () =>
                     this.codeEditorIntegrationService.revalidateIntegrationSettings(),
                 this.gitService,

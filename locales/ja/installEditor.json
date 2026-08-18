@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "リリースリストを再読み込み"
     },
+    "progress": {
+        "queued": "キュー待ち",
+        "queuedPosition": "キュー {{position}} 番",
+        "preparing": "準備中",
+        "downloading": "ダウンロード中",
+        "cancelling": "キャンセル中",
+        "extracting": "展開中",
+        "registering": "登録中",
+        "validating": "検証中",
+        "complete": "完了",
+        "cancelled": "キャンセル済み",
+        "failed": "失敗",
+        "cancelLabel": "{{version}} のインストールをキャンセル"
+    },
     "errors": {
         "fetchError": "リリースの取得中にエラーが発生しました。",
         "catalogUpdateTitle": "エディター一覧を更新できませんでした",

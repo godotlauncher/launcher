@@ -1,7 +1,7 @@
 import { HardDriveDownload } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { appBridge } from '../bridge.ts';
+import { appBridge, editorInstallsBridge } from '../bridge.ts';
 import {
     ActionMenu,
     type ActionMenuAnchorRect,
@@ -11,6 +11,7 @@ import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { usePreferences } from '../hooks/usePreferences';
+import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
 import { CustomEditorManifestDropOverlay } from './installs/components/customEditorManifestDropOverlay.component';
 import { InstalledReleaseList } from './installs/components/installedReleaseList.component';
@@ -23,6 +24,7 @@ import {
     useReleaseActions,
 } from './installs/hooks/useReleaseActions';
 import {
+    getEditorProjectUsageCount,
     getFilteredInstalledReleaseRows,
     getInstallsViewState,
 } from './installs/installsView.model';
@@ -74,6 +76,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
 
     const { addAlert, addConfirm } = useAlerts();
     const { preferences } = usePreferences();
+    const { projects } = useProjects();
     const {
         installedReleases,
         downloadingReleases,
@@ -93,7 +96,6 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         handleRemoveReleaseFromMenu,
         handleRetry,
         handleReinstall,
-        handleRemove,
     } = useReleaseActions({
         t,
         addAlert,
@@ -101,6 +103,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         checkAllReleasesValid,
         reinstallRelease,
         removeRelease,
+        getProjectUsageCount: (release) =>
+            getEditorProjectUsageCount(release, projects),
     });
     const { registerManifest, handleAddCustomEngine } =
         useCustomEditorManifestWorkflow({
@@ -202,7 +206,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                             onReinstall={(release) =>
                                 void handleReinstall(release)
                             }
-                            onRemove={(release) => void handleRemove(release)}
+                            onRemove={handleRemoveReleaseFromMenu}
                             onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
                         />
                     </>
@@ -220,7 +224,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 }
                 onStartProjectManager={(release) =>
                     runReleaseAction(() =>
-                        appBridge.openEditorProjectManager(release),
+                        editorInstallsBridge.openProjectManager(release),
                     )
                 }
                 onRemoveRelease={handleRemoveReleaseFromMenu}

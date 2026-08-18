@@ -27,6 +27,20 @@
     "buttons": {
         "reload": "Sürüm Listesini Yeniden Yükle"
     },
+    "progress": {
+        "queued": "Sırada",
+        "queuedPosition": "Sırada #{{position}}",
+        "preparing": "Hazırlanıyor",
+        "downloading": "İndiriliyor",
+        "cancelling": "İptal ediliyor",
+        "extracting": "Çıkarılıyor",
+        "registering": "Kaydediliyor",
+        "validating": "Doğrulanıyor",
+        "complete": "Tamamlandı",
+        "cancelled": "İptal edildi",
+        "failed": "Başarısız",
+        "cancelLabel": "{{version}} kurulumunu iptal et"
+    },
     "errors": {
         "fetchError": "Sürümler alınırken bir hata oluştu.",
         "catalogUpdateTitle": "Düzenleyici listesi güncellenemedi",

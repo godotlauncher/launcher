@@ -2,6 +2,7 @@ import type {
     AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
+    EditorInstallOrigin,
     InstalledRelease,
     InstallReleaseResult,
     ProjectDetails,
@@ -40,6 +41,7 @@ type AddProjectWorkflowArgs = {
     installRelease: (
         release: ReleaseSummary,
         mono: boolean,
+        origin: EditorInstallOrigin,
     ) => Promise<InstallReleaseResult>;
     setProjectEditor: (
         project: ProjectDetails,
@@ -110,7 +112,7 @@ export function useAddProjectWorkflow({
             return;
         }
 
-        const installResult = await installRelease(release, mono);
+        const installResult = await installRelease(release, mono, 'project');
 
         if (!installResult.success || !installResult.release) {
             addAlert(

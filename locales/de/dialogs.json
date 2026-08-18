@@ -24,6 +24,7 @@
         "title": "Release entfernen",
         "message": "Sind Sie sicher, dass Sie das Release \"{{version}}\" löschen möchten?",
         "detail": "Dadurch wird das Release von Ihrem Gerät gelöscht. Sie können es später erneut installieren.",
+        "usage": "Projekte, die diesen Editor verwenden: {{count}}.",
         "ok": "Ok",
         "cancel": "Abbrechen",
         "error": "Fehler",

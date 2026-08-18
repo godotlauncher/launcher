@@ -65,6 +65,8 @@ vi.mock('react-i18next', () => {
         'installEditor:table.tooltips.reinstallDotNet':
             'Reinstall Godot {{version}} .NET',
         'common:buttons.reinstall': 'Reinstall',
+        'installEditor:progress.downloading': 'Downloading',
+        'installEditor:progress.cancelLabel': 'Cancel install',
     };
 
     return {
@@ -121,6 +123,7 @@ describe('InstallReleaseTable', () => {
             prerelease: invalidRelease.prerelease,
             published_at: invalidRelease.published_at,
             stage: 'downloading',
+            canCancel: false,
             percent: 55,
             receivedBytes: 55,
             totalBytes: 100,

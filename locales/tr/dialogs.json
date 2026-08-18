@@ -24,6 +24,7 @@
         "title": "Sürümü Kaldır",
         "message": "\"{{version}}\" sürümünü silmek istediğinizden emin misiniz?",
         "detail": "Bu işlem sürümü cihazınızdan silecektir. Daha sonra tekrar yükleyebilirsiniz.",
+        "usage": "Bu düzenleyiciyi kullanan projeler: {{count}}.",
         "ok": "Tamam",
         "cancel": "İptal",
         "error": "Hata",

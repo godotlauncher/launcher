@@ -50,6 +50,7 @@ import {
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
+    resolveCreateProjectReleaseIndex,
 } from './createProject/createProject.model';
 
 type SubViewProps = {
@@ -67,7 +68,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     open,
     onOpenChange,
 }) => {
-    const { t } = useTranslation(['createProject', 'projects', 'common']);
+    const { t } = useTranslation([
+        'createProject',
+        'projects',
+        'common',
+        'installEditor',
+    ]);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseIndex, setReleaseIndex] = useState<number>(0);
     const [projectName, setProjectName] = useState<string>('');
@@ -147,6 +153,16 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 downloadingReleases,
             ),
         [installedReleases, downloadingReleases],
+    );
+    const validInstalledReleaseCount = useMemo(
+        () =>
+            installedReleases.filter((release) => release.valid !== false)
+                .length,
+        [installedReleases],
+    );
+    const selectedReleaseIndex = resolveCreateProjectReleaseIndex(
+        allReleases,
+        releaseIndex,
     );
 
     const derivedProjectPath = useMemo(() => {
@@ -292,7 +308,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setCreating(true);
         const result = await createProject(
             projectName,
-            allReleases[releaseIndex],
+            allReleases[selectedReleaseIndex],
             renderer,
             codeEditorId,
             withGit,
@@ -747,9 +763,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                         <CreateProjectProjectSection
                             t={t}
                             releases={allReleases}
-                            releaseIndex={releaseIndex}
+                            releaseIndex={selectedReleaseIndex}
                             inputNameRef={inputNameRef}
-                            installedReleaseCount={installedReleases.length}
+                            installedReleaseCount={validInstalledReleaseCount}
                             projectName={projectName}
                             derivedProjectPath={derivedProjectPath}
                             overwriteProjectPath={overwriteProjectPath}
@@ -780,8 +796,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                                 t={t}
                                 renderer={renderer}
                                 versionNumber={
-                                    allReleases[releaseIndex]?.version_number ||
-                                    0
+                                    allReleases[selectedReleaseIndex]
+                                        ?.version_number || 0
                                 }
                                 onRendererChange={setRenderer}
                             />
@@ -818,7 +834,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             createDisabled={
                                 loadingTools ||
                                 loadingGitLfsPolicy ||
-                                installedReleases.length < 1 ||
+                                validInstalledReleaseCount < 1 ||
+                                selectedReleaseIndex < 0 ||
                                 isOverwritePathEmpty
                             }
                             editNowLabel={t('buttons.editNow')}

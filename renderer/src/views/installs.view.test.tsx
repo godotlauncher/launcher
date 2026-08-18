@@ -36,6 +36,10 @@ vi.mock('../hooks/usePreferences', () => ({
     }),
 }));
 
+vi.mock('../hooks/useProjects', () => ({
+    useProjects: () => ({ projects: [] }),
+}));
+
 vi.mock('../hooks/useRelease', () => {
     return {
         useRelease: () => ({

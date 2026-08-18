@@ -20,10 +20,6 @@ import type {
     CreateCustomEngineManifestResult,
     CustomEngineManifest,
     InstalledRelease,
-    InstallReleaseResult,
-    RegisterCustomEngineResult,
-    ReleaseSummary,
-    RemovedReleaseResult,
 } from '../releases/index.js';
 import type {
     AppUpdateMessage,
@@ -87,23 +83,10 @@ export type AppBridge = {
     ensureDirectory(pathToCheck: string): Promise<boolean>;
     getAvailableReleases(): Promise<AvailableReleasesResult>;
     getAvailablePrereleases(): Promise<AvailableReleasesResult>;
-    getInstalledReleases(): Promise<InstalledRelease[]>;
-    installRelease(
-        release: ReleaseSummary,
-        mono: boolean,
-    ): Promise<InstallReleaseResult>;
-    removeRelease(release: InstalledRelease): Promise<RemovedReleaseResult>;
-    reinstallRelease(release: InstalledRelease): Promise<InstallReleaseResult>;
-    registerCustomEngine(
-        manifestPath: string,
-        options?: { replaceExisting?: boolean },
-    ): Promise<RegisterCustomEngineResult>;
     createCustomEngineManifest(
         outputDirectory: string,
         manifest: CustomEngineManifest,
     ): Promise<CreateCustomEngineManifestResult>;
-    openEditorProjectManager(release: InstalledRelease): Promise<void>;
-    checkAllReleasesValid(): Promise<InstalledRelease[]>;
     clearReleaseCache(): Promise<void>;
     getProjectsDetails(): Promise<ProjectDetails[]>;
     createProject(

@@ -16,6 +16,7 @@ import {
     PROJECT_LAUNCHER_CONFIG_FILENAME,
     PROJECTS_FILENAME,
 } from '../constants.js';
+import type { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
 import { t } from '../i18n/index.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import {
@@ -44,7 +45,6 @@ import {
 import { addProjectToList } from '../utils/projects.utils.js';
 import { sortReleases } from '../utils/releaseSorting.utils.js';
 import { getProjectsDetails } from './projects.js';
-import { getInstalledReleases } from './releases.js';
 import { getUserPreferences } from './userPreferences.js';
 
 function isCompatibleCustomPlatform(release: InstalledRelease): boolean {
@@ -190,6 +190,7 @@ function buildMissingRelease(
  *
  * @param projectPath - Path to the project's project.godot file.
  * @param codeEditorIntegrationService - Code editor integration service.
+ * @param installedEditorService - Installed editor query service.
  * @param options - Optional missing-editor resolution.
  * @param gitService - Git service used to inspect repository coverage.
  * @returns The project import result.
@@ -197,6 +198,7 @@ function buildMissingRelease(
 export async function addProject(
     projectPath: string,
     codeEditorIntegrationService: CodeEditorIntegrationService,
+    installedEditorService: InstalledEditorService,
     options: AddProjectOptions = {},
     gitService?: GitService,
 ): Promise<AddProjectToListResult> {
@@ -272,7 +274,8 @@ export async function addProject(
     const configVersion = await getProjectConfigVersionFromParsed(parsedConfig);
 
     // select the closest installed release
-    const installedReleases = await getInstalledReleases();
+    const installedReleases =
+        await installedEditorService.getInstalledEditors();
     const projectLauncherConfigPath = path.resolve(
         dirname,
         PROJECT_LAUNCHER_CONFIG_FILENAME,
