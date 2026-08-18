@@ -7,24 +7,17 @@ import type {
 import { app } from 'electron';
 import logger from 'electron-log';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { EDITOR_CONFIG_DIRNAME, PROJECTS_FILENAME } from '../constants.js';
+import { getUserPreferences } from '../commands/userPreferences.js';
+import { EDITOR_CONFIG_DIRNAME } from '../constants.js';
 import { t } from '../i18n/index.js';
+import type { ProjectsStore } from '../projects/projects.store.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
     SetProjectEditorRelease,
 } from '../utils/godot.utils.js';
-import { JsonStoreConflictError } from '../utils/jsonStore.js';
-import { getDefaultDirs } from '../utils/platform.utils.js';
 import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
-import {
-    getProjectsSnapshot,
-    storeProjectsList,
-} from '../utils/projects.utils.js';
-import { getUserPreferences } from './userPreferences.js';
-
-const PROJECT_EDITOR_MAX_ATTEMPTS = 2;
 
 function resolveProjectEditorPath(
     project: ProjectDetails,
@@ -49,29 +42,39 @@ function resolveProjectEditorPath(
     );
 }
 
+/**
+ * Assigns an installed editor to one stored project.
+ *
+ * @param project - Project to update.
+ * @param newRelease - Installed editor to assign.
+ * @param codeEditorIntegrationService - Code editor integration facade.
+ * @param projectsStore - Canonical project store.
+ * @returns The bridge-compatible editor change result.
+ */
 export async function setProjectEditor(
     project: ProjectDetails,
     newRelease: InstalledRelease,
     codeEditorIntegrationService: CodeEditorIntegrationService,
+    projectsStore: ProjectsStore,
 ): Promise<ChangeProjectEditorResult> {
-    const { configDir } = getDefaultDirs();
-    const projectListPath = path.resolve(configDir, PROJECTS_FILENAME);
     const { install_location: installLocation } = await getUserPreferences();
     const recoveredCodeEditorConfigFiles = new Set<string>();
+    let failure: ChangeProjectEditorResult | undefined;
+    let updatedProject: ProjectDetails | undefined;
 
-    for (let attempt = 0; attempt < PROJECT_EDITOR_MAX_ATTEMPTS; attempt++) {
-        const { projects, version } =
-            await getProjectsSnapshot(projectListPath);
-
-        const projectIndex = projects.findIndex((p) => p.path === project.path);
+    const projects = await projectsStore.update(async (currentProjects) => {
+        const projectIndex = currentProjects.findIndex(
+            (candidate) => candidate.path === project.path,
+        );
         if (projectIndex === -1) {
-            return {
+            failure = {
                 success: false,
                 error: t('projects:changeEditor.errors.projectNotFound'),
             };
+            return currentProjects;
         }
 
-        const currentProject = projects[projectIndex];
+        const currentProject = currentProjects[projectIndex];
 
         if (
             currentProject.release.version === newRelease.version &&
@@ -82,10 +85,7 @@ export async function setProjectEditor(
             logger.warn(
                 `Project already using the selected release, ${newRelease.version} - ${newRelease.mono ? 'mono' : ''}`,
             );
-            return {
-                success: true,
-                projects,
-            };
+            return currentProjects;
         }
 
         const config = getProjectDefinition(
@@ -94,20 +94,22 @@ export async function setProjectEditor(
         );
 
         if (!config) {
-            return {
+            failure = {
                 success: false,
                 error: t('projects:changeEditor.errors.invalidEditorVersion'),
             };
+            return currentProjects;
         }
 
         if (
             parseInt(currentProject.version_number.toString(), 10) !==
             parseInt(newRelease.version_number.toString(), 10)
         ) {
-            return {
+            failure = {
                 success: false,
                 error: t('projects:changeEditor.errors.differentMajorVersion'),
             };
+            return currentProjects;
         }
 
         const projectEditorPath = resolveProjectEditorPath(
@@ -160,7 +162,7 @@ export async function setProjectEditor(
             );
         }
 
-        const updatedProject: ProjectDetails = {
+        updatedProject = {
             ...currentProject,
             release: {
                 ...newRelease,
@@ -176,49 +178,39 @@ export async function setProjectEditor(
             valid: true,
         };
 
-        const updatedProjects = [...projects];
+        await writeProjectLauncherConfig(updatedProject.path, {
+            release: updatedProject.release,
+            launcherVersion: app.getVersion(),
+        });
+        const updatedProjects = [...currentProjects];
         updatedProjects[projectIndex] = updatedProject;
+        return updatedProjects;
+    });
 
-        try {
-            await writeProjectLauncherConfig(updatedProject.path, {
-                release: updatedProject.release,
-                launcherVersion: app.getVersion(),
-            });
-            const storedProjects = await storeProjectsList(
-                projectListPath,
-                updatedProjects,
-                { expectedVersion: version },
-            );
-
-            project.release = updatedProject.release;
-            project.version = updatedProject.version;
-            project.version_number = updatedProject.version_number;
-            project.launch_path = updatedProject.launch_path;
-            project.editor_settings_file = updatedProject.editor_settings_file;
-            project.editor_settings_path = updatedProject.editor_settings_path;
-            project.valid = updatedProject.valid;
-            project.codeEditorId = updatedProject.codeEditorId;
-
-            return {
-                success: true,
-                projects: storedProjects,
-                recoveredCodeEditorConfigFiles:
-                    recoveredCodeEditorConfigFiles.size > 0
-                        ? [...recoveredCodeEditorConfigFiles]
-                        : undefined,
-            };
-        } catch (error) {
-            if (
-                error instanceof JsonStoreConflictError &&
-                attempt < PROJECT_EDITOR_MAX_ATTEMPTS - 1
-            ) {
-                continue;
-            }
-            throw error;
-        }
+    if (failure) {
+        return failure;
     }
 
-    throw new Error(
-        'Failed to update project editor due to concurrent modifications',
-    );
+    const latestProject =
+        projects.find((candidate) => candidate.path === project.path) ??
+        updatedProject;
+    if (latestProject) {
+        project.release = latestProject.release;
+        project.version = latestProject.version;
+        project.version_number = latestProject.version_number;
+        project.launch_path = latestProject.launch_path;
+        project.editor_settings_file = latestProject.editor_settings_file;
+        project.editor_settings_path = latestProject.editor_settings_path;
+        project.valid = latestProject.valid;
+        project.codeEditorId = latestProject.codeEditorId;
+    }
+
+    return {
+        success: true,
+        projects,
+        recoveredCodeEditorConfigFiles:
+            recoveredCodeEditorConfigFiles.size > 0
+                ? [...recoveredCodeEditorConfigFiles]
+                : undefined,
+    };
 }

@@ -1,16 +1,14 @@
-import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { setProjectEditor } from '../commands/setProjectEditor.js';
-import { PROJECTS_FILENAME } from '../constants.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectsStore } from '../projects/projects.store.js';
 import { removeProjectEditor } from '../utils/godot.utils.js';
-import { getDefaultDirs } from '../utils/platform.utils.js';
-import { getStoredProjectsList } from '../utils/projects.utils.js';
 import { hasSameInstalledEditorIdentity } from './installed-editor.store.js';
+import { setProjectEditor } from './project-editor-repair.util.js';
 
 function projectUsesEditor(
     project: ProjectDetails,
@@ -22,21 +20,23 @@ function projectUsesEditor(
     );
 }
 
-/** Keeps project repair behind one temporary boundary until Projects DI moves. */
+/** Keeps editor-driven project repair behind a narrow acyclic boundary. */
 @Injectable()
 export class EditorProjectRepairAdapter {
     /**
      * Creates the project repair adapter.
      *
      * @param codeEditorIntegrationService - Service used when resetting project editors.
+     * @param projectsStore - Canonical project persistence store.
      */
     constructor(
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
+        private readonly projectsStore: ProjectsStore,
     ) {}
 
     /** Revalidates every stored project. */
     async revalidateProjects(): Promise<void> {
-        await checkAndUpdateProjects();
+        await checkAndUpdateProjects({}, undefined, this.projectsStore);
     }
 
     /**
@@ -71,6 +71,7 @@ export class EditorProjectRepairAdapter {
                 project,
                 newRelease,
                 this.codeEditorIntegrationService,
+                this.projectsStore,
             );
             if (!result.success) {
                 logger.warn(
@@ -81,11 +82,8 @@ export class EditorProjectRepairAdapter {
         await this.revalidateProjects();
     }
 
-    /** Reads the current legacy project list through its existing store. */
+    /** Reads the current project list through the canonical store. */
     private async listProjects(): Promise<ProjectDetails[]> {
-        const { configDir } = getDefaultDirs();
-        return getStoredProjectsList(
-            path.resolve(configDir, PROJECTS_FILENAME),
-        );
+        return this.projectsStore.list();
     }
 }

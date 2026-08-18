@@ -25,6 +25,7 @@ import type {
     LaunchProjectResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    ProjectsBridge,
     ReleaseInstallProgress,
     ReleaseSummary,
     ToolIntegrationSummary,
@@ -76,6 +77,10 @@ const canonicalScreensDir = path.join(
 type AppMethod = Extract<keyof AppBridge, string>;
 type AppResult<Method extends AppMethod> = Awaited<
     ReturnType<AppBridge[Method]>
+>;
+type ProjectsMethod = Extract<keyof ProjectsBridge, string>;
+type ProjectsResult<Method extends ProjectsMethod> = Awaited<
+    ReturnType<ProjectsBridge[Method]>
 >;
 type EditorInstallsMethod = Extract<keyof EditorInstallsBridge, string>;
 type EditorInstallsResult<Method extends EditorInstallsMethod> = Awaited<
@@ -441,6 +446,9 @@ export async function stubAppData(
 
             const appChannel = <Method extends AppMethod>(method: Method) =>
                 `app.${method}` as `app.${Method}`;
+            const projectsChannel = <Method extends ProjectsMethod>(
+                method: Method,
+            ) => `projects.${method}` as `projects.${Method}`;
             const editorInstallsChannel = <Method extends EditorInstallsMethod>(
                 method: Method,
             ) => `editorInstalls.${method}` as `editorInstalls.${Method}`;
@@ -465,29 +473,29 @@ export async function stubAppData(
                     ipcSuccess<AppResult<'setUserPreferences'>>(nextPrefs),
             );
 
-            ipcMain.removeHandler(appChannel('getProjectsDetails'));
+            ipcMain.removeHandler(projectsChannel('getProjectsDetails'));
             ipcMain.handle(
-                appChannel('getProjectsDetails'),
+                projectsChannel('getProjectsDetails'),
                 async () =>
-                    ipcSuccess<AppResult<'getProjectsDetails'>>(
+                    ipcSuccess<ProjectsResult<'getProjectsDetails'>>(
                         normalizedProjects,
                     ),
             );
 
-            ipcMain.removeHandler(appChannel('checkAllProjectsValid'));
+            ipcMain.removeHandler(projectsChannel('checkAllProjectsValid'));
             ipcMain.handle(
-                appChannel('checkAllProjectsValid'),
+                projectsChannel('checkAllProjectsValid'),
                 async () =>
-                    ipcSuccess<AppResult<'checkAllProjectsValid'>>(
+                    ipcSuccess<ProjectsResult<'checkAllProjectsValid'>>(
                         normalizedProjects,
                     ),
             );
 
-            ipcMain.removeHandler(appChannel('checkProjectValid'));
+            ipcMain.removeHandler(projectsChannel('checkProjectValid'));
             ipcMain.handle(
-                appChannel('checkProjectValid'),
+                projectsChannel('checkProjectValid'),
                 async (_, project: ProjectDetails) =>
-                    ipcSuccess<AppResult<'checkProjectValid'>>({
+                    ipcSuccess<ProjectsResult<'checkProjectValid'>>({
                         ...project,
                         release: {
                             ...project.release,
@@ -497,14 +505,14 @@ export async function stubAppData(
                     }),
             );
 
-            ipcMain.removeHandler(appChannel('getProjectGodotName'));
+            ipcMain.removeHandler(projectsChannel('getProjectGodotName'));
             ipcMain.handle(
-                appChannel('getProjectGodotName'),
+                projectsChannel('getProjectGodotName'),
                 async (_, project: ProjectDetails) => {
                     const matchingProject = normalizedProjects.find(
                         (candidate) => candidate.path === project.path,
                     );
-                    return ipcSuccess<AppResult<'getProjectGodotName'>>(
+                    return ipcSuccess<ProjectsResult<'getProjectGodotName'>>(
                         matchingProject?.name ?? null,
                     );
                 },
@@ -642,7 +650,7 @@ export async function stubProjectLaunchResult(
 ) {
     await electronApp.evaluate(
         ({ ipcMain }, injectedResult: LaunchProjectResult) => {
-            const channel = 'app.launchProject';
+            const channel = 'projects.launchProject';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,
@@ -666,7 +674,7 @@ export async function stubProjectGitIdentity(
 ) {
     await electronApp.evaluate(
         ({ ipcMain }, injectedResult: ProjectGitIdentityResult) => {
-            const channel = 'app.getProjectGitIdentity';
+            const channel = 'projects.getProjectGitIdentity';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,
@@ -730,7 +738,7 @@ export async function stubProjectGitInitializationFailure(
     error: string,
 ) {
     await electronApp.evaluate(({ ipcMain }, message: string) => {
-        const channel = 'app.initializeProjectGit';
+        const channel = 'projects.initializeProjectGit';
         ipcMain.removeHandler(channel);
         ipcMain.handle(channel, async () => ({
             success: false,
@@ -755,7 +763,7 @@ export async function stubProjectGitInitializationResult(
 ) {
     await electronApp.evaluate(
         ({ ipcMain }, injectedResult: InitializeProjectGitResult) => {
-            const channel = 'app.initializeProjectGit';
+            const channel = 'projects.initializeProjectGit';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,
@@ -1285,6 +1293,9 @@ export async function stubAddProjectEditorResolution(
         ) => {
             const appChannel = <Method extends AppMethod>(method: Method) =>
                 `app.${method}` as `app.${Method}`;
+            const projectsChannel = <Method extends ProjectsMethod>(
+                method: Method,
+            ) => `projects.${method}` as `projects.${Method}`;
             const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
                 success: true,
                 data,
@@ -1300,7 +1311,7 @@ export async function stubAddProjectEditorResolution(
                 }),
             );
 
-            const addProjectChannel = appChannel('addProject');
+            const addProjectChannel = projectsChannel('addProject');
             ipcMain.removeHandler(addProjectChannel);
             ipcMain.handle(addProjectChannel, async (_, path: string, options?: AddProjectOptions) => {
                 if (options?.resolution === 'add_missing') {
@@ -1334,14 +1345,14 @@ export async function stubAddProjectEditorResolution(
                         invalid_reason: 'missing_editor',
                     };
 
-                    return ipcSuccess<AppResult<'addProject'>>({
+                    return ipcSuccess<ProjectsResult<'addProject'>>({
                         success: true,
                         projects: [newProject],
                         newProject,
                     });
                 }
 
-                return ipcSuccess<AppResult<'addProject'>>({
+                return ipcSuccess<ProjectsResult<'addProject'>>({
                     success: false,
                     editorResolution: {
                         requested: {
@@ -1382,6 +1393,9 @@ export async function stubAddProjectRecoveredCodeEditorConfig(
         ) => {
             const appChannel = <Method extends AppMethod>(method: Method) =>
                 `app.${method}` as `app.${Method}`;
+            const projectsChannel = <Method extends ProjectsMethod>(
+                method: Method,
+            ) => `projects.${method}` as `projects.${Method}`;
             const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
                 success: true,
                 data,
@@ -1397,7 +1411,7 @@ export async function stubAddProjectRecoveredCodeEditorConfig(
                 }),
             );
 
-            const addProjectChannel = appChannel('addProject');
+            const addProjectChannel = projectsChannel('addProject');
             ipcMain.removeHandler(addProjectChannel);
             ipcMain.handle(addProjectChannel, async () => {
                 const projectDirectory = projectPath.replace(
@@ -1444,7 +1458,7 @@ export async function stubAddProjectRecoveredCodeEditorConfig(
                     win.webContents.send('projects-updated', projects);
                 }
 
-                return ipcSuccess<AppResult<'addProject'>>({
+                return ipcSuccess<ProjectsResult<'addProject'>>({
                     success: true,
                     projects,
                     newProject,

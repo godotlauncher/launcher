@@ -78,6 +78,7 @@ vi.mock('@mariodebono/di-electron/renderer', () => {
             editorInstalls: createBridgeNamespace('editorInstalls'),
             git: createBridgeNamespace('git'),
             gitLfs: createBridgeNamespace('gitLfs'),
+            projects: createBridgeNamespace('projects'),
             toolIntegration: createBridgeNamespace('toolIntegration'),
         }),
         createRendererEvents: () => ({

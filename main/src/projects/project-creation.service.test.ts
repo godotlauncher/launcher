@@ -9,7 +9,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import type { GitLfsService } from '../tool-integration/integrations/git-lfs/git-lfs.service.js';
-import { createProject as createProjectCommand } from './createProject.js';
+import { ProjectCreationService } from './project-creation.service.js';
+import type { ProjectsStore } from './projects.store.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -77,13 +78,11 @@ const projectUtilsMocks = vi.hoisted(() => ({
     addProjectToList: vi.fn(),
 }));
 
-vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
-
 const userPreferencesMocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
 }));
 
-vi.mock('./userPreferences.js', () => userPreferencesMocks);
+vi.mock('../commands/userPreferences.js', () => userPreferencesMocks);
 
 const projectLauncherConfigMocks = vi.hoisted(() => ({
     writeProjectLauncherConfig: vi.fn(),
@@ -116,6 +115,9 @@ const gitLfsServiceMocks = {
     supportsTrackingPolicy: vi.fn(),
 };
 const gitLfsService = gitLfsServiceMocks as unknown as GitLfsService;
+const projectsStore = {
+    put: projectUtilsMocks.addProjectToList,
+} as unknown as ProjectsStore;
 
 /**
  * Calls Create Project with the test-owned Git service.
@@ -140,15 +142,17 @@ function createProject(
     overwriteProjectPath?: string,
     gitOptions?: CreateProjectGitOptions,
 ) {
-    return createProjectCommand(
+    return new ProjectCreationService(
+        codeEditorService,
+        gitService,
+        gitLfsService,
+        projectsStore,
+    ).createProject(
         projectName,
         release,
         renderer,
         codeEditorId,
         withGit,
-        codeEditorService,
-        gitService,
-        gitLfsService,
         overwriteProjectPath,
         gitOptions,
     );

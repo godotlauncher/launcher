@@ -115,7 +115,7 @@ test('Create Project submits both an integration and explicit None', async () =>
     });
     await stubRecordedIpcHandler(electronApp, {
         key: 'createProject',
-        channel: 'app.createProject',
+        channel: 'projects.createProject',
         data: {
             success: false,
             error: 'Captured Create Project request.',
@@ -174,7 +174,7 @@ test('Project Settings preserves an unavailable selection and can save explicit 
     ]);
     await stubRecordedIpcHandler(electronApp, {
         key: 'projectCodeEditor',
-        channel: 'app.setProjectCodeEditor',
+        channel: 'projects.setProjectCodeEditor',
         data: {
             ...SAMPLE_PROJECT_PROTOTYPE,
             codeEditorId: null,
@@ -233,7 +233,7 @@ test('Project Settings preserves an unavailable selection and can save explicit 
 test('Project launch warns when its selected code editor is unavailable', async () => {
     await stubRecordedIpcHandler(electronApp, {
         key: 'projectLaunch',
-        channel: 'app.launchProject',
+        channel: 'projects.launchProject',
         data: {
             launched: false,
             reason: 'code_editor_unavailable',

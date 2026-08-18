@@ -7,6 +7,7 @@ import {
     getPathForFile,
     gitBridge,
     gitLfsBridge,
+    projectsBridge,
     subscribeAppEvent,
     toolIntegrationBridge,
 } from './bridge.js';
@@ -53,6 +54,7 @@ type TestElectronApi = {
     'git.saveGlobalIdentity': (identity: unknown) => Promise<unknown>;
     'git.saveProjectIdentityPreset': (preset: unknown) => Promise<unknown>;
     'gitLfs.getTrackingPolicy': () => Promise<unknown>;
+    'projects.getProjectsDetails': () => Promise<unknown[]>;
     'toolIntegration.listIntegrations': () => Promise<unknown[]>;
     'toolIntegration.rescanIntegrations': () => Promise<unknown[]>;
     'toolIntegration.refreshIntegration': (toolId: string) => Promise<unknown>;
@@ -110,6 +112,7 @@ describe('renderer bridge', () => {
         id: 'godot-documentation-defaults',
         groups: [],
     }));
+    const getProjectsDetails = vi.fn(async () => []);
     const listToolIntegrations = vi.fn(async () => []);
     const rescanToolIntegrations = vi.fn(async () => []);
     const refreshToolIntegration = vi.fn(async () => ({}));
@@ -152,6 +155,7 @@ describe('renderer bridge', () => {
             'git.saveGlobalIdentity': saveGlobalIdentity,
             'git.saveProjectIdentityPreset': saveProjectIdentityPreset,
             'gitLfs.getTrackingPolicy': getGitLfsTrackingPolicy,
+            'projects.getProjectsDetails': getProjectsDetails,
             'toolIntegration.listIntegrations': listToolIntegrations,
             'toolIntegration.rescanIntegrations': rescanToolIntegrations,
             'toolIntegration.refreshIntegration': refreshToolIntegration,
@@ -276,6 +280,12 @@ describe('renderer bridge', () => {
         });
 
         expect(getGitLfsTrackingPolicy).toHaveBeenCalledOnce();
+    });
+
+    it('delegates through the projects namespace', async () => {
+        await expect(projectsBridge.getProjectsDetails()).resolves.toEqual([]);
+
+        expect(getProjectsDetails).toHaveBeenCalledOnce();
     });
 
     it('subscribes and unsubscribes from application events', () => {

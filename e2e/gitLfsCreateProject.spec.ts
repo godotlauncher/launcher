@@ -173,8 +173,8 @@ async function stubRecordedCreateProject(
             __gitLfsCreateProjectCalls?: unknown[][];
         };
         state.__gitLfsCreateProjectCalls = [];
-        ipcMain.removeHandler('app.createProject');
-        ipcMain.handle('app.createProject', async (_event, ...args) => {
+        ipcMain.removeHandler('projects.createProject');
+        ipcMain.handle('projects.createProject', async (_event, ...args) => {
             state.__gitLfsCreateProjectCalls?.push(args);
             return {
                 success: true,

@@ -127,17 +127,17 @@ async function installStatefulPinnedOrderHandlers(
 
             syncProjects(currentProjects);
 
-            ipcMain.removeHandler('app.getProjectsDetails');
-            ipcMain.handle('app.getProjectsDetails', async () =>
+            ipcMain.removeHandler('projects.getProjectsDetails');
+            ipcMain.handle('projects.getProjectsDetails', async () =>
                 success(currentProjects),
             );
-            ipcMain.removeHandler('app.checkAllProjectsValid');
-            ipcMain.handle('app.checkAllProjectsValid', async () =>
+            ipcMain.removeHandler('projects.checkAllProjectsValid');
+            ipcMain.handle('projects.checkAllProjectsValid', async () =>
                 success(currentProjects),
             );
-            ipcMain.removeHandler('app.reorderPinnedProjects');
+            ipcMain.removeHandler('projects.reorderPinnedProjects');
             ipcMain.handle(
-                'app.reorderPinnedProjects',
+                'projects.reorderPinnedProjects',
                 async (_event, orderedProjectPaths: string[]) => {
                     const orderByPath = new Map(
                         orderedProjectPaths.map((projectPath, index) => [
@@ -155,9 +155,9 @@ async function installStatefulPinnedOrderHandlers(
                     );
                 },
             );
-            ipcMain.removeHandler('app.setProjectPinned');
+            ipcMain.removeHandler('projects.setProjectPinned');
             ipcMain.handle(
-                'app.setProjectPinned',
+                'projects.setProjectPinned',
                 async (_event, project: ProjectDetails, pinned: boolean) => {
                     const existingPinnedPaths = currentProjects
                         .filter(

@@ -20,10 +20,8 @@ import { I18nService } from '@mariodebono/di-electron-i18n';
 import { app, dialog, autoUpdater as electronAutoUpdater } from 'electron';
 import logger from 'electron-log/main.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
-import { checkAndUpdateProjects } from './checks.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
-import { launchProject } from './commands/projects.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -35,9 +33,9 @@ import { configureI18n } from './i18n/index.js';
 import { setMainWindow } from './mainWindow.js';
 import { getAppIconPath } from './pathResolver.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { TrayAvailabilityService } from './services/tray-availability.service.js';
+import { ProjectsService } from './projects/projects.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { GitService } from './tool-integration/integrations/git/git.service.js';
+import { TrayAvailabilityService } from './services/tray-availability.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationService } from './tool-integration/tool-integration.service.js';
 import { setAutoStart } from './utils/platform.utils.js';
@@ -60,8 +58,8 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
      * @param codeEditorIntegrationService - Code editor lifecycle facade.
      * @param installedEditorService - Installed editor lifecycle facade.
      * @param toolIntegrationService - Command-line tool lifecycle facade.
-     * @param gitService - Git repository inspection service.
      * @param trayAvailabilityService - System tray availability service.
+     * @param projectsService - Project workflow facade.
      */
     constructor(
         private readonly configService: ConfigService<AppConfig>,
@@ -71,8 +69,8 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
         private readonly installedEditorService: InstalledEditorService,
         private readonly toolIntegrationService: ToolIntegrationService,
-        private readonly gitService: GitService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
+        private readonly projectsService: ProjectsService,
     ) {}
 
     onModuleInit(): void {
@@ -108,7 +106,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         );
 
         logger.debug('App ready, checking projects and releases');
-        await checkAndUpdateProjects({}, this.gitService);
+        await this.projectsService.checkAllProjectsValid();
         await this.installedEditorService.revalidateInstalledEditors();
     }
 
@@ -127,11 +125,8 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         await createTray(
             mainWindow,
             async (project) => {
-                const result = await launchProject(
-                    project,
-                    this.codeEditorIntegrationService,
-                    this.trayAvailabilityService,
-                );
+                const result =
+                    await this.projectsService.launchProject(project);
                 if (!result.launched) {
                     this.showMainWindow();
                     ipcWebContentsSend(
@@ -142,6 +137,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
                 }
             },
             () => this.showMainWindow(),
+            () => this.projectsService.getProjectsDetails(),
         );
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
@@ -172,7 +168,11 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
                 () => this.installedEditorService.revalidateInstalledEditors(),
                 () =>
                     this.codeEditorIntegrationService.revalidateIntegrationSettings(),
-                this.gitService,
+                () =>
+                    this.projectsService.checkAllProjectsValid({
+                        repairMissingLaunchPath: false,
+                        publishResult: true,
+                    }),
             );
         }
         electronAutoUpdater.on(

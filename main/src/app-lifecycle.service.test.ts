@@ -4,8 +4,6 @@ import { AppLifecycleService } from './app-lifecycle.service.js';
 const mocks = vi.hoisted(() => ({
     ensurePreferencesStorage: vi.fn(),
     getUserPreferences: vi.fn(),
-    checkAndUpdateProjects: vi.fn(),
-    launchProject: vi.fn(),
     ipcWebContentsSend: vi.fn(),
     configureI18n: vi.fn(),
     getLocale: vi.fn(() => 'de-DE'),
@@ -81,12 +79,6 @@ vi.mock('./utils/prefs.utils.js', () => ({
 vi.mock('./commands/userPreferences.js', () => ({
     getUserPreferences: mocks.getUserPreferences,
 }));
-vi.mock('./checks.js', () => ({
-    checkAndUpdateProjects: mocks.checkAndUpdateProjects,
-}));
-vi.mock('./commands/projects.js', () => ({
-    launchProject: mocks.launchProject,
-}));
 vi.mock('./i18n/index.js', () => ({ configureI18n: mocks.configureI18n }));
 vi.mock('./autoUpdater.js', () => ({
     setupAutoUpdate: mocks.setupAutoUpdate,
@@ -106,6 +98,9 @@ vi.mock('./mainWindow.js', () => ({
 }));
 vi.mock('./pathResolver.js', () => ({
     getAppIconPath: mocks.getAppIconPath,
+}));
+vi.mock('./projects/projects.service.js', () => ({
+    ProjectsService: class ProjectsService {},
 }));
 vi.mock('./utils/platform.utils.js', () => ({
     setAutoStart: mocks.setAutoStart,
@@ -162,12 +157,13 @@ describe('AppLifecycleService', () => {
     const toolIntegrationService = {
         refreshAll: vi.fn(),
     };
-    const gitService = {
-        inspectRepository: vi.fn(),
-    };
-
     const trayAvailabilityService = {
         isAvailable: vi.fn(async () => true),
+    };
+    const projectsService = {
+        checkAllProjectsValid: vi.fn(),
+        getProjectsDetails: vi.fn(),
+        launchProject: vi.fn(),
     };
 
     function createService() {
@@ -179,8 +175,8 @@ describe('AppLifecycleService', () => {
             codeEditorIntegrationService as never,
             installedEditorService as never,
             toolIntegrationService as never,
-            gitService as never,
             trayAvailabilityService as never,
+            projectsService as never,
         );
     }
 
@@ -216,7 +212,9 @@ describe('AppLifecycleService', () => {
             docsScreenshots: false,
         });
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
-        mocks.launchProject.mockResolvedValue({ launched: true });
+        projectsService.checkAllProjectsValid.mockResolvedValue([]);
+        projectsService.getProjectsDetails.mockResolvedValue([]);
+        projectsService.launchProject.mockResolvedValue({ launched: true });
         toolIntegrationService.refreshAll.mockResolvedValue([]);
         installedEditorService.revalidateInstalledEditors.mockResolvedValue([]);
         mocks.setupFocusRevalidation.mockReturnValue(
@@ -244,7 +242,7 @@ describe('AppLifecycleService', () => {
 
         expect(mocks.ensurePreferencesStorage).toHaveBeenCalledOnce();
         expect(i18nService.setLocale).toHaveBeenCalledWith('de-DE');
-        expect(mocks.checkAndUpdateProjects).toHaveBeenCalledOnce();
+        expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
         expect(
             installedEditorService.revalidateInstalledEditors,
         ).toHaveBeenCalledOnce();
@@ -265,7 +263,7 @@ describe('AppLifecycleService', () => {
         expect(
             toolIntegrationService.refreshAll.mock.invocationCallOrder[0],
         ).toBeLessThan(
-            mocks.checkAndUpdateProjects.mock.invocationCallOrder[0],
+            projectsService.checkAllProjectsValid.mock.invocationCallOrder[0],
         );
         resolveRefresh?.();
     });
@@ -288,7 +286,7 @@ describe('AppLifecycleService', () => {
             mainWindow,
             expect.any(Function),
             expect.any(Function),
-            gitService,
+            expect.any(Function),
         );
         expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
 
@@ -362,6 +360,7 @@ describe('AppLifecycleService', () => {
             mainWindow,
             expect.any(Function),
             expect.any(Function),
+            expect.any(Function),
         );
         const launchFromTray = mocks.createTray.mock.calls[0]?.[1] as (
             selectedProject: typeof project,
@@ -369,11 +368,7 @@ describe('AppLifecycleService', () => {
 
         await launchFromTray(project);
 
-        expect(mocks.launchProject).toHaveBeenCalledWith(
-            project,
-            codeEditorIntegrationService,
-            trayAvailabilityService,
-        );
+        expect(projectsService.launchProject).toHaveBeenCalledWith(project);
     });
 
     it('routes tray show requests through the standard window reveal path', async () => {
@@ -385,6 +380,18 @@ describe('AppLifecycleService', () => {
         showFromTray();
 
         expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+    });
+
+    it('routes tray project reads through the project service', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+        const listProjects = mocks.createTray.mock
+            .calls[0]?.[3] as () => Promise<unknown[]>;
+
+        await listProjects();
+
+        expect(projectsService.getProjectsDetails).toHaveBeenCalledOnce();
     });
 
     it('reveals the window and forwards unavailable tray launches to the renderer', async () => {
@@ -399,7 +406,7 @@ describe('AppLifecycleService', () => {
                 capabilities: { dotnet: true },
             },
         };
-        mocks.launchProject.mockResolvedValue(result);
+        projectsService.launchProject.mockResolvedValue(result);
 
         await initializeLifecycle(service);
         const launchFromTray = mocks.createTray.mock.calls[0]?.[1] as (

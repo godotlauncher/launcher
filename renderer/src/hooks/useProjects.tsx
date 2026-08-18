@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router';
 import {
     appBridge,
     codeEditorIntegrationBridge,
+    projectsBridge,
     subscribeAppEvent,
 } from '../bridge.ts';
 import { appRoutePaths } from '../routes';
@@ -132,7 +133,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     const getProjects = async () => {
         setLoading(true);
         const [projects, integrations] = await Promise.all([
-            appBridge.getProjectsDetails(),
+            projectsBridge.getProjectsDetails(),
             codeEditorIntegrationBridge
                 .listIntegrationSettings()
                 .catch(() => []),
@@ -180,7 +181,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
     ) => {
-        const result = await appBridge.createProject(
+        const result = await projectsBridge.createProject(
             projectName,
             release,
             renderer,
@@ -201,7 +202,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         projectPath: string,
         options?: AddProjectOptions,
     ) => {
-        const addResult = await appBridge.addProject(projectPath, options);
+        const addResult = await projectsBridge.addProject(projectPath, options);
         if (addResult.success && addResult.projects) {
             setProjects(addResult.projects);
         }
@@ -212,7 +213,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => {
-        const result = await appBridge.setProjectEditor(project, release);
+        const result = await projectsBridge.setProjectEditor(project, release);
         if (result.success && result.projects) {
             setProjects(result.projects);
         }
@@ -232,7 +233,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         openWindowed: boolean,
     ) => {
-        const updatedProject = await appBridge.setProjectWindowed(
+        const updatedProject = await projectsBridge.setProjectWindowed(
             project,
             openWindowed,
         );
@@ -244,7 +245,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         pinned: boolean,
     ) => {
-        const updatedProjects = await appBridge.setProjectPinned(
+        const updatedProjects = await projectsBridge.setProjectPinned(
             project,
             pinned,
         );
@@ -254,7 +255,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     const reorderPinnedProjects = async (orderedProjectPaths: string[]) => {
         const updatedProjects =
-            await appBridge.reorderPinnedProjects(orderedProjectPaths);
+            await projectsBridge.reorderPinnedProjects(orderedProjectPaths);
         setProjects(updatedProjects);
         return updatedProjects;
     };
@@ -263,7 +264,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
     ) => {
-        const updatedProject = await appBridge.setProjectCodeEditor(
+        const updatedProject = await projectsBridge.setProjectCodeEditor(
             project,
             codeEditorId,
         );
@@ -273,31 +274,31 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     const resetProjectCodeEditorConfig = async (project: ProjectDetails) => {
         const updatedProject =
-            await appBridge.resetProjectCodeEditorConfig(project);
+            await projectsBridge.resetProjectCodeEditorConfig(project);
         updateProjectState(updatedProject);
         return updatedProject;
     };
 
     const initializeProjectGit = async (project: ProjectDetails) => {
-        const result = await appBridge.initializeProjectGit(project);
+        const result = await projectsBridge.initializeProjectGit(project);
         updateProjectState(result.project);
         return result;
     };
 
     const getProjectGitIdentity = (project: ProjectDetails) =>
-        appBridge.getProjectGitIdentity(project);
+        projectsBridge.getProjectGitIdentity(project);
 
     const setProjectGitIdentity = (
         project: ProjectDetails,
         identity: GitIdentity,
-    ) => appBridge.setProjectGitIdentity(project, identity);
+    ) => projectsBridge.setProjectGitIdentity(project, identity);
 
     const exportProjectEditorSettings = async (project: ProjectDetails) => {
-        await appBridge.exportProjectEditorSettings(project);
+        await projectsBridge.exportProjectEditorSettings(project);
     };
 
     const importProjectEditorSettings = async (project: ProjectDetails) => {
-        await appBridge.importProjectEditorSettings(project);
+        await projectsBridge.importProjectEditorSettings(project);
     };
 
     const openProjectFolder = async (project: ProjectDetails) => {
@@ -312,7 +313,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         project: ProjectDetails,
         options: RenameProjectOptions,
     ) => {
-        const result = await appBridge.renameProject(project, options);
+        const result = await projectsBridge.renameProject(project, options);
         if (result.success && result.projects) {
             setProjects(result.projects);
         }
@@ -320,11 +321,11 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const getProjectGodotName = async (project: ProjectDetails) => {
-        return await appBridge.getProjectGodotName(project);
+        return await projectsBridge.getProjectGodotName(project);
     };
 
     const removeProject = async (project: ProjectDetails) => {
-        const result = await appBridge.removeProject(project);
+        const result = await projectsBridge.removeProject(project);
         setProjects(result);
     };
 
@@ -356,7 +357,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                     text: t('messages.codeEditorLaunch.launchAnyway'),
                     onClick: async () => {
                         try {
-                            await appBridge.launchProject(project, {
+                            await projectsBridge.launchProject(project, {
                                 allowMissingCodeEditor: true,
                             });
                             return true;
@@ -375,7 +376,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                                 project,
                                 null,
                             );
-                            await appBridge.launchProject(updatedProject);
+                            await projectsBridge.launchProject(updatedProject);
                             return true;
                         } catch (error) {
                             handleError(error);
@@ -402,13 +403,13 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const launchProject = async (project: ProjectDetails) => {
-        const all = await appBridge.checkAllProjectsValid();
+        const all = await projectsBridge.checkAllProjectsValid();
         setProjects(all);
 
         const p = all.find((p) => p.path === project.path);
 
         if (p?.valid) {
-            const result = await appBridge.launchProject(p);
+            const result = await projectsBridge.launchProject(p);
             if (!result.launched) {
                 showMissingCodeEditorWarning(p, result);
             }
@@ -422,7 +423,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const checkProjectValid = (project: ProjectDetails) => {
-        const result = appBridge.checkProjectValid(project);
+        const result = projectsBridge.checkProjectValid(project);
         return result;
     };
 

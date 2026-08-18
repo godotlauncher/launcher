@@ -24,18 +24,6 @@ vi.mock('../pathResolver.js', () => ({
     getAssetPath: vi.fn().mockReturnValue('/assets'),
 }));
 
-vi.mock('../utils/projects.utils.js', () => ({
-    getStoredProjectsList: vi.fn().mockResolvedValue([]),
-}));
-
-vi.mock('../utils/prefs.utils.js', () => ({
-    getConfigDir: vi.fn().mockReturnValue('/config/dir'),
-}));
-
-vi.mock('../constants.js', () => ({
-    PROJECTS_FILENAME: 'projects.json',
-}));
-
 vi.mock('../i18n/index.js', () => {
     const translations = {
         'menus:tray.recentProjects': 'Recent Projects',
@@ -169,6 +157,7 @@ test('Should have tray menu with show and quit', async () => {
         browserWindow,
         vi.fn(async () => undefined),
         showMainWindow,
+        vi.fn(async () => []),
     );
 
     // Mac platform will not show menu on load but Linux would
@@ -216,6 +205,7 @@ test('Should show window on tray click', async () => {
         browserWindow,
         vi.fn(async () => undefined),
         showMainWindow,
+        vi.fn(async () => []),
     );
 
     // Check that the event handler was registered

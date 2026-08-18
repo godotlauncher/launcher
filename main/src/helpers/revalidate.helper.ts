@@ -1,12 +1,11 @@
 import type {
     CodeEditorIntegrationSettings,
     InstalledRelease,
+    ProjectDetails,
 } from '@shared/contracts';
 import type { BrowserWindow } from 'electron';
 import logger from 'electron-log';
 
-import { checkAndUpdateProjects } from '../checks.js';
-import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { ipcWebContentsSend } from '../utils.js';
 
 const FOCUS_DEBOUNCE_MS = 2000;
@@ -16,6 +15,7 @@ type RefreshCodeEditorIntegrations = () => Promise<
     CodeEditorIntegrationSettings[]
 >;
 type RefreshInstalledEditors = () => Promise<InstalledRelease[]>;
+type RefreshProjects = () => Promise<ProjectDetails[]>;
 
 /**
  * Refreshes project, release, and code editor state for a visible window.
@@ -23,14 +23,14 @@ type RefreshInstalledEditors = () => Promise<InstalledRelease[]>;
  * @param targetWindow - Window that receives refreshed state.
  * @param refreshInstalledEditors - Installed editor refresh callback.
  * @param refreshCodeEditorIntegrations - Code editor refresh callback.
- * @param gitService - Git repository inspection service.
+ * @param refreshProjects - Project refresh callback.
  * @returns A promise that resolves after revalidation.
  */
 async function performRevalidation(
     targetWindow: BrowserWindow,
     refreshInstalledEditors: RefreshInstalledEditors,
     refreshCodeEditorIntegrations: RefreshCodeEditorIntegrations,
-    gitService: GitService,
+    refreshProjects: RefreshProjects,
 ): Promise<void> {
     if (targetWindow.isDestroyed()) {
         logger.warn('Skipping revalidation: main window destroyed');
@@ -40,12 +40,9 @@ async function performRevalidation(
     logger.debug('Running focus-triggered revalidation for projects/releases');
 
     try {
-        const [releases, projects, codeEditorSettings] = await Promise.all([
+        const [releases, , codeEditorSettings] = await Promise.all([
             refreshInstalledEditors(),
-            checkAndUpdateProjects(
-                { repairMissingLaunchPath: false },
-                gitService,
-            ),
+            refreshProjects(),
             refreshCodeEditorIntegrations().catch((error) => {
                 logger.error(
                     'Failed to refresh code editor integrations',
@@ -64,7 +61,6 @@ async function performRevalidation(
         }
 
         ipcWebContentsSend('releases-updated', webContents, releases);
-        ipcWebContentsSend('projects-updated', webContents, projects);
         if (codeEditorSettings) {
             ipcWebContentsSend(
                 'code-editor-integrations-updated',
@@ -83,14 +79,14 @@ async function performRevalidation(
  * @param mainWindow - Main application window.
  * @param refreshInstalledEditors - Installed editor refresh callback.
  * @param refreshCodeEditorIntegrations - Code editor refresh callback.
- * @param gitService - Git repository inspection service.
+ * @param refreshProjects - Project refresh callback.
  * @returns A callback that removes listeners and timers.
  */
 export function setupFocusRevalidation(
     mainWindow: BrowserWindow,
     refreshInstalledEditors: RefreshInstalledEditors,
     refreshCodeEditorIntegrations: RefreshCodeEditorIntegrations,
-    gitService: GitService,
+    refreshProjects: RefreshProjects,
 ): () => void {
     let debounceTimer: NodeJS.Timeout | undefined;
     let backgroundTimer: NodeJS.Timeout | undefined;
@@ -118,7 +114,7 @@ export function setupFocusRevalidation(
                     mainWindow,
                     refreshInstalledEditors,
                     refreshCodeEditorIntegrations,
-                    gitService,
+                    refreshProjects,
                 );
                 lastRun = Date.now();
             } finally {
