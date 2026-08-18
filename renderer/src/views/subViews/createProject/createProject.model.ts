@@ -31,6 +31,18 @@ export type CreateProjectReleaseRow = InstalledRelease & {
     queuePosition?: number;
 };
 
+/**
+ * Builds the stable identity used by the Create Project editor selection.
+ *
+ * @param release - Editor release to identify.
+ * @returns The release version and variant identity.
+ */
+export function getCreateProjectReleaseKey(
+    release: Pick<InstalledRelease, 'version' | 'mono'>,
+): string {
+    return `${release.version}:${release.mono ? 'mono' : 'std'}`;
+}
+
 const RESERVED_WINDOWS_NAME =
     /^(?:con|prn|aux|nul|com[1-9\u00b9\u00b2\u00b3]|lpt[1-9\u00b9\u00b2\u00b3])(?:\.|$)/i;
 
@@ -149,13 +161,13 @@ export const buildCreateProjectReleaseRows = (
 ): CreateProjectReleaseRow[] => {
     const rowsByIdentity = new Map<string, CreateProjectReleaseRow>(
         installedReleases.map((release) => [
-            `${release.version}:${release.mono ? 'mono' : 'std'}`,
+            getCreateProjectReleaseKey(release),
             release,
         ]),
     );
 
     for (const release of downloadingReleases) {
-        const identity = `${release.version}:${release.mono ? 'mono' : 'std'}`;
+        const identity = getCreateProjectReleaseKey(release);
         const installed = rowsByIdentity.get(identity);
         if (installed && installed.valid !== false) {
             continue;
@@ -185,13 +197,17 @@ export const buildCreateProjectReleaseRows = (
  * Resolves a usable editor selection without selecting disabled rows.
  *
  * @param releases - Create Project editor rows.
- * @param preferredIndex - Current selection to preserve when still usable.
+ * @param preferredReleaseKey - Current release identity to preserve when usable.
  * @returns A usable row index, or -1 when no installed editor is available.
  */
 export function resolveCreateProjectReleaseIndex(
     releases: CreateProjectReleaseRow[],
-    preferredIndex: number,
+    preferredReleaseKey: string | null,
 ): number {
+    const preferredIndex = releases.findIndex(
+        (release) =>
+            getCreateProjectReleaseKey(release) === preferredReleaseKey,
+    );
     const preferred = releases[preferredIndex];
     if (preferred?.valid !== false && preferred?.editor_path) {
         return preferredIndex;
