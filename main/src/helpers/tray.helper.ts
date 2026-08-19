@@ -72,16 +72,20 @@ export async function updateLinuxTray(): Promise<void> {
     tray.setContextMenu(await updateMenu(tray, mainWindow));
 }
 
+/**
+ * Builds the current tray menu from the latest stored projects.
+ *
+ * @param _tray - Tray instance retained for the platform menu lifecycle.
+ * @param _mainWindow - Main window retained for the platform menu lifecycle.
+ * @returns The rebuilt Electron menu.
+ */
 export async function updateMenu(
     _tray: Tray,
     _mainWindow: BrowserWindow,
 ): Promise<Electron.Menu> {
     const projects = await listProjectsForTray();
     const filteredProjects = projects
-        .filter(
-            (p) =>
-                p.valid && p.last_opened != null && p.last_opened.getTime() > 0,
-        )
+        .filter((p) => p.last_opened != null && p.last_opened.getTime() > 0)
         .sort(
             (a, b) =>
                 (b.last_opened?.getTime() || 0) -
@@ -102,8 +106,14 @@ export async function updateMenu(
 
         last3.forEach((p) => {
             quickLaunchMenu.push({
-                label: p.name,
+                label: p.valid
+                    ? p.name
+                    : t('menus:tray.invalidProject', { project: p.name }),
+                enabled: p.valid,
                 click: async () => {
+                    if (!p.valid) {
+                        return;
+                    }
                     await launchProjectFromTray(p);
                 },
             });

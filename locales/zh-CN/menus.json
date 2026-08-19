@@ -33,6 +33,7 @@
     },
     "tray": {
         "recentProjects": "最近的项目",
+        "invalidProject": "{{project}}（无效）",
         "showGodotLauncher": "显示 Godot 启动器",
         "quit": "退出"
     }

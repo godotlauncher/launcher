@@ -33,6 +33,7 @@
     },
     "tray": {
         "recentProjects": "Proġetti Riċenti",
+        "invalidProject": "{{project}} (Invalidu)",
         "showGodotLauncher": "Uri Godot Launcher",
         "quit": "Oħroġ"
     }

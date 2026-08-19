@@ -1,3 +1,4 @@
+import type { ProjectDetails } from '@shared/contracts';
 import type {
     BrowserWindow,
     Menu as ElectronMenuType,
@@ -27,14 +28,17 @@ vi.mock('../pathResolver.js', () => ({
 vi.mock('../i18n/index.js', () => {
     const translations = {
         'menus:tray.recentProjects': 'Recent Projects',
+        'menus:tray.invalidProject': '{{project}} (Invalid)',
         'menus:tray.showGodotLauncher': 'Show Godot Launcher',
         'menus:tray.quit': 'Quit',
     } as const;
 
     return {
-        t: vi.fn(
-            (key: string) =>
-                translations[key as keyof typeof translations] ?? key,
+        t: vi.fn((key: string, options?: { project?: string }) =>
+            (translations[key as keyof typeof translations] ?? key).replace(
+                '{{project}}',
+                options?.project ?? '',
+            ),
         ),
     };
 });
@@ -237,4 +241,39 @@ test('Should show window on tray click', async () => {
         // Since it's darwin, it should try to pop up context menu not show window directly
         expect(mockTrayInstance.popUpContextMenu).toHaveBeenCalled();
     }
+});
+
+test('Should show recently opened invalid projects as disabled', async () => {
+    const buildFromTemplateMock = vi.mocked(ElectronMenu.buildFromTemplate);
+    let capturedTemplate: Array<MenuItemConstructorOptions | MenuItem> = [];
+    buildFromTemplateMock.mockImplementation((template) => {
+        capturedTemplate = template;
+        return mockMenu as unknown as ElectronMenuType;
+    });
+    const launchProject = vi.fn(async () => undefined);
+    const invalidProject = {
+        name: 'Missing Editor',
+        path: '/projects/missing-editor',
+        valid: false,
+        last_opened: new Date('2026-08-19T10:00:00.000Z'),
+    } as ProjectDetails;
+
+    await createTray(
+        browserWindow,
+        launchProject,
+        showMainWindow,
+        vi.fn(async () => [invalidProject]),
+    );
+
+    const { updateMenu } = await import('./tray.helper.js');
+    await updateMenu(trayInstance, browserWindow);
+
+    const invalidItem = capturedTemplate.find(
+        (item) => 'label' in item && item.label === 'Missing Editor (Invalid)',
+    );
+    expect(invalidItem).toMatchObject({ enabled: false });
+
+    const handler = (invalidItem as { click?: () => Promise<void> })?.click;
+    await handler?.();
+    expect(launchProject).not.toHaveBeenCalled();
 });
