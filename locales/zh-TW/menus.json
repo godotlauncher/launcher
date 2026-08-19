@@ -33,6 +33,7 @@
     },
     "tray": {
         "recentProjects": "最近的專案",
+        "invalidProject": "{{project}}（無效）",
         "showGodotLauncher": "顯示 Godot 啟動器",
         "quit": "結束"
     }

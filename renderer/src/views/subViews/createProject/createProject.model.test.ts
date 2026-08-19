@@ -7,6 +7,7 @@ import {
     addCreateProjectGitLfsOptions,
     buildCreateProjectReleaseRows,
     getCreateProjectDirectorySegment,
+    getCreateProjectReleaseKey,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
     isGitIdentityComplete,
@@ -111,6 +112,7 @@ describe('create project model helpers', () => {
         );
 
         expect(rows).toHaveLength(2);
+        expect(rows.map((row) => row.version)).toEqual(['4.3', '4.2']);
         expect(rows.some((row) => row.version === '4.2')).toBe(true);
         expect(rows.find((row) => row.version === '4.3')).toMatchObject({
             editor_path: '',
@@ -180,8 +182,32 @@ describe('create project model helpers', () => {
             installedRelease('4.7.1-stable', { valid: true }),
         ];
 
-        expect(resolveCreateProjectReleaseIndex(rows, 0)).toBe(1);
-        expect(resolveCreateProjectReleaseIndex([rows[0]], 0)).toBe(-1);
+        expect(
+            resolveCreateProjectReleaseIndex(
+                rows,
+                getCreateProjectReleaseKey(rows[0]),
+            ),
+        ).toBe(1);
+        expect(
+            resolveCreateProjectReleaseIndex(
+                [rows[0]],
+                getCreateProjectReleaseKey(rows[0]),
+            ),
+        ).toBe(-1);
+    });
+
+    it('preserves the selected editor when a newly installed editor changes its index', () => {
+        const selected = installedRelease('4.7.1-stable');
+        const selectedKey = getCreateProjectReleaseKey(selected);
+        const updatedRows = [
+            installedRelease('4.8-stable'),
+            selected,
+            installedRelease('4.6.2-stable'),
+        ];
+
+        expect(resolveCreateProjectReleaseIndex(updatedRows, selectedKey)).toBe(
+            1,
+        );
     });
 
     it('derives renderer defaults and tool integration availability', () => {

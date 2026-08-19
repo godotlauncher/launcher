@@ -209,3 +209,5 @@ export type ProjectConfig = {
 };
 
 export type ProjectDefinition = Map<number, ProjectConfig>;
+
+export type * from './projects.bridge.js';

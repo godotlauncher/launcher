@@ -40,6 +40,7 @@ import {
     buildCreateProjectReleaseRows,
     type CreateProjectGitIdentitySaveChoice,
     getCreateProjectDirectorySegment,
+    getCreateProjectReleaseKey,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
     isGitIdentityComplete,
@@ -75,7 +76,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         'installEditor',
     ]);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
-    const [releaseIndex, setReleaseIndex] = useState<number>(0);
+    const [releaseKey, setReleaseKey] = useState<string | null>(null);
     const [projectName, setProjectName] = useState<string>('');
     const [overwriteBasePath, setOverwriteBasePath] = useState<string>('');
     const [overwriteBasePathMissing, setOverwriteBasePathMissing] =
@@ -162,8 +163,20 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     );
     const selectedReleaseIndex = resolveCreateProjectReleaseIndex(
         allReleases,
-        releaseIndex,
+        releaseKey,
     );
+    const selectedRelease = allReleases[selectedReleaseIndex];
+
+    useEffect(() => {
+        if (!selectedRelease) {
+            return;
+        }
+
+        const resolvedReleaseKey = getCreateProjectReleaseKey(selectedRelease);
+        if (resolvedReleaseKey !== releaseKey) {
+            setReleaseKey(resolvedReleaseKey);
+        }
+    }, [releaseKey, selectedRelease]);
 
     const derivedProjectPath = useMemo(() => {
         const basePath = preferences?.projects_location || '';
@@ -513,13 +526,22 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setGitIdentityDialogPage('warning');
     };
 
-    const changeRelease = (index: number) => {
-        setReleaseIndex(index);
-        const release = allReleases[index];
+    /**
+     * Selects a Godot editor without depending on its current sorted index.
+     *
+     * @param nextReleaseKey - Stable version and variant identity to select.
+     */
+    const changeRelease = (nextReleaseKey: string) => {
+        const release = allReleases.find(
+            (candidate) =>
+                getCreateProjectReleaseKey(candidate) === nextReleaseKey,
+        );
 
         if (!release) {
             return;
         }
+
+        setReleaseKey(nextReleaseKey);
 
         const defaultRenderer = getDefaultRendererForReleaseVersion(
             release.version,
@@ -671,7 +693,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         }
 
         setRenderer('FORWARD_PLUS');
-        setReleaseIndex(0);
+        setReleaseKey(null);
         setProjectName('');
         setOverwriteBasePath(defaultOverwriteBasePathRef.current);
         setOverwriteBasePathMissing(false);
@@ -763,7 +785,13 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                         <CreateProjectProjectSection
                             t={t}
                             releases={allReleases}
-                            releaseIndex={selectedReleaseIndex}
+                            releaseKey={
+                                selectedRelease
+                                    ? getCreateProjectReleaseKey(
+                                          selectedRelease,
+                                      )
+                                    : ''
+                            }
                             inputNameRef={inputNameRef}
                             installedReleaseCount={validInstalledReleaseCount}
                             projectName={projectName}

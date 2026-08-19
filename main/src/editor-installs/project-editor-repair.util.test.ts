@@ -2,7 +2,8 @@ import path from 'node:path';
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { setProjectEditor } from './setProjectEditor.js';
+import type { ProjectsStore } from '../projects/projects.store.js';
+import { setProjectEditor as setProjectEditorForRepair } from './project-editor-repair.util.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -25,15 +26,13 @@ const userPreferencesMocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
 }));
 
-vi.mock('./userPreferences.js', () => userPreferencesMocks);
+vi.mock('../commands/userPreferences.js', () => userPreferencesMocks);
 
 const projectUtilsMocks = vi.hoisted(() => ({
     getProjectsSnapshot: vi.fn(),
     getStoredProjectsList: vi.fn(),
     storeProjectsList: vi.fn(),
 }));
-
-vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
 
 const godotUtilsMocks = vi.hoisted(() => ({
     DEFAULT_PROJECT_DEFINITION: new Map(),
@@ -126,6 +125,33 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
 };
 
 const { writeProjectLauncherConfig } = projectLauncherConfigMocks;
+const projectsStore = {
+    update: vi.fn(async (mutator) => {
+        const { projects } = await getProjectsSnapshot();
+        const updated = await mutator(projects);
+        return storeProjectsList('/config/projects.json', updated);
+    }),
+} as unknown as ProjectsStore;
+
+/**
+ * Calls the editor repair utility with the canonical test store.
+ *
+ * @param project - Project to update.
+ * @param release - Replacement editor release.
+ * @param codeEditors - Code editor integration facade.
+ */
+function setProjectEditor(
+    project: ProjectDetails,
+    release: InstalledRelease,
+    codeEditors: CodeEditorIntegrationService,
+) {
+    return setProjectEditorForRepair(
+        project,
+        release,
+        codeEditors,
+        projectsStore,
+    );
+}
 
 describe('setProjectEditor', () => {
     let mockProject: ProjectDetails;

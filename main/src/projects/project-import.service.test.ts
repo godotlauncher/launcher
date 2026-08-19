@@ -1,7 +1,11 @@
 import * as path from 'node:path';
+import type { AddProjectOptions } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { addProject as addProjectCommand } from './addProject.js';
+import type { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
+import type { GitService } from '../tool-integration/integrations/git/git.service.js';
+import { ProjectImportService } from './project-import.service.js';
+import type { ProjectsStore } from './projects.store.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -40,19 +44,15 @@ const projectUtilsMocks = vi.hoisted(() => ({
     addProjectToList: vi.fn(),
 }));
 
-vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
-
 const userPreferencesMocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
 }));
 
-vi.mock('./userPreferences.js', () => userPreferencesMocks);
+vi.mock('../commands/userPreferences.js', () => userPreferencesMocks);
 
 const projectsMocks = vi.hoisted(() => ({
     getProjectsDetails: vi.fn(),
 }));
-
-vi.mock('./projects.js', () => projectsMocks);
 
 const godotUtilsMocks = vi.hoisted(() => ({
     DEFAULT_PROJECT_DEFINITION: new Map(),
@@ -148,9 +148,18 @@ const { addProjectToList } = projectUtilsMocks;
 const getInstalledReleases = vi.fn();
 const installedEditorService = {
     getInstalledEditors: getInstalledReleases,
-};
+} as unknown as InstalledEditorService;
 const { getUserPreferences } = userPreferencesMocks;
 const { getProjectsDetails } = projectsMocks;
+const defaultGitService = {
+    inspectRepository: vi.fn().mockResolvedValue({
+        status: 'not-a-repository',
+    }),
+} as unknown as GitService;
+const projectsStore = {
+    list: getProjectsDetails,
+    put: addProjectToList,
+} as unknown as ProjectsStore;
 const codeEditorIntegrationService = {
     findConfiguredIntegrations: vi.fn(),
     getSelectionEligibility: vi.fn(),
@@ -182,16 +191,15 @@ const { readProjectLauncherConfig, writeProjectLauncherConfig } =
 function addProject(
     projectPath: string,
     integrationService: CodeEditorIntegrationService,
-    options: Parameters<typeof addProjectCommand>[3] = {},
-    gitService?: Parameters<typeof addProjectCommand>[4],
+    options: AddProjectOptions = {},
+    gitService: GitService = defaultGitService,
 ) {
-    return addProjectCommand(
-        projectPath,
+    return new ProjectImportService(
         integrationService,
-        installedEditorService as never,
-        options,
+        installedEditorService,
         gitService,
-    );
+        projectsStore,
+    ).addProject(projectPath, options);
 }
 
 describe('addProject', () => {
@@ -250,9 +258,7 @@ describe('addProject', () => {
             },
         ]);
 
-        addProjectToList.mockImplementation(async (_path, project) => [
-            project,
-        ]);
+        addProjectToList.mockImplementation(async (project) => [project]);
         getProjectDefinition.mockReturnValue({
             editorConfigFilename: () => 'editor_settings-4.tres',
             editorConfigFormat: 3,

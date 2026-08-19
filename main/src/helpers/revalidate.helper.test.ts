@@ -2,12 +2,7 @@ import type { BrowserWindow } from 'electron';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const moduleMocks = vi.hoisted(() => ({
-    checkAndUpdateProjects: vi.fn(),
     ipcWebContentsSend: vi.fn(),
-}));
-
-vi.mock('../checks.js', () => ({
-    checkAndUpdateProjects: moduleMocks.checkAndUpdateProjects,
 }));
 
 vi.mock('../utils.js', () => ({
@@ -60,26 +55,24 @@ let mockWindow: ReturnType<typeof createMockBrowserWindow>;
 
 let refreshCodeEditorIntegrations: ReturnType<typeof vi.fn>;
 let refreshInstalledEditors: ReturnType<typeof vi.fn>;
-const gitService = { inspectRepository: vi.fn() };
+let refreshProjects: ReturnType<typeof vi.fn>;
 describe('setupFocusRevalidation', () => {
     beforeEach(() => {
         vi.useFakeTimers();
-        moduleMocks.checkAndUpdateProjects.mockReset();
         moduleMocks.ipcWebContentsSend.mockReset();
-
-        moduleMocks.checkAndUpdateProjects.mockResolvedValue([]);
 
         mockWindow = createMockBrowserWindow();
         refreshInstalledEditors = vi.fn().mockResolvedValue([]);
         refreshCodeEditorIntegrations = vi.fn().mockResolvedValue([]);
+        refreshProjects = vi.fn().mockResolvedValue([]);
     });
 
-    it('debounces focus-triggered revalidation and broadcasts updates', async () => {
+    it('debounces focus revalidation and leaves project publication to its service', async () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshInstalledEditors,
             refreshCodeEditorIntegrations,
-            gitService as never,
+            refreshProjects,
         );
 
         mockWindow.emit('focus');
@@ -88,22 +81,18 @@ describe('setupFocusRevalidation', () => {
         await vi.runOnlyPendingTimersAsync();
 
         expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
-        expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledTimes(1);
+        expect(refreshProjects).toHaveBeenCalledTimes(1);
         expect(refreshCodeEditorIntegrations).toHaveBeenCalledTimes(1);
-        expect(moduleMocks.checkAndUpdateProjects).toHaveBeenCalledWith(
-            { repairMissingLaunchPath: false },
-            gitService,
-        );
 
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
             'releases-updated',
             mockWindow.webContents,
             [],
         );
-        expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
+        expect(moduleMocks.ipcWebContentsSend).not.toHaveBeenCalledWith(
             'projects-updated',
-            mockWindow.webContents,
-            [],
+            expect.anything(),
+            expect.anything(),
         );
 
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
@@ -122,16 +111,16 @@ describe('setupFocusRevalidation', () => {
             mockWindow as unknown as BrowserWindow,
             refreshInstalledEditors,
             refreshCodeEditorIntegrations,
-            gitService as never,
+            refreshProjects,
         );
 
         mockWindow.emit('focus');
         await vi.runOnlyPendingTimersAsync();
 
-        expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
+        expect(moduleMocks.ipcWebContentsSend).not.toHaveBeenCalledWith(
             'projects-updated',
-            mockWindow.webContents,
-            [],
+            expect.anything(),
+            expect.anything(),
         );
         expect(moduleMocks.ipcWebContentsSend).not.toHaveBeenCalledWith(
             'code-editor-integrations-updated',
@@ -147,7 +136,7 @@ describe('setupFocusRevalidation', () => {
             mockWindow as unknown as BrowserWindow,
             refreshInstalledEditors,
             refreshCodeEditorIntegrations,
-            gitService as never,
+            refreshProjects,
         );
 
         mockWindow.emit('focus');

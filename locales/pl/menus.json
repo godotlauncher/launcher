@@ -33,6 +33,7 @@
     },
     "tray": {
         "recentProjects": "Ostatnie projekty",
+        "invalidProject": "{{project}} (Nieprawidłowy)",
         "showGodotLauncher": "Pokaż Godot Launcher",
         "quit": "Zakończ"
     }

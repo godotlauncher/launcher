@@ -33,6 +33,7 @@
     },
     "tray": {
         "recentProjects": "最近のプロジェクト",
+        "invalidProject": "{{project}}（無効）",
         "showGodotLauncher": "Godot Launcherを表示",
         "quit": "終了"
     }

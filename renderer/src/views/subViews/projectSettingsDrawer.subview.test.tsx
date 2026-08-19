@@ -134,6 +134,49 @@ describe('ProjectSettingsDrawer', () => {
         );
     });
 
+    it('orders Godot editor options with the highest version first', () => {
+        const unavailableProject = {
+            ...project,
+            release: { ...project.release, valid: false },
+        };
+        const html = renderToStaticMarkup(
+            <ProjectSettingsDrawer
+                project={unavailableProject}
+                open
+                installedReleases={[
+                    {
+                        ...project.release,
+                        version: '4.3-stable',
+                        version_number: 4.3,
+                    },
+                    {
+                        ...project.release,
+                        version: '4.10-stable',
+                        version_number: 4.1,
+                    },
+                ]}
+                onOpenChange={vi.fn()}
+                onRenameProject={vi.fn()}
+                onSetProjectEditor={vi.fn()}
+                onSetProjectCodeEditor={vi.fn()}
+                onSetProjectWindowed={vi.fn()}
+                onInitializeProjectGit={vi.fn()}
+                getProjectGitIdentity={vi.fn()}
+                onSetProjectGitIdentity={vi.fn()}
+                onResetProjectCodeEditorConfig={vi.fn()}
+                getProjectGodotName={vi.fn()}
+            />,
+        );
+
+        const optionsHtml = html.slice(html.indexOf('role="listbox"'));
+        expect(optionsHtml.indexOf('4.10-stable')).toBeLessThan(
+            optionsHtml.indexOf('4.3-stable'),
+        );
+        expect(optionsHtml.indexOf('4.3-stable')).toBeLessThan(
+            optionsHtml.indexOf('4.2'),
+        );
+    });
+
     it('validates rename names', () => {
         expect(validateProjectRenameName('')).toBe('required');
         expect(validateProjectRenameName('   ')).toBe('required');

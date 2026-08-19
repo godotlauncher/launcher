@@ -1,22 +1,20 @@
 import path from 'node:path';
-import type { ProjectDetails } from '@shared/contracts';
+import type {
+    CodeEditorId,
+    GitIdentity,
+    LaunchProjectOptions,
+    ProjectDetails,
+    RenameProjectOptions,
+} from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import type { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
-import {
-    getProjectGitIdentity,
-    getProjectGodotName,
-    initializeProjectGit,
-    launchProject,
-    removeProject,
-    renameProject,
-    reorderPinnedProjects,
-    resetProjectCodeEditorConfig,
-    setProjectCodeEditor,
-    setProjectGitIdentity,
-    setProjectPinned,
-} from './projects.js';
+import type { ProjectCreationService } from './project-creation.service.js';
+import type { ProjectImportService } from './project-import.service.js';
+import { ProjectsService } from './projects.service.js';
+import type { ProjectsStore } from './projects.store.js';
 
 const childProcessMocks = vi.hoisted(() => ({
     spawn: vi.fn(() => ({
@@ -54,8 +52,6 @@ const projectUtilsMocks = vi.hoisted(() => ({
     storeProjectsList: vi.fn(),
 }));
 
-vi.mock('../utils/projects.utils.js', () => projectUtilsMocks);
-
 const godotUtilsMocks = vi.hoisted(() => ({
     removeProjectEditor: vi.fn(),
     getProjectDefinition: vi.fn(),
@@ -75,7 +71,7 @@ const userPreferencesMocks = vi.hoisted(() => ({
     getUserPreferences: vi.fn(),
 }));
 
-vi.mock('./userPreferences.js', () => userPreferencesMocks);
+vi.mock('../commands/userPreferences.js', () => userPreferencesMocks);
 
 const pathResolverMocks = vi.hoisted(() => ({
     getAssetPath: vi.fn(),
@@ -217,6 +213,143 @@ const gitServiceMocks = gitService as unknown as {
 const trayAvailabilityService = {
     isAvailable: vi.fn(async () => true),
 };
+
+const projectsStore = {
+    list: vi.fn(async () => (await getProjectsSnapshot()).projects),
+    update: vi.fn(
+        async (
+            mutator: (
+                projects: ProjectDetails[],
+            ) => ProjectDetails[] | Promise<ProjectDetails[]>,
+        ) => {
+            for (let attempt = 0; attempt < 2; attempt++) {
+                const { projects, version } = await getProjectsSnapshot();
+                const updated = await mutator(projects);
+                if (updated === projects) {
+                    return projects;
+                }
+                try {
+                    return await storeProjectsList(
+                        path.resolve(
+                            getDefaultDirs().configDir,
+                            'projects.json',
+                        ),
+                        updated,
+                        { expectedVersion: version },
+                    );
+                } catch (error) {
+                    if (
+                        error instanceof JsonStoreConflictError &&
+                        attempt === 0
+                    ) {
+                        continue;
+                    }
+                    throw error;
+                }
+            }
+            throw new Error('Failed to update project store');
+        },
+    ),
+    remove: vi.fn(async (projectPath: string) =>
+        removeProjectFromList(
+            path.resolve(getDefaultDirs().configDir, 'projects.json'),
+            projectPath,
+        ),
+    ),
+} as unknown as ProjectsStore;
+
+/** Creates the public project service with test-owned collaborators. */
+function createProjectsService(
+    codeEditors: CodeEditorIntegrationService = codeEditorIntegrationService,
+    git: GitService = gitService,
+    tray: TrayAvailabilityService = trayAvailabilityService as unknown as TrayAvailabilityService,
+): ProjectsService {
+    return new ProjectsService(
+        codeEditors,
+        {} as ProjectImportService,
+        git,
+        {} as ProjectCreationService,
+        tray,
+        projectsStore,
+    );
+}
+
+function launchProject(
+    project: ProjectDetails,
+    codeEditors: CodeEditorIntegrationService,
+    tray: TrayAvailabilityService,
+    options?: LaunchProjectOptions,
+) {
+    return createProjectsService(codeEditors, gitService, tray).launchProject(
+        project,
+        options,
+    );
+}
+
+function getProjectGodotName(project: ProjectDetails) {
+    return createProjectsService().getProjectGodotName(project);
+}
+
+function initializeProjectGit(project: ProjectDetails, git: GitService) {
+    return createProjectsService(
+        codeEditorIntegrationService,
+        git,
+    ).initializeProjectGit(project);
+}
+
+function getProjectGitIdentity(project: ProjectDetails, git: GitService) {
+    return createProjectsService(
+        codeEditorIntegrationService,
+        git,
+    ).getProjectGitIdentity(project);
+}
+
+function setProjectGitIdentity(
+    project: ProjectDetails,
+    identity: GitIdentity,
+    git: GitService,
+) {
+    return createProjectsService(
+        codeEditorIntegrationService,
+        git,
+    ).setProjectGitIdentity(project, identity);
+}
+
+function removeProject(project: ProjectDetails) {
+    return createProjectsService().removeProject(project);
+}
+
+function renameProject(project: ProjectDetails, options: RenameProjectOptions) {
+    return createProjectsService().renameProject(project, options);
+}
+
+function setProjectPinned(project: ProjectDetails, pinned: boolean) {
+    return createProjectsService().setProjectPinned(project, pinned);
+}
+
+function reorderPinnedProjects(orderedProjectPaths: string[]) {
+    return createProjectsService().reorderPinnedProjects(orderedProjectPaths);
+}
+
+function setProjectCodeEditor(
+    project: ProjectDetails,
+    codeEditorId: CodeEditorId | null,
+    codeEditors: CodeEditorIntegrationService,
+) {
+    return createProjectsService(codeEditors).setProjectCodeEditor(
+        project,
+        codeEditorId,
+    );
+}
+
+function resetProjectCodeEditorConfig(
+    project: ProjectDetails,
+    codeEditors: CodeEditorIntegrationService,
+) {
+    return createProjectsService(codeEditors).resetProjectCodeEditorConfig(
+        project,
+    );
+}
 
 let windowMock: {
     webContents: unknown;

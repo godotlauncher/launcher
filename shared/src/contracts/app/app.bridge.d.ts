@@ -1,25 +1,8 @@
-import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 import type { UserPreferences } from '../preferences/index.js';
-import type {
-    AddProjectOptions,
-    AddProjectToListResult,
-    ChangeProjectEditorResult,
-    CreateProjectGitOptions,
-    CreateProjectResult,
-    InitializeProjectGitResult,
-    LaunchProjectOptions,
-    LaunchProjectResult,
-    ProjectDetails,
-    RenameProjectOptions,
-    RenameProjectResult,
-    RendererType,
-    SetProjectCodeEditorResult,
-} from '../projects/index.js';
 import type {
     AvailableReleasesResult,
     CreateCustomEngineManifestResult,
     CustomEngineManifest,
-    InstalledRelease,
 } from '../releases/index.js';
 import type {
     AppUpdateMessage,
@@ -88,66 +71,6 @@ export type AppBridge = {
         manifest: CustomEngineManifest,
     ): Promise<CreateCustomEngineManifestResult>;
     clearReleaseCache(): Promise<void>;
-    getProjectsDetails(): Promise<ProjectDetails[]>;
-    createProject(
-        name: string,
-        release: InstalledRelease,
-        renderer: RendererType[5],
-        codeEditorId: CodeEditorId | null,
-        withGit: boolean,
-        overwriteProjectPath?: string,
-        gitOptions?: CreateProjectGitOptions,
-    ): Promise<CreateProjectResult>;
-    removeProject(project: ProjectDetails): Promise<ProjectDetails[]>;
-    renameProject(
-        project: ProjectDetails,
-        options: RenameProjectOptions,
-    ): Promise<RenameProjectResult>;
-    getProjectGodotName(project: ProjectDetails): Promise<string | null>;
-    addProject(
-        path: string,
-        options?: AddProjectOptions,
-    ): Promise<AddProjectToListResult>;
-    setProjectEditor(
-        project: ProjectDetails,
-        release: InstalledRelease,
-    ): Promise<ChangeProjectEditorResult>;
-    setProjectWindowed(
-        project: ProjectDetails,
-        openWindowed: boolean,
-    ): Promise<ProjectDetails>;
-    setProjectPinned(
-        project: ProjectDetails,
-        pinned: boolean,
-    ): Promise<ProjectDetails[]>;
-    reorderPinnedProjects(
-        orderedProjectPaths: string[],
-    ): Promise<ProjectDetails[]>;
-    setProjectCodeEditor(
-        project: ProjectDetails,
-        codeEditorId: CodeEditorId | null,
-    ): Promise<SetProjectCodeEditorResult>;
-    resetProjectCodeEditorConfig(
-        project: ProjectDetails,
-    ): Promise<SetProjectCodeEditorResult>;
-    initializeProjectGit(
-        project: ProjectDetails,
-    ): Promise<InitializeProjectGitResult>;
-    getProjectGitIdentity(
-        project: ProjectDetails,
-    ): Promise<ProjectGitIdentityResult>;
-    setProjectGitIdentity(
-        project: ProjectDetails,
-        identity: GitIdentity,
-    ): Promise<ProjectGitIdentityResult>;
-    exportProjectEditorSettings(project: ProjectDetails): Promise<void>;
-    importProjectEditorSettings(project: ProjectDetails): Promise<void>;
-    launchProject(
-        project: ProjectDetails,
-        options?: LaunchProjectOptions,
-    ): Promise<LaunchProjectResult>;
-    checkProjectValid(project: ProjectDetails): Promise<ProjectDetails>;
-    checkAllProjectsValid(): Promise<ProjectDetails[]>;
     getPlatform(): Promise<string>;
     getTrayAvailability(): Promise<boolean>;
     getAppVersion(): Promise<string>;

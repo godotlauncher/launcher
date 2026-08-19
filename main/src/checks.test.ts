@@ -4,15 +4,12 @@ import * as os from 'node:os';
 import path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ProjectsStore } from './projects/projects.store.js';
 
 const godotUtilsMocks = vi.hoisted(() => ({
     SetProjectEditorRelease: vi.fn(),
 }));
 
-const projectsUtilsMocks = vi.hoisted(() => ({
-    getProjectsSnapshot: vi.fn(),
-    storeProjectsList: vi.fn(),
-}));
 vi.mock('./utils/platform.utils.js', () => ({
     getDefaultDirs: vi.fn(() => ({
         configDir: '/tmp/godot-launcher',
@@ -20,8 +17,6 @@ vi.mock('./utils/platform.utils.js', () => ({
 }));
 
 vi.mock('./utils/godot.utils.js', () => godotUtilsMocks);
-
-vi.mock('./utils/projects.utils.js', () => projectsUtilsMocks);
 
 vi.mock('electron', () => ({
     app: {
@@ -42,9 +37,6 @@ vi.mock('electron-log', () => ({
 
 import { checkAndUpdateProjects, checkProjectValid } from './checks.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
-import { JsonStoreConflictError } from './utils/jsonStore.js';
-
-const { getProjectsSnapshot, storeProjectsList } = projectsUtilsMocks;
 
 describe('checkProjectValid', () => {
     beforeEach(() => {
@@ -454,12 +446,7 @@ text_editor/external/use_external_editor = false
 });
 
 describe('checkAndUpdateProjects', () => {
-    beforeEach(() => {
-        vi.mocked(getProjectsSnapshot).mockReset();
-        vi.mocked(storeProjectsList).mockReset();
-    });
-
-    it('retries when project snapshot becomes stale during validation', async () => {
+    it('validates and persists through the canonical store update', async () => {
         const project: ProjectDetails = {
             name: 'Sample',
             path: '/projects/sample',
@@ -490,22 +477,12 @@ describe('checkAndUpdateProjects', () => {
             valid: true,
         };
 
-        vi.mocked(getProjectsSnapshot)
-            .mockResolvedValueOnce({ projects: [project], version: 'v1' })
-            .mockResolvedValueOnce({ projects: [project], version: 'v2' });
+        const update = vi.fn(async (mutator) => mutator([project]));
+        const store = { update } as unknown as ProjectsStore;
 
-        vi.mocked(storeProjectsList)
-            .mockRejectedValueOnce(
-                new JsonStoreConflictError('/tmp/godot-launcher/projects.json'),
-            )
-            .mockResolvedValue([{ ...project, valid: true }]);
+        const result = await checkAndUpdateProjects({}, undefined, store);
 
-        const result = await checkAndUpdateProjects();
-
-        // The important behaviour here is that the call retries and the
-        // updated project list is persisted; we assert that happened and the
-        // resulting project is marked valid.
-        expect(storeProjectsList).toHaveBeenCalledTimes(2);
-        expect(result[0].valid).toBe(true);
+        expect(update).toHaveBeenCalledOnce();
+        expect(result).toHaveLength(1);
     });
 });

@@ -25,6 +25,7 @@ import { TextField } from '../../components/ui/textField.component';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
 import { useToolIntegrations } from '../../hooks/useToolIntegrations';
+import { sortReleases } from '../../releaseStoring.utils';
 import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
     canRenameGodotProject,
@@ -326,37 +327,47 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         }
 
         const currentMajor = Math.trunc(project.release.version_number);
-        return installedReleases.filter(
-            (release) =>
-                release.valid !== false &&
-                Boolean(release.editor_path) &&
-                Math.trunc(release.version_number) >= currentMajor,
-        );
+        return installedReleases
+            .filter(
+                (release) =>
+                    release.valid !== false &&
+                    Boolean(release.editor_path) &&
+                    Math.trunc(release.version_number) >= currentMajor,
+            )
+            .sort(sortReleases);
     }, [installedReleases, project]);
 
     const releaseOptions = useMemo<SelectFieldOption[]>(() => {
-        const options: SelectFieldOption[] = selectableReleases.map(
-            (release) => ({
-                value: getSelectableReleaseKey(release),
-                label: getReleaseLabel(release, t),
-            }),
-        );
+        const optionReleases = selectableReleases.map((release) => ({
+            release,
+            disabled: false,
+        }));
 
         if (
             project &&
-            !options.some(
-                (option) =>
-                    option.value === getSelectableReleaseKey(project.release),
+            !optionReleases.some(
+                ({ release }) =>
+                    getSelectableReleaseKey(release) ===
+                    getSelectableReleaseKey(project.release),
             )
         ) {
-            options.unshift({
-                value: getSelectableReleaseKey(project.release),
-                label: `${getReleaseLabel(project.release, t)} (${t('editProject.godotEditor.unavailable')})`,
+            optionReleases.push({
+                release: project.release,
                 disabled: true,
             });
         }
 
-        return options;
+        return optionReleases
+            .sort((first, second) =>
+                sortReleases(first.release, second.release),
+            )
+            .map(({ release, disabled }) => ({
+                value: getSelectableReleaseKey(release),
+                label: disabled
+                    ? `${getReleaseLabel(release, t)} (${t('editProject.godotEditor.unavailable')})`
+                    : getReleaseLabel(release, t),
+                disabled,
+            }));
     }, [project, selectableReleases, t]);
 
     const getValidationMessage = (

@@ -5,20 +5,11 @@ import {
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { I18nService } from '@mariodebono/di-electron-i18n';
 import type {
-    AddProjectOptions,
     AppBridge,
     AppFileFilter,
     AppOpenDialogProperty,
     CheckForUpdatesOptions,
-    CodeEditorId,
-    CreateProjectGitOptions,
     CustomEngineManifest,
-    GitIdentity,
-    InstalledRelease,
-    LaunchProjectOptions,
-    ProjectDetails,
-    RenameProjectOptions,
-    RendererType,
     UserPreferences,
 } from '@shared/contracts';
 import { app, shell } from 'electron';
@@ -31,42 +22,16 @@ import {
     installUpdateAndRestart,
     setBetaChannel,
 } from './autoUpdater.js';
-import { checkAndUpdateProjects } from './checks.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
-import { addProject } from './commands/addProject.js';
-import { createProject } from './commands/createProject.js';
 import {
     ensureDirectory,
     fileExists,
     pathExists,
 } from './commands/fileSystem.js';
 import {
-    exportProjectEditorSettings,
-    importProjectEditorSettings,
-} from './commands/projectEditorSettings.js';
-import {
-    checkProjectIsValid,
-    getProjectGitIdentity,
-    getProjectGodotName,
-    getProjectsDetails,
-    initializeProjectGit,
-    launchProject,
-    removeProject,
-    renameProject,
-    reorderPinnedProjects,
-    resetProjectCodeEditorConfig,
-    setProjectCodeEditor,
-    setProjectGitIdentity,
-    setProjectPinned,
-    setProjectWindowed,
-} from './commands/projects.js';
-import {
     clearReleaseCaches,
     getAvailablePrereleases,
     getAvailableReleases,
 } from './commands/releases.js';
-import { setProjectEditor } from './commands/setProjectEditor.js';
 import {
     openDirectoryDialog,
     openFileDialog,
@@ -77,16 +42,10 @@ import {
     setUserPreferences,
 } from './commands/userPreferences.js';
 import { getCurrentAppConfig } from './config/index.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { GitService } from './tool-integration/integrations/git/git.service.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { GitLfsService } from './tool-integration/integrations/git-lfs/git-lfs.service.js';
 import { createCustomEngineManifest } from './utils/customEngineManifest.utils.js';
 import { setAutoStart } from './utils/platform.utils.js';
 import { setAutoCheckUpdates } from './utils/prefs.utils.js';
@@ -103,19 +62,11 @@ export class AppController implements AppBridge {
      *
      * @param i18nService - Main-process localization service.
      * @param appLifecycleService - Application lifecycle coordinator.
-     * @param codeEditorIntegrationService - Code editor integration facade.
-     * @param installedEditorService - Installed editor query service.
-     * @param gitService - Typed Git command service.
-     * @param gitLfsService - Guarded Git LFS project configuration service.
      * @param trayAvailabilityService - System tray availability service.
      */
     constructor(
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
-        private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
-        private readonly installedEditorService: InstalledEditorService,
-        private readonly gitService: GitService,
-        private readonly gitLfsService: GitLfsService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
     ) {}
     @AppHandler('getUserPreferences')
@@ -226,162 +177,6 @@ export class AppController implements AppBridge {
             });
         }
         return this.clearReleaseCachePromise;
-    }
-
-    @AppHandler('getProjectsDetails')
-    getProjectsDetails() {
-        return getProjectsDetails();
-    }
-
-    /**
-     * Creates a project with the selected editor and Git setup.
-     *
-     * @param name - Display name for the new project.
-     * @param release - Godot editor release assigned to the project.
-     * @param renderer - Renderer selected for the project.
-     * @param codeEditorId - Optional code editor integration to apply.
-     * @param withGit - Whether to initialize Git when it is available.
-     * @param overwriteProjectPath - Optional target project path.
-     * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
-     * @returns The project creation result.
-     */
-    @AppHandler('createProject')
-    createProject(
-        name: string,
-        release: InstalledRelease,
-        renderer: RendererType[5],
-        codeEditorId: CodeEditorId | null,
-        withGit: boolean,
-        overwriteProjectPath?: string,
-        gitOptions?: CreateProjectGitOptions,
-    ) {
-        return createProject(
-            name,
-            release,
-            renderer,
-            codeEditorId,
-            withGit,
-            this.codeEditorIntegrationService,
-            this.gitService,
-            this.gitLfsService,
-            overwriteProjectPath,
-            gitOptions,
-        );
-    }
-
-    @AppHandler('removeProject')
-    removeProject(project: ProjectDetails) {
-        return removeProject(project);
-    }
-
-    @AppHandler('renameProject')
-    renameProject(project: ProjectDetails, options: RenameProjectOptions) {
-        return renameProject(project, options);
-    }
-
-    @AppHandler('getProjectGodotName')
-    getProjectGodotName(project: ProjectDetails) {
-        return getProjectGodotName(project);
-    }
-
-    @AppHandler('addProject')
-    addProject(projectPath: string, options?: AddProjectOptions) {
-        return addProject(
-            projectPath,
-            this.codeEditorIntegrationService,
-            this.installedEditorService,
-            options,
-            this.gitService,
-        );
-    }
-
-    @AppHandler('setProjectEditor')
-    setProjectEditor(project: ProjectDetails, release: InstalledRelease) {
-        return setProjectEditor(
-            project,
-            release,
-            this.codeEditorIntegrationService,
-        );
-    }
-
-    @AppHandler('setProjectWindowed')
-    setProjectWindowed(project: ProjectDetails, openWindowed: boolean) {
-        return setProjectWindowed(project, openWindowed);
-    }
-
-    @AppHandler('setProjectPinned')
-    setProjectPinned(project: ProjectDetails, pinned: boolean) {
-        return setProjectPinned(project, pinned);
-    }
-
-    @AppHandler('reorderPinnedProjects')
-    reorderPinnedProjects(orderedProjectPaths: string[]) {
-        return reorderPinnedProjects(orderedProjectPaths);
-    }
-
-    @AppHandler('setProjectCodeEditor')
-    setProjectCodeEditor(
-        project: ProjectDetails,
-        codeEditorId: CodeEditorId | null,
-    ) {
-        return setProjectCodeEditor(
-            project,
-            codeEditorId,
-            this.codeEditorIntegrationService,
-        );
-    }
-
-    @AppHandler('resetProjectCodeEditorConfig')
-    resetProjectCodeEditorConfig(project: ProjectDetails) {
-        return resetProjectCodeEditorConfig(
-            project,
-            this.codeEditorIntegrationService,
-        );
-    }
-
-    @AppHandler('initializeProjectGit')
-    initializeProjectGit(project: ProjectDetails) {
-        return initializeProjectGit(project, this.gitService);
-    }
-
-    @AppHandler('getProjectGitIdentity')
-    getProjectGitIdentity(project: ProjectDetails) {
-        return getProjectGitIdentity(project, this.gitService);
-    }
-
-    @AppHandler('setProjectGitIdentity')
-    setProjectGitIdentity(project: ProjectDetails, identity: GitIdentity) {
-        return setProjectGitIdentity(project, identity, this.gitService);
-    }
-
-    @AppHandler('exportProjectEditorSettings')
-    exportProjectEditorSettings(project: ProjectDetails) {
-        return exportProjectEditorSettings(project);
-    }
-
-    @AppHandler('importProjectEditorSettings')
-    importProjectEditorSettings(project: ProjectDetails) {
-        return importProjectEditorSettings(project);
-    }
-
-    @AppHandler('launchProject')
-    launchProject(project: ProjectDetails, options?: LaunchProjectOptions) {
-        return launchProject(
-            project,
-            this.codeEditorIntegrationService,
-            this.trayAvailabilityService,
-            options,
-        );
-    }
-
-    @AppHandler('checkProjectValid')
-    checkProjectValid(project: ProjectDetails) {
-        return checkProjectIsValid(project, this.gitService);
-    }
-
-    @AppHandler('checkAllProjectsValid')
-    checkAllProjectsValid() {
-        return checkAndUpdateProjects({}, this.gitService);
     }
 
     @AppHandler('getPlatform')

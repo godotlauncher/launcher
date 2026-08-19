@@ -1,7 +1,14 @@
 import { Folder, FolderPlus } from 'lucide-react';
 import type React from 'react';
+import {
+    SelectField,
+    type SelectFieldOption,
+} from '../../../../components/ui/selectField.component';
 import { Tooltip } from '../../../../components/ui/tooltip.component';
-import type { CreateProjectReleaseRow } from '../createProject.model';
+import {
+    type CreateProjectReleaseRow,
+    getCreateProjectReleaseKey,
+} from '../createProject.model';
 
 type Translate = (
     key: string,
@@ -11,7 +18,7 @@ type Translate = (
 type CreateProjectProjectSectionProps = {
     t: Translate;
     releases: CreateProjectReleaseRow[];
-    releaseIndex: number;
+    releaseKey: string;
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     installedReleaseCount: number;
     projectName: string;
@@ -25,7 +32,7 @@ type CreateProjectProjectSectionProps = {
     overwriteBasePathMissing: boolean;
     isOverwritePathEmpty: boolean;
     onProjectNameChange: (value: string) => void;
-    onReleaseChange: (index: number) => void;
+    onReleaseChange: (releaseKey: string) => void;
     onOverwriteBasePathChange: (value: string) => void;
     onUseDefaultPath: () => void;
     onSelectProjectFolder: () => void;
@@ -37,7 +44,7 @@ export const CreateProjectProjectSection: React.FC<
 > = ({
     t,
     releases,
-    releaseIndex,
+    releaseKey,
     inputNameRef,
     installedReleaseCount,
     projectName,
@@ -57,7 +64,9 @@ export const CreateProjectProjectSection: React.FC<
     onSelectProjectFolder,
     onOverwriteProjectPathChange,
 }) => {
-    const selectedRelease = releases[releaseIndex];
+    const selectedRelease = releases.find(
+        (release) => getCreateProjectReleaseKey(release) === releaseKey,
+    );
 
     /**
      * Gets the translated status for one editor install option.
@@ -80,6 +89,25 @@ export const CreateProjectProjectSection: React.FC<
             ns: 'installEditor',
         });
     };
+
+    const releaseOptions: SelectFieldOption[] = releases.map((release) => ({
+        value: getCreateProjectReleaseKey(release),
+        label:
+            release.valid === false
+                ? `${release.name ?? release.version} - ${t('table.status.unavailable', { ns: 'installEditor' })}`
+                : release.editor_path?.length > 0
+                  ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
+                  : `${release.name ?? release.version} - ${getInstallStatus(release)}`,
+        disabled: release.valid === false || release.editor_path?.length === 0,
+    }));
+
+    if (!selectedRelease) {
+        releaseOptions.unshift({
+            value: '',
+            label: t('project.noVersionsInstalled'),
+            disabled: true,
+        });
+    }
 
     return (
         <div className="flex flex-col gap-2">
@@ -114,33 +142,19 @@ export const CreateProjectProjectSection: React.FC<
                             onProjectNameChange(event.target.value)
                         }
                     />
-                    <select
-                        className="select select-bordered w-1/3"
-                        value={releaseIndex}
-                        onChange={(event) =>
-                            onReleaseChange(+event.target.value)
-                        }
-                    >
-                        <option value={-1} disabled hidden>
-                            {t('project.noVersionsInstalled')}
-                        </option>
-                        {releases.map((release, index) => (
-                            <option
-                                disabled={
-                                    release.valid === false ||
-                                    release.editor_path?.length === 0
-                                }
-                                key={`createProjectReleaseOption_${release.version}_${release.mono ? 'mono' : 'std'}`}
-                                value={index}
-                            >
-                                {release.valid === false
-                                    ? `${release.name ?? release.version} - ${t('table.status.unavailable', { ns: 'installEditor' })}`
-                                    : release.editor_path?.length > 0
-                                      ? `${release.name ?? release.version}${release.name ? ` (${release.version})` : ''} ${release.mono ? `[${t('project.dotNetBadge')}]` : ''}${release.source === 'custom' ? ' [Custom]' : ''}`
-                                      : `${release.name ?? release.version} - ${getInstallStatus(release)}`}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="w-1/3">
+                        <SelectField
+                            id="selectCreateProjectGodotEditor"
+                            testId="selectCreateProjectGodotEditor"
+                            ariaLabel={t(
+                                'projects:editProject.godotEditor.title',
+                            )}
+                            value={releaseKey}
+                            onChange={onReleaseChange}
+                            options={releaseOptions}
+                            showSelectedCheck
+                        />
+                    </div>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <label className="input z-10 min-w-0 flex-1">

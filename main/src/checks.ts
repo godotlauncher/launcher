@@ -4,25 +4,19 @@ import type { ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
 
 import { getCurrentAppConfig } from './config/index.js';
-import { PROJECTS_FILENAME } from './constants.js';
+import type { ProjectsStore } from './projects/projects.store.js';
 import type { GitService } from './tool-integration/integrations/git/git.service.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import {
     getProjectIconUrlFromParsed,
     parseGodotProjectFile,
 } from './utils/godotProject.utils.js';
-import { JsonStoreConflictError } from './utils/jsonStore.js';
-import { getDefaultDirs } from './utils/platform.utils.js';
-import {
-    getProjectsSnapshot,
-    storeProjectsList,
-} from './utils/projects.utils.js';
 
-const PROJECT_VALIDATION_MAX_ATTEMPTS = 2;
 const VALIDATION_PATH_CHECK_TIMEOUT_MS = 1500;
 
-type ProjectValidationOptions = {
+export type ProjectValidationOptions = {
     repairMissingLaunchPath?: boolean;
+    publishResult?: boolean;
 };
 
 async function pathExistsForValidation(pathToCheck: string): Promise<boolean> {
@@ -63,23 +57,17 @@ async function pathExistsForValidation(pathToCheck: string): Promise<boolean> {
  *
  * @param options - Project validation behavior.
  * @param gitService - Optional Git service for repository inspection.
+ * @param projectsStore - Canonical project store.
  * @returns The validated project list.
  */
 export async function checkAndUpdateProjects(
     options: ProjectValidationOptions = {},
-    gitService?: GitService,
+    gitService: GitService | undefined,
+    projectsStore: ProjectsStore,
 ): Promise<ProjectDetails[]> {
     logger.info('Checking and updating projects');
 
-    const { configDir } = getDefaultDirs();
-    // get projects
-    const projectsFile = path.resolve(configDir, PROJECTS_FILENAME);
-    for (
-        let attempt = 0;
-        attempt < PROJECT_VALIDATION_MAX_ATTEMPTS;
-        attempt++
-    ) {
-        const { projects, version } = await getProjectsSnapshot(projectsFile);
+    return projectsStore.update(async (projects) => {
         const validated: ProjectDetails[] = [];
 
         for (const project of projects) {
@@ -87,26 +75,8 @@ export async function checkAndUpdateProjects(
                 await checkProjectValid(project, options, gitService),
             );
         }
-
-        try {
-            return await storeProjectsList(projectsFile, validated, {
-                expectedVersion: version,
-            });
-        } catch (error) {
-            if (
-                error instanceof JsonStoreConflictError &&
-                attempt < PROJECT_VALIDATION_MAX_ATTEMPTS - 1
-            ) {
-                logger.warn('Project list changed during validation, retrying');
-                continue;
-            }
-            throw error;
-        }
-    }
-
-    throw new Error(
-        'Failed to validate project list due to concurrent modifications',
-    );
+        return validated;
+    });
 }
 
 /**
