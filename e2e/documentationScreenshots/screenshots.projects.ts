@@ -1175,27 +1175,18 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page
                 .getByTestId('inputProjectName')
                 .fill('Custom Editor Game');
-            const selectedCustomRelease = await page
-                .locator('select')
-                .first()
-                .evaluate((select, customReleaseName) => {
-                    const releaseSelect = select as HTMLSelectElement;
-                    const customOption = Array.from(releaseSelect.options).find(
-                        (option) =>
-                            option.textContent?.includes(customReleaseName),
-                    );
-
-                    if (!customOption) {
-                        return false;
-                    }
-
-                    releaseSelect.value = customOption.value;
-                    releaseSelect.dispatchEvent(
-                        new Event('change', { bubbles: true }),
-                    );
-                    return true;
-                }, SAMPLE_CUSTOM_RELEASE.name!);
-            expect(selectedCustomRelease).toBe(true);
+            const editorSelect = page.getByTestId(
+                'selectCreateProjectGodotEditor',
+            );
+            await editorSelect.click();
+            await page
+                .getByRole('option', {
+                    name: new RegExp(SAMPLE_CUSTOM_RELEASE.name!),
+                })
+                .click();
+            await expect(editorSelect).toContainText(
+                SAMPLE_CUSTOM_RELEASE.name!,
+            );
             await page.waitForTimeout(600);
         },
         cleanup: async (
