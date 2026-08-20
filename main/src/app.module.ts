@@ -5,6 +5,7 @@ import {
     type I18nModuleOptions,
 } from '@mariodebono/di-electron-i18n';
 import { AppController } from './app.controller.js';
+import { AppIntegrationsModule } from './app-integrations/app-integrations.module.js';
 import { AppLifecycleService } from './app-lifecycle.service.js';
 import { AppMigrationsModule } from './app-migrations/app-migrations.module.js';
 import { CodeEditorIntegrationModule } from './codeEditorIntegration/codeEditorIntegration.module.js';
@@ -41,6 +42,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
             validationSchema: AppConfigSchema,
         }),
         AppMigrationsModule,
+        AppIntegrationsModule,
         CodeEditorIntegrationModule,
         EditorCatalogModule.forRootAsync({
             inject: [ConfigService],
