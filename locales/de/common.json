@@ -29,6 +29,8 @@
             "installs": "Installationen",
             "help": "Hilfe",
             "settings": "Einstellungen",
+            "connections": "Verbindungen",
+            "new": "Neu",
             "joinCommunity": "Community beitreten"
         },
         "update": {

@@ -7,6 +7,7 @@
         "behavior": "Davranış",
         "tools": "Araçlar",
         "codeEditors": "Kod Düzenleyicileri",
+        "connections": "Bağlantılar",
         "updates": "Güncellemeler"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "Araç entegrasyonları yüklenemiyor.",
             "rescan": "Bu araç yeniden taranamıyor."
+        }
+    },
+    "connections": {
+        "title": "Bağlantıları yönet",
+        "overview": "Harici hizmetleri Godot Launcher'da kullanmak için bağlayın.",
+        "loading": "Bağlantılar yükleniyor...",
+        "loadError": "Bağlantılar yüklenemedi.",
+        "genericDescription": "Bu hizmeti Godot Launcher'da kullanmak için bağlayın.",
+        "github": {
+            "description": "Depolarınızı Godot Launcher'da kullanabilmek için GitHub'ı bağlayın.",
+            "accessNote": "GitHub uygulamasının hangi depolara erişebileceğini siz belirlersiniz."
+        },
+        "status": {
+            "notConnected": "Bağlı değil"
+        },
+        "actions": {
+            "connect": "{{provider}} bağlantısını kur"
         }
     },
     "updates": {

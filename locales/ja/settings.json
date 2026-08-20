@@ -7,6 +7,7 @@
         "behavior": "動作",
         "tools": "ツール",
         "codeEditors": "コードエディター",
+        "connections": "接続",
         "updates": "アップデート"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "ツール統合をロードできません。",
             "rescan": "このツールを再スキャンできません。"
+        }
+    },
+    "connections": {
+        "title": "接続を管理",
+        "overview": "外部サービスを接続して Godot Launcher で使用します。",
+        "loading": "接続を読み込み中...",
+        "loadError": "接続を読み込めませんでした。",
+        "genericDescription": "このサービスを接続して Godot Launcher で使用します。",
+        "github": {
+            "description": "GitHub を接続して、リポジトリを Godot Launcher で利用できるようにします。",
+            "accessNote": "GitHub App がアクセスできるリポジトリは自分で選択できます。"
+        },
+        "status": {
+            "notConnected": "未接続"
+        },
+        "actions": {
+            "connect": "{{provider}} に接続"
         }
     },
     "updates": {

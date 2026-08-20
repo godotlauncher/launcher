@@ -44,3 +44,41 @@ test('Can set theme auto', async () => {
     );
     expect(theme).toBe('auto');
 });
+
+test('Can open the Connections presentation from its shortcut', async () => {
+    const connectionsShortcut = mainPage.getByTestId('btnConnections');
+
+    await connectionsShortcut.click();
+
+    await expect(mainPage).toHaveURL(/\/settings\/connections$/);
+    await expect(connectionsShortcut).toHaveClass(/menu-active/);
+    await expect(mainPage.getByTestId('btnSettings')).not.toHaveClass(
+        /menu-active/,
+    );
+    await expect(mainPage.getByTestId('tabConnections')).toHaveAttribute(
+        'aria-selected',
+        'true',
+    );
+    await expect(mainPage.getByTestId('settingsTabRailEnd')).toHaveCSS(
+        'border-bottom-width',
+        '1px',
+    );
+    await expect(mainPage.getByTestId('settingsPanelContainer')).toHaveCSS(
+        'border-top-left-radius',
+        '0px',
+    );
+    await expect(mainPage.getByTestId('settingsPanelContainer')).toHaveCSS(
+        'border-top-right-radius',
+        '0px',
+    );
+    const githubCard = mainPage.getByTestId('app-integration-github');
+    await expect(githubCard).toBeVisible();
+    expect(
+        await githubCard.evaluate((card) =>
+            getComputedStyle(card.parentElement as HTMLElement).maxWidth,
+        ),
+    ).toBe('none');
+    await expect(
+        mainPage.getByRole('button', { name: 'Connect GitHub' }),
+    ).toBeDisabled();
+});

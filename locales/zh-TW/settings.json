@@ -7,6 +7,7 @@
         "behavior": "行為",
         "tools": "工具",
         "codeEditors": "程式碼編輯器",
+        "connections": "連線",
         "updates": "更新"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "無法載入工具整合。",
             "rescan": "無法重新掃描此工具。"
+        }
+    },
+    "connections": {
+        "title": "管理連線",
+        "overview": "連接外部服務，以便在 Godot Launcher 中使用。",
+        "loading": "正在載入連線...",
+        "loadError": "無法載入連線。",
+        "genericDescription": "連接此服務，以便在 Godot Launcher 中使用。",
+        "github": {
+            "description": "連接 GitHub，讓 Godot Launcher 可以使用你的儲存庫。",
+            "accessNote": "你可以決定 GitHub 應用程式有權存取哪些儲存庫。"
+        },
+        "status": {
+            "notConnected": "未連線"
+        },
+        "actions": {
+            "connect": "連接 {{provider}}"
         }
     },
     "updates": {

@@ -29,6 +29,8 @@
             "installs": "Установки",
             "help": "Помощь",
             "settings": "Настройки",
+            "connections": "Подключения",
+            "new": "Новое",
             "joinCommunity": "Присоединиться к сообществу"
         },
         "update": {

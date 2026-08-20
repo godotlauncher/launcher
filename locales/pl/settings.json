@@ -7,6 +7,7 @@
         "behavior": "Zachowanie",
         "tools": "Narzędzia",
         "codeEditors": "Edytory kodu",
+        "connections": "Połączenia",
         "updates": "Aktualizacje"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "Nie można załadować integracji narzędzi.",
             "rescan": "Nie można ponownie przeskanować tego narzędzia."
+        }
+    },
+    "connections": {
+        "title": "Zarządzaj połączeniami",
+        "overview": "Połącz usługi zewnętrzne, aby używać ich w Godot Launcher.",
+        "loading": "Wczytywanie połączeń...",
+        "loadError": "Nie udało się wczytać połączeń.",
+        "genericDescription": "Połącz tę usługę, aby używać jej w Godot Launcher.",
+        "github": {
+            "description": "Połącz GitHub, aby udostępnić swoje repozytoria w Godot Launcher.",
+            "accessNote": "To Ty wybierasz repozytoria, do których aplikacja GitHub ma dostęp."
+        },
+        "status": {
+            "notConnected": "Niepołączono"
+        },
+        "actions": {
+            "connect": "Połącz {{provider}}"
         }
     },
     "updates": {

@@ -29,6 +29,8 @@
             "installs": "Installazzjonijiet",
             "help": "Għajnuna",
             "settings": "Issettjar",
+            "connections": "Konnessjonijiet",
+            "new": "Ġdid",
             "joinCommunity": "Ingħaqad mal-Komunità"
         },
         "update": {

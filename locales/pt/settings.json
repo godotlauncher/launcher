@@ -7,6 +7,7 @@
         "behavior": "Comportamento",
         "tools": "Ferramentas",
         "codeEditors": "Editores de código",
+        "connections": "Ligações",
         "updates": "Atualizações"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "Não foi possível carregar integrações de ferramentas.",
             "rescan": "Não foi possível verificar novamente esta ferramenta."
+        }
+    },
+    "connections": {
+        "title": "Gerir ligações",
+        "overview": "Liga serviços externos para os utilizares no Godot Launcher.",
+        "loading": "A carregar ligações...",
+        "loadError": "Não foi possível carregar as ligações.",
+        "genericDescription": "Liga este serviço para o utilizares no Godot Launcher.",
+        "github": {
+            "description": "Liga o GitHub para disponibilizares os teus repositórios no Godot Launcher.",
+            "accessNote": "Tu controlas os repositórios a que a aplicação GitHub pode aceder."
+        },
+        "status": {
+            "notConnected": "Sem ligação"
+        },
+        "actions": {
+            "connect": "Ligar {{provider}}"
         }
     },
     "updates": {

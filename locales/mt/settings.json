@@ -7,6 +7,7 @@
         "behavior": "Imġiba",
         "tools": "Għodod",
         "codeEditors": "Edituri tal-Kodiċi",
+        "connections": "Konnessjonijiet",
         "updates": "Aġġornamenti"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "Ma tistax tgħabbi l-integrazzjonijiet tal-għodda.",
             "rescan": "Ma tistax tiskennja mill-ġdid din l-għodda."
+        }
+    },
+    "connections": {
+        "title": "Immaniġġja l-konnessjonijiet",
+        "overview": "Qabbad servizzi esterni biex tużahom f'Godot Launcher.",
+        "loading": "Qed jitgħabbew il-konnessjonijiet...",
+        "loadError": "Ma setgħux jitgħabbew il-konnessjonijiet.",
+        "genericDescription": "Qabbad dan is-servizz biex tużah f'Godot Launcher.",
+        "github": {
+            "description": "Qabbad GitHub biex ir-repożitorji tiegħek ikunu disponibbli f'Godot Launcher.",
+            "accessNote": "Int tagħżel liema repożitorji tista' taċċessa l-app GitHub."
+        },
+        "status": {
+            "notConnected": "Mhux konness"
+        },
+        "actions": {
+            "connect": "Qabbad {{provider}}"
         }
     },
     "updates": {

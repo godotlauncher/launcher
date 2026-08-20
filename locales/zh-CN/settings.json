@@ -7,6 +7,7 @@
         "behavior": "行为",
         "tools": "工具",
         "codeEditors": "代码编辑器",
+        "connections": "连接",
         "updates": "更新"
     },
     "appearance": {
@@ -222,6 +223,23 @@
         "errors": {
             "load": "无法加载工具集成。",
             "rescan": "无法重新扫描此工具。"
+        }
+    },
+    "connections": {
+        "title": "管理连接",
+        "overview": "连接外部服务，以便在 Godot Launcher 中使用。",
+        "loading": "正在加载连接...",
+        "loadError": "无法加载连接。",
+        "genericDescription": "连接此服务，以便在 Godot Launcher 中使用。",
+        "github": {
+            "description": "连接 GitHub，让 Godot Launcher 可以使用你的仓库。",
+            "accessNote": "你可以决定 GitHub 应用有权访问哪些仓库。"
+        },
+        "status": {
+            "notConnected": "未连接"
+        },
+        "actions": {
+            "connect": "连接 {{provider}}"
         }
     },
     "updates": {

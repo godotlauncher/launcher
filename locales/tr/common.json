@@ -29,6 +29,8 @@
             "installs": "Kurulumlar",
             "help": "Yardım",
             "settings": "Ayarlar",
+            "connections": "Bağlantılar",
+            "new": "Yeni",
             "joinCommunity": "Topluluğa Katıl"
         },
         "update": {

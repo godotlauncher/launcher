@@ -7,6 +7,7 @@
         "behavior": "Behavior",
         "tools": "Tools",
         "codeEditors": "Code Editors",
+        "connections": "Connections",
         "updates": "Updates"
     },
     "appearance": {
@@ -222,6 +223,23 @@
                     "savePreset": "Unable to save the project identity preset."
                 }
             }
+        }
+    },
+    "connections": {
+        "title": "Manage connections",
+        "overview": "Connect external services to use them in Godot Launcher.",
+        "loading": "Loading connections...",
+        "loadError": "Unable to load connections.",
+        "genericDescription": "Connect this service to use it in Godot Launcher.",
+        "github": {
+            "description": "Connect GitHub to make your repositories available to Godot Launcher.",
+            "accessNote": "You stay in control of which repositories the GitHub App can access."
+        },
+        "status": {
+            "notConnected": "Not connected"
+        },
+        "actions": {
+            "connect": "Connect {{provider}}"
         }
     },
     "updates": {

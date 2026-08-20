@@ -1,14 +1,15 @@
 import type {
+    AppIntegrationSummary,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     ToolIntegrationSummary,
 } from '@shared/contracts';
-import clsx from 'clsx';
 import logger from 'electron-log';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../hooks/useAlerts';
+import { useAppIntegrations } from '../hooks/useAppIntegrations';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
@@ -19,6 +20,7 @@ import { getCodeEditorProjectUsage } from './projects/projectCodeEditorHealth.mo
 import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
 import { BehaviorSettingsPanel } from './settings/components/behaviorSettingsPanel.component';
 import { CodeEditorSettingsPanel } from './settings/components/codeEditorSettingsPanel.component';
+import { ConnectionsSettingsPanel } from './settings/components/connectionsSettingsPanel.component';
 import { InstallsSettingsPanel } from './settings/components/installsSettingsPanel.component';
 import { ProjectsSettingsPanel } from './settings/components/projectsSettingsPanel.component';
 import { SettingsTabs } from './settings/components/settingsTabs.component';
@@ -60,6 +62,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         validateIntegrationPath,
     } = useCodeEditorIntegrations();
     const { listIntegrations, rescanIntegration } = useToolIntegrations();
+    const { listIntegrations: listAppIntegrations } = useAppIntegrations();
+
+    const [appIntegrations, setAppIntegrations] = useState<
+        AppIntegrationSummary[]
+    >([]);
+    const [appIntegrationsLoading, setAppIntegrationsLoading] = useState(false);
+    const [appIntegrationsLoadError, setAppIntegrationsLoadError] =
+        useState(false);
 
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -86,6 +96,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         Record<string, string | undefined>
     >({});
     const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
+
+    /** Loads renderer-safe integration summaries for the Connections panel. */
+    const syncAppIntegrations = useCallback(async () => {
+        setAppIntegrationsLoading(true);
+        setAppIntegrationsLoadError(false);
+
+        try {
+            setAppIntegrations(await listAppIntegrations());
+        } catch {
+            logger.error('Failed to load app integrations');
+            setAppIntegrationsLoadError(true);
+        } finally {
+            setAppIntegrationsLoading(false);
+        }
+    }, [listAppIntegrations]);
+
+    useEffect(() => {
+        if (activeTab === 'connections') {
+            void syncAppIntegrations();
+        }
+    }, [activeTab, syncAppIntegrations]);
 
     const quickCheckTools = useCallback(async () => {
         return await listIntegrations();
@@ -467,10 +498,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 />
 
                 <div
-                    className={clsx(
-                        'flex flex-col py-6 flex-1 max-h-full border border-base-300 border-t-0 bg-base-100 rounded-box overflow-hidden',
-                        { 'rounded-tl-none': activeTab === 'projects' },
-                    )}
+                    className="flex flex-col py-6 flex-1 max-h-full border border-base-300 border-t-0 bg-base-100 rounded-box rounded-t-none overflow-hidden"
+                    data-testid="settingsPanelContainer"
                 >
                     <div className="flex-1 overflow-y-auto px-6">
                         <ProjectsSettingsPanel
@@ -515,6 +544,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             actionErrors={toolActionErrors}
                             onEdit={(tool) => setSelectedToolId(tool.id)}
                             onRescan={rescanTool}
+                        />
+                        <ConnectionsSettingsPanel
+                            active={activeTab === 'connections'}
+                            t={t}
+                            integrations={appIntegrations}
+                            loading={appIntegrationsLoading}
+                            loadError={appIntegrationsLoadError}
+                            onRetry={() => void syncAppIntegrations()}
                         />
                         <UpdatesSettingsPanel
                             active={activeTab === 'updates'}
