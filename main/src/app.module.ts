@@ -6,6 +6,7 @@ import {
 } from '@mariodebono/di-electron-i18n';
 import { AppController } from './app.controller.js';
 import { AppIntegrationsModule } from './app-integrations/app-integrations.module.js';
+import { GitHubAppIntegrationModule } from './app-integrations/providers/github/github-app-integration.module.js';
 import { AppLifecycleService } from './app-lifecycle.service.js';
 import { AppMigrationsModule } from './app-migrations/app-migrations.module.js';
 import { CodeEditorIntegrationModule } from './codeEditorIntegration/codeEditorIntegration.module.js';
@@ -43,6 +44,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
         }),
         AppMigrationsModule,
         AppIntegrationsModule,
+        GitHubAppIntegrationModule,
         CodeEditorIntegrationModule,
         EditorCatalogModule.forRootAsync({
             inject: [ConfigService],
