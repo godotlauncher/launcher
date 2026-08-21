@@ -282,7 +282,14 @@
         },
         "disconnectConfirm": {
             "title": "{{connection}} bağlantısı kesilsin mi?",
-            "description": "Bu işlem bağlantıyı Godot Launcher'dan kaldırır. GitHub uygulamasını kaldırmaz veya proje uzak adreslerini değiştirmez."
+            "description": "Bu işlem bağlantıyı Godot Launcher'dan kaldırır. GitHub uygulamasını kaldırmaz veya proje uzak adreslerini değiştirmez.",
+            "finalDescription": "Bu işlem bağlantıyı bu cihazdan kaldırır. GitHub uygulamasını kaldırmaz; depo erişimini veya proje uzak adreslerini değiştirmez.",
+            "revokeAllDevices": "Bu GitHub yetkilendirmesini tüm Launcher cihazlarında da iptal et.",
+            "revokeDetail": "Bu GitHub hesabına bağlı diğer Launcher cihazlarının yeniden bağlanması gerekir.",
+            "localOnlyWarning": "GitHub erişimi diğer cihazlarda etkin kalır ve kopyalanmış belirteçler süreleri dolana veya iptal edilene kadar geçerli olur.",
+            "failureDetail": "Bağlantı kaldırılamadı. Yerel kimlik bilgisi korundu. Tekrar deneyin.",
+            "revokeAction": "İptal et ve bağlantıyı kes",
+            "localOnlyAction": "Bu cihazın bağlantısını kes"
         }
     },
     "updates": {

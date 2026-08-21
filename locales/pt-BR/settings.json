@@ -282,7 +282,14 @@
         },
         "disconnectConfirm": {
             "title": "Desconectar {{connection}}?",
-            "description": "Isso remove a conexão do Godot Launcher. Não desinstala o aplicativo do GitHub nem altera os remotos dos projetos."
+            "description": "Isso remove a conexão do Godot Launcher. Não desinstala o aplicativo do GitHub nem altera os remotos dos projetos.",
+            "finalDescription": "Isso remove a conexão deste dispositivo. Não desinstala o aplicativo do GitHub nem altera o acesso aos repositórios ou os remotos dos projetos.",
+            "revokeAllDevices": "Também revogar esta autorização do GitHub em todos os dispositivos com o Launcher.",
+            "revokeDetail": "Outros dispositivos com o Launcher conectados a esta conta do GitHub precisarão se reconectar.",
+            "localOnlyWarning": "O acesso ao GitHub continuará ativo em outros dispositivos, e os tokens copiados permanecerão válidos até expirarem ou serem revogados.",
+            "failureDetail": "Não foi possível remover a conexão. A credencial local foi mantida. Tente novamente.",
+            "revokeAction": "Revogar e desconectar",
+            "localOnlyAction": "Desconectar este dispositivo"
         }
     },
     "updates": {

@@ -83,7 +83,9 @@ describe('useAppIntegrations', () => {
         await hook.reconnect('github', 'connection-id');
         await hook.refresh('github');
         await hook.manageAccess('github', 'connection-id', 'target-id');
-        await hook.disconnect('github', 'connection-id', 'target-id');
+        await hook.disconnect('github', 'connection-id', 'target-id', {
+            revokeAuthorisation: true,
+        });
 
         expect(mocks.connect).toHaveBeenCalledWith('github');
         expect(mocks.finishConnections).toHaveBeenCalledWith('github', [
@@ -102,6 +104,7 @@ describe('useAppIntegrations', () => {
             'github',
             'connection-id',
             'target-id',
+            { revokeAuthorisation: true },
         );
     });
 });

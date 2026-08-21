@@ -30,6 +30,9 @@ class LaterProvider implements AppIntegrationProvider {
 
     connect = vi.fn();
     isCredentialValid = vi.fn(() => true);
+    refresh = vi.fn();
+    prepareCredentialRevocation = vi.fn();
+    revokeCredential = vi.fn();
     openManageAccess = vi.fn();
 }
 
@@ -43,6 +46,9 @@ class EarlierProvider implements AppIntegrationProvider {
 
     connect = vi.fn();
     isCredentialValid = vi.fn(() => true);
+    refresh = vi.fn();
+    prepareCredentialRevocation = vi.fn();
+    revokeCredential = vi.fn();
     openManageAccess = vi.fn();
 }
 
@@ -79,6 +85,9 @@ class DuplicateProvider implements AppIntegrationProvider {
 
     connect = vi.fn();
     isCredentialValid = vi.fn(() => true);
+    refresh = vi.fn();
+    prepareCredentialRevocation = vi.fn();
+    revokeCredential = vi.fn();
     openManageAccess = vi.fn();
 }
 

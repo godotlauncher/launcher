@@ -43,7 +43,8 @@ describe('GitHubAuthBrokerClient', () => {
                     scope: '',
                     tokenType: 'bearer',
                 }),
-            );
+            )
+            .mockResolvedValueOnce(new Response(null, { status: 204 }));
         vi.stubGlobal('fetch', fetchMock);
         const config = {
             getOrThrow: vi.fn(() => true),
@@ -70,6 +71,7 @@ describe('GitHubAuthBrokerClient', () => {
             signal,
         );
         await client.refresh('refresh-token', signal);
+        await client.revoke('access-token', signal);
 
         expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
             'http://127.0.0.1:8787/v1/oauth/github/attempts',
@@ -94,6 +96,13 @@ describe('GitHubAuthBrokerClient', () => {
         );
         expect(fetchMock.mock.calls[3]?.[1]).toMatchObject({
             body: '{"refreshToken":"refresh-token"}',
+        });
+        expect(String(fetchMock.mock.calls[4]?.[0])).toBe(
+            'http://127.0.0.1:8787/v1/oauth/github/authorisation',
+        );
+        expect(fetchMock.mock.calls[4]?.[1]).toMatchObject({
+            body: '{"accessToken":"access-token"}',
+            method: 'DELETE',
         });
     });
 

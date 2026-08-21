@@ -282,7 +282,14 @@
         },
         "disconnectConfirm": {
             "title": "Rozłączyć {{connection}}?",
-            "description": "Spowoduje to usunięcie połączenia z Godot Launcher. Aplikacja GitHub nie zostanie odinstalowana, a zdalne adresy projektów nie zostaną zmienione."
+            "description": "Spowoduje to usunięcie połączenia z Godot Launcher. Aplikacja GitHub nie zostanie odinstalowana, a zdalne adresy projektów nie zostaną zmienione.",
+            "finalDescription": "Spowoduje to usunięcie połączenia z tego urządzenia. Aplikacja GitHub nie zostanie odinstalowana, a dostęp do repozytoriów i zdalne adresy projektów nie zostaną zmienione.",
+            "revokeAllDevices": "Unieważnij też tę autoryzację GitHub na wszystkich urządzeniach z Launcherem.",
+            "revokeDetail": "Inne urządzenia z Launcherem połączone z tym kontem GitHub będą wymagały ponownego połączenia.",
+            "localOnlyWarning": "Dostęp do GitHub pozostanie aktywny na innych urządzeniach, a skopiowane tokeny pozostaną ważne do wygaśnięcia lub unieważnienia.",
+            "failureDetail": "Nie udało się usunąć połączenia. Lokalne dane uwierzytelniające zostały zachowane. Spróbuj ponownie.",
+            "revokeAction": "Unieważnij i rozłącz",
+            "localOnlyAction": "Rozłącz to urządzenie"
         }
     },
     "updates": {

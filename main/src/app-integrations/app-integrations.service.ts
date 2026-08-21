@@ -6,6 +6,7 @@ import type {
     AppIntegrationActionResult,
     AppIntegrationConnectionOption,
     AppIntegrationConnectionSummary,
+    AppIntegrationDisconnectOptions,
     AppIntegrationSummary,
 } from '@shared/contracts';
 import {
@@ -26,6 +27,7 @@ import { AppIntegrationSecureStorageAdapter } from './app-integration-secure-sto
 import { AppIntegrationsStore } from './app-integrations.store.js';
 
 const CONNECTION_TIMEOUT_MS = 5 * 60 * 1_000;
+const PROVIDER_ACTION_TIMEOUT_MS = 30_000;
 
 type ConnectionSessionStage = 'authorising' | 'choosing' | 'installing';
 
@@ -51,6 +53,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
         ActiveConnectionSession
     >();
     private readonly activeRefreshes = new Set<string>();
+    private readonly activeDisconnects = new Set<string>();
 
     /**
      * Creates the renderer-safe app integration facade.
@@ -242,7 +245,8 @@ export class AppIntegrationsService implements OnModuleDestroy {
         const provider = this.registry.get(providerId);
         if (
             this.connectionSessions.has(providerId) ||
-            this.activeRefreshes.has(providerId)
+            this.activeRefreshes.has(providerId) ||
+            this.activeDisconnects.has(providerId)
         ) {
             return { ok: true, integration: await this.summarize(provider) };
         }
@@ -300,27 +304,39 @@ export class AppIntegrationsService implements OnModuleDestroy {
      * @param providerId - Registered provider ID.
      * @param connectionId - Target local connection ID.
      * @param accessTargetId - Renderer-safe installation target ID.
+     * @param options - Explicit final-connection revocation choice.
      * @returns The updated renderer-safe integration result.
      */
     async disconnect(
         providerId: string,
         connectionId: string,
         accessTargetId: string,
+        options: AppIntegrationDisconnectOptions,
     ): Promise<AppIntegrationActionResult> {
         const provider = this.registry.get(providerId);
-        const activeSession = this.connectionSessions.get(providerId);
-        if (activeSession?.connectionId === connectionId) {
-            await this.clearConnectionSession(
-                providerId,
-                activeSession,
-                'cancelled',
-            );
+        if (!isDisconnectOptions(options)) {
+            return this.failure(provider, 'unknown');
         }
-        const record = await this.getProviderConnection(
-            providerId,
-            connectionId,
-        );
+        if (
+            this.activeRefreshes.has(providerId) ||
+            this.activeDisconnects.has(providerId)
+        ) {
+            return this.failure(provider, 'already-connecting');
+        }
+        this.activeDisconnects.add(providerId);
         try {
+            const activeSession = this.connectionSessions.get(providerId);
+            if (activeSession?.connectionId === connectionId) {
+                await this.clearConnectionSession(
+                    providerId,
+                    activeSession,
+                    'cancelled',
+                );
+            }
+            const record = await this.getProviderConnection(
+                providerId,
+                connectionId,
+            );
             const target = record?.accessTargets.find(
                 (accessTarget) => accessTarget.id === accessTargetId,
             );
@@ -336,6 +352,44 @@ export class AppIntegrationsService implements OnModuleDestroy {
                     accessTargets: remainingTargets,
                 });
             } else {
+                if (options.revokeAuthorisation) {
+                    if (!(await this.secureStorage.isAvailable())) {
+                        return this.failure(
+                            provider,
+                            'secure-storage-unavailable',
+                        );
+                    }
+                    const encrypted = await this.secrets.get(record.id);
+                    if (!encrypted) {
+                        return this.failure(provider, 'unknown');
+                    }
+                    const credential =
+                        await this.secureStorage.decrypt(encrypted);
+                    const signal = AbortSignal.timeout(
+                        PROVIDER_ACTION_TIMEOUT_MS,
+                    );
+                    const prepared = await provider.prepareCredentialRevocation(
+                        signal,
+                        credential,
+                    );
+                    if (prepared.credential !== credential) {
+                        const preparedCiphertext =
+                            await this.secureStorage.encrypt(
+                                prepared.credential,
+                            );
+                        await this.secrets.set(record.id, preparedCiphertext);
+                        await this.store.set({
+                            ...record,
+                            accessTokenExpiresAt: prepared.accessTokenExpiresAt,
+                            refreshTokenExpiresAt:
+                                prepared.refreshTokenExpiresAt,
+                        });
+                    }
+                    await provider.revokeCredential(
+                        signal,
+                        prepared.credential,
+                    );
+                }
                 const previousCiphertext = await this.secrets.get(record.id);
                 await this.secrets.remove(record.id);
                 try {
@@ -348,8 +402,15 @@ export class AppIntegrationsService implements OnModuleDestroy {
                 }
             }
             return { ok: true, integration: await this.summarize(provider) };
-        } catch {
-            return this.failure(provider, 'unknown');
+        } catch (error) {
+            return this.failure(
+                provider,
+                error instanceof AppIntegrationProviderError
+                    ? error.reason
+                    : 'unknown',
+            );
+        } finally {
+            this.activeDisconnects.delete(providerId);
         }
     }
 
@@ -369,7 +430,8 @@ export class AppIntegrationsService implements OnModuleDestroy {
         const provider = this.registry.get(providerId);
         if (
             this.connectionSessions.has(providerId) ||
-            this.activeRefreshes.has(providerId)
+            this.activeRefreshes.has(providerId) ||
+            this.activeDisconnects.has(providerId)
         ) {
             return this.failure(provider, 'already-connecting');
         }
@@ -853,4 +915,23 @@ export class AppIntegrationsService implements OnModuleDestroy {
             integration: await this.summarize(provider),
         };
     }
+}
+
+/**
+ * Validates untrusted renderer options before final connection removal.
+ *
+ * @param value - Renderer-supplied Disconnect options.
+ * @returns Whether the exact supported option shape was supplied.
+ */
+function isDisconnectOptions(
+    value: unknown,
+): value is AppIntegrationDisconnectOptions {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        Object.keys(value).length === 1 &&
+        'revokeAuthorisation' in value &&
+        typeof value.revokeAuthorisation === 'boolean'
+    );
 }

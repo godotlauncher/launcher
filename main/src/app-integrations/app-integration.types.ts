@@ -73,6 +73,12 @@ export type AppIntegrationProviderRefreshResult =
     | { status: 'reauthorisation-required' }
     | { status: 'temporarily-unavailable' };
 
+export type AppIntegrationPreparedCredential = {
+    credential: string;
+    accessTokenExpiresAt: string | null;
+    refreshTokenExpiresAt: string | null;
+};
+
 export type AppIntegrationStoreFile = {
     schemaVersion: 2;
     connections: Record<string, AppIntegrationConnectionRecord>;
@@ -137,6 +143,25 @@ export interface AppIntegrationProvider {
         credential: string,
         expectedAccountId: string,
     ): Promise<AppIntegrationProviderRefreshResult>;
+
+    /**
+     * Prepares a current credential for remote revocation.
+     *
+     * @param signal - Revocation cancellation signal.
+     * @param credential - Decrypted provider credential.
+     */
+    prepareCredentialRevocation(
+        signal: AbortSignal,
+        credential: string,
+    ): Promise<AppIntegrationPreparedCredential>;
+
+    /**
+     * Revokes the complete provider authorisation represented by a credential.
+     *
+     * @param signal - Revocation cancellation signal.
+     * @param credential - Prepared decrypted provider credential.
+     */
+    revokeCredential(signal: AbortSignal, credential: string): Promise<void>;
 
     /**
      * Opens the provider-owned repository access settings.

@@ -10,6 +10,7 @@ import { APP_INTEGRATION_PROVIDER_TAG } from '../../app-integration.constants.js
 import {
     type AppIntegrationAccessTarget,
     type AppIntegrationConnectionRequest,
+    type AppIntegrationPreparedCredential,
     type AppIntegrationProvider,
     type AppIntegrationProviderConnection,
     AppIntegrationProviderError,
@@ -375,6 +376,96 @@ export class GitHubAppIntegrationProvider implements AppIntegrationProvider {
                 return { status: 'reauthorisation-required' };
             }
             return { status: 'temporarily-unavailable' };
+        }
+    }
+
+    /**
+     * Produces a current GitHub credential that can identify the complete grant.
+     *
+     * @param signal - Revocation cancellation signal.
+     * @param credential - Decrypted stored token bundle.
+     * @returns The current credential and its provider expiry metadata.
+     */
+    async prepareCredentialRevocation(
+        signal: AbortSignal,
+        credential: string,
+    ): Promise<AppIntegrationPreparedCredential> {
+        try {
+            const stored = GitHubStoredCredentialSchema.parse(
+                JSON.parse(credential),
+            );
+            const createdAt = new Date(stored.createdAt).getTime();
+            const accessTokenExpiry =
+                stored.expiresIn === null
+                    ? null
+                    : createdAt + stored.expiresIn * 1_000;
+            const shouldRotate =
+                accessTokenExpiry !== null &&
+                accessTokenExpiry <= Date.now() + 5 * 60 * 1_000;
+            if (!shouldRotate) {
+                return {
+                    credential,
+                    accessTokenExpiresAt: expiryFromSeconds(
+                        createdAt,
+                        stored.expiresIn,
+                    ),
+                    refreshTokenExpiresAt: expiryFromSeconds(
+                        createdAt,
+                        stored.refreshTokenExpiresIn,
+                    ),
+                };
+            }
+            if (
+                stored.refreshTokenExpiresIn !== null &&
+                createdAt + stored.refreshTokenExpiresIn * 1_000 <= Date.now()
+            ) {
+                throw new GitHubBrokerError('github_rejected_token', 401);
+            }
+
+            const token = await this.rotateCredential(
+                stored.refreshToken,
+                signal,
+            );
+            const rotatedAt = Date.now();
+            return {
+                credential: JSON.stringify(
+                    GitHubStoredCredentialSchema.parse({
+                        ...token,
+                        version: 1,
+                        createdAt: new Date(rotatedAt).toISOString(),
+                    }),
+                ),
+                accessTokenExpiresAt: expiryFromSeconds(
+                    rotatedAt,
+                    token.expiresIn,
+                ),
+                refreshTokenExpiresAt: expiryFromSeconds(
+                    rotatedAt,
+                    token.refreshTokenExpiresIn,
+                ),
+            };
+        } catch (error) {
+            throw mapProviderError(error, signal);
+        }
+    }
+
+    /**
+     * Revokes the complete GitHub App user authorisation through the broker.
+     *
+     * @param signal - Revocation cancellation signal.
+     * @param credential - Prepared decrypted token bundle.
+     */
+    async revokeCredential(
+        signal: AbortSignal,
+        credential: string,
+    ): Promise<void> {
+        try {
+            const stored = GitHubStoredCredentialSchema.parse(
+                JSON.parse(credential),
+            );
+            await this.broker.revoke(stored.accessToken, signal);
+        } catch (error) {
+            throw mapProviderError(error, signal);
         }
     }
 

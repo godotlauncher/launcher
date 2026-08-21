@@ -68,7 +68,9 @@ describe('AppIntegrationsController', () => {
             controller.manageAccess('github', 'connection-id', 'target-id'),
         ).resolves.toEqual(result);
         await expect(
-            controller.disconnect('github', 'connection-id', 'target-id'),
+            controller.disconnect('github', 'connection-id', 'target-id', {
+                revokeAuthorisation: true,
+            }),
         ).resolves.toEqual(result);
         expect(appIntegrations.finishConnections).toHaveBeenCalledWith(
             'github',
@@ -76,6 +78,12 @@ describe('AppIntegrationsController', () => {
         );
         expect(appIntegrations.installConnection).toHaveBeenCalledWith(
             'github',
+        );
+        expect(appIntegrations.disconnect).toHaveBeenCalledWith(
+            'github',
+            'connection-id',
+            'target-id',
+            { revokeAuthorisation: true },
         );
     });
 });

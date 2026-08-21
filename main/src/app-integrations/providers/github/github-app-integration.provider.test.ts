@@ -346,6 +346,92 @@ describe('GitHubAppIntegrationProvider', () => {
         expect(JSON.stringify(result)).toContain('rotated-access-token');
     });
 
+    it('prepares an expiring credential and revokes its complete grant', async () => {
+        const broker = {
+            refresh: vi.fn(async () => ({
+                accessToken: 'rotated-access-token',
+                expiresIn: 28_800,
+                refreshToken: 'rotated-refresh-token',
+                refreshTokenExpiresIn: 15_897_600,
+                scope: '',
+                tokenType: 'bearer',
+            })),
+            revoke: vi.fn(),
+        };
+        const provider = new GitHubAppIntegrationProvider(
+            {} as never,
+            broker as unknown as GitHubAuthBrokerClient,
+            {} as never,
+            {} as never,
+        );
+        const credential = JSON.stringify({
+            version: 1,
+            createdAt: new Date(Date.now() - 9 * 60 * 60 * 1_000).toISOString(),
+            accessToken: 'old-access-token',
+            expiresIn: 28_800,
+            refreshToken: 'old-refresh-token',
+            refreshTokenExpiresIn: 15_897_600,
+            scope: '',
+            tokenType: 'bearer',
+        });
+        const signal = new AbortController().signal;
+
+        const prepared = await provider.prepareCredentialRevocation(
+            signal,
+            credential,
+        );
+        await provider.revokeCredential(signal, prepared.credential);
+
+        expect(broker.refresh).toHaveBeenCalledWith(
+            'old-refresh-token',
+            signal,
+        );
+        expect(broker.revoke).toHaveBeenCalledWith(
+            'rotated-access-token',
+            signal,
+        );
+        expect(prepared.credential).toContain('rotated-refresh-token');
+        expect(prepared.accessTokenExpiresAt).not.toBeNull();
+        expect(prepared.refreshTokenExpiresAt).not.toBeNull();
+    });
+
+    it('does not rotate a current credential before revocation', async () => {
+        const broker = {
+            refresh: vi.fn(),
+            revoke: vi.fn(),
+        };
+        const provider = new GitHubAppIntegrationProvider(
+            {} as never,
+            broker as unknown as GitHubAuthBrokerClient,
+            {} as never,
+            {} as never,
+        );
+        const credential = JSON.stringify({
+            version: 1,
+            createdAt: new Date().toISOString(),
+            accessToken: 'current-access-token',
+            expiresIn: 28_800,
+            refreshToken: 'current-refresh-token',
+            refreshTokenExpiresIn: 15_897_600,
+            scope: '',
+            tokenType: 'bearer',
+        });
+        const signal = new AbortController().signal;
+
+        const prepared = await provider.prepareCredentialRevocation(
+            signal,
+            credential,
+        );
+        await provider.revokeCredential(signal, prepared.credential);
+
+        expect(prepared.credential).toBe(credential);
+        expect(broker.refresh).not.toHaveBeenCalled();
+        expect(broker.revoke).toHaveBeenCalledWith(
+            'current-access-token',
+            signal,
+        );
+    });
+
     it('opens the exact verified organisation installation settings', async () => {
         const provider = new GitHubAppIntegrationProvider(
             {} as never,

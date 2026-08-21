@@ -282,7 +282,14 @@
         },
         "disconnectConfirm": {
             "title": "中斷 {{connection}} 的連線？",
-            "description": "這會從 Godot Launcher 移除連線，但不會解除安裝 GitHub 應用程式，也不會變更任何專案的遠端儲存庫。"
+            "description": "這會從 Godot Launcher 移除連線，但不會解除安裝 GitHub 應用程式，也不會變更任何專案的遠端儲存庫。",
+            "finalDescription": "這會從此裝置移除連線，但不會解除安裝 GitHub 應用程式，也不會變更儲存庫存取權或專案的遠端儲存庫。",
+            "revokeAllDevices": "同時撤銷所有 Launcher 裝置上的此 GitHub 授權。",
+            "revokeDetail": "連接到此 GitHub 帳戶的其他 Launcher 裝置需要重新連線。",
+            "localOnlyWarning": "其他裝置上的 GitHub 存取權仍然有效，任何已複製的權杖在到期或被撤銷前仍可使用。",
+            "failureDetail": "無法移除連線。本機憑證已保留。請再試一次。",
+            "revokeAction": "撤銷並中斷連線",
+            "localOnlyAction": "僅中斷此裝置"
         }
     },
     "updates": {

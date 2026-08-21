@@ -282,7 +282,14 @@
         },
         "disconnectConfirm": {
             "title": "{{connection}} の接続を解除しますか？",
-            "description": "Godot Launcher から接続を削除します。GitHub App はアンインストールされず、プロジェクトのリモートも変更されません。"
+            "description": "Godot Launcher から接続を削除します。GitHub App はアンインストールされず、プロジェクトのリモートも変更されません。",
+            "finalDescription": "このデバイスから接続を削除します。GitHub App のアンインストール、リポジトリへのアクセス権、プロジェクトのリモート設定には影響しません。",
+            "revokeAllDevices": "すべての Launcher デバイスで、この GitHub 認証も取り消す。",
+            "revokeDetail": "この GitHub アカウントに接続している他の Launcher デバイスでは、再接続が必要になります。",
+            "localOnlyWarning": "他のデバイスでは GitHub へのアクセスが引き続き有効で、コピーされたトークンも期限切れまたは取り消されるまで有効です。",
+            "failureDetail": "接続を削除できませんでした。ローカル認証情報は保持されています。もう一度お試しください。",
+            "revokeAction": "取り消して接続解除",
+            "localOnlyAction": "このデバイスのみ接続解除"
         }
     },
     "updates": {

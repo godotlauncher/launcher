@@ -282,7 +282,14 @@
         },
         "disconnectConfirm": {
             "title": "Tiskonnettja {{connection}}?",
-            "description": "Dan ineħħi l-konnessjoni minn Godot Launcher. Ma jneħħix l-app GitHub u ma jibdilx ir-remotes tal-proġetti."
+            "description": "Dan ineħħi l-konnessjoni minn Godot Launcher. Ma jneħħix l-app GitHub u ma jibdilx ir-remotes tal-proġetti.",
+            "finalDescription": "Dan ineħħi l-konnessjoni minn dan l-apparat. Ma jneħħix l-app GitHub, ma jibdilx l-aċċess għar-repożitorji jew ir-remotes tal-proġetti.",
+            "revokeAllDevices": "Irrevoka wkoll din l-awtorizzazzjoni ta' GitHub fuq l-apparati kollha ta' Launcher.",
+            "revokeDetail": "Apparati oħra ta' Launcher konnessi ma' dan il-kont ta' GitHub ikollhom jerġgħu jikkonnettjaw.",
+            "localOnlyWarning": "L-aċċess għal GitHub jibqa' attiv fuq apparati oħra, u tokens ikkupjati jibqgħu validi sakemm jiskadu jew jiġu rrevokati.",
+            "failureDetail": "Il-konnessjoni ma setgħetx titneħħa. Il-kredenzjali lokali nżammu. Erġa' pprova.",
+            "revokeAction": "Irrevoka u skonnettja",
+            "localOnlyAction": "Skonnettja dan l-apparat"
         }
     },
     "updates": {

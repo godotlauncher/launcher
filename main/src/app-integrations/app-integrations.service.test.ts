@@ -92,6 +92,12 @@ describe('AppIntegrationsService', () => {
             refresh: vi.fn(async () => ({
                 status: 'temporarily-unavailable' as const,
             })),
+            prepareCredentialRevocation: vi.fn(async (_signal, credential) => ({
+                credential,
+                accessTokenExpiresAt: null,
+                refreshTokenExpiresAt: null,
+            })),
+            revokeCredential: vi.fn(),
             isCredentialValid: vi.fn(() => true),
             openManageAccess: vi.fn(),
         };
@@ -484,10 +490,13 @@ describe('AppIntegrationsService', () => {
             throw new Error('Test connections were not persisted');
         }
 
-        await service.disconnect('github', record.id, target.id);
+        await service.disconnect('github', record.id, target.id, {
+            revokeAuthorisation: true,
+        });
 
         expect(records.get(record.id)?.accessTargets).toHaveLength(1);
         expect(ciphertexts.has(record.id)).toBe(true);
+        expect(provider.revokeCredential).not.toHaveBeenCalled();
     });
 
     it('targets reconnect, management, and disconnect actions', async () => {
@@ -529,10 +538,198 @@ describe('AppIntegrationsService', () => {
             'github',
             octocat.id,
             target.id,
+            { revokeAuthorisation: false },
         );
         expect(result.integration.connections).toHaveLength(1);
         expect(records.has(octocat.id)).toBe(false);
         expect(ciphertexts.has(octocat.id)).toBe(false);
+        expect(provider.revokeCredential).not.toHaveBeenCalled();
+    });
+
+    it('revokes the final authorisation before deleting local state', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        const target = record?.accessTargets[0];
+        if (!record || !target) {
+            throw new Error('Test connection was not persisted');
+        }
+        vi.mocked(provider.revokeCredential).mockImplementationOnce(
+            async () => {
+                expect(records.has(record.id)).toBe(true);
+                expect(ciphertexts.has(record.id)).toBe(true);
+            },
+        );
+
+        const result = await service.disconnect(
+            'github',
+            record.id,
+            target.id,
+            { revokeAuthorisation: true },
+        );
+
+        expect(result.ok).toBe(true);
+        expect(provider.prepareCredentialRevocation).toHaveBeenCalledWith(
+            expect.any(AbortSignal),
+            '{"token":"secret-1"}',
+        );
+        expect(provider.revokeCredential).toHaveBeenCalledWith(
+            expect.any(AbortSignal),
+            '{"token":"secret-1"}',
+        );
+        expect(records.has(record.id)).toBe(false);
+        expect(ciphertexts.has(record.id)).toBe(false);
+    });
+
+    it('preserves local state when selected revocation fails', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        const target = record?.accessTargets[0];
+        if (!record || !target) {
+            throw new Error('Test connection was not persisted');
+        }
+        vi.mocked(provider.revokeCredential).mockRejectedValueOnce(
+            new AppIntegrationProviderError('provider-unavailable'),
+        );
+
+        const result = await service.disconnect(
+            'github',
+            record.id,
+            target.id,
+            { revokeAuthorisation: true },
+        );
+
+        expect(result).toMatchObject({
+            ok: false,
+            reason: 'provider-unavailable',
+        });
+        expect(records.get(record.id)).toEqual(record);
+        expect(ciphertexts.has(record.id)).toBe(true);
+    });
+
+    it('rejects an invalid renderer revocation option without deleting state', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        const target = record?.accessTargets[0];
+        if (!record || !target) {
+            throw new Error('Test connection was not persisted');
+        }
+
+        const result = await service.disconnect(
+            'github',
+            record.id,
+            target.id,
+            { revokeAuthorisation: 'true' } as never,
+        );
+
+        expect(result).toMatchObject({ ok: false, reason: 'unknown' });
+        expect(provider.revokeCredential).not.toHaveBeenCalled();
+        expect(records.has(record.id)).toBe(true);
+        expect(ciphertexts.has(record.id)).toBe(true);
+    });
+
+    it('does not disconnect while the provider credential is refreshing', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        const target = record?.accessTargets[0];
+        if (!record || !target) {
+            throw new Error('Test connection was not persisted');
+        }
+        let finishRefresh:
+            | ((result: { status: 'temporarily-unavailable' }) => void)
+            | undefined;
+        vi.mocked(provider.refresh).mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    finishRefresh = resolve;
+                }),
+        );
+        const refreshing = service.refresh('github');
+        await vi.waitFor(() => expect(provider.refresh).toHaveBeenCalledOnce());
+
+        const result = await service.disconnect(
+            'github',
+            record.id,
+            target.id,
+            { revokeAuthorisation: true },
+        );
+
+        expect(result).toMatchObject({
+            ok: false,
+            reason: 'already-connecting',
+        });
+        expect(provider.revokeCredential).not.toHaveBeenCalled();
+        expect(records.has(record.id)).toBe(true);
+        expect(ciphertexts.has(record.id)).toBe(true);
+        finishRefresh?.({ status: 'temporarily-unavailable' });
+        await refreshing;
+    });
+
+    it('does not refresh while provider credential revocation is active', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        const target = record?.accessTargets[0];
+        if (!record || !target) {
+            throw new Error('Test connection was not persisted');
+        }
+        let finishRevocation: (() => void) | undefined;
+        vi.mocked(provider.revokeCredential).mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishRevocation = resolve;
+                }),
+        );
+        const disconnecting = service.disconnect(
+            'github',
+            record.id,
+            target.id,
+            { revokeAuthorisation: true },
+        );
+        await vi.waitFor(() =>
+            expect(provider.revokeCredential).toHaveBeenCalledOnce(),
+        );
+
+        await expect(service.refresh('github')).resolves.toMatchObject({
+            ok: true,
+        });
+        expect(provider.refresh).not.toHaveBeenCalled();
+        expect(records.has(record.id)).toBe(true);
+        expect(ciphertexts.has(record.id)).toBe(true);
+
+        finishRevocation?.();
+        await expect(disconnecting).resolves.toMatchObject({ ok: true });
+    });
+
+    it('retains a rotated credential when revocation fails', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        const target = record?.accessTargets[0];
+        if (!record || !target) {
+            throw new Error('Test connection was not persisted');
+        }
+        vi.mocked(provider.prepareCredentialRevocation).mockResolvedValueOnce({
+            credential: '{"token":"rotated-secret"}',
+            accessTokenExpiresAt: '2026-08-22T00:00:00.000Z',
+            refreshTokenExpiresAt: '2027-02-21T00:00:00.000Z',
+        });
+        vi.mocked(provider.revokeCredential).mockRejectedValueOnce(
+            new AppIntegrationProviderError('network-error'),
+        );
+
+        const result = await service.disconnect(
+            'github',
+            record.id,
+            target.id,
+            { revokeAuthorisation: true },
+        );
+
+        expect(result).toMatchObject({ ok: false, reason: 'network-error' });
+        expect(ciphertexts.get(record.id)).toBe(
+            'encrypted:{"token":"rotated-secret"}',
+        );
+        expect(records.get(record.id)).toMatchObject({
+            accessTokenExpiresAt: '2026-08-22T00:00:00.000Z',
+            refreshTokenExpiresAt: '2027-02-21T00:00:00.000Z',
+        });
     });
 
     it('rejects a different account before replacing a targeted connection', async () => {

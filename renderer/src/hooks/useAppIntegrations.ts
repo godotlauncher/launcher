@@ -1,5 +1,6 @@
 import type {
     AppIntegrationActionResult,
+    AppIntegrationDisconnectOptions,
     AppIntegrationSummary,
 } from '@shared/contracts';
 import { useCallback } from 'react';
@@ -30,6 +31,7 @@ export type AppIntegrationsHook = {
         integrationId: string,
         connectionId: string,
         accessTargetId: string,
+        options: AppIntegrationDisconnectOptions,
     ) => Promise<AppIntegrationActionResult>;
 };
 
@@ -80,11 +82,17 @@ export function useAppIntegrations(): AppIntegrationsHook {
         [],
     );
     const disconnect = useCallback(
-        (integrationId: string, connectionId: string, accessTargetId: string) =>
+        (
+            integrationId: string,
+            connectionId: string,
+            accessTargetId: string,
+            options: AppIntegrationDisconnectOptions,
+        ) =>
             appIntegrationsBridge.disconnect(
                 integrationId,
                 connectionId,
                 accessTargetId,
+                options,
             ),
         [],
     );

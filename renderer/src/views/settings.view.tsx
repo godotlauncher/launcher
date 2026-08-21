@@ -21,6 +21,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useToolIntegrations } from '../hooks/useToolIntegrations';
 import type { SettingsTab } from '../routes';
 import { getCodeEditorProjectUsage } from './projects/projectCodeEditorHealth.model';
+import { AppIntegrationDisconnectConfirm } from './settings/components/app-integration-disconnect-confirm.component';
 import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
 import { BehaviorSettingsPanel } from './settings/components/behaviorSettingsPanel.component';
 import { CodeEditorSettingsPanel } from './settings/components/codeEditorSettingsPanel.component';
@@ -250,6 +251,63 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             connection: AppIntegrationConnectionSummary,
             accessTarget: AppIntegrationAccessTargetSummary,
         ) => {
+            const disconnect = (revokeAuthorisation: boolean) =>
+                runAppIntegrationAction(integration.id, () =>
+                    disconnectAppIntegration(
+                        integration.id,
+                        connection.id,
+                        accessTarget.id,
+                        { revokeAuthorisation },
+                    ),
+                );
+            const revocationAvailable =
+                integration.id === 'github' &&
+                connection.accessTargets.length === 1;
+            if (revocationAvailable) {
+                addCustomConfirm(
+                    t('connections.disconnectConfirm.title', {
+                        connection: accessTarget.login,
+                    }),
+                    <p>
+                        {t('connections.disconnectConfirm.finalDescription')}
+                    </p>,
+                    [
+                        {
+                            key: 'github-final-disconnect',
+                            render: (close) => (
+                                <AppIntegrationDisconnectConfirm
+                                    close={close}
+                                    copy={{
+                                        checkbox: t(
+                                            'connections.disconnectConfirm.revokeAllDevices',
+                                        ),
+                                        checkedDetail: t(
+                                            'connections.disconnectConfirm.revokeDetail',
+                                        ),
+                                        checkedAction: t(
+                                            'connections.disconnectConfirm.revokeAction',
+                                        ),
+                                        uncheckedDetail: t(
+                                            'connections.disconnectConfirm.localOnlyWarning',
+                                        ),
+                                        uncheckedAction: t(
+                                            'connections.disconnectConfirm.localOnlyAction',
+                                        ),
+                                        failureDetail: t(
+                                            'connections.disconnectConfirm.failureDetail',
+                                        ),
+                                        cancel: t('common:buttons.cancel'),
+                                    }}
+                                    onConfirm={disconnect}
+                                />
+                            ),
+                        },
+                    ],
+                    <TriangleAlert className="stroke-warning" />,
+                );
+                return;
+            }
+
             addCustomConfirm(
                 t('connections.disconnectConfirm.title', {
                     connection: accessTarget.login,
@@ -259,14 +317,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     {
                         typeClass: 'btn-error',
                         text: t('connections.actions.disconnect'),
-                        onClick: () =>
-                            runAppIntegrationAction(integration.id, () =>
-                                disconnectAppIntegration(
-                                    integration.id,
-                                    connection.id,
-                                    accessTarget.id,
-                                ),
-                            ),
+                        onClick: () => disconnect(false),
                     },
                     {
                         isCancel: true,

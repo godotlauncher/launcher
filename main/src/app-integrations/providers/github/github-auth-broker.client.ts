@@ -148,6 +148,21 @@ export class GitHubAuthBrokerClient {
         return GitHubTokenBundleSchema.parse(await response.json());
     }
 
+    /**
+     * Revokes every GitHub OAuth token in one App user authorisation.
+     *
+     * @param accessToken - Current GitHub user access token.
+     * @param signal - Caller cancellation signal.
+     */
+    async revoke(accessToken: string, signal: AbortSignal): Promise<void> {
+        await this.request('/v1/oauth/github/authorisation', {
+            method: 'DELETE',
+            body: JSON.stringify({ accessToken }),
+            headers: { 'Content-Type': 'application/json' },
+            signal,
+        });
+    }
+
     /** Cancels an unused broker attempt without exposing cancellation errors. */
     async cancel(
         attempt: GitHubAuthAttempt,

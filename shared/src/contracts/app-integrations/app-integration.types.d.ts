@@ -71,3 +71,7 @@ export type AppIntegrationActionResult =
           reason: AppIntegrationActionFailureReason;
           integration: AppIntegrationSummary;
       };
+
+export type AppIntegrationDisconnectOptions = {
+    revokeAuthorisation: boolean;
+};

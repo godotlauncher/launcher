@@ -1,5 +1,6 @@
 import type {
     AppIntegrationActionResult,
+    AppIntegrationDisconnectOptions,
     AppIntegrationSummary,
 } from './app-integration.types.js';
 
@@ -85,10 +86,12 @@ export type AppIntegrationsBridge = {
      * @param integrationId - Registered integration ID.
      * @param connectionId - Target local connection ID.
      * @param accessTargetId - Renderer-safe installation target ID.
+     * @param options - Explicit final-connection revocation choice.
      */
     disconnect(
         integrationId: string,
         connectionId: string,
         accessTargetId: string,
+        options: AppIntegrationDisconnectOptions,
     ): Promise<AppIntegrationActionResult>;
 };

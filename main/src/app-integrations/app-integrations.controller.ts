@@ -2,7 +2,10 @@ import {
     BridgeController,
     createIpcHandleTyped,
 } from '@mariodebono/di-electron';
-import type { AppIntegrationsBridge } from '@shared/contracts';
+import type {
+    AppIntegrationDisconnectOptions,
+    AppIntegrationsBridge,
+} from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppIntegrationsService } from './app-integrations.service.js';
 
@@ -125,6 +128,8 @@ export class AppIntegrationsController implements AppIntegrationsBridge {
      *
      * @param integrationId - Registered integration ID.
      * @param connectionId - Target local connection ID.
+     * @param accessTargetId - Renderer-safe installation target ID.
+     * @param options - Explicit final-connection revocation choice.
      * @returns The updated integration result.
      */
     @AppIntegrationsHandler('disconnect')
@@ -132,11 +137,13 @@ export class AppIntegrationsController implements AppIntegrationsBridge {
         integrationId: string,
         connectionId: string,
         accessTargetId: string,
+        options: AppIntegrationDisconnectOptions,
     ) {
         return await this.appIntegrations.disconnect(
             integrationId,
             connectionId,
             accessTargetId,
+            options,
         );
     }
 }
