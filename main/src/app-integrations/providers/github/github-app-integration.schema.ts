@@ -3,16 +3,19 @@ import { z } from 'zod';
 export const GitHubAuthAttemptSchema = z.object({
     attemptId: z.string().regex(/^[0-9a-f]{64}$/u),
     attemptToken: z.string().regex(/^[A-Za-z0-9_-]{43}$/u),
-    browserUrl: z.url().refine((value) => {
-        const url = new URL(value);
-        return (
-            url.protocol === 'https:' &&
-            url.hostname === 'github.com' &&
-            url.username === '' &&
-            url.password === '' &&
-            url.hash === ''
-        );
-    }),
+    browserUrl: z
+        .url()
+        .max(2048)
+        .refine((value) => {
+            const url = new URL(value);
+            return (
+                url.protocol === 'https:' &&
+                url.hostname === 'github.com' &&
+                url.username === '' &&
+                url.password === '' &&
+                url.hash === ''
+            );
+        }),
     expiresAt: z.number().int().positive(),
 });
 
@@ -26,7 +29,7 @@ export const GitHubTokenBundleSchema = z.object({
 });
 
 export const GitHubOAuthRedemptionSchema = GitHubTokenBundleSchema.extend({
-    installationUrl: z.url().nullable(),
+    installationUrl: z.url().max(2048).nullable(),
 });
 
 export const GitHubSetupRedemptionSchema = z.object({
@@ -40,29 +43,36 @@ export const GitHubUserIdentitySchema = z.object({
 });
 
 export const GitHubInstallationPageSchema = z.object({
-    installations: z.array(
-        z.object({
-            id: z.number().int().positive(),
-            account: z.object({
-                login: z
-                    .string()
-                    .regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/u),
-                type: z.enum(['Organization', 'User']),
+    installations: z
+        .array(
+            z.object({
+                id: z.number().int().positive(),
+                account: z.object({
+                    login: z
+                        .string()
+                        .regex(
+                            /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/u,
+                        ),
+                    type: z.enum(['Organization', 'User']),
+                }),
+                html_url: z
+                    .url()
+                    .max(2048)
+                    .refine((value) => {
+                        const url = new URL(value);
+                        return (
+                            url.protocol === 'https:' &&
+                            url.hostname === 'github.com' &&
+                            url.username === '' &&
+                            url.password === '' &&
+                            url.search === '' &&
+                            url.hash === ''
+                        );
+                    }),
+                suspended_at: z.iso.datetime().nullable(),
             }),
-            html_url: z.url().refine((value) => {
-                const url = new URL(value);
-                return (
-                    url.protocol === 'https:' &&
-                    url.hostname === 'github.com' &&
-                    url.username === '' &&
-                    url.password === '' &&
-                    url.search === '' &&
-                    url.hash === ''
-                );
-            }),
-            suspended_at: z.iso.datetime().nullable(),
-        }),
-    ),
+        )
+        .max(100),
 });
 
 export const GitHubStoredCredentialSchema = GitHubTokenBundleSchema.extend({
@@ -72,7 +82,7 @@ export const GitHubStoredCredentialSchema = GitHubTokenBundleSchema.extend({
 
 export const GitHubBrokerErrorSchema = z.object({
     error: z.object({
-        code: z.string(),
-        message: z.string(),
+        code: z.string().max(128),
+        message: z.string().max(512),
     }),
 });

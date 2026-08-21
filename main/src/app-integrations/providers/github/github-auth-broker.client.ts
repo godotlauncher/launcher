@@ -17,10 +17,12 @@ import type {
     GitHubSetupRedemption,
     GitHubTokenBundle,
 } from './github-app-integration.types.js';
+import { readGitHubJsonResponse } from './github-json-response.util.js';
 
 const DEVELOPMENT_BROKER_ORIGIN = 'http://127.0.0.1:8787';
 const PRODUCTION_BROKER_ORIGIN = 'https://auth.godotlauncher.org';
 const BROKER_REQUEST_TIMEOUT_MS = 10_000;
+const BROKER_RESPONSE_MAX_BYTES = 64 * 1024;
 
 export class GitHubBrokerError extends Error {
     /**
@@ -66,7 +68,9 @@ export class GitHubAuthBrokerClient {
             headers: { 'Content-Type': 'application/json' },
             signal,
         });
-        const attempt = GitHubAuthAttemptSchema.parse(await response.json());
+        const attempt = GitHubAuthAttemptSchema.parse(
+            await readGitHubJsonResponse(response, BROKER_RESPONSE_MAX_BYTES),
+        );
         validateGitHubBrowserUrl(
             attempt.browserUrl,
             `${this.origin}/v1/oauth/github/callback`,
@@ -96,7 +100,7 @@ export class GitHubAuthBrokerClient {
             signal,
         );
         const redemption = GitHubOAuthRedemptionSchema.parse(
-            await response.json(),
+            await readGitHubJsonResponse(response, BROKER_RESPONSE_MAX_BYTES),
         );
         if (redemption.installationUrl !== null) {
             validateGitHubInstallationUrl(redemption.installationUrl);
@@ -125,7 +129,9 @@ export class GitHubAuthBrokerClient {
             completionTicket,
             signal,
         );
-        return GitHubSetupRedemptionSchema.parse(await response.json());
+        return GitHubSetupRedemptionSchema.parse(
+            await readGitHubJsonResponse(response, BROKER_RESPONSE_MAX_BYTES),
+        );
     }
 
     /**
@@ -145,7 +151,9 @@ export class GitHubAuthBrokerClient {
             headers: { 'Content-Type': 'application/json' },
             signal,
         });
-        return GitHubTokenBundleSchema.parse(await response.json());
+        return GitHubTokenBundleSchema.parse(
+            await readGitHubJsonResponse(response, BROKER_RESPONSE_MAX_BYTES),
+        );
     }
 
     /**
@@ -217,7 +225,10 @@ export class GitHubAuthBrokerClient {
         }
 
         const parsed = GitHubBrokerErrorSchema.safeParse(
-            await response.json().catch(() => null),
+            await readGitHubJsonResponse(
+                response,
+                BROKER_RESPONSE_MAX_BYTES,
+            ).catch(() => null),
         );
         throw new GitHubBrokerError(
             parsed.success ? parsed.data.error.code : 'invalid_response',

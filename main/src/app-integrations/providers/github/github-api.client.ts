@@ -8,12 +8,15 @@ import type {
     GitHubInstallation,
     GitHubUserIdentity,
 } from './github-app-integration.types.js';
+import { readGitHubJsonResponse } from './github-json-response.util.js';
 
 const GITHUB_USER_URL = 'https://api.github.com/user';
 const GITHUB_INSTALLATIONS_URL = 'https://api.github.com/user/installations';
 const GITHUB_REQUEST_TIMEOUT_MS = 10_000;
 const GITHUB_INSTALLATIONS_PER_PAGE = 100;
 const MAX_INSTALLATION_PAGES = 10;
+const GITHUB_USER_RESPONSE_MAX_BYTES = 64 * 1024;
+const GITHUB_INSTALLATION_PAGE_MAX_BYTES = 1024 * 1024;
 
 export class GitHubApiError extends Error {
     /**
@@ -48,7 +51,12 @@ export class GitHubApiClient {
         if (!response.ok) {
             throw new GitHubApiError(response.status);
         }
-        return GitHubUserIdentitySchema.parse(await response.json());
+        return GitHubUserIdentitySchema.parse(
+            await readGitHubJsonResponse(
+                response,
+                GITHUB_USER_RESPONSE_MAX_BYTES,
+            ),
+        );
     }
 
     /**
@@ -76,7 +84,10 @@ export class GitHubApiClient {
             }
 
             const parsed = GitHubInstallationPageSchema.parse(
-                await response.json(),
+                await readGitHubJsonResponse(
+                    response,
+                    GITHUB_INSTALLATION_PAGE_MAX_BYTES,
+                ),
             );
             installations.push(
                 ...parsed.installations

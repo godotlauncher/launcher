@@ -1,7 +1,10 @@
 import type { ConfigService } from '@mariodebono/di-config';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AppConfig } from '../../../config/index.js';
-import { GitHubAuthBrokerClient } from './github-auth-broker.client.js';
+import {
+    GitHubAuthBrokerClient,
+    GitHubBrokerError,
+} from './github-auth-broker.client.js';
 
 describe('GitHubAuthBrokerClient', () => {
     afterEach(() => vi.unstubAllGlobals());
@@ -166,5 +169,48 @@ describe('GitHubAuthBrokerClient', () => {
                 new AbortController().signal,
             ),
         ).rejects.toThrow('invalid authorisation URL');
+    });
+
+    it('rejects an oversized successful broker response before parsing', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => new Response(JSON.stringify('x'.repeat(65_536)))),
+        );
+        const client = new GitHubAuthBrokerClient({
+            getOrThrow: vi.fn(() => true),
+        } as unknown as ConfigService<AppConfig>);
+
+        await expect(
+            client.createAttempt(
+                'c'.repeat(43),
+                { host: '127.0.0.1', port: 54321, nonce: 'd'.repeat(43) },
+                'connect',
+                new AbortController().signal,
+            ),
+        ).rejects.toThrow('GitHub returned an invalid response');
+    });
+
+    it('maps an oversized broker error to a safe error code', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(
+                async () =>
+                    new Response(JSON.stringify('secret'.repeat(12_000)), {
+                        status: 503,
+                    }),
+            ),
+        );
+        const client = new GitHubAuthBrokerClient({
+            getOrThrow: vi.fn(() => true),
+        } as unknown as ConfigService<AppConfig>);
+
+        await expect(
+            client.createAttempt(
+                'c'.repeat(43),
+                { host: '127.0.0.1', port: 54321, nonce: 'd'.repeat(43) },
+                'connect',
+                new AbortController().signal,
+            ),
+        ).rejects.toEqual(new GitHubBrokerError('invalid_response', 503));
     });
 });

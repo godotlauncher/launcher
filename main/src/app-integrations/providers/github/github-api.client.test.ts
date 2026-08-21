@@ -4,6 +4,20 @@ import { GitHubApiClient } from './github-api.client.js';
 describe('GitHubApiClient', () => {
     afterEach(() => vi.unstubAllGlobals());
 
+    it('returns a valid user identity', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json({ id: 1, login: 'octocat', name: 'Octo Cat' }),
+            ),
+        );
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getUser('access-token', new AbortController().signal),
+        ).resolves.toEqual({ id: 1, login: 'octocat', name: 'Octo Cat' });
+    });
+
     it('lists every active installation available to the user', async () => {
         const fetchMock = vi.fn(async () =>
             Response.json({
@@ -153,5 +167,46 @@ describe('GitHubApiClient', () => {
                 new AbortController().signal,
             ),
         ).rejects.toThrow('invalid installation settings URL');
+    });
+
+    it('rejects an oversized user response before parsing', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => new Response(JSON.stringify('x'.repeat(65_536)))),
+        );
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getUser('access-token', new AbortController().signal),
+        ).rejects.toThrow('GitHub returned an invalid response');
+    });
+
+    it('rejects more installations than one requested page can contain', async () => {
+        const installation = {
+            id: 123456,
+            account: { login: 'godotlauncher', type: 'Organization' },
+            html_url:
+                'https://github.com/organizations/godotlauncher/settings/installations/123456',
+            suspended_at: null,
+        };
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json({
+                    installations: Array.from(
+                        { length: 101 },
+                        () => installation,
+                    ),
+                }),
+            ),
+        );
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getInstallations(
+                'access-token',
+                new AbortController().signal,
+            ),
+        ).rejects.toThrow();
     });
 });
