@@ -11,6 +11,15 @@ vi.mock('@mariodebono/di-electron', () => ({
     createIpcHandleTyped: () => () => () => undefined,
 }));
 
+vi.mock('electron', () => ({
+    safeStorage: {
+        isEncryptionAvailable: vi.fn(() => true),
+        getSelectedStorageBackend: vi.fn(() => 'gnome_libsecret'),
+        encryptString: vi.fn((value: string) => Buffer.from(value)),
+        decryptString: vi.fn((value: Buffer) => value.toString()),
+    },
+}));
+
 @Injectable({ tags: [APP_INTEGRATION_PROVIDER_TAG] })
 class LaterProvider implements AppIntegrationProvider {
     readonly metadata = {
@@ -18,6 +27,10 @@ class LaterProvider implements AppIntegrationProvider {
         displayName: 'Later',
         order: 20,
     };
+
+    connect = vi.fn();
+    isCredentialValid = vi.fn(() => true);
+    openManageAccess = vi.fn();
 }
 
 @Injectable({ tags: [APP_INTEGRATION_PROVIDER_TAG] })
@@ -27,13 +40,34 @@ class EarlierProvider implements AppIntegrationProvider {
         displayName: 'Earlier',
         order: 10,
     };
+
+    connect = vi.fn();
+    isCredentialValid = vi.fn(() => true);
+    openManageAccess = vi.fn();
 }
 
 @Module({
-    imports: [AppIntegrationsModule],
+    imports: [
+        AppIntegrationsModule.forRoot({
+            directory: '/config',
+            metadataFileName: 'app-integrations.json',
+            secretsFileName: 'app-integration-secrets.json',
+        }),
+    ],
     providers: [LaterProvider, EarlierProvider],
 })
 class TestAppIntegrationsModule {}
+
+@Module({
+    imports: [
+        AppIntegrationsModule.forRoot({
+            directory: '/config',
+            metadataFileName: 'app-integrations.json',
+            secretsFileName: 'app-integration-secrets.json',
+        }),
+    ],
+})
+class EmptyAppIntegrationsModule {}
 
 @Injectable({ tags: [APP_INTEGRATION_PROVIDER_TAG] })
 class DuplicateProvider implements AppIntegrationProvider {
@@ -42,21 +76,33 @@ class DuplicateProvider implements AppIntegrationProvider {
         displayName: 'Duplicate',
         order: 30,
     };
+
+    connect = vi.fn();
+    isCredentialValid = vi.fn(() => true);
+    openManageAccess = vi.fn();
 }
 
 @Module({
-    imports: [AppIntegrationsModule],
+    imports: [
+        AppIntegrationsModule.forRoot({
+            directory: '/config',
+            metadataFileName: 'app-integrations.json',
+            secretsFileName: 'app-integration-secrets.json',
+        }),
+    ],
     providers: [LaterProvider, DuplicateProvider],
 })
 class DuplicateAppIntegrationsModule {}
 
 describe('AppIntegrationsModule', () => {
     it('boots without providers', async () => {
-        const app = await createApplication(AppIntegrationsModule, {
+        const app = await createApplication(EmptyAppIntegrationsModule, {
             logger: false,
         });
 
-        expect(app.get(AppIntegrationsService).list()).toEqual([]);
+        await expect(app.get(AppIntegrationsService).list()).resolves.toEqual(
+            [],
+        );
 
         await app.destroyAsync();
     });
@@ -66,16 +112,22 @@ describe('AppIntegrationsModule', () => {
             logger: false,
         });
 
-        expect(app.get(AppIntegrationsService).list()).toEqual([
+        await expect(app.get(AppIntegrationsService).list()).resolves.toEqual([
             {
                 id: 'earlier',
                 displayName: 'Earlier',
                 state: 'not-connected',
+                connectionStage: null,
+                connections: [],
+                connectionOptions: [],
             },
             {
                 id: 'later',
                 displayName: 'Later',
                 state: 'not-connected',
+                connectionStage: null,
+                connections: [],
+                connectionOptions: [],
             },
         ]);
 

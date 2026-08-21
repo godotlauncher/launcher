@@ -44,6 +44,15 @@ export class AppIntegrationProviderRegistry implements OnModuleInit {
         return [...this.providers.values()];
     }
 
+    /** Returns one registered provider or rejects an invalid bridge target. */
+    get(providerId: string): AppIntegrationProvider {
+        const provider = this.providers.get(providerId);
+        if (!provider) {
+            throw new Error('Unknown app integration provider');
+        }
+        return provider;
+    }
+
     /**
      * Replaces the registry contents with validated providers.
      *

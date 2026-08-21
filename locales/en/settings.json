@@ -233,13 +233,56 @@
         "genericDescription": "Connect this service to use it in Godot Launcher.",
         "github": {
             "description": "Connect GitHub to make your repositories available to Godot Launcher.",
-            "accessNote": "You stay in control of which repositories the GitHub App can access."
+            "accessNote": "You stay in control of which repositories the GitHub App can access.",
+            "summary": "{{count}} connections"
         },
+        "secureStorageUnavailable": "Set up your system keyring or credential store before connecting GitHub.",
         "status": {
-            "notConnected": "Not connected"
+            "notConnected": "Not connected",
+            "connecting": "Connecting...",
+            "selectionRequired": "Choose a connection",
+            "connected": "Connected",
+            "unavailable": "Unavailable",
+            "reauthorisationRequired": "Reconnect required",
+            "secureStorageUnavailable": "Secure storage unavailable"
         },
         "actions": {
-            "connect": "Connect {{provider}}"
+            "connect": "Connect {{provider}}",
+            "addConnection": "Add connection",
+            "selectAll": "Select all",
+            "selectInstallation": "Select {{connection}}",
+            "connectSelected": "Connect selected ({{count}})",
+            "installAnother": "Install on another account or organisation",
+            "cancel": "Cancel",
+            "reconnect": "Reconnect",
+            "manageConnections": "Manage GitHub connections",
+            "manageAccess": "Manage repository access",
+            "disconnect": "Disconnect"
+        },
+        "errors": {
+            "accountMismatch": "GitHub returned a different account. Select the account you intended to manage and try again.",
+            "denied": "GitHub connection was cancelled.",
+            "timedOut": "The connection request expired. Try again.",
+            "secureStorageUnavailable": "Secure credential storage is unavailable.",
+            "installationRequired": "The GitHub App installation could not be verified. Check its repository access and try again.",
+            "generic": "Unable to complete this action. Try again."
+        },
+        "drawer": {
+            "title": "GitHub connections",
+            "description": "Manage the GitHub connections available to Godot Launcher.",
+            "connections": "Connections",
+            "chooseConnection": "Choose connections",
+            "chooseConnectionDescription": "Select one or more existing GitHub App installations, or install the App somewhere new.",
+            "finishSetup": "Finish setup on GitHub",
+            "finishSetupDescription": "Complete the installation in your browser. You can return here while Launcher keeps waiting.",
+            "installations": "App installations",
+            "noInstallations": "This connection has no accessible App installations yet.",
+            "organization": "Organisation",
+            "personalAccount": "Personal account"
+        },
+        "disconnectConfirm": {
+            "title": "Disconnect {{connection}}?",
+            "description": "This removes the connection from Godot Launcher. It does not uninstall the GitHub App or change any project remotes."
         }
     },
     "updates": {

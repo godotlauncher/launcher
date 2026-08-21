@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { Cable, CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Navigate,
@@ -28,6 +28,7 @@ import {
     defaultSettingsTab,
     isConnectionsPathname,
     isSettingsTab,
+    type SettingsTab,
 } from './routes';
 import { useSplashscreenHandoff } from './splashscreen/useSplashscreenHandoff';
 import { HelpVIew } from './views/help.view';
@@ -226,9 +227,20 @@ function InstallsRoute() {
     );
 }
 
+/**
+ * Keeps Settings tab navigation stable across child state updates.
+ *
+ * @returns The route-controlled Settings view or its default redirect.
+ */
 function SettingsRoute() {
     const navigate = useNavigate();
     const { tab } = useParams();
+    const handleActiveTabChange = useCallback(
+        (nextTab: SettingsTab) => {
+            navigate(appRoutePaths.settingsTab(nextTab));
+        },
+        [navigate],
+    );
 
     if (!isSettingsTab(tab)) {
         return <DefaultSettingsRoute />;
@@ -237,9 +249,7 @@ function SettingsRoute() {
     return (
         <SettingsView
             activeTab={tab}
-            onActiveTabChange={(nextTab) => {
-                navigate(appRoutePaths.settingsTab(nextTab));
-            }}
+            onActiveTabChange={handleActiveTabChange}
         />
     );
 }

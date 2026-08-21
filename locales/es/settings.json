@@ -233,13 +233,56 @@
         "genericDescription": "Conecta este servicio para usarlo en Godot Launcher.",
         "github": {
             "description": "Conecta GitHub para que tus repositorios estén disponibles en Godot Launcher.",
-            "accessNote": "Tú decides a qué repositorios puede acceder la aplicación de GitHub."
+            "accessNote": "Tú decides a qué repositorios puede acceder la aplicación de GitHub.",
+            "summary": "{{count}} conexiones"
         },
+        "secureStorageUnavailable": "Configura el llavero o almacén de credenciales del sistema antes de conectar GitHub.",
         "status": {
-            "notConnected": "Sin conexión"
+            "notConnected": "Sin conexión",
+            "connecting": "Conectando...",
+            "selectionRequired": "Elige una conexión",
+            "connected": "Conectado",
+            "unavailable": "No disponible",
+            "reauthorisationRequired": "Es necesario volver a conectar",
+            "secureStorageUnavailable": "Almacenamiento seguro no disponible"
         },
         "actions": {
-            "connect": "Conectar {{provider}}"
+            "connect": "Conectar {{provider}}",
+            "addConnection": "Añadir conexión",
+            "selectAll": "Seleccionar todo",
+            "selectInstallation": "Seleccionar {{connection}}",
+            "connectSelected": "Conectar seleccionadas ({{count}})",
+            "installAnother": "Instalar en otra cuenta u organización",
+            "cancel": "Cancelar",
+            "reconnect": "Volver a conectar",
+            "manageConnections": "Gestionar conexiones de GitHub",
+            "manageAccess": "Gestionar acceso a repositorios",
+            "disconnect": "Desconectar"
+        },
+        "errors": {
+            "accountMismatch": "GitHub devolvió una cuenta diferente. Selecciona la cuenta que querías gestionar e inténtalo de nuevo.",
+            "denied": "Se canceló la conexión con GitHub.",
+            "timedOut": "La solicitud de conexión caducó. Inténtalo de nuevo.",
+            "secureStorageUnavailable": "El almacenamiento seguro de credenciales no está disponible.",
+            "installationRequired": "No se pudo verificar la instalación de la aplicación de GitHub. Comprueba su acceso a los repositorios e inténtalo de nuevo.",
+            "generic": "No se pudo completar esta acción. Inténtalo de nuevo."
+        },
+        "drawer": {
+            "title": "Conexiones de GitHub",
+            "description": "Gestiona las conexiones de GitHub disponibles para Godot Launcher.",
+            "connections": "Conexiones",
+            "chooseConnection": "Elige conexiones",
+            "chooseConnectionDescription": "Elige una o más instalaciones existentes de GitHub App o instala la aplicación en otro lugar.",
+            "finishSetup": "Finaliza la configuración en GitHub",
+            "finishSetupDescription": "Completa la instalación en el navegador. Puedes volver aquí mientras Launcher sigue esperando.",
+            "installations": "Instalaciones de la aplicación",
+            "noInstallations": "Esta conexión aún no tiene instalaciones accesibles de la aplicación.",
+            "organization": "Organización",
+            "personalAccount": "Cuenta personal"
+        },
+        "disconnectConfirm": {
+            "title": "¿Desconectar {{connection}}?",
+            "description": "Esto elimina la conexión de Godot Launcher. No desinstala la aplicación de GitHub ni cambia los remotos de los proyectos."
         }
     },
     "updates": {

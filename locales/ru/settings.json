@@ -233,13 +233,56 @@
         "genericDescription": "Подключите этот сервис для использования в Godot Launcher.",
         "github": {
             "description": "Подключите GitHub, чтобы сделать репозитории доступными в Godot Launcher.",
-            "accessNote": "Вы сами выбираете репозитории, к которым может обращаться приложение GitHub."
+            "accessNote": "Вы сами выбираете репозитории, к которым может обращаться приложение GitHub.",
+            "summary": "Подключения: {{count}}"
         },
+        "secureStorageUnavailable": "Настройте системное хранилище ключей или учетных данных перед подключением GitHub.",
         "status": {
-            "notConnected": "Не подключено"
+            "notConnected": "Не подключено",
+            "connecting": "Подключение...",
+            "selectionRequired": "Выберите подключение",
+            "connected": "Подключено",
+            "unavailable": "Недоступно",
+            "reauthorisationRequired": "Требуется повторное подключение",
+            "secureStorageUnavailable": "Защищенное хранилище недоступно"
         },
         "actions": {
-            "connect": "Подключить {{provider}}"
+            "connect": "Подключить {{provider}}",
+            "addConnection": "Добавить подключение",
+            "selectAll": "Выбрать все",
+            "selectInstallation": "Выбрать {{connection}}",
+            "connectSelected": "Подключить выбранные ({{count}})",
+            "installAnother": "Установить в другой учетной записи или организации",
+            "cancel": "Отмена",
+            "reconnect": "Подключить заново",
+            "manageConnections": "Управление подключениями GitHub",
+            "manageAccess": "Управление доступом к репозиториям",
+            "disconnect": "Отключить"
+        },
+        "errors": {
+            "accountMismatch": "GitHub вернул другой аккаунт. Выберите аккаунт, которым нужно управлять, и повторите попытку.",
+            "denied": "Подключение к GitHub было отменено.",
+            "timedOut": "Срок запроса на подключение истек. Повторите попытку.",
+            "secureStorageUnavailable": "Защищенное хранилище учетных данных недоступно.",
+            "installationRequired": "Не удалось проверить установку приложения GitHub. Проверьте его доступ к репозиториям и повторите попытку.",
+            "generic": "Не удалось выполнить это действие. Повторите попытку."
+        },
+        "drawer": {
+            "title": "Подключения GitHub",
+            "description": "Управляйте подключениями GitHub, доступными для Godot Launcher.",
+            "connections": "Подключения",
+            "chooseConnection": "Выберите подключения",
+            "chooseConnectionDescription": "Выберите одну или несколько существующих установок GitHub App или установите приложение в другом месте.",
+            "finishSetup": "Завершите настройку на GitHub",
+            "finishSetupDescription": "Завершите установку в браузере. Можно вернуться сюда, пока Launcher продолжает ожидание.",
+            "installations": "Установки приложения",
+            "noInstallations": "Для этого подключения пока нет доступных установок приложения.",
+            "organization": "Организация",
+            "personalAccount": "Личный аккаунт"
+        },
+        "disconnectConfirm": {
+            "title": "Отключить {{connection}}?",
+            "description": "Это удалит подключение из Godot Launcher. Приложение GitHub не будет удалено, а удаленные адреса проектов не изменятся."
         }
     },
     "updates": {

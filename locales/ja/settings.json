@@ -233,13 +233,56 @@
         "genericDescription": "このサービスを接続して Godot Launcher で使用します。",
         "github": {
             "description": "GitHub を接続して、リポジトリを Godot Launcher で利用できるようにします。",
-            "accessNote": "GitHub App がアクセスできるリポジトリは自分で選択できます。"
+            "accessNote": "GitHub App がアクセスできるリポジトリは自分で選択できます。",
+            "summary": "{{count}} 件の接続"
         },
+        "secureStorageUnavailable": "GitHub に接続する前に、システムのキーチェーンまたは資格情報ストアを設定してください。",
         "status": {
-            "notConnected": "未接続"
+            "notConnected": "未接続",
+            "connecting": "接続中...",
+            "selectionRequired": "接続を選択",
+            "connected": "接続済み",
+            "unavailable": "利用できません",
+            "reauthorisationRequired": "再接続が必要です",
+            "secureStorageUnavailable": "安全なストレージを利用できません"
         },
         "actions": {
-            "connect": "{{provider}} に接続"
+            "connect": "{{provider}} に接続",
+            "addConnection": "接続を追加",
+            "selectAll": "すべて選択",
+            "selectInstallation": "{{connection}} を選択",
+            "connectSelected": "選択した項目を接続 ({{count}})",
+            "installAnother": "別のアカウントまたは組織にインストール",
+            "cancel": "キャンセル",
+            "reconnect": "再接続",
+            "manageConnections": "GitHub 接続を管理",
+            "manageAccess": "リポジトリへのアクセスを管理",
+            "disconnect": "接続を解除"
+        },
+        "errors": {
+            "accountMismatch": "GitHub から別のアカウントが返されました。管理するアカウントを選択して、もう一度お試しください。",
+            "denied": "GitHub への接続がキャンセルされました。",
+            "timedOut": "接続リクエストの有効期限が切れました。もう一度お試しください。",
+            "secureStorageUnavailable": "資格情報用の安全なストレージを利用できません。",
+            "installationRequired": "GitHub App のインストールを確認できませんでした。リポジトリへのアクセスを確認して、もう一度お試しください。",
+            "generic": "この操作を完了できませんでした。もう一度お試しください。"
+        },
+        "drawer": {
+            "title": "GitHub 接続",
+            "description": "Godot Launcher で利用できる GitHub 接続を管理します。",
+            "connections": "接続",
+            "chooseConnection": "接続を選択",
+            "chooseConnectionDescription": "既存の GitHub App インストール先を 1 つ以上選択するか、新しい場所に App をインストールしてください。",
+            "finishSetup": "GitHub でセットアップを完了",
+            "finishSetupDescription": "ブラウザーでインストールを完了してください。Launcher は待機を続けるため、ここに戻ってもかまいません。",
+            "installations": "App のインストール",
+            "noInstallations": "この接続には、アクセス可能な App のインストールがまだありません。",
+            "organization": "Organization",
+            "personalAccount": "個人アカウント"
+        },
+        "disconnectConfirm": {
+            "title": "{{connection}} の接続を解除しますか？",
+            "description": "Godot Launcher から接続を削除します。GitHub App はアンインストールされず、プロジェクトのリモートも変更されません。"
         }
     },
     "updates": {

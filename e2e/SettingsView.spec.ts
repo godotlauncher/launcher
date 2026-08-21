@@ -79,6 +79,8 @@ test('Can open the Connections presentation from its shortcut', async () => {
         ),
     ).toBe('none');
     await expect(
-        mainPage.getByRole('button', { name: 'Connect GitHub' }),
-    ).toBeDisabled();
+        mainPage.getByRole('button', {
+            name: /Connect GitHub|Add connection/,
+        }),
+    ).toBeEnabled();
 });

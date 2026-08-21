@@ -16,6 +16,8 @@ import {
     getCurrentAppConfig,
 } from './config/index.js';
 import {
+    APP_INTEGRATION_SECRETS_FILENAME,
+    APP_INTEGRATIONS_FILENAME,
     EDITOR_CATALOG_FILENAME,
     TOOL_INTEGRATIONS_FILENAME,
 } from './constants.js';
@@ -43,7 +45,14 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
             validationSchema: AppConfigSchema,
         }),
         AppMigrationsModule,
-        AppIntegrationsModule,
+        AppIntegrationsModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService<AppConfig>) => ({
+                directory: configService.getOrThrow('paths.configDir'),
+                metadataFileName: APP_INTEGRATIONS_FILENAME,
+                secretsFileName: APP_INTEGRATION_SECRETS_FILENAME,
+            }),
+        }),
         GitHubAppIntegrationModule,
         CodeEditorIntegrationModule,
         EditorCatalogModule.forRootAsync({
