@@ -3,7 +3,7 @@
         {
             "target_name": "godot-launcher-git-askpass",
             "type": "executable",
-            "sources": ["windows-askpass.c"],
+            "sources": ["windows-askpass.c", "version-resource.rc"],
             "defines": [
                 "UNICODE",
                 "_UNICODE",

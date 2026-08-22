@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { arch as hostArch } from 'node:process';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -13,6 +13,19 @@ if (process.platform !== 'win32') {
 if (requestedArch !== 'x64' && requestedArch !== 'arm64') {
     throw new Error(`Unsupported Windows architecture: ${requestedArch}`);
 }
+
+const { version } = JSON.parse(
+    await readFile(resolve(projectDirectory, '../../../package.json'), 'utf8'),
+);
+const versionParts = version.match(/^(\d+)\.(\d+)\.(\d+)/u);
+if (!versionParts) {
+    throw new Error(`Unsupported package version: ${version}`);
+}
+await writeFile(
+    resolve(projectDirectory, 'version-resource.generated.h'),
+    `#define LAUNCHER_VERSION ${versionParts[1]},${versionParts[2]},${versionParts[3]},0\n#define LAUNCHER_VERSION_STRING "${version}\\0"\n`,
+    'utf8',
+);
 
 const nodeGyp = resolve('node_modules/node-gyp/bin/node-gyp.js');
 const result = spawnSync(

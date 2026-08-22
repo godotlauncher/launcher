@@ -1,0 +1,31 @@
+#include <windows.h>
+#include "version-resource.generated.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION LAUNCHER_VERSION
+ PRODUCTVERSION LAUNCHER_VERSION
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEFLAGS 0x0L
+ FILEOS VOS__WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904B0"
+        BEGIN
+            VALUE "CompanyName", "Mario Debono - godotlauncher.org\0"
+            VALUE "FileDescription", "Godot Launcher Git credential helper\0"
+            VALUE "FileVersion", LAUNCHER_VERSION_STRING
+            VALUE "InternalName", "godot-launcher-git-askpass\0"
+            VALUE "LegalCopyright", "Copyright (c) 2024-2026 Mario Debono - godotlauncher.org\0"
+            VALUE "OriginalFilename", "godot-launcher-git-askpass.exe\0"
+            VALUE "ProductName", "Godot Launcher\0"
+            VALUE "ProductVersion", LAUNCHER_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0809, 1200
+    END
+END
