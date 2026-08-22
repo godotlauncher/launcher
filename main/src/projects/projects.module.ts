@@ -7,6 +7,8 @@ import { GitModule } from '../tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from '../tool-integration/integrations/git-lfs/git-lfs.module.js';
 import { ProjectCreationService } from './project-creation.service.js';
 import { ProjectImportService } from './project-import.service.js';
+import { ProjectRemoteImportService } from './project-remote-import.service.js';
+import { ProjectRemoteImportProgressService } from './project-remote-import-progress.service.js';
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 import { ProjectsController } from './projects.controller.js';
 import { ProjectsService } from './projects.service.js';
@@ -27,6 +29,8 @@ import { ProjectsStoreModule } from './projects-store.module.js';
         ProjectCreationService,
         ProjectImportService,
         ProjectRemoteSourceService,
+        ProjectRemoteImportProgressService,
+        ProjectRemoteImportService,
         ProjectsService,
         ProjectsController,
     ],

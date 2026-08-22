@@ -13,6 +13,7 @@ import { ToolIntegrationService } from './tool-integration.service.js';
 import { ToolIntegrationStore } from './tool-integration.store.js';
 import type { ToolIntegrationModuleOptions } from './tool-integration.types.js';
 import { ToolProcessExecutor } from './tool-process.executor.js';
+import { ToolStreamingProcessExecutor } from './tool-streaming-process.executor.js';
 
 type ToolIntegrationModuleAsyncOptions = Pick<
     FactoryProvider<ToolIntegrationModuleOptions>,
@@ -36,6 +37,7 @@ type ToolIntegrationModuleAsyncOptions = Pick<
         },
         ToolInstallationCache,
         ToolProcessExecutor,
+        ToolStreamingProcessExecutor,
         ToolIntegrationService,
         ToolIntegrationController,
     ],
@@ -43,6 +45,7 @@ type ToolIntegrationModuleAsyncOptions = Pick<
         ToolIntegrationService,
         ToolIntegrationStore,
         ToolProcessExecutor,
+        ToolStreamingProcessExecutor,
     ],
 })
 // biome-ignore lint/complexity/noStaticOnlyClass: DI modules use static setup methods

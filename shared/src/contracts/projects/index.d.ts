@@ -211,4 +211,5 @@ export type ProjectConfig = {
 export type ProjectDefinition = Map<number, ProjectConfig>;
 
 export type * from './projects.bridge.js';
+export type * from './remote-project-import.types.js';
 export type * from './remote-project-source.types.js';

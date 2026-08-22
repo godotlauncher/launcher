@@ -11,6 +11,7 @@ import type {
     LaunchProjectOptions,
     ProjectDetails,
     ProjectsBridge,
+    RemoteProjectImportRequest,
     RenameProjectOptions,
     RendererType,
 } from '@shared/contracts';
@@ -28,6 +29,26 @@ export class ProjectsController implements ProjectsBridge {
      * @param projects - Project workflow facade.
      */
     constructor(private readonly projects: ProjectsService) {}
+
+    /**
+     * Clones and validates one remote project without registering it.
+     *
+     * @param request - Renderer-safe remote source and destination request.
+     */
+    @ProjectsHandler('importRemoteProject')
+    importRemoteProject(request: RemoteProjectImportRequest) {
+        return this.projects.importRemoteProject(request);
+    }
+
+    /**
+     * Cancels the active remote clone job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    @ProjectsHandler('cancelRemoteProjectImport')
+    cancelRemoteProjectImport(jobId: string) {
+        return this.projects.cancelRemoteProjectImport(jobId);
+    }
 
     /**
      * Inspects one anonymous public Git source.

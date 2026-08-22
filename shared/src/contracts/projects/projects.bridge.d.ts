@@ -3,6 +3,7 @@ import type { InstalledRelease } from '../releases/index.js';
 import type {
     AddProjectOptions,
     AddProjectToListResult,
+    CancelRemoteProjectImportResult,
     ChangeProjectEditorResult,
     CreateProjectGitOptions,
     CreateProjectResult,
@@ -14,6 +15,8 @@ import type {
     ProjectDetails,
     ProjectGitIdentityResult,
     PublicGitSourceInspectionResult,
+    RemoteProjectImportRequest,
+    RemoteProjectImportResult,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
@@ -22,6 +25,16 @@ import type {
 
 /** Defines project requests available to the renderer. */
 export type ProjectsBridge = {
+    /** Clones and validates one remote Godot project without registering it. */
+    importRemoteProject(
+        request: RemoteProjectImportRequest,
+    ): Promise<RemoteProjectImportResult>;
+
+    /** Cancels the active remote project import when it is still cancellable. */
+    cancelRemoteProjectImport(
+        jobId: string,
+    ): Promise<CancelRemoteProjectImportResult>;
+
     /** Inspects an anonymous public Git repository URL. */
     inspectPublicGitSource(
         url: string,

@@ -9,6 +9,7 @@ import type {
     RepositoryBrowsingCapability,
     RepositoryBrowsingRepository,
     RepositoryHostingFailureReason,
+    RepositorySelection,
 } from './app-integration-capability.types.js';
 import { RepositoryBrowsingError } from './app-integration-capability.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -40,6 +41,18 @@ export type RepositoryHostingPage = {
 
 export type RepositoryHostingResult =
     | { ok: true; page: RepositoryHostingPage }
+    | { ok: false; reason: RepositoryHostingFailureReason };
+
+export type RepositoryCloneAccess = {
+    canonicalUrl: string;
+    credential: {
+        username: string;
+        password: string;
+    };
+};
+
+export type RepositoryCloneAccessResult<T> =
+    | { ok: true; value: T }
     | { ok: false; reason: RepositoryHostingFailureReason };
 
 type BrowseSession = {
@@ -186,6 +199,102 @@ export class RepositoryHostingService implements OnModuleDestroy {
             activeSession.cachedPages.set(cursor, result);
         }
         return result;
+    }
+
+    /**
+     * Revalidates one opaque repository selection and runs a credential-scoped operation.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param repositoryRef - Opaque repository reference from the active session.
+     * @param operation - Trusted main-process clone operation.
+     * @returns The operation value or a safe repository access failure.
+     */
+    async withRepositoryCloneAccess<T>(
+        providerId: string,
+        repositoryRef: string,
+        operation: (access: RepositoryCloneAccess) => Promise<T>,
+    ): Promise<RepositoryCloneAccessResult<T>> {
+        if (!providerId.trim() || !isOpaqueId(repositoryRef)) {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        const session = this.sessions.get(providerId);
+        if (
+            !session ||
+            Date.now() - session.lastActivityAt >= BROWSE_SESSION_EXPIRY_MS
+        ) {
+            this.sessions.delete(providerId);
+            return { ok: false, reason: 'session-expired' };
+        }
+        const repository = [...session.repositories.values()].find(
+            (candidate) => candidate.repositoryRef === repositoryRef,
+        );
+        if (!repository) {
+            return { ok: false, reason: 'session-expired' };
+        }
+        let capability: RepositoryBrowsingCapability;
+        try {
+            capability = this.capabilities.get(
+                providerId,
+                'repository-browsing',
+            );
+        } catch {
+            return { ok: false, reason: 'invalid-request' };
+        }
+
+        const lease = await this.integrations.withCredentialLease(
+            providerId,
+            async (
+                credentialRoutes,
+            ): Promise<RepositoryCloneAccessResult<T>> => {
+                const failures: RepositoryHostingFailureReason[] = [];
+                for (const route of credentialRoutes) {
+                    if (!repository.routeKeys.has(routeKey(route))) {
+                        continue;
+                    }
+                    let selection: RepositorySelection;
+                    try {
+                        selection = await capability.resolveRepository({
+                            credential: route.credential,
+                            accessTarget: route.accessTarget,
+                            repository,
+                            signal: AbortSignal.timeout(
+                                REPOSITORY_OPERATION_TIMEOUT_MS,
+                            ),
+                        });
+                    } catch (error) {
+                        failures.push(
+                            error instanceof RepositoryBrowsingError
+                                ? error.reason
+                                : 'provider-unavailable',
+                        );
+                        continue;
+                    }
+                    if (selection.repository.id !== repository.id) {
+                        failures.push('repository-unavailable');
+                        continue;
+                    }
+                    return {
+                        ok: true,
+                        value: await operation({
+                            canonicalUrl: selection.repository.cloneUrl,
+                            credential: selection.gitCredential,
+                        }),
+                    };
+                }
+                return {
+                    ok: false,
+                    reason:
+                        failures.length > 0
+                            ? selectFailure(failures)
+                            : 'session-expired',
+                };
+            },
+        );
+        if (!lease.ok) {
+            return lease;
+        }
+        session.lastActivityAt = Date.now();
+        return lease.value;
     }
 
     /**

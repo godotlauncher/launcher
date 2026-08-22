@@ -97,6 +97,24 @@ export type ToolExecutionFailure = {
 
 export type ToolExecutionResult = ToolExecutionSuccess | ToolExecutionFailure;
 
+export type ToolStreamingExecutionRequest = {
+    args: readonly string[];
+    cwd?: string;
+    env: NodeJS.ProcessEnv;
+    signal: AbortSignal;
+    timeoutMs: number;
+    onStdout?: (chunk: string) => void;
+    onStderr?: (chunk: string) => void;
+};
+
+export type ToolStreamingExecutionResult =
+    | { success: true; exitCode: 0 }
+    | {
+          success: false;
+          reason: ToolExecutionFailureReason | 'cancelled';
+          exitCode: number | null;
+      };
+
 export interface ToolIntegration {
     readonly metadata: ToolMetadata;
 

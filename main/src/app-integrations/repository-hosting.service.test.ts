@@ -114,12 +114,108 @@ describe('RepositoryHostingService', () => {
             service.listRepositories('github', first.page.nextCursor),
         ).resolves.toEqual({ ok: false, reason: 'session-expired' });
     });
+
+    it('revalidates an opaque selection inside the credential lease', async () => {
+        const selectedRoute = route('one');
+        const repository = {
+            id: '42',
+            owner: 'owner',
+            name: 'repository',
+            visibility: 'private' as const,
+            cloneUrl: 'https://example.com/owner/repository.git',
+        };
+        const capability = {
+            listRepositories: vi.fn(async () => ({
+                repositories: [repository],
+                nextCursor: null,
+            })),
+            resolveRepository: vi.fn(async () => ({
+                repository,
+                gitCredential: {
+                    username: 'x-access-token',
+                    password: selectedRoute.credential,
+                },
+            })),
+        };
+        const service = createService([selectedRoute], capability);
+        const listed = await service.listRepositories('github');
+        if (!listed.ok) {
+            throw new Error('Expected a repository page');
+        }
+        const repositoryRef = listed.page.repositories[0]?.repositoryRef;
+        if (!repositoryRef) {
+            throw new Error('Expected an opaque repository reference');
+        }
+        const operation = vi.fn(async (access) => access.canonicalUrl);
+
+        const result = await service.withRepositoryCloneAccess(
+            'github',
+            repositoryRef,
+            operation,
+        );
+
+        expect(result).toEqual({
+            ok: true,
+            value: repository.cloneUrl,
+        });
+        expect(capability.resolveRepository).toHaveBeenCalledWith(
+            expect.objectContaining({
+                credential: selectedRoute.credential,
+                accessTarget: selectedRoute.accessTarget,
+                repository: expect.objectContaining({ id: repository.id }),
+            }),
+        );
+        expect(operation).toHaveBeenCalledWith({
+            canonicalUrl: repository.cloneUrl,
+            credential: {
+                username: 'x-access-token',
+                password: selectedRoute.credential,
+            },
+        });
+        expect(JSON.stringify(result)).not.toContain(selectedRoute.credential);
+    });
+
+    it('rejects an opaque reference after its repository route drifts', async () => {
+        const routes = [route('one')];
+        const repository = {
+            id: '42',
+            owner: 'owner',
+            name: 'repository',
+            visibility: 'private' as const,
+            cloneUrl: 'https://example.com/owner/repository.git',
+        };
+        const capability = {
+            listRepositories: vi.fn(async () => ({
+                repositories: [repository],
+                nextCursor: null,
+            })),
+            resolveRepository: vi.fn(),
+        };
+        const service = createService(routes, capability);
+        const listed = await service.listRepositories('github');
+        if (!listed.ok) {
+            throw new Error('Expected a repository page');
+        }
+        const repositoryRef = listed.page.repositories[0]?.repositoryRef;
+        if (!repositoryRef) {
+            throw new Error('Expected an opaque repository reference');
+        }
+        routes[0] = route('two');
+
+        await expect(
+            service.withRepositoryCloneAccess('github', repositoryRef, vi.fn()),
+        ).resolves.toEqual({ ok: false, reason: 'session-expired' });
+        expect(capability.resolveRepository).not.toHaveBeenCalled();
+    });
 });
 
 /** Creates a repository service with callback-scoped fake credentials. */
 function createService(
     routes: AppIntegrationCredentialRoute[],
-    capability: { listRepositories: ReturnType<typeof vi.fn> },
+    capability: {
+        listRepositories: ReturnType<typeof vi.fn>;
+        resolveRepository?: ReturnType<typeof vi.fn>;
+    },
 ): RepositoryHostingService {
     return new RepositoryHostingService(
         { get: vi.fn(() => capability) } as never,

@@ -58,6 +58,49 @@ describe('GitHubRepositoryBrowsingCapability', () => {
         });
     });
 
+    it('returns a provider-formatted credential only from exact revalidation', async () => {
+        const repository = {
+            id: 42,
+            owner: { login: 'owner' },
+            name: 'repository',
+            full_name: 'owner/repository',
+            visibility: 'private' as const,
+            clone_url: 'https://github.com/owner/repository.git',
+            disabled: false,
+            archived: false,
+            permissions: { pull: true },
+        };
+        const github = { getRepository: vi.fn(async () => repository) };
+        const capability = new GitHubRepositoryBrowsingCapability(
+            github as never,
+        );
+
+        await expect(
+            capability.resolveRepository({
+                ...request,
+                repository: {
+                    id: '42',
+                    owner: 'owner',
+                    name: 'repository',
+                    visibility: 'private',
+                    cloneUrl: 'https://github.com/owner/repository.git',
+                },
+            }),
+        ).resolves.toEqual({
+            repository: {
+                id: '42',
+                owner: 'owner',
+                name: 'repository',
+                visibility: 'private',
+                cloneUrl: 'https://github.com/owner/repository.git',
+            },
+            gitCredential: {
+                username: 'x-access-token',
+                password: 'secret-token',
+            },
+        });
+    });
+
     it.each([
         [new GitHubApiError(401), 'reauthorisation-required'],
         [new GitHubApiError(403), 'reauthorisation-required'],

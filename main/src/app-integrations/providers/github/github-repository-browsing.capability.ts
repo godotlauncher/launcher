@@ -60,7 +60,13 @@ export class GitHubRepositoryBrowsingCapability
             if (!isUsableRepository(repository)) {
                 throw new RepositoryBrowsingError('repository-unavailable');
             }
-            return toBrowsingRepository(repository);
+            return {
+                repository: toBrowsingRepository(repository),
+                gitCredential: {
+                    username: 'x-access-token',
+                    password: request.credential,
+                },
+            };
         } catch (error) {
             throw mapBrowsingError(error);
         }

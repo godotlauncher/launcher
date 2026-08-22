@@ -45,6 +45,14 @@ export type RepositorySelectionRequest = {
     signal: AbortSignal;
 };
 
+export type RepositorySelection = {
+    repository: RepositoryBrowsingRepository;
+    gitCredential: {
+        username: string;
+        password: string;
+    };
+};
+
 export class RepositoryBrowsingError extends Error {
     /**
      * Creates a safe repository-browsing failure.
@@ -70,7 +78,7 @@ export interface RepositoryBrowsingCapability {
     /** Revalidates a repository immediately before a later clone operation. */
     resolveRepository(
         request: RepositorySelectionRequest,
-    ): Promise<RepositoryBrowsingRepository>;
+    ): Promise<RepositorySelection>;
 }
 
 export type AppIntegrationCapability = RepositoryBrowsingCapability;

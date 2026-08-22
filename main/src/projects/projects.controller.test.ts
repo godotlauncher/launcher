@@ -44,6 +44,14 @@ describe('ProjectsController', () => {
         const service = createServiceMock();
         const controller = new ProjectsController(service);
 
+        const remoteRequest = {
+            source: 'public-git-url' as const,
+            url: 'https://example.com/game.git',
+            parentDirectory: '/projects',
+            directoryName: 'game',
+        };
+        await controller.importRemoteProject(remoteRequest);
+        await controller.cancelRemoteProjectImport('job-id');
         await controller.inspectPublicGitSource('https://example.com/game.git');
         await controller.listConnectedRepositories('github', 'cursor');
         await controller.getProjectsDetails();
@@ -75,6 +83,10 @@ describe('ProjectsController', () => {
         await controller.checkProjectValid(project);
         await controller.checkAllProjectsValid();
 
+        expect(service.importRemoteProject).toHaveBeenCalledWith(remoteRequest);
+        expect(service.cancelRemoteProjectImport).toHaveBeenCalledWith(
+            'job-id',
+        );
         expect(service.inspectPublicGitSource).toHaveBeenCalledWith(
             'https://example.com/game.git',
         );
@@ -139,6 +151,15 @@ describe('ProjectsController', () => {
 /** Creates a complete ProjectsService test double. */
 function createServiceMock(): ProjectsService {
     return {
+        importRemoteProject: vi.fn(async () => ({
+            ok: false,
+            jobId: null,
+            reason: 'invalid-request',
+        })),
+        cancelRemoteProjectImport: vi.fn(async (jobId) => ({
+            jobId,
+            status: 'not-found',
+        })),
         inspectPublicGitSource: vi.fn(async () => ({
             ok: false,
             reason: 'invalid-url',

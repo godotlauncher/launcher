@@ -15,6 +15,7 @@ import type {
     ProjectDetails,
     ProjectGitIdentityResult,
     ProjectGitIdentityValue,
+    RemoteProjectImportRequest,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
@@ -60,6 +61,8 @@ import { ProjectCreationService } from './project-creation.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectImportService } from './project-import.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectRemoteImportService } from './project-remote-import.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
@@ -77,6 +80,7 @@ export class ProjectsService {
      * @param trayAvailability - System tray availability service.
      * @param store - Canonical project persistence store.
      * @param remoteSources - Remote project source discovery boundary.
+     * @param remoteImport - Cancellable remote clone transaction boundary.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -86,7 +90,26 @@ export class ProjectsService {
         private readonly trayAvailability: TrayAvailabilityService,
         private readonly store: ProjectsStore,
         private readonly remoteSources: ProjectRemoteSourceService,
+        private readonly remoteImport: ProjectRemoteImportService,
     ) {}
+
+    /**
+     * Clones and validates one remote project without registering it.
+     *
+     * @param request - Renderer-safe remote source and destination request.
+     */
+    importRemoteProject(request: RemoteProjectImportRequest) {
+        return this.remoteImport.importRemoteProject(request);
+    }
+
+    /**
+     * Cancels the active remote clone job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    cancelRemoteProjectImport(jobId: string) {
+        return this.remoteImport.cancelRemoteProjectImport(jobId);
+    }
 
     /**
      * Inspects one anonymous public Git source.

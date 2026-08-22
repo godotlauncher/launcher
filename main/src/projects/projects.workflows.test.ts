@@ -275,6 +275,10 @@ function createProjectsService(
             inspectPublicGitSource: vi.fn(),
             listConnectedRepositories: vi.fn(),
         } as unknown as import('./project-remote-source.service.js').ProjectRemoteSourceService,
+        {
+            importRemoteProject: vi.fn(),
+            cancelRemoteProjectImport: vi.fn(),
+        } as unknown as import('./project-remote-import.service.js').ProjectRemoteImportService,
     );
 }
 
