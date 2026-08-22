@@ -1,8 +1,13 @@
 import 'reflect-metadata';
 import { createApplication, Injectable, Module } from '@mariodebono/di';
 import { describe, expect, it, vi } from 'vitest';
-import { APP_INTEGRATION_PROVIDER_TAG } from './app-integration.constants.js';
+import {
+    APP_INTEGRATION_CAPABILITY_TAG,
+    APP_INTEGRATION_PROVIDER_TAG,
+} from './app-integration.constants.js';
 import type { AppIntegrationProvider } from './app-integration.types.js';
+import { AppIntegrationCapabilityRegistry } from './app-integration-capability.registry.js';
+import type { RepositoryBrowsingCapability } from './app-integration-capability.types.js';
 import { AppIntegrationsModule } from './app-integrations.module.js';
 import { AppIntegrationsService } from './app-integrations.service.js';
 
@@ -52,6 +57,17 @@ class EarlierProvider implements AppIntegrationProvider {
     openManageAccess = vi.fn();
 }
 
+@Injectable({ tags: [APP_INTEGRATION_CAPABILITY_TAG] })
+class RepositoryCapability implements RepositoryBrowsingCapability {
+    readonly metadata = {
+        providerId: 'earlier',
+        kind: 'repository-browsing',
+    } as const;
+
+    listRepositories = vi.fn();
+    resolveRepository = vi.fn();
+}
+
 @Module({
     imports: [
         AppIntegrationsModule.forRoot({
@@ -60,7 +76,7 @@ class EarlierProvider implements AppIntegrationProvider {
             secretsFileName: 'app-integration-secrets.json',
         }),
     ],
-    providers: [LaterProvider, EarlierProvider],
+    providers: [LaterProvider, EarlierProvider, RepositoryCapability],
 })
 class TestAppIntegrationsModule {}
 
@@ -139,6 +155,11 @@ describe('AppIntegrationsModule', () => {
                 connectionOptions: [],
             },
         ]);
+        expect(
+            app
+                .get(AppIntegrationCapabilityRegistry)
+                .get('earlier', 'repository-browsing'),
+        ).toBeInstanceOf(RepositoryCapability);
 
         await app.destroyAsync();
     });

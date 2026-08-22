@@ -10,8 +10,10 @@ import type {
     InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
+    ListConnectedRepositoriesResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    PublicGitSourceInspectionResult,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
@@ -20,6 +22,17 @@ import type {
 
 /** Defines project requests available to the renderer. */
 export type ProjectsBridge = {
+    /** Inspects an anonymous public Git repository URL. */
+    inspectPublicGitSource(
+        url: string,
+    ): Promise<PublicGitSourceInspectionResult>;
+
+    /** Lists repositories available through a connected hosting provider. */
+    listConnectedRepositories(
+        providerId: string,
+        cursor?: string,
+    ): Promise<ListConnectedRepositoriesResult>;
+
     /** Gets every stored project. */
     getProjectsDetails(): Promise<ProjectDetails[]>;
 

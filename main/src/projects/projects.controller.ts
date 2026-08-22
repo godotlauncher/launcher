@@ -29,6 +29,27 @@ export class ProjectsController implements ProjectsBridge {
      */
     constructor(private readonly projects: ProjectsService) {}
 
+    /**
+     * Inspects one anonymous public Git source.
+     *
+     * @param url - Anonymous HTTPS repository URL.
+     */
+    @ProjectsHandler('inspectPublicGitSource')
+    inspectPublicGitSource(url: string) {
+        return this.projects.inspectPublicGitSource(url);
+    }
+
+    /**
+     * Lists one page of connected hosting repositories.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param cursor - Optional opaque browse cursor.
+     */
+    @ProjectsHandler('listConnectedRepositories')
+    listConnectedRepositories(providerId: string, cursor?: string) {
+        return this.projects.listConnectedRepositories(providerId, cursor);
+    }
+
     /** Gets every stored project. */
     @ProjectsHandler('getProjectsDetails')
     getProjectsDetails() {

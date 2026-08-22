@@ -209,4 +209,108 @@ describe('GitHubApiClient', () => {
             ),
         ).rejects.toThrow();
     });
+
+    it('lists bounded pullable repository fields with a validated next link', async () => {
+        const next =
+            'https://api.github.com/user/installations/123/repositories?per_page=50&page=2';
+        const fetchMock = vi.fn(async () =>
+            Response.json(
+                {
+                    repositories: [
+                        {
+                            id: 42,
+                            owner: { login: 'GodotLauncher' },
+                            name: 'Launcher',
+                            full_name: 'GodotLauncher/Launcher',
+                            visibility: 'public',
+                            clone_url:
+                                'https://github.com/GodotLauncher/Launcher.git',
+                            disabled: false,
+                            archived: false,
+                            permissions: { pull: true },
+                        },
+                    ],
+                },
+                { headers: { Link: `<${next}>; rel="next"` } },
+            ),
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getInstallationRepositories(
+                'access-token',
+                '123',
+                null,
+                new AbortController().signal,
+            ),
+        ).resolves.toMatchObject({
+            repositories: [{ id: 42, visibility: 'public' }],
+            nextCursor: next,
+        });
+        expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+            'https://api.github.com/user/installations/123/repositories?per_page=50',
+        );
+    });
+
+    it.each([
+        'https://evil.example/user/installations/123/repositories?per_page=50&page=2',
+        'https://api.github.com/user/installations/456/repositories?per_page=50&page=2',
+        'https://api.github.com/user/installations/123/repositories?per_page=50&page=2&token=secret',
+        'https://api.github.com/user/installations/123/repositories?per_page=50&page=2&page=3',
+    ])('rejects an unsafe repository continuation link', async (next) => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json(
+                    { repositories: [] },
+                    { headers: { Link: `<${next}>; rel="next"` } },
+                ),
+            ),
+        );
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getInstallationRepositories(
+                'access-token',
+                '123',
+                null,
+                new AbortController().signal,
+            ),
+        ).rejects.toThrow('Invalid GitHub repository page URL');
+    });
+
+    it('rejects malformed and oversized repository entries', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json({
+                    repositories: [
+                        {
+                            id: 42,
+                            owner: { login: 'GodotLauncher' },
+                            name: 'Launcher',
+                            full_name: 'Other/Launcher',
+                            visibility: 'public',
+                            clone_url:
+                                'https://github.com/GodotLauncher/Launcher.git',
+                            disabled: false,
+                            archived: false,
+                            permissions: { pull: true },
+                        },
+                    ],
+                }),
+            ),
+        );
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getInstallationRepositories(
+                'access-token',
+                '123',
+                null,
+                new AbortController().signal,
+            ),
+        ).rejects.toThrow();
+    });
 });

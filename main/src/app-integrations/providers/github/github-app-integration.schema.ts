@@ -75,6 +75,69 @@ export const GitHubInstallationPageSchema = z.object({
         .max(100),
 });
 
+const GitHubRepositoryNameSchema = z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .refine(
+        (value) =>
+            !value.includes('/') &&
+            [...value].every((character) => {
+                const codePoint = character.codePointAt(0) ?? 0;
+                return codePoint > 31 && codePoint !== 127;
+            }),
+    );
+
+export const GitHubRepositorySchema = z
+    .object({
+        id: z.number().int().safe().positive(),
+        owner: z.object({
+            login: z
+                .string()
+                .regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/u),
+        }),
+        name: GitHubRepositoryNameSchema,
+        full_name: z.string().min(3).max(511),
+        visibility: z.enum(['public', 'private', 'internal']),
+        clone_url: z.url().max(2048),
+        disabled: z.boolean(),
+        archived: z.boolean(),
+        permissions: z.object({ pull: z.boolean() }),
+    })
+    .superRefine((repository, context) => {
+        if (
+            repository.full_name !==
+            `${repository.owner.login}/${repository.name}`
+        ) {
+            context.addIssue({
+                code: 'custom',
+                message: 'Repository full name does not match its owner',
+            });
+        }
+        const cloneUrl = new URL(repository.clone_url);
+        if (
+            cloneUrl.protocol !== 'https:' ||
+            cloneUrl.hostname !== 'github.com' ||
+            cloneUrl.port !== '' ||
+            cloneUrl.username !== '' ||
+            cloneUrl.password !== '' ||
+            cloneUrl.pathname !==
+                `/${repository.owner.login}/${repository.name}.git` ||
+            cloneUrl.search !== '' ||
+            cloneUrl.hash !== ''
+        ) {
+            context.addIssue({
+                code: 'custom',
+                message: 'Repository clone URL is invalid',
+            });
+        }
+    });
+
+export const GitHubRepositoryPageSchema = z.object({
+    repositories: z.array(GitHubRepositorySchema).max(50),
+});
+
 export const GitHubStoredCredentialSchema = GitHubTokenBundleSchema.extend({
     version: z.literal(1),
     createdAt: z.iso.datetime(),

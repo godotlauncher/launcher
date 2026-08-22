@@ -5,6 +5,7 @@ import { GitService } from './git.service.js';
 import { GitIdentitySettingsService } from './git-identity-settings.service.js';
 import { GitToolIntegration } from './git-tool.integration.js';
 import { GitToolConfigurationService } from './git-tool-configuration.service.js';
+import { PublicGitSourceService } from './public-git-source.service.js';
 
 @Module({
     imports: [ToolIntegrationModule],
@@ -13,12 +14,14 @@ import { GitToolConfigurationService } from './git-tool-configuration.service.js
         GitToolConfigurationService,
         GitService,
         GitIdentitySettingsService,
+        PublicGitSourceService,
         GitController,
     ],
     exports: [
         GitToolConfigurationService,
         GitService,
         GitIdentitySettingsService,
+        PublicGitSourceService,
     ],
 })
 export class GitModule {}

@@ -51,6 +51,23 @@ export type GitHubInstallation = {
     suspended_at: string | null;
 };
 
+export type GitHubRepository = {
+    id: number;
+    owner: { login: string };
+    name: string;
+    full_name: string;
+    visibility: 'public' | 'private' | 'internal';
+    clone_url: string;
+    disabled: boolean;
+    archived: boolean;
+    permissions: { pull: boolean };
+};
+
+export type GitHubRepositoryPage = {
+    repositories: GitHubRepository[];
+    nextCursor: string | null;
+};
+
 export type GitHubLoopbackCompletion = {
     ticket: string;
     respond: (completed: boolean) => void;

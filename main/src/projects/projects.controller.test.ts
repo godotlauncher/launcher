@@ -44,6 +44,8 @@ describe('ProjectsController', () => {
         const service = createServiceMock();
         const controller = new ProjectsController(service);
 
+        await controller.inspectPublicGitSource('https://example.com/game.git');
+        await controller.listConnectedRepositories('github', 'cursor');
         await controller.getProjectsDetails();
         await controller.createProject(
             'Game',
@@ -73,6 +75,13 @@ describe('ProjectsController', () => {
         await controller.checkProjectValid(project);
         await controller.checkAllProjectsValid();
 
+        expect(service.inspectPublicGitSource).toHaveBeenCalledWith(
+            'https://example.com/game.git',
+        );
+        expect(service.listConnectedRepositories).toHaveBeenCalledWith(
+            'github',
+            'cursor',
+        );
         expect(service.getProjectsDetails).toHaveBeenCalledOnce();
         expect(service.createProject).toHaveBeenCalledWith(
             'Game',
@@ -130,6 +139,14 @@ describe('ProjectsController', () => {
 /** Creates a complete ProjectsService test double. */
 function createServiceMock(): ProjectsService {
     return {
+        inspectPublicGitSource: vi.fn(async () => ({
+            ok: false,
+            reason: 'invalid-url',
+        })),
+        listConnectedRepositories: vi.fn(async () => ({
+            ok: false,
+            reason: 'session-expired',
+        })),
         getProjectsDetails: vi.fn(async () => []),
         createProject: vi.fn(async () => ({ success: true })),
         removeProject: vi.fn(async () => []),

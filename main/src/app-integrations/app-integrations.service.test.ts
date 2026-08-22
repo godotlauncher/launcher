@@ -455,6 +455,28 @@ describe('AppIntegrationsService', () => {
         expect(ciphertexts.size).toBe(1);
     });
 
+    it('leases refreshed credentials only through the main-process callback', async () => {
+        await connectFirstOption();
+        const result = await service.withCredentialLease(
+            'github',
+            async (routes) => ({
+                count: routes.length,
+                targetId: routes[0]?.accessTarget.id,
+                receivedCredential: routes[0]?.credential,
+            }),
+        );
+
+        expect(result).toMatchObject({
+            ok: true,
+            value: {
+                count: 1,
+                receivedCredential: '{"token":"secret-1"}',
+            },
+        });
+        expect(provider.refresh).toHaveBeenCalledOnce();
+        expect(JSON.stringify(await service.list())).not.toContain('secret-1');
+    });
+
     it('disconnects one target while retaining a shared credential', async () => {
         const connected = connectionResult('1', 'octocat');
         connected.accessTargets.push({

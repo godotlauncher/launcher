@@ -14,6 +14,7 @@ import type {
     ToolExecutionRequest,
     ToolExecutionResult,
 } from '../../tool-integration.types.js';
+import { normalizeGitRemoteUrl } from './git-remote-url-normalizer.util.js';
 
 const GIT_INSPECTION_TIMEOUT_MS = 5000;
 const GIT_INSPECTION_ENV = { LC_ALL: 'C', LANG: 'C' } as const;
@@ -123,6 +124,44 @@ export class GitService {
             isProjectRoot: this.pathsEqual(root, normalizedProjectPath),
             kind,
         };
+    }
+
+    /**
+     * Reads and normalises the origin of an exact stored project repository.
+     * Raw origin output is never logged or returned.
+     *
+     * @param projectPath - Stored project directory to inspect.
+     * @returns A token-free canonical HTTPS origin, or null.
+     */
+    async getNormalizedRemoteOrigin(
+        projectPath: string,
+    ): Promise<string | null> {
+        const inspection = await this.inspectRepository(projectPath);
+        if (
+            inspection.status !== 'inside-work-tree' ||
+            !inspection.isProjectRoot
+        ) {
+            return null;
+        }
+        const result = await this.run(
+            [
+                'config',
+                '--local',
+                '--no-includes',
+                '--get',
+                'remote.origin.url',
+            ],
+            projectPath,
+            false,
+            {
+                env: GIT_INSPECTION_ENV,
+                timeoutMs: GIT_INSPECTION_TIMEOUT_MS,
+            },
+        );
+        if (!result.success) {
+            return null;
+        }
+        return normalizeGitRemoteUrl(this.removeLineTerminator(result.stdout));
     }
 
     /**

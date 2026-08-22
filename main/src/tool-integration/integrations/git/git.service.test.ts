@@ -76,6 +76,48 @@ describe('GitService', () => {
         await expect(service.exists()).resolves.toBe(false);
     });
 
+    it('reads a token-free origin only for an exact repository root', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects/demo',
+            isProjectRoot: true,
+            kind: 'standard',
+        });
+        execute.mockResolvedValueOnce(
+            success('https://GitHub.com:443/Owner/Demo.git\n'),
+        );
+
+        await expect(
+            service.getNormalizedRemoteOrigin('/projects/demo'),
+        ).resolves.toBe('https://github.com/Owner/Demo');
+        expect(execute).toHaveBeenCalledWith('git', {
+            args: [
+                'config',
+                '--local',
+                '--no-includes',
+                '--get',
+                'remote.origin.url',
+            ],
+            cwd: '/projects/demo',
+            env: { LC_ALL: 'C', LANG: 'C' },
+            timeoutMs: 5000,
+        });
+    });
+
+    it('does not read an origin from a nested work tree', async () => {
+        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
+            status: 'inside-work-tree',
+            root: '/projects',
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+
+        await expect(
+            service.getNormalizedRemoteOrigin('/projects/demo'),
+        ).resolves.toBeNull();
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it('reads and normalizes the complete global user identity', async () => {
         execute
             .mockResolvedValueOnce(success('Mario\n'))

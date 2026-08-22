@@ -60,6 +60,8 @@ import { ProjectCreationService } from './project-creation.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectImportService } from './project-import.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectRemoteSourceService } from './project-remote-source.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
 /** Provides the application-facing boundary for existing project workflows. */
@@ -74,6 +76,7 @@ export class ProjectsService {
      * @param projectCreation - Transactional Create Project workflow.
      * @param trayAvailability - System tray availability service.
      * @param store - Canonical project persistence store.
+     * @param remoteSources - Remote project source discovery boundary.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -82,7 +85,27 @@ export class ProjectsService {
         private readonly projectCreation: ProjectCreationService,
         private readonly trayAvailability: TrayAvailabilityService,
         private readonly store: ProjectsStore,
+        private readonly remoteSources: ProjectRemoteSourceService,
     ) {}
+
+    /**
+     * Inspects one anonymous public Git source.
+     *
+     * @param url - Anonymous HTTPS repository URL.
+     */
+    inspectPublicGitSource(url: string) {
+        return this.remoteSources.inspectPublicGitSource(url);
+    }
+
+    /**
+     * Lists one page of connected hosting repositories.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param cursor - Optional opaque browse cursor.
+     */
+    listConnectedRepositories(providerId: string, cursor?: string) {
+        return this.remoteSources.listConnectedRepositories(providerId, cursor);
+    }
 
     /** Gets every stored project. */
     getProjectsDetails() {

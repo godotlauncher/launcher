@@ -114,6 +114,10 @@ describe('ProjectsService', () => {
         snapshot: vi.fn(),
         update: vi.fn(),
     };
+    const remoteSources = {
+        inspectPublicGitSource: vi.fn(),
+        listConnectedRepositories: vi.fn(),
+    };
     let service: ProjectsService;
 
     beforeEach(() => {
@@ -127,6 +131,7 @@ describe('ProjectsService', () => {
             projectCreation as never,
             trayAvailability as never,
             store as never,
+            remoteSources as never,
         );
     });
 

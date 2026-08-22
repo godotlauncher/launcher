@@ -17,6 +17,10 @@ import {
     AppIntegrationProviderError,
     type AppIntegrationProviderInstallation,
 } from './app-integration.types.js';
+import type {
+    AppIntegrationCredentialLeaseResult,
+    AppIntegrationCredentialRoute,
+} from './app-integration-capability.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppIntegrationProviderRegistry } from './app-integration-provider.registry.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -54,6 +58,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
     >();
     private readonly activeRefreshes = new Set<string>();
     private readonly activeDisconnects = new Set<string>();
+    private readonly providerOperationTails = new Map<string, Promise<void>>();
 
     /**
      * Creates the renderer-safe app integration facade.
@@ -129,17 +134,20 @@ export class AppIntegrationsService implements OnModuleDestroy {
             return this.failure(provider, 'unknown');
         }
 
+        const connected = session.connected;
         session.busy = true;
         this.claimSessionCompletion(providerId, session);
         try {
-            await this.persist(
-                providerId,
-                {
-                    ...session.connected,
-                    accessTargets: options.map((option) => option.target),
-                },
-                null,
-                'connect',
+            await this.runProviderOperation(providerId, () =>
+                this.persist(
+                    providerId,
+                    {
+                        ...connected,
+                        accessTargets: options.map((option) => option.target),
+                    },
+                    null,
+                    'connect',
+                ),
             );
             await this.clearConnectionSession(providerId, session, 'completed');
             return { ok: true, integration: await this.summarize(provider) };
@@ -186,11 +194,13 @@ export class AppIntegrationsService implements OnModuleDestroy {
             if (selectedTargetId === null || selectedTargets.length !== 1) {
                 throw new AppIntegrationProviderError('installation-required');
             }
-            await this.persist(
-                providerId,
-                { ...connected, accessTargets: selectedTargets },
-                null,
-                'connect',
+            await this.runProviderOperation(providerId, () =>
+                this.persist(
+                    providerId,
+                    { ...connected, accessTargets: selectedTargets },
+                    null,
+                    'connect',
+                ),
             );
             await this.clearConnectionSession(providerId, session, 'completed');
             return { ok: true, integration: await this.summarize(provider) };
@@ -250,6 +260,28 @@ export class AppIntegrationsService implements OnModuleDestroy {
         ) {
             return { ok: true, integration: await this.summarize(provider) };
         }
+        return this.runProviderOperation(providerId, () =>
+            this.refreshLocked(provider),
+        );
+    }
+
+    /**
+     * Refreshes one provider while its credential lock is held.
+     *
+     * @param provider - Registered provider implementation.
+     * @returns The updated renderer-safe integration result.
+     */
+    private async refreshLocked(
+        provider: AppIntegrationProvider,
+    ): Promise<AppIntegrationActionResult> {
+        const providerId = provider.metadata.id;
+        if (
+            this.connectionSessions.has(providerId) ||
+            this.activeRefreshes.has(providerId) ||
+            this.activeDisconnects.has(providerId)
+        ) {
+            return { ok: true, integration: await this.summarize(provider) };
+        }
         if (!(await this.secureStorage.isAvailable())) {
             return this.failure(provider, 'secure-storage-unavailable');
         }
@@ -299,6 +331,106 @@ export class AppIntegrationsService implements OnModuleDestroy {
     }
 
     /**
+     * Runs a main-process operation with current credentials for usable targets.
+     * Credential references exist only for the duration of the callback.
+     *
+     * @param providerId - Registered provider ID.
+     * @param operation - Main-process callback that consumes ephemeral routes.
+     * @returns The callback value or a safe credential-boundary failure.
+     */
+    async withCredentialLease<T>(
+        providerId: string,
+        operation: (
+            routes: readonly AppIntegrationCredentialRoute[],
+        ) => Promise<T>,
+    ): Promise<AppIntegrationCredentialLeaseResult<T>> {
+        const provider = this.registry.get(providerId);
+        return this.runProviderOperation(providerId, async () => {
+            if (!(await this.secureStorage.isAvailable())) {
+                return {
+                    ok: false,
+                    reason: 'secure-storage-unavailable',
+                } as const;
+            }
+
+            const initialRecords = await this.store.listByProvider(providerId);
+            if (initialRecords.length === 0) {
+                return { ok: false, reason: 'no-usable-connection' } as const;
+            }
+
+            let leasedRoutes: AppIntegrationCredentialRoute[] = [];
+            let providerUnavailable = false;
+            try {
+                for (const record of initialRecords) {
+                    if (!record.requiresReauthorisation) {
+                        try {
+                            await this.refreshConnection(provider, record);
+                        } catch {
+                            providerUnavailable = true;
+                        }
+                    }
+                }
+                const records = await this.store.listByProvider(providerId);
+                const routes: AppIntegrationCredentialRoute[] = [];
+                let requiresReauthorisation = false;
+                for (const record of records) {
+                    if (record.requiresReauthorisation) {
+                        requiresReauthorisation = true;
+                        continue;
+                    }
+                    const encrypted = await this.secrets.get(record.id);
+                    if (!encrypted) {
+                        requiresReauthorisation = true;
+                        await this.store.set({
+                            ...record,
+                            requiresReauthorisation: true,
+                        });
+                        continue;
+                    }
+                    let credential: string;
+                    try {
+                        credential =
+                            await this.secureStorage.decrypt(encrypted);
+                    } catch {
+                        requiresReauthorisation = true;
+                        await this.store.set({
+                            ...record,
+                            requiresReauthorisation: true,
+                        });
+                        continue;
+                    }
+                    for (const accessTarget of record.accessTargets) {
+                        if (accessTarget.availability === 'available') {
+                            routes.push({
+                                connectionId: record.id,
+                                accessTarget,
+                                credential,
+                            });
+                        }
+                    }
+                }
+                if (routes.length === 0) {
+                    return {
+                        ok: false,
+                        reason: requiresReauthorisation
+                            ? 'reauthorisation-required'
+                            : providerUnavailable
+                              ? 'provider-unavailable'
+                              : 'no-usable-connection',
+                    } as const;
+                }
+                leasedRoutes = routes;
+            } catch {
+                return { ok: false, reason: 'provider-unavailable' } as const;
+            }
+            return {
+                ok: true,
+                value: await operation(leasedRoutes),
+            } as const;
+        });
+    }
+
+    /**
      * Removes one local installation connection and its credential when unused.
      *
      * @param providerId - Registered provider ID.
@@ -317,6 +449,38 @@ export class AppIntegrationsService implements OnModuleDestroy {
         if (!isDisconnectOptions(options)) {
             return this.failure(provider, 'unknown');
         }
+        if (
+            this.activeRefreshes.has(providerId) ||
+            this.activeDisconnects.has(providerId)
+        ) {
+            return this.failure(provider, 'already-connecting');
+        }
+        return this.runProviderOperation(providerId, () =>
+            this.disconnectLocked(
+                provider,
+                connectionId,
+                accessTargetId,
+                options,
+            ),
+        );
+    }
+
+    /**
+     * Disconnects one access target while its credential lock is held.
+     *
+     * @param provider - Registered provider implementation.
+     * @param connectionId - Target local connection ID.
+     * @param accessTargetId - Renderer-safe installation target ID.
+     * @param options - Explicit final-connection revocation choice.
+     * @returns The updated renderer-safe integration result.
+     */
+    private async disconnectLocked(
+        provider: AppIntegrationProvider,
+        connectionId: string,
+        accessTargetId: string,
+        options: AppIntegrationDisconnectOptions,
+    ): Promise<AppIntegrationActionResult> {
+        const providerId = provider.metadata.id;
         if (
             this.activeRefreshes.has(providerId) ||
             this.activeDisconnects.has(providerId)
@@ -517,11 +681,13 @@ export class AppIntegrationsService implements OnModuleDestroy {
                     await result.installation.close();
                     throw new AppIntegrationProviderError('invalid-response');
                 }
-                await this.persist(
-                    providerId,
-                    result.connection,
-                    current,
-                    intent,
+                await this.runProviderOperation(providerId, () =>
+                    this.persist(
+                        providerId,
+                        result.connection,
+                        current,
+                        intent,
+                    ),
                 );
                 await this.clearConnectionSession(
                     providerId,
@@ -782,6 +948,37 @@ export class AppIntegrationsService implements OnModuleDestroy {
                 ...record,
                 requiresReauthorisation: true,
             });
+        }
+    }
+
+    /**
+     * Serialises credential and connection-store work for one provider.
+     *
+     * @param providerId - Registered provider ID.
+     * @param operation - Operation that owns the provider lock.
+     * @returns The operation result.
+     */
+    private async runProviderOperation<T>(
+        providerId: string,
+        operation: () => Promise<T>,
+    ): Promise<T> {
+        const previous = this.providerOperationTails.get(providerId);
+        let release = (): void => undefined;
+        const gate = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        const tail = (previous ?? Promise.resolve())
+            .catch(() => undefined)
+            .then(() => gate);
+        this.providerOperationTails.set(providerId, tail);
+        await previous?.catch(() => undefined);
+        try {
+            return await operation();
+        } finally {
+            release();
+            if (this.providerOperationTails.get(providerId) === tail) {
+                this.providerOperationTails.delete(providerId);
+            }
         }
     }
 

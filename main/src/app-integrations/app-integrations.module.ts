@@ -7,12 +7,14 @@ import { JsonStoreModule } from '../json-store/json-store.module.js';
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
 import { APP_INTEGRATION_MODULE_OPTIONS } from './app-integration.constants.js';
 import type { AppIntegrationModuleOptions } from './app-integration.types.js';
+import { AppIntegrationCapabilityRegistry } from './app-integration-capability.registry.js';
 import { AppIntegrationProviderRegistry } from './app-integration-provider.registry.js';
 import { AppIntegrationSecretsStore } from './app-integration-secrets.store.js';
 import { AppIntegrationSecureStorageAdapter } from './app-integration-secure-storage.adapter.js';
 import { AppIntegrationsController } from './app-integrations.controller.js';
 import { AppIntegrationsService } from './app-integrations.service.js';
 import { AppIntegrationsStore } from './app-integrations.store.js';
+import { RepositoryHostingService } from './repository-hosting.service.js';
 
 type AppIntegrationsModuleAsyncOptions = Pick<
     FactoryProvider<AppIntegrationModuleOptions>,
@@ -23,6 +25,7 @@ type AppIntegrationsModuleAsyncOptions = Pick<
     imports: [JsonStoreModule],
     providers: [
         AppIntegrationProviderRegistry,
+        AppIntegrationCapabilityRegistry,
         {
             provide: AppIntegrationsStore,
             inject: [
@@ -47,9 +50,14 @@ type AppIntegrationsModuleAsyncOptions = Pick<
         },
         AppIntegrationSecureStorageAdapter,
         AppIntegrationsService,
+        RepositoryHostingService,
         AppIntegrationsController,
     ],
-    exports: [AppIntegrationsService],
+    exports: [
+        AppIntegrationCapabilityRegistry,
+        AppIntegrationsService,
+        RepositoryHostingService,
+    ],
 })
 // biome-ignore lint/complexity/noStaticOnlyClass: DI modules use static setup methods
 export class AppIntegrationsModule {

@@ -23,6 +23,7 @@ vi.mock('electron-updater', () => ({
     },
 }));
 
+import { AppIntegrationsModule } from '../app-integrations/app-integrations.module.js';
 import type { AppConfig } from '../config/index.js';
 import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js';
 import { EditorProjectRepairAdapter } from '../editor-installs/editor-project-repair.adapter.js';
@@ -50,6 +51,11 @@ describe('ProjectsModule', () => {
                 ToolIntegrationModule.forRoot({
                     directory: '/config',
                     fileName: 'tool-integrations.json',
+                }),
+                AppIntegrationsModule.forRoot({
+                    directory: '/config',
+                    metadataFileName: 'app-integrations.json',
+                    secretsFileName: 'app-integration-secrets.json',
                 }),
                 ProjectsModule,
             ],
