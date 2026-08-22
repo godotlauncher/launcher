@@ -3,6 +3,12 @@ import { Injectable } from '@mariodebono/di';
 import { ConfigService } from '@mariodebono/di-config';
 import type { AppConfig } from '../../../config/index.js';
 import {
+    BROKER_REQUEST_TIMEOUT_MS,
+    BROKER_RESPONSE_MAX_BYTES,
+    LOCAL_BROKER_ORIGIN,
+    PRODUCTION_BROKER_ORIGIN,
+} from './github-app-integration.constants.js';
+import {
     GitHubAuthAttemptSchema,
     GitHubBrokerErrorSchema,
     GitHubOAuthRedemptionSchema,
@@ -18,11 +24,6 @@ import type {
     GitHubTokenBundle,
 } from './github-app-integration.types.js';
 import { readGitHubJsonResponse } from './github-json-response.util.js';
-
-const DEVELOPMENT_BROKER_ORIGIN = 'http://127.0.0.1:8787';
-const PRODUCTION_BROKER_ORIGIN = 'https://auth.godotlauncher.org';
-const BROKER_REQUEST_TIMEOUT_MS = 10_000;
-const BROKER_RESPONSE_MAX_BYTES = 64 * 1024;
 
 export class GitHubBrokerError extends Error {
     /**
@@ -45,13 +46,13 @@ export class GitHubAuthBrokerClient {
     private readonly origin: string;
 
     /**
-     * Creates the broker client for the current runtime mode.
+     * Creates the broker client for the configured broker environment.
      *
      * @param configService - Runtime Launcher configuration.
      */
     constructor(configService: ConfigService<AppConfig>) {
-        this.origin = configService.getOrThrow('isDev')
-            ? DEVELOPMENT_BROKER_ORIGIN
+        this.origin = configService.getOrThrow('useLocalGitHubBroker')
+            ? LOCAL_BROKER_ORIGIN
             : PRODUCTION_BROKER_ORIGIN;
     }
 

@@ -19,6 +19,7 @@ export const AppConfigSchema = z.object({
     disableDevMenu: z.boolean(),
     startHidden: z.boolean(),
     docsScreenshots: z.boolean(),
+    useLocalGitHubBroker: z.boolean().default(false),
     paths: AppPathsSchema,
 });
 

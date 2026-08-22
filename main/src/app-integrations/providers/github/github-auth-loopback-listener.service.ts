@@ -1,15 +1,15 @@
 import { createServer, type Server, type ServerResponse } from 'node:http';
 import { Injectable } from '@mariodebono/di';
+import {
+    COMPLETION_PATH_PREFIX,
+    COMPLETION_TICKET_PATTERN,
+    LOCAL_BROKER_COMPLETION_URL,
+    PRODUCTION_BROKER_COMPLETION_URL,
+} from './github-app-integration.constants.js';
 import type {
     GitHubLoopbackCompletion,
     GitHubLoopbackListener,
 } from './github-app-integration.types.js';
-
-const COMPLETION_PATH_PREFIX = '/oauth/github/callback/';
-const COMPLETION_TICKET_PATTERN = /^[A-Za-z0-9_-]{38,8192}$/u;
-const BROKER_COMPLETION_URL = 'http://127.0.0.1:8787/v1/oauth/github/complete';
-const PRODUCTION_BROKER_COMPLETION_URL =
-    'https://auth.godotlauncher.org/v1/oauth/github/complete';
 
 @Injectable()
 export class GitHubAuthLoopbackListenerService {
@@ -17,22 +17,22 @@ export class GitHubAuthLoopbackListenerService {
      * Starts an OS-assigned listener on IPv6 loopback, then IPv4 loopback.
      *
      * @param nonce - Random listener nonce encoded as base64url.
-     * @param development - Whether the local broker completion page is used.
+     * @param useLocalBroker - Whether the local broker completion page is used.
      * @param signal - Connection-attempt cancellation signal.
      * @returns The ready listener and its broker descriptor.
      */
     async start(
         nonce: string,
-        development: boolean,
+        useLocalBroker: boolean,
         signal: AbortSignal,
     ): Promise<GitHubLoopbackListener> {
         try {
-            return await this.listen('::1', nonce, development, signal);
+            return await this.listen('::1', nonce, useLocalBroker, signal);
         } catch {
             if (signal.aborted) {
                 throw signal.reason;
             }
-            return this.listen('127.0.0.1', nonce, development, signal);
+            return this.listen('127.0.0.1', nonce, useLocalBroker, signal);
         }
     }
 
@@ -40,7 +40,7 @@ export class GitHubAuthLoopbackListenerService {
     private async listen(
         host: '127.0.0.1' | '::1',
         nonce: string,
-        development: boolean,
+        useLocalBroker: boolean,
         signal: AbortSignal,
     ): Promise<GitHubLoopbackListener> {
         let resolveCompletion:
@@ -112,8 +112,8 @@ export class GitHubAuthLoopbackListenerService {
                     if (completed) {
                         response.writeHead(302, {
                             'Cache-Control': 'no-store',
-                            Location: development
-                                ? BROKER_COMPLETION_URL
+                            Location: useLocalBroker
+                                ? LOCAL_BROKER_COMPLETION_URL
                                 : PRODUCTION_BROKER_COMPLETION_URL,
                         });
                         response.end();

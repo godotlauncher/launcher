@@ -90,6 +90,9 @@ export function configuration(
             (cliConfig.disableDevMenu ?? false),
         startHidden: cliConfig.startHidden ?? false,
         docsScreenshots: envConfig.GODOT_LAUNCHER_DOCS_SCREENSHOTS ?? false,
+        useLocalGitHubBroker:
+            isDev &&
+            (envConfig.GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER ?? false),
         paths: resolveAppPaths({
             platform: options.platform,
             homedir: options.homedir,

@@ -102,7 +102,7 @@ export class GitHubAppIntegrationProvider implements AppIntegrationProvider {
         const nonce = randomBytes(32).toString('base64url');
         const listener = await this.loopback.start(
             nonce,
-            this.configService.getOrThrow('isDev'),
+            this.configService.getOrThrow('useLocalGitHubBroker'),
             signal,
         );
         let attempt: GitHubAuthAttempt | undefined;

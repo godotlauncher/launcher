@@ -1,6 +1,15 @@
 import { Injectable } from '@mariodebono/di';
 import type { AppIntegrationProviderAccessTarget } from '../../app-integration.types.js';
 import {
+    GITHUB_INSTALLATION_PAGE_MAX_BYTES,
+    GITHUB_INSTALLATIONS_PER_PAGE,
+    GITHUB_INSTALLATIONS_URL,
+    GITHUB_REQUEST_TIMEOUT_MS,
+    GITHUB_USER_RESPONSE_MAX_BYTES,
+    GITHUB_USER_URL,
+    MAX_INSTALLATION_PAGES,
+} from './github-app-integration.constants.js';
+import {
     GitHubInstallationPageSchema,
     GitHubUserIdentitySchema,
 } from './github-app-integration.schema.js';
@@ -9,14 +18,6 @@ import type {
     GitHubUserIdentity,
 } from './github-app-integration.types.js';
 import { readGitHubJsonResponse } from './github-json-response.util.js';
-
-const GITHUB_USER_URL = 'https://api.github.com/user';
-const GITHUB_INSTALLATIONS_URL = 'https://api.github.com/user/installations';
-const GITHUB_REQUEST_TIMEOUT_MS = 10_000;
-const GITHUB_INSTALLATIONS_PER_PAGE = 100;
-const MAX_INSTALLATION_PAGES = 10;
-const GITHUB_USER_RESPONSE_MAX_BYTES = 64 * 1024;
-const GITHUB_INSTALLATION_PAGE_MAX_BYTES = 1024 * 1024;
 
 export class GitHubApiError extends Error {
     /**

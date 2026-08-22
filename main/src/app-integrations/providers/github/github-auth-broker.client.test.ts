@@ -9,7 +9,7 @@ import {
 describe('GitHubAuthBrokerClient', () => {
     afterEach(() => vi.unstubAllGlobals());
 
-    it('uses the local broker and exact ticket redemption contract in development', async () => {
+    it('uses the local broker and exact ticket redemption contract when opted in', async () => {
         const fetchMock = vi
             .fn()
             .mockResolvedValueOnce(
@@ -107,6 +107,39 @@ describe('GitHubAuthBrokerClient', () => {
             body: '{"accessToken":"access-token"}',
             method: 'DELETE',
         });
+        expect(config.getOrThrow).toHaveBeenCalledWith('useLocalGitHubBroker');
+    });
+
+    it('uses the production broker by default', async () => {
+        const callback = encodeURIComponent(
+            'https://auth.godotlauncher.org/v1/oauth/github/callback',
+        );
+        const fetchMock = vi.fn(async () =>
+            Response.json(
+                {
+                    attemptId: 'a'.repeat(64),
+                    attemptToken: 'b'.repeat(43),
+                    browserUrl: `https://github.com/login/oauth/authorize?client_id=client&code_challenge=challenge&code_challenge_method=S256&prompt=select_account&redirect_uri=${callback}&state=state`,
+                    expiresAt: Date.now() + 60_000,
+                },
+                { status: 201 },
+            ),
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        const client = new GitHubAuthBrokerClient({
+            getOrThrow: vi.fn(() => false),
+        } as unknown as ConfigService<AppConfig>);
+
+        await client.createAttempt(
+            'c'.repeat(43),
+            { host: '127.0.0.1', port: 54321, nonce: 'd'.repeat(43) },
+            'connect',
+            new AbortController().signal,
+        );
+
+        expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+            'https://auth.godotlauncher.org/v1/oauth/github/attempts',
+        );
     });
 
     it('accepts only the expected direct authorisation URL', async () => {

@@ -70,14 +70,16 @@ describe('GitHubAppIntegrationProvider', () => {
             })),
             getInstallations: vi.fn(async () => [accessTarget]),
         };
+        const config = {
+            getOrThrow: vi.fn(() => false),
+        } as unknown as ConfigService<AppConfig>;
+        const loopback = {
+            start: vi.fn(async () => listener),
+        } as unknown as GitHubAuthLoopbackListenerService;
         const provider = new GitHubAppIntegrationProvider(
-            {
-                getOrThrow: vi.fn(() => true),
-            } as unknown as ConfigService<AppConfig>,
+            config,
             broker as unknown as GitHubAuthBrokerClient,
-            {
-                start: vi.fn(async () => listener),
-            } as unknown as GitHubAuthLoopbackListenerService,
+            loopback,
             github as unknown as GitHubApiClient,
         );
 
@@ -93,6 +95,12 @@ describe('GitHubAppIntegrationProvider', () => {
             expect.any(String),
             listener.descriptor,
             'connect',
+            expect.any(AbortSignal),
+        );
+        expect(config.getOrThrow).toHaveBeenCalledWith('useLocalGitHubBroker');
+        expect(loopback.start).toHaveBeenCalledWith(
+            expect.any(String),
+            false,
             expect.any(AbortSignal),
         );
         expect(github.getUser).toHaveBeenCalledWith(

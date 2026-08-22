@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { GitHubAuthLoopbackListenerService } from './github-auth-loopback-listener.service.js';
 
 describe('GitHubAuthLoopbackListenerService', () => {
-    it('accepts sequential nonce-bound tickets and redirects without credentials', async () => {
+    it('accepts sequential nonce-bound tickets and redirects to the opted-in local broker', async () => {
         const service = new GitHubAuthLoopbackListenerService();
         const controller = new AbortController();
         const nonce = 'n'.repeat(43);
@@ -39,6 +39,27 @@ describe('GitHubAuthLoopbackListenerService', () => {
             'http://127.0.0.1:8787/v1/oauth/github/complete',
         );
         expect(setupResponse.location).not.toContain(setupTicket);
+        await listener.close();
+    });
+
+    it('redirects to the production broker by default', async () => {
+        const service = new GitHubAuthLoopbackListenerService();
+        const controller = new AbortController();
+        const nonce = 'n'.repeat(43);
+        const ticket = 't'.repeat(38);
+        const listener = await service.start(nonce, false, controller.signal);
+        const host = listener.descriptor.host === '::1' ? '[::1]' : '127.0.0.1';
+        const responsePromise = request(
+            `http://${host}:${listener.descriptor.port}/oauth/github/callback/${nonce}?ticket=${ticket}`,
+        );
+
+        const completion = await listener.waitForCompletion();
+        completion.respond(true);
+
+        await expect(responsePromise).resolves.toEqual({
+            status: 302,
+            location: 'https://auth.godotlauncher.org/v1/oauth/github/complete',
+        });
         await listener.close();
     });
 });
