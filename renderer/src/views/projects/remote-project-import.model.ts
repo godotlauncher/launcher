@@ -1,4 +1,5 @@
 import type {
+    RemoteDiscoveredProject,
     RemoteProjectImportFailureReason,
     RemoteRepositorySummary,
     ToolIntegrationSummary,
@@ -9,6 +10,34 @@ import {
 } from '../subViews/createProject/createProject.model';
 
 export type GitAvailability = 'loading' | 'available' | 'unavailable';
+
+/**
+ * Creates the default selection containing every discovered project.
+ *
+ * @param projects - Projects returned by repository discovery.
+ * @returns A new set of selected project file paths.
+ */
+export function selectAllDiscoveredProjects(
+    projects: RemoteDiscoveredProject[],
+): Set<string> {
+    return new Set(projects.map((project) => project.projectFilePath));
+}
+
+/**
+ * Returns only discoveries selected for registration.
+ *
+ * @param projects - All discovered projects in display order.
+ * @param selectedPaths - Selected project file paths.
+ * @returns Selected projects in discovery order.
+ */
+export function filterSelectedDiscoveredProjects(
+    projects: RemoteDiscoveredProject[],
+    selectedPaths: Set<string>,
+): RemoteDiscoveredProject[] {
+    return projects.filter((project) =>
+        selectedPaths.has(project.projectFilePath),
+    );
+}
 
 /**
  * Reports whether the registered Git tool can currently be used.
@@ -54,6 +83,18 @@ export function getRemoteProjectDestinationDisplay(
         return `${trimmedParent}${trimmedName}`;
     }
     return `${trimmedParent}${separator}${trimmedName}`;
+}
+
+/**
+ * Returns the containing project directory for a discovered project file.
+ *
+ * @param projectFilePath - Absolute path ending in project.godot.
+ * @returns The platform-shaped containing directory path.
+ */
+export function getProjectDirectoryFromFilePath(
+    projectFilePath: string,
+): string {
+    return projectFilePath.replace(/[\\/]project\.godot$/, '');
 }
 
 /**
@@ -187,6 +228,8 @@ export function getRemoteImportFailureKey(
         'destination-conflict': 'destinationConflict',
         'clone-failed': 'cloneFailed',
         'not-godot-project': 'notGodotProject',
+        'discovery-failed': 'discoveryFailed',
+        'discovery-limit-exceeded': 'discoveryLimitExceeded',
         'finalise-failed': 'finaliseFailed',
         cancelled: 'cancelled',
     };

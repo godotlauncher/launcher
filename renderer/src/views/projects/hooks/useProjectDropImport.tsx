@@ -30,7 +30,7 @@ type UseProjectDropImportArgs = {
     handleAddProjectResult: (
         projectPath: string,
         result: AddProjectToListResult,
-    ) => Promise<void>;
+    ) => Promise<boolean>;
 };
 
 export function useProjectDropImport({

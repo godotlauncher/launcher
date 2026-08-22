@@ -151,6 +151,8 @@
                 "completePath": "Destination complète"
             },
             "actions": {
+                "clone": "Cloner le dépôt",
+                "addProjects": "Ajouter les projets sélectionnés ({{count}})",
                 "cloneAndAdd": "Cloner et ajouter un projet",
                 "cancelImport": "Annuler l'importation",
                 "retryRegistration": "Réessayez d'ajouter au lanceur",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "Préparation de l'importation...",
                 "cloning": "Clonage du référentiel...",
+                "discovering": "Recherche des projets Godot...",
                 "cancelling": "Annulation de l'importation..."
             },
+            "review": {
+                "title": "Choisir les projets à ajouter",
+                "description": "Tous les projets trouvés sont sélectionnés. Désélectionnez les exemples, les tests ou les autres projets que vous ne souhaitez pas ajouter.",
+                "selectAll": "Sélectionner tous les projets",
+                "empty": "Aucun projet Godot valide n'a été trouvé. Le dépôt cloné a été conservé."
+            },
             "registration": {
-                "preserved": "Le référentiel a été cloné avec succès et a été conservé à cet emplacement."
+                "preserved": "Le référentiel a été cloné avec succès et a été conservé à cet emplacement.",
+                "adding": "Ajout des projets : {{current}}/{{total}}",
+                "complete": "Importation des projets terminée",
+                "added": "Ajouté",
+                "skipped": "Ignoré",
+                "failed": "Échec",
+                "alreadyAdded": "Un projet portant ce nom ou ce chemin existe déjà dans Launcher.",
+                "notAdded": "Le projet n'a pas été ajouté."
             },
             "errors": {
                 "invalidSource": "La source du référentiel n'est plus valide.",
@@ -176,6 +192,8 @@
                 "destinationConflict": "La destination existe déjà.",
                 "cloneFailed": "Git n'a pas pu cloner le référentiel.",
                 "notGodotProject": "Le référentiel ne contient pas project.godot à sa racine.",
+                "discoveryFailed": "Le dépôt a été cloné, mais ses projets Godot n'ont pas pu être trouvés.",
+                "discoveryLimitExceeded": "Le dépôt a été cloné, mais il est trop volumineux ou trop imbriqué pour être analysé en toute sécurité.",
                 "finaliseFailed": "Le clone terminé n'a pas pu être déplacé vers sa destination.",
                 "cancelled": "L'importation a été annulée.",
                 "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Launcher."

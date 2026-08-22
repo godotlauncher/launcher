@@ -151,6 +151,8 @@
                 "completePath": "Destinazione completa"
             },
             "actions": {
+                "clone": "Clona repository",
+                "addProjects": "Aggiungi i progetti selezionati ({{count}})",
                 "cloneAndAdd": "Clona e aggiungi progetto",
                 "cancelImport": "Annulla l'importazione",
                 "retryRegistration": "Riprova ad aggiungere al Launcher",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "Preparazione dell'importazione...",
                 "cloning": "Clonazione del repository...",
+                "discovering": "Ricerca dei progetti Godot...",
                 "cancelling": "Annullamento dell'importazione..."
             },
+            "review": {
+                "title": "Scegli i progetti da aggiungere",
+                "description": "Tutti i progetti trovati sono selezionati. Deseleziona esempi, test o altri progetti che non vuoi aggiungere.",
+                "selectAll": "Seleziona tutti i progetti",
+                "empty": "Non sono stati trovati progetti Godot validi. Il repository clonato è stato conservato."
+            },
             "registration": {
-                "preserved": "Il repository è stato clonato con successo ed è stato conservato in questa posizione."
+                "preserved": "Il repository è stato clonato con successo ed è stato conservato in questa posizione.",
+                "adding": "Aggiunta dei progetti: {{current}}/{{total}}",
+                "complete": "Importazione dei progetti completata",
+                "added": "Aggiunto",
+                "skipped": "Ignorato",
+                "failed": "Non riuscito",
+                "alreadyAdded": "Un progetto con questo nome o percorso è già presente in Launcher.",
+                "notAdded": "Il progetto non è stato aggiunto."
             },
             "errors": {
                 "invalidSource": "L'origine del repository non è più valida.",
@@ -176,6 +192,8 @@
                 "destinationConflict": "La destinazione esiste già.",
                 "cloneFailed": "Git non è riuscito a clonare il repository.",
                 "notGodotProject": "Il repository non contiene project.godot nella sua radice.",
+                "discoveryFailed": "Il repository è stato clonato, ma non è stato possibile trovare i progetti Godot.",
+                "discoveryLimitExceeded": "Il repository è stato clonato, ma è troppo grande o annidato per essere analizzato in sicurezza.",
                 "finaliseFailed": "Impossibile spostare il clone completato nella destinazione.",
                 "cancelled": "L'importazione è stata annullata.",
                 "registration-failed": "Il repository è stato clonato ma non è stato possibile aggiungerlo al Launcher."

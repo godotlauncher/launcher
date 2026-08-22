@@ -2,12 +2,14 @@ import type {
     AddProjectToListResult,
     ListConnectedRepositoriesResult,
     PublicGitSourceInspectionResult,
+    RemoteDiscoveredProject,
     RemoteProjectImportProgress,
     RemoteProjectImportRequest,
     RemoteRepositorySummary,
 } from '@shared/contracts';
 import {
     Check,
+    CircleMinus,
     FolderOpen,
     GitBranch,
     GitPullRequest,
@@ -27,10 +29,12 @@ import { getProjectPathSuffixDisplay } from '../../subViews/createProject/create
 import {
     appendRemoteRepositories,
     filterRemoteRepositories,
+    filterSelectedDiscoveredProjects,
+    getProjectDirectoryFromFilePath,
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
-    getRemoteProjectDirectoryName,
     getRemoteRepositoryRowClassName,
+    selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
 } from '../remote-project-import.model';
 
@@ -42,7 +46,7 @@ type RemoteProjectImportModalProps = {
     handleAddProjectResult: (
         projectPath: string,
         result: AddProjectToListResult,
-    ) => Promise<void>;
+    ) => Promise<boolean>;
 };
 
 type ModalStep =
@@ -50,7 +54,15 @@ type ModalStep =
     | 'destination'
     | 'importing'
     | 'import-failed'
-    | 'registration-failed';
+    | 'review'
+    | 'registering'
+    | 'registration-complete';
+
+type RegistrationOutcome = {
+    project: RemoteDiscoveredProject;
+    status: 'added' | 'skipped' | 'failed';
+    error?: string;
+};
 
 type RepositoryFailure = Extract<
     ListConnectedRepositoriesResult,
@@ -67,7 +79,7 @@ const githubProviderId = 'github';
 /**
  * Maps public-source inspection failures to their translation key suffix.
  *
- * @param reason - The typed inspection failure.
+ * @param reason - Typed public source failure.
  */
 function getPublicSourceFailureKey(reason: PublicSourceFailure): string {
     return reason === 'dns-unavailable' ? 'dnsUnavailable' : 'invalid';
@@ -76,7 +88,7 @@ function getPublicSourceFailureKey(reason: PublicSourceFailure): string {
 /**
  * Maps repository-list failures to their translation key suffix.
  *
- * @param reason - The typed repository-list failure.
+ * @param reason - Typed repository list failure.
  */
 function getRepositoryFailureKey(reason: RepositoryFailure): string {
     if (
@@ -94,26 +106,34 @@ function getRepositoryFailureKey(reason: RepositoryFailure): string {
 /**
  * Maps import progress to the message shown for its current stage.
  *
- * @param progress - The latest progress event, when one has arrived.
+ * @param progress - Latest remote import progress.
  */
 function getProgressKey(progress: RemoteProjectImportProgress | null): string {
-    if (progress?.stage === 'cloning') {
-        return 'cloning';
-    }
-    if (progress?.stage === 'cancelling') {
-        return 'cancelling';
-    }
+    if (progress?.stage === 'cloning') return 'cloning';
+    if (progress?.stage === 'cancelling') return 'cancelling';
+    if (progress?.stage === 'discovering-projects') return 'discovering';
     return 'preparing';
+}
+
+/**
+ * Normalises a project path for renderer-side duplicate preflight.
+ *
+ * @param value - Project directory path.
+ * @param platform - Current operating-system platform.
+ */
+function normaliseProjectPath(value: string, platform?: string): string {
+    const normalised = value.replace(/\\/g, '/').replace(/\/+$/, '');
+    return platform === 'win32' ? normalised.toLocaleLowerCase() : normalised;
 }
 
 /** Renders the modal workflow for one remote Add Project source. */
 export const RemoteProjectImportModal: React.FC<
     RemoteProjectImportModalProps
 > = ({ source, onOpenChange, handleAddProjectResult }) => {
-    const { t } = useTranslation(['projects', 'common', 'createProject']);
+    const { t } = useTranslation(['projects', 'common']);
     const navigate = useNavigate();
     const { preferences, platform } = usePreferences();
-    const { addProject } = useProjects();
+    const { addProject, projects } = useProjects();
     const [step, setStep] = useState<ModalStep>('source');
     const [publicUrl, setPublicUrl] = useState('');
     const [canonicalPublicUrl, setCanonicalPublicUrl] = useState('');
@@ -136,20 +156,32 @@ export const RemoteProjectImportModal: React.FC<
     const [selectedRepository, setSelectedRepository] =
         useState<RemoteRepositorySummary | null>(null);
     const [parentDirectory, setParentDirectory] = useState('');
-    const [projectName, setProjectName] = useState('');
+    const [directoryName, setDirectoryName] = useState('');
     const [selectingFolder, setSelectingFolder] = useState(false);
     const [progress, setProgress] =
         useState<RemoteProjectImportProgress | null>(null);
     const [importFailure, setImportFailure] = useState<string | null>(null);
-    const [registrationFailure, setRegistrationFailure] = useState<{
-        error: string;
-        projectPath: string;
-        projectFilePath: string;
-    } | null>(null);
+    const [clonePreservedPath, setClonePreservedPath] = useState<string | null>(
+        null,
+    );
+    const [repositoryPath, setRepositoryPath] = useState('');
+    const [discoveredProjects, setDiscoveredProjects] = useState<
+        RemoteDiscoveredProject[]
+    >([]);
+    const [selectedProjectPaths, setSelectedProjectPaths] = useState<
+        Set<string>
+    >(new Set());
+    const [registrationOutcomes, setRegistrationOutcomes] = useState<
+        RegistrationOutcome[]
+    >([]);
+    const [registrationProgress, setRegistrationProgress] = useState({
+        current: 0,
+        total: 0,
+    });
     const importPendingRef = useRef(false);
     const activeJobIdRef = useRef<string | null>(null);
     const publicUrlInputRef = useRef<HTMLInputElement>(null);
-    const projectNameInputRef = useRef<HTMLInputElement>(null);
+    const selectAllRef = useRef<HTMLInputElement>(null);
 
     const open = source !== null;
     const remoteTitle =
@@ -157,7 +189,6 @@ export const RemoteProjectImportModal: React.FC<
             ? t('addProject.remote.github.title')
             : t('addProject.remote.public.title');
     const defaultParentDirectory = preferences?.projects_location ?? '';
-    const directoryName = getRemoteProjectDirectoryName(projectName);
     const destinationDisplay = getRemoteProjectDestinationDisplay(
         parentDirectory,
         directoryName,
@@ -166,7 +197,7 @@ export const RemoteProjectImportModal: React.FC<
     const pathSeparator = platform === 'win32' ? '\\' : '/';
     const pathSuffixDisplay = getProjectPathSuffixDisplay(
         parentDirectory,
-        directoryName || '<project-name>',
+        directoryName || '<repository>',
         pathSeparator,
     );
     const showUseDefaultPath = shouldShowRemoteProjectUseDefault(
@@ -182,11 +213,13 @@ export const RemoteProjectImportModal: React.FC<
         () => filterRemoteRepositories(repositories, repositorySearch),
         [repositories, repositorySearch],
     );
+    const selectedCount = selectedProjectPaths.size;
+    const allProjectsSelected =
+        discoveredProjects.length > 0 &&
+        selectedCount === discoveredProjects.length;
 
     const close = useCallback(() => {
-        if (step === 'importing') {
-            return;
-        }
+        if (step === 'importing' || step === 'registering') return;
         onOpenChange(false);
     }, [onOpenChange, step]);
 
@@ -234,9 +267,7 @@ export const RemoteProjectImportModal: React.FC<
     );
 
     useEffect(() => {
-        if (!open) {
-            return;
-        }
+        if (!open) return;
         setStep('source');
         setPublicUrl('');
         setCanonicalPublicUrl('');
@@ -248,27 +279,26 @@ export const RemoteProjectImportModal: React.FC<
         setRepositorySearch('');
         setSelectedRepository(null);
         setParentDirectory(defaultParentDirectory);
-        setProjectName('');
+        setDirectoryName('');
         setProgress(null);
         setImportFailure(null);
-        setRegistrationFailure(null);
+        setClonePreservedPath(null);
+        setRepositoryPath('');
+        setDiscoveredProjects([]);
+        setSelectedProjectPaths(new Set());
+        setRegistrationOutcomes([]);
+        setRegistrationProgress({ current: 0, total: 0 });
         importPendingRef.current = false;
         activeJobIdRef.current = null;
-        if (source === 'github') {
-            void loadRepositories();
-        }
+        if (source === 'github') void loadRepositories();
     }, [defaultParentDirectory, loadRepositories, open, source]);
 
     useEffect(() => {
-        if (!open) {
-            return;
-        }
+        if (!open) return;
         return subscribeAppEvent(
             'remote-project-import-progress',
             (nextProgress) => {
-                if (!importPendingRef.current) {
-                    return;
-                }
+                if (!importPendingRef.current) return;
                 if (!activeJobIdRef.current) {
                     activeJobIdRef.current = nextProgress.jobId;
                 }
@@ -286,10 +316,11 @@ export const RemoteProjectImportModal: React.FC<
     }, [open, source, step]);
 
     useEffect(() => {
-        if (open && step === 'destination') {
-            projectNameInputRef.current?.focus();
+        if (selectAllRef.current) {
+            selectAllRef.current.indeterminate =
+                selectedCount > 0 && !allProjectsSelected;
         }
-    }, [open, step]);
+    }, [allProjectsSelected, selectedCount]);
 
     const inspectPublicSource = async () => {
         setInspectingPublicUrl(true);
@@ -302,7 +333,7 @@ export const RemoteProjectImportModal: React.FC<
                 return;
             }
             setCanonicalPublicUrl(result.canonicalUrl);
-            setProjectName(result.suggestedDirectoryName);
+            setDirectoryName(result.suggestedDirectoryName);
             setParentDirectory(defaultParentDirectory);
             setStep('destination');
         } catch {
@@ -313,10 +344,8 @@ export const RemoteProjectImportModal: React.FC<
     };
 
     const continueWithRepository = () => {
-        if (!selectedRepository || selectedRepository.alreadyImported) {
-            return;
-        }
-        setProjectName(selectedRepository.name);
+        if (!selectedRepository || selectedRepository.alreadyImported) return;
+        setDirectoryName(selectedRepository.name);
         setParentDirectory(defaultParentDirectory);
         setStep('destination');
     };
@@ -336,41 +365,8 @@ export const RemoteProjectImportModal: React.FC<
         }
     };
 
-    const registerClonedProject = async (
-        projectPath: string,
-        projectFilePath: string,
-    ) => {
-        let addResult: AddProjectToListResult;
-        try {
-            addResult = await addProject(projectFilePath);
-        } catch {
-            setRegistrationFailure({
-                error: t('addProject.remote.errors.registration-failed'),
-                projectPath,
-                projectFilePath,
-            });
-            setStep('registration-failed');
-            return;
-        }
-        if (addResult.success || addResult.editorResolution) {
-            onOpenChange(false);
-            await handleAddProjectResult(projectFilePath, addResult);
-            return;
-        }
-        setRegistrationFailure({
-            error:
-                addResult.error ??
-                t('addProject.remote.errors.registration-failed'),
-            projectPath,
-            projectFilePath,
-        });
-        setStep('registration-failed');
-    };
-
     const startImport = async () => {
-        if (!source || !parentDirectory.trim() || !directoryName.trim()) {
-            return;
-        }
+        if (!source || !parentDirectory.trim() || !directoryName.trim()) return;
         const request: RemoteProjectImportRequest =
             source === 'public-git-url'
                 ? {
@@ -388,6 +384,7 @@ export const RemoteProjectImportModal: React.FC<
                   };
         setStep('importing');
         setImportFailure(null);
+        setClonePreservedPath(null);
         setProgress(null);
         importPendingRef.current = true;
         activeJobIdRef.current = null;
@@ -396,13 +393,16 @@ export const RemoteProjectImportModal: React.FC<
             activeJobIdRef.current = result.jobId;
             if (!result.ok) {
                 setImportFailure(getRemoteImportFailureKey(result.reason));
+                setClonePreservedPath(result.repositoryPath ?? null);
                 setStep('import-failed');
                 return;
             }
-            await registerClonedProject(
-                result.projectPath,
-                result.projectFilePath,
+            setRepositoryPath(result.repositoryPath);
+            setDiscoveredProjects(result.projects);
+            setSelectedProjectPaths(
+                selectAllDiscoveredProjects(result.projects),
             );
+            setStep('review');
         } catch {
             setImportFailure('addProject.remote.errors.temporarilyUnavailable');
             setStep('import-failed');
@@ -413,15 +413,114 @@ export const RemoteProjectImportModal: React.FC<
 
     const cancelImport = async () => {
         const jobId = activeJobIdRef.current;
-        if (!jobId || !progress?.canCancel) {
-            return;
-        }
+        if (!jobId || !progress?.canCancel) return;
         await projectsBridge.cancelRemoteProjectImport(jobId);
     };
 
-    if (!open || !source) {
-        return null;
-    }
+    const toggleAllProjects = (checked: boolean) => {
+        setSelectedProjectPaths(
+            checked
+                ? selectAllDiscoveredProjects(discoveredProjects)
+                : new Set(),
+        );
+    };
+
+    const toggleProject = (projectFilePath: string, checked: boolean) => {
+        setSelectedProjectPaths((current) => {
+            const next = new Set(current);
+            checked ? next.add(projectFilePath) : next.delete(projectFilePath);
+            return next;
+        });
+    };
+
+    const registerSelectedProjects = async () => {
+        const selected = filterSelectedDiscoveredProjects(
+            discoveredProjects,
+            selectedProjectPaths,
+        );
+        if (selected.length === 0) return;
+        setStep('registering');
+        setRegistrationOutcomes([]);
+        setRegistrationProgress({ current: 0, total: selected.length });
+        const knownNames = new Set(projects.map((project) => project.name));
+        const knownPaths = new Set(
+            projects.map((project) =>
+                normaliseProjectPath(project.path, platform),
+            ),
+        );
+        const outcomes: RegistrationOutcome[] = [];
+
+        for (let index = 0; index < selected.length; index++) {
+            const project = selected[index];
+            setRegistrationProgress({
+                current: index + 1,
+                total: selected.length,
+            });
+            const projectDirectory = getProjectDirectoryFromFilePath(
+                project.projectFilePath,
+            );
+            const normalisedDirectory = normaliseProjectPath(
+                projectDirectory,
+                platform,
+            );
+            let outcome: RegistrationOutcome;
+
+            if (
+                knownNames.has(project.name) ||
+                knownPaths.has(normalisedDirectory)
+            ) {
+                outcome = {
+                    project,
+                    status: 'skipped',
+                    error: t('addProject.remote.registration.alreadyAdded'),
+                };
+            } else {
+                try {
+                    const result = await addProject(project.projectFilePath);
+                    if (result.success || result.editorResolution) {
+                        const added = await handleAddProjectResult(
+                            project.projectFilePath,
+                            result,
+                        );
+                        outcome = {
+                            project,
+                            status: added ? 'added' : 'skipped',
+                            error: added
+                                ? undefined
+                                : t('addProject.remote.registration.notAdded'),
+                        };
+                        if (added) {
+                            knownNames.add(project.name);
+                            knownPaths.add(normalisedDirectory);
+                        }
+                    } else {
+                        outcome = {
+                            project,
+                            status: 'failed',
+                            error:
+                                result.error ??
+                                t(
+                                    'addProject.remote.errors.registration-failed',
+                                ),
+                        };
+                    }
+                } catch {
+                    outcome = {
+                        project,
+                        status: 'failed',
+                        error: t(
+                            'addProject.remote.errors.registration-failed',
+                        ),
+                    };
+                }
+            }
+            outcomes.push(outcome);
+            setRegistrationOutcomes([...outcomes]);
+        }
+        setStep('registration-complete');
+    };
+
+    if (!open || !source) return null;
 
     const connectionActionReasons: RepositoryFailure[] = [
         'no-usable-connection',
@@ -576,11 +675,6 @@ export const RemoteProjectImportModal: React.FC<
                                                   )
                                                 : undefined
                                         }
-                                        aria-label={
-                                            repository.alreadyImported
-                                                ? `${repository.owner}/${repository.name} - ${t('addProject.remote.github.alreadyAdded')}`
-                                                : `${repository.owner}/${repository.name}`
-                                        }
                                         aria-pressed={
                                             selectedRepository?.repositoryRef ===
                                             repository.repositoryRef
@@ -658,24 +752,6 @@ export const RemoteProjectImportModal: React.FC<
                         {repositoryDisplay}
                     </span>
                 </div>
-                <label className="form-control gap-2">
-                    <span className="font-medium">
-                        {t('addProject.remote.destination.projectName')}
-                    </span>
-                    <input
-                        ref={projectNameInputRef}
-                        data-testid="inputRemoteProjectName"
-                        className="input input-bordered w-full"
-                        type="text"
-                        placeholder={t('createProject:project.nameplaceholder')}
-                        value={projectName}
-                        maxLength={255}
-                        onChange={(event) => setProjectName(event.target.value)}
-                    />
-                    <span className="text-xs text-base-content/60">
-                        {t('addProject.remote.destination.projectNameHelp')}
-                    </span>
-                </label>
                 <div className="flex flex-col gap-2">
                     <div className="flex min-h-6 items-center justify-between gap-4">
                         <span className="font-medium">
@@ -697,7 +773,7 @@ export const RemoteProjectImportModal: React.FC<
                     <label className="input z-10 w-full min-w-0 focus-within:outline-none">
                         <input
                             data-testid="inputRemoteProjectPath"
-                            className="input input-bordered w-full active:outline-0 outline-0"
+                            className="w-full min-w-0 outline-none"
                             type="text"
                             value={parentDirectory}
                             title={destinationDisplay}
@@ -750,18 +826,15 @@ export const RemoteProjectImportModal: React.FC<
                     <button
                         type="button"
                         className="btn btn-primary"
-                        disabled={
-                            !parentDirectory.trim() || !projectName.trim()
-                        }
+                        disabled={!parentDirectory.trim() || !directoryName}
                         onClick={() => void startImport()}
                     >
-                        {t('addProject.remote.actions.cloneAndAdd')}
+                        {t('addProject.remote.actions.clone')}
                     </button>
                 </div>
             </div>
         );
     } else if (step === 'importing') {
-        const percent = progress?.percent;
         body = (
             <div className="flex flex-col gap-4" role="status">
                 <p>
@@ -771,7 +844,7 @@ export const RemoteProjectImportModal: React.FC<
                 </p>
                 <progress
                     className="progress progress-primary w-full"
-                    value={percent}
+                    value={progress?.percent}
                     max={100}
                 />
                 <code className="break-all rounded-box bg-base-200 p-3">
@@ -788,17 +861,77 @@ export const RemoteProjectImportModal: React.FC<
                 {t('addProject.remote.actions.cancelImport')}
             </button>
         ) : null;
-    } else if (step === 'registration-failed' && registrationFailure) {
+    } else if (step === 'review') {
         body = (
-            <div className="flex flex-col gap-4">
-                <div className="alert alert-warning alert-soft" role="alert">
-                    <TriangleAlert aria-hidden="true" size={18} />
-                    <span>{registrationFailure.error}</span>
+            <div className="flex h-full min-h-0 flex-col gap-4">
+                <div>
+                    <p className="font-medium">
+                        {t('addProject.remote.review.title')}
+                    </p>
+                    <p className="text-sm text-base-content/70">
+                        {t('addProject.remote.review.description')}
+                    </p>
                 </div>
-                <p>{t('addProject.remote.registration.preserved')}</p>
-                <code className="break-all rounded-box bg-base-200 p-3">
-                    {registrationFailure.projectPath}
+                <code className="break-all rounded-box bg-base-200 p-3 text-sm">
+                    {repositoryPath}
                 </code>
+                {discoveredProjects.length === 0 ? (
+                    <div
+                        className="alert alert-warning alert-soft"
+                        role="status"
+                    >
+                        <TriangleAlert aria-hidden="true" size={18} />
+                        <span>{t('addProject.remote.review.empty')}</span>
+                    </div>
+                ) : (
+                    <div className="min-h-0 overflow-auto rounded-box border border-base-300">
+                        <div className="grid grid-cols-[auto_minmax(10rem,0.7fr)_minmax(12rem,1.3fr)] items-center gap-4 border-b border-base-300 bg-base-200 px-4 py-3 font-medium">
+                            <input
+                                ref={selectAllRef}
+                                data-testid="checkboxRemoteProjectSelectAll"
+                                type="checkbox"
+                                aria-label={t(
+                                    'addProject.remote.review.selectAll',
+                                )}
+                                className="checkbox checkbox-primary checkbox-sm"
+                                checked={allProjectsSelected}
+                                onChange={(event) =>
+                                    toggleAllProjects(event.target.checked)
+                                }
+                            />
+                            <span>{t('table.name')}</span>
+                            <span>
+                                {t('editProject.fields.path.label')}
+                            </span>
+                        </div>
+                        {discoveredProjects.map((project) => (
+                            <label
+                                key={project.projectFilePath}
+                                className="grid cursor-pointer grid-cols-[auto_minmax(10rem,0.7fr)_minmax(12rem,1.3fr)] items-center gap-4 border-b border-base-300 px-4 py-3 last:border-b-0 hover:bg-base-200"
+                            >
+                                <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-primary checkbox-sm"
+                                    checked={selectedProjectPaths.has(
+                                        project.projectFilePath,
+                                    )}
+                                    onChange={(event) =>
+                                        toggleProject(
+                                            project.projectFilePath,
+                                            event.target.checked,
+                                        )
+                                    }
+                                />
+                                <span className="truncate font-medium">
+                                    {project.name}
+                                </span>
+                                <code className="truncate text-xs text-base-content/60">
+                                    {project.relativePath}
+                                </code>
+                            </label>
+                        ))}
+                    </div>
+                )}
             </div>
         );
         footer = (
@@ -808,27 +941,97 @@ export const RemoteProjectImportModal: React.FC<
                 </button>
                 <button
                     type="button"
+                    data-testid="btnAddDiscoveredProjects"
                     className="btn btn-primary"
-                    onClick={() =>
-                        void registerClonedProject(
-                            registrationFailure.projectPath,
-                            registrationFailure.projectFilePath,
-                        )
-                    }
+                    disabled={selectedCount === 0}
+                    onClick={() => void registerSelectedProjects()}
                 >
-                    {t('addProject.remote.actions.retryRegistration')}
+                    {t('addProject.remote.actions.addProjects', {
+                        count: selectedCount,
+                    })}
                 </button>
             </>
+        );
+    } else if (step === 'registering') {
+        body = (
+            <div className="flex flex-col gap-4" role="status">
+                <p>
+                    {t('addProject.remote.registration.adding', {
+                        current: registrationProgress.current,
+                        total: registrationProgress.total,
+                    })}
+                </p>
+                <progress
+                    className="progress progress-primary w-full"
+                    value={registrationProgress.current}
+                    max={registrationProgress.total}
+                />
+            </div>
+        );
+        footer = null;
+    } else if (step === 'registration-complete') {
+        body = (
+            <div className="flex h-full min-h-0 flex-col gap-4">
+                <div>
+                    <p className="font-medium">
+                        {t('addProject.remote.registration.complete')}
+                    </p>
+                    <p className="text-sm text-base-content/70">
+                        {t('addProject.remote.registration.preserved')}
+                    </p>
+                </div>
+                <div className="min-h-0 overflow-auto rounded-box border border-base-300">
+                    {registrationOutcomes.map((outcome) => (
+                        <div
+                            key={outcome.project.projectFilePath}
+                            className="flex items-start gap-3 border-b border-base-300 px-4 py-3 last:border-b-0"
+                        >
+                            {outcome.status === 'added' ? (
+                                <Check className="mt-0.5 h-5 w-5 shrink-0 stroke-success" />
+                            ) : outcome.status === 'skipped' ? (
+                                <CircleMinus className="mt-0.5 h-5 w-5 shrink-0 stroke-warning" />
+                            ) : (
+                                <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 stroke-error" />
+                            )}
+                            <span className="min-w-0 flex-1">
+                                <span className="block font-medium">
+                                    {outcome.project.name}
+                                </span>
+                                <code className="block truncate text-xs text-base-content/60">
+                                    {outcome.project.relativePath}
+                                </code>
+                                <span className="text-sm text-base-content/70">
+                                    {t(
+                                        `addProject.remote.registration.${outcome.status}`,
+                                    )}
+                                    {outcome.error ? `: ${outcome.error}` : ''}
+                                </span>
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+        footer = (
+            <button type="button" className="btn btn-primary" onClick={close}>
+                {t('addProject.remote.actions.close')}
+            </button>
         );
     } else {
         body = (
             <div className="flex flex-col gap-4">
-                <div className="alert alert-error alert-soft" role="alert">
+                <div
+                    className={`alert ${clonePreservedPath ? 'alert-warning' : 'alert-error'} alert-soft`}
+                    role="alert"
+                >
                     <TriangleAlert aria-hidden="true" size={18} />
                     <span>{importFailure ? t(importFailure) : ''}</span>
                 </div>
+                {clonePreservedPath && (
+                    <p>{t('addProject.remote.registration.preserved')}</p>
+                )}
                 <code className="break-all rounded-box bg-base-200 p-3">
-                    {destinationDisplay}
+                    {clonePreservedPath ?? destinationDisplay}
                 </code>
             </div>
         );
@@ -837,13 +1040,15 @@ export const RemoteProjectImportModal: React.FC<
                 <button type="button" className="btn btn-ghost" onClick={close}>
                     {t('addProject.remote.actions.close')}
                 </button>
-                <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => setStep('destination')}
-                >
-                    {t('addProject.remote.actions.reviewAndRetry')}
-                </button>
+                {!clonePreservedPath && (
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => setStep('destination')}
+                    >
+                        {t('addProject.remote.actions.reviewAndRetry')}
+                    </button>
+                )}
             </>
         );
     }
@@ -853,7 +1058,7 @@ export const RemoteProjectImportModal: React.FC<
             icon={sourceIcon}
             title={remoteTitle}
             footer={footer}
-            panelClassName="h-[85vh] max-w-4xl"
+            panelClassName="h-[85vh] max-w-5xl"
         >
             {body}
         </Dialog>

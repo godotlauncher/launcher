@@ -151,6 +151,8 @@
                 "completePath": "Complete destination"
             },
             "actions": {
+                "clone": "Clone repository",
+                "addProjects": "Add selected projects ({{count}})",
                 "cloneAndAdd": "Clone and add project",
                 "cancelImport": "Cancel import",
                 "retryRegistration": "Retry adding to Launcher",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "Preparing the import...",
                 "cloning": "Cloning the repository...",
+                "discovering": "Finding Godot projects...",
                 "cancelling": "Cancelling the import..."
             },
+            "review": {
+                "title": "Choose projects to add",
+                "description": "All discovered projects are selected. Clear any examples, fixtures, or other projects you do not want to add.",
+                "selectAll": "Select all projects",
+                "empty": "No valid Godot projects were found. The cloned repository has been kept."
+            },
             "registration": {
-                "preserved": "The repository was cloned successfully and has been kept at this location."
+                "preserved": "The repository was cloned successfully and has been kept at this location.",
+                "adding": "Adding projects: {{current}}/{{total}}",
+                "complete": "Project import complete",
+                "added": "Added",
+                "skipped": "Skipped",
+                "failed": "Failed",
+                "alreadyAdded": "A project with this name or path is already in Launcher.",
+                "notAdded": "The project was not added."
             },
             "errors": {
                 "invalidSource": "The repository source is no longer valid.",
@@ -176,6 +192,8 @@
                 "destinationConflict": "The destination already exists.",
                 "cloneFailed": "Git could not clone the repository.",
                 "notGodotProject": "The repository does not contain project.godot at its root.",
+                "discoveryFailed": "The repository was cloned, but its Godot projects could not be discovered.",
+                "discoveryLimitExceeded": "The repository was cloned, but it is too large or deeply nested to scan safely.",
                 "finaliseFailed": "The completed clone could not be moved to its destination.",
                 "cancelled": "The import was cancelled.",
                 "registration-failed": "The repository was cloned but could not be added to Launcher."

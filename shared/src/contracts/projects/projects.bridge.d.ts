@@ -25,7 +25,7 @@ import type {
 
 /** Defines project requests available to the renderer. */
 export type ProjectsBridge = {
-    /** Clones and validates one remote Godot project without registering it. */
+    /** Clones a repository and discovers its Godot projects. */
     importRemoteProject(
         request: RemoteProjectImportRequest,
     ): Promise<RemoteProjectImportResult>;

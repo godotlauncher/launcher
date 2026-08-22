@@ -33,20 +33,29 @@ export type RemoteProjectImportFailureReason =
     | 'destination-conflict'
     | 'clone-failed'
     | 'not-godot-project'
+    | 'discovery-failed'
+    | 'discovery-limit-exceeded'
     | 'finalise-failed'
     | 'cancelled';
+
+export type RemoteDiscoveredProject = {
+    name: string;
+    relativePath: string;
+    projectFilePath: string;
+};
 
 export type RemoteProjectImportResult =
     | {
           ok: true;
           jobId: string;
-          projectPath: string;
-          projectFilePath: string;
+          repositoryPath: string;
+          projects: RemoteDiscoveredProject[];
       }
     | {
           ok: false;
           jobId: string | null;
           reason: RemoteProjectImportFailureReason;
+          repositoryPath?: string;
       };
 
 export type RemoteProjectImportProgressStage =
@@ -55,8 +64,8 @@ export type RemoteProjectImportProgressStage =
     | 'validating-destination'
     | 'cloning'
     | 'cancelling'
-    | 'validating-project'
     | 'finalising'
+    | 'discovering-projects'
     | 'complete'
     | 'cancelled'
     | 'error';

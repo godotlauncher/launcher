@@ -92,16 +92,16 @@ export function useAddProjectWorkflow({
     const retryAddProject = async (
         projectPath: string,
         options?: AddProjectOptions,
-    ) => {
+    ): Promise<boolean> => {
         const result = await addProject(projectPath, options);
-        await handleAddProjectResult(projectPath, result);
+        return handleAddProjectResult(projectPath, result);
     };
 
     const downloadEditorAndAddProject = async (
         projectPath: string,
         result: AddProjectToListResult,
         release: ReleaseSummary,
-    ) => {
+    ): Promise<boolean> => {
         const mono = getRequestedMono(result);
         const addMissingResult = await addProject(projectPath, {
             resolution: 'add_missing',
@@ -109,7 +109,7 @@ export function useAddProjectWorkflow({
 
         if (!addMissingResult.success || !addMissingResult.newProject) {
             showAddProjectError(addMissingResult.error);
-            return;
+            return false;
         }
 
         const installResult = await installRelease(release, mono, 'project');
@@ -120,7 +120,7 @@ export function useAddProjectWorkflow({
                 installResult.error || t('messages.addProjectError'),
                 <TriangleAlert className="stroke-error" />,
             );
-            return;
+            return true;
         }
 
         const changeResult = await setProjectEditor(
@@ -131,15 +131,16 @@ export function useAddProjectWorkflow({
         if (!changeResult.success) {
             showAddProjectError(changeResult.error);
         }
+        return true;
     };
 
     const showEditorResolutionDialog = (
         projectPath: string,
         result: AddProjectToListResult,
-    ): Promise<void> => {
+    ): Promise<boolean> => {
         const resolution = result.editorResolution;
         if (!resolution) {
-            return Promise.resolve();
+            return Promise.resolve(false);
         }
 
         const downloadableRelease = findDownloadableRelease(result);
@@ -156,13 +157,12 @@ export function useAddProjectWorkflow({
                           label: t('addProject.editorResolution.download', {
                               version: downloadableRelease.version,
                           }),
-                          run: () => {
-                              void downloadEditorAndAddProject(
+                          run: () =>
+                              downloadEditorAndAddProject(
                                   projectPath,
                                   result,
                                   downloadableRelease,
-                              );
-                          },
+                              ),
                       },
                   ]
                 : []),
@@ -172,18 +172,17 @@ export function useAddProjectWorkflow({
                           label: t('addProject.editorResolution.useFallback', {
                               version: fallback.version,
                           }),
-                          run: () => {
-                              void retryAddProject(projectPath, {
+                          run: () =>
+                              retryAddProject(projectPath, {
                                   resolution: 'use_fallback',
                                   release: fallback,
-                              });
-                          },
+                              }),
                       },
                   ]
                 : []),
         ];
 
-        return new Promise((resolve) => {
+        return new Promise<boolean>((resolve) => {
             addCustomConfirm(
                 t('addProject.editorResolution.title'),
                 <div className="flex flex-col gap-3">
@@ -247,8 +246,11 @@ export function useAddProjectWorkflow({
                                                           type="button"
                                                           onClick={() => {
                                                               close();
-                                                              resolve();
-                                                              action.run();
+                                                              void action
+                                                                  .run()
+                                                                  .then(
+                                                                      resolve,
+                                                                  );
                                                           }}
                                                       >
                                                           {action.label}
@@ -265,10 +267,11 @@ export function useAddProjectWorkflow({
                         typeClass: 'btn-warning',
                         text: t('addProject.editorResolution.addMissing'),
                         onClick: async () => {
-                            await retryAddProject(projectPath, {
-                                resolution: 'add_missing',
-                            });
-                            resolve();
+                            resolve(
+                                await retryAddProject(projectPath, {
+                                    resolution: 'add_missing',
+                                }),
+                            );
                             return true;
                         },
                     },
@@ -277,7 +280,7 @@ export function useAddProjectWorkflow({
                         typeClass: 'btn-neutral',
                         text: t('common:buttons.cancel'),
                         onClick: () => {
-                            resolve();
+                            resolve(false);
                             return true;
                         },
                     },
@@ -290,20 +293,20 @@ export function useAddProjectWorkflow({
     const handleAddProjectResult = async (
         projectPath: string,
         result: AddProjectToListResult,
-    ): Promise<void> => {
+    ): Promise<boolean> => {
         if (result.editorResolution) {
-            await showEditorResolutionDialog(projectPath, result);
-            return;
+            return showEditorResolutionDialog(projectPath, result);
         }
 
         if (!result.success) {
             showAddProjectError(result.error);
-            return;
+            return false;
         }
 
         showRecoveredCodeEditorConfigWarning(
             result.recoveredCodeEditorConfigFiles,
         );
+        return true;
     };
 
     const onAddProject = async () => {

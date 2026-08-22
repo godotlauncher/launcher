@@ -6,6 +6,7 @@ import { TrayAvailabilityModule } from '../services/tray-availability.module.js'
 import { GitModule } from '../tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from '../tool-integration/integrations/git-lfs/git-lfs.module.js';
 import { ProjectCreationService } from './project-creation.service.js';
+import { ProjectDiscoveryService } from './project-discovery.service.js';
 import { ProjectImportService } from './project-import.service.js';
 import { ProjectRemoteImportService } from './project-remote-import.service.js';
 import { ProjectRemoteImportProgressService } from './project-remote-import-progress.service.js';
@@ -27,6 +28,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
     ],
     providers: [
         ProjectCreationService,
+        ProjectDiscoveryService,
         ProjectImportService,
         ProjectRemoteSourceService,
         ProjectRemoteImportProgressService,

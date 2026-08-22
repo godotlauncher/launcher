@@ -151,6 +151,8 @@
                 "completePath": "Destinazzjoni kompluta"
             },
             "actions": {
+                "clone": "Iklonja r-repożitorju",
+                "addProjects": "Żid il-proġetti magħżula ({{count}})",
                 "cloneAndAdd": "Iklonja u żid il-proġett",
                 "cancelImport": "Ikkanċella l-importazzjoni",
                 "retryRegistration": "Erġa' ipprova żid mal-Launcher",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "Nipprepara l-importazzjoni...",
                 "cloning": "Klonazzjoni tar-repożitorju...",
+                "discovering": "Qed jinstabu l-proġetti Godot...",
                 "cancelling": "Tħassir l-importazzjoni..."
             },
+            "review": {
+                "title": "Agħżel il-proġetti li trid iżżid",
+                "description": "Il-proġetti kollha misjuba huma magħżula. Neħħi l-għażla minn eżempji, testijiet, jew proġetti oħra li ma tridx iżżid.",
+                "selectAll": "Agħżel il-proġetti kollha",
+                "empty": "Ma nstab l-ebda proġett Godot validu. Ir-repożitorju kklonat inżamm."
+            },
             "registration": {
-                "preserved": "Ir-repożitorju ġie kklonat b'suċċess u nżamm f'dan il-post."
+                "preserved": "Ir-repożitorju ġie kklonat b'suċċess u nżamm f'dan il-post.",
+                "adding": "Qed jiżdiedu l-proġetti: {{current}}/{{total}}",
+                "complete": "L-importazzjoni tal-proġetti tlestiet",
+                "added": "Miżjud",
+                "skipped": "Maqbuż",
+                "failed": "Falla",
+                "alreadyAdded": "Proġett b'dan l-isem jew triq diġà jinsab fil-Launcher.",
+                "notAdded": "Il-proġett ma żdiedx."
             },
             "errors": {
                 "invalidSource": "Is-sors tar-repożitorju m'għadux validu.",
@@ -176,6 +192,8 @@
                 "destinationConflict": "Id-destinazzjoni diġà teżisti.",
                 "cloneFailed": "Git ma setax jikklona r-repożitorju.",
                 "notGodotProject": "Ir-repożitorju ma fihx project.godot fl-għerq tiegħu.",
+                "discoveryFailed": "Ir-repożitorju ġie kklonat, iżda l-proġetti Godot tiegħu ma setgħux jinstabu.",
+                "discoveryLimitExceeded": "Ir-repożitorju ġie kklonat, iżda huwa kbir wisq jew imdaħħal fil-fond biex jiġi skannjat b'mod sigur.",
                 "finaliseFailed": "Il-klonu komplut ma setax jiġi mċaqlaq lejn id-destinazzjoni tiegħu.",
                 "cancelled": "L-importazzjoni ġiet ikkanċellata.",
                 "registration-failed": "Ir-repożitorju ġie kklonat iżda ma setax jiġi miżjud mal-Launcher."

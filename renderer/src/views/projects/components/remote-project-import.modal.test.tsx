@@ -18,7 +18,7 @@ vi.mock('../../../hooks/usePreferences', () => ({
 }));
 
 vi.mock('../../../hooks/useProjects', () => ({
-    useProjects: () => ({ addProject: vi.fn() }),
+    useProjects: () => ({ addProject: vi.fn(), projects: [] }),
 }));
 
 vi.mock('../../../bridge', () => ({
@@ -61,7 +61,7 @@ describe('RemoteProjectImportModal', () => {
         );
 
         expect(html).toContain('role="dialog"');
-        expect(html).toContain('h-[85vh] max-w-4xl');
+        expect(html).toContain('h-[85vh] max-w-5xl');
         expect(html).toContain('addProject.remote.github.searchPlaceholder');
         expect(html).not.toContain('addProject.remote.github.visibility');
         expect(html).not.toContain('addProject.remote.public.urlLabel');

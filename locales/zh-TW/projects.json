@@ -151,6 +151,8 @@
                 "completePath": "完整目的地"
             },
             "actions": {
+                "clone": "克隆儲存庫",
+                "addProjects": "新增所選專案（{{count}}）",
                 "cloneAndAdd": "克隆並添加項目",
                 "cancelImport": "取消導入",
                 "retryRegistration": "重試添加到啟動器",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "準備導入...",
                 "cloning": "克隆存儲庫...",
+                "discovering": "正在尋找 Godot 專案...",
                 "cancelling": "正在取消導入..."
             },
+            "review": {
+                "title": "選擇要新增的專案",
+                "description": "已選取所有找到的專案。請取消選取不想新增的範例、測試或其他專案。",
+                "selectAll": "選取所有專案",
+                "empty": "找不到有效的 Godot 專案。已保留克隆的儲存庫。"
+            },
             "registration": {
-                "preserved": "存儲庫已成功克隆並已保存在此位置。"
+                "preserved": "存儲庫已成功克隆並已保存在此位置。",
+                "adding": "正在新增專案：{{current}}/{{total}}",
+                "complete": "專案匯入完成",
+                "added": "已新增",
+                "skipped": "已略過",
+                "failed": "失敗",
+                "alreadyAdded": "Launcher 中已有相同名稱或路徑的專案。",
+                "notAdded": "未新增此專案。"
             },
             "errors": {
                 "invalidSource": "儲存庫來源不再有效。",
@@ -176,6 +192,8 @@
                 "destinationConflict": "目的地已經存在。",
                 "cloneFailed": "Git 無法克隆儲存庫。",
                 "notGodotProject": "該儲存庫的根目錄不包含project.godot。",
+                "discoveryFailed": "儲存庫已克隆，但無法找到其中的 Godot 專案。",
+                "discoveryLimitExceeded": "儲存庫已克隆，但規模過大或巢狀層級過深，無法安全掃描。",
                 "finaliseFailed": "已完成的克隆無法移動到其目的地。",
                 "cancelled": "進口被取消。",
                 "registration-failed": "儲存庫已克隆，但無法新增至啟動器。"

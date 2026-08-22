@@ -151,6 +151,8 @@
                 "completePath": "Kompletny cel"
             },
             "actions": {
+                "clone": "Sklonuj repozytorium",
+                "addProjects": "Dodaj wybrane projekty ({{count}})",
                 "cloneAndAdd": "Sklonuj i dodaj projekt",
                 "cancelImport": "Anuluj import",
                 "retryRegistration": "Spróbuj ponownie dodać do Launchera",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "Przygotowanie importu...",
                 "cloning": "Klonowanie repozytorium...",
+                "discovering": "Wyszukiwanie projektów Godot...",
                 "cancelling": "Anulowanie importu..."
             },
+            "review": {
+                "title": "Wybierz projekty do dodania",
+                "description": "Wszystkie znalezione projekty są zaznaczone. Odznacz przykłady, testy lub inne projekty, których nie chcesz dodawać.",
+                "selectAll": "Zaznacz wszystkie projekty",
+                "empty": "Nie znaleziono prawidłowych projektów Godot. Sklonowane repozytorium zostało zachowane."
+            },
             "registration": {
-                "preserved": "Repozytorium zostało pomyślnie sklonowane i zostało przechowywane w tej lokalizacji."
+                "preserved": "Repozytorium zostało pomyślnie sklonowane i zostało przechowywane w tej lokalizacji.",
+                "adding": "Dodawanie projektów: {{current}}/{{total}}",
+                "complete": "Import projektów zakończony",
+                "added": "Dodano",
+                "skipped": "Pominięto",
+                "failed": "Niepowodzenie",
+                "alreadyAdded": "Projekt o tej nazwie lub ścieżce znajduje się już w Launcherze.",
+                "notAdded": "Projekt nie został dodany."
             },
             "errors": {
                 "invalidSource": "Źródło repozytorium nie jest już ważne.",
@@ -176,6 +192,8 @@
                 "destinationConflict": "Miejsce docelowe już istnieje.",
                 "cloneFailed": "Git nie mógł sklonować repozytorium.",
                 "notGodotProject": "Repozytorium nie zawiera pliku Project.godot w swoim katalogu głównym.",
+                "discoveryFailed": "Repozytorium zostało sklonowane, ale nie udało się znaleźć jego projektów Godot.",
+                "discoveryLimitExceeded": "Repozytorium zostało sklonowane, ale jest zbyt duże lub zbyt głęboko zagnieżdżone, aby bezpiecznie je przeskanować.",
                 "finaliseFailed": "Nie można przenieść ukończonego klonu do miejsca docelowego.",
                 "cancelled": "Import został anulowany.",
                 "registration-failed": "Repozytorium zostało sklonowane, ale nie można było go dodać do Launchera."

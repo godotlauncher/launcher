@@ -31,7 +31,7 @@ export class ProjectsController implements ProjectsBridge {
     constructor(private readonly projects: ProjectsService) {}
 
     /**
-     * Clones and validates one remote project without registering it.
+     * Clones a remote repository and discovers its Godot projects.
      *
      * @param request - Renderer-safe remote source and destination request.
      */

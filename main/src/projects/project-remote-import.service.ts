@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import type { Stats } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { OnModuleDestroy } from '@mariodebono/di';
@@ -21,6 +20,8 @@ import type { GitCloneResult } from '../tool-integration/integrations/git/git-cl
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { PublicGitSourceService } from '../tool-integration/integrations/git/public-git-source.service.js';
 import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectDiscoveryService } from './project-discovery.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRemoteImportProgressService } from './project-remote-import-progress.service.js';
 
@@ -59,6 +60,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
      * @param cloneService - Cancellable streaming Git clone service.
      * @param publicSources - Anonymous public source policy.
      * @param repositoryHosting - Connected repository selection boundary.
+     * @param discovery - Bounded cloned-repository project discovery.
      * @param progress - Renderer progress publisher.
      */
     constructor(
@@ -66,6 +68,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         private readonly cloneService: GitCloneService,
         private readonly publicSources: PublicGitSourceService,
         private readonly repositoryHosting: RepositoryHostingService,
+        private readonly discovery: ProjectDiscoveryService,
         private readonly progress: ProjectRemoteImportProgressService,
     ) {}
 
@@ -76,7 +79,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
     }
 
     /**
-     * Clones and validates one remote Godot project without registering it.
+     * Clones a remote repository and discovers its Godot projects.
      *
      * @param request - Renderer-safe source and destination request.
      * @returns The completed clone path or a typed failure.
@@ -142,7 +145,11 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         if (!job || job.id !== jobId) {
             return { jobId, status: 'not-found' };
         }
-        if (job.stage !== 'cloning' && job.stage !== 'cancelling') {
+        if (
+            job.stage !== 'cloning' &&
+            job.stage !== 'discovering-projects' &&
+            job.stage !== 'cancelling'
+        ) {
             return { jobId, status: 'not-cancellable' };
         }
         if (job.stage !== 'cancelling') {
@@ -301,28 +308,6 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             if (job.controller.signal.aborted) {
                 return { ok: false, jobId: job.id, reason: 'cancelled' };
             }
-            this.publish(job, 'validating-project', false);
-            const projectFilePath = path.join(
-                destination.temporaryPath,
-                'project.godot',
-            );
-            let projectFile: Stats;
-            try {
-                projectFile = await fs.lstat(projectFilePath);
-            } catch {
-                return {
-                    ok: false,
-                    jobId: job.id,
-                    reason: 'not-godot-project',
-                };
-            }
-            if (!projectFile.isFile() || projectFile.isSymbolicLink()) {
-                return {
-                    ok: false,
-                    jobId: job.id,
-                    reason: 'not-godot-project',
-                };
-            }
             this.publish(job, 'finalising', false);
             if (await pathExists(destination.finalPath)) {
                 return {
@@ -346,14 +331,24 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             await fs
                 .rm(destination.supportPath, { recursive: true, force: true })
                 .catch(() => undefined);
+            this.publish(job, 'discovering-projects', true);
+            const discovery = await this.discovery.discover(
+                destination.finalPath,
+                job.controller.signal,
+            );
+            if (!discovery.ok) {
+                return {
+                    ok: false,
+                    jobId: job.id,
+                    reason: discovery.reason,
+                    repositoryPath: destination.finalPath,
+                };
+            }
             return {
                 ok: true,
                 jobId: job.id,
-                projectPath: destination.finalPath,
-                projectFilePath: path.join(
-                    destination.finalPath,
-                    'project.godot',
-                ),
+                repositoryPath: destination.finalPath,
+                projects: discovery.projects,
             };
         } finally {
             await this.cleanupIncomplete(destination);

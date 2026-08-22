@@ -151,6 +151,8 @@
                 "completePath": "Hedefi tamamla"
             },
             "actions": {
+                "clone": "Depoyu klonla",
+                "addProjects": "Seçili projeleri ekle ({{count}})",
                 "cloneAndAdd": "Projeyi kopyala ve ekle",
                 "cancelImport": "İçe aktarmayı iptal et",
                 "retryRegistration": "Başlatıcıya eklemeyi yeniden deneyin",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "İçe aktarma hazırlanıyor...",
                 "cloning": "Depo klonlanıyor...",
+                "discovering": "Godot projeleri aranıyor...",
                 "cancelling": "İçe aktarma iptal ediliyor..."
             },
+            "review": {
+                "title": "Eklenecek projeleri seçin",
+                "description": "Bulunan tüm projeler seçilidir. Eklemek istemediğiniz örneklerin, testlerin veya diğer projelerin seçimini kaldırın.",
+                "selectAll": "Tüm projeleri seç",
+                "empty": "Geçerli bir Godot projesi bulunamadı. Klonlanan depo korundu."
+            },
             "registration": {
-                "preserved": "Depo başarıyla klonlandı ve bu konumda tutuldu."
+                "preserved": "Depo başarıyla klonlandı ve bu konumda tutuldu.",
+                "adding": "Projeler ekleniyor: {{current}}/{{total}}",
+                "complete": "Proje içe aktarma tamamlandı",
+                "added": "Eklendi",
+                "skipped": "Atlandı",
+                "failed": "Başarısız",
+                "alreadyAdded": "Bu ada veya yola sahip bir proje zaten Launcher'da bulunuyor.",
+                "notAdded": "Proje eklenmedi."
             },
             "errors": {
                 "invalidSource": "Depo kaynağı artık geçerli değil.",
@@ -176,6 +192,8 @@
                 "destinationConflict": "Hedef zaten mevcut.",
                 "cloneFailed": "Git, depoyu klonlayamadı.",
                 "notGodotProject": "Deponun kökünde project.godot bulunmuyor.",
+                "discoveryFailed": "Depo klonlandı ancak Godot projeleri bulunamadı.",
+                "discoveryLimitExceeded": "Depo klonlandı ancak güvenli biçimde taranamayacak kadar büyük veya derin iç içe geçmiş durumda.",
                 "finaliseFailed": "Tamamlanan klon hedefine taşınamadı.",
                 "cancelled": "İçe aktarma iptal edildi.",
                 "registration-failed": "Depo klonlandı ancak Başlatıcıya eklenemedi."

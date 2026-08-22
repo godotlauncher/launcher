@@ -151,6 +151,8 @@
                 "completePath": "完全な目的地"
             },
             "actions": {
+                "clone": "リポジトリをクローン",
+                "addProjects": "選択したプロジェクトを追加 ({{count}})",
                 "cloneAndAdd": "プロジェクトのクローンを作成して追加する",
                 "cancelImport": "インポートをキャンセルする",
                 "retryRegistration": "ランチャーへの追加を再試行します",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "インポートを準備しています...",
                 "cloning": "リポジトリのクローンを作成しています...",
+                "discovering": "Godot プロジェクトを検索しています...",
                 "cancelling": "インポートをキャンセルしています..."
             },
+            "review": {
+                "title": "追加するプロジェクトを選択",
+                "description": "見つかったすべてのプロジェクトが選択されています。追加しないサンプル、テスト、その他のプロジェクトの選択を解除してください。",
+                "selectAll": "すべてのプロジェクトを選択",
+                "empty": "有効な Godot プロジェクトが見つかりませんでした。クローンしたリポジトリは保持されています。"
+            },
             "registration": {
-                "preserved": "リポジトリは正常に複製され、この場所に保存されています。"
+                "preserved": "リポジトリは正常に複製され、この場所に保存されています。",
+                "adding": "プロジェクトを追加中: {{current}}/{{total}}",
+                "complete": "プロジェクトのインポートが完了しました",
+                "added": "追加済み",
+                "skipped": "スキップ",
+                "failed": "失敗",
+                "alreadyAdded": "同じ名前またはパスのプロジェクトが既に Launcher にあります。",
+                "notAdded": "プロジェクトは追加されませんでした。"
             },
             "errors": {
                 "invalidSource": "リポジトリ ソースは有効ではなくなりました。",
@@ -176,6 +192,8 @@
                 "destinationConflict": "宛先はすでに存在します。",
                 "cloneFailed": "Git はリポジトリのクローンを作成できませんでした。",
                 "notGodotProject": "リポジトリのルートには project.godot が含まれていません。",
+                "discoveryFailed": "リポジトリはクローンされましたが、Godot プロジェクトを見つけられませんでした。",
+                "discoveryLimitExceeded": "リポジトリはクローンされましたが、安全に検索するには大きすぎるか、深くネストされています。",
                 "finaliseFailed": "完成したクローンを目的地に移動できませんでした。",
                 "cancelled": "輸入はキャンセルされました。",
                 "registration-failed": "リポジトリは複製されましたが、Launcher に追加できませんでした。"

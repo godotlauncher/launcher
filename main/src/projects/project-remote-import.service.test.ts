@@ -36,6 +36,18 @@ describe('ProjectRemoteImportService', () => {
             }),
         ),
     };
+    const discovery = {
+        discover: vi.fn(async (repositoryPath: string) => ({
+            ok: true as const,
+            projects: [
+                {
+                    name: 'Game',
+                    relativePath: '.',
+                    projectFilePath: path.join(repositoryPath, 'project.godot'),
+                },
+            ],
+        })),
+    };
     const progress = { publish: vi.fn() };
     const clone = { clone: vi.fn() };
 
@@ -72,12 +84,18 @@ describe('ProjectRemoteImportService', () => {
         const canonicalParent = await fs.realpath(parentDirectory);
         expect(result).toMatchObject({
             ok: true,
-            projectPath: path.join(canonicalParent, 'game'),
-            projectFilePath: path.join(
-                canonicalParent,
-                'game',
-                'project.godot',
-            ),
+            repositoryPath: path.join(canonicalParent, 'game'),
+            projects: [
+                {
+                    name: 'Game',
+                    relativePath: '.',
+                    projectFilePath: path.join(
+                        canonicalParent,
+                        'game',
+                        'project.godot',
+                    ),
+                },
+            ],
         });
         expect(publicSources.inspect).toHaveBeenCalledWith(
             'https://example.com/team/game.git',
@@ -200,6 +218,49 @@ describe('ProjectRemoteImportService', () => {
         expect(await fs.readdir(parentDirectory)).toEqual([]);
     });
 
+    it('cancels discovery but preserves the completed clone', async () => {
+        discovery.discover.mockImplementationOnce(
+            async (_repositoryPath, signal: AbortSignal) =>
+                new Promise((resolve) => {
+                    signal.addEventListener(
+                        'abort',
+                        () => resolve({ ok: false, reason: 'cancelled' }),
+                        { once: true },
+                    );
+                }),
+        );
+        const service = createService();
+        const importing = service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        await vi.waitFor(() =>
+            expect(progress.publish).toHaveBeenCalledWith(
+                expect.objectContaining({ stage: 'discovering-projects' }),
+            ),
+        );
+        const jobId = progress.publish.mock.calls.find(
+            ([value]) => value.stage === 'discovering-projects',
+        )?.[0].jobId;
+
+        await expect(service.cancelRemoteProjectImport(jobId)).resolves.toEqual(
+            { jobId, status: 'cancelling' },
+        );
+        await expect(importing).resolves.toMatchObject({
+            ok: false,
+            reason: 'cancelled',
+            repositoryPath: path.join(
+                await fs.realpath(parentDirectory),
+                'game',
+            ),
+        });
+        await expect(
+            fs.stat(path.join(parentDirectory, 'game')),
+        ).resolves.toBeDefined();
+    });
+
     it('rejects case-equivalent destination conflicts before cloning', async () => {
         await fs.mkdir(path.join(parentDirectory, 'Game'));
         const service = createService();
@@ -236,7 +297,10 @@ describe('ProjectRemoteImportService', () => {
 
         expect(result).toMatchObject({
             ok: true,
-            projectPath: path.join(await fs.realpath(parentDirectory), 'game'),
+            repositoryPath: path.join(
+                await fs.realpath(parentDirectory),
+                'game',
+            ),
         });
         expect(clone.clone).toHaveBeenCalledOnce();
     });
@@ -261,11 +325,12 @@ describe('ProjectRemoteImportService', () => {
         expect(clone.clone).not.toHaveBeenCalled();
     });
 
-    it('rejects a cloned repository without a root project.godot', async () => {
+    it('preserves a cloned repository when no projects are discovered', async () => {
         clone.clone.mockImplementationOnce(async (request) => {
             await fs.mkdir(request.destinationPath);
             return { ok: true };
         });
+        discovery.discover.mockResolvedValueOnce({ ok: true, projects: [] });
         const service = createService();
 
         await expect(
@@ -275,11 +340,31 @@ describe('ProjectRemoteImportService', () => {
                 parentDirectory,
                 directoryName: 'not-godot',
             }),
+        ).resolves.toMatchObject({ ok: true, projects: [] });
+        expect(await fs.readdir(parentDirectory)).toEqual(['not-godot']);
+    });
+
+    it('preserves the completed clone after a discovery failure', async () => {
+        discovery.discover.mockResolvedValueOnce({
+            ok: false,
+            reason: 'discovery-limit-exceeded',
+        });
+        const service = createService();
+
+        await expect(
+            service.importRemoteProject({
+                source: 'public-git-url',
+                url: 'https://example.com/team/game.git',
+                parentDirectory,
+                directoryName: 'game',
+            }),
         ).resolves.toMatchObject({
             ok: false,
-            reason: 'not-godot-project',
+            reason: 'discovery-limit-exceeded',
         });
-        expect(await fs.readdir(parentDirectory)).toEqual([]);
+        await expect(
+            fs.stat(path.join(parentDirectory, 'game')),
+        ).resolves.toBeDefined();
     });
 
     /** Creates the service with test-owned external boundaries. */
@@ -289,6 +374,7 @@ describe('ProjectRemoteImportService', () => {
             clone as never,
             publicSources as never,
             repositoryHosting as never,
+            discovery as never,
             progress as never,
         );
     }

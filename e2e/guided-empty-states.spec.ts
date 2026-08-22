@@ -193,6 +193,70 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await expect(createDrawer).not.toBeVisible();
 });
 
+test('Remote repository discovery lets users exclude projects before adding', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await expect(modal.getByText('Clone to')).toBeVisible();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    const checkboxes = modal.getByRole('checkbox');
+    await expect(checkboxes).toHaveCount(3);
+    await expect(checkboxes.nth(0)).toBeChecked();
+    await expect(checkboxes.nth(1)).toBeChecked();
+    await expect(checkboxes.nth(2)).toBeChecked();
+
+    await checkboxes.nth(0).click();
+    await expect(modal.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
+    await checkboxes.nth(0).click();
+    await modal.getByText('Example Fixture').locator('..').click();
+    await expect(checkboxes.nth(0)).not.toBeChecked();
+    await expect(checkboxes.nth(1)).toBeChecked();
+    await expect(checkboxes.nth(2)).not.toBeChecked();
+    await modal.getByTestId('btnAddDiscoveredProjects').click();
+
+    await expect(modal.getByText('Project import complete')).toBeVisible();
+    await expect.poll(readRemoteAddedProjectPaths).toEqual([
+        '/home/docs/Godot/Projects/games/project.godot',
+    ]);
+});
+
+test('GitHub repositories use the same multi-project review', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await failRootRemoteProjectRegistration();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+
+    const modal = mainPage.getByRole('dialog', { name: 'Import from GitHub' });
+    await modal.getByRole('button', { name: 'team/games' }).click();
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect(modal.getByText('Root Game')).toBeVisible();
+    await expect(modal.getByText('Example Fixture')).toBeVisible();
+    await expect(modal.getByRole('checkbox')).toHaveCount(3);
+    await modal.getByTestId('btnAddDiscoveredProjects').click();
+    await expect(modal.getByText('Project import complete')).toBeVisible();
+    await expect(modal.getByText(/Failed: Duplicate root project/)).toBeVisible();
+    await expect.poll(readRemoteAddedProjectPaths).toEqual([
+        '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
+    ]);
+});
+
 test('Onboarding without an editor finishes inside the install drawer', async () => {
     await prepareOnboardingScreenshot(
         mainPage,
@@ -284,6 +348,112 @@ async function readOpenFileDialogCallCount(): Promise<number> {
             __guidedEmptyStateOpenFileDialogCalls?: number;
         };
         return state.__guidedEmptyStateOpenFileDialogCalls ?? 0;
+    });
+}
+
+/** Installs deterministic IPC results for the multi-project clone review. */
+async function stubRemoteProjectDiscovery(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteAddedProjectPaths?: string[];
+            __guidedFailRootRemoteProject?: boolean;
+        };
+        state.__guidedRemoteAddedProjectPaths = [];
+        state.__guidedFailRootRemoteProject = false;
+
+        ipcMain.removeHandler('projects.inspectPublicGitSource');
+        ipcMain.handle('projects.inspectPublicGitSource', async () => ({
+            success: true,
+            data: {
+                ok: true,
+                canonicalUrl: 'https://example.com/team/games.git',
+                suggestedDirectoryName: 'games',
+            },
+        }));
+        ipcMain.removeHandler('projects.listConnectedRepositories');
+        ipcMain.handle('projects.listConnectedRepositories', async () => ({
+            success: true,
+            data: {
+                ok: true,
+                page: {
+                    repositories: [
+                        {
+                            repositoryRef: 'repository-ref',
+                            providerId: 'github',
+                            owner: 'team',
+                            name: 'games',
+                            visibility: 'private',
+                            alreadyImported: false,
+                        },
+                    ],
+                    nextCursor: null,
+                },
+            },
+        }));
+        ipcMain.removeHandler('projects.importRemoteProject');
+        ipcMain.handle('projects.importRemoteProject', async () => ({
+            success: true,
+            data: {
+                ok: true,
+                jobId: 'remote-discovery-job',
+                repositoryPath: '/home/docs/Godot/Projects/games',
+                projects: [
+                    {
+                        name: 'Root Game',
+                        relativePath: '.',
+                        projectFilePath:
+                            '/home/docs/Godot/Projects/games/project.godot',
+                    },
+                    {
+                        name: 'Example Fixture',
+                        relativePath: 'examples/fixture',
+                        projectFilePath:
+                            '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
+                    },
+                ],
+            },
+        }));
+        ipcMain.removeHandler('projects.addProject');
+        ipcMain.handle(
+            'projects.addProject',
+            async (_event, projectFilePath: string) => {
+                if (
+                    state.__guidedFailRootRemoteProject &&
+                    projectFilePath ===
+                        '/home/docs/Godot/Projects/games/project.godot'
+                ) {
+                    return {
+                        success: true,
+                        data: {
+                            success: false,
+                            error: 'Duplicate root project',
+                        },
+                    };
+                }
+                state.__guidedRemoteAddedProjectPaths?.push(projectFilePath);
+                return { success: true, data: { success: true } };
+            },
+        );
+    });
+}
+
+/** Makes the root discovery fail registration for continuation coverage. */
+async function failRootRemoteProjectRegistration(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedFailRootRemoteProject?: boolean;
+        };
+        state.__guidedFailRootRemoteProject = true;
+    });
+}
+
+/** Reads the project paths submitted by the remote discovery review. */
+async function readRemoteAddedProjectPaths(): Promise<string[]> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteAddedProjectPaths?: string[];
+        };
+        return state.__guidedRemoteAddedProjectPaths ?? [];
     });
 }
 

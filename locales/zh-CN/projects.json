@@ -151,6 +151,8 @@
                 "completePath": "完整目的地"
             },
             "actions": {
+                "clone": "克隆存储库",
+                "addProjects": "添加所选项目（{{count}}）",
                 "cloneAndAdd": "克隆并添加项目",
                 "cancelImport": "取消导入",
                 "retryRegistration": "重试添加到启动器",
@@ -160,10 +162,24 @@
             "progress": {
                 "preparing": "准备导入...",
                 "cloning": "克隆存储库...",
+                "discovering": "正在查找 Godot 项目...",
                 "cancelling": "正在取消导入..."
             },
+            "review": {
+                "title": "选择要添加的项目",
+                "description": "已选择所有发现的项目。请取消选择不想添加的示例、测试或其他项目。",
+                "selectAll": "选择所有项目",
+                "empty": "未找到有效的 Godot 项目。已保留克隆的存储库。"
+            },
             "registration": {
-                "preserved": "存储库已成功克隆并已保存在此位置。"
+                "preserved": "存储库已成功克隆并已保存在此位置。",
+                "adding": "正在添加项目：{{current}}/{{total}}",
+                "complete": "项目导入完成",
+                "added": "已添加",
+                "skipped": "已跳过",
+                "failed": "失败",
+                "alreadyAdded": "Launcher 中已有相同名称或路径的项目。",
+                "notAdded": "未添加该项目。"
             },
             "errors": {
                 "invalidSource": "存储库源不再有效。",
@@ -176,6 +192,8 @@
                 "destinationConflict": "目的地已经存在。",
                 "cloneFailed": "Git 无法克隆存储库。",
                 "notGodotProject": "该存储库的根目录不包含project.godot。",
+                "discoveryFailed": "存储库已克隆，但无法发现其中的 Godot 项目。",
+                "discoveryLimitExceeded": "存储库已克隆，但规模过大或嵌套过深，无法安全扫描。",
                 "finaliseFailed": "已完成的克隆无法移动到其目的地。",
                 "cancelled": "进口被取消。",
                 "registration-failed": "存储库已克隆，但无法添加到启动器。"

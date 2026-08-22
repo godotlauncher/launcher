@@ -1,13 +1,19 @@
-import type { RemoteRepositorySummary } from '@shared/contracts';
+import type {
+    RemoteDiscoveredProject,
+    RemoteRepositorySummary,
+} from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
     appendRemoteRepositories,
     filterRemoteRepositories,
+    filterSelectedDiscoveredProjects,
     getGitAvailability,
+    getProjectDirectoryFromFilePath,
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
     getRemoteProjectDirectoryName,
     getRemoteRepositoryRowClassName,
+    selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
 } from './remote-project-import.model';
 
@@ -27,6 +33,19 @@ const repositories: RemoteRepositorySummary[] = [
         name: 'Game Project',
         visibility: 'private',
         alreadyImported: true,
+    },
+];
+
+const discoveredProjects: RemoteDiscoveredProject[] = [
+    {
+        name: 'Root',
+        relativePath: '.',
+        projectFilePath: '/repo/project.godot',
+    },
+    {
+        name: 'Example',
+        relativePath: 'examples/example',
+        projectFilePath: '/repo/examples/example/project.godot',
     },
 ];
 
@@ -67,6 +86,17 @@ describe('remote project import model', () => {
         expect(
             getRemoteProjectDestinationDisplay('/projects/', 'game', 'darwin'),
         ).toBe('/projects/game');
+    });
+
+    it('gets project directories from POSIX and Windows project files', () => {
+        expect(
+            getProjectDirectoryFromFilePath('/projects/game/project.godot'),
+        ).toBe('/projects/game');
+        expect(
+            getProjectDirectoryFromFilePath(
+                'C:\\Projects\\game\\project.godot',
+            ),
+        ).toBe('C:\\Projects\\game');
     });
 
     it.each([
@@ -128,6 +158,19 @@ describe('remote project import model', () => {
                 { ...repositories[1], repositoryRef: 'third' },
             ]).map((repository) => repository.repositoryRef),
         ).toEqual(['first', 'second', 'third']);
+    });
+
+    it('selects all discoveries by default and filters deselected projects', () => {
+        const selected = selectAllDiscoveredProjects(discoveredProjects);
+        expect(selected.size).toBe(2);
+
+        selected.delete(discoveredProjects[1].projectFilePath);
+        expect(
+            filterSelectedDiscoveredProjects(discoveredProjects, selected),
+        ).toEqual([discoveredProjects[0]]);
+        expect(
+            filterSelectedDiscoveredProjects(discoveredProjects, new Set()),
+        ).toEqual([]);
     });
 
     it('gives the selected repository a clear persistent highlight', () => {
