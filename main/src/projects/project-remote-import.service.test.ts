@@ -218,6 +218,29 @@ describe('ProjectRemoteImportService', () => {
         expect(clone.clone).not.toHaveBeenCalled();
     });
 
+    it('clones an independent repository inside an existing work tree', async () => {
+        git.inspectRepository.mockResolvedValueOnce({
+            status: 'inside-work-tree',
+            root: parentDirectory,
+            isProjectRoot: false,
+            kind: 'standard',
+        });
+        const service = createService();
+
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+
+        expect(result).toMatchObject({
+            ok: true,
+            projectPath: path.join(await fs.realpath(parentDirectory), 'game'),
+        });
+        expect(clone.clone).toHaveBeenCalledOnce();
+    });
+
     it('fails closed when destination repository scope cannot be inspected', async () => {
         git.inspectRepository.mockResolvedValueOnce({
             status: 'inspection-failed',

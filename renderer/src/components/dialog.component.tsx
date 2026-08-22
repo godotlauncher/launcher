@@ -5,6 +5,7 @@ type DialogProps = {
     title: string;
     children: ReactNode;
     footer?: ReactNode;
+    panelClassName?: string;
 };
 
 export const Dialog: React.FC<DialogProps> = ({
@@ -12,11 +13,14 @@ export const Dialog: React.FC<DialogProps> = ({
     title,
     children,
     footer,
+    panelClassName = '',
 }) => {
+    const widthClassName = panelClassName ? '' : 'max-w-lg';
+
     return (
         <div className="fixed z-60 inset-0 bg-black/80 flex items-center justify-center p-4">
             <section
-                className="bg-base-100 border border-base-300 rounded-lg shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden"
+                className={`bg-base-100 border border-base-300 rounded-lg shadow-2xl w-full max-h-[85vh] flex flex-col overflow-hidden ${widthClassName} ${panelClassName}`}
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}
@@ -31,7 +35,7 @@ export const Dialog: React.FC<DialogProps> = ({
                         {title}
                     </h1>
                 </header>
-                <div className="px-5 py-4 overflow-auto leading-6 text-base-content/80">
+                <div className="min-h-0 flex-1 px-5 py-4 overflow-auto leading-6 text-base-content/80">
                     {children}
                 </div>
                 {footer && (

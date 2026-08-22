@@ -239,13 +239,13 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             throw new RemoteImportFailure('destination-conflict');
         }
         const inspection = await this.git.inspectRepository(finalPath);
-        if (inspection.status === 'inside-work-tree') {
-            throw new RemoteImportFailure('destination-invalid');
-        }
         if (inspection.status === 'git-unavailable') {
             throw new RemoteImportFailure('git-unavailable');
         }
-        if (inspection.status !== 'not-a-repository') {
+        if (
+            inspection.status !== 'not-a-repository' &&
+            inspection.status !== 'inside-work-tree'
+        ) {
             throw new RemoteImportFailure('destination-invalid');
         }
 

@@ -3,7 +3,16 @@ import { GitHubApiError } from './github-api.client.js';
 import { GitHubRepositoryBrowsingCapability } from './github-repository-browsing.capability.js';
 
 const request = {
-    credential: 'secret-token',
+    credential: JSON.stringify({
+        version: 1,
+        createdAt: '2026-08-22T12:00:00.000Z',
+        accessToken: 'secret-token',
+        expiresIn: 28_800,
+        refreshToken: 'refresh-token',
+        refreshTokenExpiresIn: 15_768_000,
+        scope: '',
+        tokenType: 'bearer',
+    }),
     accessTarget: {
         id: 'local-target',
         providerTargetId: '123',
@@ -56,6 +65,12 @@ describe('GitHubRepositoryBrowsingCapability', () => {
             ],
             nextCursor: null,
         });
+        expect(github.getInstallationRepositories).toHaveBeenCalledWith(
+            'secret-token',
+            '123',
+            null,
+            request.signal,
+        );
     });
 
     it('returns a provider-formatted credential only from exact revalidation', async () => {
@@ -99,6 +114,28 @@ describe('GitHubRepositoryBrowsingCapability', () => {
                 password: 'secret-token',
             },
         });
+        expect(github.getRepository).toHaveBeenCalledWith(
+            'secret-token',
+            'owner',
+            'repository',
+            '42',
+            request.signal,
+        );
+    });
+
+    it('rejects an invalid stored credential before calling GitHub', async () => {
+        const github = { getInstallationRepositories: vi.fn() };
+        const capability = new GitHubRepositoryBrowsingCapability(
+            github as never,
+        );
+
+        await expect(
+            capability.listRepositories({
+                ...request,
+                credential: 'secret-token',
+            }),
+        ).rejects.toMatchObject({ reason: 'reauthorisation-required' });
+        expect(github.getInstallationRepositories).not.toHaveBeenCalled();
     });
 
     it.each([

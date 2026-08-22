@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     appRemoveListener: vi.fn(),
     autoUpdaterOn: vi.fn(),
     autoUpdaterRemoveListener: vi.fn(),
+    createEditingMenu: vi.fn(),
     createMenu: vi.fn(),
     createTray: vi.fn(),
     disposeFocusRevalidation: vi.fn(),
@@ -85,6 +86,7 @@ vi.mock('./autoUpdater.js', () => ({
     stopAutoUpdateChecks: mocks.stopAutoUpdateChecks,
 }));
 vi.mock('./helpers/menu.helper.js', () => ({
+    createEditingMenu: mocks.createEditingMenu,
     createMenu: mocks.createMenu,
 }));
 vi.mock('./helpers/revalidate.helper.js', () => ({
@@ -294,6 +296,15 @@ describe('AppLifecycleService', () => {
         service.revealInitialWindow();
 
         expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+    });
+
+    it('installs native editing commands in a production window', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+
+        expect(mocks.createEditingMenu).toHaveBeenCalledOnce();
+        expect(mocks.createMenu).not.toHaveBeenCalled();
     });
 
     it('does not install focus revalidation for documentation screenshots', async () => {

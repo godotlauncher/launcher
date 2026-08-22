@@ -104,6 +104,7 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await mainPage.getByTestId('btnProjects').click();
 
     await mainPage.getByTestId('btnEmptyStateSecondary').click();
+    await mainPage.getByTestId('btnAddProjectFromComputer').click();
     await expect.poll(readOpenFileDialogCallCount).toBe(1);
 
     await mainPage.getByTestId('btnEmptyStatePrimary').click();
@@ -165,6 +166,7 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await stubOpenFileDialog();
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnEmptyStateSecondary').click();
+    await mainPage.getByTestId('btnAddProjectFromComputer').click();
     await expect.poll(readOpenFileDialogCallCount).toBe(1);
 
     const newProjectAction = mainPage.getByTestId('btnEmptyStatePrimary');

@@ -26,7 +26,7 @@ import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
-import { createMenu } from './helpers/menu.helper.js';
+import { createEditingMenu, createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
 import { configureI18n } from './i18n/index.js';
@@ -142,7 +142,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         } else {
-            this.electronAppService.clearApplicationMenu();
+            createEditingMenu();
         }
 
         const prefs = await getUserPreferences();

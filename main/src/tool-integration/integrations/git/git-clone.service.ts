@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
-import { Injectable } from '@mariodebono/di';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { Injectable, Logger } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationService } from '../../tool-integration.service.js';
 import type { GitCloneRequest, GitCloneResult } from './git-clone.types.js';
@@ -28,10 +29,12 @@ export class GitCloneService {
      *
      * @param tools - Revalidated tool execution boundary.
      * @param credentials - Attempt-owned rejecting or connected sessions.
+     * @param logger - Application logger backed by the configured Electron logger.
      */
     constructor(
         private readonly tools: ToolIntegrationService,
         private readonly credentials: GitCredentialSessionService,
+        private readonly logger: Logger,
     ) {}
 
     /**
@@ -103,6 +106,14 @@ export class GitCloneService {
             ) {
                 return { ok: false, reason: 'public-clone-incompatible' };
             }
+            this.logger.warn('Remote Git clone failed', {
+                diagnostic: classifyCloneFailure(bufferedProgress),
+                event: 'remote_git_clone_failed',
+                exitCode: result.exitCode,
+                lastPercent,
+                processReason: result.reason,
+                source: request.source,
+            });
             return { ok: false, reason: 'clone-failed' };
         } finally {
             await askPass.close();
@@ -200,7 +211,7 @@ function createCloneArguments(request: GitCloneRequest, url: URL): string[] {
         '-c',
         'credential.helper=',
         '-c',
-        'credential.interactive=false',
+        `credential.interactive=${request.source === 'connected' ? 'true' : 'false'}`,
         '-c',
         'credential.useHttpPath=true',
         '-c',
@@ -263,4 +274,61 @@ function readClonePercent(value: string): number | null {
  */
 function isPublicCloneIncompatible(value: string): boolean {
     return /(?:curloptresolve|curlopt_resolve|curlopt-resolve)/iu.test(value);
+}
+
+type GitCloneFailureDiagnostic =
+    | 'authentication-denied'
+    | 'checkout-failed'
+    | 'credential-helper-failed'
+    | 'filesystem-failed'
+    | 'network-failed'
+    | 'repository-unavailable'
+    | 'unknown';
+
+/**
+ * Classifies bounded Git error output without retaining or logging it.
+ *
+ * @param value - Bounded recent Git standard error text.
+ * @returns A credential-safe diagnostic category.
+ */
+function classifyCloneFailure(value: string): GitCloneFailureDiagnostic {
+    if (
+        /(?:askpass|could not read (?:username|password)|credential helper|terminal prompts disabled|unable to get (?:username|password) from user)/iu.test(
+            value,
+        )
+    ) {
+        return 'credential-helper-failed';
+    }
+    if (
+        /(?:authentication failed|access denied|invalid username or password|http (?:401|403))/iu.test(
+            value,
+        )
+    ) {
+        return 'authentication-denied';
+    }
+    if (/(?:repository).*(?:not found|does not exist)/iu.test(value)) {
+        return 'repository-unavailable';
+    }
+    if (
+        /(?:could not resolve host|failed to connect|connection (?:reset|timed out)|early eof|http\/2 stream|remote end hung up|rpc failed|ssl|tls|unexpected disconnect)/iu.test(
+            value,
+        )
+    ) {
+        return 'network-failed';
+    }
+    if (
+        /(?:unable to checkout working tree|cannot create file|filename too long|invalid path)/iu.test(
+            value,
+        )
+    ) {
+        return 'checkout-failed';
+    }
+    if (
+        /(?:could not create work tree dir|disk quota exceeded|no space left on device|permission denied|read-only file system)/iu.test(
+            value,
+        )
+    ) {
+        return 'filesystem-failed';
+    }
+    return 'unknown';
 }

@@ -96,6 +96,90 @@
             "noStableReleases": "Aucune version Stable installée trouvée pour Godot {{version}}.x\nVeuillez installer une version stable pour Godot {{version}}.x, puis réessayez d'ajouter le projet.",
             "noDotNetRelease": "Le projet semble être un projet .NET mais aucun éditeur avec version .NET n'a été trouvé",
             "noCompatibleRelease": "Aucune version installée trouvée pour Godot {{version}}.x qui prend en charge config_version {{configVersion}}."
+        },
+        "sources": {
+            "title": "Ajouter un projet de",
+            "fromComputer": "Depuis cet ordinateur",
+            "publicGit": "Cloner le dépôt Git public",
+            "github": "Depuis GitHub",
+            "checkingGit": "Vérification de la disponibilité de Git...",
+            "gitUnavailable": "Git n'est pas disponible. Configurez-le dans Paramètres > Outils."
+        },
+        "remote": {
+            "public": {
+                "title": "Cloner le dépôt Git public",
+                "description": "Saisissez une URL de référentiel Git HTTPS public anonyme.",
+                "urlLabel": "URL du référentiel",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "Saisissez une URL de référentiel HTTPS public valide.",
+                    "dnsUnavailable": "L'hôte du référentiel n'a pas pu être résolu."
+                }
+            },
+            "github": {
+                "title": "Importer depuis GitHub",
+                "description": "Choisissez un référentiel disponible via vos connexions GitHub.",
+                "loading": "Chargement des référentiels...",
+                "searchPlaceholder": "Rechercher des référentiels",
+                "loadedSearchOnly": "La recherche couvre uniquement les référentiels chargés. Chargez-en davantage pour rechercher des résultats supplémentaires.",
+                "empty": "Aucun référentiel correspondant n'est chargé.",
+                "loadMore": "Charger plus",
+                "alreadyAdded": "Déjà ajouté",
+                "openConnections": "Connexions ouvertes",
+                "visibility": {
+                    "public": "Publique",
+                    "private": "Privé",
+                    "internal": "Interne"
+                },
+                "errors": {
+                    "connectionRequired": "Connectez ou reconnectez GitHub avant d'importer un référentiel.",
+                    "temporarilyUnavailable": "GitHub est temporairement indisponible. Réessayez plus tard.",
+                    "sessionExpired": "La session du référentiel a expiré. Chargez à nouveau la liste."
+                }
+            },
+            "destination": {
+                "description": "Choisissez où le référentiel sera cloné.",
+                "repository": "Référentiel",
+                "projectName": "Nom du projet",
+                "projectNameHelp": "Définit le nom du dossier local. Le nom dans project.godot reste inchangé.",
+                "cloneTo": "Cloner dans",
+                "useDefault": "Utiliser par défaut",
+                "parent": "Dossier parent",
+                "chooseParent": "Choisir le dossier parent",
+                "selectParent": "Sélectionner le dossier parent du projet",
+                "directoryName": "Nom du dossier du projet",
+                "completePath": "Destination complète"
+            },
+            "actions": {
+                "cloneAndAdd": "Cloner et ajouter un projet",
+                "cancelImport": "Annuler l'importation",
+                "retryRegistration": "Réessayez d'ajouter au lanceur",
+                "reviewAndRetry": "Vérifier et réessayer",
+                "close": "Fermer"
+            },
+            "progress": {
+                "preparing": "Préparation de l'importation...",
+                "cloning": "Clonage du référentiel...",
+                "cancelling": "Annulation de l'importation..."
+            },
+            "registration": {
+                "preserved": "Le référentiel a été cloné avec succès et a été conservé à cet emplacement."
+            },
+            "errors": {
+                "invalidSource": "La source du référentiel n'est plus valide.",
+                "alreadyRunning": "Une autre importation de projet distant est déjà en cours.",
+                "gitUnavailable": "Git n'est pas disponible. Configurez-le dans Paramètres > Outils.",
+                "connectionRequired": "Une connexion au référentiel utilisable est requise.",
+                "repositoryUnavailable": "Le référentiel sélectionné n'est plus disponible.",
+                "temporarilyUnavailable": "Le fournisseur ou le réseau du référentiel est temporairement indisponible.",
+                "destinationInvalid": "Choisissez un dossier de destination valide.",
+                "destinationConflict": "La destination existe déjà.",
+                "cloneFailed": "Git n'a pas pu cloner le référentiel.",
+                "notGodotProject": "Le référentiel ne contient pas project.godot à sa racine.",
+                "finaliseFailed": "Le clone terminé n'a pas pu être déplacé vers sa destination.",
+                "cancelled": "L'importation a été annulée.",
+                "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Launcher."
+            }
         }
     },
     "messages": {

@@ -8,6 +8,7 @@ describe('GitCloneService', () => {
     let supportDirectory: string;
     const executeStreaming = vi.fn();
     const closeCredential = vi.fn();
+    const logger = { warn: vi.fn() };
     const credentials = {
         openRejecting: vi.fn(async () => ({
             environment: {
@@ -48,6 +49,7 @@ describe('GitCloneService', () => {
         const service = new GitCloneService(
             { executeStreaming } as never,
             credentials as never,
+            logger as never,
         );
 
         await expect(
@@ -65,6 +67,7 @@ describe('GitCloneService', () => {
         const processRequest = executeStreaming.mock.calls[0]?.[1];
         expect(processRequest.args).toEqual(
             expect.arrayContaining([
+                'credential.interactive=false',
                 'http.curloptResolve=example.com:443:93.184.216.34',
                 'http.curloptResolve=example.com:443:[2606:2800:220:1::1]',
                 'https://example.com/team/game.git',
@@ -89,6 +92,7 @@ describe('GitCloneService', () => {
         const service = new GitCloneService(
             { executeStreaming } as never,
             credentials as never,
+            logger as never,
         );
 
         await service.clone({
@@ -106,6 +110,10 @@ describe('GitCloneService', () => {
 
         const processRequest = executeStreaming.mock.calls[0]?.[1];
         expect(JSON.stringify(processRequest)).not.toContain('secret-token');
+        expect(processRequest.args).toContain('credential.interactive=true');
+        expect(processRequest.args).not.toContain(
+            'credential.interactive=false',
+        );
         expect(credentials.open).toHaveBeenCalledWith({
             username: 'x-access-token',
             password: 'secret-token',
@@ -123,6 +131,7 @@ describe('GitCloneService', () => {
         const service = new GitCloneService(
             { executeStreaming } as never,
             credentials as never,
+            logger as never,
         );
 
         await expect(
@@ -152,6 +161,7 @@ describe('GitCloneService', () => {
         const service = new GitCloneService(
             { executeStreaming } as never,
             credentials as never,
+            logger as never,
         );
 
         await expect(
@@ -168,5 +178,54 @@ describe('GitCloneService', () => {
             ok: false,
             reason: 'public-clone-incompatible',
         });
+    });
+
+    it('logs a credential-safe checkout failure classification', async () => {
+        executeStreaming.mockImplementationOnce(async (_toolId, request) => {
+            request.onStderr?.('Receiving objects: 100%');
+            request.onStderr?.(
+                "error: invalid path 'project/unsupported-file-name'",
+            );
+            return {
+                success: false,
+                reason: 'command-failed',
+                exitCode: 128,
+            };
+        });
+        const service = new GitCloneService(
+            { executeStreaming } as never,
+            credentials as never,
+            logger as never,
+        );
+
+        await expect(
+            service.clone({
+                source: 'connected',
+                canonicalUrl: 'https://github.com/owner/game.git',
+                credential: {
+                    username: 'x-access-token',
+                    password: 'secret-token',
+                },
+                destinationPath: '/projects/.game.clone',
+                supportDirectory,
+                signal: new AbortController().signal,
+                onProgress: vi.fn(),
+            }),
+        ).resolves.toEqual({ ok: false, reason: 'clone-failed' });
+
+        expect(logger.warn).toHaveBeenCalledWith('Remote Git clone failed', {
+            diagnostic: 'checkout-failed',
+            event: 'remote_git_clone_failed',
+            exitCode: 128,
+            lastPercent: 100,
+            processReason: 'command-failed',
+            source: 'connected',
+        });
+        expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(
+            'secret-token',
+        );
+        expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(
+            'unsupported-file-name',
+        );
     });
 });

@@ -69,6 +69,9 @@ export const GitHubInstallationPageSchema = z.object({
                             url.hash === ''
                         );
                     }),
+                permissions: z.object({
+                    contents: z.enum(['read', 'write']).optional(),
+                }),
                 suspended_at: z.iso.datetime().nullable(),
             }),
         )

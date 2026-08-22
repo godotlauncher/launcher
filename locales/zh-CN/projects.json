@@ -96,6 +96,90 @@
             "noStableReleases": "未找到适用于 Godot {{version}}.x 的已安装稳定版本\n请为 Godot {{version}}.x 安装稳定版本，然后重试添加项目。",
             "noDotNetRelease": "该项目似乎是 .NET 项目，但未找到包含 .NET 的编辑器发布版本",
             "noCompatibleRelease": "未找到支持 config_version {{configVersion}} 的 Godot {{version}}.x 的已安装发行版本。"
+        },
+        "sources": {
+            "title": "添加项目来自",
+            "fromComputer": "从这台计算机",
+            "publicGit": "克隆公共 Git 存储库",
+            "github": "来自 GitHub",
+            "checkingGit": "检查 Git 可用性...",
+            "gitUnavailable": "Git 不可用。在“设置”>“工具”中配置它。"
+        },
+        "remote": {
+            "public": {
+                "title": "克隆公共 Git 存储库",
+                "description": "输入匿名公共 HTTPS Git 存储库 URL。",
+                "urlLabel": "存储库网址",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "输入有效的公共 HTTPS 存储库 URL。",
+                    "dnsUnavailable": "无法解析存储库主机。"
+                }
+            },
+            "github": {
+                "title": "从 GitHub 导入",
+                "description": "选择通过 GitHub 连接可用的存储库。",
+                "loading": "正在加载存储库...",
+                "searchPlaceholder": "搜索存储库",
+                "loadedSearchOnly": "搜索仅涵盖已加载的存储库。加载更多以搜索其他结果。",
+                "empty": "没有加载匹配的存储库。",
+                "loadMore": "加载更多",
+                "alreadyAdded": "已添加",
+                "openConnections": "打开连接",
+                "visibility": {
+                    "public": "公共",
+                    "private": "私人",
+                    "internal": "内部"
+                },
+                "errors": {
+                    "connectionRequired": "在导入存储库之前连接或重新连接 GitHub。",
+                    "temporarilyUnavailable": "GitHub 暂时不可用。稍后再试。",
+                    "sessionExpired": "存储库会话已过期。再次加载列表。"
+                }
+            },
+            "destination": {
+                "description": "选择将克隆存储库的位置。",
+                "repository": "存储库",
+                "projectName": "项目名称",
+                "projectNameHelp": "设置本地文件夹名称。project.godot 中的名称不会更改。",
+                "cloneTo": "克隆到",
+                "useDefault": "使用默认值",
+                "parent": "父文件夹",
+                "chooseParent": "选择父文件夹",
+                "selectParent": "选择项目父文件夹",
+                "directoryName": "项目文件夹名称",
+                "completePath": "完整目的地"
+            },
+            "actions": {
+                "cloneAndAdd": "克隆并添加项目",
+                "cancelImport": "取消导入",
+                "retryRegistration": "重试添加到启动器",
+                "reviewAndRetry": "检查并重试",
+                "close": "关闭"
+            },
+            "progress": {
+                "preparing": "准备导入...",
+                "cloning": "克隆存储库...",
+                "cancelling": "正在取消导入..."
+            },
+            "registration": {
+                "preserved": "存储库已成功克隆并已保存在此位置。"
+            },
+            "errors": {
+                "invalidSource": "存储库源不再有效。",
+                "alreadyRunning": "另一个远程项目导入已在运行。",
+                "gitUnavailable": "Git 不可用。在“设置”>“工具”中配置它。",
+                "connectionRequired": "需要可用的存储库连接。",
+                "repositoryUnavailable": "所选存储库不再可用。",
+                "temporarilyUnavailable": "存储库提供商或网络暂时不可用。",
+                "destinationInvalid": "选择有效的目标文件夹。",
+                "destinationConflict": "目的地已经存在。",
+                "cloneFailed": "Git 无法克隆存储库。",
+                "notGodotProject": "该存储库的根目录不包含project.godot。",
+                "finaliseFailed": "已完成的克隆无法移动到其目的地。",
+                "cancelled": "进口被取消。",
+                "registration-failed": "存储库已克隆，但无法添加到启动器。"
+            }
         }
     },
     "messages": {

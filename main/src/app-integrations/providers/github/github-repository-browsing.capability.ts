@@ -9,6 +9,7 @@ import {
 } from '../../app-integration-capability.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitHubApiClient, GitHubApiError } from './github-api.client.js';
+import { GitHubStoredCredentialSchema } from './github-app-integration.schema.js';
 import type { GitHubRepository } from './github-app-integration.types.js';
 
 @Injectable({ tags: [APP_INTEGRATION_CAPABILITY_TAG] })
@@ -30,8 +31,9 @@ export class GitHubRepositoryBrowsingCapability
     /** Lists one repository page for an installation route. */
     async listRepositories(request: RepositoryBrowsingRequest) {
         try {
+            const accessToken = readAccessToken(request.credential);
             const page = await this.github.getInstallationRepositories(
-                request.credential,
+                accessToken,
                 request.accessTarget.providerTargetId,
                 request.cursor,
                 request.signal,
@@ -50,8 +52,9 @@ export class GitHubRepositoryBrowsingCapability
     /** Revalidates a repository before a later clone operation. */
     async resolveRepository(request: RepositorySelectionRequest) {
         try {
+            const accessToken = readAccessToken(request.credential);
             const repository = await this.github.getRepository(
-                request.credential,
+                accessToken,
                 request.repository.owner,
                 request.repository.name,
                 request.repository.id,
@@ -64,12 +67,27 @@ export class GitHubRepositoryBrowsingCapability
                 repository: toBrowsingRepository(repository),
                 gitCredential: {
                     username: 'x-access-token',
-                    password: request.credential,
+                    password: accessToken,
                 },
             };
         } catch (error) {
             throw mapBrowsingError(error);
         }
+    }
+}
+
+/**
+ * Extracts the access token from one decrypted GitHub credential bundle.
+ *
+ * @param credential - Decrypted provider-owned credential bundle.
+ * @returns The current GitHub App user access token.
+ */
+function readAccessToken(credential: string): string {
+    try {
+        return GitHubStoredCredentialSchema.parse(JSON.parse(credential))
+            .accessToken;
+    } catch {
+        throw new RepositoryBrowsingError('reauthorisation-required');
     }
 }
 

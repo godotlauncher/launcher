@@ -105,7 +105,9 @@ export class GitHubApiClient {
             installations.push(
                 ...parsed.installations
                     .filter(
-                        (installation) => installation.suspended_at === null,
+                        (installation) =>
+                            installation.suspended_at === null &&
+                            hasRepositoryContentsReadPermission(installation),
                     )
                     .map(toAccessTarget),
             );
@@ -202,6 +204,16 @@ export class GitHubApiClient {
             return repository;
         }
     }
+}
+
+/** Returns whether one installation has approved repository clone access. */
+function hasRepositoryContentsReadPermission(
+    installation: GitHubInstallation,
+): boolean {
+    return (
+        installation.permissions.contents === 'read' ||
+        installation.permissions.contents === 'write'
+    );
 }
 
 /**

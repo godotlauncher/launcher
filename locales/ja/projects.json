@@ -96,6 +96,90 @@
             "noStableReleases": "Godot {{version}}.xの安定版リリースがインストールされていません\nGodot {{version}}.xの安定版をインストールしてから、再度プロジェクトを追加してください。",
             "noDotNetRelease": "プロジェクトは.NETプロジェクトのようですが、.NET対応エディタが見つかりません",
             "noCompatibleRelease": "config_version {{configVersion}}をサポートするGodot {{version}}.xのインストール済みリリースが見つかりません。"
+        },
+        "sources": {
+            "title": "からプロジェクトを追加",
+            "fromComputer": "このコンピュータから",
+            "publicGit": "パブリック Git リポジトリのクローンを作成する",
+            "github": "GitHub から",
+            "checkingGit": "Git の可用性を確認しています...",
+            "gitUnavailable": "Git は使用できません。 [設定] > [ツール] で設定します。"
+        },
+        "remote": {
+            "public": {
+                "title": "パブリック Git リポジトリのクローンを作成する",
+                "description": "匿名のパブリック HTTPS Git リポジトリ URL を入力します。",
+                "urlLabel": "リポジトリURL",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "有効なパブリック HTTPS リポジトリ URL を入力します。",
+                    "dnsUnavailable": "リポジトリ ホストを解決できませんでした。"
+                }
+            },
+            "github": {
+                "title": "GitHub からインポートする",
+                "description": "GitHub 接続を通じて利用可能なリポジトリを選択します。",
+                "loading": "リポジトリをロードしています...",
+                "searchPlaceholder": "リポジトリを検索",
+                "loadedSearchOnly": "検索では、ロードされたリポジトリのみが対象になります。さらにロードして追加の結果を検索します。",
+                "empty": "一致するリポジトリがロードされていません。",
+                "loadMore": "さらにロードする",
+                "alreadyAdded": "すでに追加されています",
+                "openConnections": "オープンコネクション",
+                "visibility": {
+                    "public": "公共",
+                    "private": "プライベート",
+                    "internal": "内部"
+                },
+                "errors": {
+                    "connectionRequired": "リポジトリをインポートする前に、GitHub に接続または再接続します。",
+                    "temporarilyUnavailable": "GitHub が一時的に利用できなくなりました。後でもう一度試してください。",
+                    "sessionExpired": "リポジトリ セッションの有効期限が切れました。リストを再度ロードします。"
+                }
+            },
+            "destination": {
+                "description": "リポジトリのクローンを作成する場所を選択します。",
+                "repository": "リポジトリ",
+                "projectName": "プロジェクト名",
+                "projectNameHelp": "ローカルフォルダー名を設定します。project.godot 内の名前は変更されません。",
+                "cloneTo": "クローン先",
+                "useDefault": "既定値を使用",
+                "parent": "親フォルダー",
+                "chooseParent": "親フォルダーを選択してください",
+                "selectParent": "プロジェクトの親フォルダーを選択",
+                "directoryName": "プロジェクトフォルダー名",
+                "completePath": "完全な目的地"
+            },
+            "actions": {
+                "cloneAndAdd": "プロジェクトのクローンを作成して追加する",
+                "cancelImport": "インポートをキャンセルする",
+                "retryRegistration": "ランチャーへの追加を再試行します",
+                "reviewAndRetry": "確認して再試行してください",
+                "close": "閉じる"
+            },
+            "progress": {
+                "preparing": "インポートを準備しています...",
+                "cloning": "リポジトリのクローンを作成しています...",
+                "cancelling": "インポートをキャンセルしています..."
+            },
+            "registration": {
+                "preserved": "リポジトリは正常に複製され、この場所に保存されています。"
+            },
+            "errors": {
+                "invalidSource": "リポジトリ ソースは有効ではなくなりました。",
+                "alreadyRunning": "別のリモート プロジェクトのインポートがすでに実行されています。",
+                "gitUnavailable": "Git は使用できません。 [設定] > [ツール] で設定します。",
+                "connectionRequired": "使用可能なリポジトリ接続が必要です。",
+                "repositoryUnavailable": "選択したリポジトリは使用できなくなりました。",
+                "temporarilyUnavailable": "リポジトリ プロバイダーまたはネットワークが一時的に利用できなくなりました。",
+                "destinationInvalid": "有効な宛先フォルダーを選択してください。",
+                "destinationConflict": "宛先はすでに存在します。",
+                "cloneFailed": "Git はリポジトリのクローンを作成できませんでした。",
+                "notGodotProject": "リポジトリのルートには project.godot が含まれていません。",
+                "finaliseFailed": "完成したクローンを目的地に移動できませんでした。",
+                "cancelled": "輸入はキャンセルされました。",
+                "registration-failed": "リポジトリは複製されましたが、Launcher に追加できませんでした。"
+            }
         }
     },
     "messages": {

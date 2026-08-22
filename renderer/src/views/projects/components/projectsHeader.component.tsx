@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import type React from 'react';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { SearchField } from '../../../components/ui/searchField.component';
@@ -8,7 +9,7 @@ type ProjectsHeaderProps = {
     searchPlaceholder: string;
     searchValue: string;
     onSearchChange: (value: string) => void;
-    onAddProject: () => void;
+    onAddProject: React.MouseEventHandler<HTMLButtonElement>;
     onCreateProject: () => void;
     createDisabled: boolean;
     addLabel: string;
@@ -63,6 +64,11 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                         className="btn btn-neutral"
                     >
                         {addLabel}
+                        <ChevronDown
+                            data-testid="iconProjectAddMenu"
+                            size={14}
+                            aria-hidden="true"
+                        />
                     </button>
                     <button
                         type="button"

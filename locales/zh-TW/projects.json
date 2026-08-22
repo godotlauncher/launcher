@@ -96,6 +96,90 @@
             "noStableReleases": "找不到 Godot {{version}}.x 的已安裝穩定版\n請先為 Godot {{version}}.x 安裝穩定版，再嘗試新增專案。",
             "noDotNetRelease": "此專案似乎為 .NET 專案，但未找到含 .NET 的編輯器發行版",
             "noCompatibleRelease": "找不到支援 config_version {{configVersion}} 的 Godot {{version}}.x 已安裝發行版。"
+        },
+        "sources": {
+            "title": "新增項目來自",
+            "fromComputer": "從這台計算機",
+            "publicGit": "克隆公共 Git 儲存庫",
+            "github": "來自 GitHub",
+            "checkingGit": "檢查 Git 可用性...",
+            "gitUnavailable": "Git 不可用。在“設定”>“工具”中配置它。"
+        },
+        "remote": {
+            "public": {
+                "title": "克隆公共 Git 儲存庫",
+                "description": "輸入匿名公用 HTTPS Git 儲存庫 URL。",
+                "urlLabel": "儲存庫網址",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "輸入有效的公共 HTTPS 儲存庫 URL。",
+                    "dnsUnavailable": "無法解析儲存庫主機。"
+                }
+            },
+            "github": {
+                "title": "從 GitHub 導入",
+                "description": "選擇透過 GitHub 連接可用的儲存庫。",
+                "loading": "正在加載存儲庫...",
+                "searchPlaceholder": "搜尋儲存庫",
+                "loadedSearchOnly": "搜尋僅涵蓋已載入的儲存庫。加載更多以搜尋其他結果。",
+                "empty": "沒有載入匹配的存儲庫。",
+                "loadMore": "加載更多",
+                "alreadyAdded": "已新增",
+                "openConnections": "開啟連接",
+                "visibility": {
+                    "public": "公有",
+                    "private": "私人",
+                    "internal": "內部"
+                },
+                "errors": {
+                    "connectionRequired": "在匯入儲存庫之前連接或重新連接 GitHub。",
+                    "temporarilyUnavailable": "GitHub 暫時無法使用。稍後再試。",
+                    "sessionExpired": "儲存庫會話已過期。再次載入列表。"
+                }
+            },
+            "destination": {
+                "description": "選擇將克隆儲存庫的位置。",
+                "repository": "儲存庫",
+                "projectName": "專案名稱",
+                "projectNameHelp": "設定本機資料夾名稱。project.godot 中的名稱不會變更。",
+                "cloneTo": "複製到",
+                "useDefault": "使用預設值",
+                "parent": "父資料夾",
+                "chooseParent": "選擇父資料夾",
+                "selectParent": "選擇項目父資料夾",
+                "directoryName": "項目資料夾名稱",
+                "completePath": "完整目的地"
+            },
+            "actions": {
+                "cloneAndAdd": "克隆並添加項目",
+                "cancelImport": "取消導入",
+                "retryRegistration": "重試添加到啟動器",
+                "reviewAndRetry": "檢查並重試",
+                "close": "關閉"
+            },
+            "progress": {
+                "preparing": "準備導入...",
+                "cloning": "克隆存儲庫...",
+                "cancelling": "正在取消導入..."
+            },
+            "registration": {
+                "preserved": "存儲庫已成功克隆並已保存在此位置。"
+            },
+            "errors": {
+                "invalidSource": "儲存庫來源不再有效。",
+                "alreadyRunning": "另一個遠端專案導入已在運行。",
+                "gitUnavailable": "Git 不可用。在“設定”>“工具”中配置它。",
+                "connectionRequired": "需要可用的儲存庫連線。",
+                "repositoryUnavailable": "所選存儲庫不再可用。",
+                "temporarilyUnavailable": "儲存庫提供者或網路暫時無法使用。",
+                "destinationInvalid": "選擇有效的目標資料夾。",
+                "destinationConflict": "目的地已經存在。",
+                "cloneFailed": "Git 無法克隆儲存庫。",
+                "notGodotProject": "該儲存庫的根目錄不包含project.godot。",
+                "finaliseFailed": "已完成的克隆無法移動到其目的地。",
+                "cancelled": "進口被取消。",
+                "registration-failed": "儲存庫已克隆，但無法新增至啟動器。"
+            }
         }
     },
     "messages": {

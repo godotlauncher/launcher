@@ -48,6 +48,9 @@ export type GitHubInstallation = {
         type: 'Organization' | 'User';
     };
     html_url: string;
+    permissions: {
+        contents?: 'read' | 'write';
+    };
     suspended_at: string | null;
 };
 

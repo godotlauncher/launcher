@@ -30,6 +30,7 @@ describe('GitHubApiClient', () => {
                         },
                         html_url:
                             'https://github.com/organizations/godotlauncher/settings/installations/123456',
+                        permissions: { contents: 'read' },
                         suspended_at: null,
                     },
                     {
@@ -37,6 +38,7 @@ describe('GitHubApiClient', () => {
                         account: { login: 'octocat', type: 'User' },
                         html_url:
                             'https://github.com/settings/installations/654321',
+                        permissions: { contents: 'write' },
                         suspended_at: null,
                     },
                 ],
@@ -90,7 +92,39 @@ describe('GitHubApiClient', () => {
                             },
                             html_url:
                                 'https://github.com/organizations/godotlauncher/settings/installations/123456',
+                            permissions: { contents: 'read' },
                             suspended_at: '2026-08-20T10:00:00Z',
+                        },
+                    ],
+                }),
+            ),
+        );
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.getInstallations(
+                'access-token',
+                new AbortController().signal,
+            ),
+        ).resolves.toEqual([]);
+    });
+
+    it('omits installations that have not approved Contents read access', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json({
+                    installations: [
+                        {
+                            id: 123456,
+                            account: {
+                                login: 'godotlauncher',
+                                type: 'Organization',
+                            },
+                            html_url:
+                                'https://github.com/organizations/godotlauncher/settings/installations/123456',
+                            permissions: {},
+                            suspended_at: null,
                         },
                     ],
                 }),
@@ -117,6 +151,7 @@ describe('GitHubApiClient', () => {
                             account: { login: 'octocat', type: 'User' },
                             html_url:
                                 'https://github.com/settings/installations/123456',
+                            permissions: { contents: 'read' },
                             suspended_at: null,
                         },
                     ],
@@ -153,6 +188,7 @@ describe('GitHubApiClient', () => {
                             },
                             html_url:
                                 'https://github.com/settings/installations/123456',
+                            permissions: { contents: 'read' },
                             suspended_at: null,
                         },
                     ],
@@ -187,6 +223,7 @@ describe('GitHubApiClient', () => {
             account: { login: 'godotlauncher', type: 'Organization' },
             html_url:
                 'https://github.com/organizations/godotlauncher/settings/installations/123456',
+            permissions: { contents: 'read' },
             suspended_at: null,
         };
         vi.stubGlobal(

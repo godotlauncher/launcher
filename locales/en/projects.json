@@ -96,6 +96,90 @@
             "noStableReleases": "No installed Stable releases found for Godot {{version}}.x\nPlease install a stable release for Godot {{version}}.x, then try adding the project again.",
             "noDotNetRelease": "Project seems to be a .NET project but no Editor with .NET release found",
             "noCompatibleRelease": "No installed releases found for Godot {{version}}.x that support config_version {{configVersion}}."
+        },
+        "sources": {
+            "title": "Add project from",
+            "fromComputer": "From this computer",
+            "publicGit": "Clone public Git repository",
+            "github": "From GitHub",
+            "checkingGit": "Checking Git availability...",
+            "gitUnavailable": "Git is unavailable. Configure it in Settings > Tools."
+        },
+        "remote": {
+            "public": {
+                "title": "Clone public Git repository",
+                "description": "Enter an anonymous public HTTPS Git repository URL.",
+                "urlLabel": "Repository URL",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "Enter a valid public HTTPS repository URL.",
+                    "dnsUnavailable": "The repository host could not be resolved."
+                }
+            },
+            "github": {
+                "title": "Import from GitHub",
+                "description": "Choose a repository available through your GitHub connections.",
+                "loading": "Loading repositories...",
+                "searchPlaceholder": "Search repositories",
+                "loadedSearchOnly": "Search covers loaded repositories only. Load more to search additional results.",
+                "empty": "No matching repositories are loaded.",
+                "loadMore": "Load more",
+                "alreadyAdded": "Already added",
+                "openConnections": "Open Connections",
+                "visibility": {
+                    "public": "Public",
+                    "private": "Private",
+                    "internal": "Internal"
+                },
+                "errors": {
+                    "connectionRequired": "Connect or reconnect GitHub before importing a repository.",
+                    "temporarilyUnavailable": "GitHub is temporarily unavailable. Try again later.",
+                    "sessionExpired": "The repository session expired. Load the list again."
+                }
+            },
+            "destination": {
+                "description": "Choose where the repository will be cloned.",
+                "repository": "Repository",
+                "projectName": "Project name",
+                "projectNameHelp": "Sets the local folder name. The name in project.godot is unchanged.",
+                "cloneTo": "Clone to",
+                "useDefault": "Use default",
+                "parent": "Parent folder",
+                "chooseParent": "Choose parent folder",
+                "selectParent": "Select Project Parent Folder",
+                "directoryName": "Project folder name",
+                "completePath": "Complete destination"
+            },
+            "actions": {
+                "cloneAndAdd": "Clone and add project",
+                "cancelImport": "Cancel import",
+                "retryRegistration": "Retry adding to Launcher",
+                "reviewAndRetry": "Review and retry",
+                "close": "Close"
+            },
+            "progress": {
+                "preparing": "Preparing the import...",
+                "cloning": "Cloning the repository...",
+                "cancelling": "Cancelling the import..."
+            },
+            "registration": {
+                "preserved": "The repository was cloned successfully and has been kept at this location."
+            },
+            "errors": {
+                "invalidSource": "The repository source is no longer valid.",
+                "alreadyRunning": "Another remote project import is already running.",
+                "gitUnavailable": "Git is unavailable. Configure it in Settings > Tools.",
+                "connectionRequired": "A usable repository connection is required.",
+                "repositoryUnavailable": "The selected repository is no longer available.",
+                "temporarilyUnavailable": "The repository provider or network is temporarily unavailable.",
+                "destinationInvalid": "Choose a valid destination folder.",
+                "destinationConflict": "The destination already exists.",
+                "cloneFailed": "Git could not clone the repository.",
+                "notGodotProject": "The repository does not contain project.godot at its root.",
+                "finaliseFailed": "The completed clone could not be moved to its destination.",
+                "cancelled": "The import was cancelled.",
+                "registration-failed": "The repository was cloned but could not be added to Launcher."
+            }
         }
     },
     "messages": {
