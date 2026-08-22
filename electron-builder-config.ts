@@ -132,6 +132,12 @@ export default (<Configuration>{
     },
     win: {
         icon: 'build-resources/win/icon.ico',
+        extraResources: [
+            {
+                from: 'native/git-credentials-helper/windows-askpass/out/win32-${arch}/godot-launcher-git-askpass.exe',
+                to: 'git-credentials-helper/godot-launcher-git-askpass.exe',
+            },
+        ],
 
         // azureSignOptions: {
         //     publisherName: process.env.WIN_SIGN_PUBLISHER_NAME,

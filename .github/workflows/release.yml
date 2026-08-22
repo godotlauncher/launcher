@@ -23,6 +23,11 @@ on:
         required: true
         default: "release-windows"
         type: string
+      signpath_windows_helper_artifact_configuration_slug:
+        description: "SignPath Windows helper artifact configuration slug"
+        required: true
+        default: "release-windows-helper"
+        type: string
       signpath_wait_timeout_seconds:
         description: "Maximum seconds to wait for SignPath approval and signing"
         required: true
@@ -150,10 +155,115 @@ jobs:
 
           gh release create "v${VERSION}" "${args[@]}"
 
+  build-windows-helper:
+    needs:
+      - tag-release
+      - create-release
+    strategy:
+      matrix:
+        include:
+          - runner: windows-2025
+            arch: x64
+          - runner: windows-11-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Sync npm version
+        run: npm install --global npm@12.0.2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native helper
+        run: npm run build:native:git-askpass -- ${{ matrix.arch }}
+
+      - name: Test native helper
+        run: npm run test:native:git-askpass -- ${{ matrix.arch }}
+
+      - name: Upload unsigned helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-git-askpass-unsigned-${{ matrix.arch }}
+          path: native/git-credentials-helper/windows-askpass/out/win32-${{ matrix.arch }}/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
+  sign-windows-helper:
+    needs: build-windows-helper
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    runs-on: windows-2025
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Download unsigned helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-unsigned-${{ matrix.arch }}
+          path: signpath-unsigned-helper
+
+      - name: Upload SignPath helper input
+        id: upload_unsigned_helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-windows-helper-${{ matrix.arch }}
+          path: signpath-unsigned-helper/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
+      - name: Submit helper signing request
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signpath_signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.signpath_windows_helper_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_helper.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: ${{ inputs.signpath_wait_timeout_seconds }}
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-helper
+
+      - name: Verify signed helper
+        shell: pwsh
+        run: |
+          $helper = Get-ChildItem -Path signpath-signed-helper -Filter godot-launcher-git-askpass.exe -Recurse -File
+          if ($helper.Count -ne 1) {
+              throw "Expected one signed helper, found $($helper.Count)."
+          }
+          $signature = Get-AuthenticodeSignature -FilePath $helper.FullName
+          if ($signature.Status -ne 'Valid') {
+              throw "Signed helper signature status is $($signature.Status)."
+          }
+
+      - name: Stage signed helper
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path signed-helper | Out-Null
+          $helper = Get-ChildItem -Path signpath-signed-helper -Filter godot-launcher-git-askpass.exe -Recurse -File
+          Copy-Item -LiteralPath $helper.FullName -Destination signed-helper/godot-launcher-git-askpass.exe
+
+      - name: Upload signed helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-git-askpass-signed-${{ matrix.arch }}
+          path: signed-helper/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
   sign-windows:
     needs:
       - tag-release
       - create-release
+      - sign-windows-helper
     runs-on: windows-latest
     permissions:
       actions: read
@@ -205,6 +315,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download signed x64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-signed-x64
+          path: native/git-credentials-helper/windows-askpass/out/win32-x64
+
+      - name: Download signed ARM64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-signed-arm64
+          path: native/git-credentials-helper/windows-askpass/out/win32-arm64
+
+      - name: Verify staged helper signatures
+        shell: pwsh
+        run: |
+          foreach ($arch in @('x64', 'arm64')) {
+              $helper = "native/git-credentials-helper/windows-askpass/out/win32-$arch/godot-launcher-git-askpass.exe"
+              $signature = Get-AuthenticodeSignature -FilePath $helper
+              if ($signature.Status -ne 'Valid') {
+                  throw "$arch helper signature status is $($signature.Status)."
+              }
+          }
+
       - name: Resolve Windows updater metadata filename
         id: windows_update_metadata
         shell: pwsh
@@ -223,7 +356,21 @@ jobs:
           Write-Host "Windows updater metadata: dist/$file"
 
       - name: Build unsigned Windows artifacts
-        run: npm run dist:win -- --publish never
+        run: npm run dist:win:prepared -- --publish never
+
+      - name: Verify packaged helper signatures
+        shell: pwsh
+        run: |
+          $helpers = Get-ChildItem -Path dist -Filter godot-launcher-git-askpass.exe -Recurse -File
+          if ($helpers.Count -ne 2) {
+              throw "Expected two packaged helpers, found $($helpers.Count)."
+          }
+          foreach ($helper in $helpers) {
+              $signature = Get-AuthenticodeSignature -FilePath $helper.FullName
+              if ($signature.Status -ne 'Valid') {
+                  throw "Packaged helper signature status is $($signature.Status)."
+              }
+          }
 
       - name: Upload unsigned Windows dist artifact
         uses: actions/upload-artifact@v7
@@ -290,6 +437,9 @@ jobs:
               Copy-Item -LiteralPath $installer.FullName -Destination $target -Force
 
               $signature = Get-AuthenticodeSignature -FilePath $target
+              if ($signature.Status -ne 'Valid') {
+                  throw "Signed installer signature status is $($signature.Status)."
+              }
               Write-Host "Signed artifact: $($installer.Name)"
               Write-Host "  Signature status: $($signature.Status)"
               Write-Host "  Signer subject: $($signature.SignerCertificate.Subject)"
