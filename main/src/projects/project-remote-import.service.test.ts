@@ -119,6 +119,83 @@ describe('ProjectRemoteImportService', () => {
         ).toEqual([]);
     });
 
+    it('creates a missing destination parent recursively before cloning', async () => {
+        const missingParent = path.join(
+            parentDirectory,
+            'new',
+            'nested',
+            'projects',
+        );
+        const service = createService();
+
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory: missingParent,
+            directoryName: 'game',
+        });
+
+        const canonicalParent = await fs.realpath(missingParent);
+        expect(result).toMatchObject({
+            ok: true,
+            repositoryPath: path.join(canonicalParent, 'game'),
+        });
+        await expect(
+            fs.stat(path.join(canonicalParent, 'game', 'project.godot')),
+        ).resolves.toBeDefined();
+    });
+
+    it('rejects a missing destination parent beneath an existing file', async () => {
+        const blockingFile = path.join(parentDirectory, 'not-a-directory');
+        await fs.writeFile(blockingFile, 'blocked');
+        const service = createService();
+
+        await expect(
+            service.importRemoteProject({
+                source: 'public-git-url',
+                url: 'https://example.com/team/game.git',
+                parentDirectory: path.join(blockingFile, 'projects'),
+                directoryName: 'game',
+            }),
+        ).resolves.toMatchObject({
+            ok: false,
+            reason: 'destination-invalid',
+        });
+        expect(clone.clone).not.toHaveBeenCalled();
+    });
+
+    it('uses the canonical target of a symlinked destination parent', async () => {
+        const canonicalParent = path.join(parentDirectory, 'canonical-parent');
+        const selectedParent = path.join(parentDirectory, 'selected-parent');
+        await fs.mkdir(canonicalParent);
+        await fs.symlink(
+            canonicalParent,
+            selectedParent,
+            process.platform === 'win32' ? 'junction' : 'dir',
+        );
+        const service = createService();
+
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory: selectedParent,
+            directoryName: 'game',
+        });
+
+        expect(result).toMatchObject({
+            ok: true,
+            repositoryPath: path.join(
+                await fs.realpath(canonicalParent),
+                'game',
+            ),
+        });
+        const cloneRequest = clone.clone.mock.calls[0]?.[0];
+        expect(cloneRequest).toBeDefined();
+        expect(path.dirname(cloneRequest?.destinationPath ?? '')).toBe(
+            await fs.realpath(canonicalParent),
+        );
+    });
+
     it('revalidates connected selection inside the credential lease', async () => {
         const service = createService();
 
@@ -175,6 +252,47 @@ describe('ProjectRemoteImportService', () => {
             await fs.readFile(path.join(parentDirectory, 'keep.txt'), 'utf8'),
         ).toBe('keep');
         expect(await fs.readdir(parentDirectory)).toEqual(['keep.txt']);
+    });
+
+    it('preserves a destination created by another process during cloning', async () => {
+        clone.clone.mockImplementationOnce(async (request) => {
+            await fs.mkdir(request.destinationPath);
+            await fs.writeFile(
+                path.join(request.destinationPath, 'project.godot'),
+                '[application]\nconfig/name="Game"\n',
+            );
+            const racedDestination = path.join(parentDirectory, 'game');
+            await fs.mkdir(racedDestination);
+            await fs.writeFile(
+                path.join(racedDestination, 'other-process.txt'),
+                'keep',
+            );
+            return { ok: true };
+        });
+        const service = createService();
+
+        await expect(
+            service.importRemoteProject({
+                source: 'public-git-url',
+                url: 'https://example.com/team/game.git',
+                parentDirectory,
+                directoryName: 'game',
+            }),
+        ).resolves.toMatchObject({
+            ok: false,
+            reason: 'destination-conflict',
+        });
+        await expect(
+            fs.readFile(
+                path.join(parentDirectory, 'game', 'other-process.txt'),
+                'utf8',
+            ),
+        ).resolves.toBe('keep');
+        expect(
+            (await fs.readdir(parentDirectory)).filter((entry) =>
+                entry.includes('.clone-'),
+            ),
+        ).toEqual([]);
     });
 
     it('cancels the active clone and cleans its temporary directory', async () => {

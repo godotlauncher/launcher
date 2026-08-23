@@ -722,4 +722,60 @@ describe('CodeEditorIntegrationService', () => {
             service.resolveConfiguredIntegration(path.resolve('project')),
         ).resolves.toBeNull();
     });
+
+    it('uses the eligible configured default when no project signal exists', async () => {
+        const integration = createIntegration();
+        vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            CODE_EDITOR_ID,
+        );
+        const service = createService(integration, settingsStore);
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBe(CODE_EDITOR_ID);
+    });
+
+    it('returns None when the no-signal configured default is unavailable', async () => {
+        const integration = createIntegration();
+        vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
+        vi.mocked(integration.detectInstallation).mockResolvedValue(null);
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            CODE_EDITOR_ID,
+        );
+        const service = createService(integration, settingsStore);
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBeNull();
+    });
+
+    it('does not replace an unavailable project signal with an unrelated default', async () => {
+        const defaultIntegration = createIntegration();
+        vi.mocked(defaultIntegration.isConfiguredForProject).mockResolvedValue(
+            false,
+        );
+        const configuredIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        vi.mocked(configuredIntegration.detectInstallation).mockResolvedValue(
+            null,
+        );
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            CODE_EDITOR_ID,
+        );
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([
+                defaultIntegration,
+                configuredIntegration,
+            ]),
+            settingsStore,
+        );
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBeNull();
+        expect(defaultIntegration.detectInstallation).not.toHaveBeenCalled();
+    });
 });

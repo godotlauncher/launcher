@@ -214,8 +214,9 @@ export class CodeEditorIntegrationService {
      * Resolves the code editor to use for automatic project import.
      *
      * @param projectPath - Project directory inspected by each integration.
-     * @returns The single eligible match, the eligible configured default when
-     * multiple integrations match, or null when the choice is ambiguous.
+     * @returns The single eligible project match, the eligible configured
+     * default when no project signal exists or multiple integrations match,
+     * or null when the choice is unavailable or ambiguous.
      */
     async resolveConfiguredIntegration(
         projectPath: string,
@@ -236,14 +237,27 @@ export class CodeEditorIntegrationService {
         if (eligibleIntegrationIds.length === 1) {
             return eligibleIntegrationIds[0];
         }
-        if (eligibleIntegrationIds.length === 0) {
+        if (
+            eligibleIntegrationIds.length === 0 &&
+            configuredIntegrationIds.length > 0
+        ) {
             return null;
         }
 
         const defaultIntegrationId =
             await this.settingsStore.getDefaultIntegrationId();
-        return defaultIntegrationId &&
-            eligibleIntegrationIds.includes(defaultIntegrationId)
+        if (!defaultIntegrationId) {
+            return null;
+        }
+
+        if (eligibleIntegrationIds.length > 1) {
+            return eligibleIntegrationIds.includes(defaultIntegrationId)
+                ? defaultIntegrationId
+                : null;
+        }
+
+        return (await this.getSelectionEligibility(defaultIntegrationId)) ===
+            'eligible'
             ? defaultIntegrationId
             : null;
     }

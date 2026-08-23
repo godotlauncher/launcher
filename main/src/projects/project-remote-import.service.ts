@@ -222,6 +222,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         }
         let parentPath: string;
         try {
+            await fs.mkdir(request.parentDirectory, { recursive: true });
             parentPath = await fs.realpath(request.parentDirectory);
             if (!(await fs.stat(parentPath)).isDirectory()) {
                 throw new Error('Parent is not a directory');
