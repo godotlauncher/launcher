@@ -7,7 +7,10 @@ import {
     type Page,
     test,
 } from '@playwright/test';
-import type { ReleaseInstallProgress } from '@shared/contracts';
+import type {
+    ReleaseInstallProgress,
+    ReleaseSummary,
+} from '@shared/contracts';
 import {
     createFixtureHome,
     prepareAppWithStubbedData,
@@ -193,6 +196,32 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await expect(createDrawer).not.toBeVisible();
 });
 
+test('Native import offers the newest stable patch for an inferred Godot branch', async () => {
+    const availableReleases = [
+        createAvailableRelease('4.5-stable'),
+        createAvailableRelease('4.4.1-stable'),
+        createAvailableRelease('4.4.3-stable'),
+    ];
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        availableReleases,
+    });
+    await stubInferredEditorResolution();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectFromComputer').click();
+
+    const dialog = mainPage.getByRole('dialog', {
+        name: 'Editor version required',
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('4.4', { exact: true })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Options' }).click();
+    await expect(
+        dialog.getByRole('button', { name: 'Download 4.4.3-stable' }),
+    ).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+});
+
 test('Remote repository discovery lets users exclude projects before adding', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
@@ -255,6 +284,40 @@ test('GitHub repositories use the same multi-project review', async () => {
     await expect.poll(readRemoteAddedProjectPaths).toEqual([
         '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
     ]);
+});
+
+test('Remote registration surfaces editor resolution above the import modal', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await requireNestedRemoteEditorResolution();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const importModal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await importModal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await importModal.getByRole('button', { name: 'Continue' }).click();
+    await importModal
+        .getByRole('button', { name: 'Clone repository' })
+        .click();
+    await expect(importModal.getByText('Choose projects to add')).toBeVisible();
+    await importModal.getByRole('checkbox').first().click();
+    await importModal.getByText('Example Fixture').locator('..').click();
+    await importModal.getByTestId('btnAddDiscoveredProjects').click();
+
+    const resolutionDialog = mainPage.getByRole('dialog', {
+        name: 'Editor version required',
+    });
+    await expect(resolutionDialog).toBeVisible();
+    await resolutionDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(importModal.getByText('Project import complete')).toBeVisible();
+    await expect(
+        importModal.getByText(/Skipped: The project was not added\./),
+    ).toBeVisible();
 });
 
 test('Onboarding without an editor finishes inside the install drawer', async () => {
@@ -337,6 +400,67 @@ async function stubOpenFileDialog(): Promise<void> {
     });
 }
 
+/** Installs a native Add Project result for an inferred stable branch. */
+async function stubInferredEditorResolution(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('app.openFileDialog');
+        ipcMain.handle('app.openFileDialog', async () => ({
+            success: true,
+            data: {
+                canceled: false,
+                filePaths: [
+                    '/home/docs/Godot/Projects/inferred/project.godot',
+                ],
+            },
+        }));
+        ipcMain.removeHandler('projects.addProject');
+        ipcMain.handle('projects.addProject', async () => ({
+            success: true,
+            data: {
+                success: false,
+                editorResolution: {
+                    requested: {
+                        kind: 'stable-base',
+                        channel: 'official',
+                        flavor: 'gdscript',
+                        base_version: '4.4',
+                    },
+                    downloadable: {
+                        match: 'stable-base',
+                        base_version: '4.4',
+                        flavor: 'gdscript',
+                    },
+                },
+            },
+        }));
+    });
+}
+
+/**
+ * Creates an official release with a standard editor asset.
+ *
+ * @param version - Stable release version.
+ * @returns A renderer catalogue fixture.
+ */
+function createAvailableRelease(version: string): ReleaseSummary {
+    return {
+        version,
+        version_number: Number.parseFloat(version),
+        name: version,
+        published_at: null,
+        draft: false,
+        prerelease: false,
+        assets: [
+            {
+                name: `${version}-linux-x64`,
+                download_url: 'https://example.com/godot.zip',
+                platform_tags: ['linux', 'x64'],
+                mono: false,
+            },
+        ],
+    };
+}
+
 /**
  * Reads how many times the recorded native file dialog was requested.
  *
@@ -357,9 +481,11 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
         const state = globalThis as typeof globalThis & {
             __guidedRemoteAddedProjectPaths?: string[];
             __guidedFailRootRemoteProject?: boolean;
+            __guidedRequireNestedRemoteEditor?: boolean;
         };
         state.__guidedRemoteAddedProjectPaths = [];
         state.__guidedFailRootRemoteProject = false;
+        state.__guidedRequireNestedRemoteEditor = false;
 
         ipcMain.removeHandler('projects.inspectPublicGitSource');
         ipcMain.handle('projects.inspectPublicGitSource', async () => ({
@@ -430,10 +556,45 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                         },
                     };
                 }
+                if (
+                    state.__guidedRequireNestedRemoteEditor &&
+                    projectFilePath ===
+                        '/home/docs/Godot/Projects/games/examples/fixture/project.godot'
+                ) {
+                    return {
+                        success: true,
+                        data: {
+                            success: false,
+                            editorResolution: {
+                                requested: {
+                                    kind: 'stable-base',
+                                    channel: 'official',
+                                    flavor: 'gdscript',
+                                    base_version: '4.4',
+                                },
+                                downloadable: {
+                                    match: 'stable-base',
+                                    base_version: '4.4',
+                                    flavor: 'gdscript',
+                                },
+                            },
+                        },
+                    };
+                }
                 state.__guidedRemoteAddedProjectPaths?.push(projectFilePath);
                 return { success: true, data: { success: true } };
             },
         );
+    });
+}
+
+/** Makes the nested discovery require editor resolution during registration. */
+async function requireNestedRemoteEditorResolution(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRequireNestedRemoteEditor?: boolean;
+        };
+        state.__guidedRequireNestedRemoteEditor = true;
     });
 }
 

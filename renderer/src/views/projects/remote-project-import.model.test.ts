@@ -2,7 +2,7 @@ import type {
     RemoteDiscoveredProject,
     RemoteRepositorySummary,
 } from '@shared/contracts';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
     appendRemoteRepositories,
     filterRemoteRepositories,
@@ -13,6 +13,7 @@ import {
     getRemoteProjectDestinationDisplay,
     getRemoteProjectDirectoryName,
     getRemoteRepositoryRowClassName,
+    handOffRemoteProjectRegistration,
     selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
 } from './remote-project-import.model';
@@ -191,6 +192,42 @@ describe('remote project import model', () => {
         );
         expect(getRemoteImportFailureKey('dns-unavailable')).toBe(
             'addProject.remote.errors.temporarilyUnavailable',
+        );
+    });
+
+    it('hands an exact remote editor resolution to the shared workflow', async () => {
+        const editorResolution = {
+            requested: {
+                kind: 'exact' as const,
+                channel: 'official' as const,
+                flavor: 'gdscript' as const,
+                base_version: '4.4',
+                version: '4.4.2-stable',
+            },
+            downloadable: {
+                match: 'exact' as const,
+                version: '4.4.2-stable',
+                flavor: 'gdscript' as const,
+                prerelease: false,
+            },
+        };
+        const result = { success: false, editorResolution };
+        const addProject = vi.fn().mockResolvedValue(result);
+        const handleAddProjectResult = vi.fn().mockResolvedValue(true);
+
+        await expect(
+            handOffRemoteProjectRegistration(
+                '/repo/examples/game/project.godot',
+                addProject,
+                handleAddProjectResult,
+            ),
+        ).resolves.toEqual({ handled: true, added: true });
+        expect(addProject).toHaveBeenCalledWith(
+            '/repo/examples/game/project.godot',
+        );
+        expect(handleAddProjectResult).toHaveBeenCalledWith(
+            '/repo/examples/game/project.godot',
+            result,
         );
     });
 });

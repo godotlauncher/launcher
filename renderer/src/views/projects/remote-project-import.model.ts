@@ -1,4 +1,6 @@
 import type {
+    AddProjectOptions,
+    AddProjectToListResult,
     RemoteDiscoveredProject,
     RemoteProjectImportFailureReason,
     RemoteRepositorySummary,
@@ -10,6 +12,50 @@ import {
 } from '../subViews/createProject/createProject.model';
 
 export type GitAvailability = 'loading' | 'available' | 'unavailable';
+
+type RemoteProjectAdd = (
+    projectPath: string,
+    options?: AddProjectOptions,
+) => Promise<AddProjectToListResult>;
+
+type RemoteProjectResultHandler = (
+    projectPath: string,
+    result: AddProjectToListResult,
+) => Promise<boolean>;
+
+export type RemoteProjectRegistrationHandoff =
+    | {
+          handled: true;
+          added: boolean;
+      }
+    | {
+          handled: false;
+          error?: string;
+      };
+
+/**
+ * Hands a discovered remote project to the shared Add Project result workflow.
+ *
+ * @param projectFilePath - Discovered project.godot path.
+ * @param addProject - Canonical project registration function.
+ * @param handleAddProjectResult - Shared renderer result handler.
+ * @returns Whether the result was handled and whether the project was added.
+ */
+export async function handOffRemoteProjectRegistration(
+    projectFilePath: string,
+    addProject: RemoteProjectAdd,
+    handleAddProjectResult: RemoteProjectResultHandler,
+): Promise<RemoteProjectRegistrationHandoff> {
+    const result = await addProject(projectFilePath);
+    if (!result.success && !result.editorResolution) {
+        return { handled: false, error: result.error };
+    }
+
+    return {
+        handled: true,
+        added: await handleAddProjectResult(projectFilePath, result),
+    };
+}
 
 /**
  * Creates the default selection containing every discovered project.

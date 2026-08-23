@@ -13,6 +13,7 @@ import { ChevronDown, TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { appBridge } from '../../../bridge.ts';
 import type { ConfirmButton } from '../../../components/confirm.component';
+import { findDownloadableProjectEditor } from '../project-editor-resolution.model.ts';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -64,19 +65,6 @@ export function useAddProjectWorkflow({
     setProjectEditor,
     showRecoveredCodeEditorConfigWarning,
 }: AddProjectWorkflowArgs) {
-    const findDownloadableRelease = (
-        result: AddProjectToListResult,
-    ): ReleaseSummary | undefined => {
-        const downloadable = result.editorResolution?.downloadable;
-        if (!downloadable) {
-            return undefined;
-        }
-
-        return [...availableReleases, ...availablePrereleases].find(
-            (release) => release.version === downloadable.version,
-        );
-    };
-
     const getRequestedMono = (result: AddProjectToListResult): boolean =>
         result.editorResolution?.requested.flavor === 'dotnet';
 
@@ -143,7 +131,11 @@ export function useAddProjectWorkflow({
             return Promise.resolve(false);
         }
 
-        const downloadableRelease = findDownloadableRelease(result);
+        const downloadableRelease = findDownloadableProjectEditor(
+            resolution,
+            availableReleases,
+            availablePrereleases,
+        );
         const canDownload = Boolean(
             downloadableRelease &&
                 (resolution.requested.flavor === 'gdscript' ||
@@ -188,10 +180,14 @@ export function useAddProjectWorkflow({
                 <div className="flex flex-col gap-3">
                     <p>{t('addProject.editorResolution.message')}</p>
                     <div className="bg-base-200 rounded-md p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                        <span className="text-base-content/60">
-                            {t('addProject.editorResolution.version')}
-                        </span>
-                        <code>{resolution.requested.version}</code>
+                        {resolution.requested.kind === 'exact' && (
+                            <>
+                                <span className="text-base-content/60">
+                                    {t('addProject.editorResolution.version')}
+                                </span>
+                                <code>{resolution.requested.version}</code>
+                            </>
+                        )}
                         <span className="text-base-content/60">
                             {t('addProject.editorResolution.channel')}
                         </span>

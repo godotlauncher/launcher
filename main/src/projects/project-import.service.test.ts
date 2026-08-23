@@ -29,6 +29,7 @@ const godotProjectMocks = vi.hoisted(() => ({
     getProjectNameFromParsed: vi.fn(),
     getProjectRendererFromParsed: vi.fn(),
     getProjectConfigVersionFromParsed: vi.fn(),
+    getProjectGodotVersionFromParsed: vi.fn(),
     getProjectIconUrlFromParsed: vi.fn(),
 }));
 
@@ -141,6 +142,7 @@ const {
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectIconUrlFromParsed,
 } = godotProjectMocks;
 const { getDefaultDirs } = platformMocks;
@@ -216,6 +218,7 @@ describe('addProject', () => {
         getProjectNameFromParsed.mockResolvedValue('Sample Project');
         getProjectRendererFromParsed.mockResolvedValue('FORWARD_PLUS');
         getProjectConfigVersionFromParsed.mockResolvedValue(5);
+        getProjectGodotVersionFromParsed.mockReturnValue(null);
         getProjectIconUrlFromParsed.mockReturnValue(undefined);
 
         getDefaultDirs.mockReturnValue({
@@ -303,6 +306,142 @@ describe('addProject', () => {
                 launcherVersion: '1.0.0',
             }),
         );
+    });
+
+    it('selects the newest installed stable editor for the project Godot branch', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.5-stable',
+                version_number: 4.5,
+                install_path: '/install/4.5',
+                editor_path: '/install/4.5/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            {
+                version: '4.4.1-stable',
+                version_number: 4.4,
+                install_path: '/install/4.4.1',
+                editor_path: '/install/4.4.1/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            {
+                version: '4.4.3-stable',
+                version_number: 4.4,
+                install_path: '/install/4.4.3',
+                editor_path: '/install/4.4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.release.version).toBe('4.4.3-stable');
+    });
+
+    it('requests the inferred stable branch instead of using a newer minor', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.5-stable',
+                version_number: 4.5,
+                install_path: '/install/4.5',
+                editor_path: '/install/4.5/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result).toMatchObject({
+            success: false,
+            editorResolution: {
+                requested: {
+                    kind: 'stable-base',
+                    channel: 'official',
+                    flavor: 'gdscript',
+                    base_version: '4.4',
+                },
+                downloadable: {
+                    match: 'stable-base',
+                    base_version: '4.4',
+                    flavor: 'gdscript',
+                },
+            },
+        });
+        expect(addProjectToList).not.toHaveBeenCalled();
+    });
+
+    it('infers the .NET flavour for a project that has a solution file', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        readdirSync.mockReturnValue(['project.godot', 'sample.sln']);
+        getInstalledReleases.mockResolvedValue([]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.editorResolution?.requested).toMatchObject({
+            kind: 'stable-base',
+            flavor: 'dotnet',
+            base_version: '4.4',
+        });
+    });
+
+    it('adds an inferred project with a missing editor when requested', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        getInstalledReleases.mockResolvedValue([]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { resolution: 'add_missing' },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject).toMatchObject({
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: {
+                version: '4.4-stable',
+                base_version: '4.4',
+                source: 'official',
+                valid: false,
+            },
+        });
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 
     it('marks an imported project as covered by an enclosing repository', async () => {
@@ -399,6 +538,7 @@ describe('addProject', () => {
     });
 
     it('prefers an exact .godotlauncher editor match when importing', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.6');
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },
             launcher: { version: '1.9.0' },

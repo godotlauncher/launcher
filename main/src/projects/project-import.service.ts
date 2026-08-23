@@ -8,6 +8,7 @@ import type {
     InstalledRelease,
     ProjectConfig,
     ProjectDetails,
+    ProjectInferredEditorRequest,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
@@ -31,6 +32,7 @@ import {
 import {
     type GodotProjectFile,
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectIconUrlFromParsed,
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
@@ -63,37 +65,6 @@ function releaseMatchesProjectLauncherConfig(
     return (
         getReleaseChannel(release) === launcherConfig.editor.channel &&
         getReleaseFlavor(release) === launcherConfig.editor.flavor
-    );
-}
-
-function findReleaseFromProjectLauncherConfig(
-    releases: InstalledRelease[],
-    launcherConfig: ProjectLauncherConfig | null,
-    configVersion: number,
-): InstalledRelease | undefined {
-    if (!launcherConfig) {
-        return undefined;
-    }
-
-    const candidates = releases.filter(
-        (release) =>
-            release.valid &&
-            release.config_version >= configVersion &&
-            isCompatibleCustomPlatform(release) &&
-            releaseMatchesProjectLauncherConfig(release, launcherConfig),
-    );
-
-    return (
-        candidates.find(
-            (release) => release.version === launcherConfig.editor.version,
-        ) ??
-        candidates
-            .filter(
-                (release) =>
-                    getReleaseBaseVersion(release) ===
-                    launcherConfig.editor.base_version,
-            )
-            .sort(sortReleases)[0]
     );
 }
 
@@ -138,7 +109,10 @@ function createEditorResolution(
     launcherConfig: ProjectLauncherConfig,
     fallback: InstalledRelease | undefined,
 ): AddProjectEditorResolution {
-    const requested = launcherConfig.editor;
+    const requested = {
+        kind: 'exact' as const,
+        ...launcherConfig.editor,
+    };
 
     return {
         requested,
@@ -146,6 +120,7 @@ function createEditorResolution(
         downloadable:
             requested.channel === 'official'
                 ? {
+                      match: 'exact',
                       version: requested.version,
                       flavor: requested.flavor,
                       prerelease: !requested.version
@@ -154,6 +129,53 @@ function createEditorResolution(
                   }
                 : undefined,
     };
+}
+
+/**
+ * Creates a missing-editor resolution for a Godot branch inferred from the
+ * project file.
+ *
+ * @param request - Inferred official stable editor request.
+ * @returns A resolution that the renderer can match to the latest patch.
+ */
+function createInferredEditorResolution(
+    request: ProjectInferredEditorRequest,
+): AddProjectEditorResolution {
+    return {
+        requested: request,
+        downloadable: {
+            match: 'stable-base',
+            base_version: request.base_version,
+            flavor: request.flavor,
+        },
+    };
+}
+
+/**
+ * Selects the newest installed official stable editor for an inferred request.
+ *
+ * @param releases - Installed editor releases.
+ * @param request - Inferred official stable editor request.
+ * @param configVersion - Project file format version that must be supported.
+ * @returns The newest compatible installed release, when present.
+ */
+function findInferredStableRelease(
+    releases: InstalledRelease[],
+    request: ProjectInferredEditorRequest,
+    configVersion: number,
+): InstalledRelease | undefined {
+    return releases
+        .filter(
+            (release) =>
+                release.valid &&
+                release.config_version >= configVersion &&
+                release.source !== 'custom' &&
+                !release.prerelease &&
+                release.version.toLowerCase().includes('stable') &&
+                getReleaseBaseVersion(release) === request.base_version &&
+                getReleaseFlavor(release) === request.flavor,
+        )
+        .sort(sortReleases)[0];
 }
 
 function getRequestedVersionNumber(
@@ -184,6 +206,37 @@ function buildMissingRelease(
         published_at: null,
         valid: false,
         source: launcherConfig.editor.channel,
+    };
+}
+
+/**
+ * Builds a placeholder release for an unavailable inferred stable editor.
+ *
+ * @param request - Inferred official stable editor request.
+ * @param configVersion - Project file format version.
+ * @returns An invalid release record that keeps the project addable.
+ */
+function buildMissingInferredRelease(
+    request: ProjectInferredEditorRequest,
+    configVersion: number,
+): InstalledRelease {
+    const versionNumber = Number.parseFloat(request.base_version);
+
+    return {
+        version: `${request.base_version}-stable`,
+        base_version: request.base_version,
+        flavor: request.flavor,
+        version_number: Number.isNaN(versionNumber) ? 0 : versionNumber,
+        install_path: '',
+        editor_path: '',
+        platform: process.platform,
+        arch: process.arch,
+        mono: request.flavor === 'dotnet',
+        prerelease: false,
+        config_version: configVersion as 5,
+        published_at: null,
+        valid: false,
+        source: 'official',
     };
 }
 
@@ -290,6 +343,8 @@ export class ProjectImportService {
 
         const configVersion =
             await getProjectConfigVersionFromParsed(parsedConfig);
+        const projectGodotVersion =
+            getProjectGodotVersionFromParsed(parsedConfig);
 
         // select the closest installed release
         const installedReleases =
@@ -329,6 +384,15 @@ export class ProjectImportService {
         const hasDotNET: boolean = fs
             .readdirSync(dirname)
             .some((f) => f.endsWith('.csproj') || f.endsWith('.sln'));
+        const inferredEditorRequest: ProjectInferredEditorRequest | null =
+            projectGodotVersion
+                ? {
+                      kind: 'stable-base',
+                      channel: 'official',
+                      flavor: hasDotNET ? 'dotnet' : 'gdscript',
+                      base_version: projectGodotVersion,
+                  }
+                : null;
 
         let release: InstalledRelease | undefined;
 
@@ -387,12 +451,30 @@ export class ProjectImportService {
                     };
                 }
             }
-        } else {
-            release = findReleaseFromProjectLauncherConfig(
-                installedReleases,
-                projectLauncherConfig,
-                configVersion,
-            );
+        } else if (inferredEditorRequest) {
+            if (options.resolution === 'add_missing') {
+                release = buildMissingInferredRelease(
+                    inferredEditorRequest,
+                    configVersion,
+                );
+                addAsMissingEditor = true;
+                shouldWriteProjectLauncherConfig = false;
+            } else {
+                release = findInferredStableRelease(
+                    installedReleases,
+                    inferredEditorRequest,
+                    configVersion,
+                );
+
+                if (!release) {
+                    return {
+                        success: false,
+                        editorResolution: createInferredEditorResolution(
+                            inferredEditorRequest,
+                        ),
+                    };
+                }
+            }
         }
 
         if (!release) {

@@ -9,6 +9,7 @@ export {
 export type { GodotProjectFile } from './godotProject/projectFile.utils.js';
 export {
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectRendererFromParsed,
     getProjectRendererFromPath,
     parseGodotProjectFile,

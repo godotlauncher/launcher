@@ -140,11 +140,23 @@ export type InitializeProjectGitResult = {
 };
 
 export type ProjectLauncherEditorRequest = {
+    kind: 'exact';
     channel: EditorChannel;
     flavor: EditorFlavor;
     base_version: string;
     version: string;
 };
+
+export type ProjectInferredEditorRequest = {
+    kind: 'stable-base';
+    channel: 'official';
+    flavor: 'gdscript' | 'dotnet';
+    base_version: string;
+};
+
+export type ProjectEditorRequest =
+    | ProjectLauncherEditorRequest
+    | ProjectInferredEditorRequest;
 
 export type AddProjectOptions =
     | {
@@ -159,13 +171,20 @@ export type AddProjectOptions =
       };
 
 export type AddProjectEditorResolution = {
-    requested: ProjectLauncherEditorRequest;
+    requested: ProjectEditorRequest;
     fallback?: InstalledRelease;
-    downloadable?: {
-        version: string;
-        flavor: EditorFlavor;
-        prerelease: boolean;
-    };
+    downloadable?:
+        | {
+              match: 'exact';
+              version: string;
+              flavor: EditorFlavor;
+              prerelease: boolean;
+          }
+        | {
+              match: 'stable-base';
+              base_version: string;
+              flavor: 'gdscript' | 'dotnet';
+          };
 };
 
 export type AddProjectToListResult = BackendResult & {

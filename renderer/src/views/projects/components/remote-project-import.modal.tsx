@@ -34,6 +34,7 @@ import {
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
     getRemoteRepositoryRowClassName,
+    handOffRemoteProjectRegistration,
     selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
 } from '../remote-project-import.model';
@@ -476,20 +477,20 @@ export const RemoteProjectImportModal: React.FC<
                 };
             } else {
                 try {
-                    const result = await addProject(project.projectFilePath);
-                    if (result.success || result.editorResolution) {
-                        const added = await handleAddProjectResult(
-                            project.projectFilePath,
-                            result,
-                        );
+                    const handoff = await handOffRemoteProjectRegistration(
+                        project.projectFilePath,
+                        addProject,
+                        handleAddProjectResult,
+                    );
+                    if (handoff.handled) {
                         outcome = {
                             project,
-                            status: added ? 'added' : 'skipped',
-                            error: added
+                            status: handoff.added ? 'added' : 'skipped',
+                            error: handoff.added
                                 ? undefined
                                 : t('addProject.remote.registration.notAdded'),
                         };
-                        if (added) {
+                        if (handoff.added) {
                             knownNames.add(project.name);
                             knownPaths.add(normalisedDirectory);
                         }
@@ -498,7 +499,7 @@ export const RemoteProjectImportModal: React.FC<
                             project,
                             status: 'failed',
                             error:
-                                result.error ??
+                                handoff.error ??
                                 t(
                                     'addProject.remote.errors.registration-failed',
                                 ),
@@ -900,9 +901,7 @@ export const RemoteProjectImportModal: React.FC<
                                 }
                             />
                             <span>{t('table.name')}</span>
-                            <span>
-                                {t('editProject.fields.path.label')}
-                            </span>
+                            <span>{t('editProject.fields.path.label')}</span>
                         </div>
                         {discoveredProjects.map((project) => (
                             <label
