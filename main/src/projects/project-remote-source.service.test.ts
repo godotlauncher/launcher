@@ -16,7 +16,6 @@ describe('ProjectRemoteSourceService', () => {
             } as never,
             {} as never,
             {} as never,
-            {} as never,
         );
 
         const result = await service.inspectPublicGitSource(
@@ -32,17 +31,10 @@ describe('ProjectRemoteSourceService', () => {
     });
 
     it('marks canonical stored origins without mutating projects', async () => {
-        const projects = {
-            list: vi.fn(async () => [
-                { path: '/projects/game' },
-                { path: '/projects/other' },
-            ]),
-        };
-        const git = {
-            getNormalizedRemoteOrigin: vi
-                .fn()
-                .mockResolvedValueOnce('https://github.com/Owner/Game')
-                .mockResolvedValueOnce(null),
+        const projectOrigins = {
+            getOrigins: vi.fn(
+                async () => new Set(['https://github.com/Owner/Game']),
+            ),
         };
         const repositoryHosting = {
             listRepositories: vi.fn(async () => ({
@@ -67,8 +59,7 @@ describe('ProjectRemoteSourceService', () => {
         const service = new ProjectRemoteSourceService(
             {} as never,
             repositoryHosting as never,
-            git as never,
-            projects as never,
+            projectOrigins as never,
         );
 
         const result = await service.listConnectedRepositories('github');
@@ -89,11 +80,80 @@ describe('ProjectRemoteSourceService', () => {
                 nextCursor: null,
             },
         });
-        expect(projects.list).toHaveBeenCalledOnce();
-        expect(git.getNormalizedRemoteOrigin).toHaveBeenCalledTimes(2);
+        expect(projectOrigins.getOrigins).toHaveBeenCalledOnce();
         expect(repositoryHosting.listRepositories).toHaveBeenCalledWith(
             'github',
             undefined,
         );
+    });
+
+    it('starts stored-origin indexing concurrently with provider browsing', async () => {
+        const origins = Promise.withResolvers<ReadonlySet<string>>();
+        const repositories = Promise.withResolvers<{
+            ok: true;
+            page: {
+                sessionId: string;
+                repositories: [];
+                nextCursor: null;
+            };
+        }>();
+        const projectOrigins = {
+            getOrigins: vi.fn(() => origins.promise),
+        };
+        const repositoryHosting = {
+            listRepositories: vi.fn(() => repositories.promise),
+        };
+        const service = new ProjectRemoteSourceService(
+            {} as never,
+            repositoryHosting as never,
+            projectOrigins as never,
+        );
+
+        const result = service.listConnectedRepositories('github');
+        expect(projectOrigins.getOrigins).toHaveBeenCalledOnce();
+        expect(repositoryHosting.listRepositories).toHaveBeenCalledOnce();
+
+        repositories.resolve({
+            ok: true,
+            page: {
+                sessionId: 'session-one',
+                repositories: [],
+                nextCursor: null,
+            },
+        });
+        origins.resolve(new Set());
+
+        await expect(result).resolves.toEqual({
+            ok: true,
+            page: { repositories: [], nextCursor: null },
+        });
+    });
+
+    it('does not fail provider browsing when the origin index is unavailable', async () => {
+        const service = new ProjectRemoteSourceService(
+            {} as never,
+            {
+                listRepositories: vi.fn(async () => ({
+                    ok: true,
+                    page: {
+                        sessionId: 'session-one',
+                        repositories: [],
+                        nextCursor: null,
+                    },
+                })),
+            } as never,
+            {
+                getOrigins: vi.fn(async () => {
+                    throw new Error('unavailable');
+                }),
+            } as never,
+        );
+
+        await expect(
+            service.listConnectedRepositories('github'),
+        ).resolves.toEqual({
+            ok: true,
+            page: { repositories: [], nextCursor: null },
+        });
     });
 });

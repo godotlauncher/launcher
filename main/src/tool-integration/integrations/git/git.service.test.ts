@@ -76,13 +76,7 @@ describe('GitService', () => {
         await expect(service.exists()).resolves.toBe(false);
     });
 
-    it('reads a token-free origin only for an exact repository root', async () => {
-        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
-            status: 'inside-work-tree',
-            root: '/projects/demo',
-            isProjectRoot: true,
-            kind: 'standard',
-        });
+    it('reads a token-free origin with one repository-local command', async () => {
         execute.mockResolvedValueOnce(
             success('https://GitHub.com:443/Owner/Demo.git\n'),
         );
@@ -104,18 +98,24 @@ describe('GitService', () => {
         });
     });
 
-    it('does not read an origin from a nested work tree', async () => {
-        vi.spyOn(service, 'inspectRepository').mockResolvedValue({
-            status: 'inside-work-tree',
-            root: '/projects',
-            isProjectRoot: false,
-            kind: 'standard',
-        });
+    it('reads the repository-local origin from a nested project', async () => {
+        execute.mockResolvedValueOnce(
+            success('https://github.com/Owner/Monorepo.git\n'),
+        );
+
+        await expect(
+            service.getNormalizedRemoteOrigin('/projects/demo'),
+        ).resolves.toBe('https://github.com/Owner/Monorepo');
+        expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('returns no origin when repository-local configuration is unavailable', async () => {
+        execute.mockResolvedValueOnce(failure());
 
         await expect(
             service.getNormalizedRemoteOrigin('/projects/demo'),
         ).resolves.toBeNull();
-        expect(execute).not.toHaveBeenCalled();
+        expect(execute).toHaveBeenCalledOnce();
     });
 
     it('reads and normalizes the complete global user identity', async () => {

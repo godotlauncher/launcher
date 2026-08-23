@@ -1,4 +1,3 @@
-import type { OnModuleDestroy } from '@mariodebono/di';
 import { Injectable } from '@mariodebono/di';
 import type {
     ListConnectedRepositoriesResult,
@@ -6,39 +5,26 @@ import type {
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { RepositoryHostingService } from '../app-integrations/repository-hosting.service.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { normalizeGitRemoteUrl } from '../tool-integration/integrations/git/git-remote-url-normalizer.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { PublicGitSourceService } from '../tool-integration/integrations/git/public-git-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { ProjectsStore } from './projects.store.js';
+import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
 
 @Injectable()
-export class ProjectRemoteSourceService implements OnModuleDestroy {
-    private readonly originCaches = new Map<string, Promise<Set<string>>>();
-    private readonly providerSessions = new Map<string, string>();
-
+export class ProjectRemoteSourceService {
     /**
      * Creates the project-facing remote source boundary.
      *
      * @param publicSources - Anonymous public Git source inspector.
      * @param repositoryHosting - Connected hosting discovery service.
-     * @param git - Guarded Git command service.
-     * @param projects - Canonical stored project list.
+     * @param projectOrigins - Cached stored-project origin index.
      */
     constructor(
         private readonly publicSources: PublicGitSourceService,
         private readonly repositoryHosting: RepositoryHostingService,
-        private readonly git: GitService,
-        private readonly projects: ProjectsStore,
+        private readonly projectOrigins: ProjectRepositoryOriginIndexService,
     ) {}
-
-    /** Clears per-session normalised origin caches during shutdown. */
-    onModuleDestroy(): void {
-        this.originCaches.clear();
-        this.providerSessions.clear();
-    }
 
     /**
      * Inspects one public Git source without exposing resolved addresses.
@@ -71,6 +57,9 @@ export class ProjectRemoteSourceService implements OnModuleDestroy {
         providerId: string,
         cursor?: string,
     ): Promise<ListConnectedRepositoriesResult> {
+        const originsPromise = this.projectOrigins
+            .getOrigins()
+            .catch(() => new Set<string>());
         const result = await this.repositoryHosting.listRepositories(
             providerId,
             cursor,
@@ -83,18 +72,7 @@ export class ProjectRemoteSourceService implements OnModuleDestroy {
             return { ok: false, reason };
         }
 
-        const sessionId = result.page.sessionId;
-        const previousSessionId = this.providerSessions.get(providerId);
-        if (previousSessionId && previousSessionId !== sessionId) {
-            this.originCaches.delete(previousSessionId);
-        }
-        this.providerSessions.set(providerId, sessionId);
-        let cachedOrigins = this.originCaches.get(sessionId);
-        if (!cachedOrigins) {
-            cachedOrigins = this.readStoredOrigins();
-            this.originCaches.set(sessionId, cachedOrigins);
-        }
-        const origins = await cachedOrigins;
+        const origins = await originsPromise;
         return {
             ok: true,
             page: {
@@ -111,15 +89,5 @@ export class ProjectRemoteSourceService implements OnModuleDestroy {
                 nextCursor: result.page.nextCursor,
             },
         };
-    }
-
-    /** Reads safe canonical origins for exact stored project repositories. */
-    private async readStoredOrigins(): Promise<Set<string>> {
-        const origins = await Promise.all(
-            (await this.projects.list()).map((project) =>
-                this.git.getNormalizedRemoteOrigin(project.path),
-            ),
-        );
-        return new Set(origins.filter((origin): origin is string => !!origin));
     }
 }

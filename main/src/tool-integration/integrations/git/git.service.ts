@@ -127,22 +127,17 @@ export class GitService {
     }
 
     /**
-     * Reads and normalises the origin of an exact stored project repository.
+     * Reads and normalises the local origin visible from a stored project.
+     *
+     * The project may be at the repository root or nested inside its work tree.
      * Raw origin output is never logged or returned.
      *
-     * @param projectPath - Stored project directory to inspect.
+     * @param projectPath - Stored project working directory.
      * @returns A token-free canonical HTTPS origin, or null.
      */
     async getNormalizedRemoteOrigin(
         projectPath: string,
     ): Promise<string | null> {
-        const inspection = await this.inspectRepository(projectPath);
-        if (
-            inspection.status !== 'inside-work-tree' ||
-            !inspection.isProjectRoot
-        ) {
-            return null;
-        }
         const result = await this.run(
             [
                 'config',
