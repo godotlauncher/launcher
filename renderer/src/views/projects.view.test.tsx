@@ -99,6 +99,7 @@ vi.mock('./projects/hooks/useAddProjectWorkflow', () => ({
     useAddProjectWorkflow: () => ({
         handleAddProjectResult: vi.fn(),
         onAddProject: vi.fn(),
+        projectEditorInstallTargets: [],
     }),
 }));
 

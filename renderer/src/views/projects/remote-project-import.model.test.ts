@@ -1,4 +1,5 @@
 import type {
+    CodeEditorIntegrationSettings,
     RemoteDiscoveredProject,
     RemoteRepositorySummary,
 } from '@shared/contracts';
@@ -9,6 +10,9 @@ import {
     filterSelectedDiscoveredProjects,
     getGitAvailability,
     getProjectDirectoryFromFilePath,
+    getRemoteAddProjectOptions,
+    getRemoteCodeEditorOptions,
+    getRemoteDetectedEditorLabel,
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
     getRemoteProjectDirectoryName,
@@ -42,11 +46,24 @@ const discoveredProjects: RemoteDiscoveredProject[] = [
         name: 'Root',
         relativePath: '.',
         projectFilePath: '/repo/project.godot',
+        detectedEditor: {
+            kind: 'stable-base',
+            channel: 'official',
+            flavor: 'gdscript',
+            baseVersion: '4.4',
+        },
     },
     {
         name: 'Example',
         relativePath: 'examples/example',
         projectFilePath: '/repo/examples/example/project.godot',
+        detectedEditor: {
+            kind: 'exact',
+            channel: 'official',
+            flavor: 'dotnet',
+            baseVersion: '4.3',
+            version: '4.3.2-stable',
+        },
     },
 ];
 
@@ -220,14 +237,100 @@ describe('remote project import model', () => {
                 '/repo/examples/game/project.godot',
                 addProject,
                 handleAddProjectResult,
+                { codeEditorId: 'vscodium' },
             ),
         ).resolves.toEqual({ handled: true, added: true });
         expect(addProject).toHaveBeenCalledWith(
             '/repo/examples/game/project.godot',
+            { codeEditorId: 'vscodium' },
         );
         expect(handleAddProjectResult).toHaveBeenCalledWith(
             '/repo/examples/game/project.godot',
             result,
+            { codeEditorId: 'vscodium' },
         );
+    });
+
+    it('maps review code-editor choices to registration options', () => {
+        expect(getRemoteAddProjectOptions('auto')).toEqual({});
+        expect(getRemoteAddProjectOptions('none')).toEqual({
+            codeEditorId: null,
+        });
+        expect(getRemoteAddProjectOptions('vscode')).toEqual({
+            codeEditorId: 'vscode',
+        });
+    });
+
+    it('formats inferred and exact detected Godot editor requirements', () => {
+        expect(getRemoteDetectedEditorLabel(discoveredProjects[0])).toBe(
+            '4.4 stable',
+        );
+        expect(getRemoteDetectedEditorLabel(discoveredProjects[1])).toBe(
+            '4.3.2-stable (.NET)',
+        );
+        expect(
+            getRemoteDetectedEditorLabel({
+                ...discoveredProjects[0],
+                detectedEditor: null,
+            }),
+        ).toBeNull();
+    });
+
+    it('lists Auto-detect, None, and configured code editors', () => {
+        const settings = [
+            {
+                integration: {
+                    id: 'vscode',
+                    displayName: 'Visual Studio Code',
+                    capabilities: { dotnet: true },
+                },
+                isDefault: true,
+                enabled: true,
+                customPath: null,
+                defaultExecFlags: '',
+                execFlagsOverride: null,
+                resolvedExecFlags: '',
+                installation: {
+                    integrationId: 'vscode',
+                    path: '/tools/code',
+                    version: null,
+                },
+                resolvedGodotExecPath: '/tools/code',
+            },
+            {
+                integration: {
+                    id: 'vscodium',
+                    displayName: 'VSCodium',
+                    capabilities: { dotnet: true },
+                },
+                isDefault: false,
+                enabled: false,
+                customPath: null,
+                defaultExecFlags: '',
+                execFlagsOverride: null,
+                resolvedExecFlags: '',
+                installation: null,
+                resolvedGodotExecPath: null,
+            },
+        ] satisfies CodeEditorIntegrationSettings[];
+        const labels: Record<string, string> = {
+            'settings:codeEditors.drawer.path.automatic': 'Automatic detection',
+            'editProject.codeEditor.none': 'None',
+            'editProject.codeEditor.disabled': 'Disabled',
+            'editProject.codeEditor.notFound': 'Not found',
+        };
+
+        expect(
+            getRemoteCodeEditorOptions((key) => labels[key], settings),
+        ).toEqual([
+            { value: 'auto', label: 'Automatic detection' },
+            { value: 'none', label: 'None' },
+            { value: 'vscode', label: 'Visual Studio Code', disabled: false },
+            {
+                value: 'vscodium',
+                label: 'VSCodium (Disabled)',
+                disabled: true,
+            },
+        ]);
     });
 });

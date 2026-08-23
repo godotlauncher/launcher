@@ -83,18 +83,32 @@ const DISCOVERED_PROJECTS: RemoteDiscoveredProject[] = [
         relativePath: '.',
         projectFilePath:
             '/Users/docs/Godot/Projects/pixel-workshop/project.godot',
+        detectedEditor: {
+            kind: 'stable-base',
+            channel: 'official',
+            flavor: 'gdscript',
+            baseVersion: '4.4',
+        },
     },
     {
         name: 'Platformer Demo',
         relativePath: 'examples/platformer',
         projectFilePath:
             '/Users/docs/Godot/Projects/pixel-workshop/examples/platformer/project.godot',
+        detectedEditor: {
+            kind: 'exact',
+            channel: 'official',
+            flavor: 'dotnet',
+            baseVersion: '4.3',
+            version: '4.3.2-stable',
+        },
     },
     {
         name: 'Test Fixture',
         relativePath: 'tests/fixtures/sample-project',
         projectFilePath:
             '/Users/docs/Godot/Projects/pixel-workshop/tests/fixtures/sample-project/project.godot',
+        detectedEditor: null,
     },
 ];
 
@@ -104,18 +118,21 @@ const MIXED_OUTCOME_PROJECTS: RemoteDiscoveredProject[] = [
         relativePath: '.',
         projectFilePath:
             '/Users/docs/Godot/Projects/pixel-workshop/project.godot',
+        detectedEditor: null,
     },
     {
         name: 'Pixel Workshop',
         relativePath: 'games/pixel-workshop',
         projectFilePath:
             '/Users/docs/Godot/Projects/pixel-workshop/games/pixel-workshop/project.godot',
+        detectedEditor: null,
     },
     {
         name: 'Broken Demo',
         relativePath: 'examples/broken',
         projectFilePath:
             '/Users/docs/Godot/Projects/pixel-workshop/examples/broken/project.godot',
+        detectedEditor: null,
     },
 ];
 

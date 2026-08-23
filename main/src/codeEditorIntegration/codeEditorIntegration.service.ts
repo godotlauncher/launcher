@@ -210,6 +210,44 @@ export class CodeEditorIntegrationService {
         return configuredIntegrationIds;
     }
 
+    /**
+     * Resolves the code editor to use for automatic project import.
+     *
+     * @param projectPath - Project directory inspected by each integration.
+     * @returns The single eligible match, the eligible configured default when
+     * multiple integrations match, or null when the choice is ambiguous.
+     */
+    async resolveConfiguredIntegration(
+        projectPath: string,
+    ): Promise<CodeEditorId | null> {
+        const configuredIntegrationIds =
+            await this.findConfiguredIntegrations(projectPath);
+        const eligibleIntegrationIds: CodeEditorId[] = [];
+
+        for (const integrationId of configuredIntegrationIds) {
+            if (
+                (await this.getSelectionEligibility(integrationId)) ===
+                'eligible'
+            ) {
+                eligibleIntegrationIds.push(integrationId);
+            }
+        }
+
+        if (eligibleIntegrationIds.length === 1) {
+            return eligibleIntegrationIds[0];
+        }
+        if (eligibleIntegrationIds.length === 0) {
+            return null;
+        }
+
+        const defaultIntegrationId =
+            await this.settingsStore.getDefaultIntegrationId();
+        return defaultIntegrationId &&
+            eligibleIntegrationIds.includes(defaultIntegrationId)
+            ? defaultIntegrationId
+            : null;
+    }
+
     async validateIntegrationPath(
         integrationId: CodeEditorId,
         pathToValidate: string,

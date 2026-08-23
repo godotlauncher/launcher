@@ -1,3 +1,5 @@
+import type { EditorChannel, EditorFlavor } from '../releases/index.js';
+
 export type RemoteProjectImportRequest = {
     parentDirectory: string;
     directoryName: string;
@@ -42,7 +44,23 @@ export type RemoteDiscoveredProject = {
     name: string;
     relativePath: string;
     projectFilePath: string;
+    detectedEditor: RemoteDetectedProjectEditor | null;
 };
+
+export type RemoteDetectedProjectEditor =
+    | {
+          kind: 'exact';
+          channel: EditorChannel;
+          flavor: EditorFlavor;
+          baseVersion: string;
+          version: string;
+      }
+    | {
+          kind: 'stable-base';
+          channel: 'official';
+          flavor: 'gdscript' | 'dotnet';
+          baseVersion: string;
+      };
 
 export type RemoteProjectImportResult =
     | {

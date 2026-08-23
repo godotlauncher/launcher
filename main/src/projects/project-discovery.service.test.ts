@@ -38,6 +38,12 @@ describe('ProjectDiscoveryService', () => {
                     name: 'Root Game',
                     relativePath: '.',
                     projectFilePath: path.join(repositoryPath, 'project.godot'),
+                    detectedEditor: {
+                        kind: 'stable-base',
+                        channel: 'official',
+                        flavor: 'gdscript',
+                        baseVersion: '4.4',
+                    },
                 },
                 {
                     name: 'Nested',
@@ -48,6 +54,12 @@ describe('ProjectDiscoveryService', () => {
                         'nested',
                         'project.godot',
                     ),
+                    detectedEditor: {
+                        kind: 'stable-base',
+                        channel: 'official',
+                        flavor: 'gdscript',
+                        baseVersion: '4.4',
+                    },
                 },
             ],
         });
@@ -99,6 +111,64 @@ describe('ProjectDiscoveryService', () => {
         ).resolves.toEqual({ ok: false, reason: 'cancelled' });
     });
 
+    it('prefers exact adjacent .godotlauncher editor metadata', async () => {
+        await writeProject(repositoryPath, 'Configured Game');
+        await fs.writeFile(
+            path.join(repositoryPath, '.godotlauncher'),
+            [
+                '[config]',
+                'version=1',
+                '',
+                '[launcher]',
+                'version=1.11.0',
+                '',
+                '[editor]',
+                'channel=custom',
+                'flavor=team-build',
+                'base_version=4.4',
+                'version=4.4-team.2',
+                '',
+            ].join('\n'),
+        );
+
+        await expect(
+            service.discover(repositoryPath, new AbortController().signal),
+        ).resolves.toMatchObject({
+            ok: true,
+            projects: [
+                {
+                    detectedEditor: {
+                        kind: 'exact',
+                        channel: 'custom',
+                        flavor: 'team-build',
+                        baseVersion: '4.4',
+                        version: '4.4-team.2',
+                    },
+                },
+            ],
+        });
+    });
+
+    it('detects the .NET flavour from project files', async () => {
+        await writeProject(repositoryPath, 'Dotnet Game');
+        await fs.writeFile(path.join(repositoryPath, 'Dotnet Game.csproj'), '');
+
+        await expect(
+            service.discover(repositoryPath, new AbortController().signal),
+        ).resolves.toMatchObject({
+            ok: true,
+            projects: [
+                {
+                    detectedEditor: {
+                        kind: 'stable-base',
+                        flavor: 'dotnet',
+                        baseVersion: '4.4',
+                    },
+                },
+            ],
+        });
+    });
+
     it('stops when repository nesting exceeds the traversal bound', async () => {
         let directory = repositoryPath;
         for (let depth = 0; depth < 14; depth++) {
@@ -127,7 +197,7 @@ describe('ProjectDiscoveryService', () => {
         await fs.mkdir(directory, { recursive: true });
         await fs.writeFile(
             path.join(directory, 'project.godot'),
-            `config_version=5\n\n[application]\nconfig/name="${name}"\n`,
+            `config_version=5\n\n[application]\nconfig/name="${name}"\nconfig/features=PackedStringArray("4.4")\n`,
         );
     }
 });

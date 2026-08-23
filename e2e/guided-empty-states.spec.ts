@@ -8,6 +8,7 @@ import {
     test,
 } from '@playwright/test';
 import type {
+    AddProjectOptions,
     ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -23,6 +24,8 @@ import {
     SAMPLE_AVAILABLE_PRERELEASES,
     SAMPLE_AVAILABLE_RELEASES,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+    SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
 } from './documentationScreenshots/sampleData.ts';
 import { getMainWindow } from './splashscreen/getMainWindow.ts';
 
@@ -262,7 +265,12 @@ test('Remote repository discovery lets users exclude projects before adding', as
 });
 
 test('GitHub repositories use the same multi-project review', async () => {
-    await prepareAppWithStubbedData(mainPage, electronApp);
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        codeEditorSettings: [
+            SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
+        ],
+    });
     await stubRemoteProjectDiscovery();
     await failRootRemoteProjectRegistration();
     await mainPage.getByTestId('btnProjects').click();
@@ -277,12 +285,23 @@ test('GitHub repositories use the same multi-project review', async () => {
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
     await expect(modal.getByText('Root Game')).toBeVisible();
     await expect(modal.getByText('Example Fixture')).toBeVisible();
+    await expect(modal.getByText('4.4 stable')).toBeVisible();
+    await expect(modal.getByText('4.3.2-stable (.NET)')).toBeVisible();
     await expect(modal.getByRole('checkbox')).toHaveCount(3);
+    await expect(
+        modal.getByTestId('selectRemoteProjectCodeEditor-0'),
+    ).toContainText('Automatic detection');
+    await modal.getByTestId('selectRemoteProjectCodeEditor-1').click();
+    await modal.getByRole('option', { name: 'VSCodium' }).click();
     await modal.getByTestId('btnAddDiscoveredProjects').click();
     await expect(modal.getByText('Project import complete')).toBeVisible();
     await expect(modal.getByText(/Failed: Duplicate root project/)).toBeVisible();
     await expect.poll(readRemoteAddedProjectPaths).toEqual([
         '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
+    ]);
+    await expect.poll(readRemoteAddProjectOptions).toEqual([
+        {},
+        { codeEditorId: 'vscodium' },
     ]);
 });
 
@@ -318,6 +337,144 @@ test('Remote registration surfaces editor resolution above the import modal', as
     await expect(
         importModal.getByText(/Skipped: The project was not added\./),
     ).toBeVisible();
+});
+
+test('Remote registration preserves the code editor through editor resolution retries', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        codeEditorSettings: [SAMPLE_VSCODIUM_SETTINGS_AVAILABLE],
+    });
+    await stubRemoteProjectDiscovery();
+    await requireNestedRemoteEditorResolution();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const importModal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await importModal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await importModal.getByRole('button', { name: 'Continue' }).click();
+    await importModal
+        .getByRole('button', { name: 'Clone repository' })
+        .click();
+    await expect(importModal.getByText('Choose projects to add')).toBeVisible();
+    await importModal.getByRole('checkbox').nth(1).click();
+    await importModal.getByTestId('selectRemoteProjectCodeEditor-1').click();
+    await importModal.getByRole('option', { name: 'VSCodium' }).click();
+    await importModal.getByTestId('btnAddDiscoveredProjects').click();
+
+    const resolutionDialog = mainPage.getByRole('dialog', {
+        name: 'Editor version required',
+    });
+    await resolutionDialog
+        .getByRole('button', { name: 'Add With Missing Editor' })
+        .click();
+    await expect(importModal.getByText('Project import complete')).toBeVisible();
+    await expect.poll(readRemoteAddProjectOptions).toEqual([
+        { codeEditorId: 'vscodium' },
+        { codeEditorId: 'vscodium', resolution: 'add_missing' },
+    ]);
+});
+
+test('Remote registration shows progress for its missing editor installation', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        availableReleases: [createAvailableRelease('4.4.3-stable')],
+    });
+    await stubRemoteProjectDiscovery();
+    await requireNestedRemoteEditorResolution();
+    await stubPendingRemoteEditorInstallation();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const importModal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await importModal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await importModal.getByRole('button', { name: 'Continue' }).click();
+    await importModal
+        .getByRole('button', { name: 'Clone repository' })
+        .click();
+    await importModal.getByRole('checkbox').nth(1).click();
+    await importModal.getByTestId('btnAddDiscoveredProjects').click();
+
+    const resolutionDialog = mainPage.getByRole('dialog', {
+        name: 'Editor version required',
+    });
+    await resolutionDialog.getByRole('button', { name: 'Options' }).click();
+    await resolutionDialog
+        .getByRole('button', { name: 'Download 4.4.3-stable' })
+        .click();
+
+    const installProgress = importModal.getByTestId(
+        'remoteProjectEditorInstallProgress',
+    );
+    await expect(installProgress).toContainText(
+        'Installing Godot 4.4.3-stable Standard',
+    );
+    await publishReleaseInstallProgress({
+        id: 'remote-editor-install',
+        version: '4.4.3-stable',
+        mono: false,
+        prerelease: false,
+        published_at: null,
+        stage: 'downloading',
+        canCancel: false,
+        percent: 42,
+        receivedBytes: 42 * 1024 * 1024,
+        totalBytes: 100 * 1024 * 1024,
+    });
+    await expect(installProgress).toContainText('Downloading');
+    await expect(installProgress).toContainText('42%');
+    await expect(installProgress).toContainText('42 MB / 100 MB');
+
+    await completePendingRemoteEditorInstallation();
+    await expect(importModal.getByText('Project import complete')).toBeVisible();
+});
+
+test('Remote registration resolves missing editors sequentially for multiple projects', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await requireAllRemoteEditorResolutions();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const importModal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await importModal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await importModal.getByRole('button', { name: 'Continue' }).click();
+    await importModal
+        .getByRole('button', { name: 'Clone repository' })
+        .click();
+    await importModal.getByTestId('btnAddDiscoveredProjects').click();
+
+    const firstResolution = mainPage.getByRole('dialog', {
+        name: 'Editor version required',
+    });
+    await firstResolution
+        .getByRole('button', { name: 'Add With Missing Editor' })
+        .click();
+    const secondResolution = mainPage.getByRole('dialog', {
+        name: 'Editor version required',
+    });
+    await expect(secondResolution).toBeVisible();
+    await secondResolution
+        .getByRole('button', { name: 'Add With Missing Editor' })
+        .click();
+
+    await expect(importModal.getByText('Project import complete')).toBeVisible();
+    await expect.poll(readRemoteAddedProjectPaths).toEqual([
+        '/home/docs/Godot/Projects/games/project.godot',
+        '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
+    ]);
 });
 
 test('Onboarding without an editor finishes inside the install drawer', async () => {
@@ -480,12 +637,16 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
     await electronApp.evaluate(({ ipcMain }) => {
         const state = globalThis as typeof globalThis & {
             __guidedRemoteAddedProjectPaths?: string[];
+            __guidedRemoteAddProjectOptions?: AddProjectOptions[];
             __guidedFailRootRemoteProject?: boolean;
             __guidedRequireNestedRemoteEditor?: boolean;
+            __guidedRequireAllRemoteEditors?: boolean;
         };
         state.__guidedRemoteAddedProjectPaths = [];
+        state.__guidedRemoteAddProjectOptions = [];
         state.__guidedFailRootRemoteProject = false;
         state.__guidedRequireNestedRemoteEditor = false;
+        state.__guidedRequireAllRemoteEditors = false;
 
         ipcMain.removeHandler('projects.inspectPublicGitSource');
         ipcMain.handle('projects.inspectPublicGitSource', async () => ({
@@ -529,12 +690,25 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                         relativePath: '.',
                         projectFilePath:
                             '/home/docs/Godot/Projects/games/project.godot',
+                        detectedEditor: {
+                            kind: 'stable-base',
+                            channel: 'official',
+                            flavor: 'gdscript',
+                            baseVersion: '4.4',
+                        },
                     },
                     {
                         name: 'Example Fixture',
                         relativePath: 'examples/fixture',
                         projectFilePath:
                             '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
+                        detectedEditor: {
+                            kind: 'exact',
+                            channel: 'official',
+                            flavor: 'dotnet',
+                            baseVersion: '4.3',
+                            version: '4.3.2-stable',
+                        },
                     },
                 ],
             },
@@ -542,7 +716,12 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
         ipcMain.removeHandler('projects.addProject');
         ipcMain.handle(
             'projects.addProject',
-            async (_event, projectFilePath: string) => {
+            async (
+                _event,
+                projectFilePath: string,
+                options: AddProjectOptions = {},
+            ) => {
+                state.__guidedRemoteAddProjectOptions?.push(options);
                 if (
                     state.__guidedFailRootRemoteProject &&
                     projectFilePath ===
@@ -556,11 +735,13 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                         },
                     };
                 }
-                if (
-                    state.__guidedRequireNestedRemoteEditor &&
-                    projectFilePath ===
-                        '/home/docs/Godot/Projects/games/examples/fixture/project.godot'
-                ) {
+                const needsEditorResolution =
+                    options.resolution === undefined &&
+                    (state.__guidedRequireAllRemoteEditors ||
+                        (state.__guidedRequireNestedRemoteEditor &&
+                            projectFilePath ===
+                                '/home/docs/Godot/Projects/games/examples/fixture/project.godot'));
+                if (needsEditorResolution) {
                     return {
                         success: true,
                         data: {
@@ -582,7 +763,47 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                     };
                 }
                 state.__guidedRemoteAddedProjectPaths?.push(projectFilePath);
-                return { success: true, data: { success: true } };
+                const projectDirectory = projectFilePath.replace(
+                    /\/project\.godot$/i,
+                    '',
+                );
+                const newProject = {
+                    name: projectFilePath.includes('fixture')
+                        ? 'Example Fixture'
+                        : 'Root Game',
+                    path: projectDirectory,
+                    icon_path: '',
+                    version: '4.4 (missing)',
+                    version_number: 4.4,
+                    renderer: 'FORWARD_PLUS',
+                    added_at: new Date(),
+                    last_opened: null,
+                    launch_path: '',
+                    editor_settings_path: '',
+                    editor_settings_file: '',
+                    config_version: 5,
+                    withGit: true,
+                    codeEditorId: options.codeEditorId ?? null,
+                    valid: false,
+                    invalid_reason: 'missing_editor',
+                    release: {
+                        version: '4.4 (missing)',
+                        version_number: 4.4,
+                        install_path: '',
+                        editor_path: '',
+                        platform: 'linux',
+                        arch: 'x86_64',
+                        mono: false,
+                        prerelease: false,
+                        config_version: 5,
+                        published_at: null,
+                        valid: false,
+                    },
+                };
+                return {
+                    success: true,
+                    data: { success: true, newProject },
+                };
             },
         );
     });
@@ -595,6 +816,75 @@ async function requireNestedRemoteEditorResolution(): Promise<void> {
             __guidedRequireNestedRemoteEditor?: boolean;
         };
         state.__guidedRequireNestedRemoteEditor = true;
+    });
+}
+
+/** Makes every remote discovery require sequential editor resolution. */
+async function requireAllRemoteEditorResolutions(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRequireAllRemoteEditors?: boolean;
+        };
+        state.__guidedRequireAllRemoteEditors = true;
+    });
+}
+
+/** Holds a remote editor installation open until its progress is asserted. */
+async function stubPendingRemoteEditorInstallation(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedCompleteRemoteEditorInstall?: () => void;
+        };
+        ipcMain.removeHandler('editorInstalls.installEditor');
+        ipcMain.handle(
+            'editorInstalls.installEditor',
+            async (_event, release: ReleaseSummary, mono: boolean) =>
+                await new Promise((resolve) => {
+                    state.__guidedCompleteRemoteEditorInstall = () =>
+                        resolve({
+                            success: true,
+                            data: {
+                                success: true,
+                                version: release.version,
+                                release: {
+                                    version: release.version,
+                                    version_number: Number.parseFloat(
+                                        release.version,
+                                    ),
+                                    install_path: '/editors/installed',
+                                    editor_path: '/editors/installed/Godot',
+                                    platform: 'linux',
+                                    arch: 'x86_64',
+                                    mono,
+                                    prerelease: release.prerelease,
+                                    config_version: 5,
+                                    published_at: release.published_at,
+                                    valid: true,
+                                },
+                            },
+                        });
+                }),
+        );
+        ipcMain.removeHandler('projects.setProjectEditor');
+        ipcMain.handle('projects.setProjectEditor', async () => ({
+            success: true,
+            data: { success: true },
+        }));
+    });
+}
+
+/** Releases the pending remote editor installation result. */
+async function completePendingRemoteEditorInstallation(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedCompleteRemoteEditorInstall?: () => void;
+        };
+        const complete = state.__guidedCompleteRemoteEditorInstall;
+        if (!complete) {
+            throw new Error('No remote editor installation is pending.');
+        }
+        state.__guidedCompleteRemoteEditorInstall = undefined;
+        complete();
     });
 }
 
@@ -615,6 +905,16 @@ async function readRemoteAddedProjectPaths(): Promise<string[]> {
             __guidedRemoteAddedProjectPaths?: string[];
         };
         return state.__guidedRemoteAddedProjectPaths ?? [];
+    });
+}
+
+/** Reads the registration options submitted by the remote discovery review. */
+async function readRemoteAddProjectOptions(): Promise<AddProjectOptions[]> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteAddProjectOptions?: AddProjectOptions[];
+        };
+        return state.__guidedRemoteAddProjectOptions ?? [];
     });
 }
 

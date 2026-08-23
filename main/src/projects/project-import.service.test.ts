@@ -164,6 +164,8 @@ const projectsStore = {
 } as unknown as ProjectsStore;
 const codeEditorIntegrationService = {
     findConfiguredIntegrations: vi.fn(),
+    resolveConfiguredIntegration: vi.fn(),
+    assertIntegrationSelectable: vi.fn(),
     getSelectionEligibility: vi.fn(),
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
@@ -171,6 +173,8 @@ const codeEditorIntegrationService = {
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
     findConfiguredIntegrations: ReturnType<typeof vi.fn>;
+    resolveConfiguredIntegration: ReturnType<typeof vi.fn>;
+    assertIntegrationSelectable: ReturnType<typeof vi.fn>;
     getSelectionEligibility: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
 };
@@ -273,6 +277,15 @@ describe('addProject', () => {
                 existsSync(path.resolve(projectDir, '.vscode'))
                     ? ['vscode']
                     : [],
+        );
+        integrationMocks.resolveConfiguredIntegration.mockImplementation(
+            async (projectDir: string) =>
+                existsSync(path.resolve(projectDir, '.vscode'))
+                    ? 'vscode'
+                    : null,
+        );
+        integrationMocks.assertIntegrationSelectable.mockResolvedValue(
+            undefined,
         );
         integrationMocks.getSelectionEligibility.mockResolvedValue('eligible');
         integrationMocks.applyToProject.mockImplementation(
@@ -485,9 +498,9 @@ describe('addProject', () => {
     });
 
     it('uses the locally configured code editor when importing', async () => {
-        integrationMocks.findConfiguredIntegrations.mockResolvedValue([
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(
             'vscode',
-        ]);
+        );
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -496,7 +509,7 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(
-            integrationMocks.findConfiguredIntegrations,
+            integrationMocks.resolveConfiguredIntegration,
         ).toHaveBeenCalledWith('/fake/project');
         expect(result.newProject?.codeEditorId).toBe('vscode');
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
@@ -508,10 +521,7 @@ describe('addProject', () => {
     });
 
     it('imports ambiguous project-file matches as explicit None', async () => {
-        integrationMocks.findConfiguredIntegrations.mockResolvedValue([
-            'vscode',
-            'future-editor',
-        ]);
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(null);
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -525,7 +535,7 @@ describe('addProject', () => {
     });
 
     it('does not infer a disabled integration from project files', async () => {
-        integrationMocks.findConfiguredIntegrations.mockResolvedValue([]);
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(null);
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -535,6 +545,59 @@ describe('addProject', () => {
         expect(result.success).toBe(true);
         expect(result.newProject?.codeEditorId).toBeNull();
         expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+    });
+
+    it('preserves an explicit None choice without automatic detection', async () => {
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { codeEditorId: null },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBeNull();
+        expect(
+            integrationMocks.resolveConfiguredIntegration,
+        ).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+    });
+
+    it('applies an explicit eligible code editor without project metadata', async () => {
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(null);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { codeEditorId: 'vscodium' },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBe('vscodium');
+        expect(
+            integrationMocks.assertIntegrationSelectable,
+        ).toHaveBeenCalledWith('vscodium');
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscodium',
+            expect.objectContaining({ projectPath: '/fake/project' }),
+        );
+    });
+
+    it('rejects an explicit unavailable code editor before registration', async () => {
+        integrationMocks.assertIntegrationSelectable.mockRejectedValue(
+            new Error('VSCodium installation was not found.'),
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { codeEditorId: 'vscodium' },
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: 'VSCodium installation was not found.',
+        });
+        expect(addProjectToList).not.toHaveBeenCalled();
     });
 
     it('prefers an exact .godotlauncher editor match when importing', async () => {

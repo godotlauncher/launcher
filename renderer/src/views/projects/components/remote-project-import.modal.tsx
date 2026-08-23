@@ -1,4 +1,5 @@
 import type {
+    AddProjectOptions,
     AddProjectToListResult,
     ListConnectedRepositoriesResult,
     PublicGitSourceInspectionResult,
@@ -21,20 +22,28 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appBridge, projectsBridge, subscribeAppEvent } from '../../../bridge';
 import { Dialog } from '../../../components/dialog.component';
+import { ReleaseInstallProgressIndicator } from '../../../components/releaseInstallProgress.component';
 import { SearchField } from '../../../components/ui/searchField.component';
+import { SelectField } from '../../../components/ui/selectField.component';
 import { usePreferences } from '../../../hooks/usePreferences';
 import { useProjects } from '../../../hooks/useProjects';
+import { useRelease } from '../../../hooks/useRelease';
 import { appRoutePaths } from '../../../routes';
 import { getProjectPathSuffixDisplay } from '../../subViews/createProject/createProject.model';
+import type { ProjectEditorInstallTarget } from '../hooks/useAddProjectWorkflow';
 import {
     appendRemoteRepositories,
     filterRemoteRepositories,
     filterSelectedDiscoveredProjects,
     getProjectDirectoryFromFilePath,
+    getRemoteAddProjectOptions,
+    getRemoteCodeEditorOptions,
+    getRemoteDetectedEditorLabel,
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
     getRemoteRepositoryRowClassName,
     handOffRemoteProjectRegistration,
+    type RemoteProjectCodeEditorChoice,
     selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
 } from '../remote-project-import.model';
@@ -47,7 +56,9 @@ type RemoteProjectImportModalProps = {
     handleAddProjectResult: (
         projectPath: string,
         result: AddProjectToListResult,
+        options?: AddProjectOptions,
     ) => Promise<boolean>;
+    editorInstallTargets: ProjectEditorInstallTarget[];
 };
 
 type ModalStep =
@@ -130,11 +141,22 @@ function normaliseProjectPath(value: string, platform?: string): string {
 /** Renders the modal workflow for one remote Add Project source. */
 export const RemoteProjectImportModal: React.FC<
     RemoteProjectImportModalProps
-> = ({ source, onOpenChange, handleAddProjectResult }) => {
-    const { t } = useTranslation(['projects', 'common']);
+> = ({
+    source,
+    onOpenChange,
+    handleAddProjectResult,
+    editorInstallTargets,
+}) => {
+    const { t } = useTranslation([
+        'projects',
+        'common',
+        'settings',
+        'installEditor',
+    ]);
     const navigate = useNavigate();
     const { preferences, platform } = usePreferences();
-    const { addProject, projects } = useProjects();
+    const { addProject, codeEditorSettings, projects } = useProjects();
+    const { getReleaseInstallProgress } = useRelease();
     const [step, setStep] = useState<ModalStep>('source');
     const [publicUrl, setPublicUrl] = useState('');
     const [canonicalPublicUrl, setCanonicalPublicUrl] = useState('');
@@ -172,6 +194,9 @@ export const RemoteProjectImportModal: React.FC<
     const [selectedProjectPaths, setSelectedProjectPaths] = useState<
         Set<string>
     >(new Set());
+    const [codeEditorChoices, setCodeEditorChoices] = useState<
+        Record<string, RemoteProjectCodeEditorChoice>
+    >({});
     const [registrationOutcomes, setRegistrationOutcomes] = useState<
         RegistrationOutcome[]
     >([]);
@@ -218,6 +243,10 @@ export const RemoteProjectImportModal: React.FC<
     const allProjectsSelected =
         discoveredProjects.length > 0 &&
         selectedCount === discoveredProjects.length;
+    const codeEditorOptions = useMemo(
+        () => getRemoteCodeEditorOptions(t, codeEditorSettings),
+        [codeEditorSettings, t],
+    );
 
     const close = useCallback(() => {
         if (step === 'importing' || step === 'registering') return;
@@ -287,6 +316,7 @@ export const RemoteProjectImportModal: React.FC<
         setRepositoryPath('');
         setDiscoveredProjects([]);
         setSelectedProjectPaths(new Set());
+        setCodeEditorChoices({});
         setRegistrationOutcomes([]);
         setRegistrationProgress({ current: 0, total: 0 });
         importPendingRef.current = false;
@@ -403,6 +433,7 @@ export const RemoteProjectImportModal: React.FC<
             setSelectedProjectPaths(
                 selectAllDiscoveredProjects(result.projects),
             );
+            setCodeEditorChoices({});
             setStep('review');
         } catch {
             setImportFailure('addProject.remote.errors.temporarilyUnavailable');
@@ -432,6 +463,22 @@ export const RemoteProjectImportModal: React.FC<
             checked ? next.add(projectFilePath) : next.delete(projectFilePath);
             return next;
         });
+    };
+
+    /**
+     * Stores the code-editor choice for one discovered project.
+     *
+     * @param projectFilePath - Discovered project.godot path.
+     * @param choice - Automatic, none, or an explicit configured integration.
+     */
+    const setProjectCodeEditorChoice = (
+        projectFilePath: string,
+        choice: RemoteProjectCodeEditorChoice,
+    ) => {
+        setCodeEditorChoices((current) => ({
+            ...current,
+            [projectFilePath]: choice,
+        }));
     };
 
     const registerSelectedProjects = async () => {
@@ -481,6 +528,10 @@ export const RemoteProjectImportModal: React.FC<
                         project.projectFilePath,
                         addProject,
                         handleAddProjectResult,
+                        getRemoteAddProjectOptions(
+                            codeEditorChoices[project.projectFilePath] ??
+                                'auto',
+                        ),
                     );
                     if (handoff.handled) {
                         outcome = {
@@ -886,7 +937,7 @@ export const RemoteProjectImportModal: React.FC<
                     </div>
                 ) : (
                     <div className="min-h-0 overflow-auto rounded-box border border-base-300">
-                        <div className="grid grid-cols-[auto_minmax(10rem,0.7fr)_minmax(12rem,1.3fr)] items-center gap-4 border-b border-base-300 bg-base-200 px-4 py-3 font-medium">
+                        <div className="grid grid-cols-[auto_minmax(9rem,0.7fr)_minmax(10rem,1.1fr)_minmax(8rem,0.65fr)_minmax(12rem,1fr)] items-center gap-4 border-b border-base-300 bg-base-200 px-4 py-3 font-medium">
                             <input
                                 ref={selectAllRef}
                                 data-testid="checkboxRemoteProjectSelectAll"
@@ -902,33 +953,71 @@ export const RemoteProjectImportModal: React.FC<
                             />
                             <span>{t('table.name')}</span>
                             <span>{t('editProject.fields.path.label')}</span>
+                            <span>{t('editProject.godotEditor.title')}</span>
+                            <span>{t('editProject.codeEditor.title')}</span>
                         </div>
-                        {discoveredProjects.map((project) => (
-                            <label
-                                key={project.projectFilePath}
-                                className="grid cursor-pointer grid-cols-[auto_minmax(10rem,0.7fr)_minmax(12rem,1.3fr)] items-center gap-4 border-b border-base-300 px-4 py-3 last:border-b-0 hover:bg-base-200"
-                            >
-                                <input
-                                    type="checkbox"
-                                    className="checkbox checkbox-primary checkbox-sm"
-                                    checked={selectedProjectPaths.has(
-                                        project.projectFilePath,
-                                    )}
-                                    onChange={(event) =>
-                                        toggleProject(
+                        {discoveredProjects.map((project, index) => {
+                            const checkboxId = `remote-project-${index}`;
+                            return (
+                                <div
+                                    key={project.projectFilePath}
+                                    className="grid grid-cols-[auto_minmax(9rem,0.7fr)_minmax(10rem,1.1fr)_minmax(8rem,0.65fr)_minmax(12rem,1fr)] items-center gap-4 border-b border-base-300 px-4 py-3 last:border-b-0 hover:bg-base-200"
+                                >
+                                    <input
+                                        id={checkboxId}
+                                        type="checkbox"
+                                        className="checkbox checkbox-primary checkbox-sm"
+                                        checked={selectedProjectPaths.has(
                                             project.projectFilePath,
-                                            event.target.checked,
-                                        )
-                                    }
-                                />
-                                <span className="truncate font-medium">
-                                    {project.name}
-                                </span>
-                                <code className="truncate text-xs text-base-content/60">
-                                    {project.relativePath}
-                                </code>
-                            </label>
-                        ))}
+                                        )}
+                                        onChange={(event) =>
+                                            toggleProject(
+                                                project.projectFilePath,
+                                                event.target.checked,
+                                            )
+                                        }
+                                    />
+                                    <label
+                                        htmlFor={checkboxId}
+                                        className="contents cursor-pointer"
+                                    >
+                                        <span className="truncate font-medium">
+                                            {project.name}
+                                        </span>
+                                        <code className="truncate text-xs text-base-content/60">
+                                            {project.relativePath}
+                                        </code>
+                                        <code className="truncate text-xs">
+                                            {getRemoteDetectedEditorLabel(
+                                                project,
+                                            ) ??
+                                                t(
+                                                    'settings:tools.status.unknown',
+                                                )}
+                                        </code>
+                                    </label>
+                                    <SelectField
+                                        id={`selectRemoteProjectCodeEditor-${index}`}
+                                        testId={`selectRemoteProjectCodeEditor-${index}`}
+                                        compact
+                                        showSelectedCheck
+                                        ariaLabel={`${project.name}: ${t('editProject.codeEditor.title')}`}
+                                        value={
+                                            codeEditorChoices[
+                                                project.projectFilePath
+                                            ] ?? 'auto'
+                                        }
+                                        onChange={(value) =>
+                                            setProjectCodeEditorChoice(
+                                                project.projectFilePath,
+                                                value as RemoteProjectCodeEditorChoice,
+                                            )
+                                        }
+                                        options={codeEditorOptions}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -965,6 +1054,52 @@ export const RemoteProjectImportModal: React.FC<
                     value={registrationProgress.current}
                     max={registrationProgress.total}
                 />
+                {editorInstallTargets.length > 0 && (
+                    <div
+                        className="flex flex-col gap-3 rounded-box border border-base-300 bg-base-200 p-4"
+                        data-testid="remoteProjectEditorInstallProgress"
+                    >
+                        {editorInstallTargets.map((target) => {
+                            const installProgress = getReleaseInstallProgress(
+                                target.version,
+                                target.mono,
+                            );
+                            const flavor = target.mono
+                                ? t('installEditor:table.dotnet')
+                                : t('installEditor:table.gdscript');
+                            return (
+                                <div
+                                    key={target.projectPath}
+                                    className="flex flex-col gap-2"
+                                >
+                                    <span className="text-sm font-medium">
+                                        {t(
+                                            'installEditor:table.tooltips.installingVariant',
+                                            {
+                                                version: target.version,
+                                                flavor,
+                                            },
+                                        )}
+                                    </span>
+                                    {installProgress ? (
+                                        <ReleaseInstallProgressIndicator
+                                            progress={installProgress}
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col gap-1 text-xs text-info">
+                                            <span>
+                                                {t(
+                                                    'installEditor:progress.preparing',
+                                                )}
+                                            </span>
+                                            <progress className="progress progress-info h-1 w-full" />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         );
         footer = null;

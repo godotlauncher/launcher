@@ -44,6 +44,7 @@ describe('ProjectRemoteImportService', () => {
                     name: 'Game',
                     relativePath: '.',
                     projectFilePath: path.join(repositoryPath, 'project.godot'),
+                    detectedEditor: null,
                 },
             ],
         })),
@@ -94,6 +95,7 @@ describe('ProjectRemoteImportService', () => {
                         'game',
                         'project.godot',
                     ),
+                    detectedEditor: null,
                 },
             ],
         });

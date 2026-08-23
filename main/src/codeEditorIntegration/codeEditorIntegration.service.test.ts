@@ -683,4 +683,43 @@ describe('CodeEditorIntegrationService', () => {
         ).resolves.toEqual([]);
         expect(integration.isConfiguredForProject).toHaveBeenCalledOnce();
     });
+
+    it('resolves a single eligible project inference match', async () => {
+        const integration = createIntegration();
+        const service = createService(integration);
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBe(CODE_EDITOR_ID);
+    });
+
+    it('uses the eligible default when multiple integrations share project metadata', async () => {
+        const integration = createIntegration();
+        const otherIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        const settingsStore = createSettingsStore();
+        vi.mocked(settingsStore.getDefaultIntegrationId).mockResolvedValue(
+            OTHER_CODE_EDITOR_ID,
+        );
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([integration, otherIntegration]),
+            settingsStore,
+        );
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBe(OTHER_CODE_EDITOR_ID);
+    });
+
+    it('returns None when multiple eligible matches have no matching default', async () => {
+        const integration = createIntegration();
+        const otherIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([integration, otherIntegration]),
+            createSettingsStore(),
+        );
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBeNull();
+    });
 });

@@ -1,11 +1,14 @@
 import type {
     AddProjectOptions,
     AddProjectToListResult,
+    CodeEditorId,
+    CodeEditorIntegrationSettings,
     RemoteDiscoveredProject,
     RemoteProjectImportFailureReason,
     RemoteRepositorySummary,
     ToolIntegrationSummary,
 } from '@shared/contracts';
+import type { SelectFieldOption } from '../../components/ui/selectField.component';
 import {
     getCreateProjectDirectorySegment,
     normalizeBasePathForJoin,
@@ -21,7 +24,12 @@ type RemoteProjectAdd = (
 type RemoteProjectResultHandler = (
     projectPath: string,
     result: AddProjectToListResult,
+    options?: AddProjectOptions,
 ) => Promise<boolean>;
+
+export type RemoteProjectCodeEditorChoice = 'auto' | 'none' | CodeEditorId;
+
+type Translate = (key: string) => string;
 
 export type RemoteProjectRegistrationHandoff =
     | {
@@ -39,22 +47,90 @@ export type RemoteProjectRegistrationHandoff =
  * @param projectFilePath - Discovered project.godot path.
  * @param addProject - Canonical project registration function.
  * @param handleAddProjectResult - Shared renderer result handler.
+ * @param options - Per-project registration options to preserve through retries.
  * @returns Whether the result was handled and whether the project was added.
  */
 export async function handOffRemoteProjectRegistration(
     projectFilePath: string,
     addProject: RemoteProjectAdd,
     handleAddProjectResult: RemoteProjectResultHandler,
+    options: AddProjectOptions = {},
 ): Promise<RemoteProjectRegistrationHandoff> {
-    const result = await addProject(projectFilePath);
+    const result = await addProject(projectFilePath, options);
     if (!result.success && !result.editorResolution) {
         return { handled: false, error: result.error };
     }
 
     return {
         handled: true,
-        added: await handleAddProjectResult(projectFilePath, result),
+        added: await handleAddProjectResult(projectFilePath, result, options),
     };
+}
+
+/**
+ * Creates the code-editor choices shown for one discovered project.
+ *
+ * @param t - Translation function.
+ * @param settings - Configured code-editor integration settings.
+ * @returns Select options with unavailable integrations disabled.
+ */
+export function getRemoteCodeEditorOptions(
+    t: Translate,
+    settings: CodeEditorIntegrationSettings[],
+): SelectFieldOption[] {
+    return [
+        {
+            value: 'auto',
+            label: t('settings:codeEditors.drawer.path.automatic'),
+        },
+        { value: 'none', label: t('editProject.codeEditor.none') },
+        ...settings.map((integrationSettings) => {
+            const unavailableReason = !integrationSettings.enabled
+                ? t('editProject.codeEditor.disabled')
+                : integrationSettings.installation
+                  ? null
+                  : t('editProject.codeEditor.notFound');
+
+            return {
+                value: integrationSettings.integration.id,
+                label: `${integrationSettings.integration.displayName}${unavailableReason ? ` (${unavailableReason})` : ''}`,
+                disabled: unavailableReason !== null,
+            };
+        }),
+    ];
+}
+
+/**
+ * Converts a review choice into the options accepted by project registration.
+ *
+ * @param choice - Per-project code-editor choice.
+ * @returns Registration options for automatic, none, or an explicit editor.
+ */
+export function getRemoteAddProjectOptions(
+    choice: RemoteProjectCodeEditorChoice,
+): AddProjectOptions {
+    if (choice === 'auto') return {};
+    if (choice === 'none') return { codeEditorId: null };
+    return { codeEditorId: choice };
+}
+
+/**
+ * Formats the effective Godot editor requirement discovered in a repository.
+ *
+ * @param project - Discovered project with effective editor metadata.
+ * @returns A compact version label, or null when no version was detected.
+ */
+export function getRemoteDetectedEditorLabel(
+    project: RemoteDiscoveredProject,
+): string | null {
+    const detected = project.detectedEditor;
+    if (!detected) return null;
+
+    const version =
+        detected.kind === 'exact'
+            ? detected.version
+            : `${detected.baseVersion} stable`;
+    return detected.flavor === 'dotnet' ? `${version} (.NET)` : version;
 }
 
 /**

@@ -1,12 +1,17 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
-import type { RemoteDiscoveredProject } from '@shared/contracts';
+import type {
+    RemoteDetectedProjectEditor,
+    RemoteDiscoveredProject,
+} from '@shared/contracts';
 import {
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectNameFromParsed,
     parseGodotProjectFile,
 } from '../utils/godotProject.utils.js';
+import { readProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 
 const MAX_DISCOVERY_DEPTH = 12;
 const MAX_DISCOVERY_ENTRIES = 10_000;
@@ -142,6 +147,58 @@ export class ProjectDiscoveryService {
         }
         const relativePath =
             path.relative(repositoryPath, path.dirname(projectFilePath)) || '.';
-        return { name, relativePath, projectFilePath };
+        return {
+            name,
+            relativePath,
+            projectFilePath,
+            detectedEditor: await this.detectProjectEditor(
+                path.dirname(projectFilePath),
+                parsed,
+            ),
+        };
+    }
+
+    /**
+     * Resolves the renderer-safe editor requirement for one discovery row.
+     *
+     * @param projectDirectory - Directory containing project.godot.
+     * @param parsedProject - Parsed project.godot content.
+     * @returns The exact or inferred editor request, when detectable.
+     */
+    private async detectProjectEditor(
+        projectDirectory: string,
+        parsedProject: ReturnType<typeof parseGodotProjectFile>,
+    ): Promise<RemoteDetectedProjectEditor | null> {
+        try {
+            const launcherConfig =
+                await readProjectLauncherConfig(projectDirectory);
+            if (launcherConfig) {
+                return {
+                    kind: 'exact',
+                    channel: launcherConfig.editor.channel,
+                    flavor: launcherConfig.editor.flavor,
+                    baseVersion: launcherConfig.editor.base_version,
+                    version: launcherConfig.editor.version,
+                };
+            }
+        } catch {
+            // Invalid or unreadable optional metadata falls back to project.godot.
+        }
+
+        const baseVersion = getProjectGodotVersionFromParsed(parsedProject);
+        if (!baseVersion) {
+            return null;
+        }
+
+        const entries = await fs.readdir(projectDirectory);
+        const hasDotNet = entries.some(
+            (entry) => entry.endsWith('.csproj') || entry.endsWith('.sln'),
+        );
+        return {
+            kind: 'stable-base',
+            channel: 'official',
+            flavor: hasDotNet ? 'dotnet' : 'gdscript',
+            baseVersion,
+        };
     }
 }

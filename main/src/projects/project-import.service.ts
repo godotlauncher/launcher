@@ -262,7 +262,7 @@ export class ProjectImportService {
      * Imports an existing Godot project into the Launcher project list.
      *
      * @param projectPath - Path to the project's project.godot file.
-     * @param options - Optional missing-editor resolution.
+     * @param options - Optional code-editor choice and missing-editor resolution.
      * @returns The project import result.
      */
     async addProject(
@@ -561,16 +561,24 @@ export class ProjectImportService {
 
         const gitInspection = await this.git.inspectRepository(dirname);
         const withGit = gitInspection?.status === 'inside-work-tree';
-        const configuredIntegrationIds =
-            await this.codeEditors.findConfiguredIntegrations(dirname);
-        const codeEditorId =
-            configuredIntegrationIds.length === 1
-                ? configuredIntegrationIds[0]
-                : null;
-        if (configuredIntegrationIds.length > 1) {
-            logger.warn(
-                `Multiple code editor integrations are configured for '${projectName}'; importing with no code editor selected`,
-            );
+        let codeEditorId = options.codeEditorId ?? null;
+        if (options.codeEditorId === undefined) {
+            codeEditorId =
+                await this.codeEditors.resolveConfiguredIntegration(dirname);
+        } else if (options.codeEditorId !== null) {
+            try {
+                await this.codeEditors.assertIntegrationSelectable(
+                    options.codeEditorId,
+                );
+            } catch (error) {
+                return {
+                    success: false,
+                    error:
+                        error instanceof Error
+                            ? error.message
+                            : t('projects:messages.addProjectError'),
+                };
+            }
         }
 
         const recoveredCodeEditorConfigFiles = new Set<string>();

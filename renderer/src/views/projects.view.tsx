@@ -166,7 +166,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         importProjectEditorSettings,
         removeProject,
     });
-    const { handleAddProjectResult, onAddProject } = useAddProjectWorkflow({
+    const {
+        handleAddProjectResult,
+        onAddProject,
+        projectEditorInstallTargets,
+    } = useAddProjectWorkflow({
         t,
         addingProject,
         projectsLocation: preferences?.projects_location,
@@ -548,6 +552,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     }
                 }}
                 handleAddProjectResult={handleAddProjectResult}
+                editorInstallTargets={projectEditorInstallTargets}
             />
         </>
     );

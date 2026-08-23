@@ -18,7 +18,15 @@ vi.mock('../../../hooks/usePreferences', () => ({
 }));
 
 vi.mock('../../../hooks/useProjects', () => ({
-    useProjects: () => ({ addProject: vi.fn(), projects: [] }),
+    useProjects: () => ({
+        addProject: vi.fn(),
+        codeEditorSettings: [],
+        projects: [],
+    }),
+}));
+
+vi.mock('../../../hooks/useRelease', () => ({
+    useRelease: () => ({ getReleaseInstallProgress: vi.fn() }),
 }));
 
 vi.mock('../../../bridge', () => ({
@@ -35,6 +43,7 @@ vi.mock('../../../bridge', () => ({
 const defaultProps = {
     onOpenChange: vi.fn(),
     handleAddProjectResult: vi.fn(),
+    editorInstallTargets: [],
 };
 
 describe('RemoteProjectImportModal', () => {

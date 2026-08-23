@@ -158,7 +158,9 @@ export type ProjectEditorRequest =
     | ProjectLauncherEditorRequest
     | ProjectInferredEditorRequest;
 
-export type AddProjectOptions =
+export type AddProjectOptions = {
+    codeEditorId?: CodeEditorId | null;
+} & (
     | {
           resolution?: undefined;
       }
@@ -168,7 +170,8 @@ export type AddProjectOptions =
     | {
           resolution: 'use_fallback';
           release: InstalledRelease;
-      };
+      }
+);
 
 export type AddProjectEditorResolution = {
     requested: ProjectEditorRequest;
