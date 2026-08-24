@@ -157,7 +157,9 @@
                 "cancelImport": "取消导入",
                 "retryRegistration": "重试添加到启动器",
                 "reviewAndRetry": "检查并重试",
-                "close": "关闭"
+                "close": "关闭",
+                "openCloneFolder": "打开克隆文件夹",
+                "deleteCloneAndClose": "删除克隆并关闭"
             },
             "progress": {
                 "preparing": "准备导入...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "存储库已克隆，但规模过大或嵌套过深，无法安全扫描。",
                 "finaliseFailed": "已完成的克隆无法移动到其目的地。",
                 "cancelled": "进口被取消。",
-                "registration-failed": "存储库已克隆，但无法添加到启动器。"
+                "registration-failed": "存储库已克隆，但无法添加到启动器。",
+                "cloneFolderOpenFailed": "无法打开克隆文件夹。",
+                "cloneCleanupChanged": "导入后克隆已被更改或替换，因此未将其删除。",
+                "cloneCleanupFailed": "无法删除克隆。克隆已保留。"
             }
         }
     },

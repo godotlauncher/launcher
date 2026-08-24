@@ -121,6 +121,7 @@ describe('ProjectsService', () => {
     const remoteImport = {
         importRemoteProject: vi.fn(),
         cancelRemoteProjectImport: vi.fn(),
+        resolveRemoteProjectClone: vi.fn(),
     };
     let service: ProjectsService;
 
@@ -153,6 +154,14 @@ describe('ProjectsService', () => {
             { initialCommit: 'skip' },
         );
         await service.addProject('/projects/game');
+        await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/game.git',
+            parentDirectory: '/projects',
+            directoryName: 'game',
+        });
+        await service.cancelRemoteProjectImport('job-id');
+        await service.resolveRemoteProjectClone('job-id', 'keep');
 
         expect(mocks.createProject).toHaveBeenCalledWith(
             'Game',
@@ -166,6 +175,14 @@ describe('ProjectsService', () => {
         expect(mocks.addProject).toHaveBeenCalledWith(
             '/projects/game',
             undefined,
+        );
+        expect(remoteImport.importRemoteProject).toHaveBeenCalledOnce();
+        expect(remoteImport.cancelRemoteProjectImport).toHaveBeenCalledWith(
+            'job-id',
+        );
+        expect(remoteImport.resolveRemoteProjectClone).toHaveBeenCalledWith(
+            'job-id',
+            'keep',
         );
     });
 

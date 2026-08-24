@@ -157,7 +157,9 @@
                 "cancelImport": "Annuler l'importation",
                 "retryRegistration": "Réessayez d'ajouter au lanceur",
                 "reviewAndRetry": "Vérifier et réessayer",
-                "close": "Fermer"
+                "close": "Fermer",
+                "openCloneFolder": "Ouvrir le dossier du clone",
+                "deleteCloneAndClose": "Supprimer le clone et fermer"
             },
             "progress": {
                 "preparing": "Préparation de l'importation...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "Le dépôt a été cloné, mais il est trop volumineux ou trop imbriqué pour être analysé en toute sécurité.",
                 "finaliseFailed": "Le clone terminé n'a pas pu être déplacé vers sa destination.",
                 "cancelled": "L'importation a été annulée.",
-                "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Launcher."
+                "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Launcher.",
+                "cloneFolderOpenFailed": "Le dossier du clone n'a pas pu être ouvert.",
+                "cloneCleanupChanged": "Le clone a été modifié ou remplacé depuis l'importation, il n'a donc pas été supprimé.",
+                "cloneCleanupFailed": "Le clone n'a pas pu être supprimé. Il a été conservé."
             }
         }
     },

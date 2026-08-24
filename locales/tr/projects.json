@@ -157,7 +157,9 @@
                 "cancelImport": "İçe aktarmayı iptal et",
                 "retryRegistration": "Başlatıcıya eklemeyi yeniden deneyin",
                 "reviewAndRetry": "İnceleyin ve yeniden deneyin",
-                "close": "Kapat"
+                "close": "Kapat",
+                "openCloneFolder": "Klon klasörünü aç",
+                "deleteCloneAndClose": "Klonu sil ve kapat"
             },
             "progress": {
                 "preparing": "İçe aktarma hazırlanıyor...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "Depo klonlandı ancak güvenli biçimde taranamayacak kadar büyük veya derin iç içe geçmiş durumda.",
                 "finaliseFailed": "Tamamlanan klon hedefine taşınamadı.",
                 "cancelled": "İçe aktarma iptal edildi.",
-                "registration-failed": "Depo klonlandı ancak Başlatıcıya eklenemedi."
+                "registration-failed": "Depo klonlandı ancak Başlatıcıya eklenemedi.",
+                "cloneFolderOpenFailed": "Klon klasörü açılamadı.",
+                "cloneCleanupChanged": "Klon içe aktarıldıktan sonra değiştirildi veya yenisiyle değiştirildi, bu nedenle silinmedi.",
+                "cloneCleanupFailed": "Klon silinemedi. Korundu."
             }
         }
     },

@@ -157,7 +157,9 @@
                 "cancelImport": "Cancel import",
                 "retryRegistration": "Retry adding to Launcher",
                 "reviewAndRetry": "Review and retry",
-                "close": "Close"
+                "close": "Close",
+                "openCloneFolder": "Open clone folder",
+                "deleteCloneAndClose": "Delete clone and close"
             },
             "progress": {
                 "preparing": "Preparing the import...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "The repository was cloned, but it is too large or deeply nested to scan safely.",
                 "finaliseFailed": "The completed clone could not be moved to its destination.",
                 "cancelled": "The import was cancelled.",
-                "registration-failed": "The repository was cloned but could not be added to Launcher."
+                "registration-failed": "The repository was cloned but could not be added to Launcher.",
+                "cloneFolderOpenFailed": "The clone folder could not be opened.",
+                "cloneCleanupChanged": "The clone has changed or been replaced since the import, so it was not deleted.",
+                "cloneCleanupFailed": "The clone could not be deleted. It has been kept."
             }
         }
     },

@@ -20,6 +20,8 @@ import type {
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
+    ResolveRemoteProjectCloneAction,
+    ResolveRemoteProjectCloneResult,
     SetProjectCodeEditorResult,
 } from './index.js';
 
@@ -34,6 +36,12 @@ export type ProjectsBridge = {
     cancelRemoteProjectImport(
         jobId: string,
     ): Promise<CancelRemoteProjectImportResult>;
+
+    /** Keeps or deletes the exact final clone owned by an import job. */
+    resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ): Promise<ResolveRemoteProjectCloneResult>;
 
     /** Inspects an anonymous public Git repository URL. */
     inspectPublicGitSource(

@@ -157,7 +157,9 @@
                 "cancelImport": "Annulla l'importazione",
                 "retryRegistration": "Riprova ad aggiungere al Launcher",
                 "reviewAndRetry": "Rivedi e riprova",
-                "close": "Chiudi"
+                "close": "Chiudi",
+                "openCloneFolder": "Apri la cartella del clone",
+                "deleteCloneAndClose": "Elimina il clone e chiudi"
             },
             "progress": {
                 "preparing": "Preparazione dell'importazione...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "Il repository è stato clonato, ma è troppo grande o annidato per essere analizzato in sicurezza.",
                 "finaliseFailed": "Impossibile spostare il clone completato nella destinazione.",
                 "cancelled": "L'importazione è stata annullata.",
-                "registration-failed": "Il repository è stato clonato ma non è stato possibile aggiungerlo al Launcher."
+                "registration-failed": "Il repository è stato clonato ma non è stato possibile aggiungerlo al Launcher.",
+                "cloneFolderOpenFailed": "Non è stato possibile aprire la cartella del clone.",
+                "cloneCleanupChanged": "Il clone è stato modificato o sostituito dopo l'importazione, quindi non è stato eliminato.",
+                "cloneCleanupFailed": "Non è stato possibile eliminare il clone. È stato mantenuto."
             }
         }
     },

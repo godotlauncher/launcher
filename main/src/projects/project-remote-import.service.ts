@@ -9,6 +9,8 @@ import type {
     RemoteProjectImportProgressStage,
     RemoteProjectImportRequest,
     RemoteProjectImportResult,
+    ResolveRemoteProjectCloneAction,
+    ResolveRemoteProjectCloneResult,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { RepositoryHostingService } from '../app-integrations/repository-hosting.service.js';
@@ -37,6 +39,12 @@ type PreparedDestination = {
     supportPath: string;
 };
 
+type RecoverableClone = {
+    path: string;
+    device: number | bigint;
+    inode: number | bigint;
+};
+
 class RemoteImportFailure extends Error {
     /**
      * Creates one safe clone transaction failure.
@@ -52,6 +60,7 @@ class RemoteImportFailure extends Error {
 @Injectable()
 export class ProjectRemoteImportService implements OnModuleDestroy {
     private active: ActiveRemoteImport | null = null;
+    private readonly recoverableClones = new Map<string, RecoverableClone>();
 
     /**
      * Creates the remote clone transaction service.
@@ -76,6 +85,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
     onModuleDestroy(): void {
         this.active?.controller.abort('shutdown');
         this.active = null;
+        this.recoverableClones.clear();
     }
 
     /**
@@ -94,6 +104,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             return { ok: false, jobId: null, reason: 'invalid-request' };
         }
 
+        this.recoverableClones.clear();
         const job: ActiveRemoteImport = {
             id: randomUUID(),
             controller: new AbortController(),
@@ -157,6 +168,51 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             job.controller.abort('cancelled');
         }
         return { jobId, status: 'cancelling' };
+    }
+
+    /**
+     * Keeps or deletes the exact final clone created by one import job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param action - Whether to retain the clone or delete it.
+     * @returns The guarded clone resolution result.
+     */
+    async resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ): Promise<ResolveRemoteProjectCloneResult> {
+        const clone = this.recoverableClones.get(jobId);
+        if (!clone || (action !== 'keep' && action !== 'delete')) {
+            return { jobId, status: 'not-found' };
+        }
+        if (action === 'keep') {
+            this.recoverableClones.delete(jobId);
+            return { jobId, status: 'kept' };
+        }
+
+        let current: Awaited<ReturnType<typeof fs.lstat>>;
+        try {
+            current = await fs.lstat(clone.path);
+        } catch {
+            this.recoverableClones.delete(jobId);
+            return { jobId, status: 'not-found' };
+        }
+        if (
+            !current.isDirectory() ||
+            current.isSymbolicLink() ||
+            current.dev !== clone.device ||
+            current.ino !== clone.inode
+        ) {
+            this.recoverableClones.delete(jobId);
+            return { jobId, status: 'changed' };
+        }
+        try {
+            await fs.rm(clone.path, { recursive: true, force: true });
+        } catch {
+            return { jobId, status: 'delete-failed' };
+        }
+        this.recoverableClones.delete(jobId);
+        return { jobId, status: 'deleted' };
     }
 
     /**
@@ -317,7 +373,15 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
                     reason: 'destination-conflict',
                 };
             }
+            let cloneIdentity: Awaited<ReturnType<typeof fs.lstat>>;
             try {
+                cloneIdentity = await fs.lstat(destination.temporaryPath);
+                if (
+                    !cloneIdentity.isDirectory() ||
+                    cloneIdentity.isSymbolicLink()
+                ) {
+                    throw new Error('Clone destination is not a directory');
+                }
                 await fs.rename(
                     destination.temporaryPath,
                     destination.finalPath,
@@ -329,6 +393,11 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
                     reason: 'finalise-failed',
                 };
             }
+            this.rememberRecoverableClone(
+                job.id,
+                destination.finalPath,
+                cloneIdentity,
+            );
             await fs
                 .rm(destination.supportPath, { recursive: true, force: true })
                 .catch(() => undefined);
@@ -372,6 +441,25 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             fs.rm(destination.temporaryPath, { recursive: true, force: true }),
             fs.rm(destination.supportPath, { recursive: true, force: true }),
         ]).catch(() => undefined);
+    }
+
+    /**
+     * Records the filesystem identity of one finalised clone for guarded UX cleanup.
+     *
+     * @param jobId - Exact import job that created the clone.
+     * @param repositoryPath - Canonical final clone destination.
+     * @param identity - Filesystem identity captured before the atomic rename.
+     */
+    private rememberRecoverableClone(
+        jobId: string,
+        repositoryPath: string,
+        identity: Awaited<ReturnType<typeof fs.lstat>>,
+    ): void {
+        this.recoverableClones.set(jobId, {
+            path: repositoryPath,
+            device: identity.dev,
+            inode: identity.ino,
+        });
     }
 
     /** Publishes and records one complete job progress snapshot. */

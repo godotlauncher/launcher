@@ -157,7 +157,9 @@
                 "cancelImport": "インポートをキャンセルする",
                 "retryRegistration": "ランチャーへの追加を再試行します",
                 "reviewAndRetry": "確認して再試行してください",
-                "close": "閉じる"
+                "close": "閉じる",
+                "openCloneFolder": "クローンのフォルダーを開く",
+                "deleteCloneAndClose": "クローンを削除して閉じる"
             },
             "progress": {
                 "preparing": "インポートを準備しています...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "リポジトリはクローンされましたが、安全に検索するには大きすぎるか、深くネストされています。",
                 "finaliseFailed": "完成したクローンを目的地に移動できませんでした。",
                 "cancelled": "輸入はキャンセルされました。",
-                "registration-failed": "リポジトリは複製されましたが、Launcher に追加できませんでした。"
+                "registration-failed": "リポジトリは複製されましたが、Launcher に追加できませんでした。",
+                "cloneFolderOpenFailed": "クローンのフォルダーを開けませんでした。",
+                "cloneCleanupChanged": "インポート後にクローンが変更または置換されたため、削除されませんでした。",
+                "cloneCleanupFailed": "クローンを削除できませんでした。クローンは保持されています。"
             }
         }
     },

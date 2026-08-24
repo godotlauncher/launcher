@@ -19,6 +19,7 @@ import type {
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
+    ResolveRemoteProjectCloneAction,
     SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
@@ -109,6 +110,19 @@ export class ProjectsService {
      */
     cancelRemoteProjectImport(jobId: string) {
         return this.remoteImport.cancelRemoteProjectImport(jobId);
+    }
+
+    /**
+     * Keeps or deletes the exact final clone owned by an import job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param action - Whether to retain the clone or delete it.
+     */
+    resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ) {
+        return this.remoteImport.resolveRemoteProjectClone(jobId, action);
     }
 
     /**

@@ -100,3 +100,10 @@ export type CancelRemoteProjectImportResult = {
     jobId: string;
     status: 'cancelling' | 'not-found' | 'not-cancellable';
 };
+
+export type ResolveRemoteProjectCloneAction = 'keep' | 'delete';
+
+export type ResolveRemoteProjectCloneResult = {
+    jobId: string;
+    status: 'kept' | 'deleted' | 'not-found' | 'changed' | 'delete-failed';
+};

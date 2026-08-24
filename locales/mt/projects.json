@@ -157,7 +157,9 @@
                 "cancelImport": "Ikkanċella l-importazzjoni",
                 "retryRegistration": "Erġa' ipprova żid mal-Launcher",
                 "reviewAndRetry": "Irrevedi u erġa' pprova",
-                "close": "Agħlaq"
+                "close": "Agħlaq",
+                "openCloneFolder": "Iftaħ il-folder tal-klonu",
+                "deleteCloneAndClose": "Ħassar il-klonu u agħlaq"
             },
             "progress": {
                 "preparing": "Nipprepara l-importazzjoni...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "Ir-repożitorju ġie kklonat, iżda huwa kbir wisq jew imdaħħal fil-fond biex jiġi skannjat b'mod sigur.",
                 "finaliseFailed": "Il-klonu komplut ma setax jiġi mċaqlaq lejn id-destinazzjoni tiegħu.",
                 "cancelled": "L-importazzjoni ġiet ikkanċellata.",
-                "registration-failed": "Ir-repożitorju ġie kklonat iżda ma setax jiġi miżjud mal-Launcher."
+                "registration-failed": "Ir-repożitorju ġie kklonat iżda ma setax jiġi miżjud mal-Launcher.",
+                "cloneFolderOpenFailed": "Il-folder tal-klonu ma setax jinfetaħ.",
+                "cloneCleanupChanged": "Il-klonu nbidel jew ġie sostitwit wara l-importazzjoni, għalhekk ma tħassarx.",
+                "cloneCleanupFailed": "Il-klonu ma setax jitħassar. Inżamm."
             }
         }
     },

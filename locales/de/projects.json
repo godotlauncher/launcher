@@ -157,7 +157,9 @@
                 "cancelImport": "Import abbrechen",
                 "retryRegistration": "Erneut zu Launcher hinzufügen",
                 "reviewAndRetry": "Prüfen und erneut versuchen",
-                "close": "Schließen"
+                "close": "Schließen",
+                "openCloneFolder": "Klonordner öffnen",
+                "deleteCloneAndClose": "Klon löschen und schließen"
             },
             "progress": {
                 "preparing": "Import wird vorbereitet...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "Das Repository wurde geklont, ist aber zu groß oder zu tief verschachtelt, um es sicher zu durchsuchen.",
                 "finaliseFailed": "Der vollständige Klon konnte nicht an sein Ziel verschoben werden.",
                 "cancelled": "Der Import wurde abgebrochen.",
-                "registration-failed": "Das Repository wurde geklont, konnte aber nicht zu Launcher hinzugefügt werden."
+                "registration-failed": "Das Repository wurde geklont, konnte aber nicht zu Launcher hinzugefügt werden.",
+                "cloneFolderOpenFailed": "Der Klonordner konnte nicht geöffnet werden.",
+                "cloneCleanupChanged": "Der Klon wurde seit dem Import geändert oder ersetzt und daher nicht gelöscht.",
+                "cloneCleanupFailed": "Der Klon konnte nicht gelöscht werden. Er wurde beibehalten."
             }
         }
     },

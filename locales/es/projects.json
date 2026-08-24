@@ -157,7 +157,9 @@
                 "cancelImport": "Cancelar importación",
                 "retryRegistration": "Volver a intentar añadir al Launcher",
                 "reviewAndRetry": "Revisar e intentar de nuevo",
-                "close": "Cerrar"
+                "close": "Cerrar",
+                "openCloneFolder": "Abrir carpeta del clon",
+                "deleteCloneAndClose": "Eliminar clon y cerrar"
             },
             "progress": {
                 "preparing": "Preparando la importación...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "El repositorio se clonó, pero es demasiado grande o está demasiado anidado para analizarlo de forma segura.",
                 "finaliseFailed": "El clon completado no se pudo mover a su destino.",
                 "cancelled": "La importación se ha cancelado.",
-                "registration-failed": "El repositorio se clonó, pero no se pudo añadir al Launcher."
+                "registration-failed": "El repositorio se clonó, pero no se pudo añadir al Launcher.",
+                "cloneFolderOpenFailed": "No se pudo abrir la carpeta del clon.",
+                "cloneCleanupChanged": "El clon se modificó o reemplazó después de la importación, por lo que no se eliminó.",
+                "cloneCleanupFailed": "No se pudo eliminar el clon. Se ha conservado."
             }
         }
     },

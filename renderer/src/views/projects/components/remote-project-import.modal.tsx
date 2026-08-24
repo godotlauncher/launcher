@@ -14,6 +14,7 @@ import {
     FolderOpen,
     GitBranch,
     GitPullRequest,
+    Trash2,
     TriangleAlert,
 } from 'lucide-react';
 import type React from 'react';
@@ -187,6 +188,12 @@ export const RemoteProjectImportModal: React.FC<
     const [clonePreservedPath, setClonePreservedPath] = useState<string | null>(
         null,
     );
+    const [cloneJobId, setCloneJobId] = useState<string | null>(null);
+    const [cloneRecoveryAvailable, setCloneRecoveryAvailable] = useState(false);
+    const [resolvingClone, setResolvingClone] = useState(false);
+    const [cloneRecoveryError, setCloneRecoveryError] = useState<string | null>(
+        null,
+    );
     const [repositoryPath, setRepositoryPath] = useState('');
     const [discoveredProjects, setDiscoveredProjects] = useState<
         RemoteDiscoveredProject[]
@@ -250,8 +257,12 @@ export const RemoteProjectImportModal: React.FC<
 
     const close = useCallback(() => {
         if (step === 'importing' || step === 'registering') return;
+        if (cloneJobId && cloneRecoveryAvailable) {
+            void projectsBridge.resolveRemoteProjectClone(cloneJobId, 'keep');
+            setCloneRecoveryAvailable(false);
+        }
         onOpenChange(false);
-    }, [onOpenChange, step]);
+    }, [cloneJobId, cloneRecoveryAvailable, onOpenChange, step]);
 
     const loadRepositories = useCallback(
         async (cursor?: string, append = false) => {
@@ -313,6 +324,10 @@ export const RemoteProjectImportModal: React.FC<
         setProgress(null);
         setImportFailure(null);
         setClonePreservedPath(null);
+        setCloneJobId(null);
+        setCloneRecoveryAvailable(false);
+        setResolvingClone(false);
+        setCloneRecoveryError(null);
         setRepositoryPath('');
         setDiscoveredProjects([]);
         setSelectedProjectPaths(new Set());
@@ -416,6 +431,9 @@ export const RemoteProjectImportModal: React.FC<
         setStep('importing');
         setImportFailure(null);
         setClonePreservedPath(null);
+        setCloneJobId(null);
+        setCloneRecoveryAvailable(false);
+        setCloneRecoveryError(null);
         setProgress(null);
         importPendingRef.current = true;
         activeJobIdRef.current = null;
@@ -425,9 +443,15 @@ export const RemoteProjectImportModal: React.FC<
             if (!result.ok) {
                 setImportFailure(getRemoteImportFailureKey(result.reason));
                 setClonePreservedPath(result.repositoryPath ?? null);
+                if (result.repositoryPath && result.jobId) {
+                    setCloneJobId(result.jobId);
+                    setCloneRecoveryAvailable(true);
+                }
                 setStep('import-failed');
                 return;
             }
+            setCloneJobId(result.jobId);
+            setCloneRecoveryAvailable(true);
             setRepositoryPath(result.repositoryPath);
             setDiscoveredProjects(result.projects);
             setSelectedProjectPaths(
@@ -447,6 +471,54 @@ export const RemoteProjectImportModal: React.FC<
         const jobId = activeJobIdRef.current;
         if (!jobId || !progress?.canCancel) return;
         await projectsBridge.cancelRemoteProjectImport(jobId);
+    };
+
+    /** Opens the preserved final clone through the existing shell boundary. */
+    const openPreservedClone = async () => {
+        const clonePath = clonePreservedPath ?? repositoryPath;
+        if (!clonePath) return;
+        setCloneRecoveryError(null);
+        try {
+            await appBridge.openShellFolder(clonePath);
+        } catch {
+            setCloneRecoveryError(
+                'addProject.remote.errors.cloneFolderOpenFailed',
+            );
+        }
+    };
+
+    /** Deletes the exact attempt-owned final clone and closes on success. */
+    const deletePreservedClone = async () => {
+        if (!cloneJobId || !cloneRecoveryAvailable) return;
+        setResolvingClone(true);
+        setCloneRecoveryError(null);
+        try {
+            const result = await projectsBridge.resolveRemoteProjectClone(
+                cloneJobId,
+                'delete',
+            );
+            if (result.status === 'deleted' || result.status === 'not-found') {
+                setCloneRecoveryAvailable(false);
+                onOpenChange(false);
+                return;
+            }
+            if (result.status === 'changed') {
+                setCloneRecoveryAvailable(false);
+                setCloneRecoveryError(
+                    'addProject.remote.errors.cloneCleanupChanged',
+                );
+                return;
+            }
+            setCloneRecoveryError(
+                'addProject.remote.errors.cloneCleanupFailed',
+            );
+        } catch {
+            setCloneRecoveryError(
+                'addProject.remote.errors.cloneCleanupFailed',
+            );
+        } finally {
+            setResolvingClone(false);
+        }
     };
 
     const toggleAllProjects = (checked: boolean) => {
@@ -569,6 +641,15 @@ export const RemoteProjectImportModal: React.FC<
             outcomes.push(outcome);
             setRegistrationOutcomes([...outcomes]);
         }
+        if (outcomes.some((outcome) => outcome.status === 'added')) {
+            setCloneRecoveryAvailable(false);
+            if (cloneJobId) {
+                void projectsBridge.resolveRemoteProjectClone(
+                    cloneJobId,
+                    'keep',
+                );
+            }
+        }
         setStep('registration-complete');
     };
 
@@ -588,6 +669,33 @@ export const RemoteProjectImportModal: React.FC<
         ) : (
             <GitPullRequest aria-hidden="true" />
         );
+    const cloneFolderPath = clonePreservedPath ?? (repositoryPath || null);
+    const preservedCloneActions = cloneFolderPath ? (
+        <div className="flex flex-wrap items-center gap-3">
+            <button
+                type="button"
+                data-testid="btnOpenPreservedCloneFolder"
+                className="btn btn-ghost"
+                disabled={resolvingClone}
+                onClick={() => void openPreservedClone()}
+            >
+                <FolderOpen aria-hidden="true" size={18} />
+                {t('addProject.remote.actions.openCloneFolder')}
+            </button>
+            {cloneRecoveryAvailable && (
+                <button
+                    type="button"
+                    data-testid="btnDeletePreservedClone"
+                    className="btn btn-error"
+                    disabled={resolvingClone}
+                    onClick={() => void deletePreservedClone()}
+                >
+                    <Trash2 aria-hidden="true" size={18} />
+                    {t('addProject.remote.actions.deleteCloneAndClose')}
+                </button>
+            )}
+        </div>
+    ) : null;
 
     let body: React.ReactNode;
     let footer: React.ReactNode;
@@ -1022,24 +1130,41 @@ export const RemoteProjectImportModal: React.FC<
                 )}
             </div>
         );
-        footer = (
-            <>
-                <button type="button" className="btn btn-ghost" onClick={close}>
-                    {t('addProject.remote.actions.close')}
-                </button>
-                <button
-                    type="button"
-                    data-testid="btnAddDiscoveredProjects"
-                    className="btn btn-primary"
-                    disabled={selectedCount === 0}
-                    onClick={() => void registerSelectedProjects()}
-                >
-                    {t('addProject.remote.actions.addProjects', {
-                        count: selectedCount,
-                    })}
-                </button>
-            </>
-        );
+        footer =
+            discoveredProjects.length === 0 ? (
+                <div className="flex w-full items-center justify-between gap-4">
+                    {preservedCloneActions}
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={resolvingClone}
+                        onClick={close}
+                    >
+                        {t('addProject.remote.actions.close')}
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={close}
+                    >
+                        {t('addProject.remote.actions.close')}
+                    </button>
+                    <button
+                        type="button"
+                        data-testid="btnAddDiscoveredProjects"
+                        className="btn btn-primary"
+                        disabled={selectedCount === 0}
+                        onClick={() => void registerSelectedProjects()}
+                    >
+                        {t('addProject.remote.actions.addProjects', {
+                            count: selectedCount,
+                        })}
+                    </button>
+                </>
+            );
     } else if (step === 'registering') {
         body = (
             <div className="flex flex-col gap-4" role="status">
@@ -1144,12 +1269,26 @@ export const RemoteProjectImportModal: React.FC<
                         </div>
                     ))}
                 </div>
+                {cloneRecoveryError && (
+                    <div className="alert alert-error alert-soft" role="alert">
+                        <TriangleAlert aria-hidden="true" size={18} />
+                        <span>{t(cloneRecoveryError)}</span>
+                    </div>
+                )}
             </div>
         );
         footer = (
-            <button type="button" className="btn btn-primary" onClick={close}>
-                {t('addProject.remote.actions.close')}
-            </button>
+            <div className="flex w-full items-center justify-between gap-4">
+                {preservedCloneActions}
+                <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={resolvingClone}
+                    onClick={close}
+                >
+                    {t('addProject.remote.actions.close')}
+                </button>
+            </div>
         );
     } else {
         body = (
@@ -1167,13 +1306,27 @@ export const RemoteProjectImportModal: React.FC<
                 <code className="break-all rounded-box bg-base-200 p-3">
                     {clonePreservedPath ?? destinationDisplay}
                 </code>
+                {cloneRecoveryError && (
+                    <div className="alert alert-error alert-soft" role="alert">
+                        <TriangleAlert aria-hidden="true" size={18} />
+                        <span>{t(cloneRecoveryError)}</span>
+                    </div>
+                )}
             </div>
         );
         footer = (
-            <>
-                <button type="button" className="btn btn-ghost" onClick={close}>
-                    {t('addProject.remote.actions.close')}
-                </button>
+            <div className="flex w-full items-center justify-between gap-4">
+                {clonePreservedPath ? (
+                    preservedCloneActions
+                ) : (
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={close}
+                    >
+                        {t('addProject.remote.actions.close')}
+                    </button>
+                )}
                 {!clonePreservedPath && (
                     <button
                         type="button"
@@ -1183,7 +1336,17 @@ export const RemoteProjectImportModal: React.FC<
                         {t('addProject.remote.actions.reviewAndRetry')}
                     </button>
                 )}
-            </>
+                {clonePreservedPath && (
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={resolvingClone}
+                        onClick={close}
+                    >
+                        {t('addProject.remote.actions.close')}
+                    </button>
+                )}
+            </div>
         );
     }
 

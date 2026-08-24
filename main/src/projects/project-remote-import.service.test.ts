@@ -338,6 +338,45 @@ describe('ProjectRemoteImportService', () => {
         expect(await fs.readdir(parentDirectory)).toEqual([]);
     });
 
+    it('aborts an active clone and cleans attempt-owned paths on shutdown', async () => {
+        clone.clone.mockImplementationOnce(
+            async (request) =>
+                new Promise((resolve) => {
+                    void fs.mkdir(request.destinationPath).then(() => {
+                        request.signal.addEventListener(
+                            'abort',
+                            () =>
+                                resolve({
+                                    ok: false,
+                                    reason: 'cancelled',
+                                }),
+                            { once: true },
+                        );
+                    });
+                }),
+        );
+        const service = createService();
+        const importing = service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        await vi.waitFor(() =>
+            expect(progress.publish).toHaveBeenCalledWith(
+                expect.objectContaining({ stage: 'cloning' }),
+            ),
+        );
+
+        service.onModuleDestroy();
+
+        await expect(importing).resolves.toMatchObject({
+            ok: false,
+            reason: 'cancelled',
+        });
+        expect(await fs.readdir(parentDirectory)).toEqual([]);
+    });
+
     it('cancels discovery but preserves the completed clone', async () => {
         discovery.discover.mockImplementationOnce(
             async (_repositoryPath, signal: AbortSignal) =>
@@ -485,6 +524,150 @@ describe('ProjectRemoteImportService', () => {
         await expect(
             fs.stat(path.join(parentDirectory, 'game')),
         ).resolves.toBeDefined();
+    });
+
+    it('deletes only the final clone owned by the exact import job', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'deleted' });
+        await expect(fs.stat(result.repositoryPath)).rejects.toThrow();
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'not-found' });
+    });
+
+    it('releases cleanup ownership when the final clone is kept', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'keep'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'kept' });
+        await expect(fs.stat(result.repositoryPath)).resolves.toBeDefined();
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'not-found' });
+    });
+
+    it('forgets cleanup ownership without deleting a final clone on shutdown', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+
+        service.onModuleDestroy();
+
+        await expect(fs.stat(result.repositoryPath)).resolves.toBeDefined();
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'not-found' });
+    });
+
+    it('bounds cleanup ownership to the newest completed import', async () => {
+        const service = createService();
+        const first = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'first-game',
+        });
+        const second = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'second-game',
+        });
+        expect(first.ok).toBe(true);
+        expect(second.ok).toBe(true);
+        if (!first.ok || !second.ok) {
+            throw new Error('Expected successful imports');
+        }
+
+        await expect(
+            service.resolveRemoteProjectClone(first.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: first.jobId, status: 'not-found' });
+        await expect(fs.stat(first.repositoryPath)).resolves.toBeDefined();
+        await expect(
+            service.resolveRemoteProjectClone(second.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: second.jobId, status: 'deleted' });
+    });
+
+    it('refuses to delete a destination replaced after the clone completed', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+        const movedClone = path.join(parentDirectory, 'moved-game');
+        await fs.rename(result.repositoryPath, movedClone);
+        await fs.mkdir(result.repositoryPath);
+        await fs.writeFile(
+            path.join(result.repositoryPath, 'other-process.txt'),
+            'keep',
+        );
+
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'changed' });
+        await expect(
+            fs.readFile(
+                path.join(result.repositoryPath, 'other-process.txt'),
+                'utf8',
+            ),
+        ).resolves.toBe('keep');
+    });
+
+    it('retains cleanup ownership when deleting the final clone fails', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+        const remove = vi
+            .spyOn(fs, 'rm')
+            .mockRejectedValueOnce(new Error('busy'));
+
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({
+            jobId: result.jobId,
+            status: 'delete-failed',
+        });
+        remove.mockRestore();
+        await expect(fs.stat(result.repositoryPath)).resolves.toBeDefined();
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'deleted' });
     });
 
     /** Creates the service with test-owned external boundaries. */

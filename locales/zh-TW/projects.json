@@ -157,7 +157,9 @@
                 "cancelImport": "取消導入",
                 "retryRegistration": "重試添加到啟動器",
                 "reviewAndRetry": "檢查並重試",
-                "close": "關閉"
+                "close": "關閉",
+                "openCloneFolder": "開啟克隆資料夾",
+                "deleteCloneAndClose": "刪除克隆並關閉"
             },
             "progress": {
                 "preparing": "準備導入...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "儲存庫已克隆，但規模過大或巢狀層級過深，無法安全掃描。",
                 "finaliseFailed": "已完成的克隆無法移動到其目的地。",
                 "cancelled": "進口被取消。",
-                "registration-failed": "儲存庫已克隆，但無法新增至啟動器。"
+                "registration-failed": "儲存庫已克隆，但無法新增至啟動器。",
+                "cloneFolderOpenFailed": "無法開啟克隆資料夾。",
+                "cloneCleanupChanged": "匯入後克隆已被變更或取代，因此未將其刪除。",
+                "cloneCleanupFailed": "無法刪除克隆。克隆已保留。"
             }
         }
     },

@@ -26,6 +26,7 @@ import {
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
+    TOOL_INTEGRATIONS_NO_GIT,
 } from './documentationScreenshots/sampleData.ts';
 import { getMainWindow } from './splashscreen/getMainWindow.ts';
 
@@ -264,6 +265,44 @@ test('Remote repository discovery lets users exclude projects before adding', as
     ]);
 });
 
+test('Remote project sources stay unavailable when Git is unavailable', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+
+    await expect(mainPage.getByTestId('btnAddProjectFromComputer')).toBeEnabled();
+    await expect(mainPage.getByTestId('btnAddProjectPublicGit')).toBeDisabled();
+    await expect(mainPage.getByTestId('btnAddProjectGitHub')).toBeDisabled();
+});
+
+test('Remote clone progress can be cancelled without preserving a final clone', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubPendingRemoteProjectImport();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+
+    await expect(modal.getByText('Cloning the repository...')).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel import' }).click();
+    await expect(modal.getByText('The import was cancelled.')).toBeVisible();
+    await expect(modal.getByTestId('btnOpenPreservedCloneFolder')).toHaveCount(
+        0,
+    );
+    await expect(modal.getByTestId('btnDeletePreservedClone')).toHaveCount(0);
+});
+
 test('GitHub repositories use the same multi-project review', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp, {
         codeEditorSettings: [
@@ -303,6 +342,132 @@ test('GitHub repositories use the same multi-project review', async () => {
         {},
         { codeEditorId: 'vscodium' },
     ]);
+    await expect(
+        modal.getByTestId('btnOpenPreservedCloneFolder'),
+    ).toBeVisible();
+    await expect(modal.getByTestId('btnDeletePreservedClone')).toHaveCount(0);
+    await expect.poll(readRemoteCloneResolutions).toEqual([
+        { jobId: 'remote-discovery-job', action: 'keep' },
+    ]);
+});
+
+test('Preserved clone recovery opens the folder and keeps failed deletion actionable', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubPreservedRemoteImportFailure();
+    await setRemoteCloneResolutionStatus('delete-failed');
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+
+    await expect(
+        modal.getByText(
+            'The repository was cloned, but its Godot projects could not be discovered.',
+        ),
+    ).toBeVisible();
+    await modal.getByTestId('btnOpenPreservedCloneFolder').click();
+    await expect.poll(readOpenedRemoteClonePaths).toEqual([
+        '/home/docs/Godot/Projects/games',
+    ]);
+    await modal.getByTestId('btnDeletePreservedClone').click();
+    await expect(
+        modal.getByText('The clone could not be deleted. It has been kept.'),
+    ).toBeVisible();
+    await expect(modal.getByTestId('btnOpenPreservedCloneFolder')).toBeVisible();
+    await expect(modal.getByTestId('btnDeletePreservedClone')).toBeEnabled();
+
+    await setRemoteCloneResolutionStatus('deleted');
+    await modal.getByTestId('btnDeletePreservedClone').click();
+    await expect(modal).not.toBeVisible();
+    await expect.poll(readRemoteCloneResolutions).toEqual([
+        { jobId: 'remote-discovery-job', action: 'delete' },
+        { jobId: 'remote-discovery-job', action: 'delete' },
+    ]);
+});
+
+test('All failed registrations can delete the preserved clone', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await failAllRemoteProjectRegistrations();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+    await modal.getByTestId('btnAddDiscoveredProjects').click();
+
+    await expect(modal.getByText('Project import complete')).toBeVisible();
+    await expect(modal.getByTestId('btnOpenPreservedCloneFolder')).toBeVisible();
+    await expect(modal.getByTestId('btnDeletePreservedClone')).toBeVisible();
+});
+
+test('Preserved clone recovery remains contained with a long locale', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubPreservedRemoteImportFailure();
+    await setRemoteCloneResolutionStatus('delete-failed');
+    await mainPage.getByTestId('btnSettings').click();
+    await mainPage.getByTestId('tabAppearance').click();
+    await mainPage.locator('select').selectOption('de');
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog');
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.locator('button.btn-primary').click();
+    await modal.locator('button.btn-primary').click();
+    await modal.getByTestId('btnDeletePreservedClone').click();
+
+    try {
+        await expect(
+            modal.getByText(
+                'Der Klon konnte nicht gelöscht werden. Er wurde beibehalten.',
+            ),
+        ).toBeVisible();
+        const modalBox = await modal.boundingBox();
+        const deleteBox = await modal
+            .getByTestId('btnDeletePreservedClone')
+            .boundingBox();
+        const openBox = await modal
+            .getByTestId('btnOpenPreservedCloneFolder')
+            .boundingBox();
+        expect(modalBox).not.toBeNull();
+        expect(deleteBox).not.toBeNull();
+        expect(openBox).not.toBeNull();
+        if (!modalBox || !deleteBox || !openBox) return;
+        expect(deleteBox.x).toBeGreaterThanOrEqual(modalBox.x);
+        expect(deleteBox.x + deleteBox.width).toBeLessThanOrEqual(
+            modalBox.x + modalBox.width,
+        );
+        expect(openBox.x).toBeGreaterThanOrEqual(modalBox.x);
+        expect(openBox.x + openBox.width).toBeLessThanOrEqual(
+            modalBox.x + modalBox.width,
+        );
+    } finally {
+        await modal.locator('button.btn-primary').last().click();
+        await mainPage.getByTestId('btnSettings').click();
+        await mainPage.getByTestId('tabAppearance').click();
+        await mainPage.locator('select').selectOption('en');
+    }
 });
 
 test('Remote registration surfaces editor resolution above the import modal', async () => {
@@ -639,14 +804,27 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
             __guidedRemoteAddedProjectPaths?: string[];
             __guidedRemoteAddProjectOptions?: AddProjectOptions[];
             __guidedFailRootRemoteProject?: boolean;
+            __guidedFailAllRemoteProjects?: boolean;
             __guidedRequireNestedRemoteEditor?: boolean;
             __guidedRequireAllRemoteEditors?: boolean;
+            __guidedRemoteCloneResolutions?: Array<{
+                jobId: string;
+                action: 'keep' | 'delete';
+            }>;
+            __guidedRemoteCloneResolutionStatus?:
+                | 'deleted'
+                | 'delete-failed';
+            __guidedOpenedRemoteClonePaths?: string[];
         };
         state.__guidedRemoteAddedProjectPaths = [];
         state.__guidedRemoteAddProjectOptions = [];
         state.__guidedFailRootRemoteProject = false;
+        state.__guidedFailAllRemoteProjects = false;
         state.__guidedRequireNestedRemoteEditor = false;
         state.__guidedRequireAllRemoteEditors = false;
+        state.__guidedRemoteCloneResolutions = [];
+        state.__guidedRemoteCloneResolutionStatus = 'deleted';
+        state.__guidedOpenedRemoteClonePaths = [];
 
         ipcMain.removeHandler('projects.inspectPublicGitSource');
         ipcMain.handle('projects.inspectPublicGitSource', async () => ({
@@ -723,9 +901,10 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
             ) => {
                 state.__guidedRemoteAddProjectOptions?.push(options);
                 if (
-                    state.__guidedFailRootRemoteProject &&
-                    projectFilePath ===
-                        '/home/docs/Godot/Projects/games/project.godot'
+                    state.__guidedFailAllRemoteProjects ||
+                    (state.__guidedFailRootRemoteProject &&
+                        projectFilePath ===
+                            '/home/docs/Godot/Projects/games/project.godot')
                 ) {
                     return {
                         success: true,
@@ -806,7 +985,113 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                 };
             },
         );
+        ipcMain.removeHandler('projects.resolveRemoteProjectClone');
+        ipcMain.handle(
+            'projects.resolveRemoteProjectClone',
+            async (_event, jobId: string, action: 'keep' | 'delete') => {
+                state.__guidedRemoteCloneResolutions?.push({ jobId, action });
+                return {
+                    success: true,
+                    data: {
+                        jobId,
+                        status:
+                            action === 'keep'
+                                ? 'kept'
+                                : state.__guidedRemoteCloneResolutionStatus,
+                    },
+                };
+            },
+        );
+        ipcMain.removeHandler('app.openShellFolder');
+        ipcMain.handle('app.openShellFolder', async (_event, folderPath) => {
+            state.__guidedOpenedRemoteClonePaths?.push(folderPath);
+            return { success: true, data: undefined };
+        });
     });
+}
+
+/** Makes clone discovery fail after the final repository path is retained. */
+async function stubPreservedRemoteImportFailure(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('projects.importRemoteProject');
+        ipcMain.handle('projects.importRemoteProject', async () => ({
+            success: true,
+            data: {
+                ok: false,
+                jobId: 'remote-discovery-job',
+                reason: 'discovery-failed',
+                repositoryPath: '/home/docs/Godot/Projects/games',
+            },
+        }));
+    });
+}
+
+/** Holds a clone open until cancellation resolves it without a final path. */
+async function stubPendingRemoteProjectImport(): Promise<void> {
+    await electronApp.evaluate(({ BrowserWindow, ipcMain }) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedCancelRemoteImport?: () => void;
+        };
+        ipcMain.removeHandler('projects.importRemoteProject');
+        ipcMain.handle(
+            'projects.importRemoteProject',
+            async () =>
+                await new Promise((resolve) => {
+                    state.__guidedCancelRemoteImport = () =>
+                        resolve({
+                            success: true,
+                            data: {
+                                ok: false,
+                                jobId: 'pending-remote-job',
+                                reason: 'cancelled',
+                            },
+                        });
+                    const window = BrowserWindow.getAllWindows().find(
+                        (candidate) =>
+                            candidate.webContents
+                                .getURL()
+                                .startsWith('http://localhost:5123'),
+                    );
+                    setTimeout(() => {
+                        window?.webContents.send(
+                            'remote-project-import-progress',
+                            {
+                                jobId: 'pending-remote-job',
+                                stage: 'cloning',
+                                canCancel: true,
+                                percent: 35,
+                            },
+                        );
+                    }, 50);
+                }),
+        );
+        ipcMain.removeHandler('projects.cancelRemoteProjectImport');
+        ipcMain.handle(
+            'projects.cancelRemoteProjectImport',
+            async (_event, jobId: string) => {
+                state.__guidedCancelRemoteImport?.();
+                state.__guidedCancelRemoteImport = undefined;
+                return {
+                    success: true,
+                    data: { jobId, status: 'cancelling' },
+                };
+            },
+        );
+    });
+}
+
+/** Sets the deterministic result returned by preserved-clone deletion. */
+async function setRemoteCloneResolutionStatus(
+    status: 'deleted' | 'delete-failed',
+): Promise<void> {
+    await electronApp.evaluate((_, nextStatus) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteCloneResolutionStatus?:
+                | 'deleted'
+                | 'delete-failed';
+        };
+        state.__guidedRemoteCloneResolutionStatus = nextStatus;
+    }, status);
 }
 
 /** Makes the nested discovery require editor resolution during registration. */
@@ -898,6 +1183,16 @@ async function failRootRemoteProjectRegistration(): Promise<void> {
     });
 }
 
+/** Makes every discovered project fail registration. */
+async function failAllRemoteProjectRegistrations(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedFailAllRemoteProjects?: boolean;
+        };
+        state.__guidedFailAllRemoteProjects = true;
+    });
+}
+
 /** Reads the project paths submitted by the remote discovery review. */
 async function readRemoteAddedProjectPaths(): Promise<string[]> {
     return electronApp.evaluate(() => {
@@ -915,6 +1210,31 @@ async function readRemoteAddProjectOptions(): Promise<AddProjectOptions[]> {
             __guidedRemoteAddProjectOptions?: AddProjectOptions[];
         };
         return state.__guidedRemoteAddProjectOptions ?? [];
+    });
+}
+
+/** Reads clone recovery operations submitted by the remote import modal. */
+async function readRemoteCloneResolutions(): Promise<
+    Array<{ jobId: string; action: 'keep' | 'delete' }>
+> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteCloneResolutions?: Array<{
+                jobId: string;
+                action: 'keep' | 'delete';
+            }>;
+        };
+        return state.__guidedRemoteCloneResolutions ?? [];
+    });
+}
+
+/** Reads clone folders opened through the shell boundary. */
+async function readOpenedRemoteClonePaths(): Promise<string[]> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedOpenedRemoteClonePaths?: string[];
+        };
+        return state.__guidedOpenedRemoteClonePaths ?? [];
     });
 }
 

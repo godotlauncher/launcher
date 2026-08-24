@@ -157,7 +157,9 @@
                 "cancelImport": "Anuluj import",
                 "retryRegistration": "Spróbuj ponownie dodać do Launchera",
                 "reviewAndRetry": "Przejrzyj i spróbuj ponownie",
-                "close": "Zamknij"
+                "close": "Zamknij",
+                "openCloneFolder": "Otwórz folder klonu",
+                "deleteCloneAndClose": "Usuń klon i zamknij"
             },
             "progress": {
                 "preparing": "Przygotowanie importu...",
@@ -196,7 +198,10 @@
                 "discoveryLimitExceeded": "Repozytorium zostało sklonowane, ale jest zbyt duże lub zbyt głęboko zagnieżdżone, aby bezpiecznie je przeskanować.",
                 "finaliseFailed": "Nie można przenieść ukończonego klonu do miejsca docelowego.",
                 "cancelled": "Import został anulowany.",
-                "registration-failed": "Repozytorium zostało sklonowane, ale nie można było go dodać do Launchera."
+                "registration-failed": "Repozytorium zostało sklonowane, ale nie można było go dodać do Launchera.",
+                "cloneFolderOpenFailed": "Nie można było otworzyć folderu klonu.",
+                "cloneCleanupChanged": "Klon został zmieniony lub zastąpiony po imporcie, dlatego nie został usunięty.",
+                "cloneCleanupFailed": "Nie można było usunąć klonu. Został zachowany."
             }
         }
     },

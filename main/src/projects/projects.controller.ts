@@ -14,6 +14,7 @@ import type {
     RemoteProjectImportRequest,
     RenameProjectOptions,
     RendererType,
+    ResolveRemoteProjectCloneAction,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsService } from './projects.service.js';
@@ -48,6 +49,20 @@ export class ProjectsController implements ProjectsBridge {
     @ProjectsHandler('cancelRemoteProjectImport')
     cancelRemoteProjectImport(jobId: string) {
         return this.projects.cancelRemoteProjectImport(jobId);
+    }
+
+    /**
+     * Keeps or deletes the exact final clone owned by an import job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param action - Whether to retain the clone or delete it.
+     */
+    @ProjectsHandler('resolveRemoteProjectClone')
+    resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ) {
+        return this.projects.resolveRemoteProjectClone(jobId, action);
     }
 
     /**
