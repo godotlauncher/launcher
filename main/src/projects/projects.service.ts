@@ -25,7 +25,10 @@ import type {
 import { app } from 'electron';
 import logger from 'electron-log';
 import {
+    checkAndUpdateProjectHealth,
     checkAndUpdateProjects,
+    checkProjectHealth,
+    hasProjectHealthChanged,
     type ProjectValidationOptions,
     checkProjectValid as validateProject,
 } from '../checks.js';
@@ -797,6 +800,34 @@ export class ProjectsService {
         project: ProjectDetails,
         options: LaunchProjectOptions = {},
     ): Promise<LaunchProjectResult> {
+        const currentProject = (await this.store.list()).find(
+            (candidate) => candidate.path === project.path,
+        );
+        const checkedProject = await checkProjectHealth(
+            currentProject ?? project,
+        );
+        if (
+            hasProjectHealthChanged(currentProject ?? project, checkedProject)
+        ) {
+            const updatedProjects = await this.store.update((currentProjects) =>
+                currentProjects.map((candidate) =>
+                    candidate.path === checkedProject.path
+                        ? checkedProject
+                        : candidate,
+                ),
+            );
+            this.publishProjects(updatedProjects);
+        }
+        project = checkedProject;
+
+        if (!project.valid) {
+            return {
+                launched: false,
+                reason: 'project_unavailable',
+                project,
+            };
+        }
+
         if (project.codeEditorId && !options.allowMissingCodeEditor) {
             const integrationSettings =
                 await this.codeEditors.rescanIntegration(project.codeEditorId);
@@ -817,20 +848,20 @@ export class ProjectsService {
                     : candidate,
             ),
         );
-        const storedProject = projects.find(
+        const launchedProject = projects.find(
             (candidate) => candidate.path === project.path,
         );
 
-        if (storedProject) {
-            project = storedProject;
+        if (launchedProject) {
+            project = launchedProject;
             try {
-                await writeProjectLauncherConfig(storedProject.path, {
-                    release: storedProject.release,
+                await writeProjectLauncherConfig(launchedProject.path, {
+                    release: launchedProject.release,
                     launcherVersion: app.getVersion(),
                 });
             } catch (error) {
                 logger.warn(
-                    `Failed to write project launcher config for '${storedProject.name}'`,
+                    `Failed to write project launcher config for '${launchedProject.name}'`,
                     error,
                 );
             }
@@ -930,6 +961,14 @@ export class ProjectsService {
             this.publishProjects(projects);
         }
         return projects;
+    }
+
+    /** Quickly refreshes renderer-visible health for every stored project. */
+    async refreshProjectHealth(): Promise<void> {
+        const result = await checkAndUpdateProjectHealth(this.store);
+        if (result.changed) {
+            this.publishProjects(result.projects);
+        }
     }
 
     /**

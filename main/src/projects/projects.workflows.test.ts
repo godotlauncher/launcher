@@ -24,6 +24,17 @@ const childProcessMocks = vi.hoisted(() => ({
     })),
 }));
 
+const checksMocks = vi.hoisted(() => ({
+    checkProjectHealth: vi.fn(async (project: ProjectDetails) => project),
+    hasProjectHealthChanged: vi.fn(() => false),
+}));
+
+vi.mock('../checks.js', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('../checks.js')>()),
+    checkProjectHealth: checksMocks.checkProjectHealth,
+    hasProjectHealthChanged: checksMocks.hasProjectHealthChanged,
+}));
+
 vi.mock('node:child_process', () => ({
     spawn: childProcessMocks.spawn,
 }));
@@ -555,13 +566,46 @@ describe('launchProject', () => {
         });
 
         expect(trayAvailabilityService.isAvailable).not.toHaveBeenCalled();
-        expect(getProjectsSnapshot).not.toHaveBeenCalled();
+        expect(getProjectsSnapshot).toHaveBeenCalledOnce();
+        expect(checksMocks.checkProjectHealth).toHaveBeenCalledWith(project);
         expect(storeProjectsList).not.toHaveBeenCalled();
         expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
         expect(childProcessMocks.spawn).not.toHaveBeenCalled();
     });
 
-    it('launches without scanning when the missing editor warning is explicitly bypassed', async () => {
+    it('quickly blocks only the selected invalid project', async () => {
+        const project = createProjectDetails();
+        const invalidProject = {
+            ...project,
+            release: { ...project.release, valid: false },
+            valid: false,
+            invalid_reason: 'missing_editor' as const,
+        };
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        checksMocks.checkProjectHealth.mockResolvedValueOnce(invalidProject);
+        checksMocks.hasProjectHealthChanged.mockReturnValueOnce(true);
+
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).resolves.toEqual({
+            launched: false,
+            reason: 'project_unavailable',
+            project: invalidProject,
+        });
+
+        expect(checksMocks.checkProjectHealth).toHaveBeenCalledOnce();
+        expect(integrationMocks.rescanIntegration).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    it('launches without a code editor scan when its warning is explicitly bypassed', async () => {
         const project = createProjectDetails();
         getProjectsSnapshot.mockResolvedValue({
             projects: [project],

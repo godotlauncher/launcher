@@ -331,7 +331,10 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     const showMissingCodeEditorWarning = (
         project: ProjectDetails,
-        result: Extract<LaunchProjectResult, { launched: false }>,
+        result: Extract<
+            LaunchProjectResult,
+            { reason: 'code_editor_unavailable' }
+        >,
     ) => {
         const editor = result.integration.displayName;
         const handleError = (error: unknown) => {
@@ -403,19 +406,16 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const launchProject = async (project: ProjectDetails) => {
-        const all = await projectsBridge.checkAllProjectsValid();
-        setProjects(all);
-
-        const p = all.find((p) => p.path === project.path);
-
-        if (p?.valid) {
-            const result = await projectsBridge.launchProject(p);
-            if (!result.launched) {
-                showMissingCodeEditorWarning(p, result);
+        const result = await projectsBridge.launchProject(project);
+        if (!result.launched) {
+            if (result.reason === 'code_editor_unavailable') {
+                showMissingCodeEditorWarning(project, result);
+                return project;
             }
+            return result.project;
         }
 
-        return p;
+        return project;
     };
 
     const refreshProjects = async () => {

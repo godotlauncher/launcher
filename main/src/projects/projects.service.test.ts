@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
     addProject: vi.fn(),
     checkAllProjectsValid: vi.fn(),
+    checkAndUpdateProjectHealth: vi.fn(),
+    checkProjectHealth: vi.fn(),
     checkProjectValid: vi.fn(),
     createProject: vi.fn(),
     exportProjectEditorSettings: vi.fn(),
@@ -27,6 +29,7 @@ const mocks = vi.hoisted(() => ({
     updateGodotProjectName: vi.fn(),
     updateLinuxTray: vi.fn(),
     writeProjectLauncherConfig: vi.fn(),
+    hasProjectHealthChanged: vi.fn(),
 }));
 
 vi.mock('electron', () => ({
@@ -37,8 +40,11 @@ vi.mock('electron-log', () => ({
 }));
 
 vi.mock('../checks.js', () => ({
+    checkAndUpdateProjectHealth: mocks.checkAndUpdateProjectHealth,
     checkAndUpdateProjects: mocks.checkAllProjectsValid,
+    checkProjectHealth: mocks.checkProjectHealth,
     checkProjectValid: mocks.checkProjectValid,
+    hasProjectHealthChanged: mocks.hasProjectHealthChanged,
 }));
 vi.mock('../commands/projectEditorSettings.js', () => ({
     exportProjectEditorSettings: mocks.exportProjectEditorSettings,
@@ -129,6 +135,12 @@ describe('ProjectsService', () => {
         vi.clearAllMocks();
         store.list.mockResolvedValue([]);
         store.remove.mockResolvedValue([]);
+        mocks.checkProjectHealth.mockImplementation(async (project) => project);
+        mocks.hasProjectHealthChanged.mockReturnValue(false);
+        mocks.checkAndUpdateProjectHealth.mockResolvedValue({
+            projects: [],
+            changed: false,
+        });
         service = new ProjectsService(
             codeEditors as never,
             projectImport as never,
@@ -211,6 +223,31 @@ describe('ProjectsService', () => {
         store.list.mockResolvedValue(projects);
 
         await expect(service.getProjectsDetails()).resolves.toBe(projects);
+    });
+
+    it('publishes project health only when it changes', async () => {
+        const projects = [{ path: '/projects/game' }] as ProjectDetails[];
+        mocks.checkAndUpdateProjectHealth.mockResolvedValueOnce({
+            projects,
+            changed: true,
+        });
+
+        await service.refreshProjectHealth();
+
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            { id: 'web-contents' },
+            projects,
+        );
+
+        mocks.ipcWebContentsSend.mockClear();
+        mocks.checkAndUpdateProjectHealth.mockResolvedValueOnce({
+            projects,
+            changed: false,
+        });
+        await service.refreshProjectHealth();
+
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
     });
 
     it('persists and publishes a windowed-mode update once', async () => {

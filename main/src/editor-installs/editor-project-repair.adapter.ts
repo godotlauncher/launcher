@@ -4,9 +4,11 @@ import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import { getMainWindow } from '../mainWindow.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from '../projects/projects.store.js';
 import { removeProjectEditor } from '../utils/godot.utils.js';
+import { ipcWebContentsSend } from '../utils.js';
 import { hasSameInstalledEditorIdentity } from './installed-editor.store.js';
 import { setProjectEditor } from './project-editor-repair.util.js';
 
@@ -36,7 +38,15 @@ export class EditorProjectRepairAdapter {
 
     /** Revalidates every stored project. */
     async revalidateProjects(): Promise<void> {
-        await checkAndUpdateProjects({}, undefined, this.projectsStore);
+        const projects = await checkAndUpdateProjects(
+            {},
+            undefined,
+            this.projectsStore,
+        );
+        const webContents = getMainWindow()?.webContents;
+        if (webContents && !webContents.isDestroyed?.()) {
+            ipcWebContentsSend('projects-updated', webContents, projects);
+        }
     }
 
     /**

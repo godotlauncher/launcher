@@ -17,7 +17,10 @@ export type AppEventMap = {
     'code-editor-integrations-updated': CodeEditorIntegrationSettings[];
     'project-launch-code-editor-warning': {
         project: ProjectDetails;
-        result: Extract<LaunchProjectResult, { launched: false }>;
+        result: Extract<
+            LaunchProjectResult,
+            { reason: 'code_editor_unavailable' }
+        >;
     };
     'releases-updated': InstalledRelease[];
     'release-install-progress': ReleaseInstallProgress;

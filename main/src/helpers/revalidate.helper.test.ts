@@ -53,7 +53,6 @@ const createMockBrowserWindow = () => {
 
 let mockWindow: ReturnType<typeof createMockBrowserWindow>;
 
-let refreshCodeEditorIntegrations: ReturnType<typeof vi.fn>;
 let refreshInstalledEditors: ReturnType<typeof vi.fn>;
 let refreshProjects: ReturnType<typeof vi.fn>;
 describe('setupFocusRevalidation', () => {
@@ -63,26 +62,23 @@ describe('setupFocusRevalidation', () => {
 
         mockWindow = createMockBrowserWindow();
         refreshInstalledEditors = vi.fn().mockResolvedValue([]);
-        refreshCodeEditorIntegrations = vi.fn().mockResolvedValue([]);
-        refreshProjects = vi.fn().mockResolvedValue([]);
+        refreshProjects = vi.fn().mockResolvedValue(undefined);
     });
 
-    it('debounces focus revalidation and leaves project publication to its service', async () => {
+    it('debounces quick focus health checks', async () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshInstalledEditors,
-            refreshCodeEditorIntegrations,
             refreshProjects,
         );
 
         mockWindow.emit('focus');
         mockWindow.emit('focus');
 
-        await vi.runOnlyPendingTimersAsync();
+        await vi.advanceTimersByTimeAsync(250);
 
         expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
         expect(refreshProjects).toHaveBeenCalledTimes(1);
-        expect(refreshCodeEditorIntegrations).toHaveBeenCalledTimes(1);
 
         expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
             'releases-updated',
@@ -94,36 +90,24 @@ describe('setupFocusRevalidation', () => {
             expect.anything(),
             expect.anything(),
         );
-
-        expect(moduleMocks.ipcWebContentsSend).toHaveBeenCalledWith(
-            'code-editor-integrations-updated',
-            mockWindow.webContents,
-            [],
-        );
         dispose();
     });
 
-    it('keeps the last known code editor settings when refresh fails', async () => {
-        refreshCodeEditorIntegrations.mockRejectedValue(
-            new Error('Detection failed'),
-        );
+    it('does not publish unchanged installed-editor health', async () => {
+        refreshInstalledEditors.mockResolvedValue(null);
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshInstalledEditors,
-            refreshCodeEditorIntegrations,
             refreshProjects,
         );
 
         mockWindow.emit('focus');
-        await vi.runOnlyPendingTimersAsync();
+        await vi.advanceTimersByTimeAsync(250);
 
+        expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
+        expect(refreshProjects).toHaveBeenCalledTimes(1);
         expect(moduleMocks.ipcWebContentsSend).not.toHaveBeenCalledWith(
-            'projects-updated',
-            expect.anything(),
-            expect.anything(),
-        );
-        expect(moduleMocks.ipcWebContentsSend).not.toHaveBeenCalledWith(
-            'code-editor-integrations-updated',
+            'releases-updated',
             expect.anything(),
             expect.anything(),
         );
@@ -135,20 +119,15 @@ describe('setupFocusRevalidation', () => {
         const dispose = setupFocusRevalidation(
             mockWindow as unknown as BrowserWindow,
             refreshInstalledEditors,
-            refreshCodeEditorIntegrations,
             refreshProjects,
         );
 
         mockWindow.emit('focus');
-        await vi.runOnlyPendingTimersAsync();
-
-        expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
-
         dispose();
-        vi.advanceTimersByTime(5 * 60 * 1000);
-        await Promise.resolve();
+        await vi.advanceTimersByTimeAsync(250);
 
-        expect(refreshInstalledEditors).toHaveBeenCalledTimes(1);
+        expect(refreshInstalledEditors).not.toHaveBeenCalled();
+        expect(refreshProjects).not.toHaveBeenCalled();
     });
 
     afterEach(() => {

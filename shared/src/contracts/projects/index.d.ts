@@ -98,6 +98,11 @@ export type LaunchProjectResult =
     | { launched: true }
     | {
           launched: false;
+          reason: 'project_unavailable';
+          project: ProjectDetails;
+      }
+    | {
+          launched: false;
           reason: 'code_editor_unavailable';
           integration: CodeEditorIntegrationSummary;
       };

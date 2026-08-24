@@ -27,7 +27,14 @@ function getImageMimeType(iconPath: string): string | undefined {
     }
 }
 
-export function getProjectIconUrlFromParsed(
+/**
+ * Resolves the configured project icon to a supported path inside the project.
+ *
+ * @param projectDir - Absolute project directory.
+ * @param parsedProject - Parsed project.godot contents.
+ * @returns The resolved icon path, or undefined when it cannot be used.
+ */
+export function getProjectIconPathFromParsed(
     projectDir: string,
     parsedProject: GodotProjectFile,
 ): string | undefined {
@@ -60,7 +67,52 @@ export function getProjectIconUrlFromParsed(
         return undefined;
     }
 
-    if (!fs.existsSync(resolvedIconPath)) {
+    const mimeType = getImageMimeType(resolvedIconPath);
+    if (!mimeType) {
+        return undefined;
+    }
+
+    return resolvedIconPath;
+}
+
+/**
+ * Reads one resolved project icon without blocking the main process.
+ *
+ * @param iconPath - Resolved supported icon path.
+ * @returns A renderer-safe data URL, or undefined when the icon cannot be read.
+ */
+export async function readProjectIconUrl(
+    iconPath: string,
+): Promise<string | undefined> {
+    const mimeType = getImageMimeType(iconPath);
+    if (!mimeType) {
+        return undefined;
+    }
+
+    try {
+        const icon = await fs.promises.readFile(iconPath);
+        return `data:${mimeType};base64,${icon.toString('base64')}`;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Resolves and synchronously reads a project icon for creation and import.
+ *
+ * @param projectDir - Absolute project directory.
+ * @param parsedProject - Parsed project.godot contents.
+ * @returns A renderer-safe data URL, or undefined when unavailable.
+ */
+export function getProjectIconUrlFromParsed(
+    projectDir: string,
+    parsedProject: GodotProjectFile,
+): string | undefined {
+    const resolvedIconPath = getProjectIconPathFromParsed(
+        projectDir,
+        parsedProject,
+    );
+    if (!resolvedIconPath || !fs.existsSync(resolvedIconPath)) {
         return undefined;
     }
 

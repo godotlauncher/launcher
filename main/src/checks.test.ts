@@ -35,7 +35,11 @@ vi.mock('electron-log', () => ({
     },
 }));
 
-import { checkAndUpdateProjects, checkProjectValid } from './checks.js';
+import {
+    checkAndUpdateProjects,
+    checkProjectHealth,
+    checkProjectValid,
+} from './checks.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 
 describe('checkProjectValid', () => {
@@ -256,6 +260,22 @@ config/icon="res://assets/icon.svg"
                 'base64',
             )}`,
         );
+
+        const readFile = vi.spyOn(fs.promises, 'readFile');
+        await expect(checkProjectHealth(validatedProject)).resolves.toEqual(
+            expect.objectContaining({ icon_path: validatedProject.icon_path }),
+        );
+        expect(readFile).not.toHaveBeenCalled();
+
+        fs.writeFileSync(iconPath, '<svg>changed</svg>');
+        const refreshedProject = await checkProjectHealth(validatedProject);
+        expect(refreshedProject.icon_path).toBe(
+            `data:image/svg+xml;base64,${Buffer.from(
+                '<svg>changed</svg>',
+            ).toString('base64')}`,
+        );
+        expect(readFile).toHaveBeenCalledWith(iconPath);
+        readFile.mockRestore();
 
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });
