@@ -69,13 +69,20 @@ describe('ToolsSettingsPanel', () => {
                 ],
             }),
         ).toContain('tools.status.unknownPath');
-        expect(renderPanel({ loading: true })).toContain(
+        expect(renderPanel({ tools: [], loading: true })).toContain(
             'tools.actions.loading',
         );
         expect(renderPanel({ loadError: true })).toContain('tools.errors.load');
         const pending = renderPanel({ pendingToolId: 'git' });
         expect(pending).toContain('role="status"');
         expect(pending.match(/disabled=""/g)?.length).toBe(2);
+    });
+
+    it('keeps existing tools visible while refreshing', () => {
+        const html = renderPanel({ loading: true });
+
+        expect(html).toContain('tool-integration-git');
+        expect(html).not.toContain('tools.actions.loading');
     });
 
     it('renders an isolated row action error', () => {
