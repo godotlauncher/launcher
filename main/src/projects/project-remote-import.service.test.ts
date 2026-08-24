@@ -2,6 +2,13 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const logger = vi.hoisted(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+}));
+vi.mock('electron-log', () => ({ default: logger }));
+
 import { ProjectRemoteImportService } from './project-remote-import.service.js';
 
 describe('ProjectRemoteImportService', () => {
@@ -117,6 +124,14 @@ describe('ProjectRemoteImportService', () => {
                 entry.includes('.support-'),
             ),
         ).toEqual([]);
+        expect(logger.info).toHaveBeenCalledWith(
+            'Remote project import completed',
+            expect.objectContaining({
+                event: 'remote_project_import_completed',
+                projectCount: 1,
+                source: 'public-git-url',
+            }),
+        );
     });
 
     it('creates a missing destination parent recursively before cloning', async () => {
@@ -252,6 +267,14 @@ describe('ProjectRemoteImportService', () => {
             await fs.readFile(path.join(parentDirectory, 'keep.txt'), 'utf8'),
         ).toBe('keep');
         expect(await fs.readdir(parentDirectory)).toEqual(['keep.txt']);
+        expect(logger.warn).toHaveBeenCalledWith(
+            'Remote project import failed',
+            expect.objectContaining({
+                event: 'remote_project_import_failed',
+                reason: 'clone-failed',
+                source: 'public-git-url',
+            }),
+        );
     });
 
     it('preserves a destination created by another process during cloning', async () => {

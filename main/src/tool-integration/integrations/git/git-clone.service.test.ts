@@ -122,6 +122,51 @@ describe('GitCloneService', () => {
         expect(closeCredential).toHaveBeenCalledOnce();
     });
 
+    it('logs a credential-safe empty repository warning after Git succeeds', async () => {
+        executeStreaming.mockImplementationOnce(async (_toolId, request) => {
+            request.onStderr?.(
+                'warning: You appear to have cloned an empty repository.',
+            );
+            return { success: true, exitCode: 0 };
+        });
+        const service = new GitCloneService(
+            { executeStreaming } as never,
+            credentials as never,
+            logger as never,
+        );
+
+        await expect(
+            service.clone({
+                source: 'connected',
+                canonicalUrl: 'https://github.com/owner/game.git',
+                credential: {
+                    username: 'x-access-token',
+                    password: 'secret-token',
+                },
+                destinationPath: '/projects/.game.clone',
+                supportDirectory,
+                signal: new AbortController().signal,
+                onProgress: vi.fn(),
+            }),
+        ).resolves.toEqual({ ok: true });
+
+        expect(logger.warn).toHaveBeenCalledWith(
+            'Remote Git clone reported an empty repository',
+            {
+                diagnostic: 'empty-repository',
+                event: 'remote_git_clone_completed',
+                lastPercent: -1,
+                source: 'connected',
+            },
+        );
+        expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(
+            'secret-token',
+        );
+        expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(
+            'github.com/owner/game',
+        );
+    });
+
     it('maps child cancellation without returning process output', async () => {
         executeStreaming.mockResolvedValueOnce({
             success: false,

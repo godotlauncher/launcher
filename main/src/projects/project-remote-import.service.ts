@@ -12,6 +12,7 @@ import type {
     ResolveRemoteProjectCloneAction,
     ResolveRemoteProjectCloneResult,
 } from '@shared/contracts';
+import logger from 'electron-log';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { RepositoryHostingService } from '../app-integrations/repository-hosting.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -111,6 +112,11 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             stage: 'preparing',
         };
         this.active = job;
+        logger.info('Remote project import started', {
+            event: 'remote_project_import_started',
+            jobId: job.id,
+            source: request.source,
+        });
         this.publish(job, 'preparing', false);
         let result: RemoteProjectImportResult;
         try {
@@ -125,6 +131,21 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
                       ? error.reason
                       : 'clone-failed',
             };
+        }
+        if (result.ok) {
+            logger.info('Remote project import completed', {
+                event: 'remote_project_import_completed',
+                jobId: job.id,
+                projectCount: result.projects.length,
+                source: request.source,
+            });
+        } else {
+            logger.warn('Remote project import failed', {
+                event: 'remote_project_import_failed',
+                jobId: job.id,
+                reason: result.reason,
+                source: request.source,
+            });
         }
         this.publish(
             job,

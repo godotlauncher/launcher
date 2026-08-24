@@ -87,6 +87,21 @@ export class GitCloneService {
                 },
             });
             if (result.success) {
+                const diagnostic = classifyCloneSuccess(bufferedProgress);
+                const details = {
+                    diagnostic,
+                    event: 'remote_git_clone_completed',
+                    lastPercent,
+                    source: request.source,
+                };
+                if (diagnostic === 'empty-repository') {
+                    this.logger.warn(
+                        'Remote Git clone reported an empty repository',
+                        details,
+                    );
+                } else {
+                    this.logger.debug?.('Remote Git clone completed', details);
+                }
                 request.onProgress(100);
                 return { ok: true };
             }
@@ -119,6 +134,20 @@ export class GitCloneService {
             await askPass.close();
         }
     }
+}
+
+type GitCloneSuccessDiagnostic = 'complete' | 'empty-repository';
+
+/**
+ * Classifies safe terminal information emitted by a successful Git clone.
+ *
+ * @param value - Bounded recent Git standard error text.
+ * @returns A credential-safe successful clone classification.
+ */
+function classifyCloneSuccess(value: string): GitCloneSuccessDiagnostic {
+    return /(?:cloned an empty repository|empty repository)/iu.test(value)
+        ? 'empty-repository'
+        : 'complete';
 }
 
 /**
