@@ -167,6 +167,25 @@
                 "discovering": "Wyszukiwanie projektów Godot...",
                 "cancelling": "Anulowanie importu..."
             },
+            "submodules": {
+                "title": "To repozytorium używa podmodułów Git",
+                "description": "Launcher może zainicjalizować anonimowe publiczne podmoduły HTTPS przed ponownym skanowaniem. Operacja zatrzyma się, jeśli podmoduł jest prywatny lub używa nieobsługiwanego adresu URL.",
+                "preparing": "Przygotowywanie inicjalizacji podmodułów...",
+                "initialise": "Zainicjalizuj podmoduły",
+                "continueWithoutSubmodules": "Kontynuuj bez podmodułów",
+                "failure": "Nie udało się zainicjalizować niektórych podmodułów. Częściowo zainicjalizowany klon został zachowany, aby można było kontynuować ręcznie.",
+                "activityTitle": "Aktywność",
+                "activityAriaLabel": "Aktywność inicjalizacji podmodułów",
+                "activity": {
+                    "found": "Znalezione podmoduły: {{count}}",
+                    "validating": "Sprawdzanie {{path}}",
+                    "initialising": "Inicjalizowanie {{path}}",
+                    "initialised": "Zainicjalizowano {{path}}",
+                    "scanning-projects": "Wyszukiwanie projektów Godot",
+                    "complete": "Znalezione projekty Godot: {{count}}",
+                    "stopped": "Zatrzymano na {{path}}"
+                }
+            },
             "review": {
                 "title": "Wybierz projekty do dodania",
                 "description": "Wszystkie znalezione projekty są zaznaczone. Odznacz przykłady, testy lub inne projekty, których nie chcesz dodawać.",

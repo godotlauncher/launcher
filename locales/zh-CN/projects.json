@@ -167,6 +167,25 @@
                 "discovering": "正在查找 Godot 项目...",
                 "cancelling": "正在取消导入..."
             },
+            "submodules": {
+                "title": "此仓库使用 Git 子模块",
+                "description": "Launcher 可以在重新扫描前初始化可匿名访问的公共 HTTPS 子模块。如果子模块为私有仓库或使用不受支持的 URL，操作将停止。",
+                "preparing": "正在准备初始化子模块...",
+                "initialise": "初始化子模块",
+                "continueWithoutSubmodules": "不初始化子模块并继续",
+                "failure": "部分子模块无法初始化。已保留部分初始化的克隆，以便你手动继续。",
+                "activityTitle": "活动",
+                "activityAriaLabel": "子模块初始化活动",
+                "activity": {
+                    "found": "发现的子模块：{{count}}",
+                    "validating": "正在验证 {{path}}",
+                    "initialising": "正在初始化 {{path}}",
+                    "initialised": "已初始化 {{path}}",
+                    "scanning-projects": "正在扫描 Godot 项目",
+                    "complete": "发现的 Godot 项目：{{count}}",
+                    "stopped": "已在 {{path}} 停止"
+                }
+            },
             "review": {
                 "title": "选择要添加的项目",
                 "description": "已选择所有发现的项目。请取消选择不想添加的示例、测试或其他项目。",

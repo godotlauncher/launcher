@@ -167,6 +167,25 @@
                 "discovering": "Godot-Projekte werden gesucht...",
                 "cancelling": "Import wird abgebrochen..."
             },
+            "submodules": {
+                "title": "Dieses Repository verwendet Git-Submodule",
+                "description": "Launcher kann anonyme öffentliche HTTPS-Submodule initialisieren und danach erneut suchen. Der Vorgang wird beendet, wenn ein Submodule privat ist oder eine nicht unterstützte URL verwendet.",
+                "preparing": "Submodule-Initialisierung wird vorbereitet...",
+                "initialise": "Submodule initialisieren",
+                "continueWithoutSubmodules": "Ohne Submodule fortfahren",
+                "failure": "Einige Submodule konnten nicht initialisiert werden. Der teilweise initialisierte Klon wurde beibehalten, damit du manuell fortfahren kannst.",
+                "activityTitle": "Aktivität",
+                "activityAriaLabel": "Aktivität der Submodule-Initialisierung",
+                "activity": {
+                    "found": "Gefundene Submodule: {{count}}",
+                    "validating": "{{path}} wird überprüft",
+                    "initialising": "{{path}} wird initialisiert",
+                    "initialised": "{{path}} wurde initialisiert",
+                    "scanning-projects": "Godot-Projekte werden gesucht",
+                    "complete": "Gefundene Godot-Projekte: {{count}}",
+                    "stopped": "Angehalten bei {{path}}"
+                }
+            },
             "review": {
                 "title": "Hinzuzufügende Projekte auswählen",
                 "description": "Alle gefundenen Projekte sind ausgewählt. Deaktivieren Sie Beispiele, Testprojekte oder andere Projekte, die nicht hinzugefügt werden sollen.",

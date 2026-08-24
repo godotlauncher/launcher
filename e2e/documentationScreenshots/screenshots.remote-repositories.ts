@@ -350,6 +350,95 @@ async function stubRemoteRepositoryImport(
 }
 
 /**
+ * Installs a deterministic submodule initialisation flow for screenshot states.
+ *
+ * @param electronApp - Electron app whose handler is replaced.
+ * @param outcome - Whether initialisation stays active or stops with a failure.
+ * @returns A promise that ends when the handler is installed.
+ */
+async function stubRemoteProjectSubmodules(
+    electronApp: ElectronApplication,
+    outcome: 'pending' | 'failure',
+): Promise<void> {
+    await electronApp.evaluate(
+        ({ BrowserWindow, ipcMain }, injectedOutcome) => {
+            ipcMain.removeHandler(
+                'projects.initialiseRemoteProjectSubmodules',
+            );
+            ipcMain.handle(
+                'projects.initialiseRemoteProjectSubmodules',
+                async (_event, jobId: string) => {
+                    const window = BrowserWindow.getAllWindows().find(
+                        (candidate) =>
+                            candidate.webContents
+                                .getURL()
+                                .startsWith('http://localhost:5123'),
+                    );
+                    const publishActivity = (
+                        delay: number,
+                        activity: Record<string, string | number>,
+                    ) => {
+                        setTimeout(() => {
+                            window?.webContents.send(
+                                'remote-project-import-progress',
+                                {
+                                    jobId,
+                                    stage: 'initialising-submodules',
+                                    canCancel: true,
+                                    activity,
+                                },
+                            );
+                        }, delay);
+                    };
+
+                    publishActivity(20, { type: 'found', count: 2 });
+                    publishActivity(40, {
+                        type: 'validating',
+                        path: 'addons/godot-cpp',
+                    });
+                    publishActivity(60, {
+                        type: 'initialising',
+                        path: 'addons/godot-cpp',
+                    });
+                    publishActivity(80, {
+                        type: 'initialised',
+                        path: 'addons/godot-cpp',
+                    });
+                    publishActivity(100, {
+                        type: 'validating',
+                        path: 'addons/private-extension',
+                    });
+
+                    if (injectedOutcome === 'pending') {
+                        return await new Promise(() => undefined);
+                    }
+
+                    publishActivity(120, {
+                        type: 'stopped',
+                        path: 'addons/private-extension',
+                    });
+                    return await new Promise((resolve) => {
+                        setTimeout(
+                            () =>
+                                resolve({
+                                    success: true,
+                                    data: {
+                                        ok: false,
+                                        jobId,
+                                        reason: 'unsupported-submodule',
+                                    },
+                                }),
+                            150,
+                        );
+                    });
+                },
+            );
+        },
+        outcome,
+    );
+}
+
+/**
  * Opens one remote import source after refreshing its deterministic fixtures.
  *
  * @param page - Electron renderer page to drive.
@@ -370,6 +459,7 @@ async function openRemoteSource(
         jobId: 'docs-clone-job',
         repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
         projects: DISCOVERED_PROJECTS,
+        hasSubmodules: false,
     },
     pendingProgress = false,
 ): Promise<ReturnType<ElectronPage['getByRole']>> {
@@ -583,6 +673,65 @@ export const REMOTE_REPOSITORY_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_remote_submodules_detected',
+        description: 'Detected Git submodules before project review',
+        viewportHeight: 800,
+        navigate: async (page, electronApp, theme) => {
+            const modal = await openPublicDestination(page, electronApp, theme, {
+                ok: true,
+                jobId: 'docs-clone-job',
+                repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
+                projects: [],
+                hasSubmodules: true,
+            });
+            await modal.getByRole('button', { name: 'Clone repository' }).click();
+            await expect(
+                modal.getByText('This repository uses Git submodules'),
+            ).toBeVisible();
+        },
+    },
+    {
+        fileBase: 'screen_projects_remote_submodules_initialising',
+        description: 'Public Git submodule initialisation activity',
+        viewportHeight: 800,
+        navigate: async (page, electronApp, theme) => {
+            const modal = await openPublicDestination(page, electronApp, theme, {
+                ok: true,
+                jobId: 'docs-clone-job',
+                repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
+                projects: [],
+                hasSubmodules: true,
+            });
+            await stubRemoteProjectSubmodules(electronApp, 'pending');
+            await modal.getByRole('button', { name: 'Clone repository' }).click();
+            await modal.getByTestId('btnInitialiseSubmodules').click();
+            await expect(
+                modal.getByText('Validating addons/private-extension'),
+            ).toBeVisible();
+        },
+    },
+    {
+        fileBase: 'screen_projects_remote_submodules_failed',
+        description: 'Stopped Git submodule initialisation with recovery actions',
+        viewportHeight: 800,
+        navigate: async (page, electronApp, theme) => {
+            const modal = await openPublicDestination(page, electronApp, theme, {
+                ok: true,
+                jobId: 'docs-clone-job',
+                repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
+                projects: [],
+                hasSubmodules: true,
+            });
+            await stubRemoteProjectSubmodules(electronApp, 'failure');
+            await modal.getByRole('button', { name: 'Clone repository' }).click();
+            await modal.getByTestId('btnInitialiseSubmodules').click();
+            await expect(modal.getByRole('alert')).toBeVisible();
+            await expect(
+                modal.getByText('Stopped at addons/private-extension'),
+            ).toBeVisible();
+        },
+    },
+    {
         fileBase: 'screen_projects_remote_project_review',
         description: 'Discovered projects selection review',
         viewportHeight: 800,
@@ -604,6 +753,7 @@ export const REMOTE_REPOSITORY_SCREENSHOTS: ScreenshotConfig[] = [
                 jobId: 'docs-clone-job',
                 repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
                 projects: [],
+                hasSubmodules: false,
             });
             await modal.getByRole('button', { name: 'Clone repository' }).click();
             await expect(
@@ -623,6 +773,7 @@ export const REMOTE_REPOSITORY_SCREENSHOTS: ScreenshotConfig[] = [
                 jobId: 'docs-clone-job',
                 repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
                 projects: MIXED_OUTCOME_PROJECTS,
+                hasSubmodules: false,
             });
             await modal.getByRole('button', { name: 'Clone repository' }).click();
             await modal.getByTestId('btnAddDiscoveredProjects').click();

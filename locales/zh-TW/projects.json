@@ -167,6 +167,25 @@
                 "discovering": "正在尋找 Godot 專案...",
                 "cancelling": "正在取消導入..."
             },
+            "submodules": {
+                "title": "此儲存庫使用 Git 子模組",
+                "description": "Launcher 可以在重新掃描前初始化可匿名存取的公開 HTTPS 子模組。如果子模組是私人儲存庫或使用不支援的 URL，操作將停止。",
+                "preparing": "正在準備初始化子模組...",
+                "initialise": "初始化子模組",
+                "continueWithoutSubmodules": "不初始化子模組並繼續",
+                "failure": "部分子模組無法初始化。已保留部分初始化的複製內容，讓你可以手動繼續。",
+                "activityTitle": "活動",
+                "activityAriaLabel": "子模組初始化活動",
+                "activity": {
+                    "found": "找到的子模組：{{count}}",
+                    "validating": "正在驗證 {{path}}",
+                    "initialising": "正在初始化 {{path}}",
+                    "initialised": "已初始化 {{path}}",
+                    "scanning-projects": "正在掃描 Godot 專案",
+                    "complete": "找到的 Godot 專案：{{count}}",
+                    "stopped": "已在 {{path}} 停止"
+                }
+            },
             "review": {
                 "title": "選擇要新增的專案",
                 "description": "已選取所有找到的專案。請取消選取不想新增的範例、測試或其他專案。",

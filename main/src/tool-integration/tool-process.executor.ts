@@ -31,9 +31,12 @@ export class ToolProcessExecutor {
                     [...installation.executableArgs, ...request.args],
                     {
                         cwd: request.cwd,
-                        env: request.env
-                            ? { ...process.env, ...request.env }
-                            : process.env,
+                        env:
+                            request.inheritEnv === false
+                                ? request.env
+                                : request.env
+                                  ? { ...process.env, ...request.env }
+                                  : process.env,
                         encoding: 'utf8',
                         shell: false,
                         timeout,

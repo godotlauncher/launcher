@@ -66,6 +66,16 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Initialises validated public submodules for one retained remote clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    @ProjectsHandler('initialiseRemoteProjectSubmodules')
+    initialiseRemoteProjectSubmodules(jobId: string) {
+        return this.projects.initialiseRemoteProjectSubmodules(jobId);
+    }
+
+    /**
      * Inspects one anonymous public Git source.
      *
      * @param url - Anonymous HTTPS repository URL.

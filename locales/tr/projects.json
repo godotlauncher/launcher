@@ -167,6 +167,25 @@
                 "discovering": "Godot projeleri aranıyor...",
                 "cancelling": "İçe aktarma iptal ediliyor..."
             },
+            "submodules": {
+                "title": "Bu depo Git alt modülleri kullanıyor",
+                "description": "Launcher yeniden taramadan önce anonim ve herkese açık HTTPS alt modüllerini başlatabilir. Bir alt modül gizliyse veya desteklenmeyen bir URL kullanıyorsa işlem durur.",
+                "preparing": "Alt modül başlatma hazırlanıyor...",
+                "initialise": "Alt modülleri başlat",
+                "continueWithoutSubmodules": "Alt modüller olmadan devam et",
+                "failure": "Bazı alt modüller başlatılamadı. El ile devam edebilmeniz için kısmen başlatılmış klon korundu.",
+                "activityTitle": "Etkinlik",
+                "activityAriaLabel": "Alt modül başlatma etkinliği",
+                "activity": {
+                    "found": "Bulunan alt modüller: {{count}}",
+                    "validating": "{{path}} doğrulanıyor",
+                    "initialising": "{{path}} başlatılıyor",
+                    "initialised": "{{path}} başlatıldı",
+                    "scanning-projects": "Godot projeleri aranıyor",
+                    "complete": "Bulunan Godot projeleri: {{count}}",
+                    "stopped": "{{path}} konumunda durdu"
+                }
+            },
             "review": {
                 "title": "Eklenecek projeleri seçin",
                 "description": "Bulunan tüm projeler seçilidir. Eklemek istemediğiniz örneklerin, testlerin veya diğer projelerin seçimini kaldırın.",

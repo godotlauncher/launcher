@@ -265,6 +265,34 @@ test('Remote repository discovery lets users exclude projects before adding', as
     ]);
 });
 
+test('Remote repositories can initialise public submodules before review', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubRemoteProjectSubmodules();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+
+    await expect(
+        modal.getByText('This repository uses Git submodules'),
+    ).toBeVisible();
+    await modal.getByTestId('btnInitialiseSubmodules').click();
+    await expect(
+        modal.getByText('Initialising addons/gdextension'),
+    ).toBeVisible();
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect(modal.getByText('GDExtension Demo')).toBeVisible();
+});
+
 test('Remote project sources stay unavailable when Git is unavailable', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp, {
         toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
@@ -862,6 +890,7 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                 ok: true,
                 jobId: 'remote-discovery-job',
                 repositoryPath: '/home/docs/Godot/Projects/games',
+                hasSubmodules: false,
                 projects: [
                     {
                         name: 'Root Game',
@@ -1076,6 +1105,70 @@ async function stubPendingRemoteProjectImport(): Promise<void> {
                     data: { jobId, status: 'cancelling' },
                 };
             },
+        );
+    });
+}
+
+/** Adds a deterministic public submodule initialisation and activity flow. */
+async function stubRemoteProjectSubmodules(): Promise<void> {
+    await electronApp.evaluate(({ BrowserWindow, ipcMain }) => {
+        ipcMain.removeHandler('projects.importRemoteProject');
+        ipcMain.handle('projects.importRemoteProject', async () => ({
+            success: true,
+            data: {
+                ok: true,
+                jobId: 'remote-discovery-job',
+                repositoryPath: '/home/docs/Godot/Projects/games',
+                hasSubmodules: true,
+                projects: [],
+            },
+        }));
+        ipcMain.removeHandler('projects.initialiseRemoteProjectSubmodules');
+        ipcMain.handle(
+            'projects.initialiseRemoteProjectSubmodules',
+            async (_event, jobId: string) =>
+                await new Promise((resolve) => {
+                    const window = BrowserWindow.getAllWindows().find(
+                        (candidate) =>
+                            candidate.webContents
+                                .getURL()
+                                .startsWith('http://localhost:5123'),
+                    );
+                    setTimeout(() => {
+                        window?.webContents.send(
+                            'remote-project-import-progress',
+                            {
+                                jobId,
+                                stage: 'initialising-submodules',
+                                canCancel: true,
+                                activity: {
+                                    type: 'initialising',
+                                    path: 'addons/gdextension',
+                                },
+                            },
+                        );
+                    }, 20);
+                    setTimeout(
+                        () =>
+                            resolve({
+                                success: true,
+                                data: {
+                                    ok: true,
+                                    jobId,
+                                    projects: [
+                                        {
+                                            name: 'GDExtension Demo',
+                                            relativePath: 'demo',
+                                            projectFilePath:
+                                                '/home/docs/Godot/Projects/games/demo/project.godot',
+                                            detectedEditor: null,
+                                        },
+                                    ],
+                                },
+                            }),
+                        150,
+                    );
+                }),
         );
     });
 }

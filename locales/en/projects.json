@@ -167,6 +167,25 @@
                 "discovering": "Finding Godot projects...",
                 "cancelling": "Cancelling the import..."
             },
+            "submodules": {
+                "title": "This repository uses Git submodules",
+                "description": "Launcher can initialise anonymous public HTTPS submodules before scanning again. It stops if a submodule is private or uses an unsupported URL.",
+                "preparing": "Preparing submodule initialisation...",
+                "initialise": "Initialise submodules",
+                "continueWithoutSubmodules": "Continue without submodules",
+                "failure": "Some submodules could not be initialised. The partially initialised clone has been kept so you can continue manually.",
+                "activityTitle": "Activity",
+                "activityAriaLabel": "Submodule initialisation activity",
+                "activity": {
+                    "found": "Submodules found: {{count}}",
+                    "validating": "Validating {{path}}",
+                    "initialising": "Initialising {{path}}",
+                    "initialised": "Initialised {{path}}",
+                    "scanning-projects": "Scanning for Godot projects",
+                    "complete": "Godot projects found: {{count}}",
+                    "stopped": "Stopped at {{path}}"
+                }
+            },
             "review": {
                 "title": "Choose projects to add",
                 "description": "All discovered projects are selected. Clear any examples, fixtures, or other projects you do not want to add.",

@@ -129,6 +129,15 @@ export class ProjectsService {
     }
 
     /**
+     * Initialises validated public submodules for one retained remote clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    initialiseRemoteProjectSubmodules(jobId: string) {
+        return this.remoteImport.initialiseRemoteProjectSubmodules(jobId);
+    }
+
+    /**
      * Inspects one anonymous public Git source.
      *
      * @param url - Anonymous HTTPS repository URL.

@@ -34,6 +34,7 @@ vi.mock('../../../bridge', () => ({
     projectsBridge: {
         cancelRemoteProjectImport: vi.fn(),
         importRemoteProject: vi.fn(),
+        initialiseRemoteProjectSubmodules: vi.fn(),
         inspectPublicGitSource: vi.fn(),
         listConnectedRepositories: vi.fn(),
     },

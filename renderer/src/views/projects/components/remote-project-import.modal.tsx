@@ -6,6 +6,7 @@ import type {
     RemoteDiscoveredProject,
     RemoteProjectImportProgress,
     RemoteProjectImportRequest,
+    RemoteProjectSubmoduleActivity,
     RemoteRepositorySummary,
 } from '@shared/contracts';
 import {
@@ -67,6 +68,8 @@ type ModalStep =
     | 'destination'
     | 'importing'
     | 'import-failed'
+    | 'submodules'
+    | 'initialising-submodules'
     | 'review'
     | 'registering'
     | 'registration-complete';
@@ -75,6 +78,11 @@ type RegistrationOutcome = {
     project: RemoteDiscoveredProject;
     status: 'added' | 'skipped' | 'failed';
     error?: string;
+};
+
+type SubmoduleActivityEntry = {
+    id: number;
+    activity: RemoteProjectSubmoduleActivity;
 };
 
 type RepositoryFailure = Extract<
@@ -126,6 +134,36 @@ function getProgressKey(progress: RemoteProjectImportProgress | null): string {
     if (progress?.stage === 'cancelling') return 'cancelling';
     if (progress?.stage === 'discovering-projects') return 'discovering';
     return 'preparing';
+}
+
+/**
+ * Returns one translated activity message for a safe submodule event.
+ *
+ * @param activity - Typed renderer-safe submodule activity.
+ * @param translate - Translation function for the active locale.
+ */
+function getSubmoduleActivityMessage(
+    activity: RemoteProjectSubmoduleActivity,
+    translate: (key: string, values?: Record<string, unknown>) => string,
+): string {
+    const key = `addProject.remote.submodules.activity.${activity.type}`;
+    if (activity.type === 'found') {
+        return translate(key, { count: activity.count });
+    }
+    if (
+        activity.type === 'validating' ||
+        activity.type === 'initialising' ||
+        activity.type === 'initialised'
+    ) {
+        return translate(key, { path: activity.path });
+    }
+    if (activity.type === 'complete') {
+        return translate(key, { count: activity.projectCount });
+    }
+    if (activity.type === 'stopped') {
+        return translate(key, { path: activity.path ?? '' });
+    }
+    return translate(key);
 }
 
 /**
@@ -195,6 +233,12 @@ export const RemoteProjectImportModal: React.FC<
         null,
     );
     const [repositoryPath, setRepositoryPath] = useState('');
+    const [submoduleActivities, setSubmoduleActivities] = useState<
+        SubmoduleActivityEntry[]
+    >([]);
+    const [submoduleFailure, setSubmoduleFailure] = useState<string | null>(
+        null,
+    );
     const [discoveredProjects, setDiscoveredProjects] = useState<
         RemoteDiscoveredProject[]
     >([]);
@@ -213,6 +257,7 @@ export const RemoteProjectImportModal: React.FC<
     });
     const importPendingRef = useRef(false);
     const activeJobIdRef = useRef<string | null>(null);
+    const submoduleActivityIdRef = useRef(0);
     const publicUrlInputRef = useRef<HTMLInputElement>(null);
     const selectAllRef = useRef<HTMLInputElement>(null);
 
@@ -256,7 +301,12 @@ export const RemoteProjectImportModal: React.FC<
     );
 
     const close = useCallback(() => {
-        if (step === 'importing' || step === 'registering') return;
+        if (
+            step === 'importing' ||
+            step === 'initialising-submodules' ||
+            step === 'registering'
+        )
+            return;
         if (cloneJobId && cloneRecoveryAvailable) {
             void projectsBridge.resolveRemoteProjectClone(cloneJobId, 'keep');
             setCloneRecoveryAvailable(false);
@@ -329,6 +379,8 @@ export const RemoteProjectImportModal: React.FC<
         setResolvingClone(false);
         setCloneRecoveryError(null);
         setRepositoryPath('');
+        setSubmoduleActivities([]);
+        setSubmoduleFailure(null);
         setDiscoveredProjects([]);
         setSelectedProjectPaths(new Set());
         setCodeEditorChoices({});
@@ -336,6 +388,7 @@ export const RemoteProjectImportModal: React.FC<
         setRegistrationProgress({ current: 0, total: 0 });
         importPendingRef.current = false;
         activeJobIdRef.current = null;
+        submoduleActivityIdRef.current = 0;
         if (source === 'github') void loadRepositories();
     }, [defaultParentDirectory, loadRepositories, open, source]);
 
@@ -350,6 +403,17 @@ export const RemoteProjectImportModal: React.FC<
                 }
                 if (activeJobIdRef.current === nextProgress.jobId) {
                     setProgress(nextProgress);
+                    if (nextProgress.activity) {
+                        submoduleActivityIdRef.current += 1;
+                        setSubmoduleActivities((current) => [
+                            ...current.slice(-99),
+                            {
+                                id: submoduleActivityIdRef.current,
+                                activity:
+                                    nextProgress.activity as RemoteProjectSubmoduleActivity,
+                            },
+                        ]);
+                    }
                 }
             },
         );
@@ -458,7 +522,7 @@ export const RemoteProjectImportModal: React.FC<
                 selectAllDiscoveredProjects(result.projects),
             );
             setCodeEditorChoices({});
-            setStep('review');
+            setStep(result.hasSubmodules ? 'submodules' : 'review');
         } catch {
             setImportFailure('addProject.remote.errors.temporarilyUnavailable');
             setStep('import-failed');
@@ -471,6 +535,39 @@ export const RemoteProjectImportModal: React.FC<
         const jobId = activeJobIdRef.current;
         if (!jobId || !progress?.canCancel) return;
         await projectsBridge.cancelRemoteProjectImport(jobId);
+    };
+
+    /** Initialises validated public submodules and refreshes project discovery. */
+    const initialiseSubmodules = async () => {
+        if (!cloneJobId) return;
+        setStep('initialising-submodules');
+        setSubmoduleFailure(null);
+        setSubmoduleActivities([]);
+        setProgress(null);
+        importPendingRef.current = true;
+        activeJobIdRef.current = cloneJobId;
+        try {
+            const result =
+                await projectsBridge.initialiseRemoteProjectSubmodules(
+                    cloneJobId,
+                );
+            if (!result.ok) {
+                setSubmoduleFailure(result.reason);
+                setStep('submodules');
+                return;
+            }
+            setDiscoveredProjects(result.projects);
+            setSelectedProjectPaths(
+                selectAllDiscoveredProjects(result.projects),
+            );
+            setCodeEditorChoices({});
+            setStep('review');
+        } catch {
+            setSubmoduleFailure('submodule-unavailable');
+            setStep('submodules');
+        } finally {
+            importPendingRef.current = false;
+        }
     };
 
     /** Opens the preserved final clone through the existing shell boundary. */
@@ -696,6 +793,24 @@ export const RemoteProjectImportModal: React.FC<
             )}
         </div>
     ) : null;
+    const submoduleActivityFeed = submoduleActivities.length > 0 && (
+        <div className="flex min-h-0 flex-col gap-2">
+            <p className="font-medium">
+                {t('addProject.remote.submodules.activityTitle')}
+            </p>
+            <ol
+                className="max-h-64 space-y-2 overflow-auto rounded-box border border-base-300 bg-base-200 p-3 text-sm"
+                aria-live="polite"
+                aria-label={t('addProject.remote.submodules.activityAriaLabel')}
+            >
+                {submoduleActivities.map((entry) => (
+                    <li key={entry.id} className="break-all font-mono">
+                        {getSubmoduleActivityMessage(entry.activity, t)}
+                    </li>
+                ))}
+            </ol>
+        </div>
+    );
 
     let body: React.ReactNode;
     let footer: React.ReactNode;
@@ -1021,6 +1136,68 @@ export const RemoteProjectImportModal: React.FC<
                 {t('addProject.remote.actions.cancelImport')}
             </button>
         ) : null;
+    } else if (step === 'submodules' || step === 'initialising-submodules') {
+        const initialising = step === 'initialising-submodules';
+        body = (
+            <div className="flex h-full min-h-0 flex-col gap-4">
+                <div className="alert alert-warning alert-soft" role="status">
+                    <GitBranch aria-hidden="true" size={18} />
+                    <div>
+                        <p className="font-medium">
+                            {t('addProject.remote.submodules.title')}
+                        </p>
+                        <p className="text-sm">
+                            {t('addProject.remote.submodules.description')}
+                        </p>
+                    </div>
+                </div>
+                {submoduleFailure && (
+                    <div className="alert alert-error alert-soft" role="alert">
+                        <TriangleAlert aria-hidden="true" size={18} />
+                        <span>{t('addProject.remote.submodules.failure')}</span>
+                    </div>
+                )}
+                {initialising && submoduleActivities.length === 0 && (
+                    <div className="flex items-center gap-2" role="status">
+                        <span className="loading loading-spinner loading-sm" />
+                        {t('addProject.remote.submodules.preparing')}
+                    </div>
+                )}
+                {submoduleActivityFeed}
+            </div>
+        );
+        footer = initialising ? (
+            progress?.canCancel ? (
+                <button
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={() => void cancelImport()}
+                >
+                    {t('addProject.remote.actions.cancelImport')}
+                </button>
+            ) : null
+        ) : (
+            <div className="flex w-full items-center justify-between gap-4">
+                <button
+                    type="button"
+                    data-testid="btnContinueWithoutSubmodules"
+                    className="btn btn-ghost"
+                    onClick={() => setStep('review')}
+                >
+                    {t(
+                        'addProject.remote.submodules.continueWithoutSubmodules',
+                    )}
+                </button>
+                <button
+                    type="button"
+                    data-testid="btnInitialiseSubmodules"
+                    className="btn btn-primary"
+                    onClick={() => void initialiseSubmodules()}
+                >
+                    {t('addProject.remote.submodules.initialise')}
+                </button>
+            </div>
+        );
     } else if (step === 'review') {
         body = (
             <div className="flex h-full min-h-0 flex-col gap-4">

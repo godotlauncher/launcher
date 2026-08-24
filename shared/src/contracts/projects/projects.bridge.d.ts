@@ -8,6 +8,7 @@ import type {
     CreateProjectGitOptions,
     CreateProjectResult,
     GitIdentity,
+    InitialiseRemoteProjectSubmodulesResult,
     InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
@@ -42,6 +43,11 @@ export type ProjectsBridge = {
         jobId: string,
         action: ResolveRemoteProjectCloneAction,
     ): Promise<ResolveRemoteProjectCloneResult>;
+
+    /** Initialises validated anonymous public submodules for an owned clone. */
+    initialiseRemoteProjectSubmodules(
+        jobId: string,
+    ): Promise<InitialiseRemoteProjectSubmodulesResult>;
 
     /** Inspects an anonymous public Git repository URL. */
     inspectPublicGitSource(

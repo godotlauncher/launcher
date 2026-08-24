@@ -70,6 +70,7 @@ export type ToolExecutionRequest = {
     args: readonly string[];
     cwd?: string;
     env?: Readonly<Record<string, string | undefined>>;
+    inheritEnv?: boolean;
     timeoutMs?: number;
 };
 

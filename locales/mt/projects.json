@@ -167,6 +167,25 @@
                 "discovering": "Qed jinstabu l-proġetti Godot...",
                 "cancelling": "Tħassir l-importazzjoni..."
             },
+            "submodules": {
+                "title": "Dan ir-repożitorju juża submodules ta' Git",
+                "description": "Launcher jista' jinizjalizza submodules HTTPS pubbliċi u anonimi qabel jerġa' jiskennja. Jieqaf jekk submodule ikun privat jew juża URL mhux appoġġjat.",
+                "preparing": "Qed titħejja l-inizjalizzazzjoni tas-submodules...",
+                "initialise": "Inizjalizza s-submodules",
+                "continueWithoutSubmodules": "Kompli mingħajr submodules",
+                "failure": "Xi submodules ma setgħux jiġu inizjalizzati. Il-clone parzjalment inizjalizzat inżamm biex tkun tista' tkompli manwalment.",
+                "activityTitle": "Attività",
+                "activityAriaLabel": "Attività tal-inizjalizzazzjoni tas-submodules",
+                "activity": {
+                    "found": "Submodules misjuba: {{count}}",
+                    "validating": "Qed jiġi vvalidat {{path}}",
+                    "initialising": "Qed jiġi inizjalizzat {{path}}",
+                    "initialised": "Ġie inizjalizzat {{path}}",
+                    "scanning-projects": "Qed jiġu mfittxija proġetti Godot",
+                    "complete": "Proġetti Godot misjuba: {{count}}",
+                    "stopped": "Waqaf f'{{path}}"
+                }
+            },
             "review": {
                 "title": "Agħżel il-proġetti li trid iżżid",
                 "description": "Il-proġetti kollha misjuba huma magħżula. Neħħi l-għażla minn eżempji, testijiet, jew proġetti oħra li ma tridx iżżid.",

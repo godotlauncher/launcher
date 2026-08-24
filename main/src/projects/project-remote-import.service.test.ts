@@ -58,9 +58,14 @@ describe('ProjectRemoteImportService', () => {
     };
     const progress = { publish: vi.fn() };
     const clone = { clone: vi.fn() };
+    const submodules = {
+        hasSubmodules: vi.fn(async () => false),
+        initialise: vi.fn(),
+    };
 
     beforeEach(async () => {
         vi.clearAllMocks();
+        submodules.hasSubmodules.mockResolvedValue(false);
         parentDirectory = await fs.mkdtemp(
             path.join(os.tmpdir(), 'remote-import-test-'),
         );
@@ -526,6 +531,102 @@ describe('ProjectRemoteImportService', () => {
         expect(await fs.readdir(parentDirectory)).toEqual(['not-godot']);
     });
 
+    it('initialises retained submodules and returns a fresh project scan', async () => {
+        submodules.hasSubmodules.mockResolvedValueOnce(true);
+        const service = createService();
+        const imported = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(imported).toMatchObject({ ok: true, hasSubmodules: true });
+        if (!imported.ok) throw new Error('Expected a successful import');
+        const nestedProject = {
+            name: 'Extension Demo',
+            relativePath: 'addons/extension/demo',
+            projectFilePath: path.join(
+                imported.repositoryPath,
+                'addons',
+                'extension',
+                'demo',
+                'project.godot',
+            ),
+            detectedEditor: null,
+        };
+        submodules.initialise.mockImplementationOnce(async (request) => {
+            request.onActivity({
+                type: 'initialising',
+                path: 'addons/extension',
+            });
+            return { ok: true, initialisedCount: 1 };
+        });
+        discovery.discover.mockResolvedValueOnce({
+            ok: true,
+            projects: [nestedProject],
+        });
+
+        await expect(
+            service.initialiseRemoteProjectSubmodules(imported.jobId),
+        ).resolves.toEqual({
+            ok: true,
+            jobId: imported.jobId,
+            projects: [nestedProject],
+        });
+
+        expect(progress.publish).toHaveBeenCalledWith(
+            expect.objectContaining({
+                activity: {
+                    type: 'initialising',
+                    path: 'addons/extension',
+                },
+                canCancel: true,
+                jobId: imported.jobId,
+                stage: 'initialising-submodules',
+            }),
+        );
+        expect(progress.publish).toHaveBeenCalledWith(
+            expect.objectContaining({
+                activity: { type: 'complete', projectCount: 1 },
+            }),
+        );
+    });
+
+    it('preserves a retained clone after submodule initialisation fails', async () => {
+        const service = createService();
+        const imported = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(imported.ok).toBe(true);
+        if (!imported.ok) throw new Error('Expected a successful import');
+        submodules.initialise.mockResolvedValueOnce({
+            ok: false,
+            reason: 'unsupported-submodule',
+            path: 'addons/private',
+        });
+
+        await expect(
+            service.initialiseRemoteProjectSubmodules(imported.jobId),
+        ).resolves.toEqual({
+            ok: false,
+            jobId: imported.jobId,
+            reason: 'unsupported-submodule',
+        });
+        await expect(fs.stat(imported.repositoryPath)).resolves.toBeDefined();
+        expect(progress.publish).toHaveBeenCalledWith(
+            expect.objectContaining({
+                activity: {
+                    type: 'stopped',
+                    path: 'addons/private',
+                },
+                canCancel: false,
+            }),
+        );
+    });
+
     it('preserves the completed clone after a discovery failure', async () => {
         discovery.discover.mockResolvedValueOnce({
             ok: false,
@@ -698,6 +799,7 @@ describe('ProjectRemoteImportService', () => {
         return new ProjectRemoteImportService(
             git as never,
             clone as never,
+            submodules as never,
             publicSources as never,
             repositoryHosting as never,
             discovery as never,

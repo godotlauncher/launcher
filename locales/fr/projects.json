@@ -167,6 +167,25 @@
                 "discovering": "Recherche des projets Godot...",
                 "cancelling": "Annulation de l'importation..."
             },
+            "submodules": {
+                "title": "Ce dépôt utilise des sous-modules Git",
+                "description": "Launcher peut initialiser les sous-modules HTTPS publics et anonymes avant une nouvelle analyse. L’opération s’arrête si un sous-module est privé ou utilise une URL non prise en charge.",
+                "preparing": "Préparation de l’initialisation des sous-modules...",
+                "initialise": "Initialiser les sous-modules",
+                "continueWithoutSubmodules": "Continuer sans les sous-modules",
+                "failure": "Certains sous-modules n’ont pas pu être initialisés. Le clone partiellement initialisé a été conservé pour vous permettre de continuer manuellement.",
+                "activityTitle": "Activité",
+                "activityAriaLabel": "Activité d’initialisation des sous-modules",
+                "activity": {
+                    "found": "Sous-modules trouvés : {{count}}",
+                    "validating": "Validation de {{path}}",
+                    "initialising": "Initialisation de {{path}}",
+                    "initialised": "{{path}} initialisé",
+                    "scanning-projects": "Recherche de projets Godot",
+                    "complete": "Projets Godot trouvés : {{count}}",
+                    "stopped": "Arrêt à {{path}}"
+                }
+            },
             "review": {
                 "title": "Choisir les projets à ajouter",
                 "description": "Tous les projets trouvés sont sélectionnés. Désélectionnez les exemples, les tests ou les autres projets que vous ne souhaitez pas ajouter.",

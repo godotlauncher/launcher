@@ -53,6 +53,7 @@ describe('ProjectsController', () => {
         await controller.importRemoteProject(remoteRequest);
         await controller.cancelRemoteProjectImport('job-id');
         await controller.resolveRemoteProjectClone('job-id', 'delete');
+        await controller.initialiseRemoteProjectSubmodules('job-id');
         await controller.inspectPublicGitSource('https://example.com/game.git');
         await controller.listConnectedRepositories('github', 'cursor');
         await controller.getProjectsDetails();
@@ -91,6 +92,9 @@ describe('ProjectsController', () => {
         expect(service.resolveRemoteProjectClone).toHaveBeenCalledWith(
             'job-id',
             'delete',
+        );
+        expect(service.initialiseRemoteProjectSubmodules).toHaveBeenCalledWith(
+            'job-id',
         );
         expect(service.inspectPublicGitSource).toHaveBeenCalledWith(
             'https://example.com/game.git',
@@ -168,6 +172,11 @@ function createServiceMock(): ProjectsService {
         resolveRemoteProjectClone: vi.fn(async (jobId) => ({
             jobId,
             status: 'not-found',
+        })),
+        initialiseRemoteProjectSubmodules: vi.fn(async (jobId) => ({
+            ok: false,
+            jobId,
+            reason: 'not-found',
         })),
         inspectPublicGitSource: vi.fn(async () => ({
             ok: false,

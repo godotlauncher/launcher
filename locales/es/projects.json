@@ -167,6 +167,25 @@
                 "discovering": "Buscando proyectos de Godot...",
                 "cancelling": "Cancelando la importación..."
             },
+            "submodules": {
+                "title": "Este repositorio usa submódulos de Git",
+                "description": "Launcher puede inicializar submódulos HTTPS públicos y anónimos antes de volver a buscar. Se detiene si un submódulo es privado o usa una URL no compatible.",
+                "preparing": "Preparando la inicialización de submódulos...",
+                "initialise": "Inicializar submódulos",
+                "continueWithoutSubmodules": "Continuar sin submódulos",
+                "failure": "No se pudieron inicializar algunos submódulos. Se ha conservado el clon parcialmente inicializado para que puedas continuar manualmente.",
+                "activityTitle": "Actividad",
+                "activityAriaLabel": "Actividad de inicialización de submódulos",
+                "activity": {
+                    "found": "Submódulos encontrados: {{count}}",
+                    "validating": "Validando {{path}}",
+                    "initialising": "Inicializando {{path}}",
+                    "initialised": "Se inicializó {{path}}",
+                    "scanning-projects": "Buscando proyectos de Godot",
+                    "complete": "Proyectos de Godot encontrados: {{count}}",
+                    "stopped": "Se detuvo en {{path}}"
+                }
+            },
             "review": {
                 "title": "Elige los proyectos que quieres añadir",
                 "description": "Todos los proyectos encontrados están seleccionados. Desmarca los ejemplos, las pruebas u otros proyectos que no quieras añadir.",

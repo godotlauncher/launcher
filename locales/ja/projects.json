@@ -167,6 +167,25 @@
                 "discovering": "Godot プロジェクトを検索しています...",
                 "cancelling": "インポートをキャンセルしています..."
             },
+            "submodules": {
+                "title": "このリポジトリは Git サブモジュールを使用しています",
+                "description": "Launcher は再スキャンの前に、匿名でアクセスできる公開 HTTPS サブモジュールを初期化できます。非公開または未対応の URL を使用するサブモジュールがある場合は停止します。",
+                "preparing": "サブモジュールの初期化を準備しています...",
+                "initialise": "サブモジュールを初期化",
+                "continueWithoutSubmodules": "サブモジュールなしで続行",
+                "failure": "一部のサブモジュールを初期化できませんでした。手動で続行できるよう、部分的に初期化されたクローンは保持されています。",
+                "activityTitle": "アクティビティ",
+                "activityAriaLabel": "サブモジュール初期化のアクティビティ",
+                "activity": {
+                    "found": "検出されたサブモジュール: {{count}}",
+                    "validating": "{{path}} を検証中",
+                    "initialising": "{{path}} を初期化中",
+                    "initialised": "{{path}} を初期化しました",
+                    "scanning-projects": "Godot プロジェクトを検索中",
+                    "complete": "検出された Godot プロジェクト: {{count}}",
+                    "stopped": "{{path}} で停止しました"
+                }
+            },
             "review": {
                 "title": "追加するプロジェクトを選択",
                 "description": "見つかったすべてのプロジェクトが選択されています。追加しないサンプル、テスト、その他のプロジェクトの選択を解除してください。",

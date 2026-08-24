@@ -128,6 +128,7 @@ describe('ProjectsService', () => {
         importRemoteProject: vi.fn(),
         cancelRemoteProjectImport: vi.fn(),
         resolveRemoteProjectClone: vi.fn(),
+        initialiseRemoteProjectSubmodules: vi.fn(),
     };
     let service: ProjectsService;
 
@@ -174,6 +175,7 @@ describe('ProjectsService', () => {
         });
         await service.cancelRemoteProjectImport('job-id');
         await service.resolveRemoteProjectClone('job-id', 'keep');
+        await service.initialiseRemoteProjectSubmodules('job-id');
 
         expect(mocks.createProject).toHaveBeenCalledWith(
             'Game',
@@ -196,6 +198,9 @@ describe('ProjectsService', () => {
             'job-id',
             'keep',
         );
+        expect(
+            remoteImport.initialiseRemoteProjectSubmodules,
+        ).toHaveBeenCalledWith('job-id');
     });
 
     it('preserves stateless workflow arguments', async () => {

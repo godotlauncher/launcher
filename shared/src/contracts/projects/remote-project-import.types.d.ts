@@ -68,6 +68,7 @@ export type RemoteProjectImportResult =
           jobId: string;
           repositoryPath: string;
           projects: RemoteDiscoveredProject[];
+          hasSubmodules: boolean;
       }
     | {
           ok: false;
@@ -84,6 +85,8 @@ export type RemoteProjectImportProgressStage =
     | 'cancelling'
     | 'finalising'
     | 'discovering-projects'
+    | 'validating-submodules'
+    | 'initialising-submodules'
     | 'complete'
     | 'cancelled'
     | 'error';
@@ -93,8 +96,39 @@ export type RemoteProjectImportProgress = {
     stage: RemoteProjectImportProgressStage;
     canCancel: boolean;
     percent?: number;
+    activity?: RemoteProjectSubmoduleActivity;
     result?: RemoteProjectImportResult;
 };
+
+export type RemoteProjectSubmoduleActivity =
+    | { type: 'found'; count: number }
+    | { type: 'validating'; path: string }
+    | { type: 'initialising'; path: string }
+    | { type: 'initialised'; path: string }
+    | { type: 'scanning-projects' }
+    | { type: 'complete'; projectCount: number }
+    | { type: 'stopped'; path?: string };
+
+export type InitialiseRemoteProjectSubmodulesResult =
+    | {
+          ok: true;
+          jobId: string;
+          projects: RemoteDiscoveredProject[];
+      }
+    | {
+          ok: false;
+          jobId: string;
+          reason:
+              | 'not-found'
+              | 'already-running'
+              | 'git-unavailable'
+              | 'unsupported-submodule'
+              | 'submodule-unavailable'
+              | 'submodule-limit-exceeded'
+              | 'discovery-failed'
+              | 'discovery-limit-exceeded'
+              | 'cancelled';
+      };
 
 export type CancelRemoteProjectImportResult = {
     jobId: string;
@@ -105,5 +139,11 @@ export type ResolveRemoteProjectCloneAction = 'keep' | 'delete';
 
 export type ResolveRemoteProjectCloneResult = {
     jobId: string;
-    status: 'kept' | 'deleted' | 'not-found' | 'changed' | 'delete-failed';
+    status:
+        | 'kept'
+        | 'deleted'
+        | 'not-found'
+        | 'changed'
+        | 'busy'
+        | 'delete-failed';
 };

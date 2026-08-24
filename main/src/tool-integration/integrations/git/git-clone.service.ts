@@ -1,6 +1,4 @@
-import { promises as fs } from 'node:fs';
 import net from 'node:net';
-import path from 'node:path';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { Injectable, Logger } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -8,19 +6,14 @@ import { ToolIntegrationService } from '../../tool-integration.service.js';
 import type { GitCloneRequest, GitCloneResult } from './git-clone.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitCredentialSessionService } from './git-credential-session.service.js';
+import {
+    createGitHttpsSafetyArguments,
+    createGitNetworkEnvironment,
+    createIsolatedGitConfig,
+    formatGitCurlResolve,
+} from './git-network-process.util.js';
 
 const GIT_CLONE_TIMEOUT_MS = 30 * 60 * 1_000;
-
-const REMOVED_ENVIRONMENT_KEYS = new Set([
-    'CURL_CA_BUNDLE',
-    'GITHUB_TOKEN',
-    'GH_TOKEN',
-    'HTTP_PROXY',
-    'HTTPS_PROXY',
-    'ALL_PROXY',
-    'NO_PROXY',
-    'SSH_ASKPASS',
-]);
 
 @Injectable()
 export class GitCloneService {
@@ -55,7 +48,7 @@ export class GitCloneService {
         ) {
             return { ok: false, reason: 'clone-failed' };
         }
-        const configPaths = await createIsolatedConfig(
+        const configPaths = await createIsolatedGitConfig(
             request.supportDirectory,
         );
         const askPass =
@@ -63,7 +56,7 @@ export class GitCloneService {
                 ? await this.credentials.open(request.credential)
                 : await this.credentials.openRejecting();
         try {
-            const environment = createCloneEnvironment(
+            const environment = createGitNetworkEnvironment(
                 configPaths,
                 askPass.environment,
             );
@@ -175,60 +168,6 @@ function validateCloneUrl(value: string): URL | null {
 }
 
 /**
- * Creates empty attempt-owned Git configuration files.
- *
- * @param supportDirectory - Attempt-owned support directory.
- * @returns Paths for isolated system and global Git configuration.
- */
-async function createIsolatedConfig(
-    supportDirectory: string,
-): Promise<{ system: string; global: string }> {
-    const system = path.join(supportDirectory, 'git-system.config');
-    const global = path.join(supportDirectory, 'git-global.config');
-    await Promise.all([
-        fs.writeFile(system, '', { flag: 'wx', mode: 0o600 }),
-        fs.writeFile(global, '', { flag: 'wx', mode: 0o600 }),
-    ]);
-    return { system, global };
-}
-
-/**
- * Creates a controlled clone environment without inherited Git injection.
- *
- * @param configPaths - Attempt-owned empty Git configuration paths.
- * @param askPassEnvironment - Opaque askpass session environment.
- * @returns Controlled child process environment.
- */
-function createCloneEnvironment(
-    configPaths: { system: string; global: string },
-    askPassEnvironment: NodeJS.ProcessEnv,
-): NodeJS.ProcessEnv {
-    const environment: NodeJS.ProcessEnv = {};
-    for (const [key, value] of Object.entries(process.env)) {
-        const upperKey = key.toUpperCase();
-        if (
-            upperKey.startsWith('GIT_') ||
-            upperKey.startsWith('GCM_') ||
-            REMOVED_ENVIRONMENT_KEYS.has(upperKey)
-        ) {
-            continue;
-        }
-        environment[key] = value;
-    }
-    return {
-        ...environment,
-        ...askPassEnvironment,
-        GIT_ALLOW_PROTOCOL: 'https',
-        GIT_CONFIG_GLOBAL: configPaths.global,
-        GIT_CONFIG_NOSYSTEM: '1',
-        GIT_CONFIG_SYSTEM: configPaths.system,
-        GIT_TERMINAL_PROMPT: '0',
-        LANG: 'C',
-        LC_ALL: 'C',
-    };
-}
-
-/**
  * Builds exact clone arguments without credentials or shell fragments.
  *
  * @param request - Validated clone request.
@@ -236,23 +175,14 @@ function createCloneEnvironment(
  * @returns Exact Git clone argument list.
  */
 function createCloneArguments(request: GitCloneRequest, url: URL): string[] {
-    const argumentsList = [
-        '-c',
-        'credential.helper=',
-        '-c',
-        `credential.interactive=${request.source === 'connected' ? 'true' : 'false'}`,
-        '-c',
-        'credential.useHttpPath=true',
-        '-c',
-        'http.followRedirects=false',
-        '-c',
-        'http.sslVerify=true',
-    ];
+    const argumentsList = createGitHttpsSafetyArguments(
+        request.source === 'connected',
+    );
     if (request.source === 'public') {
         for (const address of request.approvedAddresses) {
             argumentsList.push(
                 '-c',
-                `http.curloptResolve=${url.hostname}:443:${formatAddress(address)}`,
+                formatGitCurlResolve(url.hostname, address),
             );
         }
     }
@@ -264,16 +194,6 @@ function createCloneArguments(request: GitCloneRequest, url: URL): string[] {
         request.destinationPath,
     );
     return argumentsList;
-}
-
-/**
- * Formats an approved IP address for libcurl resolution pinning.
- *
- * @param address - Approved public IPv4 or IPv6 address.
- * @returns Address in libcurl resolve syntax.
- */
-function formatAddress(address: string): string {
-    return net.isIP(address) === 6 ? `[${address}]` : address;
 }
 
 /**

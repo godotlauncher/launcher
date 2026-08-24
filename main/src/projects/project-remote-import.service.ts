@@ -5,10 +5,12 @@ import type { OnModuleDestroy } from '@mariodebono/di';
 import { Injectable } from '@mariodebono/di';
 import type {
     CancelRemoteProjectImportResult,
+    InitialiseRemoteProjectSubmodulesResult,
     RemoteProjectImportFailureReason,
     RemoteProjectImportProgressStage,
     RemoteProjectImportRequest,
     RemoteProjectImportResult,
+    RemoteProjectSubmoduleActivity,
     ResolveRemoteProjectCloneAction,
     ResolveRemoteProjectCloneResult,
 } from '@shared/contracts';
@@ -20,6 +22,9 @@ import { GitService } from '../tool-integration/integrations/git/git.service.js'
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitCloneService } from '../tool-integration/integrations/git/git-clone.service.js';
 import type { GitCloneResult } from '../tool-integration/integrations/git/git-clone.types.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { GitSubmoduleService } from '../tool-integration/integrations/git/git-submodule.service.js';
+import type { GitSubmoduleActivity } from '../tool-integration/integrations/git/git-submodule.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { PublicGitSourceService } from '../tool-integration/integrations/git/public-git-source.service.js';
 import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
@@ -68,6 +73,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
      *
      * @param git - Guarded short Git command service.
      * @param cloneService - Cancellable streaming Git clone service.
+     * @param submodules - Validated anonymous public submodule service.
      * @param publicSources - Anonymous public source policy.
      * @param repositoryHosting - Connected repository selection boundary.
      * @param discovery - Bounded cloned-repository project discovery.
@@ -76,6 +82,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
     constructor(
         private readonly git: GitService,
         private readonly cloneService: GitCloneService,
+        private readonly submodules: GitSubmoduleService,
         private readonly publicSources: PublicGitSourceService,
         private readonly repositoryHosting: RepositoryHostingService,
         private readonly discovery: ProjectDiscoveryService,
@@ -180,6 +187,8 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         if (
             job.stage !== 'cloning' &&
             job.stage !== 'discovering-projects' &&
+            job.stage !== 'validating-submodules' &&
+            job.stage !== 'initialising-submodules' &&
             job.stage !== 'cancelling'
         ) {
             return { jobId, status: 'not-cancellable' };
@@ -202,6 +211,9 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         jobId: string,
         action: ResolveRemoteProjectCloneAction,
     ): Promise<ResolveRemoteProjectCloneResult> {
+        if (this.active?.id === jobId) {
+            return { jobId, status: 'busy' };
+        }
         const clone = this.recoverableClones.get(jobId);
         if (!clone || (action !== 'keep' && action !== 'delete')) {
             return { jobId, status: 'not-found' };
@@ -234,6 +246,125 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         }
         this.recoverableClones.delete(jobId);
         return { jobId, status: 'deleted' };
+    }
+
+    /**
+     * Initialises public HTTPS submodules for one exact retained clone.
+     *
+     * @param jobId - Exact import job that owns the completed clone.
+     * @returns Rescanned projects or a safe terminal failure.
+     */
+    async initialiseRemoteProjectSubmodules(
+        jobId: string,
+    ): Promise<InitialiseRemoteProjectSubmodulesResult> {
+        if (this.active) {
+            return { ok: false, jobId, reason: 'already-running' };
+        }
+        const clone = await this.getUnchangedRecoverableClone(jobId);
+        if (!clone) {
+            return { ok: false, jobId, reason: 'not-found' };
+        }
+
+        const job: ActiveRemoteImport = {
+            id: jobId,
+            controller: new AbortController(),
+            stage: 'validating-submodules',
+        };
+        this.active = job;
+        const supportPath = path.join(
+            path.dirname(clone.path),
+            `.${path.basename(clone.path)}.submodules-${randomUUID()}`,
+        );
+        logger.info('Remote project submodule initialisation started', {
+            event: 'remote_project_submodules_started',
+            jobId,
+        });
+        try {
+            await fs.mkdir(supportPath, { mode: 0o700 });
+            this.publish(job, 'validating-submodules', true);
+            const result = await this.submodules.initialise({
+                repositoryPath: clone.path,
+                supportDirectory: supportPath,
+                signal: job.controller.signal,
+                onActivity: (activity) =>
+                    this.publishSubmoduleActivity(job, activity),
+            });
+            if (!result.ok) {
+                this.publish(
+                    job,
+                    'initialising-submodules',
+                    false,
+                    undefined,
+                    undefined,
+                    { type: 'stopped', path: result.path },
+                );
+                logger.warn('Remote project submodule initialisation failed', {
+                    event: 'remote_project_submodules_failed',
+                    jobId,
+                    reason: result.reason,
+                });
+                return { ok: false, jobId, reason: result.reason };
+            }
+
+            this.publish(
+                job,
+                'discovering-projects',
+                true,
+                undefined,
+                undefined,
+                { type: 'scanning-projects' },
+            );
+            const discovery = await this.discovery.discover(
+                clone.path,
+                job.controller.signal,
+            );
+            if (!discovery.ok) {
+                this.publish(
+                    job,
+                    'discovering-projects',
+                    false,
+                    undefined,
+                    undefined,
+                    { type: 'stopped' },
+                );
+                return { ok: false, jobId, reason: discovery.reason };
+            }
+            this.publish(
+                job,
+                'discovering-projects',
+                false,
+                undefined,
+                undefined,
+                {
+                    type: 'complete',
+                    projectCount: discovery.projects.length,
+                },
+            );
+            logger.info('Remote project submodule initialisation completed', {
+                event: 'remote_project_submodules_completed',
+                initialisedCount: result.initialisedCount,
+                jobId,
+                projectCount: discovery.projects.length,
+            });
+            return { ok: true, jobId, projects: discovery.projects };
+        } catch {
+            const reason = job.controller.signal.aborted
+                ? 'cancelled'
+                : 'submodule-unavailable';
+            logger.warn('Remote project submodule initialisation failed', {
+                event: 'remote_project_submodules_failed',
+                jobId,
+                reason,
+            });
+            return { ok: false, jobId, reason };
+        } finally {
+            await fs
+                .rm(supportPath, { recursive: true, force: true })
+                .catch(() => undefined);
+            if (this.active === job) {
+                this.active = null;
+            }
+        }
     }
 
     /**
@@ -440,6 +571,9 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
                 jobId: job.id,
                 repositoryPath: destination.finalPath,
                 projects: discovery.projects,
+                hasSubmodules: await this.submodules.hasSubmodules(
+                    destination.finalPath,
+                ),
             };
         } finally {
             await this.cleanupIncomplete(destination);
@@ -483,6 +617,53 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         });
     }
 
+    /**
+     * Returns one retained clone only while its filesystem identity is unchanged.
+     *
+     * @param jobId - Exact import job that owns the clone.
+     * @returns The unchanged clone capability, or null.
+     */
+    private async getUnchangedRecoverableClone(
+        jobId: string,
+    ): Promise<RecoverableClone | null> {
+        const clone = this.recoverableClones.get(jobId);
+        if (!clone) return null;
+        try {
+            const current = await fs.lstat(clone.path);
+            return current.isDirectory() &&
+                !current.isSymbolicLink() &&
+                current.dev === clone.device &&
+                current.ino === clone.inode
+                ? clone
+                : null;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Publishes one renderer-safe submodule activity entry.
+     *
+     * @param job - Active submodule job.
+     * @param activity - Sanitised Git activity entry.
+     */
+    private publishSubmoduleActivity(
+        job: ActiveRemoteImport,
+        activity: GitSubmoduleActivity,
+    ): void {
+        if (job.controller.signal.aborted) return;
+        this.publish(
+            job,
+            activity.type === 'validating'
+                ? 'validating-submodules'
+                : 'initialising-submodules',
+            true,
+            undefined,
+            undefined,
+            activity,
+        );
+    }
+
     /** Publishes and records one complete job progress snapshot. */
     private publish(
         job: ActiveRemoteImport,
@@ -490,6 +671,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         canCancel: boolean,
         percent?: number,
         result?: RemoteProjectImportResult,
+        activity?: RemoteProjectSubmoduleActivity,
     ): void {
         job.stage = stage;
         this.progress.publish({
@@ -497,6 +679,7 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
             stage,
             canCancel,
             percent,
+            activity,
             result,
         });
     }
