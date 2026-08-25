@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "Il repository è stato clonato con successo ed è stato conservato in questa posizione.",
+                "editorsQueued": "I download degli editor selezionati sono stati aggiunti a Installazioni. I progetti si aggiornano automaticamente quando gli editor sono pronti.",
                 "adding": "Aggiunta dei progetti: {{current}}/{{total}}",
                 "complete": "Importazione dei progetti completata",
                 "added": "Aggiunto",
@@ -201,6 +202,20 @@
                 "failed": "Non riuscito",
                 "alreadyAdded": "Un progetto con questo nome o percorso è già presente in Launcher.",
                 "notAdded": "Il progetto non è stato aggiunto."
+            },
+            "editorBatch": {
+                "title": "Editor richiesti",
+                "description": "{{count}} progetti selezionati richiedono un editor Godot prima di completare la configurazione.",
+                "summary": "{{editors}} editor | {{projects}} progetti",
+                "affectedProjects": "Progetti interessati",
+                "resolution": "Risoluzione",
+                "status": "Stato",
+                "checking": "Verifica dei progetti: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Termina senza i progetti rimanenti",
+                "apply": "Aggiungi progetti e continua",
+                "statuses": {
+                    "ready": "Pronto"
+                }
             },
             "errors": {
                 "invalidSource": "L'origine del repository non è più valida.",

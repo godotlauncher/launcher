@@ -24,15 +24,22 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appBridge, projectsBridge, subscribeAppEvent } from '../../../bridge';
 import { Dialog } from '../../../components/dialog.component';
-import { ReleaseInstallProgressIndicator } from '../../../components/releaseInstallProgress.component';
 import { SearchField } from '../../../components/ui/searchField.component';
 import { SelectField } from '../../../components/ui/selectField.component';
 import { usePreferences } from '../../../hooks/usePreferences';
-import { useProjects } from '../../../hooks/useProjects';
+import {
+    type ProjectEditorRepairRequest,
+    useProjects,
+} from '../../../hooks/useProjects';
 import { useRelease } from '../../../hooks/useRelease';
 import { appRoutePaths } from '../../../routes';
 import { getProjectPathSuffixDisplay } from '../../subViews/createProject/createProject.model';
-import type { ProjectEditorInstallTarget } from '../hooks/useAddProjectWorkflow';
+import {
+    createRemoteProjectEditorPlan,
+    type RemoteProjectEditorCandidate,
+    type RemoteProjectEditorChoice,
+    type RemoteProjectEditorPlanGroup,
+} from '../remote-project-editor-plan.model';
 import {
     appendRemoteRepositories,
     filterRemoteRepositories,
@@ -44,7 +51,6 @@ import {
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
     getRemoteRepositoryRowClassName,
-    handOffRemoteProjectRegistration,
     type RemoteProjectCodeEditorChoice,
     selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
@@ -60,7 +66,7 @@ type RemoteProjectImportModalProps = {
         result: AddProjectToListResult,
         options?: AddProjectOptions,
     ) => Promise<boolean>;
-    editorInstallTargets: ProjectEditorInstallTarget[];
+    queueProjectEditorRepairs: (requests: ProjectEditorRepairRequest[]) => void;
 };
 
 type ModalStep =
@@ -71,7 +77,9 @@ type ModalStep =
     | 'submodules'
     | 'initialising-submodules'
     | 'review'
-    | 'registering'
+    | 'checking-projects'
+    | 'editors-required'
+    | 'registering-projects'
     | 'registration-complete';
 
 type RegistrationOutcome = {
@@ -184,7 +192,7 @@ export const RemoteProjectImportModal: React.FC<
     source,
     onOpenChange,
     handleAddProjectResult,
-    editorInstallTargets,
+    queueProjectEditorRepairs,
 }) => {
     const { t } = useTranslation([
         'projects',
@@ -195,7 +203,7 @@ export const RemoteProjectImportModal: React.FC<
     const navigate = useNavigate();
     const { preferences, platform } = usePreferences();
     const { addProject, codeEditorSettings, projects } = useProjects();
-    const { getReleaseInstallProgress } = useRelease();
+    const { availableReleases, availablePrereleases } = useRelease();
     const [step, setStep] = useState<ModalStep>('source');
     const [publicUrl, setPublicUrl] = useState('');
     const [canonicalPublicUrl, setCanonicalPublicUrl] = useState('');
@@ -251,12 +259,17 @@ export const RemoteProjectImportModal: React.FC<
     const [registrationOutcomes, setRegistrationOutcomes] = useState<
         RegistrationOutcome[]
     >([]);
+    const [editorPlan, setEditorPlan] = useState<
+        RemoteProjectEditorPlanGroup[]
+    >([]);
+    const [editorDownloadsQueued, setEditorDownloadsQueued] = useState(false);
     const [registrationProgress, setRegistrationProgress] = useState({
         current: 0,
         total: 0,
     });
     const importPendingRef = useRef(false);
     const activeJobIdRef = useRef<string | null>(null);
+    const clonePreservedRef = useRef(false);
     const submoduleActivityIdRef = useRef(0);
     const publicUrlInputRef = useRef<HTMLInputElement>(null);
     const selectAllRef = useRef<HTMLInputElement>(null);
@@ -304,7 +317,8 @@ export const RemoteProjectImportModal: React.FC<
         if (
             step === 'importing' ||
             step === 'initialising-submodules' ||
-            step === 'registering'
+            step === 'checking-projects' ||
+            step === 'registering-projects'
         )
             return;
         if (cloneJobId && cloneRecoveryAvailable) {
@@ -385,9 +399,12 @@ export const RemoteProjectImportModal: React.FC<
         setSelectedProjectPaths(new Set());
         setCodeEditorChoices({});
         setRegistrationOutcomes([]);
+        setEditorPlan([]);
+        setEditorDownloadsQueued(false);
         setRegistrationProgress({ current: 0, total: 0 });
         importPendingRef.current = false;
         activeJobIdRef.current = null;
+        clonePreservedRef.current = false;
         submoduleActivityIdRef.current = 0;
         if (source === 'github') void loadRepositories();
     }, [defaultParentDirectory, loadRepositories, open, source]);
@@ -650,14 +667,30 @@ export const RemoteProjectImportModal: React.FC<
         }));
     };
 
+    /** Keeps the completed clone once at least one project uses it. */
+    const preserveRegisteredClone = () => {
+        if (clonePreservedRef.current) return;
+        clonePreservedRef.current = true;
+        setCloneRecoveryAvailable(false);
+        if (cloneJobId) {
+            void projectsBridge.resolveRemoteProjectClone(cloneJobId, 'keep');
+        }
+    };
+
+    /**
+     * Checks selected projects and collects every missing Godot editor.
+     *
+     * @returns A promise that ends when the modal advances to its next step.
+     */
     const registerSelectedProjects = async () => {
         const selected = filterSelectedDiscoveredProjects(
             discoveredProjects,
             selectedProjectPaths,
         );
         if (selected.length === 0) return;
-        setStep('registering');
+        setStep('checking-projects');
         setRegistrationOutcomes([]);
+        setEditorPlan([]);
         setRegistrationProgress({ current: 0, total: selected.length });
         const knownNames = new Set(projects.map((project) => project.name));
         const knownPaths = new Set(
@@ -666,6 +699,7 @@ export const RemoteProjectImportModal: React.FC<
             ),
         );
         const outcomes: RegistrationOutcome[] = [];
+        const editorCandidates: RemoteProjectEditorCandidate[] = [];
 
         for (let index = 0; index < selected.length; index++) {
             const project = selected[index];
@@ -693,33 +727,39 @@ export const RemoteProjectImportModal: React.FC<
                 };
             } else {
                 try {
-                    const handoff = await handOffRemoteProjectRegistration(
-                        project.projectFilePath,
-                        addProject,
-                        handleAddProjectResult,
-                        getRemoteAddProjectOptions(
-                            codeEditorChoices[project.projectFilePath] ??
-                                'auto',
-                        ),
+                    const options = getRemoteAddProjectOptions(
+                        codeEditorChoices[project.projectFilePath] ?? 'auto',
                     );
-                    if (handoff.handled) {
+                    const result = await addProject(
+                        project.projectFilePath,
+                        options,
+                    );
+
+                    if (result.editorResolution) {
+                        editorCandidates.push({ project, result, options });
+                        knownNames.add(project.name);
+                        knownPaths.add(normalisedDirectory);
+                        continue;
+                    }
+
+                    if (result.success) {
+                        await handleAddProjectResult(
+                            project.projectFilePath,
+                            result,
+                            options,
+                        );
                         outcome = {
                             project,
-                            status: handoff.added ? 'added' : 'skipped',
-                            error: handoff.added
-                                ? undefined
-                                : t('addProject.remote.registration.notAdded'),
+                            status: 'added',
                         };
-                        if (handoff.added) {
-                            knownNames.add(project.name);
-                            knownPaths.add(normalisedDirectory);
-                        }
+                        knownNames.add(project.name);
+                        knownPaths.add(normalisedDirectory);
                     } else {
                         outcome = {
                             project,
                             status: 'failed',
                             error:
-                                handoff.error ??
+                                result.error ??
                                 t(
                                     'addProject.remote.errors.registration-failed',
                                 ),
@@ -738,15 +778,141 @@ export const RemoteProjectImportModal: React.FC<
             outcomes.push(outcome);
             setRegistrationOutcomes([...outcomes]);
         }
+
         if (outcomes.some((outcome) => outcome.status === 'added')) {
-            setCloneRecoveryAvailable(false);
-            if (cloneJobId) {
-                void projectsBridge.resolveRemoteProjectClone(
-                    cloneJobId,
-                    'keep',
-                );
+            preserveRegisteredClone();
+        }
+
+        const plan = createRemoteProjectEditorPlan(
+            editorCandidates,
+            availableReleases,
+            availablePrereleases,
+        );
+        setEditorPlan(plan);
+        setStep(plan.length > 0 ? 'editors-required' : 'registration-complete');
+    };
+
+    /**
+     * Stores one resolution choice from the Editors required screen.
+     *
+     * @param key - Stable editor-plan group key.
+     * @param choice - Resolution selected for the group.
+     */
+    const setEditorPlanChoice = (
+        key: string,
+        choice: RemoteProjectEditorChoice,
+    ) => {
+        setEditorPlan((current) =>
+            current.map((group) =>
+                group.key === key ? { ...group, choice } : group,
+            ),
+        );
+    };
+
+    /** Finishes without registering projects that still need editor resolution. */
+    const finishWithoutRemainingProjects = () => {
+        setRegistrationOutcomes((current) => [
+            ...current,
+            ...editorPlan.flatMap((group) =>
+                group.candidates.map(({ project }) => ({
+                    project,
+                    status: 'skipped' as const,
+                    error: t('addProject.remote.registration.notAdded'),
+                })),
+            ),
+        ]);
+        setStep('registration-complete');
+    };
+
+    /** Registers pending projects and hands editor repairs to the background queue. */
+    const applyEditorPlan = async () => {
+        const projectCount = editorPlan.reduce(
+            (count, group) => count + group.candidates.length,
+            0,
+        );
+        let processedProjects = 0;
+        setRegistrationProgress({ current: 0, total: projectCount });
+        setStep('registering-projects');
+        const resolvedOutcomes: RegistrationOutcome[] = [];
+        const repairRequests: ProjectEditorRepairRequest[] = [];
+
+        for (const group of editorPlan) {
+            const registeredProjects: ProjectEditorRepairRequest['projects'] =
+                [];
+            for (const candidate of group.candidates) {
+                const resolutionOptions: AddProjectOptions =
+                    group.choice === 'use-fallback' && group.fallback
+                        ? {
+                              ...candidate.options,
+                              resolution: 'use_fallback',
+                              release: group.fallback,
+                          }
+                        : {
+                              ...candidate.options,
+                              resolution: 'add_missing',
+                          };
+                try {
+                    const result = await addProject(
+                        candidate.project.projectFilePath,
+                        resolutionOptions,
+                    );
+                    if (result.success && result.newProject) {
+                        await handleAddProjectResult(
+                            candidate.project.projectFilePath,
+                            result,
+                            resolutionOptions,
+                        );
+                        registeredProjects.push(result.newProject);
+                        resolvedOutcomes.push({
+                            project: candidate.project,
+                            status: 'added',
+                        });
+                    } else {
+                        resolvedOutcomes.push({
+                            project: candidate.project,
+                            status: 'failed',
+                            error:
+                                result.error ??
+                                t(
+                                    'addProject.remote.errors.registration-failed',
+                                ),
+                        });
+                    }
+                } catch {
+                    resolvedOutcomes.push({
+                        project: candidate.project,
+                        status: 'failed',
+                        error: t(
+                            'addProject.remote.errors.registration-failed',
+                        ),
+                    });
+                }
+                processedProjects += 1;
+                setRegistrationProgress({
+                    current: processedProjects,
+                    total: projectCount,
+                });
+            }
+
+            if (
+                group.choice === 'download' &&
+                group.downloadableRelease &&
+                registeredProjects.length > 0
+            ) {
+                repairRequests.push({
+                    release: group.downloadableRelease,
+                    mono: group.mono,
+                    projects: registeredProjects,
+                });
             }
         }
+
+        setRegistrationOutcomes((current) => [...current, ...resolvedOutcomes]);
+        if (resolvedOutcomes.some((outcome) => outcome.status === 'added')) {
+            preserveRegisteredClone();
+        }
+        queueProjectEditorRepairs(repairRequests);
+        setEditorDownloadsQueued(repairRequests.length > 0);
         setStep('registration-complete');
     };
 
@@ -809,6 +975,105 @@ export const RemoteProjectImportModal: React.FC<
                     </li>
                 ))}
             </ol>
+        </div>
+    );
+
+    /** Renders the grouped Godot editor requirements and resolution choices. */
+    const renderEditorPlanTable = (): React.ReactNode => (
+        <div
+            className="min-h-0 overflow-auto rounded-box border border-base-300"
+            data-testid="remoteProjectEditorPlan"
+        >
+            <div className="grid grid-cols-[minmax(14rem,1fr)_minmax(12rem,1fr)_minmax(12rem,0.8fr)_minmax(14rem,1fr)] items-center gap-4 border-b border-base-300 bg-base-200 px-4 py-3 font-medium">
+                <span>{t('editProject.godotEditor.title')}</span>
+                <span>
+                    {t('addProject.remote.editorBatch.affectedProjects')}
+                </span>
+                <span>{t('addProject.remote.editorBatch.resolution')}</span>
+                <span>{t('addProject.remote.editorBatch.status')}</span>
+            </div>
+            {editorPlan.map((group, index) => {
+                const flavor = group.mono
+                    ? t('installEditor:table.dotnet')
+                    : t('installEditor:table.gdscript');
+                const choiceOptions = [
+                    ...(group.downloadableRelease
+                        ? [
+                              {
+                                  value: 'download',
+                                  label: t(
+                                      'addProject.editorResolution.download',
+                                      { version: group.version },
+                                  ),
+                              },
+                          ]
+                        : []),
+                    ...(group.fallback
+                        ? [
+                              {
+                                  value: 'use-fallback',
+                                  label: t(
+                                      'addProject.editorResolution.useFallback',
+                                      { version: group.fallback.version },
+                                  ),
+                              },
+                          ]
+                        : []),
+                    {
+                        value: 'add-missing',
+                        label: t('addProject.editorResolution.addMissing'),
+                    },
+                ];
+
+                return (
+                    <div
+                        key={group.key}
+                        className="grid grid-cols-[minmax(14rem,1fr)_minmax(12rem,1fr)_minmax(12rem,0.8fr)_minmax(14rem,1fr)] items-center gap-4 border-b border-base-300 px-4 py-4 last:border-b-0"
+                    >
+                        <div className="flex min-w-0 items-center gap-2">
+                            <span className="truncate font-medium">
+                                {group.version}
+                            </span>
+                            <span className="badge badge-outline badge-sm shrink-0">
+                                {flavor}
+                            </span>
+                        </div>
+                        <ul className="min-w-0 space-y-1 text-sm">
+                            {group.candidates.map(({ project }) => (
+                                <li
+                                    key={project.projectFilePath}
+                                    className="truncate"
+                                    title={project.name}
+                                >
+                                    {project.name}
+                                </li>
+                            ))}
+                        </ul>
+                        <SelectField
+                            id={`selectRemoteProjectEditorResolution-${index}`}
+                            testId={`selectRemoteProjectEditorResolution-${index}`}
+                            compact
+                            showSelectedCheck
+                            ariaLabel={`${group.version}: ${t('addProject.remote.editorBatch.resolution')}`}
+                            value={group.choice}
+                            onChange={(value) =>
+                                setEditorPlanChoice(
+                                    group.key,
+                                    value as RemoteProjectEditorChoice,
+                                )
+                            }
+                            options={choiceOptions}
+                        />
+                        <div className="min-w-0">
+                            <span className="text-sm text-base-content/70">
+                                {t(
+                                    'addProject.remote.editorBatch.statuses.ready',
+                                )}
+                            </span>
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 
@@ -1130,7 +1395,7 @@ export const RemoteProjectImportModal: React.FC<
         footer = progress?.canCancel ? (
             <button
                 type="button"
-                className="btn btn-warning"
+                className="btn btn-ghost"
                 onClick={() => void cancelImport()}
             >
                 {t('addProject.remote.actions.cancelImport')}
@@ -1140,16 +1405,13 @@ export const RemoteProjectImportModal: React.FC<
         const initialising = step === 'initialising-submodules';
         body = (
             <div className="flex h-full min-h-0 flex-col gap-4">
-                <div className="alert alert-warning alert-soft" role="status">
-                    <GitBranch aria-hidden="true" size={18} />
-                    <div>
-                        <p className="font-medium">
-                            {t('addProject.remote.submodules.title')}
-                        </p>
-                        <p className="text-sm">
-                            {t('addProject.remote.submodules.description')}
-                        </p>
-                    </div>
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-lg font-semibold">
+                        {t('addProject.remote.submodules.title')}
+                    </h2>
+                    <p className="max-w-4xl text-sm text-base-content/70">
+                        {t('addProject.remote.submodules.description')}
+                    </p>
                 </div>
                 {submoduleFailure && (
                     <div className="alert alert-error alert-soft" role="alert">
@@ -1342,7 +1604,24 @@ export const RemoteProjectImportModal: React.FC<
                     </button>
                 </>
             );
-    } else if (step === 'registering') {
+    } else if (step === 'checking-projects') {
+        body = (
+            <div className="flex flex-col gap-4" role="status">
+                <p>
+                    {t('addProject.remote.editorBatch.checking', {
+                        current: registrationProgress.current,
+                        total: registrationProgress.total,
+                    })}
+                </p>
+                <progress
+                    className="progress progress-primary w-full"
+                    value={registrationProgress.current}
+                    max={registrationProgress.total}
+                />
+            </div>
+        );
+        footer = null;
+    } else if (step === 'registering-projects') {
         body = (
             <div className="flex flex-col gap-4" role="status">
                 <p>
@@ -1356,55 +1635,63 @@ export const RemoteProjectImportModal: React.FC<
                     value={registrationProgress.current}
                     max={registrationProgress.total}
                 />
-                {editorInstallTargets.length > 0 && (
-                    <div
-                        className="flex flex-col gap-3 rounded-box border border-base-300 bg-base-200 p-4"
-                        data-testid="remoteProjectEditorInstallProgress"
-                    >
-                        {editorInstallTargets.map((target) => {
-                            const installProgress = getReleaseInstallProgress(
-                                target.version,
-                                target.mono,
-                            );
-                            const flavor = target.mono
-                                ? t('installEditor:table.dotnet')
-                                : t('installEditor:table.gdscript');
-                            return (
-                                <div
-                                    key={target.projectPath}
-                                    className="flex flex-col gap-2"
-                                >
-                                    <span className="text-sm font-medium">
-                                        {t(
-                                            'installEditor:table.tooltips.installingVariant',
-                                            {
-                                                version: target.version,
-                                                flavor,
-                                            },
-                                        )}
-                                    </span>
-                                    {installProgress ? (
-                                        <ReleaseInstallProgressIndicator
-                                            progress={installProgress}
-                                        />
-                                    ) : (
-                                        <div className="flex flex-col gap-1 text-xs text-info">
-                                            <span>
-                                                {t(
-                                                    'installEditor:progress.preparing',
-                                                )}
-                                            </span>
-                                            <progress className="progress progress-info h-1 w-full" />
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
             </div>
         );
         footer = null;
+    } else if (step === 'editors-required') {
+        const projectCount = editorPlan.reduce(
+            (count, group) => count + group.candidates.length,
+            0,
+        );
+        const downloadCount = editorPlan.filter(
+            (group) => group.choice === 'download',
+        ).length;
+        body = (
+            <div className="flex h-full min-h-0 flex-col gap-4">
+                <div>
+                    <p className="font-medium">
+                        {t('addProject.remote.editorBatch.title')}
+                    </p>
+                    <p className="text-sm text-base-content/70">
+                        {t('addProject.remote.editorBatch.description', {
+                            count: projectCount,
+                        })}
+                    </p>
+                </div>
+                <code className="break-all rounded-box bg-base-200 p-3 text-sm">
+                    {repositoryPath}
+                </code>
+                <p className="text-sm font-medium">
+                    {t('addProject.remote.editorBatch.summary', {
+                        editors: editorPlan.length,
+                        projects: projectCount,
+                    })}
+                </p>
+                {renderEditorPlanTable()}
+            </div>
+        );
+        footer = (
+            <div className="flex w-full items-center justify-between gap-4">
+                <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={finishWithoutRemainingProjects}
+                >
+                    {t('addProject.remote.editorBatch.finishWithoutRemaining')}
+                </button>
+                <button
+                    type="button"
+                    data-testid="btnApplyRemoteProjectEditorPlan"
+                    className="btn btn-primary"
+                    onClick={() => void applyEditorPlan()}
+                >
+                    {t('addProject.remote.editorBatch.apply', {
+                        projects: projectCount,
+                        editors: downloadCount,
+                    })}
+                </button>
+            </div>
+        );
     } else if (step === 'registration-complete') {
         body = (
             <div className="flex h-full min-h-0 flex-col gap-4">
@@ -1416,6 +1703,14 @@ export const RemoteProjectImportModal: React.FC<
                         {t('addProject.remote.registration.preserved')}
                     </p>
                 </div>
+                {editorDownloadsQueued && (
+                    <div className="alert alert-info alert-soft">
+                        <Check aria-hidden="true" size={18} />
+                        <span>
+                            {t('addProject.remote.registration.editorsQueued')}
+                        </span>
+                    </div>
+                )}
                 <div className="min-h-0 overflow-auto rounded-box border border-base-300">
                     {registrationOutcomes.map((outcome) => (
                         <div

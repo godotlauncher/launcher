@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "Das Repository wurde erfolgreich geklont und an diesem Speicherort beibehalten.",
+                "editorsQueued": "Ausgewählte Editor-Downloads wurden zu Installationen hinzugefügt. Projekte werden automatisch aktualisiert, sobald ihre Editoren bereit sind.",
                 "adding": "Projekte werden hinzugefügt: {{current}}/{{total}}",
                 "complete": "Projektimport abgeschlossen",
                 "added": "Hinzugefügt",
@@ -201,6 +202,20 @@
                 "failed": "Fehlgeschlagen",
                 "alreadyAdded": "Ein Projekt mit diesem Namen oder Pfad ist bereits im Launcher vorhanden.",
                 "notAdded": "Das Projekt wurde nicht hinzugefügt."
+            },
+            "editorBatch": {
+                "title": "Editoren erforderlich",
+                "description": "{{count}} ausgewählte Projekte benötigen einen Godot-Editor, bevor die Einrichtung abgeschlossen werden kann.",
+                "summary": "{{editors}} Editoren | {{projects}} Projekte",
+                "affectedProjects": "Betroffene Projekte",
+                "resolution": "Lösung",
+                "status": "Status",
+                "checking": "Projekte werden geprüft: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Ohne verbleibende Projekte abschließen",
+                "apply": "Projekte hinzufügen und fortfahren",
+                "statuses": {
+                    "ready": "Bereit"
+                }
             },
             "errors": {
                 "invalidSource": "Die Repository-Quelle ist nicht mehr gültig.",

@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "The repository was cloned successfully and has been kept at this location.",
+                "editorsQueued": "Selected editor downloads were added to Installs. Projects update automatically when their editors are ready.",
                 "adding": "Adding projects: {{current}}/{{total}}",
                 "complete": "Project import complete",
                 "added": "Added",
@@ -201,6 +202,20 @@
                 "failed": "Failed",
                 "alreadyAdded": "A project with this name or path is already in Launcher.",
                 "notAdded": "The project was not added."
+            },
+            "editorBatch": {
+                "title": "Editors required",
+                "description": "{{count}} selected projects need a Godot editor before setup can finish.",
+                "summary": "{{editors}} editors | {{projects}} projects",
+                "affectedProjects": "Affected projects",
+                "resolution": "Resolution",
+                "status": "Status",
+                "checking": "Checking projects: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Finish without remaining projects",
+                "apply": "Add projects and continue",
+                "statuses": {
+                    "ready": "Ready"
+                }
             },
             "errors": {
                 "invalidSource": "The repository source is no longer valid.",

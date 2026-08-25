@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "リポジトリは正常に複製され、この場所に保存されています。",
+                "editorsQueued": "選択したエディターのダウンロードをインストールに追加しました。エディターの準備ができると、プロジェクトは自動的に更新されます。",
                 "adding": "プロジェクトを追加中: {{current}}/{{total}}",
                 "complete": "プロジェクトのインポートが完了しました",
                 "added": "追加済み",
@@ -201,6 +202,20 @@
                 "failed": "失敗",
                 "alreadyAdded": "同じ名前またはパスのプロジェクトが既に Launcher にあります。",
                 "notAdded": "プロジェクトは追加されませんでした。"
+            },
+            "editorBatch": {
+                "title": "必要なエディター",
+                "description": "選択した{{count}}件のプロジェクトは、セットアップを完了する前に Godot エディターが必要です。",
+                "summary": "エディター {{editors}}件 | プロジェクト {{projects}}件",
+                "affectedProjects": "対象プロジェクト",
+                "resolution": "解決方法",
+                "status": "状態",
+                "checking": "プロジェクトを確認中: {{current}}/{{total}}",
+                "finishWithoutRemaining": "残りのプロジェクトを追加せずに完了",
+                "apply": "プロジェクトを追加して続行",
+                "statuses": {
+                    "ready": "準備完了"
+                }
             },
             "errors": {
                 "invalidSource": "リポジトリ ソースは有効ではなくなりました。",

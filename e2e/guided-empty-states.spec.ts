@@ -9,6 +9,7 @@ import {
 } from '@playwright/test';
 import type {
     AddProjectOptions,
+    InstalledRelease,
     ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -498,7 +499,7 @@ test('Preserved clone recovery remains contained with a long locale', async () =
     }
 });
 
-test('Remote registration surfaces editor resolution above the import modal', async () => {
+test('Remote registration collects editor resolution inside the import modal', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
     await requireNestedRemoteEditorResolution();
@@ -521,11 +522,13 @@ test('Remote registration surfaces editor resolution above the import modal', as
     await importModal.getByText('Example Fixture').locator('..').click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    const resolutionDialog = mainPage.getByRole('dialog', {
-        name: 'Editor version required',
-    });
-    await expect(resolutionDialog).toBeVisible();
-    await resolutionDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await expect(
+        importModal.getByTestId('remoteProjectEditorPlan'),
+    ).toContainText('Example Fixture');
+    await importModal
+        .getByRole('button', { name: 'Finish without remaining projects' })
+        .click();
     await expect(importModal.getByText('Project import complete')).toBeVisible();
     await expect(
         importModal.getByText(/Skipped: The project was not added\./),
@@ -558,11 +561,15 @@ test('Remote registration preserves the code editor through editor resolution re
     await importModal.getByRole('option', { name: 'VSCodium' }).click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    const resolutionDialog = mainPage.getByRole('dialog', {
-        name: 'Editor version required',
-    });
-    await resolutionDialog
-        .getByRole('button', { name: 'Add With Missing Editor' })
+    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await importModal
+        .getByTestId('selectRemoteProjectEditorResolution-0')
+        .click();
+    await importModal
+        .getByRole('option', { name: 'Add With Missing Editor' })
+        .click();
+    await importModal
+        .getByTestId('btnApplyRemoteProjectEditorPlan')
         .click();
     await expect(importModal.getByText('Project import complete')).toBeVisible();
     await expect.poll(readRemoteAddProjectOptions).toEqual([
@@ -571,7 +578,7 @@ test('Remote registration preserves the code editor through editor resolution re
     ]);
 });
 
-test('Remote registration shows progress for its missing editor installation', async () => {
+test('Remote registration continues while Installs shows editor progress', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp, {
         availableReleases: [createAvailableRelease('4.4.3-stable')],
     });
@@ -595,20 +602,17 @@ test('Remote registration shows progress for its missing editor installation', a
     await importModal.getByRole('checkbox').nth(1).click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    const resolutionDialog = mainPage.getByRole('dialog', {
-        name: 'Editor version required',
-    });
-    await resolutionDialog.getByRole('button', { name: 'Options' }).click();
-    await resolutionDialog
-        .getByRole('button', { name: 'Download 4.4.3-stable' })
+    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await importModal
+        .getByTestId('btnApplyRemoteProjectEditorPlan')
         .click();
+    await expect(importModal.getByText('Project import complete')).toBeVisible();
+    await expect(
+        importModal.getByText(/Selected editor downloads were added to Installs/),
+    ).toBeVisible();
+    await importModal.getByRole('button', { name: 'Close' }).click();
+    await mainPage.getByTestId('btnInstalls').click();
 
-    const installProgress = importModal.getByTestId(
-        'remoteProjectEditorInstallProgress',
-    );
-    await expect(installProgress).toContainText(
-        'Installing Godot 4.4.3-stable Standard',
-    );
     await publishReleaseInstallProgress({
         id: 'remote-editor-install',
         version: '4.4.3-stable',
@@ -621,18 +625,25 @@ test('Remote registration shows progress for its missing editor installation', a
         receivedBytes: 42 * 1024 * 1024,
         totalBytes: 100 * 1024 * 1024,
     });
+    const installProgress = mainPage.getByTestId('installedReleaseList');
+    await expect(installProgress).toContainText('4.4.3-stable');
     await expect(installProgress).toContainText('Downloading');
     await expect(installProgress).toContainText('42%');
     await expect(installProgress).toContainText('42 MB / 100 MB');
 
     await completePendingRemoteEditorInstallation();
-    await expect(importModal.getByText('Project import complete')).toBeVisible();
 });
 
-test('Remote registration resolves missing editors sequentially for multiple projects', async () => {
-    await prepareAppWithStubbedData(mainPage, electronApp);
+test('Remote registration shows two different missing editors together', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        availableReleases: [
+            createAvailableRelease('4.4.3-stable'),
+            createAvailableRelease('4.3.2-stable'),
+        ],
+    });
     await stubRemoteProjectDiscovery();
     await requireAllRemoteEditorResolutions();
+    await stubRemoteEditorInstallations();
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectAdd').click();
     await mainPage.getByTestId('btnAddProjectPublicGit').click();
@@ -649,25 +660,61 @@ test('Remote registration resolves missing editors sequentially for multiple pro
         .click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    const firstResolution = mainPage.getByRole('dialog', {
-        name: 'Editor version required',
-    });
-    await firstResolution
-        .getByRole('button', { name: 'Add With Missing Editor' })
+    const editorPlan = importModal.getByTestId('remoteProjectEditorPlan');
+    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await expect(editorPlan).toContainText('4.4.3-stable');
+    await expect(editorPlan).toContainText('4.3.2-stable');
+    await expect(editorPlan).toContainText('Root Game');
+    await expect(editorPlan).toContainText('Example Fixture');
+    await importModal
+        .getByTestId('btnApplyRemoteProjectEditorPlan')
         .click();
-    const secondResolution = mainPage.getByRole('dialog', {
-        name: 'Editor version required',
-    });
-    await expect(secondResolution).toBeVisible();
-    await secondResolution
-        .getByRole('button', { name: 'Add With Missing Editor' })
-        .click();
-
     await expect(importModal.getByText('Project import complete')).toBeVisible();
+    await expect(
+        importModal.getByText(/Selected editor downloads were added to Installs/),
+    ).toBeVisible();
     await expect.poll(readRemoteAddedProjectPaths).toEqual([
         '/home/docs/Godot/Projects/games/project.godot',
         '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
     ]);
+});
+
+test('Remote registration continues after one editor download fails', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        availableReleases: [
+            createAvailableRelease('4.4.3-stable'),
+            createAvailableRelease('4.3.2-stable'),
+        ],
+    });
+    await stubRemoteProjectDiscovery();
+    await requireAllRemoteEditorResolutions();
+    await stubRemoteEditorInstallations('4.4.3-stable');
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const importModal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await importModal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await importModal.getByRole('button', { name: 'Continue' }).click();
+    await importModal
+        .getByRole('button', { name: 'Clone repository' })
+        .click();
+    await importModal.getByTestId('btnAddDiscoveredProjects').click();
+    await importModal
+        .getByTestId('btnApplyRemoteProjectEditorPlan')
+        .click();
+
+    await expect(importModal.getByText('Project import complete')).toBeVisible();
+    await expect(mainPage.getByText('Simulated editor failure')).toBeVisible();
+    await expect.poll(readRemoteEditorInstallVersions).toEqual([
+        '4.4.3-stable',
+        '4.3.2-stable',
+    ]);
+    await expect.poll(readRemoteEditorAssignments).toEqual(['4.3.2-stable']);
 });
 
 test('Onboarding without an editor finishes inside the install drawer', async () => {
@@ -950,21 +997,38 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                             projectFilePath ===
                                 '/home/docs/Godot/Projects/games/examples/fixture/project.godot'));
                 if (needsEditorResolution) {
+                    const requiresOlderEditor =
+                        state.__guidedRequireAllRemoteEditors &&
+                        projectFilePath.includes('fixture');
                     return {
                         success: true,
                         data: {
                             success: false,
                             editorResolution: {
                                 requested: {
-                                    kind: 'stable-base',
+                                    kind: requiresOlderEditor
+                                        ? 'exact'
+                                        : 'stable-base',
                                     channel: 'official',
                                     flavor: 'gdscript',
-                                    base_version: '4.4',
+                                    base_version: requiresOlderEditor
+                                        ? '4.3'
+                                        : '4.4',
+                                    ...(requiresOlderEditor
+                                        ? { version: '4.3.2-stable' }
+                                        : {}),
                                 },
                                 downloadable: {
-                                    match: 'stable-base',
-                                    base_version: '4.4',
+                                    match: requiresOlderEditor
+                                        ? 'exact'
+                                        : 'stable-base',
+                                    ...(requiresOlderEditor
+                                        ? { version: '4.3.2-stable' }
+                                        : { base_version: '4.4' }),
                                     flavor: 'gdscript',
+                                    ...(requiresOlderEditor
+                                        ? { prerelease: false }
+                                        : {}),
                                 },
                             },
                         },
@@ -1251,6 +1315,74 @@ async function stubPendingRemoteEditorInstallation(): Promise<void> {
     });
 }
 
+/**
+ * Resolves remote editor installs immediately, with one optional failure.
+ *
+ * @param failedVersion - Editor version that should return a failed result.
+ */
+async function stubRemoteEditorInstallations(
+    failedVersion?: string,
+): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }, injectedFailedVersion) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteEditorInstallVersions?: string[];
+            __guidedRemoteEditorAssignments?: string[];
+        };
+        state.__guidedRemoteEditorInstallVersions = [];
+        state.__guidedRemoteEditorAssignments = [];
+        ipcMain.removeHandler('editorInstalls.installEditor');
+        ipcMain.handle(
+            'editorInstalls.installEditor',
+            async (_event, release: ReleaseSummary, mono: boolean) => {
+                state.__guidedRemoteEditorInstallVersions?.push(
+                    release.version,
+                );
+                if (release.version === injectedFailedVersion) {
+                    return {
+                        success: true,
+                        data: {
+                            success: false,
+                            version: release.version,
+                            error: 'Simulated editor failure',
+                        },
+                    };
+                }
+                return {
+                    success: true,
+                    data: {
+                        success: true,
+                        version: release.version,
+                        release: {
+                            version: release.version,
+                            version_number: Number.parseFloat(release.version),
+                            install_path: `/editors/${release.version}`,
+                            editor_path: `/editors/${release.version}/Godot`,
+                            platform: 'linux',
+                            arch: 'x86_64',
+                            mono,
+                            prerelease: release.prerelease,
+                            config_version: 5,
+                            published_at: release.published_at,
+                            valid: true,
+                        },
+                    },
+                };
+            },
+        );
+        ipcMain.removeHandler('projects.setProjectEditor');
+        ipcMain.handle(
+            'projects.setProjectEditor',
+            async (_event, _project, release: InstalledRelease) => {
+                state.__guidedRemoteEditorAssignments?.push(release.version);
+                return {
+                    success: true,
+                    data: { success: true },
+                };
+            },
+        );
+    }, failedVersion);
+}
+
 /** Releases the pending remote editor installation result. */
 async function completePendingRemoteEditorInstallation(): Promise<void> {
     await electronApp.evaluate(() => {
@@ -1303,6 +1435,26 @@ async function readRemoteAddProjectOptions(): Promise<AddProjectOptions[]> {
             __guidedRemoteAddProjectOptions?: AddProjectOptions[];
         };
         return state.__guidedRemoteAddProjectOptions ?? [];
+    });
+}
+
+/** Reads editor versions submitted by the remote background queue. */
+async function readRemoteEditorInstallVersions(): Promise<string[]> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteEditorInstallVersions?: string[];
+        };
+        return state.__guidedRemoteEditorInstallVersions ?? [];
+    });
+}
+
+/** Reads editor versions assigned after background installation. */
+async function readRemoteEditorAssignments(): Promise<string[]> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteEditorAssignments?: string[];
+        };
+        return state.__guidedRemoteEditorAssignments ?? [];
     });
 }
 

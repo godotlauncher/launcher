@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "Depo başarıyla klonlandı ve bu konumda tutuldu.",
+                "editorsQueued": "Seçilen düzenleyici indirmeleri Kurulumlar'a eklendi. Düzenleyicileri hazır olduğunda projeler otomatik olarak güncellenir.",
                 "adding": "Projeler ekleniyor: {{current}}/{{total}}",
                 "complete": "Proje içe aktarma tamamlandı",
                 "added": "Eklendi",
@@ -201,6 +202,20 @@
                 "failed": "Başarısız",
                 "alreadyAdded": "Bu ada veya yola sahip bir proje zaten Launcher'da bulunuyor.",
                 "notAdded": "Proje eklenmedi."
+            },
+            "editorBatch": {
+                "title": "Gerekli düzenleyiciler",
+                "description": "Seçilen {{count}} projenin kurulumu tamamlanmadan önce bir Godot düzenleyicisine ihtiyacı var.",
+                "summary": "{{editors}} düzenleyici | {{projects}} proje",
+                "affectedProjects": "Etkilenen projeler",
+                "resolution": "Çözüm",
+                "status": "Durum",
+                "checking": "Projeler denetleniyor: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Kalan projeler olmadan tamamla",
+                "apply": "Projeleri ekle ve devam et",
+                "statuses": {
+                    "ready": "Hazır"
+                }
             },
             "errors": {
                 "invalidSource": "Depo kaynağı artık geçerli değil.",

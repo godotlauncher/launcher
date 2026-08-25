@@ -439,6 +439,46 @@ async function stubRemoteProjectSubmodules(
 }
 
 /**
+ * Makes the two screenshot projects request different downloadable editors.
+ *
+ * @param electronApp - Electron app whose project-add handler is replaced.
+ * @returns A promise that ends when the handler is installed.
+ */
+async function stubRemoteMissingEditorPlan(
+    electronApp: ElectronApplication,
+): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('projects.addProject');
+        ipcMain.handle(
+            'projects.addProject',
+            async (_event, projectFilePath: string) => {
+                const dotnet = projectFilePath.includes('/examples/platformer/');
+                const baseVersion = dotnet ? '4.3' : '4.4';
+                return {
+                    success: true,
+                    data: {
+                        success: false,
+                        editorResolution: {
+                            requested: {
+                                kind: 'stable-base',
+                                channel: 'official',
+                                flavor: dotnet ? 'dotnet' : 'gdscript',
+                                base_version: baseVersion,
+                            },
+                            downloadable: {
+                                match: 'stable-base',
+                                base_version: baseVersion,
+                                flavor: dotnet ? 'dotnet' : 'gdscript',
+                            },
+                        },
+                    },
+                };
+            },
+        );
+    });
+}
+
+/**
  * Opens one remote import source after refreshing its deterministic fixtures.
  *
  * @param page - Electron renderer page to drive.
@@ -741,6 +781,30 @@ export const REMOTE_REPOSITORY_SCREENSHOTS: ScreenshotConfig[] = [
             await expect(modal.getByText('Choose projects to add')).toBeVisible();
             await modal.getByText('Test Fixture').locator('..').click();
             await expect(modal.getByRole('checkbox').nth(3)).not.toBeChecked();
+        },
+    },
+    {
+        fileBase: 'screen_projects_remote_editors_required',
+        description: 'Grouped missing editors for a repository import',
+        viewportHeight: 800,
+        navigate: async (page, electronApp, theme) => {
+            const modal = await openPublicDestination(page, electronApp, theme, {
+                ok: true,
+                jobId: 'docs-clone-job',
+                repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
+                projects: DISCOVERED_PROJECTS.slice(0, 2),
+                hasSubmodules: false,
+            });
+            await stubRemoteMissingEditorPlan(electronApp);
+            await modal.getByRole('button', { name: 'Clone repository' }).click();
+            await modal.getByTestId('btnAddDiscoveredProjects').click();
+            await expect(modal.getByText('Editors required')).toBeVisible();
+            await expect(
+                modal.getByTestId('remoteProjectEditorPlan'),
+            ).toContainText('Pixel Workshop');
+            await expect(
+                modal.getByTestId('remoteProjectEditorPlan'),
+            ).toContainText('Platformer Demo');
         },
     },
     {

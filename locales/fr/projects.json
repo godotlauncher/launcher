@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "Le référentiel a été cloné avec succès et a été conservé à cet emplacement.",
+                "editorsQueued": "Les téléchargements d'éditeurs sélectionnés ont été ajoutés aux installations. Les projets se mettent à jour automatiquement lorsque leurs éditeurs sont prêts.",
                 "adding": "Ajout des projets : {{current}}/{{total}}",
                 "complete": "Importation des projets terminée",
                 "added": "Ajouté",
@@ -201,6 +202,20 @@
                 "failed": "Échec",
                 "alreadyAdded": "Un projet portant ce nom ou ce chemin existe déjà dans Launcher.",
                 "notAdded": "Le projet n'a pas été ajouté."
+            },
+            "editorBatch": {
+                "title": "Éditeurs requis",
+                "description": "{{count}} projets sélectionnés nécessitent un éditeur Godot avant de terminer la configuration.",
+                "summary": "{{editors}} éditeurs | {{projects}} projets",
+                "affectedProjects": "Projets concernés",
+                "resolution": "Résolution",
+                "status": "État",
+                "checking": "Vérification des projets : {{current}}/{{total}}",
+                "finishWithoutRemaining": "Terminer sans les projets restants",
+                "apply": "Ajouter les projets et continuer",
+                "statuses": {
+                    "ready": "Prêt"
+                }
             },
             "errors": {
                 "invalidSource": "La source du référentiel n'est plus valide.",

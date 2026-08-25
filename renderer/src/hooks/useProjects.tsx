@@ -12,6 +12,7 @@ import type {
     LaunchProjectResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    ReleaseSummary,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
@@ -36,6 +37,13 @@ import {
 } from '../bridge.ts';
 import { appRoutePaths } from '../routes';
 import { useAlerts } from './useAlerts';
+import { useRelease } from './useRelease';
+
+export type ProjectEditorRepairRequest = {
+    release: ReleaseSummary;
+    mono: boolean;
+    projects: ProjectDetails[];
+};
 
 interface ProjectsContext {
     projects: ProjectDetails[];
@@ -52,6 +60,7 @@ interface ProjectsContext {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
+    queueProjectEditorRepairs: (requests: ProjectEditorRepairRequest[]) => void;
     setProjectWindowed: (
         project: ProjectDetails,
         openWindowed: boolean,
@@ -124,6 +133,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     const { t } = useTranslation(['projects', 'common']);
     const navigate = useNavigate();
     const { addAlert, addCustomConfirm } = useAlerts();
+    const { installRelease } = useRelease();
     const [projects, setProjects] = useState<ProjectDetails[]>([]);
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -219,6 +229,68 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         }
 
         return result;
+    };
+
+    /**
+     * Installs one queued editor and assigns it to every associated project.
+     *
+     * @param request - Editor release and projects to repair in the background.
+     * @returns A promise that ends after installation and project repair.
+     */
+    const runProjectEditorRepair = async (
+        request: ProjectEditorRepairRequest,
+    ): Promise<void> => {
+        const installResult = await installRelease(
+            request.release,
+            request.mono,
+            'project',
+        );
+        if (!installResult.success || !installResult.release) {
+            addAlert(
+                t('common:error'),
+                installResult.error || t('messages.addProjectError'),
+                <TriangleAlert className="stroke-error" />,
+            );
+            return;
+        }
+
+        let assignmentError: string | undefined;
+        for (const project of request.projects) {
+            try {
+                const result = await setProjectEditor(
+                    project,
+                    installResult.release,
+                );
+                if (!result.success) {
+                    assignmentError ??=
+                        result.error ?? t('messages.addProjectError');
+                }
+            } catch (error) {
+                assignmentError ??=
+                    error instanceof Error ? error.message : String(error);
+            }
+        }
+
+        if (assignmentError) {
+            addAlert(
+                t('common:error'),
+                assignmentError,
+                <TriangleAlert className="stroke-error" />,
+            );
+        }
+    };
+
+    /**
+     * Submits editor repairs without making the active project flow wait.
+     *
+     * @param requests - Editor installs and their associated projects.
+     */
+    const queueProjectEditorRepairs = (
+        requests: ProjectEditorRepairRequest[],
+    ): void => {
+        for (const request of requests) {
+            void runProjectEditorRepair(request);
+        }
     };
 
     const updateProjectState = (updatedProject: ProjectDetails) => {
@@ -458,6 +530,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 rescanCodeEditorIntegration,
                 addProject,
                 setProjectEditor,
+                queueProjectEditorRepairs,
                 setProjectWindowed,
                 setProjectPinned,
                 reorderPinnedProjects,

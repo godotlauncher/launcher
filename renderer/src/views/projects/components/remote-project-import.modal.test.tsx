@@ -44,7 +44,7 @@ vi.mock('../../../bridge', () => ({
 const defaultProps = {
     onOpenChange: vi.fn(),
     handleAddProjectResult: vi.fn(),
-    editorInstallTargets: [],
+    queueProjectEditorRepairs: vi.fn(),
 };
 
 describe('RemoteProjectImportModal', () => {

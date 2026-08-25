@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "Ir-repożitorju ġie kklonat b'suċċess u nżamm f'dan il-post.",
+                "editorsQueued": "It-tniżżil tal-edituri magħżula żdied ma' Installazzjonijiet. Il-proġetti jaġġornaw awtomatikament meta l-edituri jkunu lesti.",
                 "adding": "Qed jiżdiedu l-proġetti: {{current}}/{{total}}",
                 "complete": "L-importazzjoni tal-proġetti tlestiet",
                 "added": "Miżjud",
@@ -201,6 +202,20 @@
                 "failed": "Falla",
                 "alreadyAdded": "Proġett b'dan l-isem jew triq diġà jinsab fil-Launcher.",
                 "notAdded": "Il-proġett ma żdiedx."
+            },
+            "editorBatch": {
+                "title": "Edituri meħtieġa",
+                "description": "{{count}} proġetti magħżula jeħtieġu editur ta' Godot qabel ma jitlesta s-setup.",
+                "summary": "{{editors}} edituri | {{projects}} proġetti",
+                "affectedProjects": "Proġetti affettwati",
+                "resolution": "Riżoluzzjoni",
+                "status": "Status",
+                "checking": "Qed jiġu ċċekkjati l-proġetti: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Lesti mingħajr il-proġetti li fadal",
+                "apply": "Żid il-proġetti u kompli",
+                "statuses": {
+                    "ready": "Lest"
+                }
             },
             "errors": {
                 "invalidSource": "Is-sors tar-repożitorju m'għadux validu.",

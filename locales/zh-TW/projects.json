@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "存儲庫已成功克隆並已保存在此位置。",
+                "editorsQueued": "所選編輯器下載已加入安裝佇列。編輯器準備就緒後，專案會自動更新。",
                 "adding": "正在新增專案：{{current}}/{{total}}",
                 "complete": "專案匯入完成",
                 "added": "已新增",
@@ -201,6 +202,20 @@
                 "failed": "失敗",
                 "alreadyAdded": "Launcher 中已有相同名稱或路徑的專案。",
                 "notAdded": "未新增此專案。"
+            },
+            "editorBatch": {
+                "title": "需要編輯器",
+                "description": "{{count}} 個所選專案需要 Godot 編輯器才能完成設定。",
+                "summary": "{{editors}} 個編輯器 | {{projects}} 個專案",
+                "affectedProjects": "受影響的專案",
+                "resolution": "解決方式",
+                "status": "狀態",
+                "checking": "正在檢查專案：{{current}}/{{total}}",
+                "finishWithoutRemaining": "不加入其餘專案並完成",
+                "apply": "加入專案並繼續",
+                "statuses": {
+                    "ready": "就緒"
+                }
             },
             "errors": {
                 "invalidSource": "儲存庫來源不再有效。",

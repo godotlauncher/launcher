@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "Repozytorium zostało pomyślnie sklonowane i zostało przechowywane w tej lokalizacji.",
+                "editorsQueued": "Wybrane edytory dodano do kolejki w sekcji Instalacje. Projekty zostaną automatycznie zaktualizowane, gdy edytory będą gotowe.",
                 "adding": "Dodawanie projektów: {{current}}/{{total}}",
                 "complete": "Import projektów zakończony",
                 "added": "Dodano",
@@ -201,6 +202,20 @@
                 "failed": "Niepowodzenie",
                 "alreadyAdded": "Projekt o tej nazwie lub ścieżce znajduje się już w Launcherze.",
                 "notAdded": "Projekt nie został dodany."
+            },
+            "editorBatch": {
+                "title": "Wymagane edytory",
+                "description": "{{count}} wybranych projektów wymaga edytora Godot przed zakończeniem konfiguracji.",
+                "summary": "{{editors}} edytorów | {{projects}} projektów",
+                "affectedProjects": "Projekty, których dotyczy",
+                "resolution": "Rozwiązanie",
+                "status": "Stan",
+                "checking": "Sprawdzanie projektów: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Zakończ bez pozostałych projektów",
+                "apply": "Dodaj projekty i kontynuuj",
+                "statuses": {
+                    "ready": "Gotowe"
+                }
             },
             "errors": {
                 "invalidSource": "Źródło repozytorium nie jest już ważne.",

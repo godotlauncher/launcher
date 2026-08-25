@@ -194,6 +194,7 @@
             },
             "registration": {
                 "preserved": "存储库已成功克隆并已保存在此位置。",
+                "editorsQueued": "所选编辑器下载已添加到安装队列。编辑器准备就绪后，项目会自动更新。",
                 "adding": "正在添加项目：{{current}}/{{total}}",
                 "complete": "项目导入完成",
                 "added": "已添加",
@@ -201,6 +202,20 @@
                 "failed": "失败",
                 "alreadyAdded": "Launcher 中已有相同名称或路径的项目。",
                 "notAdded": "未添加该项目。"
+            },
+            "editorBatch": {
+                "title": "需要编辑器",
+                "description": "{{count}} 个所选项目需要 Godot 编辑器才能完成设置。",
+                "summary": "{{editors}} 个编辑器 | {{projects}} 个项目",
+                "affectedProjects": "受影响的项目",
+                "resolution": "解决方式",
+                "status": "状态",
+                "checking": "正在检查项目：{{current}}/{{total}}",
+                "finishWithoutRemaining": "不添加剩余项目并完成",
+                "apply": "添加项目并继续",
+                "statuses": {
+                    "ready": "就绪"
+                }
             },
             "errors": {
                 "invalidSource": "存储库源不再有效。",
