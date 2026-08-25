@@ -5,7 +5,10 @@ import logger from 'electron-log';
 
 import { getCurrentAppConfig } from './config/index.js';
 import type { ProjectsStore } from './projects/projects.store.js';
-import type { GitService } from './tool-integration/integrations/git/git.service.js';
+import type {
+    GitRepositoryInspector,
+    GitService,
+} from './tool-integration/integrations/git/git.service.js';
 import { SetProjectEditorRelease } from './utils/godot.utils.js';
 import {
     getProjectIconPathFromParsed,
@@ -15,6 +18,7 @@ import {
 } from './utils/godotProject.utils.js';
 
 const VALIDATION_PATH_CHECK_TIMEOUT_MS = 1500;
+const PROJECT_VALIDATION_CONCURRENCY = 4;
 
 type FileSignature = {
     mtimeMs: number;
@@ -236,13 +240,37 @@ export async function checkAndUpdateProjects(
     logger.info('Checking and updating projects');
 
     return projectsStore.update(async (projects) => {
-        const validated: ProjectDetails[] = [];
+        const validated = new Array<ProjectDetails>(projects.length);
+        const gitInspector =
+            gitService && projects.length > 0
+                ? await gitService.createRepositoryInspectionSession()
+                : undefined;
+        let nextIndex = 0;
 
-        for (const project of projects) {
-            validated.push(
-                await checkProjectValid(project, options, gitService),
-            );
-        }
+        /** Validates successive projects until the shared queue is empty. */
+        const validateNext = async (): Promise<void> => {
+            while (nextIndex < projects.length) {
+                const projectIndex = nextIndex;
+                nextIndex += 1;
+                validated[projectIndex] = await checkProjectValid(
+                    projects[projectIndex],
+                    options,
+                    gitInspector,
+                );
+            }
+        };
+
+        await Promise.all(
+            Array.from(
+                {
+                    length: Math.min(
+                        projects.length,
+                        PROJECT_VALIDATION_CONCURRENCY,
+                    ),
+                },
+                () => validateNext(),
+            ),
+        );
         return validated;
     });
 }
@@ -325,13 +353,13 @@ export async function checkProjectHealth(
  *
  * @param project - Project details to validate.
  * @param options - Project validation behavior.
- * @param gitService - Optional Git service for repository inspection.
+ * @param gitInspector - Optional Git repository inspection boundary.
  * @returns The updated project details.
  */
 export async function checkProjectValid(
     project: ProjectDetails,
     options: ProjectValidationOptions = {},
-    gitService?: GitService,
+    gitInspector?: GitRepositoryInspector,
 ): Promise<ProjectDetails> {
     if (getCurrentAppConfig().docsScreenshots) {
         return project;
@@ -399,8 +427,10 @@ export async function checkProjectValid(
         project.release.valid = true;
     }
 
-    if (gitService) {
-        const gitInspection = await gitService.inspectRepository(project.path);
+    if (gitInspector) {
+        const gitInspection = await gitInspector.inspectRepository(
+            project.path,
+        );
         if (
             gitInspection.status === 'inside-work-tree' ||
             gitInspection.status === 'not-a-repository'

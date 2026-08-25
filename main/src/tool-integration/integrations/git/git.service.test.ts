@@ -1,7 +1,12 @@
+import path from 'node:path';
 import logger from 'electron-log';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ToolIntegrationService } from '../../tool-integration.service.js';
-import type { ToolExecutionResult } from '../../tool-integration.types.js';
+import type {
+    ToolExecutionRequest,
+    ToolExecutionResult,
+    ToolExecutionSession,
+} from '../../tool-integration.types.js';
 import { GitService } from './git.service.js';
 
 vi.mock('electron-log', () => ({
@@ -11,8 +16,14 @@ vi.mock('electron-log', () => ({
 }));
 
 const execute = vi.fn();
+const createExecutionSession = vi.fn(
+    async (): Promise<ToolExecutionSession> =>
+        (request: ToolExecutionRequest) =>
+            execute('git', request),
+);
 const toolIntegrationService = {
     execute,
+    createExecutionSession,
 } as unknown as ToolIntegrationService;
 
 const success = (stdout = ''): ToolExecutionResult => ({
@@ -355,33 +366,62 @@ describe('GitService', () => {
     });
 
     it('reports a project nested in a standard repository', async () => {
-        execute
-            .mockResolvedValueOnce(success('true\n'))
-            .mockResolvedValueOnce(success('/projects/parent\n'))
-            .mockResolvedValueOnce(success('\n'));
+        execute.mockResolvedValueOnce(success('true\n/projects/parent\n\n'));
 
         await expect(
             service.inspectRepository('/projects/parent/demo'),
         ).resolves.toEqual({
             status: 'inside-work-tree',
-            root: '/projects/parent',
+            root: path.resolve('/projects/parent'),
             isProjectRoot: false,
             kind: 'standard',
         });
 
-        expect(execute).toHaveBeenNthCalledWith(1, 'git', {
-            args: ['rev-parse', '--is-inside-work-tree'],
-            cwd: '/',
+        expect(createExecutionSession).toHaveBeenCalledOnce();
+        expect(createExecutionSession).toHaveBeenCalledWith('git');
+        expect(execute).toHaveBeenCalledOnce();
+        expect(execute).toHaveBeenCalledWith('git', {
+            args: [
+                'rev-parse',
+                '--is-inside-work-tree',
+                '--show-toplevel',
+                '--show-superproject-working-tree',
+            ],
+            cwd: path.parse(path.resolve('/projects/parent/demo')).root,
             env: { LC_ALL: 'C', LANG: 'C' },
             timeoutMs: 5000,
         });
     });
 
+    it('reuses one validated execution session across repository inspections', async () => {
+        execute.mockResolvedValue(notRepositoryFailure());
+        const inspector = await service.createRepositoryInspectionSession();
+
+        await inspector.inspectRepository('/projects/one');
+        await inspector.inspectRepository('/projects/two');
+
+        expect(createExecutionSession).toHaveBeenCalledOnce();
+        expect(execute).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns a failed inspector when session validation fails unexpectedly', async () => {
+        createExecutionSession.mockRejectedValueOnce(new Error('unexpected'));
+
+        const inspector = await service.createRepositoryInspectionSession();
+
+        await expect(
+            inspector.inspectRepository('/projects/demo'),
+        ).resolves.toEqual({ status: 'inspection-failed' });
+        expect(execute).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(
+            'Git command failed unexpectedly',
+        );
+    });
+
     it('classifies a submodule before considering its .git file marker', async () => {
-        execute
-            .mockResolvedValueOnce(success('true\n'))
-            .mockResolvedValueOnce(success('/projects/parent/submodule\n'))
-            .mockResolvedValueOnce(success('/projects/parent\n'));
+        execute.mockResolvedValueOnce(
+            success('true\n/projects/parent/submodule\n/projects/parent\n'),
+        );
 
         await expect(
             service.inspectRepository('/projects/parent/submodule'),
@@ -398,16 +438,13 @@ describe('GitService', () => {
             },
             'isGitFile',
         ).mockResolvedValue(true);
-        execute
-            .mockResolvedValueOnce(success('true\n'))
-            .mockResolvedValueOnce(success('/projects/worktree\n'))
-            .mockResolvedValueOnce(success('\n'));
+        execute.mockResolvedValueOnce(success('true\n/projects/worktree\n\n'));
 
         await expect(
             service.inspectRepository('/projects/worktree'),
         ).resolves.toEqual({
             status: 'inside-work-tree',
-            root: '/projects/worktree',
+            root: path.resolve('/projects/worktree'),
             isProjectRoot: true,
             kind: 'linked-worktree',
         });

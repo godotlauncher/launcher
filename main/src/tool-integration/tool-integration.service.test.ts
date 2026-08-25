@@ -153,6 +153,31 @@ describe('ToolIntegrationService', () => {
         );
     });
 
+    it('validates once for multiple commands in one execution session', async () => {
+        const { service, installationCache, processExecutor } = createService();
+        const execute = await service.createExecutionSession('example');
+
+        await expect(
+            Promise.all([
+                execute({ args: ['status'], cwd: '/project-one' }),
+                execute({ args: ['status'], cwd: '/project-two' }),
+            ]),
+        ).resolves.toHaveLength(2);
+
+        expect(installationCache.requireAvailable).toHaveBeenCalledOnce();
+        expect(processExecutor.execute).toHaveBeenCalledTimes(2);
+        expect(processExecutor.execute).toHaveBeenNthCalledWith(
+            1,
+            installation,
+            { args: ['status'], cwd: '/project-one' },
+        );
+        expect(processExecutor.execute).toHaveBeenNthCalledWith(
+            2,
+            installation,
+            { args: ['status'], cwd: '/project-two' },
+        );
+    });
+
     it('does not resolve or execute a disabled tool', async () => {
         const { service, settingsStore, installationCache, processExecutor } =
             createService();

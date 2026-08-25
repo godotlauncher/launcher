@@ -8,6 +8,7 @@ import { ToolIntegrationStore } from './tool-integration.store.js';
 import type {
     ToolExecutionRequest,
     ToolExecutionResult,
+    ToolExecutionSession,
     ToolId,
     ToolSettings,
     ToolStreamingExecutionRequest,
@@ -210,10 +211,28 @@ export class ToolIntegrationService {
         toolId: ToolId,
         request: ToolExecutionRequest,
     ): Promise<ToolExecutionResult> {
+        const execute = await this.createExecutionSession(toolId);
+        return execute(request);
+    }
+
+    /**
+     * Creates a process execution session from one freshly validated tool.
+     *
+     * The returned function reuses the exact validated installation for a
+     * bounded compound operation. Command failures still report through the
+     * normal structured result.
+     *
+     * @param toolId - Stable tool ID to validate for the session.
+     * @returns An execution function bound to the validated installation.
+     */
+    async createExecutionSession(
+        toolId: ToolId,
+    ): Promise<ToolExecutionSession> {
         this.registry.get(toolId);
         const settings = await this.settingsStore.get(toolId);
         if (!settings.enabled) {
-            return this.createUnavailableResult('disabled');
+            const unavailable = this.createUnavailableResult('disabled');
+            return async () => unavailable;
         }
 
         const resolution = await this.installationCache.requireAvailable(
@@ -221,12 +240,15 @@ export class ToolIntegrationService {
             settings,
         );
         if (!resolution.installation) {
-            return this.createUnavailableResult(
+            const unavailable = this.createUnavailableResult(
                 resolution.status === 'invalid' ? 'invalid' : 'unavailable',
             );
+            return async () => unavailable;
         }
 
-        return this.processExecutor.execute(resolution.installation, request);
+        const installation = resolution.installation;
+        return (sessionRequest) =>
+            this.processExecutor.execute(installation, sessionRequest);
     }
 
     /**

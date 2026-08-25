@@ -505,4 +505,95 @@ describe('checkAndUpdateProjects', () => {
         expect(update).toHaveBeenCalledOnce();
         expect(result).toHaveLength(1);
     });
+
+    it('validates at most four projects through one Git session', async () => {
+        const rootDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'launcher-project-validation-'),
+        );
+        const releasePath = path.join(rootDir, 'Godot.exe');
+        fs.writeFileSync(releasePath, '');
+        const projects = Array.from({ length: 5 }, (_, index) => {
+            const projectDir = path.join(rootDir, `project-${index}`);
+            fs.mkdirSync(projectDir);
+            fs.writeFileSync(path.join(projectDir, 'project.godot'), '');
+            const launchPath = path.join(projectDir, 'Godot.exe');
+            fs.writeFileSync(launchPath, '');
+            return {
+                name: `Project ${index}`,
+                path: projectDir,
+                version: '4.2.0',
+                version_number: 40200,
+                renderer: 'forward_plus',
+                editor_settings_path: '',
+                editor_settings_file: '',
+                last_opened: null,
+                open_windowed: false,
+                release: {
+                    version: '4.2.0',
+                    version_number: 40200,
+                    install_path: rootDir,
+                    editor_path: releasePath,
+                    platform: 'win32',
+                    arch: 'x86_64',
+                    mono: false,
+                    prerelease: false,
+                    config_version: 5,
+                    published_at: null,
+                    valid: true,
+                },
+                launch_path: launchPath,
+                config_version: 5,
+                codeEditorId: null,
+                withGit: false,
+                valid: true,
+            } satisfies ProjectDetails;
+        });
+        let activeInspections = 0;
+        let maxActiveInspections = 0;
+        const releaseInspections: Array<() => void> = [];
+        const inspectRepository = vi.fn(
+            () =>
+                new Promise<{ status: 'not-a-repository' }>((resolve) => {
+                    activeInspections += 1;
+                    maxActiveInspections = Math.max(
+                        maxActiveInspections,
+                        activeInspections,
+                    );
+                    releaseInspections.push(() => {
+                        activeInspections -= 1;
+                        resolve({ status: 'not-a-repository' });
+                    });
+                }),
+        );
+        const createRepositoryInspectionSession = vi.fn(async () => ({
+            inspectRepository,
+        }));
+        const update = vi.fn(async (mutator) => mutator(projects));
+        const store = { update } as unknown as ProjectsStore;
+
+        const validation = checkAndUpdateProjects(
+            {},
+            { createRepositoryInspectionSession } as never,
+            store,
+        );
+        await vi.waitFor(() => {
+            expect(inspectRepository).toHaveBeenCalledTimes(4);
+        });
+        expect(maxActiveInspections).toBe(4);
+        expect(createRepositoryInspectionSession).toHaveBeenCalledOnce();
+
+        releaseInspections.splice(0).forEach((release) => {
+            release();
+        });
+        await vi.waitFor(() => {
+            expect(inspectRepository).toHaveBeenCalledTimes(5);
+        });
+        releaseInspections.splice(0).forEach((release) => {
+            release();
+        });
+
+        await expect(validation).resolves.toHaveLength(5);
+        expect(maxActiveInspections).toBe(4);
+        fs.rmSync(rootDir, { recursive: true, force: true });
+    });
 });

@@ -98,6 +98,10 @@ export type ToolExecutionFailure = {
 
 export type ToolExecutionResult = ToolExecutionSuccess | ToolExecutionFailure;
 
+export type ToolExecutionSession = (
+    request: ToolExecutionRequest,
+) => Promise<ToolExecutionResult>;
+
 export type ToolStreamingExecutionRequest = {
     args: readonly string[];
     cwd?: string;
