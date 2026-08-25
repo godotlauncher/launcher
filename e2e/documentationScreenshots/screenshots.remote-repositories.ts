@@ -353,15 +353,18 @@ async function stubRemoteRepositoryImport(
  * Installs a deterministic submodule initialisation flow for screenshot states.
  *
  * @param electronApp - Electron app whose handler is replaced.
- * @param outcome - Whether initialisation stays active or stops with a failure.
+ * @param outcome - Whether initialisation stays active, fails, or is cancelled.
  * @returns A promise that ends when the handler is installed.
  */
 async function stubRemoteProjectSubmodules(
     electronApp: ElectronApplication,
-    outcome: 'pending' | 'failure',
+    outcome: 'pending' | 'failure' | 'cancelled',
 ): Promise<void> {
     await electronApp.evaluate(
         ({ BrowserWindow, ipcMain }, injectedOutcome) => {
+            const state = globalThis as typeof globalThis & {
+                __docsCancelRemoteSubmodules?: () => void;
+            };
             ipcMain.removeHandler(
                 'projects.initialiseRemoteProjectSubmodules',
             );
@@ -409,7 +412,23 @@ async function stubRemoteProjectSubmodules(
                         path: 'addons/private-extension',
                     });
 
-                    if (injectedOutcome === 'pending') {
+                    if (
+                        injectedOutcome === 'pending' ||
+                        injectedOutcome === 'cancelled'
+                    ) {
+                        if (injectedOutcome === 'cancelled') {
+                            return await new Promise((resolve) => {
+                                state.__docsCancelRemoteSubmodules = () =>
+                                    resolve({
+                                        success: true,
+                                        data: {
+                                            ok: false,
+                                            jobId,
+                                            reason: 'cancelled',
+                                        },
+                                    });
+                            });
+                        }
                         return await new Promise(() => undefined);
                     }
 
@@ -433,6 +452,20 @@ async function stubRemoteProjectSubmodules(
                     });
                 },
             );
+            if (injectedOutcome === 'cancelled') {
+                ipcMain.removeHandler('projects.cancelRemoteProjectImport');
+                ipcMain.handle(
+                    'projects.cancelRemoteProjectImport',
+                    async (_event, jobId: string) => {
+                        state.__docsCancelRemoteSubmodules?.();
+                        state.__docsCancelRemoteSubmodules = undefined;
+                        return {
+                            success: true,
+                            data: { jobId, status: 'cancelling' },
+                        };
+                    },
+                );
+            }
         },
         outcome,
     );
@@ -768,6 +801,34 @@ export const REMOTE_REPOSITORY_SCREENSHOTS: ScreenshotConfig[] = [
             await expect(modal.getByRole('alert')).toBeVisible();
             await expect(
                 modal.getByText('Stopped at addons/private-extension'),
+            ).toBeVisible();
+        },
+    },
+    {
+        fileBase: 'screen_projects_remote_submodules_cancelled',
+        description: 'Cancelled submodule initialisation with clone recovery',
+        viewportHeight: 800,
+        navigate: async (page, electronApp, theme) => {
+            const modal = await openPublicDestination(page, electronApp, theme, {
+                ok: true,
+                jobId: 'docs-clone-job',
+                repositoryPath: '/Users/docs/Godot/Projects/pixel-workshop',
+                projects: [],
+                hasSubmodules: true,
+            });
+            await stubRemoteProjectSubmodules(electronApp, 'cancelled');
+            await modal.getByRole('button', { name: 'Clone repository' }).click();
+            await modal.getByTestId('btnInitialiseSubmodules').click();
+            await expect(
+                modal.getByText('Validating addons/private-extension'),
+            ).toBeVisible();
+            await modal.getByRole('button', { name: 'Cancel import' }).click();
+            await expect(modal.getByText('The import was cancelled.')).toBeVisible();
+            await expect(
+                modal.getByTestId('btnOpenPreservedCloneFolder'),
+            ).toBeVisible();
+            await expect(
+                modal.getByTestId('btnDeletePreservedClone'),
             ).toBeVisible();
         },
     },

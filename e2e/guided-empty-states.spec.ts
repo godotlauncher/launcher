@@ -294,6 +294,40 @@ test('Remote repositories can initialise public submodules before review', async
     await expect(modal.getByText('GDExtension Demo')).toBeVisible();
 });
 
+test('Cancelling submodule initialisation exposes clone recovery', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubRemoteProjectSubmodules(true);
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+    await modal.getByTestId('btnInitialiseSubmodules').click();
+    await expect(
+        modal.getByText('Initialising addons/gdextension'),
+    ).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel import' }).click();
+
+    await expect(modal.getByText('The import was cancelled.')).toBeVisible();
+    await expect(
+        modal.getByTestId('btnOpenPreservedCloneFolder'),
+    ).toBeVisible();
+    await expect(modal.getByTestId('btnDeletePreservedClone')).toBeVisible();
+    await modal.getByTestId('btnDeletePreservedClone').click();
+    await expect(modal).not.toBeVisible();
+    await expect.poll(readRemoteCloneResolutions).toEqual([
+        { jobId: 'remote-discovery-job', action: 'delete' },
+    ]);
+});
+
 test('Remote project sources stay unavailable when Git is unavailable', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp, {
         toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
@@ -1173,9 +1207,18 @@ async function stubPendingRemoteProjectImport(): Promise<void> {
     });
 }
 
-/** Adds a deterministic public submodule initialisation and activity flow. */
-async function stubRemoteProjectSubmodules(): Promise<void> {
-    await electronApp.evaluate(({ BrowserWindow, ipcMain }) => {
+/**
+ * Adds a deterministic public submodule initialisation and activity flow.
+ *
+ * @param cancelOnRequest - Whether cancellation should end the pending flow.
+ */
+async function stubRemoteProjectSubmodules(
+    cancelOnRequest = false,
+): Promise<void> {
+    await electronApp.evaluate(({ BrowserWindow, ipcMain }, shouldCancel) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedCancelRemoteImport?: () => void;
+        };
         ipcMain.removeHandler('projects.importRemoteProject');
         ipcMain.handle('projects.importRemoteProject', async () => ({
             success: true,
@@ -1212,6 +1255,18 @@ async function stubRemoteProjectSubmodules(): Promise<void> {
                             },
                         );
                     }, 20);
+                    if (shouldCancel) {
+                        state.__guidedCancelRemoteImport = () =>
+                            resolve({
+                                success: true,
+                                data: {
+                                    ok: false,
+                                    jobId,
+                                    reason: 'cancelled',
+                                },
+                            });
+                        return;
+                    }
                     setTimeout(
                         () =>
                             resolve({
@@ -1234,7 +1289,21 @@ async function stubRemoteProjectSubmodules(): Promise<void> {
                     );
                 }),
         );
-    });
+        if (shouldCancel) {
+            ipcMain.removeHandler('projects.cancelRemoteProjectImport');
+            ipcMain.handle(
+                'projects.cancelRemoteProjectImport',
+                async (_event, jobId: string) => {
+                    state.__guidedCancelRemoteImport?.();
+                    state.__guidedCancelRemoteImport = undefined;
+                    return {
+                        success: true,
+                        data: { jobId, status: 'cancelling' },
+                    };
+                },
+            );
+        }
+    }, cancelOnRequest);
 }
 
 /** Sets the deterministic result returned by preserved-clone deletion. */

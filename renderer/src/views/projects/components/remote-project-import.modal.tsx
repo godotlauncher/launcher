@@ -569,6 +569,12 @@ export const RemoteProjectImportModal: React.FC<
                     cloneJobId,
                 );
             if (!result.ok) {
+                if (result.reason === 'cancelled') {
+                    setImportFailure(getRemoteImportFailureKey(result.reason));
+                    setClonePreservedPath(repositoryPath);
+                    setStep('import-failed');
+                    return;
+                }
                 setSubmoduleFailure(result.reason);
                 setStep('submodules');
                 return;
@@ -1432,7 +1438,7 @@ export const RemoteProjectImportModal: React.FC<
             progress?.canCancel ? (
                 <button
                     type="button"
-                    className="btn btn-warning"
+                    className="btn btn-ghost"
                     onClick={() => void cancelImport()}
                 >
                     {t('addProject.remote.actions.cancelImport')}
