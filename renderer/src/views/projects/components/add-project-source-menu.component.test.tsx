@@ -49,4 +49,24 @@ describe('AddProjectSourceMenu', () => {
         expect(html).not.toContain('disabled=""');
         expect(html).not.toContain('addProject.sources.gitUnavailable');
     });
+
+    it('keeps remote choices on one line while checking Git', () => {
+        const html = renderToStaticMarkup(
+            <AddProjectSourceMenu
+                anchorRect={anchorRect}
+                gitAvailability="loading"
+                t={translate}
+                onClose={vi.fn()}
+                onFromComputer={vi.fn()}
+                onPublicGit={vi.fn()}
+                onGitHub={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('addProject.sources.publicGit');
+        expect(html).toContain('addProject.sources.github');
+        expect(html).not.toContain('addProject.sources.checkingGit');
+        expect(html).not.toContain('flex-col');
+        expect(html.match(/disabled=""/g)).toHaveLength(2);
+    });
 });

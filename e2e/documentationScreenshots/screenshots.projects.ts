@@ -849,6 +849,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectAdd').click();
+            await page.getByTestId('btnAddProjectFromComputer').click();
             await expect(
                 page.getByRole('dialog', {
                     name: 'Editor version required',
@@ -885,6 +886,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectAdd').click();
+            await page.getByTestId('btnAddProjectFromComputer').click();
             await expect(
                 page.getByRole('dialog', {
                     name: 'Editor version required',
@@ -921,6 +923,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await applyTheme(page, theme);
             await page.getByTestId('btnProjects').click();
             await page.getByTestId('btnProjectAdd').click();
+            await page.getByTestId('btnAddProjectFromComputer').click();
             await expect(
                 page.getByRole('dialog', {
                     name: 'Warning',

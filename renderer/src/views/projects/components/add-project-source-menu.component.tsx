@@ -32,18 +32,18 @@ export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
     onGitHub,
 }) => {
     const gitUnavailable = gitAvailability !== 'available';
-    const remoteLabel = (label: string) => (
+    const unavailableRemoteLabel = (label: string) => (
         <span className="flex min-w-0 flex-col items-start">
             <span>{label}</span>
-            {gitUnavailable && (
-                <span className="text-xs font-normal opacity-70">
-                    {gitAvailability === 'loading'
-                        ? t('addProject.sources.checkingGit')
-                        : t('addProject.sources.gitUnavailable')}
-                </span>
-            )}
+            <span className="text-xs font-normal opacity-70">
+                {t('addProject.sources.gitUnavailable')}
+            </span>
         </span>
     );
+    const remoteLabel = (label: string) =>
+        gitAvailability === 'unavailable'
+            ? unavailableRemoteLabel(label)
+            : label;
     const items: ActionMenuItem[] = [
         {
             key: 'from-computer',
