@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     type EditorInstallValidationError,
     validateExtractedEditor,
@@ -11,6 +11,7 @@ const temporaryDirectories: string[] = [];
 
 describe('managed editor containment', () => {
     afterEach(async () => {
+        vi.restoreAllMocks();
         await Promise.all(
             temporaryDirectories.splice(0).map((directory) =>
                 fs.promises.rm(directory, {
@@ -24,7 +25,10 @@ describe('managed editor containment', () => {
     it('accepts a regular executable inside the managed root', async () => {
         const root = await createTemporaryDirectory();
         const editorPath = path.join(root, 'Godot');
-        await fs.promises.writeFile(editorPath, 'editor', { mode: 0o755 });
+        await fs.promises.writeFile(editorPath, 'editor');
+        const editorStats = await fs.promises.stat(editorPath);
+        editorStats.mode = 0o100755;
+        vi.spyOn(fs.promises, 'stat').mockResolvedValue(editorStats);
 
         await expect(
             validateExtractedEditor(root, editorPath, 'linux'),
@@ -49,7 +53,10 @@ describe('managed editor containment', () => {
     it('rejects a non-executable Linux editor', async () => {
         const root = await createTemporaryDirectory();
         const editorPath = path.join(root, 'Godot');
-        await fs.promises.writeFile(editorPath, 'editor', { mode: 0o644 });
+        await fs.promises.writeFile(editorPath, 'editor');
+        const editorStats = await fs.promises.stat(editorPath);
+        editorStats.mode = 0o100644;
+        vi.spyOn(fs.promises, 'stat').mockResolvedValue(editorStats);
 
         await expect(
             validateExtractedEditor(root, editorPath, 'linux'),

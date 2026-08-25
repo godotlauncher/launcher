@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InstalledEditorService } from './installed-editor.service.js';
@@ -158,14 +159,15 @@ describe('InstalledEditorService', () => {
 
     it('opens the platform-specific project manager executable', () => {
         osMocks.platform.mockReturnValue('darwin');
+        const editorPath = path.resolve('Applications', 'Godot.app');
         const release = createRelease('4.3-stable', {
-            editor_path: '/Applications/Godot.app',
+            editor_path: editorPath,
         });
 
         createService().openProjectManager(release);
 
         expect(spawnMocks.spawn).toHaveBeenCalledWith(
-            '/Applications/Godot.app/Contents/MacOS/Godot',
+            path.resolve(editorPath, 'Contents', 'MacOS', 'Godot'),
             ['-p'],
             { detached: true, stdio: 'ignore' },
         );

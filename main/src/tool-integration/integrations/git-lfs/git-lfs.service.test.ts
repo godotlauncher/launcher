@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ToolIntegrationService } from '../../tool-integration.service.js';
 import type { ToolExecutionResult } from '../../tool-integration.types.js';
@@ -29,9 +30,10 @@ const failure = (
     stderr: '',
     exitCode: reason === 'command-failed' ? 1 : null,
 });
+const projectPath = path.resolve('projects', 'demo');
 const repository = {
     status: 'inside-work-tree' as const,
-    root: '/projects/demo',
+    root: projectPath,
     isProjectRoot: true,
     kind: 'standard' as const,
 };
@@ -78,7 +80,7 @@ describe('GitLfsService', () => {
     it('rejects unsupported policies and non-standard repository roots', async () => {
         await expect(
             service.configureProjectRepository(
-                '/projects/demo',
+                projectPath,
                 'unknown' as 'godot-recommended-v1',
             ),
         ).resolves.toEqual({ status: 'failed', stage: 'verify' });
@@ -92,7 +94,7 @@ describe('GitLfsService', () => {
             inspectRepository.mockResolvedValueOnce(invalidRepository);
             await expect(
                 service.configureProjectRepository(
-                    '/projects/demo',
+                    projectPath,
                     GODOT_GIT_LFS_TRACKING_POLICY.id,
                 ),
             ).resolves.toEqual({ status: 'failed', stage: 'verify' });
@@ -107,7 +109,7 @@ describe('GitLfsService', () => {
 
         await expect(
             service.configureProjectRepository(
-                '/projects/demo',
+                projectPath,
                 GODOT_GIT_LFS_TRACKING_POLICY.id,
             ),
         ).resolves.toEqual({
@@ -118,13 +120,13 @@ describe('GitLfsService', () => {
         expect(new Set(patterns).size).toBe(patterns.length);
         expect(execute).toHaveBeenNthCalledWith(1, 'git-lfs', {
             args: ['install', '--local'],
-            cwd: '/projects/demo',
+            cwd: projectPath,
             env: { LC_ALL: 'C', LANG: 'C' },
             timeoutMs: GIT_LFS_OPERATION_TIMEOUT_MS,
         });
         expect(execute).toHaveBeenNthCalledWith(2, 'git-lfs', {
             args: ['track', ...patterns],
-            cwd: '/projects/demo',
+            cwd: projectPath,
             env: { LC_ALL: 'C', LANG: 'C' },
             timeoutMs: GIT_LFS_OPERATION_TIMEOUT_MS,
         });
@@ -139,7 +141,7 @@ describe('GitLfsService', () => {
             execute.mock.invocationCallOrder[1],
         );
         expect(fsMocks.readFile).toHaveBeenCalledWith(
-            '/projects/demo/.gitattributes',
+            path.resolve(projectPath, '.gitattributes'),
             'utf8',
         );
     });
@@ -160,7 +162,7 @@ describe('GitLfsService', () => {
         execute.mockResolvedValueOnce(result);
         await expect(
             service.configureProjectRepository(
-                '/projects/demo',
+                projectPath,
                 GODOT_GIT_LFS_TRACKING_POLICY.id,
             ),
         ).resolves.toEqual(expected);
@@ -173,7 +175,7 @@ describe('GitLfsService', () => {
             .mockResolvedValueOnce(failure('timed-out'));
         await expect(
             service.configureProjectRepository(
-                '/projects/demo',
+                projectPath,
                 GODOT_GIT_LFS_TRACKING_POLICY.id,
             ),
         ).resolves.toEqual({ status: 'failed', stage: 'track' });
@@ -186,7 +188,7 @@ describe('GitLfsService', () => {
             .mockResolvedValueOnce(failure('unavailable'));
         await expect(
             service.configureProjectRepository(
-                '/projects/demo',
+                projectPath,
                 GODOT_GIT_LFS_TRACKING_POLICY.id,
             ),
         ).resolves.toEqual({ status: 'unavailable' });
@@ -200,7 +202,7 @@ describe('GitLfsService', () => {
         fsMocks.readFile.mockResolvedValueOnce(attributes);
         await expect(
             service.configureProjectRepository(
-                '/projects/demo',
+                projectPath,
                 GODOT_GIT_LFS_TRACKING_POLICY.id,
             ),
         ).resolves.toEqual({ status: 'failed', stage: 'verify' });
