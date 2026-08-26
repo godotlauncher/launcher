@@ -214,12 +214,16 @@ export class CodeEditorIntegrationService {
      * Resolves the code editor to use for automatic project import.
      *
      * @param projectPath - Project directory inspected by each integration.
+     * @param isDotNetProject - Whether a sole eligible .NET editor may be used
+     * when the project and user preferences provide no editor choice.
      * @returns The single eligible project match, the eligible configured
      * default when no project signal exists or multiple integrations match,
-     * or null when the choice is unavailable or ambiguous.
+     * the sole eligible .NET integration when allowed, or null when the choice
+     * is unavailable or ambiguous.
      */
     async resolveConfiguredIntegration(
         projectPath: string,
+        isDotNetProject = false,
     ): Promise<CodeEditorId | null> {
         const configuredIntegrationIds =
             await this.findConfiguredIntegrations(projectPath);
@@ -247,7 +251,9 @@ export class CodeEditorIntegrationService {
         const defaultIntegrationId =
             await this.settingsStore.getDefaultIntegrationId();
         if (!defaultIntegrationId) {
-            return null;
+            return configuredIntegrationIds.length === 0 && isDotNetProject
+                ? await this.resolveSoleEligibleDotNetIntegration()
+                : null;
         }
 
         if (eligibleIntegrationIds.length > 1) {
@@ -259,6 +265,34 @@ export class CodeEditorIntegrationService {
         return (await this.getSelectionEligibility(defaultIntegrationId)) ===
             'eligible'
             ? defaultIntegrationId
+            : null;
+    }
+
+    /**
+     * Resolves the only enabled and installed integration that supports .NET.
+     *
+     * @returns The sole eligible .NET integration, or null when none or
+     * multiple are available.
+     */
+    private async resolveSoleEligibleDotNetIntegration(): Promise<CodeEditorId | null> {
+        const eligibleIntegrationIds: CodeEditorId[] = [];
+
+        for (const integration of this.registry.list()) {
+            if (!integration.metadata.capabilities.dotnet) {
+                continue;
+            }
+
+            if (
+                (await this.getSelectionEligibility(
+                    integration.metadata.id,
+                )) === 'eligible'
+            ) {
+                eligibleIntegrationIds.push(integration.metadata.id);
+            }
+        }
+
+        return eligibleIntegrationIds.length === 1
+            ? eligibleIntegrationIds[0]
             : null;
     }
 

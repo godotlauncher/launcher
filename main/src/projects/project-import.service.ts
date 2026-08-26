@@ -563,8 +563,10 @@ export class ProjectImportService {
         const withGit = gitInspection?.status === 'inside-work-tree';
         let codeEditorId = options.codeEditorId ?? null;
         if (options.codeEditorId === undefined) {
-            codeEditorId =
-                await this.codeEditors.resolveConfiguredIntegration(dirname);
+            codeEditorId = await this.codeEditors.resolveConfiguredIntegration(
+                dirname,
+                hasDotNET,
+            );
         } else if (options.codeEditorId !== null) {
             try {
                 await this.codeEditors.assertIntegrationSelectable(

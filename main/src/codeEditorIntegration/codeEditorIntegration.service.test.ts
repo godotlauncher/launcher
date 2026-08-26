@@ -737,6 +737,56 @@ describe('CodeEditorIntegrationService', () => {
         ).resolves.toBe(CODE_EDITOR_ID);
     });
 
+    it('uses the sole eligible .NET integration when no project signal or default exists', async () => {
+        const integration = createIntegration();
+        vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
+        const service = createService(integration);
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project'), true),
+        ).resolves.toBe(CODE_EDITOR_ID);
+    });
+
+    it('does not use the sole eligible integration for a standard project', async () => {
+        const integration = createIntegration();
+        vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
+        const service = createService(integration);
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project')),
+        ).resolves.toBeNull();
+    });
+
+    it('does not guess between multiple eligible .NET integrations', async () => {
+        const integration = createIntegration();
+        const otherIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);
+        vi.mocked(otherIntegration.isConfiguredForProject).mockResolvedValue(
+            false,
+        );
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([integration, otherIntegration]),
+            createSettingsStore(),
+        );
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project'), true),
+        ).resolves.toBeNull();
+    });
+
+    it('does not replace multiple project inference matches with the sole .NET fallback', async () => {
+        const integration = createIntegration();
+        const otherIntegration = createIntegration(OTHER_CODE_EDITOR_ID);
+        const service = new CodeEditorIntegrationService(
+            new CodeEditorIntegrationRegistry([integration, otherIntegration]),
+            createSettingsStore(),
+        );
+
+        await expect(
+            service.resolveConfiguredIntegration(path.resolve('project'), true),
+        ).resolves.toBeNull();
+    });
+
     it('returns None when the no-signal configured default is unavailable', async () => {
         const integration = createIntegration();
         vi.mocked(integration.isConfiguredForProject).mockResolvedValue(false);

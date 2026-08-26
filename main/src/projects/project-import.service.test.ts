@@ -510,7 +510,7 @@ describe('addProject', () => {
         expect(result.success).toBe(true);
         expect(
             integrationMocks.resolveConfiguredIntegration,
-        ).toHaveBeenCalledWith('/fake/project');
+        ).toHaveBeenCalledWith('/fake/project', false);
         expect(result.newProject?.codeEditorId).toBe('vscode');
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
@@ -518,6 +518,24 @@ describe('addProject', () => {
         );
         const [, input] = writeProjectLauncherConfig.mock.calls[0];
         expect(input).not.toHaveProperty('codeEditorId');
+    });
+
+    it('allows the sole eligible code editor fallback for a .NET import', async () => {
+        readdirSync.mockReturnValue(['project.godot', 'sample.csproj']);
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(
+            'vscode',
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(
+            integrationMocks.resolveConfiguredIntegration,
+        ).toHaveBeenCalledWith('/fake/project', true);
+        expect(result.newProject?.codeEditorId).toBe('vscode');
     });
 
     it('imports ambiguous project-file matches as explicit None', async () => {
