@@ -158,8 +158,10 @@
                 "retryRegistration": "重试添加到启动器",
                 "reviewAndRetry": "检查并重试",
                 "close": "关闭",
+                "done": "完成",
                 "openCloneFolder": "打开克隆文件夹",
-                "deleteCloneAndClose": "删除克隆并关闭"
+                "deleteCloneAndClose": "删除克隆并关闭",
+                "keepCloneAndClose": "保留克隆并关闭"
             },
             "progress": {
                 "preparing": "准备导入...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "选择要添加的项目",
+                "cancelTitle": "取消存储库导入？",
+                "cancelDescription": "存储库已克隆。请选择在关闭前保留还是删除克隆。",
                 "description": "已选择所有发现的项目。请取消选择不想添加的示例、测试或其他项目。",
                 "selectAll": "选择所有项目",
                 "empty": "未找到有效的 Godot 项目。已保留克隆的存储库。"

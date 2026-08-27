@@ -158,8 +158,10 @@
                 "retryRegistration": "Réessayez d'ajouter au lanceur",
                 "reviewAndRetry": "Vérifier et réessayer",
                 "close": "Fermer",
+                "done": "Terminé",
                 "openCloneFolder": "Ouvrir le dossier du clone",
-                "deleteCloneAndClose": "Supprimer le clone et fermer"
+                "deleteCloneAndClose": "Supprimer le clone et fermer",
+                "keepCloneAndClose": "Conserver le clone et fermer"
             },
             "progress": {
                 "preparing": "Préparation de l'importation...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "Choisir les projets à ajouter",
+                "cancelTitle": "Annuler l'importation du dépôt ?",
+                "cancelDescription": "Le dépôt a déjà été cloné. Choisissez de conserver le clone ou de le supprimer avant de fermer.",
                 "description": "Tous les projets trouvés sont sélectionnés. Désélectionnez les exemples, les tests ou les autres projets que vous ne souhaitez pas ajouter.",
                 "selectAll": "Sélectionner tous les projets",
                 "empty": "Aucun projet Godot valide n'a été trouvé. Le dépôt cloné a été conservé."

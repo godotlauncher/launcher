@@ -237,10 +237,11 @@ test('Remote repository discovery lets users exclude projects before adding', as
     const modal = mainPage.getByRole('dialog', {
         name: 'Clone public Git repository',
     });
-    await modal
-        .getByTestId('inputPublicGitRepositoryUrl')
-        .fill('https://example.com/team/games.git');
-    await modal.getByRole('button', { name: 'Continue' }).click();
+    const repositoryUrlInput = modal.getByTestId(
+        'inputPublicGitRepositoryUrl',
+    );
+    await repositoryUrlInput.fill('https://example.com/team/games.git');
+    await repositoryUrlInput.press('Enter');
     await expect(modal.getByText('Clone to')).toBeVisible();
     await modal.getByRole('button', { name: 'Clone repository' }).click();
 
@@ -266,6 +267,64 @@ test('Remote repository discovery lets users exclude projects before adding', as
     ]);
 });
 
+test('Public repository destination focuses the path and Enter starts import', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    const repositoryUrlInput = modal.getByTestId(
+        'inputPublicGitRepositoryUrl',
+    );
+    await repositoryUrlInput.fill('https://example.com/team/games.git');
+    await repositoryUrlInput.press('Enter');
+
+    const destinationInput = modal.getByTestId('inputRemoteProjectPath');
+    await expect(destinationInput).toBeFocused();
+    await destinationInput.press('Enter');
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    const addProjectsButton = modal.getByTestId('btnAddDiscoveredProjects');
+    await expect(addProjectsButton).toBeFocused();
+    await addProjectsButton.press('Enter');
+    await expect(
+        modal.getByText('Choose projects to add'),
+    ).not.toBeVisible();
+});
+
+test('Retryable remote import failure focuses review and retry', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRetryableRemoteImportFailure();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    const repositoryUrlInput = modal.getByTestId(
+        'inputPublicGitRepositoryUrl',
+    );
+    await repositoryUrlInput.fill('https://example.com/team/games.git');
+    await repositoryUrlInput.press('Enter');
+
+    const destinationInput = modal.getByTestId('inputRemoteProjectPath');
+    await expect(destinationInput).toBeFocused();
+    await destinationInput.press('Enter');
+
+    await expect(modal.getByText('Git could not clone the repository.')).toBeVisible();
+    const retryButton = modal.getByTestId('btnReviewAndRetryRemoteImport');
+    await expect(retryButton).toBeFocused();
+    await retryButton.press('Enter');
+
+    await expect(modal.getByText('Clone to')).toBeVisible();
+    await expect(modal.getByTestId('inputRemoteProjectPath')).toBeFocused();
+});
+
 test('Remote repositories can initialise public submodules before review', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
@@ -277,21 +336,65 @@ test('Remote repositories can initialise public submodules before review', async
     const modal = mainPage.getByRole('dialog', {
         name: 'Clone public Git repository',
     });
-    await modal
-        .getByTestId('inputPublicGitRepositoryUrl')
-        .fill('https://example.com/team/games.git');
-    await modal.getByRole('button', { name: 'Continue' }).click();
-    await modal.getByRole('button', { name: 'Clone repository' }).click();
+    const repositoryUrlInput = modal.getByTestId(
+        'inputPublicGitRepositoryUrl',
+    );
+    await repositoryUrlInput.fill('https://example.com/team/games.git');
+    await repositoryUrlInput.press('Enter');
+
+    const destinationInput = modal.getByTestId('inputRemoteProjectPath');
+    await expect(destinationInput).toBeFocused();
+    await destinationInput.press('Enter');
 
     await expect(
         modal.getByText('This repository uses Git submodules'),
     ).toBeVisible();
-    await modal.getByTestId('btnInitialiseSubmodules').click();
+    const initialiseButton = modal.getByTestId('btnInitialiseSubmodules');
+    await expect(initialiseButton).toBeFocused();
+    await initialiseButton.press('Enter');
     await expect(
         modal.getByText('Initialising addons/gdextension'),
     ).toBeVisible();
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    const addProjectsButton = modal.getByTestId('btnAddDiscoveredProjects');
+    await expect(addProjectsButton).toBeFocused();
+    await addProjectsButton.press('Enter');
+    await expect(modal.getByText('Project import complete')).toBeVisible();
     await expect(modal.getByText('GDExtension Demo')).toBeVisible();
+    const doneButton = modal.getByTestId('btnCompleteRemoteProjectImport');
+    await expect(doneButton).toBeFocused();
+    await doneButton.press('Enter');
+    await expect(modal).not.toBeVisible();
+});
+
+test('Repeated remote imports log each submodule activity once', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubRemoteProjectSubmodules();
+    await mainPage.getByTestId('btnProjects').click();
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        await mainPage.getByTestId('btnProjectAdd').click();
+        await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+        const modal = mainPage.getByRole('dialog', {
+            name: 'Clone public Git repository',
+        });
+        await modal
+            .getByTestId('inputPublicGitRepositoryUrl')
+            .fill('https://example.com/team/games.git');
+        await modal.getByRole('button', { name: 'Continue' }).click();
+        await modal.getByRole('button', { name: 'Clone repository' }).click();
+        await modal.getByTestId('btnInitialiseSubmodules').click();
+
+        await expect(
+            modal.getByText('Initialising addons/gdextension', { exact: true }),
+        ).toHaveCount(1);
+        await expect(modal.getByText('Choose projects to add')).toBeVisible();
+        await modal.getByRole('button', { name: 'Cancel import' }).click();
+        await modal.getByTestId('btnKeepPreservedClone').click();
+        await expect(modal).not.toBeVisible();
+    }
 });
 
 test('Cancelling submodule initialisation exposes clone recovery', async () => {
@@ -325,6 +428,65 @@ test('Cancelling submodule initialisation exposes clone recovery', async () => {
     await expect(modal).not.toBeVisible();
     await expect.poll(readRemoteCloneResolutions).toEqual([
         { jobId: 'remote-discovery-job', action: 'delete' },
+    ]);
+});
+
+test('Cancelling review after submodules offers guarded clone deletion', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubRemoteProjectSubmodules();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+    await modal.getByTestId('btnInitialiseSubmodules').click();
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+
+    await modal.getByRole('button', { name: 'Cancel import' }).click();
+    await expect(
+        modal.getByText('Cancel repository import?'),
+    ).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Back' })).toBeFocused();
+    await expect.poll(readRemoteCloneResolutions).toEqual([]);
+
+    await modal.getByRole('button', { name: 'Back' }).click();
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel import' }).click();
+    await modal.getByTestId('btnDeletePreservedClone').click();
+
+    await expect(modal).not.toBeVisible();
+    await expect.poll(readRemoteCloneResolutions).toEqual([
+        { jobId: 'remote-discovery-job', action: 'delete' },
+    ]);
+});
+
+test('GitHub review can explicitly keep the completed clone', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+
+    const modal = mainPage.getByRole('dialog', { name: 'Import from GitHub' });
+    await modal.getByRole('button', { name: 'team/games' }).click();
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+
+    await modal.getByRole('button', { name: 'Cancel import' }).click();
+    await modal.getByTestId('btnKeepPreservedClone').click();
+
+    await expect(modal).not.toBeVisible();
+    await expect.poll(readRemoteCloneResolutions).toEqual([
+        { jobId: 'remote-discovery-job', action: 'keep' },
     ]);
 });
 
@@ -364,6 +526,60 @@ test('Remote clone progress can be cancelled without preserving a final clone', 
         0,
     );
     await expect(modal.getByTestId('btnDeletePreservedClone')).toHaveCount(0);
+});
+
+test('GitHub repository keyboard selection keeps Search inert and Space selection-only', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+
+    const modal = mainPage.getByRole('dialog', { name: 'Import from GitHub' });
+    const search = modal.getByTestId('inputGitHubRepositorySearch');
+    const repository = modal.getByRole('button', { name: 'team/games' });
+    const continueButton = modal.getByRole('button', { name: 'Continue' });
+
+    await expect(search).toBeFocused();
+    await search.press('Enter');
+    await expect(continueButton).toBeDisabled();
+
+    await mainPage.keyboard.press('Tab');
+    await expect(repository).toBeFocused();
+    await repository.press('Space');
+    await expect(repository).toHaveAttribute('aria-pressed', 'true');
+    await expect(continueButton).toBeEnabled();
+    await expect(modal.getByText('Clone to')).toHaveCount(0);
+
+    await repository.press('Enter');
+    await expect(modal.getByText('Clone to')).toBeVisible();
+    await expect(modal.getByText('team/games', { exact: true })).toBeVisible();
+
+    const destinationInput = modal.getByTestId('inputRemoteProjectPath');
+    await expect(destinationInput).toBeFocused();
+    await destinationInput.press('Enter');
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+});
+
+test('Enter selects an unselected GitHub repository choice and continues', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+
+    const modal = mainPage.getByRole('dialog', { name: 'Import from GitHub' });
+    const search = modal.getByTestId('inputGitHubRepositorySearch');
+    const repository = modal.getByRole('button', { name: 'team/games' });
+
+    await expect(search).toBeFocused();
+    await mainPage.keyboard.press('Tab');
+    await expect(repository).toBeFocused();
+    await expect(repository).toHaveAttribute('aria-pressed', 'false');
+
+    await repository.press('Enter');
+    await expect(modal.getByText('Clone to')).toBeVisible();
+    await expect(modal.getByText('team/games', { exact: true })).toBeVisible();
 });
 
 test('GitHub repositories use the same multi-project review', async () => {
@@ -637,14 +853,22 @@ test('Remote registration continues while Installs shows editor progress', async
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
     await expect(importModal.getByText('Editors required')).toBeVisible();
-    await importModal
-        .getByTestId('btnApplyRemoteProjectEditorPlan')
-        .click();
+    const addProjectsButton = importModal.getByTestId(
+        'btnApplyRemoteProjectEditorPlan',
+    );
+    await expect(addProjectsButton).toBeFocused();
+    await addProjectsButton.press('Enter');
     await expect(importModal.getByText('Project import complete')).toBeVisible();
     await expect(
         importModal.getByText(/Selected editor downloads were added to Installs/),
     ).toBeVisible();
-    await importModal.getByRole('button', { name: 'Close' }).click();
+    const doneButton = importModal.getByTestId(
+        'btnCompleteRemoteProjectImport',
+    );
+    await expect(doneButton).toHaveText('Done');
+    await expect(doneButton).toBeFocused();
+    await doneButton.press('Enter');
+    await expect(importModal).not.toBeVisible();
     await mainPage.getByTestId('btnInstalls').click();
 
     await publishReleaseInstallProgress({
@@ -1148,6 +1372,21 @@ async function stubPreservedRemoteImportFailure(): Promise<void> {
                 jobId: 'remote-discovery-job',
                 reason: 'discovery-failed',
                 repositoryPath: '/home/docs/Godot/Projects/games',
+            },
+        }));
+    });
+}
+
+/** Makes clone execution fail before a final repository path is retained. */
+async function stubRetryableRemoteImportFailure(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('projects.importRemoteProject');
+        ipcMain.handle('projects.importRemoteProject', async () => ({
+            success: true,
+            data: {
+                ok: false,
+                jobId: 'remote-clone-failed-job',
+                reason: 'clone-failed',
             },
         }));
     });

@@ -158,8 +158,10 @@
                 "retryRegistration": "Başlatıcıya eklemeyi yeniden deneyin",
                 "reviewAndRetry": "İnceleyin ve yeniden deneyin",
                 "close": "Kapat",
+                "done": "Bitti",
                 "openCloneFolder": "Klon klasörünü aç",
-                "deleteCloneAndClose": "Klonu sil ve kapat"
+                "deleteCloneAndClose": "Klonu sil ve kapat",
+                "keepCloneAndClose": "Klonu tut ve kapat"
             },
             "progress": {
                 "preparing": "İçe aktarma hazırlanıyor...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "Eklenecek projeleri seçin",
+                "cancelTitle": "Depo içe aktarması iptal edilsin mi?",
+                "cancelDescription": "Depo zaten klonlandı. Kapatmadan önce klonu tutmayı veya silmeyi seçin.",
                 "description": "Bulunan tüm projeler seçilidir. Eklemek istemediğiniz örneklerin, testlerin veya diğer projelerin seçimini kaldırın.",
                 "selectAll": "Tüm projeleri seç",
                 "empty": "Geçerli bir Godot projesi bulunamadı. Klonlanan depo korundu."

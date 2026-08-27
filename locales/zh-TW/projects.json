@@ -158,8 +158,10 @@
                 "retryRegistration": "重試添加到啟動器",
                 "reviewAndRetry": "檢查並重試",
                 "close": "關閉",
+                "done": "完成",
                 "openCloneFolder": "開啟克隆資料夾",
-                "deleteCloneAndClose": "刪除克隆並關閉"
+                "deleteCloneAndClose": "刪除克隆並關閉",
+                "keepCloneAndClose": "保留克隆並關閉"
             },
             "progress": {
                 "preparing": "準備導入...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "選擇要新增的專案",
+                "cancelTitle": "取消儲存庫匯入？",
+                "cancelDescription": "儲存庫已克隆。請選擇在關閉前保留或刪除克隆。",
                 "description": "已選取所有找到的專案。請取消選取不想新增的範例、測試或其他專案。",
                 "selectAll": "選取所有專案",
                 "empty": "找不到有效的 Godot 專案。已保留克隆的儲存庫。"

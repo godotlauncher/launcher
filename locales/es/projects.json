@@ -158,8 +158,10 @@
                 "retryRegistration": "Volver a intentar añadir al Launcher",
                 "reviewAndRetry": "Revisar e intentar de nuevo",
                 "close": "Cerrar",
+                "done": "Hecho",
                 "openCloneFolder": "Abrir carpeta del clon",
-                "deleteCloneAndClose": "Eliminar clon y cerrar"
+                "deleteCloneAndClose": "Eliminar clon y cerrar",
+                "keepCloneAndClose": "Conservar clon y cerrar"
             },
             "progress": {
                 "preparing": "Preparando la importación...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "Elige los proyectos que quieres añadir",
+                "cancelTitle": "¿Cancelar la importación del repositorio?",
+                "cancelDescription": "El repositorio ya se ha clonado. Elige si quieres conservar el clon o eliminarlo antes de cerrar.",
                 "description": "Todos los proyectos encontrados están seleccionados. Desmarca los ejemplos, las pruebas u otros proyectos que no quieras añadir.",
                 "selectAll": "Seleccionar todos los proyectos",
                 "empty": "No se encontraron proyectos de Godot válidos. Se ha conservado el repositorio clonado."

@@ -158,8 +158,10 @@
                 "retryRegistration": "Spróbuj ponownie dodać do Launchera",
                 "reviewAndRetry": "Przejrzyj i spróbuj ponownie",
                 "close": "Zamknij",
+                "done": "Gotowe",
                 "openCloneFolder": "Otwórz folder klonu",
-                "deleteCloneAndClose": "Usuń klon i zamknij"
+                "deleteCloneAndClose": "Usuń klon i zamknij",
+                "keepCloneAndClose": "Zachowaj klon i zamknij"
             },
             "progress": {
                 "preparing": "Przygotowanie importu...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "Wybierz projekty do dodania",
+                "cancelTitle": "Anulować importowanie repozytorium?",
+                "cancelDescription": "Repozytorium zostało już sklonowane. Wybierz, czy zachować klon, czy usunąć go przed zamknięciem.",
                 "description": "Wszystkie znalezione projekty są zaznaczone. Odznacz przykłady, testy lub inne projekty, których nie chcesz dodawać.",
                 "selectAll": "Zaznacz wszystkie projekty",
                 "empty": "Nie znaleziono prawidłowych projektów Godot. Sklonowane repozytorium zostało zachowane."

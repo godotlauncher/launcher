@@ -158,8 +158,10 @@
                 "retryRegistration": "ランチャーへの追加を再試行します",
                 "reviewAndRetry": "確認して再試行してください",
                 "close": "閉じる",
+                "done": "完了",
                 "openCloneFolder": "クローンのフォルダーを開く",
-                "deleteCloneAndClose": "クローンを削除して閉じる"
+                "deleteCloneAndClose": "クローンを削除して閉じる",
+                "keepCloneAndClose": "クローンを保持して閉じる"
             },
             "progress": {
                 "preparing": "インポートを準備しています...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "追加するプロジェクトを選択",
+                "cancelTitle": "リポジトリのインポートをキャンセルしますか？",
+                "cancelDescription": "リポジトリはすでにクローンされています。閉じる前にクローンを保持するか削除するかを選択してください。",
                 "description": "見つかったすべてのプロジェクトが選択されています。追加しないサンプル、テスト、その他のプロジェクトの選択を解除してください。",
                 "selectAll": "すべてのプロジェクトを選択",
                 "empty": "有効な Godot プロジェクトが見つかりませんでした。クローンしたリポジトリは保持されています。"

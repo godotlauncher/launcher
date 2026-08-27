@@ -158,8 +158,10 @@
                 "retryRegistration": "Erġa' ipprova żid mal-Launcher",
                 "reviewAndRetry": "Irrevedi u erġa' pprova",
                 "close": "Agħlaq",
+                "done": "Lest",
                 "openCloneFolder": "Iftaħ il-folder tal-klonu",
-                "deleteCloneAndClose": "Ħassar il-klonu u agħlaq"
+                "deleteCloneAndClose": "Ħassar il-klonu u agħlaq",
+                "keepCloneAndClose": "Żomm il-klonu u agħlaq"
             },
             "progress": {
                 "preparing": "Nipprepara l-importazzjoni...",
@@ -188,6 +190,8 @@
             },
             "review": {
                 "title": "Agħżel il-proġetti li trid iżżid",
+                "cancelTitle": "Tikkanċella l-importazzjoni tar-repożitorju?",
+                "cancelDescription": "Ir-repożitorju diġà ġie kklonat. Agħżel jekk iżżommx il-klonu jew tħassrux qabel tagħlaq.",
                 "description": "Il-proġetti kollha misjuba huma magħżula. Neħħi l-għażla minn eżempji, testijiet, jew proġetti oħra li ma tridx iżżid.",
                 "selectAll": "Agħżel il-proġetti kollha",
                 "empty": "Ma nstab l-ebda proġett Godot validu. Ir-repożitorju kklonat inżamm."

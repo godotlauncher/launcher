@@ -77,6 +77,7 @@ type ModalStep =
     | 'submodules'
     | 'initialising-submodules'
     | 'review'
+    | 'cancel-review'
     | 'checking-projects'
     | 'editors-required'
     | 'registering-projects'
@@ -272,6 +273,13 @@ export const RemoteProjectImportModal: React.FC<
     const clonePreservedRef = useRef(false);
     const submoduleActivityIdRef = useRef(0);
     const publicUrlInputRef = useRef<HTMLInputElement>(null);
+    const remoteProjectPathInputRef = useRef<HTMLInputElement>(null);
+    const initialiseSubmodulesButtonRef = useRef<HTMLButtonElement>(null);
+    const addDiscoveredProjectsButtonRef = useRef<HTMLButtonElement>(null);
+    const reviewAndRetryButtonRef = useRef<HTMLButtonElement>(null);
+    const applyEditorPlanButtonRef = useRef<HTMLButtonElement>(null);
+    const completionDoneButtonRef = useRef<HTMLButtonElement>(null);
+    const cancelReviewBackButtonRef = useRef<HTMLButtonElement>(null);
     const selectAllRef = useRef<HTMLInputElement>(null);
 
     const open = source !== null;
@@ -443,6 +451,35 @@ export const RemoteProjectImportModal: React.FC<
     }, [open, source, step]);
 
     useEffect(() => {
+        if (!open || step !== 'destination') return;
+        const input = remoteProjectPathInputRef.current;
+        if (!input) return;
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+    }, [open, step]);
+
+    useEffect(() => {
+        if (open && step === 'cancel-review') {
+            cancelReviewBackButtonRef.current?.focus();
+        }
+    }, [open, step]);
+
+    useEffect(() => {
+        if (!open) return;
+        if (step === 'submodules') {
+            initialiseSubmodulesButtonRef.current?.focus();
+        } else if (step === 'review' && discoveredProjects.length > 0) {
+            addDiscoveredProjectsButtonRef.current?.focus();
+        } else if (step === 'import-failed' && !clonePreservedPath) {
+            reviewAndRetryButtonRef.current?.focus();
+        } else if (step === 'editors-required') {
+            applyEditorPlanButtonRef.current?.focus();
+        } else if (step === 'registration-complete') {
+            completionDoneButtonRef.current?.focus();
+        }
+    }, [clonePreservedPath, discoveredProjects.length, open, step]);
+
+    useEffect(() => {
         if (selectAllRef.current) {
             selectAllRef.current.indeterminate =
                 selectedCount > 0 && !allProjectsSelected;
@@ -470,9 +507,17 @@ export const RemoteProjectImportModal: React.FC<
         }
     };
 
-    const continueWithRepository = () => {
-        if (!selectedRepository || selectedRepository.alreadyImported) return;
-        setDirectoryName(selectedRepository.name);
+    /**
+     * Advances the selected connected repository to destination review.
+     *
+     * @param repository - Repository selected through the row or footer action.
+     */
+    const continueWithRepository = (
+        repository: RemoteRepositorySummary | null,
+    ) => {
+        if (!repository || repository.alreadyImported) return;
+        setSelectedRepository(repository);
+        setDirectoryName(repository.name);
         setParentDirectory(defaultParentDirectory);
         setStep('destination');
     };
@@ -1107,6 +1152,18 @@ export const RemoteProjectImportModal: React.FC<
                             setPublicUrl(event.target.value);
                             setPublicError(null);
                         }}
+                        onKeyDown={(event) => {
+                            if (
+                                event.key !== 'Enter' ||
+                                event.repeat ||
+                                event.nativeEvent.isComposing
+                            )
+                                return;
+                            event.preventDefault();
+                            if (!publicUrl.trim() || inspectingPublicUrl)
+                                return;
+                            void inspectPublicSource();
+                        }}
                     />
                 </label>
                 {publicError && (
@@ -1232,6 +1289,11 @@ export const RemoteProjectImportModal: React.FC<
                                         onClick={() =>
                                             setSelectedRepository(repository)
                                         }
+                                        onKeyDown={(event) => {
+                                            if (event.key !== 'Enter') return;
+                                            event.preventDefault();
+                                            continueWithRepository(repository);
+                                        }}
                                     >
                                         <span className="min-w-0 flex-1 truncate font-medium">
                                             {repository.owner}/{repository.name}
@@ -1278,7 +1340,7 @@ export const RemoteProjectImportModal: React.FC<
                     type="button"
                     className="btn btn-primary"
                     disabled={!selectedRepository || Boolean(repositoryError)}
-                    onClick={continueWithRepository}
+                    onClick={() => continueWithRepository(selectedRepository)}
                 >
                     {t('common:buttons.continue')}
                 </button>
@@ -1318,6 +1380,7 @@ export const RemoteProjectImportModal: React.FC<
                     </div>
                     <label className="input z-10 w-full min-w-0 focus-within:outline-none">
                         <input
+                            ref={remoteProjectPathInputRef}
                             data-testid="inputRemoteProjectPath"
                             className="w-full min-w-0 outline-none"
                             type="text"
@@ -1326,6 +1389,16 @@ export const RemoteProjectImportModal: React.FC<
                             onChange={(event) =>
                                 setParentDirectory(event.target.value)
                             }
+                            onKeyDown={(event) => {
+                                if (
+                                    event.key !== 'Enter' ||
+                                    event.repeat ||
+                                    event.nativeEvent.isComposing
+                                )
+                                    return;
+                                event.preventDefault();
+                                void startImport();
+                            }}
                         />
                         <span
                             data-testid="remoteProjectPathSuffix"
@@ -1457,6 +1530,7 @@ export const RemoteProjectImportModal: React.FC<
                     )}
                 </button>
                 <button
+                    ref={initialiseSubmodulesButtonRef}
                     type="button"
                     data-testid="btnInitialiseSubmodules"
                     className="btn btn-primary"
@@ -1593,11 +1667,12 @@ export const RemoteProjectImportModal: React.FC<
                     <button
                         type="button"
                         className="btn btn-ghost"
-                        onClick={close}
+                        onClick={() => setStep('cancel-review')}
                     >
-                        {t('addProject.remote.actions.close')}
+                        {t('addProject.remote.actions.cancelImport')}
                     </button>
                     <button
+                        ref={addDiscoveredProjectsButtonRef}
                         type="button"
                         data-testid="btnAddDiscoveredProjects"
                         className="btn btn-primary"
@@ -1610,6 +1685,73 @@ export const RemoteProjectImportModal: React.FC<
                     </button>
                 </>
             );
+    } else if (step === 'cancel-review') {
+        body = (
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-lg font-semibold">
+                        {t('addProject.remote.review.cancelTitle')}
+                    </h2>
+                    <p className="text-sm text-base-content/70">
+                        {t('addProject.remote.review.cancelDescription')}
+                    </p>
+                </div>
+                <code className="break-all rounded-box bg-base-200 p-3 text-sm">
+                    {repositoryPath}
+                </code>
+                {cloneRecoveryError && (
+                    <div className="alert alert-error alert-soft" role="alert">
+                        <TriangleAlert aria-hidden="true" size={18} />
+                        <span>{t(cloneRecoveryError)}</span>
+                    </div>
+                )}
+            </div>
+        );
+        footer = (
+            <div className="flex w-full items-center justify-between gap-4">
+                <button
+                    ref={cancelReviewBackButtonRef}
+                    type="button"
+                    className="btn btn-ghost"
+                    disabled={resolvingClone}
+                    onClick={() => setStep('review')}
+                >
+                    {t('common:buttons.back')}
+                </button>
+                <div className="flex flex-wrap items-center justify-end gap-3">
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        disabled={resolvingClone}
+                        onClick={() => void openPreservedClone()}
+                    >
+                        <FolderOpen aria-hidden="true" size={18} />
+                        {t('addProject.remote.actions.openCloneFolder')}
+                    </button>
+                    <button
+                        type="button"
+                        data-testid="btnKeepPreservedClone"
+                        className="btn btn-neutral"
+                        disabled={resolvingClone}
+                        onClick={close}
+                    >
+                        {t('addProject.remote.actions.keepCloneAndClose')}
+                    </button>
+                    {cloneRecoveryAvailable && (
+                        <button
+                            type="button"
+                            data-testid="btnDeletePreservedClone"
+                            className="btn btn-error"
+                            disabled={resolvingClone}
+                            onClick={() => void deletePreservedClone()}
+                        >
+                            <Trash2 aria-hidden="true" size={18} />
+                            {t('addProject.remote.actions.deleteCloneAndClose')}
+                        </button>
+                    )}
+                </div>
+            </div>
+        );
     } else if (step === 'checking-projects') {
         body = (
             <div className="flex flex-col gap-4" role="status">
@@ -1686,6 +1828,7 @@ export const RemoteProjectImportModal: React.FC<
                     {t('addProject.remote.editorBatch.finishWithoutRemaining')}
                 </button>
                 <button
+                    ref={applyEditorPlanButtonRef}
                     type="button"
                     data-testid="btnApplyRemoteProjectEditorPlan"
                     className="btn btn-primary"
@@ -1759,12 +1902,14 @@ export const RemoteProjectImportModal: React.FC<
             <div className="flex w-full items-center justify-between gap-4">
                 {preservedCloneActions}
                 <button
+                    ref={completionDoneButtonRef}
                     type="button"
+                    data-testid="btnCompleteRemoteProjectImport"
                     className="btn btn-primary"
                     disabled={resolvingClone}
                     onClick={close}
                 >
-                    {t('addProject.remote.actions.close')}
+                    {t('addProject.remote.actions.done')}
                 </button>
             </div>
         );
@@ -1807,7 +1952,9 @@ export const RemoteProjectImportModal: React.FC<
                 )}
                 {!clonePreservedPath && (
                     <button
+                        ref={reviewAndRetryButtonRef}
                         type="button"
+                        data-testid="btnReviewAndRetryRemoteImport"
                         className="btn btn-primary"
                         onClick={() => setStep('destination')}
                     >
