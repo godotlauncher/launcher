@@ -1,6 +1,7 @@
 import type { GitIdentityScope } from '@shared/contracts';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
+import type { RefObject } from 'react';
 import { Dialog } from '../../../../components/dialog.component';
 import { TextField } from '../../../../components/ui/textField.component';
 import type { CreateProjectGitIdentitySaveChoice } from '../createProject.model';
@@ -31,6 +32,8 @@ type CreateProjectGitIdentityDialogProps = {
     onUseDifferentIdentity: () => void;
     onBack: () => void;
     onSave: () => void;
+    onRequestClose: () => void;
+    returnFocusRef: RefObject<HTMLElement | null>;
 };
 
 /**
@@ -63,12 +66,16 @@ export const CreateProjectGitIdentityDialog: React.FC<
     onUseDifferentIdentity,
     onBack,
     onSave,
+    onRequestClose,
+    returnFocusRef,
 }) => {
     if (page === 'warning') {
         return (
             <Dialog
                 icon={<TriangleAlert className="text-warning" />}
                 title={t('gitIdentity.warningTitle')}
+                onRequestClose={onRequestClose}
+                returnFocusRef={returnFocusRef}
                 footer={
                     <>
                         <button
@@ -104,6 +111,8 @@ export const CreateProjectGitIdentityDialog: React.FC<
                     ? 'gitIdentity.presetTitle'
                     : 'gitIdentity.formTitle',
             )}
+            onRequestClose={saving ? undefined : onRequestClose}
+            returnFocusRef={returnFocusRef}
             footer={
                 presetPage ? (
                     <>

@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, type ReactNode, useRef } from 'react';
 import { Dialog } from './dialog.component';
 
 interface AlertProps {
@@ -23,10 +23,16 @@ export type ConfirmButton =
           onClick?: ConfirmButtonClick;
       };
 
+/**
+ * Runs a confirmation action and closes when it reports success.
+ *
+ * @param callback - Optional confirmation action.
+ * @param shouldClose - Callback that removes the confirmation.
+ */
 const onClickShouldClose = (
     callback?: ConfirmButtonClick,
     shouldClose?: () => void,
-) => {
+): void => {
     const result = callback?.();
 
     if (result instanceof Promise) {
@@ -43,6 +49,26 @@ const onClickShouldClose = (
     }
 };
 
+/**
+ * Closes a confirmation through its declared Cancel action.
+ *
+ * @param button - Cancel button whose callback should run.
+ * @param shouldClose - Callback that removes the confirmation.
+ */
+function requestCancel(
+    button: Exclude<ConfirmButton, { key: string }>,
+    shouldClose: () => void,
+): void {
+    shouldClose();
+    void button.onClick?.();
+}
+
+/**
+ * Renders a controlled confirmation dialog.
+ *
+ * @param props - Confirmation content, actions, and close callback.
+ * @returns The confirmation dialog.
+ */
 export const Confirm: React.FC<AlertProps> = ({
     content,
     buttons,
@@ -50,10 +76,21 @@ export const Confirm: React.FC<AlertProps> = ({
     icon,
     shouldClose,
 }) => {
+    const cancelButtonRef = useRef<HTMLButtonElement>(null);
+    const cancelButton = buttons?.find(
+        (button) => !('render' in button) && button.isCancel,
+    );
+
     return (
         <Dialog
             icon={icon}
             title={title}
+            initialFocusRef={cancelButton ? cancelButtonRef : undefined}
+            onRequestClose={
+                cancelButton && !('render' in cancelButton)
+                    ? () => requestCancel(cancelButton, shouldClose)
+                    : undefined
+            }
             footer={buttons?.map((button, index) => (
                 <Fragment
                     key={
@@ -66,12 +103,12 @@ export const Confirm: React.FC<AlertProps> = ({
                         button.render(shouldClose)
                     ) : (
                         <button
+                            ref={button.isCancel ? cancelButtonRef : undefined}
                             type="button"
                             data-testid={`btnAlert${index}`}
                             onClick={() => {
                                 if (button.isCancel) {
-                                    shouldClose();
-                                    void button.onClick?.();
+                                    requestCancel(button, shouldClose);
                                 } else {
                                     onClickShouldClose(button.onClick, () =>
                                         shouldClose(),

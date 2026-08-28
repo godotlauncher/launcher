@@ -106,6 +106,166 @@ test('SelectField supports keyboard navigation and announces its selected code e
     await expect(trigger).not.toBeFocused();
 });
 
+test('Confirmation dialogs contain focus and restore it after Escape', async () => {
+    const integrationRow = await openCodeEditorSettings();
+    const enabledSwitch = integrationRow.getByRole('checkbox', {
+        name: 'Enabled: Visual Studio Code',
+    });
+    await enabledSwitch.click();
+
+    const dialog = mainPage.getByRole('dialog', {
+        name: 'Disable Visual Studio Code?',
+    });
+    const cancelButton = dialog.getByRole('button', {
+        name: 'Cancel',
+        exact: true,
+    });
+    await expect(dialog).toBeVisible();
+    await expect(cancelButton).toBeFocused();
+    expect(await dialog.evaluate((element) => element.matches(':modal'))).toBe(
+        true,
+    );
+
+    const projectsNavigation = mainPage.getByTestId('btnProjects');
+    await projectsNavigation.evaluate((element) => element.focus());
+    await expect(cancelButton).toBeFocused();
+
+    await mainPage.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(enabledSwitch).toBeFocused();
+    await expect(enabledSwitch).toBeChecked();
+});
+
+test('Alerts focus their safe action and remain modal', async () => {
+    await stubRecordedIpcHandler(electronApp, {
+        key: 'clearReleaseCache',
+        channel: 'app.clearReleaseCache',
+        data: undefined,
+        error: 'Simulated cache refresh failure.',
+    });
+    await mainPage.getByTestId('btnSettings').click();
+    await mainPage.getByTestId('tabInstalls').click();
+
+    const refreshButton = mainPage.getByRole('button', {
+        name: 'Refresh cache',
+        exact: true,
+    });
+    await refreshButton.click();
+
+    const dialog = mainPage.getByRole('dialog', {
+        name: 'Unable to Refresh Cache',
+    });
+    const okButton = dialog.getByRole('button', { name: 'Ok', exact: true });
+    await expect(dialog).toBeVisible();
+    await expect(okButton).toBeFocused();
+    expect(await dialog.evaluate((element) => element.matches(':modal'))).toBe(
+        true,
+    );
+
+    await mainPage.getByTestId('btnProjects').evaluate((element) =>
+        element.focus(),
+    );
+    await expect(okButton).toBeFocused();
+
+    await mainPage.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+});
+
+test('Git identity dialog returns to Create Project and blocks Escape while saving', async () => {
+    const projectName = 'Modal Focus E2E Project';
+    await stubGlobalGitIdentity(electronApp, { name: '', email: '' });
+    await openCreateProject();
+
+    await mainPage.getByTestId('inputProjectName').fill(projectName);
+    const createButton = mainPage.getByTestId('btnCreateProject');
+    await createButton.click();
+
+    const warningDialog = mainPage.getByRole('dialog', {
+        name: 'Git identity required',
+    });
+    const warningTitle = warningDialog.getByRole('heading', {
+        name: 'Git identity required',
+    });
+    await expect(warningDialog).toBeVisible();
+    await expect(warningTitle).toBeFocused();
+    expect(
+        await warningDialog.evaluate((element) => element.matches(':modal')),
+    ).toBe(true);
+
+    const projectNameInput = mainPage.getByTestId('inputProjectName');
+    await projectNameInput.evaluate((element) => element.focus());
+    await expect(warningTitle).toBeFocused();
+
+    await mainPage.keyboard.press('Escape');
+    await expect(warningDialog).toHaveCount(0);
+    const createDrawer = mainPage.getByRole('dialog', {
+        name: 'New Project',
+    });
+    await expect(createDrawer).toBeVisible();
+    expect(
+        await createDrawer.evaluate((element) =>
+            element.contains(document.activeElement),
+        ),
+    ).toBe(true);
+
+    await stubRecordedIpcHandler(electronApp, {
+        key: 'saveIdentityPreset',
+        channel: 'git.saveProjectIdentityPreset',
+        data: {
+            success: true,
+            preset: {
+                name: 'Modal User',
+                email: 'modal@example.com',
+                useForNewRepositories: true,
+            },
+        },
+        pending: true,
+    });
+    await stubRecordedIpcHandler(electronApp, {
+        key: 'createProjectAfterIdentity',
+        channel: 'projects.createProject',
+        data: {
+            success: false,
+            error: 'Captured Create Project request.',
+        },
+    });
+
+    await createButton.click();
+    await warningDialog
+        .getByRole('button', { name: 'Add Git identity', exact: true })
+        .click();
+    const identityDialog = mainPage.getByRole('dialog', {
+        name: 'Add Git identity',
+    });
+    await identityDialog.getByLabel('Name', { exact: true }).fill('Modal User');
+    await identityDialog
+        .getByLabel('Email', { exact: true })
+        .fill('modal@example.com');
+    await identityDialog
+        .getByLabel('Save as default local identity', { exact: true })
+        .check();
+    const saveButton = identityDialog.getByRole('button', {
+        name: 'Save and create project',
+        exact: true,
+    });
+    await saveButton.click();
+    await expect
+        .poll(() => readRecordedIpcCalls(electronApp, 'saveIdentityPreset'))
+        .toHaveLength(1);
+    await expect(saveButton).toBeDisabled();
+
+    await mainPage.keyboard.press('Escape');
+    await expect(identityDialog).toBeVisible();
+
+    await releaseRecordedIpcHandler(electronApp, 'saveIdentityPreset');
+    await expect(identityDialog).toHaveCount(0);
+    await expect
+        .poll(() =>
+            readRecordedIpcCalls(electronApp, 'createProjectAfterIdentity'),
+        )
+        .toHaveLength(1);
+});
+
 test('Create Project submits both an integration and explicit None', async () => {
     const projectName = 'Code Editor E2E Project';
 

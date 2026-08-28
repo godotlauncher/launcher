@@ -36,6 +36,8 @@ describe('CreateProjectGitIdentityDialog', () => {
                 onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
+                onRequestClose={noop}
+                returnFocusRef={{ current: null }}
             />,
         );
 
@@ -69,6 +71,8 @@ describe('CreateProjectGitIdentityDialog', () => {
                 onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
+                onRequestClose={noop}
+                returnFocusRef={{ current: null }}
             />,
         );
 
@@ -103,6 +107,8 @@ describe('CreateProjectGitIdentityDialog', () => {
                 onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
+                onRequestClose={noop}
+                returnFocusRef={{ current: null }}
             />,
         );
 
@@ -135,6 +141,8 @@ describe('CreateProjectGitIdentityDialog', () => {
                 onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
+                onRequestClose={noop}
+                returnFocusRef={{ current: null }}
             />,
         );
         expect(completeGlobalHtml).toContain('gitIdentity.presetTitle');
@@ -165,6 +173,8 @@ describe('CreateProjectGitIdentityDialog', () => {
                 onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
+                onRequestClose={noop}
+                returnFocusRef={{ current: null }}
             />,
         );
         expect(missingGlobalHtml).toContain('gitIdentity.useDifferent');
@@ -195,6 +205,8 @@ describe('CreateProjectGitIdentityDialog', () => {
                 onUseDifferentIdentity={noop}
                 onBack={noop}
                 onSave={noop}
+                onRequestClose={noop}
+                returnFocusRef={{ current: null }}
             />,
         );
 
