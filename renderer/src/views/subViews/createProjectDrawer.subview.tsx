@@ -75,6 +75,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         'common',
         'installEditor',
     ]);
+    const createButtonRef = useRef<HTMLButtonElement>(null);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseKey, setReleaseKey] = useState<string | null>(null);
     const [projectName, setProjectName] = useState<string>('');
@@ -872,6 +873,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             onEditNowChange={setEditNow}
                             onCancel={() => onOpenChange(false)}
                             onCreateProject={() => void onCreateProject()}
+                            createButtonRef={createButtonRef}
                         />
                     </Drawer.Footer>
                 </form>
@@ -913,6 +915,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     onUseDifferentIdentity={handleUseDifferentGitIdentity}
                     onBack={handleGitIdentityBack}
                     onSave={() => void handleSaveGitIdentity()}
+                    onRequestClose={() => setGitIdentityDialogPage(null)}
+                    returnFocusRef={createButtonRef}
                 />
             )}
         </>
