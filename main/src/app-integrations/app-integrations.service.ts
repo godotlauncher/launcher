@@ -16,6 +16,7 @@ import {
     type AppIntegrationProviderConnection,
     AppIntegrationProviderError,
     type AppIntegrationProviderInstallation,
+    type AppIntegrationRefreshTrigger,
 } from './app-integration.types.js';
 import type {
     AppIntegrationCredentialLeaseResult,
@@ -23,6 +24,7 @@ import type {
 } from './app-integration-capability.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppIntegrationProviderRegistry } from './app-integration-provider.registry.js';
+import { logAppIntegrationRefreshDiagnostic } from './app-integration-refresh-diagnostics.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppIntegrationSecretsStore } from './app-integration-secrets.store.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -288,7 +290,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
         this.activeRefreshes.add(providerId);
         try {
             for (const record of await this.store.listByProvider(providerId)) {
-                await this.refreshConnection(provider, record);
+                await this.refreshConnection(provider, record, 'connections');
             }
             return { ok: true, integration: await this.summarize(provider) };
         } catch {
@@ -362,12 +364,14 @@ export class AppIntegrationsService implements OnModuleDestroy {
             let providerUnavailable = false;
             try {
                 for (const record of initialRecords) {
-                    if (!record.requiresReauthorisation) {
-                        try {
-                            await this.refreshConnection(provider, record);
-                        } catch {
-                            providerUnavailable = true;
-                        }
+                    try {
+                        await this.refreshConnection(
+                            provider,
+                            record,
+                            'credential-lease',
+                        );
+                    } catch {
+                        providerUnavailable = true;
                     }
                 }
                 const records = await this.store.listByProvider(providerId);
@@ -907,13 +911,23 @@ export class AppIntegrationsService implements OnModuleDestroy {
      *
      * @param provider - Registered provider implementation.
      * @param record - Persisted authorised-user group.
+     * @param trigger - Safe caller classification for diagnostics.
      */
     private async refreshConnection(
         provider: AppIntegrationProvider,
         record: AppIntegrationConnectionRecord,
+        trigger: AppIntegrationRefreshTrigger,
     ): Promise<void> {
+        const context = { operationId: randomUUID(), trigger } as const;
         const encrypted = await this.secrets.get(record.id);
         if (!encrypted) {
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: provider.metadata.id,
+                phase: 'credential-read',
+                outcome: 'terminal-failure',
+                code: 'credential-missing',
+            });
             await this.store.set({
                 ...record,
                 requiresReauthorisation: true,
@@ -924,6 +938,13 @@ export class AppIntegrationsService implements OnModuleDestroy {
         try {
             credential = await this.secureStorage.decrypt(encrypted);
         } catch {
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: provider.metadata.id,
+                phase: 'credential-decrypt',
+                outcome: 'terminal-failure',
+                code: 'secure-storage-error',
+            });
             await this.store.set({
                 ...record,
                 requiresReauthorisation: true,
@@ -935,18 +956,48 @@ export class AppIntegrationsService implements OnModuleDestroy {
             AbortSignal.timeout(30_000),
             credential,
             record.accountId,
+            context,
         );
         if (result.status === 'refreshed') {
-            await this.persist(
-                provider.metadata.id,
-                result.connection,
-                record,
-                'reconnect',
-            );
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: provider.metadata.id,
+                phase: 'credential-persist',
+                outcome: 'started',
+            });
+            try {
+                await this.persist(
+                    provider.metadata.id,
+                    result.connection,
+                    record,
+                    'reconnect',
+                );
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: provider.metadata.id,
+                    phase: 'credential-persist',
+                    outcome: 'succeeded',
+                });
+            } catch (error) {
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: provider.metadata.id,
+                    phase: 'credential-persist',
+                    outcome: 'temporary-failure',
+                    code: 'unknown',
+                });
+                throw error;
+            }
         } else if (result.status === 'reauthorisation-required') {
             await this.store.set({
                 ...record,
                 requiresReauthorisation: true,
+            });
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: provider.metadata.id,
+                phase: 'metadata-update',
+                outcome: 'succeeded',
             });
         }
     }

@@ -230,6 +230,7 @@ describe('GitHubAuthBrokerClient', () => {
                 async () =>
                     new Response(JSON.stringify('secret'.repeat(12_000)), {
                         status: 503,
+                        headers: { 'x-request-id': 'safe-request-id' },
                     }),
             ),
         );
@@ -244,6 +245,8 @@ describe('GitHubAuthBrokerClient', () => {
                 'connect',
                 new AbortController().signal,
             ),
-        ).rejects.toEqual(new GitHubBrokerError('invalid_response', 503));
+        ).rejects.toEqual(
+            new GitHubBrokerError('invalid_response', 503, 'safe-request-id'),
+        );
     });
 });

@@ -73,6 +73,13 @@ export type AppIntegrationProviderRefreshResult =
     | { status: 'reauthorisation-required' }
     | { status: 'temporarily-unavailable' };
 
+export type AppIntegrationRefreshTrigger = 'connections' | 'credential-lease';
+
+export type AppIntegrationRefreshContext = {
+    operationId: string;
+    trigger: AppIntegrationRefreshTrigger;
+};
+
 export type AppIntegrationPreparedCredential = {
     credential: string;
     accessTokenExpiresAt: string | null;
@@ -137,11 +144,13 @@ export interface AppIntegrationProvider {
      * @param signal - Refresh cancellation signal.
      * @param credential - Decrypted provider credential.
      * @param expectedAccountId - Immutable provider account ID.
+     * @param context - Safe correlation metadata for this refresh operation.
      */
     refresh(
         signal: AbortSignal,
         credential: string,
         expectedAccountId: string,
+        context: AppIntegrationRefreshContext,
     ): Promise<AppIntegrationProviderRefreshResult>;
 
     /**

@@ -31,10 +31,12 @@ export class GitHubBrokerError extends Error {
      *
      * @param code - Stable broker error code.
      * @param status - HTTP response status.
+     * @param requestId - Validated broker request correlation ID.
      */
     constructor(
         readonly code: string,
         readonly status: number,
+        readonly requestId: string | null = null,
     ) {
         super(`GitHub authentication broker failed: ${code}`);
         this.name = 'GitHubBrokerError';
@@ -231,9 +233,13 @@ export class GitHubAuthBrokerClient {
                 BROKER_RESPONSE_MAX_BYTES,
             ).catch(() => null),
         );
+        const requestId = response.headers.get('x-request-id');
         throw new GitHubBrokerError(
             parsed.success ? parsed.data.error.code : 'invalid_response',
             response.status,
+            requestId && /^[A-Za-z0-9-]{1,128}$/u.test(requestId)
+                ? requestId
+                : null,
         );
     }
 

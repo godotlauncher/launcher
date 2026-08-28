@@ -14,6 +14,9 @@ import { AppIntegrationsService } from './app-integrations.service.js';
 import type { AppIntegrationsStore } from './app-integrations.store.js';
 
 vi.mock('electron', () => ({ safeStorage: {} }));
+vi.mock('electron-log/main.js', () => ({
+    default: { debug: vi.fn(), warn: vi.fn() },
+}));
 
 /**
  * Creates one provider connection result for a test account.
@@ -452,6 +455,15 @@ describe('AppIntegrationsService', () => {
         expect(result.integration.connections[0]?.state).toBe(
             'reauthorisation-required',
         );
+        expect(provider.refresh).toHaveBeenCalledWith(
+            expect.any(AbortSignal),
+            '{"token":"secret-1"}',
+            '1',
+            expect.objectContaining({
+                operationId: expect.any(String),
+                trigger: 'connections',
+            }),
+        );
         expect(ciphertexts.size).toBe(1);
     });
 
@@ -474,7 +486,52 @@ describe('AppIntegrationsService', () => {
             },
         });
         expect(provider.refresh).toHaveBeenCalledOnce();
+        expect(provider.refresh).toHaveBeenCalledWith(
+            expect.any(AbortSignal),
+            '{"token":"secret-1"}',
+            '1',
+            expect.objectContaining({
+                operationId: expect.any(String),
+                trigger: 'credential-lease',
+            }),
+        );
         expect(JSON.stringify(await service.list())).not.toContain('secret-1');
+    });
+
+    it('retries a reauthorisation-marked credential when a lease is requested', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        if (!record) throw new Error('Test connection was not persisted');
+        records.set(record.id, {
+            ...record,
+            requiresReauthorisation: true,
+        });
+        const refreshed = connectionResult('1', 'octocat');
+        refreshed.credential = '{"token":"rotated"}';
+        vi.mocked(provider.refresh).mockResolvedValueOnce({
+            status: 'refreshed',
+            connection: refreshed,
+        });
+
+        const result = await service.withCredentialLease(
+            'github',
+            async (routes) => routes.length,
+        );
+
+        expect(result).toEqual({ ok: true, value: 1 });
+        expect(provider.refresh).toHaveBeenCalledWith(
+            expect.any(AbortSignal),
+            '{"token":"secret-1"}',
+            '1',
+            expect.objectContaining({
+                operationId: expect.any(String),
+                trigger: 'credential-lease',
+            }),
+        );
+        expect([...ciphertexts.values()]).toEqual([
+            'encrypted:{"token":"rotated"}',
+        ]);
+        expect(records.get(record.id)?.requiresReauthorisation).toBe(false);
     });
 
     it('disconnects one target while retaining a shared credential', async () => {

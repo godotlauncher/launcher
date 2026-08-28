@@ -15,7 +15,9 @@ import {
     type AppIntegrationProviderConnection,
     AppIntegrationProviderError,
     type AppIntegrationProviderRefreshResult,
+    type AppIntegrationRefreshContext,
 } from '../../app-integration.types.js';
+import { logAppIntegrationRefreshDiagnostic } from '../../app-integration-refresh-diagnostics.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitHubApiClient, GitHubApiError } from './github-api.client.js';
 import { GitHubStoredCredentialSchema } from './github-app-integration.schema.js';
@@ -302,45 +304,137 @@ export class GitHubAppIntegrationProvider implements AppIntegrationProvider {
      * @param signal - Refresh cancellation signal.
      * @param credential - Decrypted GitHub token bundle.
      * @param expectedAccountId - Immutable GitHub user ID.
+     * @param context - Safe correlation metadata for this refresh operation.
      * @returns The refreshed provider state without opening a browser.
      */
     async refresh(
         signal: AbortSignal,
         credential: string,
         expectedAccountId: string,
+        context: AppIntegrationRefreshContext,
     ): Promise<AppIntegrationProviderRefreshResult> {
         let stored: GitHubStoredCredential;
         try {
             stored = GitHubStoredCredentialSchema.parse(JSON.parse(credential));
         } catch {
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: this.metadata.id,
+                phase: 'credential-parse',
+                outcome: 'terminal-failure',
+                refreshTokenState: 'unknown',
+                code: 'credential-invalid',
+            });
             return { status: 'reauthorisation-required' };
         }
 
         try {
             const createdAt = new Date(stored.createdAt).getTime();
-            if (
-                stored.refreshTokenExpiresIn !== null &&
-                createdAt + stored.refreshTokenExpiresIn * 1_000 <= Date.now()
-            ) {
-                return { status: 'reauthorisation-required' };
-            }
+            const now = Date.now();
             const accessTokenExpiry = stored.expiresIn
                 ? createdAt + stored.expiresIn * 1_000
                 : null;
+            const accessTokenState =
+                accessTokenExpiry === null
+                    ? ('non-expiring' as const)
+                    : accessTokenExpiry <= now
+                      ? ('expired' as const)
+                      : accessTokenExpiry <= now + 5 * 60 * 1_000
+                        ? ('near-expiry' as const)
+                        : ('current' as const);
+            const refreshTokenExpired =
+                stored.refreshTokenExpiresIn !== null &&
+                createdAt + stored.refreshTokenExpiresIn * 1_000 <= now;
+            const refreshTokenState = refreshTokenExpired
+                ? ('recorded-expired' as const)
+                : stored.refreshToken
+                  ? ('present' as const)
+                  : ('missing' as const);
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: this.metadata.id,
+                phase: 'credential-classified',
+                outcome: 'succeeded',
+                accessTokenState,
+                refreshTokenState,
+            });
+            if (refreshTokenExpired) {
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: this.metadata.id,
+                    phase: 'credential-classified',
+                    outcome: 'terminal-failure',
+                    accessTokenState,
+                    refreshTokenState,
+                    code: 'refresh-token-expired',
+                });
+                return { status: 'reauthorisation-required' };
+            }
             const shouldRotate =
                 accessTokenExpiry !== null &&
-                accessTokenExpiry <= Date.now() + 5 * 60 * 1_000;
-            const token = shouldRotate
-                ? await this.rotateCredential(stored.refreshToken, signal)
-                : stored;
+                accessTokenExpiry <= now + 5 * 60 * 1_000;
+            if (shouldRotate && !stored.refreshToken) {
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: this.metadata.id,
+                    phase: 'broker-rotation',
+                    outcome: 'terminal-failure',
+                    accessTokenState,
+                    refreshTokenState,
+                    code: 'refresh-token-missing',
+                });
+                return { status: 'reauthorisation-required' };
+            }
+            let token: GitHubTokenBundle = stored;
+            if (shouldRotate) {
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: this.metadata.id,
+                    phase: 'broker-rotation',
+                    outcome: 'started',
+                    accessTokenState,
+                    refreshTokenState,
+                });
+                token = await this.rotateCredential(
+                    stored.refreshToken,
+                    signal,
+                );
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: this.metadata.id,
+                    phase: 'broker-rotation',
+                    outcome: 'succeeded',
+                    accessTokenState,
+                    refreshTokenState: token.refreshToken
+                        ? 'present'
+                        : 'missing',
+                });
+            }
             const [identity, accessTargets] = await Promise.all([
                 this.github.getUser(token.accessToken, signal),
                 this.github.getInstallations(token.accessToken, signal),
             ]);
             if (String(identity.id) !== expectedAccountId) {
+                logAppIntegrationRefreshDiagnostic({
+                    ...context,
+                    providerId: this.metadata.id,
+                    phase: 'provider-validation',
+                    outcome: 'terminal-failure',
+                    accessTokenState,
+                    refreshTokenState,
+                    code: 'identity-mismatch',
+                });
                 return { status: 'reauthorisation-required' };
             }
             const refreshedAt = shouldRotate ? Date.now() : createdAt;
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: this.metadata.id,
+                phase: 'provider-validation',
+                outcome: 'succeeded',
+                accessTokenState,
+                refreshTokenState: token.refreshToken ? 'present' : 'missing',
+            });
             return {
                 status: 'refreshed',
                 connection: {
@@ -367,12 +461,48 @@ export class GitHubAppIntegrationProvider implements AppIntegrationProvider {
                 },
             };
         } catch (error) {
-            if (
+            const terminal =
                 (error instanceof GitHubBrokerError &&
                     error.code === 'github_rejected_token') ||
                 (error instanceof GitHubApiError &&
-                    (error.status === 401 || error.status === 403))
-            ) {
+                    (error.status === 401 || error.status === 403));
+            const code =
+                error instanceof GitHubBrokerError
+                    ? error.code === 'github_rejected_token'
+                        ? ('broker-rejected-token' as const)
+                        : error.code === 'github_unavailable' ||
+                            error.code === 'rate_limited'
+                          ? ('broker-unavailable' as const)
+                          : ('broker-invalid-response' as const)
+                    : error instanceof GitHubApiError
+                      ? error.status === 401
+                          ? ('github-unauthorised' as const)
+                          : error.status === 403
+                            ? ('github-forbidden' as const)
+                            : ('network-error' as const)
+                      : signal.aborted
+                        ? ('timed-out' as const)
+                        : error instanceof TypeError
+                          ? ('network-error' as const)
+                          : ('unknown' as const);
+            logAppIntegrationRefreshDiagnostic({
+                ...context,
+                providerId: this.metadata.id,
+                phase:
+                    error instanceof GitHubBrokerError
+                        ? 'broker-rotation'
+                        : 'provider-validation',
+                outcome: terminal ? 'terminal-failure' : 'temporary-failure',
+                code,
+                status:
+                    error instanceof GitHubBrokerError ||
+                    error instanceof GitHubApiError
+                        ? error.status
+                        : null,
+                requestId:
+                    error instanceof GitHubBrokerError ? error.requestId : null,
+            });
+            if (terminal) {
                 return { status: 'reauthorisation-required' };
             }
             return { status: 'temporarily-unavailable' };

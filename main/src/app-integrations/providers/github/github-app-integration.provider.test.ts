@@ -3,14 +3,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppConfig } from '../../../config/index.js';
 import type { GitHubApiClient } from './github-api.client.js';
 import { GitHubAppIntegrationProvider } from './github-app-integration.provider.js';
-import type { GitHubAuthBrokerClient } from './github-auth-broker.client.js';
+import {
+    type GitHubAuthBrokerClient,
+    GitHubBrokerError,
+} from './github-auth-broker.client.js';
 import type { GitHubAuthLoopbackListenerService } from './github-auth-loopback-listener.service.js';
 
 const mocks = vi.hoisted(() => ({
+    loggerDebug: vi.fn(),
+    loggerWarn: vi.fn(),
     openExternal: vi.fn(),
     revealMainWindow: vi.fn(),
 }));
 
+vi.mock('electron-log/main.js', () => ({
+    default: { debug: mocks.loggerDebug, warn: mocks.loggerWarn },
+}));
 vi.mock('electron', () => ({ shell: { openExternal: mocks.openExternal } }));
 vi.mock('../../../mainWindow.js', () => ({
     revealMainWindow: mocks.revealMainWindow,
@@ -338,6 +346,7 @@ describe('GitHubAppIntegrationProvider', () => {
             new AbortController().signal,
             credential,
             '1',
+            { operationId: 'refresh-operation', trigger: 'connections' },
         );
 
         expect(result).toMatchObject({
@@ -352,6 +361,66 @@ describe('GitHubAppIntegrationProvider', () => {
             expect.any(AbortSignal),
         );
         expect(JSON.stringify(result)).toContain('rotated-access-token');
+        const diagnostics = JSON.stringify([
+            ...mocks.loggerDebug.mock.calls,
+            ...mocks.loggerWarn.mock.calls,
+        ]);
+        expect(diagnostics).toContain('broker-rotation');
+        expect(diagnostics).not.toContain('old-access-token');
+        expect(diagnostics).not.toContain('old-refresh-token');
+        expect(diagnostics).not.toContain('rotated-access-token');
+        expect(diagnostics).not.toContain('rotated-refresh-token');
+    });
+
+    it('reports a broker token rejection without logging credential values', async () => {
+        const broker = {
+            refresh: vi.fn(async () => {
+                throw new GitHubBrokerError(
+                    'github_rejected_token',
+                    401,
+                    'safe-request-id',
+                );
+            }),
+        };
+        const provider = new GitHubAppIntegrationProvider(
+            {} as never,
+            broker as unknown as GitHubAuthBrokerClient,
+            {} as never,
+            {} as never,
+        );
+        const credential = JSON.stringify({
+            version: 1,
+            createdAt: new Date(Date.now() - 9 * 60 * 60 * 1_000).toISOString(),
+            accessToken: 'diagnostic-access-token',
+            expiresIn: 28_800,
+            refreshToken: 'diagnostic-refresh-token',
+            refreshTokenExpiresIn: 15_897_600,
+            scope: '',
+            tokenType: 'bearer',
+        });
+
+        await expect(
+            provider.refresh(new AbortController().signal, credential, '1', {
+                operationId: 'refresh-operation',
+                trigger: 'connections',
+            }),
+        ).resolves.toEqual({ status: 'reauthorisation-required' });
+        expect(mocks.loggerDebug).toHaveBeenCalledWith(
+            'App integration credential refresh',
+            expect.objectContaining({
+                operationId: 'refresh-operation',
+                trigger: 'connections',
+                phase: 'broker-rotation',
+                outcome: 'terminal-failure',
+                code: 'broker-rejected-token',
+                status: 401,
+                requestId: 'safe-request-id',
+            }),
+        );
+        expect(mocks.loggerWarn).not.toHaveBeenCalled();
+        const diagnostics = JSON.stringify(mocks.loggerDebug.mock.calls);
+        expect(diagnostics).not.toContain('diagnostic-access-token');
+        expect(diagnostics).not.toContain('diagnostic-refresh-token');
     });
 
     it('prepares an expiring credential and revokes its complete grant', async () => {
