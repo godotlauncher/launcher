@@ -5,6 +5,7 @@ import type { OnModuleDestroy } from '@mariodebono/di';
 import { Injectable } from '@mariodebono/di';
 import type {
     CancelRemoteProjectImportResult,
+    GitIdentity,
     InitialiseRemoteProjectSubmodulesResult,
     RemoteProjectImportFailureReason,
     RemoteProjectImportProgressStage,
@@ -13,6 +14,7 @@ import type {
     RemoteProjectSubmoduleActivity,
     ResolveRemoteProjectCloneAction,
     ResolveRemoteProjectCloneResult,
+    SetRemoteProjectGitIdentityResult,
 } from '@shared/contracts';
 import logger from 'electron-log';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -22,6 +24,7 @@ import { GitService } from '../tool-integration/integrations/git/git.service.js'
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitCloneService } from '../tool-integration/integrations/git/git-clone.service.js';
 import type { GitCloneResult } from '../tool-integration/integrations/git/git-clone.types.js';
+import { GitIdentitySchema } from '../tool-integration/integrations/git/git-identity.schema.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitSubmoduleService } from '../tool-integration/integrations/git/git-submodule.service.js';
 import type { GitSubmoduleActivity } from '../tool-integration/integrations/git/git-submodule.types.js';
@@ -248,6 +251,64 @@ export class ProjectRemoteImportService implements OnModuleDestroy {
         return { jobId, status: 'deleted' };
     }
 
+    /**
+     * Sets repository-scoped Git identity for an unchanged final clone.
+     *
+     * @param jobId - Exact import job that owns the completed clone.
+     * @param identity - Complete Git identity supplied by the renderer.
+     * @returns A renderer-safe configuration result.
+     */
+    async setRemoteProjectGitIdentity(
+        jobId: string,
+        identity: GitIdentity,
+    ): Promise<SetRemoteProjectGitIdentityResult> {
+        if (this.active?.id === jobId) {
+            return { jobId, status: 'busy' };
+        }
+        const parsed = GitIdentitySchema.safeParse(identity);
+        if (!parsed.success) {
+            return { jobId, status: 'invalid-identity' };
+        }
+
+        const clone = this.recoverableClones.get(jobId);
+        if (!clone) {
+            return { jobId, status: 'not-found' };
+        }
+        let current: Awaited<ReturnType<typeof fs.lstat>>;
+        try {
+            current = await fs.lstat(clone.path);
+        } catch {
+            return { jobId, status: 'changed' };
+        }
+        if (
+            !current.isDirectory() ||
+            current.isSymbolicLink() ||
+            current.dev !== clone.device ||
+            current.ino !== clone.inode
+        ) {
+            return { jobId, status: 'changed' };
+        }
+
+        const inspection = await this.git.inspectRepository(clone.path);
+        if (inspection.status === 'git-unavailable') {
+            return { jobId, status: 'git-unavailable' };
+        }
+        if (
+            inspection.status !== 'inside-work-tree' ||
+            !inspection.isProjectRoot ||
+            inspection.kind !== 'standard'
+        ) {
+            return { jobId, status: 'repository-unavailable' };
+        }
+
+        const configured = await this.git.setIdentity(
+            parsed.data.name,
+            parsed.data.email,
+            'repository',
+            clone.path,
+        );
+        return { jobId, status: configured ? 'configured' : 'update-failed' };
+    }
     /**
      * Initialises public HTTPS submodules for one exact retained clone.
      *

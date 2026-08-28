@@ -106,6 +106,17 @@
             "gitUnavailable": "Git is unavailable. Configure it in Settings > Tools."
         },
         "remote": {
+            "gitIdentity": {
+                "title": "Set Git identity",
+                "message": "Set the name and email Git should use for future commits in this cloned repository.",
+                "continueWithout": "Continue without identity",
+                "presetMessage": "Apply this saved identity to the cloned repository.",
+                "usePreset": "Use preset and continue",
+                "formMessage": "Choose the identity Git should use for this cloned repository.",
+                "saveAndContinue": "Save and continue",
+                "identityWriteFailed": "The Git identity could not be saved. The cloned repository was kept and import can continue.",
+                "presetWriteFailed": "The identity was applied, but the default local identity could not be saved for future repositories."
+            },
             "public": {
                 "title": "Clone public Git repository",
                 "description": "Enter an anonymous public HTTPS Git repository URL.",

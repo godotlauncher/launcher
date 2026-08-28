@@ -106,6 +106,17 @@
             "gitUnavailable": "Git jest niedostępny. Skonfiguruj go w Ustawieniach > Narzędzia."
         },
         "remote": {
+            "gitIdentity": {
+                "title": "Ustaw tożsamość Git",
+                "message": "Ustaw nazwę i adres e-mail, których Git ma używać w przyszłych commitach w tym sklonowanym repozytorium.",
+                "continueWithout": "Kontynuuj bez tożsamości",
+                "presetMessage": "Zastosuj tę zapisaną tożsamość do sklonowanego repozytorium.",
+                "usePreset": "Użyj ustawienia i kontynuuj",
+                "formMessage": "Wybierz tożsamość, której Git ma używać w tym sklonowanym repozytorium.",
+                "saveAndContinue": "Zapisz i kontynuuj",
+                "identityWriteFailed": "Nie udało się zapisać tożsamości Git. Sklonowane repozytorium zostało zachowane i import może być kontynuowany.",
+                "presetWriteFailed": "Tożsamość została zastosowana, ale nie udało się zapisać domyślnej tożsamości lokalnej dla przyszłych repozytoriów."
+            },
             "public": {
                 "title": "Sklonuj publiczne repozytorium Git",
                 "description": "Wprowadź anonimowy adres URL publicznego repozytorium HTTPS Git.",

@@ -106,6 +106,17 @@
             "gitUnavailable": "Git mhux disponibbli. Ikkonfiguraha f'Settings > Għodod."
         },
         "remote": {
+            "gitIdentity": {
+                "title": "Issettja l-identità ta' Git",
+                "message": "Issettja l-isem u l-email li Git għandu juża għal commits futuri f'dan ir-repożitorju kklonat.",
+                "continueWithout": "Kompli mingħajr identità",
+                "presetMessage": "Applika din l-identità ssejvjata għar-repożitorju kklonat.",
+                "usePreset": "Uża l-preset u kompli",
+                "formMessage": "Agħżel l-identità li Git għandu juża għal dan ir-repożitorju kklonat.",
+                "saveAndContinue": "Issejvja u kompli",
+                "identityWriteFailed": "L-identità ta' Git ma setgħetx tiġi ssejvjata. Ir-repożitorju kklonat inżamm u l-importazzjoni tista' tkompli.",
+                "presetWriteFailed": "L-identità ġiet applikata, iżda l-identità lokali predefinita ma setgħetx tiġi ssejvjata għal repożitorji futuri."
+            },
             "public": {
                 "title": "Iklonu repożitorju Git pubbliku",
                 "description": "Daħħal URL ta' repożitorju HTTPS Git pubbliku anonimu.",

@@ -1,7 +1,10 @@
 import type {
     AddProjectOptions,
     AddProjectToListResult,
+    GitIdentity,
+    GitIdentityScope,
     ListConnectedRepositoriesResult,
+    ProjectGitIdentityPreset,
     PublicGitSourceInspectionResult,
     RemoteDiscoveredProject,
     RemoteProjectImportProgress,
@@ -26,6 +29,13 @@ import { appBridge, projectsBridge, subscribeAppEvent } from '../../../bridge';
 import { Dialog } from '../../../components/dialog.component';
 import { SearchField } from '../../../components/ui/searchField.component';
 import { SelectField } from '../../../components/ui/selectField.component';
+import {
+    type GitIdentitySaveChoice,
+    isGitIdentityComplete,
+    resolveGitIdentityDecision,
+    resolveGitIdentitySave,
+} from '../../../git-identity.model';
+import { useGit } from '../../../hooks/git.hook';
 import { usePreferences } from '../../../hooks/usePreferences';
 import {
     type ProjectEditorRepairRequest,
@@ -56,6 +66,10 @@ import {
     shouldShowRemoteProjectUseDefault,
 } from '../remote-project-import.model';
 
+import {
+    RemoteProjectGitIdentity,
+    type RemoteProjectGitIdentityPage,
+} from './remote-project-git-identity.component';
 export type RemoteProjectSource = 'public-git-url' | 'github';
 
 type RemoteProjectImportModalProps = {
@@ -75,6 +89,7 @@ type ModalStep =
     | 'importing'
     | 'import-failed'
     | 'submodules'
+    | 'git-identity'
     | 'initialising-submodules'
     | 'review'
     | 'cancel-review'
@@ -82,6 +97,9 @@ type ModalStep =
     | 'editors-required'
     | 'registering-projects'
     | 'registration-complete';
+
+type PostGitIdentityStep = 'submodules' | 'review';
+type GitIdentityWarning = 'identity' | 'preset';
 
 type RegistrationOutcome = {
     project: RemoteDiscoveredProject;
@@ -200,11 +218,18 @@ export const RemoteProjectImportModal: React.FC<
         'common',
         'settings',
         'installEditor',
+        'createProject',
     ]);
     const navigate = useNavigate();
     const { preferences, platform } = usePreferences();
     const { addProject, codeEditorSettings, projects } = useProjects();
     const { availableReleases, availablePrereleases } = useRelease();
+
+    const {
+        getIdentitySettings,
+        saveGlobalIdentity,
+        saveProjectIdentityPreset,
+    } = useGit();
     const [step, setStep] = useState<ModalStep>('source');
     const [publicUrl, setPublicUrl] = useState('');
     const [canonicalPublicUrl, setCanonicalPublicUrl] = useState('');
@@ -235,6 +260,26 @@ export const RemoteProjectImportModal: React.FC<
     const [clonePreservedPath, setClonePreservedPath] = useState<string | null>(
         null,
     );
+
+    const [gitIdentityPage, setGitIdentityPage] =
+        useState<RemoteProjectGitIdentityPage>('warning');
+    const [gitIdentityName, setGitIdentityName] = useState('');
+    const [gitIdentityEmail, setGitIdentityEmail] = useState('');
+    const [gitIdentityScope, setGitIdentityScope] =
+        useState<GitIdentityScope>('repository');
+    const [gitIdentitySaveChoice, setGitIdentitySaveChoice] =
+        useState<GitIdentitySaveChoice>('ask');
+    const [gitIdentityPreset, setGitIdentityPreset] =
+        useState<ProjectGitIdentityPreset | null>(null);
+    const [preflightGlobalIdentity, setPreflightGlobalIdentity] =
+        useState<GitIdentity>({ name: '', email: '' });
+    const [postGitIdentityStep, setPostGitIdentityStep] =
+        useState<PostGitIdentityStep>('review');
+    const [showGitIdentityValidation, setShowGitIdentityValidation] =
+        useState(false);
+    const [savingGitIdentity, setSavingGitIdentity] = useState(false);
+    const [gitIdentityWarning, setGitIdentityWarning] =
+        useState<GitIdentityWarning | null>(null);
     const [cloneJobId, setCloneJobId] = useState<string | null>(null);
     const [cloneRecoveryAvailable, setCloneRecoveryAvailable] = useState(false);
     const [resolvingClone, setResolvingClone] = useState(false);
@@ -248,6 +293,7 @@ export const RemoteProjectImportModal: React.FC<
     const [submoduleFailure, setSubmoduleFailure] = useState<string | null>(
         null,
     );
+    const gitIdentityPrimaryActionRef = useRef<HTMLButtonElement>(null);
     const [discoveredProjects, setDiscoveredProjects] = useState<
         RemoteDiscoveredProject[]
     >([]);
@@ -326,7 +372,8 @@ export const RemoteProjectImportModal: React.FC<
             step === 'importing' ||
             step === 'initialising-submodules' ||
             step === 'checking-projects' ||
-            step === 'registering-projects'
+            step === 'registering-projects' ||
+            savingGitIdentity
         )
             return;
         if (cloneJobId && cloneRecoveryAvailable) {
@@ -334,7 +381,13 @@ export const RemoteProjectImportModal: React.FC<
             setCloneRecoveryAvailable(false);
         }
         onOpenChange(false);
-    }, [cloneJobId, cloneRecoveryAvailable, onOpenChange, step]);
+    }, [
+        cloneJobId,
+        cloneRecoveryAvailable,
+        onOpenChange,
+        savingGitIdentity,
+        step,
+    ]);
 
     const loadRepositories = useCallback(
         async (cursor?: string, append = false) => {
@@ -401,6 +454,17 @@ export const RemoteProjectImportModal: React.FC<
         setResolvingClone(false);
         setCloneRecoveryError(null);
         setRepositoryPath('');
+        setGitIdentityPage('warning');
+        setGitIdentityName('');
+        setGitIdentityEmail('');
+        setGitIdentityScope('repository');
+        setGitIdentitySaveChoice('ask');
+        setGitIdentityPreset(null);
+        setPreflightGlobalIdentity({ name: '', email: '' });
+        setPostGitIdentityStep('review');
+        setShowGitIdentityValidation(false);
+        setSavingGitIdentity(false);
+        setGitIdentityWarning(null);
         setSubmoduleActivities([]);
         setSubmoduleFailure(null);
         setDiscoveredProjects([]);
@@ -460,7 +524,9 @@ export const RemoteProjectImportModal: React.FC<
 
     useEffect(() => {
         if (!open) return;
-        if (step === 'submodules') {
+        if (step === 'git-identity') {
+            gitIdentityPrimaryActionRef.current?.focus();
+        } else if (step === 'submodules') {
             initialiseSubmodulesButtonRef.current?.focus();
         } else if (step === 'review' && discoveredProjects.length > 0) {
             addDiscoveredProjectsButtonRef.current?.focus();
@@ -531,6 +597,195 @@ export const RemoteProjectImportModal: React.FC<
         }
     };
 
+    /**
+     * Writes identity only through the process-owned clone capability.
+     *
+     * @param jobId - Completed remote import job.
+     * @param identity - Complete repository identity.
+     * @returns Whether the repository identity was configured.
+     */
+    const applyRepositoryGitIdentity = async (
+        jobId: string,
+        identity: GitIdentity,
+    ): Promise<boolean> => {
+        try {
+            const result = await projectsBridge.setRemoteProjectGitIdentity(
+                jobId,
+                { name: identity.name, email: identity.email },
+            );
+            return result.status === 'configured';
+        } catch {
+            return false;
+        }
+    };
+
+    /** Continues to the post-clone step selected before identity resolution. */
+    const continueAfterGitIdentity = () => {
+        setSavingGitIdentity(false);
+        setStep(postGitIdentityStep);
+    };
+
+    /**
+     * Resolves inherited, preset, and missing identity after a successful clone.
+     *
+     * @param jobId - Completed remote import job.
+     * @param nextStep - Submodule or project review destination.
+     */
+    const prepareGitIdentity = async (
+        jobId: string,
+        nextStep: PostGitIdentityStep,
+    ) => {
+        setPostGitIdentityStep(nextStep);
+        setGitIdentityWarning(null);
+        let settings = {
+            globalIdentity: { name: '', email: '' },
+            projectPreset: null as ProjectGitIdentityPreset | null,
+        };
+        try {
+            settings = await getIdentitySettings();
+        } catch {
+            // An unreadable configuration is treated as missing.
+        }
+
+        const decision = resolveGitIdentityDecision(
+            settings.globalIdentity,
+            settings.projectPreset,
+        );
+        if (decision.action === 'use-global') {
+            setStep(nextStep);
+            return;
+        }
+        if (decision.action === 'apply-preset') {
+            const configured = await applyRepositoryGitIdentity(
+                jobId,
+                decision.preset,
+            );
+            if (!configured) {
+                setGitIdentityWarning('identity');
+            }
+            setStep(nextStep);
+            return;
+        }
+
+        setPreflightGlobalIdentity(decision.globalIdentity);
+        setGitIdentityScope('repository');
+        setGitIdentitySaveChoice('ask');
+        setShowGitIdentityValidation(false);
+        if (decision.action === 'suggest-preset') {
+            setGitIdentityPreset(decision.preset);
+            setGitIdentityName(decision.preset.name);
+            setGitIdentityEmail(decision.preset.email);
+            setGitIdentityPage('preset');
+        } else {
+            setGitIdentityPreset(null);
+            setGitIdentityName(decision.globalIdentity.name);
+            setGitIdentityEmail(decision.globalIdentity.email);
+            setGitIdentityPage('warning');
+        }
+        setStep('git-identity');
+    };
+
+    /** Opens the editable identity form from the missing-identity warning. */
+    const addGitIdentity = () => {
+        setGitIdentityName(preflightGlobalIdentity.name);
+        setGitIdentityEmail(preflightGlobalIdentity.email);
+        setGitIdentityScope('repository');
+        setShowGitIdentityValidation(false);
+        setGitIdentityPage('identity');
+    };
+
+    /** Opens the editable form instead of using the suggested preset. */
+    const useDifferentGitIdentity = () => {
+        setGitIdentityName(preflightGlobalIdentity.name);
+        setGitIdentityEmail(preflightGlobalIdentity.email);
+        setGitIdentityScope('repository');
+        setShowGitIdentityValidation(false);
+        setGitIdentityPage('identity');
+    };
+
+    /** Applies the suggested preset locally and continues the import. */
+    const applyGitIdentityPreset = async () => {
+        if (!cloneJobId || !gitIdentityPreset) {
+            setGitIdentityWarning('identity');
+            continueAfterGitIdentity();
+            return;
+        }
+        setSavingGitIdentity(true);
+        const configured = await applyRepositoryGitIdentity(
+            cloneJobId,
+            gitIdentityPreset,
+        );
+        if (!configured) {
+            setGitIdentityWarning('identity');
+        }
+        continueAfterGitIdentity();
+    };
+
+    /** Validates and saves the entered identity before continuing import. */
+    const saveGitIdentityAndContinue = async () => {
+        const identity = {
+            name: gitIdentityName.trim(),
+            email: gitIdentityEmail.trim(),
+        };
+        if (!isGitIdentityComplete(identity)) {
+            setShowGitIdentityValidation(true);
+            return;
+        }
+
+        const resolution = gitIdentityPreset
+            ? { scope: gitIdentityScope, preset: null }
+            : resolveGitIdentitySave(
+                  identity,
+                  gitIdentitySaveChoice,
+                  gitIdentityPreset,
+              );
+        if (!resolution) {
+            setShowGitIdentityValidation(true);
+            return;
+        }
+
+        setSavingGitIdentity(true);
+        let warning: GitIdentityWarning | null = null;
+        if (resolution.scope === 'global') {
+            try {
+                const result = await saveGlobalIdentity(identity);
+                if (!result.success) {
+                    warning = 'identity';
+                }
+            } catch {
+                warning = 'identity';
+            }
+        } else if (
+            !cloneJobId ||
+            !(await applyRepositoryGitIdentity(cloneJobId, identity))
+        ) {
+            warning = 'identity';
+        }
+
+        if (resolution.preset) {
+            try {
+                const result = await saveProjectIdentityPreset(
+                    resolution.preset,
+                );
+                if (!result.success && !warning) {
+                    warning = 'preset';
+                }
+            } catch {
+                if (!warning) {
+                    warning = 'preset';
+                }
+            }
+        }
+        setGitIdentityWarning(warning);
+        continueAfterGitIdentity();
+    };
+
+    /** Returns the editable form to its warning or preset choice. */
+    const returnFromGitIdentityForm = () => {
+        setShowGitIdentityValidation(false);
+        setGitIdentityPage(gitIdentityPreset ? 'preset' : 'warning');
+    };
+
     const startImport = async () => {
         if (!source || !parentDirectory.trim() || !directoryName.trim()) return;
         const request: RemoteProjectImportRequest =
@@ -578,7 +833,10 @@ export const RemoteProjectImportModal: React.FC<
                 selectAllDiscoveredProjects(result.projects),
             );
             setCodeEditorChoices({});
-            setStep(result.hasSubmodules ? 'submodules' : 'review');
+            await prepareGitIdentity(
+                result.jobId,
+                result.hasSubmodules ? 'submodules' : 'review',
+            );
         } catch {
             setImportFailure('addProject.remote.errors.temporarilyUnavailable');
             setStep('import-failed');
@@ -1474,6 +1732,36 @@ export const RemoteProjectImportModal: React.FC<
                 {t('addProject.remote.actions.cancelImport')}
             </button>
         ) : null;
+    } else if (step === 'git-identity') {
+        body = (
+            <RemoteProjectGitIdentity
+                page={gitIdentityPage}
+                name={gitIdentityName}
+                email={gitIdentityEmail}
+                scope={gitIdentityScope}
+                saveChoice={gitIdentitySaveChoice}
+                preset={gitIdentityPreset}
+                globalIdentityComplete={isGitIdentityComplete(
+                    preflightGlobalIdentity,
+                )}
+                showValidation={showGitIdentityValidation}
+                saving={savingGitIdentity}
+                primaryActionRef={gitIdentityPrimaryActionRef}
+                t={t}
+                onNameChange={setGitIdentityName}
+                onEmailChange={setGitIdentityEmail}
+                onScopeChange={setGitIdentityScope}
+                onSaveChoiceChange={setGitIdentitySaveChoice}
+                onContinueWithoutIdentity={continueAfterGitIdentity}
+                onAddIdentity={addGitIdentity}
+                onUseGlobal={continueAfterGitIdentity}
+                onUseDifferentIdentity={useDifferentGitIdentity}
+                onUsePreset={() => void applyGitIdentityPreset()}
+                onBack={returnFromGitIdentityForm}
+                onSave={() => void saveGitIdentityAndContinue()}
+            />
+        );
+        footer = null;
     } else if (step === 'submodules' || step === 'initialising-submodules') {
         const initialising = step === 'initialising-submodules';
         body = (
@@ -1979,6 +2267,21 @@ export const RemoteProjectImportModal: React.FC<
                 source === 'public-git-url' ? publicUrlInputRef : undefined
             }
         >
+            {gitIdentityWarning && (
+                <div
+                    className="alert alert-warning alert-soft mb-4"
+                    role="status"
+                >
+                    <TriangleAlert aria-hidden="true" size={18} />
+                    <span>
+                        {t(
+                            gitIdentityWarning === 'preset'
+                                ? 'addProject.remote.gitIdentity.presetWriteFailed'
+                                : 'addProject.remote.gitIdentity.identityWriteFailed',
+                        )}
+                    </span>
+                </div>
+            )}
             {body}
         </Dialog>
     );

@@ -268,6 +268,136 @@ test('Remote repository discovery lets users exclude projects before adding', as
     ]);
 });
 
+test('Remote clone can set repository Git identity before project review', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubMissingRemoteGitIdentity();
+
+    const modal = await clonePublicRepositoryForReview();
+    await expect(modal.getByText('Set Git identity')).toBeVisible();
+    const addIdentityButton = modal.getByRole('button', {
+        name: 'Add Git identity',
+    });
+    await expect(addIdentityButton).toBeFocused();
+    await addIdentityButton.click();
+
+    await modal.locator('#remoteProjectGitName').fill('  Example Developer  ');
+    await modal.locator('#remoteProjectGitEmail').fill('  developer@example.com  ');
+    await modal
+        .getByRole('button', { name: 'Save and continue' })
+        .click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect.poll(readRemoteGitIdentityWrites).toEqual([
+        {
+            jobId: 'remote-discovery-job',
+            identity: {
+                name: 'Example Developer',
+                email: 'developer@example.com',
+            },
+        },
+    ]);
+});
+
+test('Remote clone applies an automatic project identity preset locally', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubAutomaticRemoteGitIdentityPreset();
+
+    const modal = await clonePublicRepositoryForReview();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect.poll(readRemoteGitIdentityWrites).toEqual([
+        {
+            jobId: 'remote-discovery-job',
+            identity: {
+                name: 'Preset Developer',
+                email: 'preset@example.com',
+            },
+        },
+    ]);
+});
+
+test('Remote clone continues when a global Git identity write fails', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubMissingRemoteGitIdentity();
+    await stubRemoteGitIdentitySettingsWriteFailures({ global: true });
+
+    const modal = await clonePublicRepositoryForReview();
+    await modal.getByRole('button', { name: 'Add Git identity' }).click();
+    await modal.locator('#remoteProjectGitName').fill('Example Developer');
+    await modal.locator('#remoteProjectGitEmail').fill('developer@example.com');
+    await modal
+        .getByRole('radio', { name: 'Save as default global identity' })
+        .check();
+    await modal.getByRole('button', { name: 'Save and continue' }).click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect(
+        modal.getByText(
+            'The Git identity could not be saved. The cloned repository was kept and import can continue.',
+        ),
+    ).toBeVisible();
+});
+
+test('Remote clone warns when its future local identity preset cannot be saved', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubMissingRemoteGitIdentity();
+    await stubRemoteGitIdentitySettingsWriteFailures({ preset: true });
+
+    const modal = await clonePublicRepositoryForReview();
+    await modal.getByRole('button', { name: 'Add Git identity' }).click();
+    await modal.locator('#remoteProjectGitName').fill('Example Developer');
+    await modal.locator('#remoteProjectGitEmail').fill('developer@example.com');
+    await modal
+        .getByRole('radio', { name: 'Save as default local identity' })
+        .check();
+    await modal.getByRole('button', { name: 'Save and continue' }).click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect(
+        modal.getByText(
+            'The identity was applied, but the default local identity could not be saved for future repositories.',
+        ),
+    ).toBeVisible();
+});
+
+test('Remote clone can continue without configuring Git identity', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubMissingRemoteGitIdentity();
+
+    const modal = await clonePublicRepositoryForReview();
+    await modal
+        .getByRole('button', { name: 'Continue without identity' })
+        .click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect.poll(readRemoteGitIdentityWrites).toEqual([]);
+});
+
+test('Remote clone keeps import available when Git identity cannot be saved', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubMissingRemoteGitIdentity();
+    await stubRemoteGitIdentityWriteFailure();
+
+    const modal = await clonePublicRepositoryForReview();
+    await modal.getByRole('button', { name: 'Add Git identity' }).click();
+    await modal.locator('#remoteProjectGitName').fill('Example Developer');
+    await modal.locator('#remoteProjectGitEmail').fill('developer@example.com');
+    await modal.getByRole('button', { name: 'Save and continue' }).click();
+
+    await expect(modal.getByText('Choose projects to add')).toBeVisible();
+    await expect(
+        modal.getByText(
+            'The Git identity could not be saved. The cloned repository was kept and import can continue.',
+        ),
+    ).toBeVisible();
+});
+
 test('Public repository destination focuses the path and Enter starts import', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
@@ -1131,6 +1261,114 @@ async function readOpenFileDialogCallCount(): Promise<number> {
     });
 }
 
+/**
+ * Clones the deterministic public repository and returns its import dialog.
+ *
+ * @returns The remote import dialog after cloning reaches identity or review.
+ */
+async function clonePublicRepositoryForReview(): Promise<import('@playwright/test').Locator> {
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectPublicGit').click();
+
+    const modal = mainPage.getByRole('dialog', {
+        name: 'Clone public Git repository',
+    });
+    await modal
+        .getByTestId('inputPublicGitRepositoryUrl')
+        .fill('https://example.com/team/games.git');
+    await modal.getByRole('button', { name: 'Continue' }).click();
+    await modal.getByRole('button', { name: 'Clone repository' }).click();
+    return modal;
+}
+
+/** Configures the deterministic clone fixture with no complete Git identity. */
+async function stubMissingRemoteGitIdentity(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedGitIdentitySettings?: {
+                globalIdentity: { name: string; email: string };
+                projectPreset: null;
+            };
+        };
+        state.__guidedGitIdentitySettings = {
+            globalIdentity: { name: '', email: '' },
+            projectPreset: null,
+        };
+    });
+}
+
+/** Configures an automatic Launcher identity preset for the deterministic clone. */
+async function stubAutomaticRemoteGitIdentityPreset(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedGitIdentitySettings?: {
+                globalIdentity: { name: string; email: string };
+                projectPreset: {
+                    name: string;
+                    email: string;
+                    useForNewRepositories: boolean;
+                } | null;
+            };
+        };
+        state.__guidedGitIdentitySettings = {
+            globalIdentity: { name: '', email: '' },
+            projectPreset: {
+                name: 'Preset Developer',
+                email: 'preset@example.com',
+                useForNewRepositories: true,
+            },
+        };
+    });
+}
+
+/**
+ * Makes selected Git settings writes fail in the deterministic clone fixture.
+ *
+ * @param failures - Git settings boundaries that should report failure.
+ */
+async function stubRemoteGitIdentitySettingsWriteFailures(failures: {
+    global?: boolean;
+    preset?: boolean;
+}): Promise<void> {
+    await electronApp.evaluate((_electron, selectedFailures) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedGlobalGitIdentityWriteStatus?: boolean;
+            __guidedProjectPresetWriteStatus?: boolean;
+        };
+        state.__guidedGlobalGitIdentityWriteStatus = !selectedFailures.global;
+        state.__guidedProjectPresetWriteStatus = !selectedFailures.preset;
+    }, failures);
+}
+
+/** Makes repository-local Git identity writes fail without discarding the clone. */
+async function stubRemoteGitIdentityWriteFailure(): Promise<void> {
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteGitIdentityStatus?: 'configured' | 'update-failed';
+        };
+        state.__guidedRemoteGitIdentityStatus = 'update-failed';
+    });
+}
+
+/** Reads repository-local identities submitted by the remote import dialog. */
+async function readRemoteGitIdentityWrites(): Promise<
+    Array<{
+        jobId: string;
+        identity: { name: string; email: string };
+    }>
+> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedRemoteGitIdentityWrites?: Array<{
+                jobId: string;
+                identity: { name: string; email: string };
+            }>;
+        };
+        return state.__guidedRemoteGitIdentityWrites ?? [];
+    });
+}
+
 /** Installs deterministic IPC results for the multi-project clone review. */
 async function stubRemoteProjectDiscovery(): Promise<void> {
     await electronApp.evaluate(({ ipcMain }) => {
@@ -1149,6 +1387,21 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                 | 'deleted'
                 | 'delete-failed';
             __guidedOpenedRemoteClonePaths?: string[];
+            __guidedGitIdentitySettings?: {
+                globalIdentity: { name: string; email: string };
+                projectPreset: {
+                    name: string;
+                    email: string;
+                    useForNewRepositories: boolean;
+                } | null;
+            };
+            __guidedGlobalGitIdentityWriteStatus?: boolean;
+            __guidedProjectPresetWriteStatus?: boolean;
+            __guidedRemoteGitIdentityWrites?: Array<{
+                jobId: string;
+                identity: { name: string; email: string };
+            }>;
+            __guidedRemoteGitIdentityStatus?: 'configured' | 'update-failed';
         };
         state.__guidedRemoteAddedProjectPaths = [];
         state.__guidedRemoteAddProjectOptions = [];
@@ -1159,6 +1412,60 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
         state.__guidedRemoteCloneResolutions = [];
         state.__guidedRemoteCloneResolutionStatus = 'deleted';
         state.__guidedOpenedRemoteClonePaths = [];
+        state.__guidedGitIdentitySettings = {
+            globalIdentity: {
+                name: 'Documentation User',
+                email: 'docs@example.com',
+            },
+            projectPreset: null,
+        };
+        state.__guidedRemoteGitIdentityWrites = [];
+        state.__guidedRemoteGitIdentityStatus = 'configured';
+        state.__guidedGlobalGitIdentityWriteStatus = true;
+        state.__guidedProjectPresetWriteStatus = true;
+
+        ipcMain.removeHandler('git.getIdentitySettings');
+        ipcMain.handle('git.getIdentitySettings', async () => ({
+            success: true,
+            data: state.__guidedGitIdentitySettings,
+        }));
+        ipcMain.removeHandler('git.saveGlobalIdentity');
+        ipcMain.handle('git.saveGlobalIdentity', async (_event, identity) => ({
+            success: true,
+            data: {
+                success: state.__guidedGlobalGitIdentityWriteStatus,
+                identity,
+            },
+        }));
+        ipcMain.removeHandler('git.saveProjectIdentityPreset');
+        ipcMain.handle(
+            'git.saveProjectIdentityPreset',
+            async (_event, preset) => ({
+                success: true,
+                data: {
+                    success: state.__guidedProjectPresetWriteStatus,
+                    preset,
+                },
+            }),
+        );
+        ipcMain.removeHandler('projects.setRemoteProjectGitIdentity');
+        ipcMain.handle(
+            'projects.setRemoteProjectGitIdentity',
+            async (
+                _event,
+                jobId: string,
+                identity: { name: string; email: string },
+            ) => {
+                state.__guidedRemoteGitIdentityWrites?.push({ jobId, identity });
+                return {
+                    success: true,
+                    data: {
+                        jobId,
+                        status: state.__guidedRemoteGitIdentityStatus,
+                    },
+                };
+            },
+        );
 
         ipcMain.removeHandler('projects.inspectPublicGitSource');
         ipcMain.handle('projects.inspectPublicGitSource', async () => ({

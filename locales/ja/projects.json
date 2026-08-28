@@ -106,6 +106,17 @@
             "gitUnavailable": "Git は使用できません。 [設定] > [ツール] で設定します。"
         },
         "remote": {
+            "gitIdentity": {
+                "title": "Git ID を設定",
+                "message": "このクローンしたリポジトリで今後のコミットに使用する名前とメールアドレスを設定します。",
+                "continueWithout": "ID を設定せずに続行",
+                "presetMessage": "保存済みの ID をクローンしたリポジトリに適用します。",
+                "usePreset": "プリセットを使用して続行",
+                "formMessage": "このクローンしたリポジトリで Git が使用する ID を選択します。",
+                "saveAndContinue": "保存して続行",
+                "identityWriteFailed": "Git ID を保存できませんでした。クローンしたリポジトリは保持され、インポートを続行できます。",
+                "presetWriteFailed": "ID は適用されましたが、今後のリポジトリ用の既定のローカル ID を保存できませんでした。"
+            },
             "public": {
                 "title": "パブリック Git リポジトリのクローンを作成する",
                 "description": "匿名のパブリック HTTPS Git リポジトリ URL を入力します。",

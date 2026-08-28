@@ -128,6 +128,7 @@ describe('ProjectsService', () => {
         importRemoteProject: vi.fn(),
         cancelRemoteProjectImport: vi.fn(),
         resolveRemoteProjectClone: vi.fn(),
+        setRemoteProjectGitIdentity: vi.fn(),
         initialiseRemoteProjectSubmodules: vi.fn(),
     };
     let service: ProjectsService;
@@ -175,6 +176,10 @@ describe('ProjectsService', () => {
         });
         await service.cancelRemoteProjectImport('job-id');
         await service.resolveRemoteProjectClone('job-id', 'keep');
+        await service.setRemoteProjectGitIdentity('job-id', {
+            name: 'Import User',
+            email: 'import@example.com',
+        });
         await service.initialiseRemoteProjectSubmodules('job-id');
 
         expect(mocks.createProject).toHaveBeenCalledWith(
@@ -197,6 +202,10 @@ describe('ProjectsService', () => {
         expect(remoteImport.resolveRemoteProjectClone).toHaveBeenCalledWith(
             'job-id',
             'keep',
+        );
+        expect(remoteImport.setRemoteProjectGitIdentity).toHaveBeenCalledWith(
+            'job-id',
+            { name: 'Import User', email: 'import@example.com' },
         );
         expect(
             remoteImport.initialiseRemoteProjectSubmodules,

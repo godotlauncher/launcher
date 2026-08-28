@@ -106,6 +106,17 @@
             "gitUnavailable": "Git 不可用。在“設定”>“工具”中配置它。"
         },
         "remote": {
+            "gitIdentity": {
+                "title": "設定 Git 身分",
+                "message": "設定 Git 在此複製儲存庫的後續提交中使用的姓名和電子郵件地址。",
+                "continueWithout": "不設定身分並繼續",
+                "presetMessage": "將此已儲存身分套用到複製的儲存庫。",
+                "usePreset": "使用預設並繼續",
+                "formMessage": "選擇 Git 在此複製儲存庫中使用的身分。",
+                "saveAndContinue": "儲存並繼續",
+                "identityWriteFailed": "無法儲存 Git 身分。複製的儲存庫已保留，可以繼續匯入。",
+                "presetWriteFailed": "身分已套用，但無法儲存供未來儲存庫使用的預設本機身分。"
+            },
             "public": {
                 "title": "克隆公共 Git 儲存庫",
                 "description": "輸入匿名公用 HTTPS Git 儲存庫 URL。",

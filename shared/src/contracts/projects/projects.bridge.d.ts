@@ -24,6 +24,7 @@ import type {
     ResolveRemoteProjectCloneAction,
     ResolveRemoteProjectCloneResult,
     SetProjectCodeEditorResult,
+    SetRemoteProjectGitIdentityResult,
 } from './index.js';
 
 /** Defines project requests available to the renderer. */
@@ -43,6 +44,12 @@ export type ProjectsBridge = {
         jobId: string,
         action: ResolveRemoteProjectCloneAction,
     ): Promise<ResolveRemoteProjectCloneResult>;
+
+    /** Sets repository-scoped Git identity for an unchanged imported clone. */
+    setRemoteProjectGitIdentity(
+        jobId: string,
+        identity: GitIdentity,
+    ): Promise<SetRemoteProjectGitIdentityResult>;
 
     /** Initialises validated anonymous public submodules for an owned clone. */
     initialiseRemoteProjectSubmodules(

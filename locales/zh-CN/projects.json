@@ -106,6 +106,17 @@
             "gitUnavailable": "Git 不可用。在“设置”>“工具”中配置它。"
         },
         "remote": {
+            "gitIdentity": {
+                "title": "设置 Git 身份",
+                "message": "设置 Git 在此克隆仓库的后续提交中使用的姓名和电子邮件地址。",
+                "continueWithout": "不设置身份并继续",
+                "presetMessage": "将此已保存身份应用到克隆的仓库。",
+                "usePreset": "使用预设并继续",
+                "formMessage": "选择 Git 在此克隆仓库中使用的身份。",
+                "saveAndContinue": "保存并继续",
+                "identityWriteFailed": "无法保存 Git 身份。克隆的仓库已保留，可以继续导入。",
+                "presetWriteFailed": "身份已应用，但无法保存供未来仓库使用的默认本地身份。"
+            },
             "public": {
                 "title": "克隆公共 Git 存储库",
                 "description": "输入匿名公共 HTTPS Git 存储库 URL。",

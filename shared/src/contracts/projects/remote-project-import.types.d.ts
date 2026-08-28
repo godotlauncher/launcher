@@ -147,3 +147,16 @@ export type ResolveRemoteProjectCloneResult = {
         | 'busy'
         | 'delete-failed';
 };
+
+export type SetRemoteProjectGitIdentityResult = {
+    jobId: string;
+    status:
+        | 'configured'
+        | 'invalid-identity'
+        | 'not-found'
+        | 'changed'
+        | 'busy'
+        | 'git-unavailable'
+        | 'repository-unavailable'
+        | 'update-failed';
+};

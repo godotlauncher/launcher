@@ -129,6 +129,16 @@ export class ProjectsService {
     }
 
     /**
+     * Sets repository-scoped Git identity for an unchanged imported clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param identity - Complete identity to write to the clone.
+     */
+    setRemoteProjectGitIdentity(jobId: string, identity: GitIdentity) {
+        return this.remoteImport.setRemoteProjectGitIdentity(jobId, identity);
+    }
+
+    /**
      * Initialises validated public submodules for one retained remote clone.
      *
      * @param jobId - Exact process-local clone job ID.

@@ -11,6 +11,11 @@ import type {
     RendererType,
     ToolIntegrationSummary,
 } from '@shared/contracts';
+import {
+    isGitIdentityComplete as isSharedGitIdentityComplete,
+    resolveGitIdentityDecision,
+    resolveGitIdentitySave,
+} from '../../../git-identity.model';
 import { sortReleases } from '../../../releaseStoring.utils';
 
 export const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;
@@ -294,7 +299,7 @@ export const resolveCreateProjectCodeEditorId = (
  * @returns Whether name and email are both present.
  */
 export const isGitIdentityComplete = (identity: GitIdentity): boolean =>
-    identity.name.trim().length > 0 && identity.email.trim().length > 0;
+    isSharedGitIdentityComplete(identity);
 
 export type CreateProjectGitIdentityDecision =
     | { action: 'use-global' }
@@ -327,20 +332,7 @@ export function resolveCreateProjectGitIdentityDecision(
     globalIdentity: GitIdentity,
     projectPreset: ProjectGitIdentityPreset | null,
 ): CreateProjectGitIdentityDecision {
-    if (projectPreset?.useForNewRepositories) {
-        return { action: 'apply-preset', preset: projectPreset };
-    }
-    if (projectPreset) {
-        return {
-            action: 'suggest-preset',
-            preset: projectPreset,
-            globalIdentity,
-        };
-    }
-    if (isGitIdentityComplete(globalIdentity)) {
-        return { action: 'use-global' };
-    }
-    return { action: 'require-identity', globalIdentity };
+    return resolveGitIdentityDecision(globalIdentity, projectPreset);
 }
 
 /**
@@ -356,28 +348,5 @@ export function resolveCreateProjectGitIdentitySave(
     choice: CreateProjectGitIdentitySaveChoice,
     existingPreset: ProjectGitIdentityPreset | null,
 ): CreateProjectGitIdentitySaveResolution | null {
-    if (!isGitIdentityComplete(identity)) {
-        return null;
-    }
-
-    if (choice === 'global-default') {
-        return { scope: 'global', preset: null };
-    }
-
-    if (choice === 'ask') {
-        return { scope: 'repository', preset: null };
-    }
-
-    if (existingPreset) {
-        return null;
-    }
-
-    return {
-        scope: 'repository',
-        preset: {
-            name: identity.name.trim(),
-            email: identity.email.trim(),
-            useForNewRepositories: true,
-        },
-    };
+    return resolveGitIdentitySave(identity, choice, existingPreset);
 }

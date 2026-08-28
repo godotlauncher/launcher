@@ -106,6 +106,17 @@
             "gitUnavailable": "Git ist nicht verfügbar. Konfigurieren Sie es unter Einstellungen > Tools."
         },
         "remote": {
+            "gitIdentity": {
+                "title": "Git-Identität festlegen",
+                "message": "Lege den Namen und die E-Mail-Adresse fest, die Git für zukünftige Commits in diesem geklonten Repository verwenden soll.",
+                "continueWithout": "Ohne Identität fortfahren",
+                "presetMessage": "Wende diese gespeicherte Identität auf das geklonte Repository an.",
+                "usePreset": "Voreinstellung verwenden und fortfahren",
+                "formMessage": "Wähle die Identität, die Git für dieses geklonte Repository verwenden soll.",
+                "saveAndContinue": "Speichern und fortfahren",
+                "identityWriteFailed": "Die Git-Identität konnte nicht gespeichert werden. Das geklonte Repository wurde beibehalten und der Import kann fortgesetzt werden.",
+                "presetWriteFailed": "Die Identität wurde angewendet, aber die lokale Standardidentität für zukünftige Repositorys konnte nicht gespeichert werden."
+            },
             "public": {
                 "title": "Öffentliches Git-Repository klonen",
                 "description": "Geben Sie die URL eines anonymen öffentlichen HTTPS-Git-Repositorys ein.",

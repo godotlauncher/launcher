@@ -18,6 +18,8 @@ describe('ProjectRemoteImportService', () => {
         inspectRepository: vi.fn(async () => ({
             status: 'not-a-repository' as const,
         })),
+
+        setIdentity: vi.fn(async () => true),
     };
     const publicSources = {
         inspect: vi.fn(async (url: string) => ({
@@ -648,6 +650,192 @@ describe('ProjectRemoteImportService', () => {
         await expect(
             fs.stat(path.join(parentDirectory, 'game')),
         ).resolves.toBeDefined();
+    });
+    it('sets identity only for the exact unchanged final clone', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+        git.inspectRepository.mockResolvedValueOnce({
+            status: 'inside-work-tree',
+            root: result.repositoryPath,
+            isProjectRoot: true,
+            kind: 'standard',
+        });
+        git.setIdentity.mockResolvedValueOnce(true);
+
+        await expect(
+            service.setRemoteProjectGitIdentity(result.jobId, {
+                name: ' Import User ',
+                email: ' import@example.com ',
+            }),
+        ).resolves.toEqual({
+            jobId: result.jobId,
+            status: 'configured',
+        });
+        expect(git.setIdentity).toHaveBeenCalledWith(
+            'Import User',
+            'import@example.com',
+            'repository',
+            result.repositoryPath,
+        );
+        await expect(fs.stat(result.repositoryPath)).resolves.toBeDefined();
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'deleted' });
+        expect(JSON.stringify(logger.info.mock.calls)).not.toContain(
+            'import@example.com',
+        );
+    });
+
+    it('rejects incomplete identity before inspecting the clone', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+        git.inspectRepository.mockClear();
+
+        await expect(
+            service.setRemoteProjectGitIdentity(result.jobId, {
+                name: 'Import User',
+                email: ' ',
+            }),
+        ).resolves.toEqual({
+            jobId: result.jobId,
+            status: 'invalid-identity',
+        });
+        expect(git.inspectRepository).not.toHaveBeenCalled();
+        expect(git.setIdentity).not.toHaveBeenCalled();
+    });
+
+    it('rejects a destination replaced after clone completion', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+        const movedClone = path.join(parentDirectory, 'identity-moved-game');
+        await fs.rename(result.repositoryPath, movedClone);
+        await fs.mkdir(result.repositoryPath);
+
+        await expect(
+            service.setRemoteProjectGitIdentity(result.jobId, {
+                name: 'Import User',
+                email: 'import@example.com',
+            }),
+        ).resolves.toEqual({
+            jobId: result.jobId,
+            status: 'changed',
+        });
+        expect(git.setIdentity).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            inspection: { status: 'git-unavailable' as const },
+            status: 'git-unavailable' as const,
+        },
+        {
+            inspection: {
+                status: 'inside-work-tree' as const,
+                root: '/other/repository',
+                isProjectRoot: false,
+                kind: 'standard' as const,
+            },
+            status: 'repository-unavailable' as const,
+        },
+        {
+            inspection: {
+                status: 'inside-work-tree' as const,
+                root: '/linked/repository',
+                isProjectRoot: true,
+                kind: 'linked-worktree' as const,
+            },
+            status: 'repository-unavailable' as const,
+        },
+    ])(
+        'returns $status without writing for an unavailable repository scope',
+        async ({ inspection, status }) => {
+            const service = createService();
+            const result = await service.importRemoteProject({
+                source: 'public-git-url',
+                url: 'https://example.com/team/game.git',
+                parentDirectory,
+                directoryName: 'game',
+            });
+            expect(result.ok).toBe(true);
+            if (!result.ok) throw new Error('Expected a successful import');
+            git.inspectRepository.mockResolvedValueOnce(inspection);
+
+            await expect(
+                service.setRemoteProjectGitIdentity(result.jobId, {
+                    name: 'Import User',
+                    email: 'import@example.com',
+                }),
+            ).resolves.toEqual({ jobId: result.jobId, status });
+            expect(git.setIdentity).not.toHaveBeenCalled();
+        },
+    );
+
+    it('reports a failed repository write without consuming clone ownership', async () => {
+        const service = createService();
+        const result = await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/team/game.git',
+            parentDirectory,
+            directoryName: 'game',
+        });
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error('Expected a successful import');
+        git.inspectRepository.mockResolvedValueOnce({
+            status: 'inside-work-tree',
+            root: result.repositoryPath,
+            isProjectRoot: true,
+            kind: 'standard',
+        });
+        git.setIdentity.mockResolvedValueOnce(false);
+
+        await expect(
+            service.setRemoteProjectGitIdentity(result.jobId, {
+                name: 'Import User',
+                email: 'import@example.com',
+            }),
+        ).resolves.toEqual({
+            jobId: result.jobId,
+            status: 'update-failed',
+        });
+        await expect(
+            service.resolveRemoteProjectClone(result.jobId, 'delete'),
+        ).resolves.toEqual({ jobId: result.jobId, status: 'deleted' });
+    });
+
+    it('rejects an identity request for an unknown or expired job', async () => {
+        const service = createService();
+
+        await expect(
+            service.setRemoteProjectGitIdentity('unknown-job', {
+                name: 'Import User',
+                email: 'import@example.com',
+            }),
+        ).resolves.toEqual({
+            jobId: 'unknown-job',
+            status: 'not-found',
+        });
+        expect(git.setIdentity).not.toHaveBeenCalled();
     });
 
     it('deletes only the final clone owned by the exact import job', async () => {

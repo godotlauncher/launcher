@@ -106,6 +106,17 @@
             "gitUnavailable": "Git kullanılamıyor. Ayarlar > Araçlar'da yapılandırın."
         },
         "remote": {
+            "gitIdentity": {
+                "title": "Git kimliğini ayarla",
+                "message": "Git'in bu klonlanmış depodaki gelecekteki commit'ler için kullanacağı adı ve e-posta adresini ayarlayın.",
+                "continueWithout": "Kimlik olmadan devam et",
+                "presetMessage": "Bu kayıtlı kimliği klonlanmış depoya uygulayın.",
+                "usePreset": "Ön ayarı kullan ve devam et",
+                "formMessage": "Git'in bu klonlanmış depo için kullanacağı kimliği seçin.",
+                "saveAndContinue": "Kaydet ve devam et",
+                "identityWriteFailed": "Git kimliği kaydedilemedi. Klonlanmış depo korundu ve içe aktarma devam edebilir.",
+                "presetWriteFailed": "Kimlik uygulandı, ancak gelecekteki depolar için varsayılan yerel kimlik kaydedilemedi."
+            },
             "public": {
                 "title": "Genel Git deposunu klonlayın",
                 "description": "Anonim bir genel HTTPS Git deposu URL'si girin.",
