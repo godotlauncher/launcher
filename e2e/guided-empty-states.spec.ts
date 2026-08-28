@@ -240,6 +240,7 @@ test('Remote repository discovery lets users exclude projects before adding', as
     const repositoryUrlInput = modal.getByTestId(
         'inputPublicGitRepositoryUrl',
     );
+    await expect(repositoryUrlInput).toBeFocused();
     await repositoryUrlInput.fill('https://example.com/team/games.git');
     await repositoryUrlInput.press('Enter');
     await expect(modal.getByText('Clone to')).toBeVisible();

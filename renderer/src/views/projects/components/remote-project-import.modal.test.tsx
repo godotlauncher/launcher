@@ -56,7 +56,7 @@ describe('RemoteProjectImportModal', () => {
             />,
         );
 
-        expect(html).toContain('role="dialog"');
+        expect(html).toContain('<dialog');
         expect(html).toContain('addProject.remote.public.urlPlaceholder');
         expect(html).toContain('data-testid="inputPublicGitRepositoryUrl"');
         expect(html).not.toContain(
@@ -70,7 +70,7 @@ describe('RemoteProjectImportModal', () => {
             <RemoteProjectImportModal {...defaultProps} source="github" />,
         );
 
-        expect(html).toContain('role="dialog"');
+        expect(html).toContain('<dialog');
         expect(html).toContain('h-[85vh] max-w-5xl');
         expect(html).toContain('addProject.remote.github.searchPlaceholder');
         expect(html).not.toContain('addProject.remote.github.visibility');

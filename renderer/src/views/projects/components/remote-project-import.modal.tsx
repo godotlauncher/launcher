@@ -445,12 +445,6 @@ export const RemoteProjectImportModal: React.FC<
     }, [open]);
 
     useEffect(() => {
-        if (open && step === 'source' && source === 'public-git-url') {
-            publicUrlInputRef.current?.focus();
-        }
-    }, [open, source, step]);
-
-    useEffect(() => {
         if (!open || step !== 'destination') return;
         const input = remoteProjectPathInputRef.current;
         if (!input) return;
@@ -1981,6 +1975,9 @@ export const RemoteProjectImportModal: React.FC<
             title={remoteTitle}
             footer={footer}
             panelClassName="h-[85vh] max-w-5xl"
+            initialFocusRef={
+                source === 'public-git-url' ? publicUrlInputRef : undefined
+            }
         >
             {body}
         </Dialog>
