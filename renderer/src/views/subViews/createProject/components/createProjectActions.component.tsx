@@ -1,4 +1,5 @@
 import type React from 'react';
+import type { Ref } from 'react';
 
 type CreateProjectActionsProps = {
     editNow: boolean;
@@ -10,8 +11,15 @@ type CreateProjectActionsProps = {
     onEditNowChange: (enabled: boolean) => void;
     onCancel: () => void;
     onCreateProject: () => void;
+    createButtonRef: Ref<HTMLButtonElement>;
 };
 
+/**
+ * Renders the Create Project drawer actions.
+ *
+ * @param props - Action state, callbacks, labels, and Create button ref.
+ * @returns The Create Project actions.
+ */
 export const CreateProjectActions: React.FC<CreateProjectActionsProps> = ({
     editNow,
     creating,
@@ -22,6 +30,7 @@ export const CreateProjectActions: React.FC<CreateProjectActionsProps> = ({
     onEditNowChange,
     onCancel,
     onCreateProject,
+    createButtonRef,
 }) => (
     <div className="flex w-full flex-wrap items-center justify-between gap-4">
         <label className="flex items-center">
@@ -38,6 +47,7 @@ export const CreateProjectActions: React.FC<CreateProjectActionsProps> = ({
         </label>
         <div className="flex gap-4 items-center">
             <button
+                ref={createButtonRef}
                 type="button"
                 disabled={creating}
                 onClick={onCancel}

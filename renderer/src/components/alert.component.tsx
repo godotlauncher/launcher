@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GITHUB_STATUS_URL } from '../constants';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -40,16 +40,26 @@ function renderAlertLine(
     );
 }
 
+/**
+ * Renders a dismissible application alert.
+ *
+ * @param props - Alert message, presentation, and dismissal callback.
+ * @returns The alert dialog.
+ */
 export const Alert: React.FC<AlertProps> = ({ message, onOk, title, icon }) => {
     const { t } = useTranslation('common');
     const { openExternalLink } = useAppNavigation();
+    const okButtonRef = useRef<HTMLButtonElement>(null);
 
     return (
         <Dialog
             icon={icon}
             title={title}
+            initialFocusRef={okButtonRef}
+            onRequestClose={onOk}
             footer={
                 <button
+                    ref={okButtonRef}
                     type="button"
                     data-testid="btnAlertOk"
                     onClick={onOk}
