@@ -17,7 +17,9 @@ if (process.platform !== 'win32') {
     throw new Error('The Windows askpass helper tests must run on Windows.');
 }
 
-const projectDirectory = path.dirname(fileURLToPath(import.meta.url));
+const projectDirectory = path.dirname(
+    path.dirname(fileURLToPath(import.meta.url)),
+);
 const requestedArch = process.argv[2] ?? process.arch;
 const helperPath = path.join(
     projectDirectory,
@@ -37,6 +39,7 @@ const temporaryDirectory = await mkdtemp(
 
 try {
     await verifyPeArchitecture(helperPath, requestedArch);
+    await verifyNoNodeRuntimeImports(helperPath);
     await testDirectRequests(helperPath);
     await testFailures(helperPath);
 
@@ -49,6 +52,189 @@ try {
     await testGitCredentialFill(spacedHelper);
 } finally {
     await rm(temporaryDirectory, { recursive: true, force: true });
+}
+
+/**
+ * Verifies that the standalone helper has no Node runtime dependency.
+ *
+ * @param {string} executable Path to the helper executable.
+ */
+async function verifyNoNodeRuntimeImports(executable) {
+    const importedLibraries = readPeImportedLibraries(await readFile(executable));
+    assert.ok(
+        importedLibraries.includes('ws2_32.dll'),
+        `Expected Winsock import, found: ${importedLibraries.join(', ')}`,
+    );
+    for (const nodeRuntime of ['node.exe', 'node.dll', 'libnode.dll']) {
+        assert.equal(
+            importedLibraries.includes(nodeRuntime),
+            false,
+            `Unexpected Node runtime import: ${nodeRuntime}`,
+        );
+    }
+}
+
+/**
+ * Reads regular and delay-loaded library names from a PE image.
+ *
+ * @param {Buffer} file PE image contents.
+ * @returns {string[]} Lower-case imported library names.
+ */
+function readPeImportedLibraries(file) {
+    const peOffset = file.readUInt32LE(0x3c);
+    assert.equal(file.toString('ascii', peOffset, peOffset + 4), 'PE\0\0');
+
+    const coffHeaderOffset = peOffset + 4;
+    const sectionCount = file.readUInt16LE(coffHeaderOffset + 2);
+    const optionalHeaderSize = file.readUInt16LE(coffHeaderOffset + 16);
+    const optionalHeaderOffset = coffHeaderOffset + 20;
+    const optionalHeaderMagic = file.readUInt16LE(optionalHeaderOffset);
+    assert.ok(
+        optionalHeaderMagic === 0x10b || optionalHeaderMagic === 0x20b,
+        `Unsupported PE optional header: 0x${optionalHeaderMagic.toString(16)}`,
+    );
+
+    const isPe32Plus = optionalHeaderMagic === 0x20b;
+    const imageBase = isPe32Plus
+        ? file.readBigUInt64LE(optionalHeaderOffset + 24)
+        : BigInt(file.readUInt32LE(optionalHeaderOffset + 28));
+    const dataDirectoryOffset = optionalHeaderOffset + (isPe32Plus ? 112 : 96);
+    const sectionTableOffset = optionalHeaderOffset + optionalHeaderSize;
+    const sections = [];
+    for (let index = 0; index < sectionCount; index += 1) {
+        const offset = sectionTableOffset + index * 40;
+        sections.push({
+            virtualSize: file.readUInt32LE(offset + 8),
+            virtualAddress: file.readUInt32LE(offset + 12),
+            rawSize: file.readUInt32LE(offset + 16),
+            rawOffset: file.readUInt32LE(offset + 20),
+        });
+    }
+
+    return [
+        ...readPeImportDirectory(file, sections, dataDirectoryOffset + 8),
+        ...readPeDelayImportDirectory(
+            file,
+            sections,
+            dataDirectoryOffset + 13 * 8,
+            imageBase,
+        ),
+    ].map((library) => library.toLowerCase());
+}
+
+/**
+ * Reads IMAGE_IMPORT_DESCRIPTOR library names.
+ *
+ * @param {Buffer} file PE image contents.
+ * @param {Array<object>} sections PE section mappings.
+ * @param {number} directoryOffset Import data-directory offset.
+ * @returns {string[]} Imported library names.
+ */
+function readPeImportDirectory(file, sections, directoryOffset) {
+    const directory = readPeDataDirectory(file, sections, directoryOffset);
+    if (!directory) {
+        return [];
+    }
+
+    const libraries = [];
+    for (
+        let offset = directory.offset;
+        offset + 20 <= directory.end;
+        offset += 20
+    ) {
+        if (file.subarray(offset, offset + 20).every((byte) => byte === 0)) {
+            break;
+        }
+        libraries.push(
+            readPeString(
+                file,
+                peRvaToOffset(file.readUInt32LE(offset + 12), sections),
+            ),
+        );
+    }
+    return libraries;
+}
+
+/**
+ * Reads IMAGE_DELAYLOAD_DESCRIPTOR library names.
+ *
+ * @param {Buffer} file PE image contents.
+ * @param {Array<object>} sections PE section mappings.
+ * @param {number} directoryOffset Delay-import data-directory offset.
+ * @param {bigint} imageBase PE image base.
+ * @returns {string[]} Delay-loaded library names.
+ */
+function readPeDelayImportDirectory(file, sections, directoryOffset, imageBase) {
+    const directory = readPeDataDirectory(file, sections, directoryOffset);
+    if (!directory) {
+        return [];
+    }
+
+    const libraries = [];
+    for (
+        let offset = directory.offset;
+        offset + 32 <= directory.end;
+        offset += 32
+    ) {
+        if (file.subarray(offset, offset + 32).every((byte) => byte === 0)) {
+            break;
+        }
+        const attributes = file.readUInt32LE(offset);
+        const namePointer = BigInt(file.readUInt32LE(offset + 4));
+        const nameRva = Number(
+            (attributes & 1) === 1 ? namePointer : namePointer - imageBase,
+        );
+        libraries.push(readPeString(file, peRvaToOffset(nameRva, sections)));
+    }
+    return libraries;
+}
+
+/**
+ * Resolves one populated PE data directory to file offsets.
+ *
+ * @param {Buffer} file PE image contents.
+ * @param {Array<object>} sections PE section mappings.
+ * @param {number} directoryOffset Data-directory offset.
+ * @returns {{offset: number, end: number} | null} Directory file range.
+ */
+function readPeDataDirectory(file, sections, directoryOffset) {
+    const rva = file.readUInt32LE(directoryOffset);
+    const size = file.readUInt32LE(directoryOffset + 4);
+    if (rva === 0 || size === 0) {
+        return null;
+    }
+    const offset = peRvaToOffset(rva, sections);
+    return { offset, end: Math.min(offset + size, file.length) };
+}
+
+/**
+ * Maps a PE relative virtual address to its file offset.
+ *
+ * @param {number} rva Relative virtual address.
+ * @param {Array<object>} sections PE section mappings.
+ * @returns {number} File offset.
+ */
+function peRvaToOffset(rva, sections) {
+    const section = sections.find(
+        ({ virtualAddress, virtualSize, rawSize }) =>
+            rva >= virtualAddress &&
+            rva < virtualAddress + Math.max(virtualSize, rawSize),
+    );
+    assert.ok(section, `PE RVA 0x${rva.toString(16)} is outside every section`);
+    return section.rawOffset + rva - section.virtualAddress;
+}
+
+/**
+ * Reads one null-terminated PE library name.
+ *
+ * @param {Buffer} file PE image contents.
+ * @param {number} offset String file offset.
+ * @returns {string} Library name.
+ */
+function readPeString(file, offset) {
+    const end = file.indexOf(0, offset);
+    assert.notEqual(end, -1, `Unterminated PE string at offset ${offset}`);
+    return file.toString('ascii', offset, end);
 }
 
 /** Verifies that the executable machine field matches the requested output. */

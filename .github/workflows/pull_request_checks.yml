@@ -84,8 +84,10 @@ jobs:
         include:
           - runner: windows-2025
             arch: x64
+            build-script: build:native:git-askpass:x64
           - runner: windows-11-arm
             arch: arm64
+            build-script: build:native:git-askpass:arm64
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -101,11 +103,16 @@ jobs:
       - name: Sync npm version
         run: npm install --global npm@12.0.2
 
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build native helper
-        run: npm run build:native:git-askpass -- ${{ matrix.arch }}
+        run: npm run ${{ matrix.build-script }}
 
       - name: Test native helper
         run: npm run test:native:git-askpass -- ${{ matrix.arch }}

@@ -14,7 +14,7 @@ BEGIN
     BEGIN
         BLOCK "080904B0"
         BEGIN
-            VALUE "CompanyName", "Mario Debono - godotlauncher.org\0"
+            VALUE "CompanyName", "Godot Launcher\0"
             VALUE "FileDescription", "Godot Launcher Git credential helper\0"
             VALUE "FileVersion", LAUNCHER_VERSION_STRING
             VALUE "InternalName", "godot-launcher-git-askpass\0"

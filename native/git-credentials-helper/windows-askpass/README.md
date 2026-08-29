@@ -13,12 +13,19 @@ Requirements:
 
 - Windows 10 or later
 - Node.js 24 and the repository's npm dependencies
-- Visual Studio 2022 Build Tools with the Desktop development with C++ workload
+- Visual Studio 2019 or later with the Desktop development with C++ workload
+  and the MSVC ARM64 build tools
 
-Build the current architecture with `npm run build:native:git-askpass`. Build
-both shipping architectures with `npm run build:native:git-askpass:windows`.
-Outputs are written to `out/win32-x64/` and `out/win32-arm64/` and are ignored by
-Git.
+The helper source is C and is built directly through its MSBuild project. The
+Visual Studio workload supplies MSBuild, the MSVC compiler and linker, the
+Windows SDK, and the resource compiler. Python, GYP, CMake, and Node headers are
+not required. Run the build commands from a Visual Studio Developer PowerShell
+or Developer Command Prompt so `msbuild` is available on `PATH`.
+
+Build one architecture with `npm run build:native:git-askpass:x64` or
+`npm run build:native:git-askpass:arm64`. Build both shipping architectures with
+`npm run build:native:git-askpass:windows`. Outputs are written to
+`out/win32-x64/` and `out/win32-arm64/` and are ignored by Git.
 
 Run the native black-box checks with `npm run test:native:git-askpass`. Release
 builds require the raw executable to be signed through the SignPath artifact

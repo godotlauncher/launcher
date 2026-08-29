@@ -166,8 +166,12 @@ These commands build all configured architectures and package targets for one
 operating system without publishing them. The macOS command uses the configured
 signing and notarisation credentials when they are available. The Windows
 command builds and tests the native Git askpass helper before creating unsigned
-installers, and requires Visual Studio Build Tools with the Desktop development
-with C++ workload. Publishing is performed only by the release workflow.
+installers. The native build requires Visual Studio 2019 or later with the
+Desktop development with C++ workload and MSVC ARM64 build tools. The helper is
+built directly through MSBuild; the workload supplies MSBuild, the compiler,
+linker, resource compiler, and Windows SDK. Run the command from a Visual Studio
+Developer PowerShell or Developer Command Prompt so `msbuild` is available on
+`PATH`. Publishing is performed only by the release workflow.
 
 ---
 

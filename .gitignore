@@ -46,7 +46,6 @@ build.local/*
 /coverage
 /native/git-credentials-helper/windows-askpass/build/
 /native/git-credentials-helper/windows-askpass/out/
-/native/git-credentials-helper/windows-askpass/version-resource.generated.h
 
 # Winget manifests are maintained outside this repository
 /manifests/

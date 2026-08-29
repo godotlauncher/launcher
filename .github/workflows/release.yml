@@ -164,8 +164,10 @@ jobs:
         include:
           - runner: windows-2025
             arch: x64
+            build-script: build:native:git-askpass:x64
           - runner: windows-11-arm
             arch: arm64
+            build-script: build:native:git-askpass:arm64
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
@@ -180,11 +182,16 @@ jobs:
       - name: Sync npm version
         run: npm install --global npm@12.0.2
 
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build native helper
-        run: npm run build:native:git-askpass -- ${{ matrix.arch }}
+        run: npm run ${{ matrix.build-script }}
 
       - name: Test native helper
         run: npm run test:native:git-askpass -- ${{ matrix.arch }}
@@ -197,30 +204,36 @@ jobs:
           if-no-files-found: error
 
   sign-windows-helper:
-    needs: build-windows-helper
-    strategy:
-      matrix:
-        arch: [x64, arm64]
+    needs:
+      - tag-release
+      - build-windows-helper
     runs-on: windows-2025
     permissions:
       actions: read
       contents: read
     steps:
-      - name: Download unsigned helper
+      - name: Download unsigned x64 helper
         uses: actions/download-artifact@v8
         with:
-          name: windows-git-askpass-unsigned-${{ matrix.arch }}
-          path: signpath-unsigned-helper
+          name: windows-git-askpass-unsigned-x64
+          path: signpath-unsigned-helper/win32-x64
+
+      - name: Download unsigned ARM64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-unsigned-arm64
+          path: signpath-unsigned-helper/win32-arm64
 
       - name: Upload SignPath helper input
         id: upload_unsigned_helper
         uses: actions/upload-artifact@v7
         with:
-          name: signpath-windows-helper-${{ matrix.arch }}
-          path: signpath-unsigned-helper/godot-launcher-git-askpass.exe
+          name: signpath-windows-helper
+          path: signpath-unsigned-helper
           if-no-files-found: error
 
       - name: Submit helper signing request
+        id: submit_signpath_helper
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -232,31 +245,45 @@ jobs:
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: ${{ inputs.signpath_wait_timeout_seconds }}
           output-artifact-directory: ${{ github.workspace }}\signpath-signed-helper
+          parameters: |
+            version: ${{ toJSON(needs.tag-release.outputs.version) }}
 
-      - name: Verify signed helper
+      - name: Show helper SignPath request
         shell: pwsh
         run: |
-          $helper = Get-ChildItem -Path signpath-signed-helper -Filter godot-launcher-git-askpass.exe -Recurse -File
-          if ($helper.Count -ne 1) {
-              throw "Expected one signed helper, found $($helper.Count)."
-          }
-          $signature = Get-AuthenticodeSignature -FilePath $helper.FullName
-          if ($signature.Status -ne 'Valid') {
-              throw "Signed helper signature status is $($signature.Status)."
-          }
+          Write-Host "SignPath request: ${{ steps.submit_signpath_helper.outputs.signing-request-web-url }}"
 
-      - name: Stage signed helper
+      - name: Verify and stage signed helpers
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path signed-helper | Out-Null
-          $helper = Get-ChildItem -Path signpath-signed-helper -Filter godot-launcher-git-askpass.exe -Recurse -File
-          Copy-Item -LiteralPath $helper.FullName -Destination signed-helper/godot-launcher-git-askpass.exe
+          foreach ($arch in @('x64', 'arm64')) {
+              $helper = "signpath-signed-helper/win32-$arch/godot-launcher-git-askpass.exe"
+              if (-not (Test-Path -LiteralPath $helper -PathType Leaf)) {
+                  throw "Signed $arch helper was not returned at the expected path."
+              }
 
-      - name: Upload signed helper
+              $signature = Get-AuthenticodeSignature -FilePath $helper
+              if ($signature.Status -ne 'Valid') {
+                  throw "Signed $arch helper signature status is $($signature.Status)."
+              }
+
+              $destination = "signed-helper/win32-$arch"
+              New-Item -ItemType Directory -Force -Path $destination | Out-Null
+              Copy-Item -LiteralPath $helper -Destination "$destination/godot-launcher-git-askpass.exe"
+          }
+
+      - name: Upload signed x64 helper
         uses: actions/upload-artifact@v7
         with:
-          name: windows-git-askpass-signed-${{ matrix.arch }}
-          path: signed-helper/godot-launcher-git-askpass.exe
+          name: windows-git-askpass-signed-x64
+          path: signed-helper/win32-x64/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
+      - name: Upload signed ARM64 helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-git-askpass-signed-arm64
+          path: signed-helper/win32-arm64/godot-launcher-git-askpass.exe
           if-no-files-found: error
 
   sign-windows:
