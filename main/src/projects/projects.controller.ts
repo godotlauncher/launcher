@@ -6,6 +6,7 @@ import type {
     AddProjectOptions,
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectPublicationOptions,
     GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
@@ -114,6 +115,16 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Lists current owner routes eligible for Create Project publishing.
+     *
+     * @param providerId - Registered repository provider ID.
+     */
+    @ProjectsHandler('listCreateProjectPublicationTargets')
+    listCreateProjectPublicationTargets(providerId: string) {
+        return this.projects.listCreateProjectPublicationTargets(providerId);
+    }
+
+    /**
      * Creates and registers a project.
      *
      * @param name - Display name for the new project.
@@ -123,6 +134,7 @@ export class ProjectsController implements ProjectsBridge {
      * @param withGit - Whether Git setup is requested.
      * @param overwriteProjectPath - Optional existing target to replace.
      * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
+     * @param publication - Optional private repository publication request.
      */
     @ProjectsHandler('createProject')
     createProject(
@@ -133,8 +145,9 @@ export class ProjectsController implements ProjectsBridge {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
     ) {
-        return this.projects.createProject(
+        const args = [
             name,
             release,
             renderer,
@@ -142,7 +155,37 @@ export class ProjectsController implements ProjectsBridge {
             withGit,
             overwriteProjectPath,
             gitOptions,
+        ] as const;
+        return publication
+            ? this.projects.createProject(...args, publication)
+            : this.projects.createProject(...args);
+    }
+
+    /**
+     * Retries one process-local publication attempt for its exact project.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @param publication - Optional edited selection before remote creation.
+     */
+    @ProjectsHandler('retryCreateProjectPublication')
+    retryCreateProjectPublication(
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+    ) {
+        return this.projects.retryCreateProjectPublication(
+            attemptId,
+            publication,
         );
+    }
+
+    /**
+     * Discards one process-local publication attempt without changing repositories.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     */
+    @ProjectsHandler('discardCreateProjectPublication')
+    discardCreateProjectPublication(attemptId: string) {
+        return this.projects.discardCreateProjectPublication(attemptId);
     }
 
     /**

@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "移动",
         "compatible": "兼容",
+        "forwardPlusHelp": "最适合使用高级 3D 图形的桌面游戏。",
+        "mobileHelp": "最适合移动游戏和较简单的场景。",
+        "compatibleHelp": "最适合 Web、旧设备和广泛兼容性。",
         "forwardPlusFeatures": {
             "desktop": "仅支持桌面平台。",
             "advanced3d": "支持高级 3D 图形。",
@@ -39,6 +42,58 @@
             "lowEnd": "适用于低端/较旧设备。",
             "opengl": "使用 OpenGL 3 后端（OpenGL 3.3/ES 3.0/WebGL2）。",
             "fastest": "对简单场景渲染最快。"
+        }
+    },
+    "publishToGitHub": {
+        "label": "发布到 GitHub",
+        "repositoryTitle": "GitHub 仓库",
+        "description": "在本地创建项目后，创建私有仓库并推送项目。",
+        "loadingOwners": "正在检查已连接的 GitHub 所有者...",
+        "owner": "所有者",
+        "ownerHelp": "选择拥有该仓库的 GitHub 帐户或组织。",
+        "ownerPlaceholder": "选择所有者",
+        "ownerViaAccount": "{{owner}}（通过 @{{account}}）",
+        "repositoryName": "仓库名称",
+        "repositoryNameHelp": "仅可使用字母、数字、点、连字符和下划线。",
+        "repositoryNameInvalid": "请输入 1-100 个字母、数字、点、连字符或下划线。",
+        "privateTitle": "私有仓库",
+        "privateDescription": "只有你和获得授权的人员可以查看。",
+        "openConnections": "打开连接",
+        "leaveTitle": "离开创建项目？",
+        "leaveMessage": "打开连接时，未保存的项目信息将被清除。",
+        "successTitle": "已发布到 GitHub",
+        "successMessage": "已将 {{owner}}/{{name}} 创建为私有仓库并推送项目。",
+        "recoveryTitle": "本地项目是安全的",
+        "retry": "重试发布",
+        "retryFailed": "无法重试发布。本地项目仍然安全。",
+        "continueLocally": "继续使用本地项目",
+        "openGitHub": "打开 GitHub",
+        "localTitle": "项目已保留在本地",
+        "localMessage": "项目仍保留在此计算机和 Launcher 库中。",
+        "requiresInitialCommit": "发布需要一个包含初始提交的新 Git 仓库。",
+        "publicationFailed": "项目已在本地创建，但 GitHub 发布未完成。",
+        "attemptExpired": "此发布尝试已过期。本地项目仍然安全。",
+        "targetFailure": {
+            "connection-required": "发布项目前请先连接 GitHub。",
+            "permission-update-required": "GitHub 连接需要创建仓库的权限。",
+            "secure-storage-unavailable": "此计算机无法使用安全凭据存储。",
+            "provider-unavailable": "无法加载 GitHub 所有者。请检查连接并重试。"
+        },
+        "failure": {
+            "connection-required": "GitHub 连接已不可用。",
+            "permission-update-required": "GitHub 连接需要更新仓库权限。",
+            "secure-storage-unavailable": "安全凭据存储已不可用。",
+            "target-unavailable": "所选 GitHub 所有者已不可用。",
+            "invalid-repository-name": "仓库名称无效。",
+            "repository-name-unavailable-or-policy-rejected": "GitHub 无法使用该名称。名称可能已存在或被组织策略禁止。",
+            "rate-limited": "GitHub 暂时限制请求。请稍后重试。",
+            "network-unavailable": "发布时网络连接失败。",
+            "remote-creation-uncertain": "Launcher 无法确认 GitHub 是否已创建仓库。在继续使用本地项目之前请检查 GitHub。",
+            "remote-created-origin-failed": "私有仓库已创建，但 Launcher 无法将其连接到本地项目。",
+            "remote-created-push-failed": "私有仓库已创建，但无法推送项目。",
+            "remote-created-verification-failed": "项目可能已推送，但 Launcher 无法验证。",
+            "local-repository-changed": "本地 Git 仓库已更改，因此 Launcher 停止了重试。",
+            "provider-unavailable": "GitHub 无法完成请求。"
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "立即编辑",
         "create": "创建项目",
-        "creating": "正在创建项目..."
+        "createAndPublish": "创建并发布",
+        "creating": "正在创建项目...",
+        "publishing": "正在创建项目并发布到 GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "无效的编辑器版本：{{version}}",

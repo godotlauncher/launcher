@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "行動裝置",
         "compatible": "相容",
+        "forwardPlusHelp": "最適合使用進階 3D 圖形的桌面遊戲。",
+        "mobileHelp": "最適合行動遊戲和較簡單的場景。",
+        "compatibleHelp": "最適合 Web、較舊裝置和廣泛相容性。",
         "forwardPlusFeatures": {
             "desktop": "僅支援桌面平台。",
             "advanced3d": "提供進階 3D 圖形。",
@@ -39,6 +42,58 @@
             "lowEnd": "適用於低階/舊型裝置。",
             "opengl": "使用 OpenGL 3 後端（OpenGL 3.3/ES 3.0/WebGL2）。",
             "fastest": "簡單場景的渲染速度最快。"
+        }
+    },
+    "publishToGitHub": {
+        "label": "發佈到 GitHub",
+        "repositoryTitle": "GitHub 儲存庫",
+        "description": "在本機建立專案後，建立私人儲存庫並推送專案。",
+        "loadingOwners": "正在檢查已連線的 GitHub 擁有者...",
+        "owner": "擁有者",
+        "ownerHelp": "選擇擁有此儲存庫的 GitHub 帳戶或組織。",
+        "ownerPlaceholder": "選擇擁有者",
+        "ownerViaAccount": "{{owner}}（透過 @{{account}}）",
+        "repositoryName": "儲存庫名稱",
+        "repositoryNameHelp": "僅可使用字母、數字、句點、連字號和底線。",
+        "repositoryNameInvalid": "請輸入 1-100 個字母、數字、句點、連字號或底線。",
+        "privateTitle": "私人儲存庫",
+        "privateDescription": "只有你和獲得授權的人員可以查看。",
+        "openConnections": "開啟連線",
+        "leaveTitle": "離開建立專案？",
+        "leaveMessage": "開啟連線時，未儲存的專案資料將被清除。",
+        "successTitle": "已發佈到 GitHub",
+        "successMessage": "已將 {{owner}}/{{name}} 建立為私人儲存庫並推送專案。",
+        "recoveryTitle": "本機專案是安全的",
+        "retry": "重試發佈",
+        "retryFailed": "無法重試發佈。本機專案仍然安全。",
+        "continueLocally": "繼續使用本機專案",
+        "openGitHub": "開啟 GitHub",
+        "localTitle": "專案已保留在本機",
+        "localMessage": "專案仍保留在此電腦和 Launcher 資料庫中。",
+        "requiresInitialCommit": "發佈需要一個包含初始提交的新 Git 儲存庫。",
+        "publicationFailed": "專案已在本機建立，但 GitHub 發佈未完成。",
+        "attemptExpired": "此發佈嘗試已過期。本機專案仍然安全。",
+        "targetFailure": {
+            "connection-required": "發佈專案前請先連線 GitHub。",
+            "permission-update-required": "GitHub 連線需要建立儲存庫的權限。",
+            "secure-storage-unavailable": "此電腦無法使用安全憑證儲存空間。",
+            "provider-unavailable": "無法載入 GitHub 擁有者。請檢查連線並重試。"
+        },
+        "failure": {
+            "connection-required": "GitHub 連線已無法使用。",
+            "permission-update-required": "GitHub 連線需要更新儲存庫權限。",
+            "secure-storage-unavailable": "安全憑證儲存空間已無法使用。",
+            "target-unavailable": "所選 GitHub 擁有者已無法使用。",
+            "invalid-repository-name": "儲存庫名稱無效。",
+            "repository-name-unavailable-or-policy-rejected": "GitHub 無法使用此名稱。名稱可能已存在或被組織政策禁止。",
+            "rate-limited": "GitHub 暫時限制請求。請稍後重試。",
+            "network-unavailable": "發佈時網路連線失敗。",
+            "remote-creation-uncertain": "Launcher 無法確認 GitHub 是否已建立儲存庫。在繼續使用本機專案前請檢查 GitHub。",
+            "remote-created-origin-failed": "私人儲存庫已建立，但 Launcher 無法將它連接到本機專案。",
+            "remote-created-push-failed": "私人儲存庫已建立，但無法推送專案。",
+            "remote-created-verification-failed": "專案可能已推送，但 Launcher 無法驗證。",
+            "local-repository-changed": "本機 Git 儲存庫已變更，因此 Launcher 停止重試。",
+            "provider-unavailable": "GitHub 無法完成請求。"
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "立即編輯",
         "create": "建立專案",
-        "creating": "正在建立專案..."
+        "createAndPublish": "建立並發佈",
+        "creating": "正在建立專案...",
+        "publishing": "正在建立專案並發佈到 GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "無效的編輯器版本：{{version}}",

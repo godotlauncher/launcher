@@ -13,8 +13,11 @@ type CreateProjectSourceControlSectionProps = {
     gitLfsPolicy: GitLfsTrackingPolicyDescriptor | null;
     withGit: boolean;
     withGitLfs: boolean;
+    publishToGitHub: boolean;
+    publishingLocked?: boolean;
     onWithGitChange: (enabled: boolean) => void;
     onWithGitLfsChange: (enabled: boolean) => void;
+    onPublishToGitHubChange: (enabled: boolean) => void;
 };
 
 /**
@@ -33,8 +36,11 @@ export const CreateProjectSourceControlSection: React.FC<
     gitLfsPolicy,
     withGit,
     withGitLfs,
+    publishToGitHub,
+    publishingLocked = false,
     onWithGitChange,
     onWithGitLfsChange,
+    onPublishToGitHubChange,
 }) => (
     <div className="flex flex-col gap-2">
         <h2 className="text-md flex items-center gap-4">
@@ -64,13 +70,30 @@ export const CreateProjectSourceControlSection: React.FC<
                 </span>
             )}
             {withGit && (
-                <CreateProjectGitLfsOption
-                    t={t}
-                    available={gitLfsAvailable}
-                    policy={gitLfsPolicy}
-                    selected={withGitLfs}
-                    onSelectedChange={onWithGitLfsChange}
-                />
+                <>
+                    <CreateProjectGitLfsOption
+                        t={t}
+                        available={gitLfsAvailable}
+                        policy={gitLfsPolicy}
+                        selected={withGitLfs}
+                        onSelectedChange={onWithGitLfsChange}
+                    />
+                    <label className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            className="checkbox"
+                            checked={publishToGitHub}
+                            disabled={publishingLocked}
+                            onChange={(event) =>
+                                onPublishToGitHubChange(event.target.checked)
+                            }
+                        />
+                        <span>{t('publishToGitHub.label')}</span>
+                    </label>
+                    <p className="pl-8 text-sm text-base-content/70">
+                        {t('publishToGitHub.description')}
+                    </p>
+                </>
             )}
         </div>
     </div>

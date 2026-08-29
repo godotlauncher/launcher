@@ -72,9 +72,6 @@ export const CreateProjectGitLfsOption: React.FC<
                 </Tooltip>
             )}
         </div>
-        <p className="text-sm opacity-70">
-            {t('otherSettings.gitLfs.description')}
-        </p>
         {!available && (
             <p className="text-sm text-warning">
                 {t('otherSettings.gitLfs.unavailable')}

@@ -49,6 +49,7 @@ export type GitHubInstallation = {
     };
     html_url: string;
     permissions: {
+        administration?: 'read' | 'write';
         contents?: 'read' | 'write';
     };
     suspended_at: string | null;
@@ -69,6 +70,16 @@ export type GitHubRepository = {
 export type GitHubRepositoryPage = {
     repositories: GitHubRepository[];
     nextCursor: string | null;
+};
+
+export type GitHubCreatedRepository = {
+    id: number;
+    owner: { login: string };
+    name: string;
+    full_name: string;
+    private: true;
+    clone_url: string;
+    html_url: string;
 };
 
 export type GitHubLoopbackCompletion = {

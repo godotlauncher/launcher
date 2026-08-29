@@ -23,6 +23,7 @@ import type {
     EditorInstallsBridge,
     InstalledRelease,
     LaunchProjectResult,
+    ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectGitIdentityResult,
     ProjectsBridge,
@@ -651,6 +652,33 @@ export async function stubProjectLaunchResult(
     await electronApp.evaluate(
         ({ ipcMain }, injectedResult: LaunchProjectResult) => {
             const channel = 'projects.launchProject';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs the GitHub owner routes available to Create Project publishing.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic renderer-safe owner target result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectPublicationTargets(
+    electronApp: ElectronApplication,
+    result: ListCreateProjectPublicationTargetsResult,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedResult: ListCreateProjectPublicationTargetsResult,
+        ) => {
+            const channel = 'projects.listCreateProjectPublicationTargets';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,

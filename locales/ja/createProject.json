@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "モバイル",
         "compatible": "互換",
+        "forwardPlusHelp": "高度な3Dグラフィックスを使うデスクトップゲームに最適です。",
+        "mobileHelp": "モバイルゲームやシンプルなシーンに最適です。",
+        "compatibleHelp": "Web、古いデバイス、幅広い互換性に最適です。",
         "forwardPlusFeatures": {
             "desktop": "デスクトッププラットフォームのみをサポート。",
             "advanced3d": "高度な3Dグラフィックスが利用可能。",
@@ -39,6 +42,58 @@
             "lowEnd": "ローエンド/古いデバイス向け。",
             "opengl": "OpenGL 3バックエンドを使用（OpenGL 3.3/ES 3.0/WebGL2）。",
             "fastest": "シンプルなシーンの最速レンダリング。"
+        }
+    },
+    "publishToGitHub": {
+        "label": "GitHub に公開",
+        "repositoryTitle": "GitHub リポジトリ",
+        "description": "ローカルで作成した後、プライベートリポジトリを作成してプロジェクトをプッシュします。",
+        "loadingOwners": "接続済みの GitHub 所有者を確認しています...",
+        "owner": "所有者",
+        "ownerHelp": "リポジトリを所有する GitHub アカウントまたは組織を選択します。",
+        "ownerPlaceholder": "所有者を選択",
+        "ownerViaAccount": "{{owner}}（@{{account}} 経由）",
+        "repositoryName": "リポジトリ名",
+        "repositoryNameHelp": "英数字、ピリオド、ハイフン、アンダースコアのみ使用できます。",
+        "repositoryNameInvalid": "1～100文字の英数字、ピリオド、ハイフン、アンダースコアを入力してください。",
+        "privateTitle": "プライベートリポジトリ",
+        "privateDescription": "自分とアクセスを許可したユーザーだけが表示できます。",
+        "openConnections": "接続を開く",
+        "leaveTitle": "プロジェクト作成を終了しますか？",
+        "leaveMessage": "接続を開くと、保存されていないプロジェクト情報は消去されます。",
+        "successTitle": "GitHub に公開しました",
+        "successMessage": "{{owner}}/{{name}} をプライベートリポジトリとして作成し、プロジェクトをプッシュしました。",
+        "recoveryTitle": "ローカルプロジェクトは安全です",
+        "retry": "公開を再試行",
+        "retryFailed": "公開を再試行できませんでした。ローカルプロジェクトは安全です。",
+        "continueLocally": "ローカルで続行",
+        "openGitHub": "GitHub を開く",
+        "localTitle": "プロジェクトをローカルに保持しました",
+        "localMessage": "プロジェクトはこのコンピューターと Launcher ライブラリに残ります。",
+        "requiresInitialCommit": "公開には、最初のコミットを持つ新しい Git リポジトリが必要です。",
+        "publicationFailed": "プロジェクトはローカルに作成されましたが、GitHub への公開は完了しませんでした。",
+        "attemptExpired": "この公開操作は期限切れです。ローカルプロジェクトは安全です。",
+        "targetFailure": {
+            "connection-required": "公開する前に GitHub に接続してください。",
+            "permission-update-required": "GitHub 接続にリポジトリ作成権限が必要です。",
+            "secure-storage-unavailable": "安全な認証情報ストレージを利用できません。",
+            "provider-unavailable": "GitHub 所有者を読み込めませんでした。接続を確認して再試行してください。"
+        },
+        "failure": {
+            "connection-required": "GitHub 接続を利用できなくなりました。",
+            "permission-update-required": "GitHub 接続のリポジトリ権限を更新する必要があります。",
+            "secure-storage-unavailable": "安全な認証情報ストレージを利用できなくなりました。",
+            "target-unavailable": "選択した GitHub 所有者を利用できなくなりました。",
+            "invalid-repository-name": "リポジトリ名が無効です。",
+            "repository-name-unavailable-or-policy-rejected": "GitHub でこの名前を使用できません。既に存在するか、組織のポリシーで禁止されている可能性があります。",
+            "rate-limited": "GitHub が一時的にリクエストを制限しています。後でもう一度お試しください。",
+            "network-unavailable": "公開中にネットワーク接続が失敗しました。",
+            "remote-creation-uncertain": "GitHub がリポジトリを作成したか確認できませんでした。ローカルで続行する前に GitHub を確認してください。",
+            "remote-created-origin-failed": "プライベートリポジトリは作成されましたが、ローカルプロジェクトに接続できませんでした。",
+            "remote-created-push-failed": "プライベートリポジトリは作成されましたが、プロジェクトをプッシュできませんでした。",
+            "remote-created-verification-failed": "プロジェクトはプッシュされた可能性がありますが、確認できませんでした。",
+            "local-repository-changed": "ローカル Git リポジトリが変更されたため、再試行を停止しました。",
+            "provider-unavailable": "GitHub がリクエストを完了できませんでした。"
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "今すぐ編集",
         "create": "プロジェクトを作成",
-        "creating": "プロジェクトを作成中..."
+        "createAndPublish": "作成して公開",
+        "creating": "プロジェクトを作成中...",
+        "publishing": "プロジェクトを作成して GitHub に公開しています..."
     },
     "errors": {
         "invalidEditorVersion": "無効なエディタバージョン：{{version}}",

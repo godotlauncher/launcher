@@ -15,6 +15,7 @@ import { AppIntegrationProviderRegistry } from './app-integration-provider.regis
 
 const CAPABILITY_KINDS = new Set<AppIntegrationCapabilityKind>([
     'repository-browsing',
+    'repository-creation',
 ]);
 
 @Injectable()
@@ -52,15 +53,18 @@ export class AppIntegrationCapabilityRegistry implements OnModuleInit {
      * @param kind - Supported capability kind.
      * @returns The matching capability.
      */
-    get(
+    get<K extends AppIntegrationCapabilityKind>(
         providerId: string,
-        kind: AppIntegrationCapabilityKind,
-    ): AppIntegrationCapability {
+        kind: K,
+    ): Extract<AppIntegrationCapability, { metadata: { kind: K } }> {
         const capability = this.capabilities.get(this.key(providerId, kind));
         if (!capability) {
             throw new Error('Unknown app integration capability');
         }
-        return capability;
+        return capability as Extract<
+            AppIntegrationCapability,
+            { metadata: { kind: K } }
+        >;
     }
 
     /**

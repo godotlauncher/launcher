@@ -55,6 +55,7 @@ describe('GitHubApiClient', () => {
         ).resolves.toEqual([
             {
                 providerTargetId: '123456',
+                capabilities: ['repository-browsing'],
                 login: 'godotlauncher',
                 type: 'organization',
                 manageUrl:
@@ -62,6 +63,7 @@ describe('GitHubApiClient', () => {
             },
             {
                 providerTargetId: '654321',
+                capabilities: ['repository-browsing'],
                 login: 'octocat',
                 type: 'user',
                 manageUrl: 'https://github.com/settings/installations/654321',
@@ -74,6 +76,80 @@ describe('GitHubApiClient', () => {
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
             headers: expect.objectContaining({
                 Authorization: 'Bearer access-token',
+            }),
+        });
+    });
+
+    it('marks installations with approved write permissions for creation', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json({
+                    installations: [
+                        {
+                            id: 123456,
+                            account: {
+                                login: 'godotlauncher',
+                                type: 'Organization',
+                            },
+                            html_url:
+                                'https://github.com/organizations/godotlauncher/settings/installations/123456',
+                            permissions: {
+                                contents: 'write',
+                                administration: 'write',
+                            },
+                            suspended_at: null,
+                        },
+                    ],
+                }),
+            ),
+        );
+
+        await expect(
+            new GitHubApiClient().getInstallations(
+                'access-token',
+                new AbortController().signal,
+            ),
+        ).resolves.toEqual([
+            expect.objectContaining({
+                capabilities: ['repository-browsing', 'repository-creation'],
+            }),
+        ]);
+    });
+
+    it('creates only an empty private organisation repository', async () => {
+        const fetchMock = vi.fn(async () =>
+            Response.json({
+                id: 42,
+                owner: { login: 'godotlauncher' },
+                name: 'my-game',
+                full_name: 'godotlauncher/my-game',
+                private: true,
+                clone_url: 'https://github.com/godotlauncher/my-game.git',
+                html_url: 'https://github.com/godotlauncher/my-game',
+            }),
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(
+            new GitHubApiClient().createPrivateRepository(
+                'access-token',
+                'godotlauncher',
+                'organization',
+                'my-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toMatchObject({ id: 42, private: true });
+        expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+            'https://api.github.com/orgs/godotlauncher/repos',
+        );
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+            method: 'POST',
+            redirect: 'manual',
+            body: JSON.stringify({
+                name: 'my-game',
+                private: true,
+                auto_init: false,
             }),
         });
     });

@@ -11,6 +11,7 @@ import {
     stubAddProjectEditorResolution,
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
+    stubCreateProjectPublicationTargets,
     stubGlobalGitIdentity,
     stubProjectGitIdentity,
     stubProjectGitInitializationFailure,
@@ -959,6 +960,21 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             electronApp: ElectronApplication,
         ) => {
             await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
+            await stubCreateProjectPublicationTargets(electronApp, {
+                success: true,
+                targets: [
+                    {
+                        providerId: 'github',
+                        connectionId:
+                            '4d542f86-89c7-4a7c-89cf-835ce17022af',
+                        accessTargetId:
+                            'de178a20-320a-471f-8c8c-94061ac13de1',
+                        ownerLogin: 'mariodebono',
+                        ownerType: 'user',
+                        accountLogin: 'mariodebono',
+                    },
+                ],
+            });
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_AVAILABLE,
@@ -967,6 +983,12 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page
                 .getByTestId('inputProjectName')
                 .fill('My Next Awesome Game');
+            await page
+                .getByRole('checkbox', { name: 'Publish to GitHub' })
+                .check();
+            await expect(
+                page.getByTestId('selectCreateProjectGitHubOwner'),
+            ).toBeVisible();
             await page.waitForTimeout(600);
         },
         cleanup: async (

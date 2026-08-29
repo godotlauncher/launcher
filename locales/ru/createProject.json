@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Мобильный",
         "compatible": "Совместимый",
+        "forwardPlusHelp": "Лучший выбор для настольных игр с продвинутой 3D-графикой.",
+        "mobileHelp": "Лучший выбор для мобильных игр и простых сцен.",
+        "compatibleHelp": "Лучший выбор для веба, старых устройств и широкой совместимости.",
         "forwardPlusFeatures": {
             "desktop": "Поддерживает только настольные платформы.",
             "advanced3d": "Доступна продвинутая 3D графика.",
@@ -39,6 +42,58 @@
             "lowEnd": "Предназначен для слабых/старых устройств.",
             "opengl": "Использует бэкенд OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
             "fastest": "Самая быстрая отрисовка простых сцен."
+        }
+    },
+    "publishToGitHub": {
+        "label": "Опубликовать на GitHub",
+        "repositoryTitle": "Репозиторий GitHub",
+        "description": "Создаёт приватный репозиторий и отправляет проект после локального создания.",
+        "loadingOwners": "Проверка подключённых владельцев GitHub...",
+        "owner": "Владелец",
+        "ownerHelp": "Выберите учётную запись или организацию GitHub, которой будет принадлежать репозиторий.",
+        "ownerPlaceholder": "Выберите владельца",
+        "ownerViaAccount": "{{owner}} (через @{{account}})",
+        "repositoryName": "Имя репозитория",
+        "repositoryNameHelp": "Только буквы, цифры, точки, дефисы и подчёркивания.",
+        "repositoryNameInvalid": "Введите от 1 до 100 букв, цифр, точек, дефисов или подчёркиваний.",
+        "privateTitle": "Приватный репозиторий",
+        "privateDescription": "Его видите только вы и пользователи, которым вы предоставили доступ.",
+        "openConnections": "Открыть подключения",
+        "leaveTitle": "Покинуть создание проекта?",
+        "leaveMessage": "Несохранённые данные проекта будут удалены при открытии подключений.",
+        "successTitle": "Опубликовано на GitHub",
+        "successMessage": "{{owner}}/{{name}} создан как приватный репозиторий, и проект отправлен.",
+        "recoveryTitle": "Локальный проект в безопасности",
+        "retry": "Повторить публикацию",
+        "retryFailed": "Не удалось повторить публикацию. Локальный проект остаётся в безопасности.",
+        "continueLocally": "Продолжить локально",
+        "openGitHub": "Открыть GitHub",
+        "localTitle": "Проект сохранён локально",
+        "localMessage": "Проект остаётся на этом компьютере и в библиотеке Launcher.",
+        "requiresInitialCommit": "Для публикации нужен новый репозиторий Git с первым коммитом.",
+        "publicationFailed": "Проект создан локально, но публикация на GitHub не завершена.",
+        "attemptExpired": "Срок этой попытки публикации истёк. Локальный проект в безопасности.",
+        "targetFailure": {
+            "connection-required": "Подключите GitHub перед публикацией проекта.",
+            "permission-update-required": "Подключению GitHub нужно разрешение на создание репозиториев.",
+            "secure-storage-unavailable": "Безопасное хранилище учётных данных недоступно.",
+            "provider-unavailable": "Не удалось загрузить владельцев GitHub. Проверьте подключение и повторите попытку."
+        },
+        "failure": {
+            "connection-required": "Подключение GitHub больше недоступно.",
+            "permission-update-required": "Подключению GitHub нужны обновлённые разрешения.",
+            "secure-storage-unavailable": "Безопасное хранилище учётных данных стало недоступно.",
+            "target-unavailable": "Выбранный владелец GitHub больше недоступен.",
+            "invalid-repository-name": "Недопустимое имя репозитория.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub не может использовать это имя. Оно уже занято или запрещено политикой организации.",
+            "rate-limited": "GitHub временно ограничивает запросы. Повторите попытку позже.",
+            "network-unavailable": "Во время публикации произошёл сбой сети.",
+            "remote-creation-uncertain": "Launcher не смог подтвердить создание репозитория. Проверьте GitHub перед локальным продолжением.",
+            "remote-created-origin-failed": "Приватный репозиторий создан, но Launcher не смог связать его с локальным проектом.",
+            "remote-created-push-failed": "Приватный репозиторий создан, но проект не удалось отправить.",
+            "remote-created-verification-failed": "Возможно, проект отправлен, но Launcher не смог это проверить.",
+            "local-repository-changed": "Локальный репозиторий Git изменился, поэтому Launcher остановил повторную попытку.",
+            "provider-unavailable": "GitHub не смог выполнить запрос."
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "Редактировать сейчас",
         "create": "Создать проект",
-        "creating": "Создание проекта..."
+        "createAndPublish": "Создать и опубликовать",
+        "creating": "Создание проекта...",
+        "publishing": "Создание проекта и публикация на GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "Неверная версия редактора: {{version}}",

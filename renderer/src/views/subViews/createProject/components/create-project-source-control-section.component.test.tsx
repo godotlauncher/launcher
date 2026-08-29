@@ -26,8 +26,10 @@ describe('CreateProjectSourceControlSection', () => {
                 }}
                 withGit={false}
                 withGitLfs={false}
+                publishToGitHub={false}
                 onWithGitChange={vi.fn()}
                 onWithGitLfsChange={vi.fn()}
+                onPublishToGitHubChange={vi.fn()}
             />,
         );
 

@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobile",
         "compatible": "Compatible",
+        "forwardPlusHelp": "Best for desktop games with advanced 3D graphics.",
+        "mobileHelp": "Best for mobile games and simpler scenes.",
+        "compatibleHelp": "Best for web, older devices, and broad compatibility.",
         "forwardPlusFeatures": {
             "desktop": "Supports desktop platforms only.",
             "advanced3d": "Advanced 3D graphics available.",
@@ -39,6 +42,58 @@
             "lowEnd": "Intended for low-end/older devices.",
             "opengl": "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).",
             "fastest": "Fastest rendering of simple scenes."
+        }
+    },
+    "publishToGitHub": {
+        "label": "Publish to GitHub",
+        "repositoryTitle": "GitHub repository",
+        "description": "Create a private repository and push main.",
+        "loadingOwners": "Checking connected GitHub owners...",
+        "owner": "Owner",
+        "ownerHelp": "Choose the GitHub account or organisation that will own the repository.",
+        "ownerPlaceholder": "Choose an owner",
+        "ownerViaAccount": "{{owner}} (via @{{account}})",
+        "repositoryName": "Repository name",
+        "repositoryNameHelp": "Letters, numbers, dots, hyphens, and underscores only.",
+        "repositoryNameInvalid": "Enter 1-100 letters, numbers, dots, hyphens, or underscores.",
+        "privateTitle": "Private repository",
+        "privateDescription": "Only you and people you grant access to can see it.",
+        "openConnections": "Open Connections",
+        "leaveTitle": "Leave Create Project?",
+        "leaveMessage": "Your unsaved project details will be cleared when you open Connections.",
+        "successTitle": "Published to GitHub",
+        "successMessage": "{{owner}}/{{name}} was created as a private repository and the project was pushed.",
+        "recoveryTitle": "The local project is safe",
+        "retry": "Retry publishing",
+        "retryFailed": "Could not retry publishing. The local project is still safe.",
+        "continueLocally": "Continue locally",
+        "openGitHub": "Open on GitHub",
+        "localTitle": "Project kept locally",
+        "localMessage": "The project remains on this computer and in your Launcher library.",
+        "requiresInitialCommit": "Publishing requires a new Git repository with an initial commit.",
+        "publicationFailed": "The project was created locally, but GitHub publishing did not finish.",
+        "attemptExpired": "This publishing attempt has expired. The local project is still safe.",
+        "targetFailure": {
+            "connection-required": "Connect GitHub before publishing a project.",
+            "permission-update-required": "Your GitHub connection needs permission to create repositories.",
+            "secure-storage-unavailable": "Secure credential storage is unavailable on this computer.",
+            "provider-unavailable": "GitHub owners could not be loaded. Check your connection and try again."
+        },
+        "failure": {
+            "connection-required": "The GitHub connection is no longer available.",
+            "permission-update-required": "The GitHub connection needs updated repository permissions.",
+            "secure-storage-unavailable": "Secure credential storage became unavailable.",
+            "target-unavailable": "The selected GitHub owner is no longer available.",
+            "invalid-repository-name": "The repository name is not valid.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub could not use that repository name. It may already exist or be blocked by an organisation policy.",
+            "rate-limited": "GitHub is temporarily limiting requests. Try again later.",
+            "network-unavailable": "The network connection failed while publishing.",
+            "remote-creation-uncertain": "Launcher could not confirm whether GitHub created the repository. Check GitHub before continuing locally.",
+            "remote-created-origin-failed": "The private repository was created, but Launcher could not attach it to the local project.",
+            "remote-created-push-failed": "The private repository was created, but the project could not be pushed.",
+            "remote-created-verification-failed": "The project may have been pushed, but Launcher could not verify it.",
+            "local-repository-changed": "The local Git repository changed, so Launcher stopped before retrying.",
+            "provider-unavailable": "GitHub could not complete the request."
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "Edit now",
         "create": "Create Project",
-        "creating": "Creating project..."
+        "createAndPublish": "Create and publish to GitHub",
+        "creating": "Creating project...",
+        "publishing": "Creating project and publishing to GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "Invalid editor version: {{version}}",

@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobil",
         "compatible": "Uyumlu",
+        "forwardPlusHelp": "Gelişmiş 3D grafiklere sahip masaüstü oyunları için en iyisi.",
+        "mobileHelp": "Mobil oyunlar ve daha basit sahneler için en iyisi.",
+        "compatibleHelp": "Web, eski cihazlar ve geniş uyumluluk için en iyisi.",
         "forwardPlusFeatures": {
             "desktop": "Yalnızca masaüstü platformları destekler.",
             "advanced3d": "Gelişmiş 3D grafikler mevcut.",
@@ -39,6 +42,58 @@
             "lowEnd": "Düşük uçlu/eski cihazlar için tasarlanmıştır.",
             "opengl": "OpenGL 3 arka ucunu kullanır (OpenGL 3.3/ES 3.0/WebGL2).",
             "fastest": "Basit sahnelerin en hızlı işlenmesi."
+        }
+    },
+    "publishToGitHub": {
+        "label": "GitHub'da yayımla",
+        "repositoryTitle": "GitHub deposu",
+        "description": "Yerel oluşturmanın ardından özel bir depo oluşturur ve projeyi gönderir.",
+        "loadingOwners": "Bağlı GitHub sahipleri denetleniyor...",
+        "owner": "Sahip",
+        "ownerHelp": "Deponun sahibi olacak GitHub hesabını veya kuruluşunu seçin.",
+        "ownerPlaceholder": "Bir sahip seçin",
+        "ownerViaAccount": "{{owner}} (@{{account}} üzerinden)",
+        "repositoryName": "Depo adı",
+        "repositoryNameHelp": "Yalnızca harf, rakam, nokta, kısa çizgi ve alt çizgi.",
+        "repositoryNameInvalid": "1-100 harf, rakam, nokta, kısa çizgi veya alt çizgi girin.",
+        "privateTitle": "Özel depo",
+        "privateDescription": "Yalnızca siz ve erişim verdiğiniz kişiler görebilir.",
+        "openConnections": "Bağlantıları aç",
+        "leaveTitle": "Proje oluşturmadan çıkılsın mı?",
+        "leaveMessage": "Bağlantılar açıldığında kaydedilmemiş proje bilgileri temizlenecek.",
+        "successTitle": "GitHub'da yayımlandı",
+        "successMessage": "{{owner}}/{{name}} özel depo olarak oluşturuldu ve proje gönderildi.",
+        "recoveryTitle": "Yerel proje güvende",
+        "retry": "Yayımlamayı yeniden dene",
+        "retryFailed": "Yayımlama yeniden denenemedi. Yerel proje güvende.",
+        "continueLocally": "Yerel olarak devam et",
+        "openGitHub": "GitHub'ı aç",
+        "localTitle": "Proje yerelde tutuldu",
+        "localMessage": "Proje bu bilgisayarda ve Launcher kitaplığında kalır.",
+        "requiresInitialCommit": "Yayımlama, ilk commit'e sahip yeni bir Git deposu gerektirir.",
+        "publicationFailed": "Proje yerel olarak oluşturuldu ancak GitHub yayımlaması tamamlanmadı.",
+        "attemptExpired": "Bu yayımlama denemesi sona erdi. Yerel proje güvende.",
+        "targetFailure": {
+            "connection-required": "Proje yayımlamadan önce GitHub'ı bağlayın.",
+            "permission-update-required": "GitHub bağlantısının depo oluşturma iznine ihtiyacı var.",
+            "secure-storage-unavailable": "Güvenli kimlik bilgisi depolama kullanılamıyor.",
+            "provider-unavailable": "GitHub sahipleri yüklenemedi. Bağlantıyı kontrol edip yeniden deneyin."
+        },
+        "failure": {
+            "connection-required": "GitHub bağlantısı artık kullanılamıyor.",
+            "permission-update-required": "GitHub bağlantısının güncel depo izinlerine ihtiyacı var.",
+            "secure-storage-unavailable": "Güvenli kimlik bilgisi depolama kullanılamaz oldu.",
+            "target-unavailable": "Seçilen GitHub sahibi artık kullanılamıyor.",
+            "invalid-repository-name": "Depo adı geçerli değil.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub bu adı kullanamadı. Ad zaten var olabilir veya kuruluş ilkesi tarafından engellenmiş olabilir.",
+            "rate-limited": "GitHub istekleri geçici olarak sınırlıyor. Daha sonra yeniden deneyin.",
+            "network-unavailable": "Yayımlama sırasında ağ bağlantısı başarısız oldu.",
+            "remote-creation-uncertain": "Launcher deponun oluşturulduğunu doğrulayamadı. Yerel olarak devam etmeden önce GitHub'ı kontrol edin.",
+            "remote-created-origin-failed": "Özel depo oluşturuldu ancak Launcher yerel projeye bağlayamadı.",
+            "remote-created-push-failed": "Özel depo oluşturuldu ancak proje gönderilemedi.",
+            "remote-created-verification-failed": "Proje gönderilmiş olabilir ancak Launcher doğrulayamadı.",
+            "local-repository-changed": "Yerel Git deposu değiştiği için Launcher yeniden denemeyi durdurdu.",
+            "provider-unavailable": "GitHub isteği tamamlayamadı."
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "Şimdi düzenle",
         "create": "Proje Oluştur",
-        "creating": "Proje oluşturuluyor..."
+        "createAndPublish": "Oluştur ve yayımla",
+        "creating": "Proje oluşturuluyor...",
+        "publishing": "Proje oluşturuluyor ve GitHub'da yayımlanıyor..."
     },
     "errors": {
         "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",

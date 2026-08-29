@@ -90,6 +90,75 @@ export type CreateProjectGitOptions = {
       }
 );
 
+export type CreateProjectPublicationTarget = {
+    providerId: string;
+    connectionId: string;
+    accessTargetId: string;
+    ownerLogin: string;
+    ownerType: 'organization' | 'user';
+    accountLogin: string;
+};
+
+export type CreateProjectPublicationTargetFailureReason =
+    | 'connection-required'
+    | 'permission-update-required'
+    | 'secure-storage-unavailable'
+    | 'provider-unavailable';
+
+export type ListCreateProjectPublicationTargetsResult =
+    | { success: true; targets: CreateProjectPublicationTarget[] }
+    | {
+          success: false;
+          reason: CreateProjectPublicationTargetFailureReason;
+          targets: [];
+      };
+
+export type CreateProjectPublicationOptions = {
+    providerId: string;
+    connectionId: string;
+    accessTargetId: string;
+    repositoryName: string;
+};
+
+export type ProjectPublicationFailureReason =
+    | 'connection-required'
+    | 'permission-update-required'
+    | 'secure-storage-unavailable'
+    | 'target-unavailable'
+    | 'invalid-repository-name'
+    | 'repository-name-unavailable-or-policy-rejected'
+    | 'rate-limited'
+    | 'network-unavailable'
+    | 'remote-creation-uncertain'
+    | 'remote-created-origin-failed'
+    | 'remote-created-push-failed'
+    | 'remote-created-verification-failed'
+    | 'local-repository-changed'
+    | 'provider-unavailable';
+
+export type PublishedGitHubRepository = {
+    owner: string;
+    name: string;
+    webUrl: string;
+};
+
+export type CreateProjectPublicationOutcome =
+    | { status: 'not-requested' }
+    | {
+          status: 'published';
+          repository: PublishedGitHubRepository;
+      }
+    | {
+          status: 'failed';
+          attemptId: string;
+          stage: 'remote-create' | 'origin' | 'push' | 'verification';
+          reason: ProjectPublicationFailureReason;
+          repository?: PublishedGitHubRepository;
+          intendedRepository?: { owner: string; name: string; webUrl: string };
+          canRetry: boolean;
+          canEdit: boolean;
+      };
+
 export type LaunchProjectOptions = {
     allowMissingCodeEditor?: boolean;
 };
@@ -135,6 +204,7 @@ export type CreateProjectResult = BackendResult & {
     projectDetails?: ProjectDetails;
     gitSetup?: ProjectGitSetupOutcome;
     gitLfsSetup?: ProjectGitLfsSetupOutcome;
+    publication?: CreateProjectPublicationOutcome;
 };
 
 export type InitializeProjectGitResult = {

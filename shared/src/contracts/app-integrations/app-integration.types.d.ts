@@ -41,6 +41,7 @@ export type AppIntegrationAccessTargetSummary = {
     login: string;
     type: 'organization' | 'user';
     availability: 'available' | 'unavailable';
+    capabilities: Array<'repository-browsing' | 'repository-creation'>;
 };
 
 export type AppIntegrationConnectionOption = {

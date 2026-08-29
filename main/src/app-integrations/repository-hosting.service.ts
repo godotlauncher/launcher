@@ -8,10 +8,16 @@ import type {
     AppIntegrationCredentialRoute,
     RepositoryBrowsingCapability,
     RepositoryBrowsingRepository,
+    RepositoryCreation,
+    RepositoryCreationCapability,
+    RepositoryCreationFailureReason,
     RepositoryHostingFailureReason,
     RepositorySelection,
 } from './app-integration-capability.types.js';
-import { RepositoryBrowsingError } from './app-integration-capability.types.js';
+import {
+    RepositoryBrowsingError,
+    RepositoryCreationError,
+} from './app-integration-capability.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppIntegrationsService } from './app-integrations.service.js';
 
@@ -55,6 +61,36 @@ export type RepositoryCloneAccessResult<T> =
     | { ok: true; value: T }
     | { ok: false; reason: RepositoryHostingFailureReason };
 
+export type RepositoryCreationTarget = {
+    providerId: string;
+    connectionId: string;
+    accessTargetId: string;
+    ownerLogin: string;
+    ownerType: 'organization' | 'user';
+    accountLogin: string;
+};
+
+export type RepositoryCreationTargetsResult =
+    | { ok: true; targets: RepositoryCreationTarget[] }
+    | { ok: false; reason: RepositoryCreationFailureReason };
+
+export type RepositoryCreationSelection = {
+    connectionId: string;
+    accessTargetId: string;
+    repositoryName: string;
+};
+
+export type RepositoryCreationAccessResult<T> =
+    | { ok: true; value: T }
+    | { ok: false; reason: RepositoryCreationFailureReason };
+
+export type RepositoryPushAccess = {
+    credential: {
+        username: string;
+        password: string;
+    };
+};
+
 type BrowseSession = {
     id: string;
     providerId: string;
@@ -84,6 +120,200 @@ export class RepositoryHostingService implements OnModuleDestroy {
     /** Clears all in-memory browse sessions during shutdown. */
     onModuleDestroy(): void {
         this.sessions.clear();
+    }
+
+    /**
+     * Lists current renderer-safe routes approved for repository creation.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @returns Eligible owner routes or one stable failure.
+     */
+    async listRepositoryCreationTargets(
+        providerId: string,
+    ): Promise<RepositoryCreationTargetsResult> {
+        if (!providerId.trim()) {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        try {
+            this.capabilities.get(providerId, 'repository-creation');
+        } catch {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        const lease = await this.integrations.withCredentialLease(
+            providerId,
+            async (routes) =>
+                routes
+                    .filter((route) =>
+                        route.accessTarget.capabilities.includes(
+                            'repository-creation',
+                        ),
+                    )
+                    .map((route) => ({
+                        providerId,
+                        connectionId: route.connectionId,
+                        accessTargetId: route.accessTarget.id,
+                        ownerLogin: route.accessTarget.login,
+                        ownerType: route.accessTarget.type,
+                        accountLogin: route.accountLogin,
+                    }))
+                    .sort(
+                        (left, right) =>
+                            left.ownerLogin.localeCompare(right.ownerLogin) ||
+                            left.accountLogin.localeCompare(right.accountLogin),
+                    ),
+        );
+        if (!lease.ok) {
+            return { ok: false, reason: mapLeaseFailure(lease.reason) };
+        }
+        if (lease.value.length === 0) {
+            return { ok: false, reason: 'permission-update-required' };
+        }
+        return { ok: true, targets: lease.value };
+    }
+
+    /**
+     * Creates a repository through one exact refreshed route and keeps its
+     * credential available only for the trusted follow-on operation.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param selection - Exact renderer-safe target and repository name.
+     * @param operation - Trusted main-process operation using the creation.
+     * @returns The operation value or one stable creation failure.
+     */
+    async withRepositoryCreationAccess<T>(
+        providerId: string,
+        selection: RepositoryCreationSelection,
+        operation: (creation: RepositoryCreation) => Promise<T>,
+    ): Promise<RepositoryCreationAccessResult<T>> {
+        if (
+            !providerId.trim() ||
+            !isOpaqueId(selection.connectionId) ||
+            !isOpaqueId(selection.accessTargetId)
+        ) {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        let capability: RepositoryCreationCapability;
+        try {
+            capability = this.capabilities.get(
+                providerId,
+                'repository-creation',
+            );
+        } catch {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        const lease = await this.integrations.withCredentialLease(
+            providerId,
+            async (routes): Promise<RepositoryCreationAccessResult<T>> => {
+                const route = routes.find(
+                    (candidate) =>
+                        candidate.connectionId === selection.connectionId &&
+                        candidate.accessTarget.id === selection.accessTargetId,
+                );
+                if (!route) {
+                    return { ok: false, reason: 'target-unavailable' };
+                }
+                if (
+                    !route.accessTarget.capabilities.includes(
+                        'repository-creation',
+                    )
+                ) {
+                    return {
+                        ok: false,
+                        reason: 'permission-update-required',
+                    };
+                }
+                try {
+                    const creation = await capability.createRepository({
+                        credential: route.credential,
+                        accessTarget: route.accessTarget,
+                        repositoryName: selection.repositoryName,
+                        signal: AbortSignal.timeout(
+                            REPOSITORY_OPERATION_TIMEOUT_MS,
+                        ),
+                    });
+                    return { ok: true, value: await operation(creation) };
+                } catch (error) {
+                    return {
+                        ok: false,
+                        reason:
+                            error instanceof RepositoryCreationError
+                                ? error.reason
+                                : 'provider-unavailable',
+                    };
+                }
+            },
+        );
+        return lease.ok
+            ? lease.value
+            : { ok: false, reason: mapLeaseFailure(lease.reason) };
+    }
+
+    /**
+     * Provides a fresh Git credential for a confirmed repository retry.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param selection - Exact renderer-safe target IDs.
+     * @param operation - Trusted main-process retry operation.
+     * @returns The operation value or one stable credential failure.
+     */
+    async withRepositoryPushAccess<T>(
+        providerId: string,
+        selection: Pick<
+            RepositoryCreationSelection,
+            'accessTargetId' | 'connectionId'
+        >,
+        operation: (access: RepositoryPushAccess) => Promise<T>,
+    ): Promise<RepositoryCreationAccessResult<T>> {
+        if (
+            !providerId.trim() ||
+            !isOpaqueId(selection.connectionId) ||
+            !isOpaqueId(selection.accessTargetId)
+        ) {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        let capability: RepositoryCreationCapability;
+        try {
+            capability = this.capabilities.get(
+                providerId,
+                'repository-creation',
+            );
+        } catch {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        const lease = await this.integrations.withCredentialLease(
+            providerId,
+            async (routes): Promise<RepositoryCreationAccessResult<T>> => {
+                const route = routes.find(
+                    (candidate) =>
+                        candidate.connectionId === selection.connectionId &&
+                        candidate.accessTarget.id === selection.accessTargetId,
+                );
+                if (!route) {
+                    return { ok: false, reason: 'target-unavailable' };
+                }
+                try {
+                    const credential = capability.getGitCredential({
+                        credential: route.credential,
+                        accessTarget: route.accessTarget,
+                    });
+                    return {
+                        ok: true,
+                        value: await operation({ credential }),
+                    };
+                } catch (error) {
+                    return {
+                        ok: false,
+                        reason:
+                            error instanceof RepositoryCreationError
+                                ? error.reason
+                                : 'provider-unavailable',
+                    };
+                }
+            },
+        );
+        return lease.ok
+            ? lease.value
+            : { ok: false, reason: mapLeaseFailure(lease.reason) };
     }
 
     /**
@@ -308,7 +538,7 @@ export class RepositoryHostingService implements OnModuleDestroy {
     private async fillPage(
         session: BrowseSession,
         credentialRoutes: readonly AppIntegrationCredentialRoute[],
-        capability: ReturnType<AppIntegrationCapabilityRegistry['get']>,
+        capability: RepositoryBrowsingCapability,
     ): Promise<RepositoryHostingResult> {
         const repositories: BrowsedRepository[] = [];
         const failures: RepositoryHostingFailureReason[] = [];
@@ -469,9 +699,28 @@ function browseRouteKey(route: BrowseRoute): string {
 
 /** Returns whether a value has the opaque UUID shape generated by Launcher. */
 function isOpaqueId(value: string): boolean {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[45][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(
         value,
     );
+}
+
+/** Maps a credential-boundary failure to repository creation copy. */
+function mapLeaseFailure(
+    reason: Exclude<
+        AppIntegrationCredentialLeaseResult<unknown>,
+        { ok: true }
+    >['reason'],
+): RepositoryCreationFailureReason {
+    if (reason === 'secure-storage-unavailable') {
+        return reason;
+    }
+    if (reason === 'reauthorisation-required') {
+        return 'permission-update-required';
+    }
+    if (reason === 'no-usable-connection') {
+        return reason;
+    }
+    return 'provider-unavailable';
 }
 
 /** Selects the most actionable safe failure when every route failed. */

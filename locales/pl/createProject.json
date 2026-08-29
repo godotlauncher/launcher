@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobilny",
         "compatible": "Kompatybilny",
+        "forwardPlusHelp": "Najlepszy dla gier komputerowych z zaawansowaną grafiką 3D.",
+        "mobileHelp": "Najlepszy dla gier mobilnych i prostszych scen.",
+        "compatibleHelp": "Najlepszy dla sieci Web, starszych urządzeń i szerokiej zgodności.",
         "forwardPlusFeatures": {
             "desktop": "Obsługuje tylko platformy desktopowe.",
             "advanced3d": "Dostępna zaawansowana grafika 3D.",
@@ -39,6 +42,58 @@
             "lowEnd": "Przeznaczony dla starszych/słabszych urządzeń.",
             "opengl": "Używa backendu OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
             "fastest": "Najszybsze renderowanie prostych scen."
+        }
+    },
+    "publishToGitHub": {
+        "label": "Opublikuj w GitHub",
+        "repositoryTitle": "Repozytorium GitHub",
+        "description": "Tworzy prywatne repozytorium i wysyła projekt po utworzeniu go lokalnie.",
+        "loadingOwners": "Sprawdzanie połączonych właścicieli GitHub...",
+        "owner": "Właściciel",
+        "ownerHelp": "Wybierz konto lub organizację GitHub, do której będzie należeć repozytorium.",
+        "ownerPlaceholder": "Wybierz właściciela",
+        "ownerViaAccount": "{{owner}} (przez @{{account}})",
+        "repositoryName": "Nazwa repozytorium",
+        "repositoryNameHelp": "Tylko litery, cyfry, kropki, łączniki i podkreślenia.",
+        "repositoryNameInvalid": "Wpisz 1-100 liter, cyfr, kropek, łączników lub podkreśleń.",
+        "privateTitle": "Prywatne repozytorium",
+        "privateDescription": "Tylko Ty i upoważnione osoby możecie je zobaczyć.",
+        "openConnections": "Otwórz Połączenia",
+        "leaveTitle": "Opuścić tworzenie projektu?",
+        "leaveMessage": "Niezapisane dane projektu zostaną wyczyszczone po otwarciu Połączeń.",
+        "successTitle": "Opublikowano w GitHub",
+        "successMessage": "Repozytorium {{owner}}/{{name}} zostało utworzone jako prywatne i projekt został wysłany.",
+        "recoveryTitle": "Projekt lokalny jest bezpieczny",
+        "retry": "Ponów publikowanie",
+        "retryFailed": "Nie udało się ponowić publikowania. Projekt lokalny jest nadal bezpieczny.",
+        "continueLocally": "Kontynuuj lokalnie",
+        "openGitHub": "Otwórz GitHub",
+        "localTitle": "Projekt zachowano lokalnie",
+        "localMessage": "Projekt pozostaje na tym komputerze i w bibliotece Launchera.",
+        "requiresInitialCommit": "Publikowanie wymaga nowego repozytorium Git z pierwszym commitem.",
+        "publicationFailed": "Projekt utworzono lokalnie, ale publikowanie w GitHub nie zostało ukończone.",
+        "attemptExpired": "Ta próba publikowania wygasła. Projekt lokalny jest nadal bezpieczny.",
+        "targetFailure": {
+            "connection-required": "Połącz GitHub przed opublikowaniem projektu.",
+            "permission-update-required": "Połączenie GitHub wymaga uprawnienia do tworzenia repozytoriów.",
+            "secure-storage-unavailable": "Bezpieczny magazyn danych logowania jest niedostępny.",
+            "provider-unavailable": "Nie udało się wczytać właścicieli GitHub. Sprawdź połączenie i spróbuj ponownie."
+        },
+        "failure": {
+            "connection-required": "Połączenie GitHub nie jest już dostępne.",
+            "permission-update-required": "Połączenie GitHub wymaga zaktualizowanych uprawnień.",
+            "secure-storage-unavailable": "Bezpieczny magazyn danych logowania stał się niedostępny.",
+            "target-unavailable": "Wybrany właściciel GitHub nie jest już dostępny.",
+            "invalid-repository-name": "Nazwa repozytorium jest nieprawidłowa.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub nie może użyć tej nazwy. Może już istnieć lub być zablokowana przez zasady organizacji.",
+            "rate-limited": "GitHub tymczasowo ogranicza żądania. Spróbuj później.",
+            "network-unavailable": "Połączenie sieciowe nie powiodło się podczas publikowania.",
+            "remote-creation-uncertain": "Launcher nie potwierdził utworzenia repozytorium. Sprawdź GitHub przed kontynuowaniem lokalnie.",
+            "remote-created-origin-failed": "Prywatne repozytorium utworzono, ale nie udało się połączyć go z projektem lokalnym.",
+            "remote-created-push-failed": "Prywatne repozytorium utworzono, ale nie udało się wysłać projektu.",
+            "remote-created-verification-failed": "Projekt mógł zostać wysłany, ale Launcher nie mógł tego zweryfikować.",
+            "local-repository-changed": "Lokalne repozytorium Git zmieniło się, więc Launcher zatrzymał ponowną próbę.",
+            "provider-unavailable": "GitHub nie mógł wykonać żądania."
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "Edytuj teraz",
         "create": "Utwórz projekt",
-        "creating": "Tworzenie projektu..."
+        "createAndPublish": "Utwórz i opublikuj",
+        "creating": "Tworzenie projektu...",
+        "publishing": "Tworzenie projektu i publikowanie w GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "Nieprawidłowa wersja edytora: {{version}}",

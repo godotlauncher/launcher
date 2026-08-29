@@ -10,6 +10,9 @@ import {
     getCreateProjectReleaseKey,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
+    getPublicationTargetValue,
+    getSuggestedGitHubRepositoryName,
+    isGitHubRepositoryNameValid,
     isGitIdentityComplete,
     isToolIntegrationAvailable,
     joinBasePathWithProjectSegment,
@@ -18,6 +21,7 @@ import {
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
     resolveCreateProjectReleaseIndex,
+    toCreateProjectPublicationOptions,
 } from './createProject.model';
 
 const installedRelease = (
@@ -62,6 +66,36 @@ const codeEditorSettings = (
 });
 
 describe('create project model helpers', () => {
+    it('suggests and validates conservative GitHub repository names', () => {
+        expect(getSuggestedGitHubRepositoryName('  My Café Game!  ')).toBe(
+            'My-Caf-Game',
+        );
+        expect(isGitHubRepositoryNameValid('My-Game_1.0')).toBe(true);
+        expect(isGitHubRepositoryNameValid('My Game')).toBe(false);
+        expect(isGitHubRepositoryNameValid('')).toBe(false);
+    });
+
+    it('preserves the exact opaque publishing route', () => {
+        const target = {
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'target-id',
+            ownerLogin: 'godotlauncher',
+            ownerType: 'organization' as const,
+            accountLogin: 'octocat',
+        };
+
+        expect(getPublicationTargetValue(target)).toBe(
+            '["connection-id","target-id"]',
+        );
+        expect(toCreateProjectPublicationOptions(target, 'my-game')).toEqual({
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'target-id',
+            repositoryName: 'my-game',
+        });
+    });
+
     it.each([
         ['Example Project', 'Example-Project'],
         ['Example: Project', 'Example--Project'],

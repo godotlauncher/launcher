@@ -2,6 +2,8 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
+    CreateProjectPublicationOptions,
+    CreateProjectPublicationTarget,
     GitIdentity,
     GitIdentityScope,
     GitLfsTrackingPolicy,
@@ -19,6 +21,63 @@ import {
 import { sortReleases } from '../../../releaseStoring.utils';
 
 export const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;
+
+export const GITHUB_REPOSITORY_NAME_PATTERN = /^[A-Za-z0-9._-]{1,100}$/;
+
+/**
+ * Suggests a GitHub-safe repository name from the project name.
+ *
+ * @param projectName - Current display name for the project.
+ * @returns A trimmed repository name using GitHub's conservative safe subset.
+ */
+export function getSuggestedGitHubRepositoryName(projectName: string): string {
+    return projectName
+        .trim()
+        .replace(/[^A-Za-z0-9._-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 100);
+}
+
+/**
+ * Checks the conservative repository-name syntax used by the publishing flow.
+ *
+ * @param repositoryName - Repository name entered by the user.
+ * @returns Whether the name can be sent to the provider.
+ */
+export function isGitHubRepositoryNameValid(repositoryName: string): boolean {
+    return GITHUB_REPOSITORY_NAME_PATTERN.test(repositoryName);
+}
+
+/**
+ * Builds a stable renderer value for one exact publication target.
+ *
+ * @param target - Provider target selected by the user.
+ * @returns A value safe for the owner selector.
+ */
+export function getPublicationTargetValue(
+    target: CreateProjectPublicationTarget,
+): string {
+    return JSON.stringify([target.connectionId, target.accessTargetId]);
+}
+
+/**
+ * Converts one selected target and repository name to a publication request.
+ *
+ * @param target - Exact connected owner target.
+ * @param repositoryName - Validated repository name.
+ * @returns Provider-neutral publication options.
+ */
+export function toCreateProjectPublicationOptions(
+    target: CreateProjectPublicationTarget,
+    repositoryName: string,
+): CreateProjectPublicationOptions {
+    return {
+        providerId: target.providerId,
+        connectionId: target.connectionId,
+        accessTargetId: target.accessTargetId,
+        repositoryName,
+    };
+}
 
 export type PathSeparator = '\\' | '/';
 

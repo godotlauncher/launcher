@@ -7,6 +7,8 @@ import type {
     ChangeProjectEditorResult,
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectPublicationOptions,
+    CreateProjectResult,
     GitIdentity,
     InitializeProjectGitResult,
     InstalledRelease,
@@ -20,6 +22,7 @@ import type {
     RenameProjectResult,
     RendererType,
     ResolveRemoteProjectCloneAction,
+    ResolveRemoteProjectCloneResult,
     SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
@@ -65,6 +68,8 @@ import { ProjectCreationService } from './project-creation.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectImportService } from './project-import.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectPublicationService } from './project-publication.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRemoteImportService } from './project-remote-import.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
@@ -85,6 +90,7 @@ export class ProjectsService {
      * @param store - Canonical project persistence store.
      * @param remoteSources - Remote project source discovery boundary.
      * @param remoteImport - Cancellable remote clone transaction boundary.
+     * @param projectPublication - Follow-on remote publication and retry workflow.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -95,6 +101,7 @@ export class ProjectsService {
         private readonly store: ProjectsStore,
         private readonly remoteSources: ProjectRemoteSourceService,
         private readonly remoteImport: ProjectRemoteImportService,
+        private readonly projectPublication: ProjectPublicationService,
     ) {}
 
     /**
@@ -124,7 +131,7 @@ export class ProjectsService {
     resolveRemoteProjectClone(
         jobId: string,
         action: ResolveRemoteProjectCloneAction,
-    ) {
+    ): Promise<ResolveRemoteProjectCloneResult> {
         return this.remoteImport.resolveRemoteProjectClone(jobId, action);
     }
 
@@ -172,6 +179,15 @@ export class ProjectsService {
     }
 
     /**
+     * Lists current owner routes eligible for Create Project publishing.
+     *
+     * @param providerId - Registered repository provider ID.
+     */
+    listCreateProjectPublicationTargets(providerId: string) {
+        return this.projectPublication.listTargets(providerId);
+    }
+
+    /**
      * Creates and registers a project.
      *
      * @param name - Display name for the new project.
@@ -181,8 +197,9 @@ export class ProjectsService {
      * @param withGit - Whether Git setup is requested.
      * @param overwriteProjectPath - Optional existing target to replace.
      * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
+     * @param publication - Optional private repository publication request.
      */
-    createProject(
+    async createProject(
         name: string,
         release: InstalledRelease,
         renderer: RendererType[5],
@@ -190,8 +207,16 @@ export class ProjectsService {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
-    ) {
-        return this.projectCreation.createProject(
+        publication?: CreateProjectPublicationOptions,
+    ): Promise<CreateProjectResult> {
+        if (publication && (!withGit || gitOptions?.initialCommit === 'skip')) {
+            return {
+                success: false,
+                error: t('createProject:publishToGitHub.requiresInitialCommit'),
+                publication: { status: 'not-requested' as const },
+            };
+        }
+        const result = await this.projectCreation.createProject(
             name,
             release,
             renderer,
@@ -200,6 +225,70 @@ export class ProjectsService {
             overwriteProjectPath,
             gitOptions,
         );
+        if (!publication || !result.success || !result.projectDetails) {
+            return {
+                ...result,
+                publication: { status: 'not-requested' as const },
+            };
+        }
+        const publicationOutcome = await this.projectPublication.publish(
+            result.projectDetails,
+            publication,
+        );
+        return publicationOutcome.status === 'published'
+            ? { ...result, publication: publicationOutcome }
+            : {
+                  ...result,
+                  success: false,
+                  error: t('createProject:publishToGitHub.publicationFailed'),
+                  publication: publicationOutcome,
+              };
+    }
+
+    /**
+     * Retries one process-local publication attempt for its exact project.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @param publication - Optional edited selection before remote creation.
+     */
+    async retryCreateProjectPublication(
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+    ): Promise<CreateProjectResult> {
+        const result = await this.projectPublication.retry(
+            attemptId,
+            publication,
+        );
+        if (!result) {
+            return {
+                success: false,
+                error: t('createProject:publishToGitHub.attemptExpired'),
+                publication: { status: 'not-requested' as const },
+            };
+        }
+        const success = result.publication.status === 'published';
+        return {
+            success,
+            projectPath: result.projectDetails.path,
+            projectDetails: result.projectDetails,
+            publication: result.publication,
+            ...(success
+                ? {}
+                : {
+                      error: t(
+                          'createProject:publishToGitHub.publicationFailed',
+                      ),
+                  }),
+        };
+    }
+
+    /**
+     * Discards one process-local retry attempt without changing repositories.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     */
+    async discardCreateProjectPublication(attemptId: string): Promise<void> {
+        this.projectPublication.discard(attemptId);
     }
 
     /**

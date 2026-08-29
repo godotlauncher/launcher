@@ -1,11 +1,15 @@
 import { Injectable } from '@mariodebono/di';
-import type { AppIntegrationProviderAccessTarget } from '../../app-integration.types.js';
+import type {
+    AppIntegrationAccessTargetCapability,
+    AppIntegrationProviderAccessTarget,
+} from '../../app-integration.types.js';
 import {
     GITHUB_INSTALLATION_PAGE_MAX_BYTES,
     GITHUB_INSTALLATIONS_PER_PAGE,
     GITHUB_INSTALLATIONS_URL,
     GITHUB_MAX_RENAME_REDIRECTS,
     GITHUB_REPOSITORIES_PER_PAGE,
+    GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES,
     GITHUB_REPOSITORY_PAGE_MAX_BYTES,
     GITHUB_REPOSITORY_RESPONSE_MAX_BYTES,
     GITHUB_REQUEST_TIMEOUT_MS,
@@ -14,12 +18,14 @@ import {
     MAX_INSTALLATION_PAGES,
 } from './github-app-integration.constants.js';
 import {
+    GitHubCreatedRepositorySchema,
     GitHubInstallationPageSchema,
     GitHubRepositoryPageSchema,
     GitHubRepositorySchema,
     GitHubUserIdentitySchema,
 } from './github-app-integration.schema.js';
 import type {
+    GitHubCreatedRepository,
     GitHubInstallation,
     GitHubRepository,
     GitHubRepositoryPage,
@@ -204,6 +210,62 @@ export class GitHubApiClient {
             return repository;
         }
     }
+
+    /**
+     * Creates one empty private repository for an approved installation owner.
+     *
+     * @param accessToken - GitHub App user access token.
+     * @param owner - Exact personal or organisation installation owner.
+     * @param ownerType - Installation account type.
+     * @param repositoryName - Locally validated repository name.
+     * @param signal - Caller cancellation signal.
+     * @returns The validated created repository.
+     */
+    async createPrivateRepository(
+        accessToken: string,
+        owner: string,
+        ownerType: 'organization' | 'user',
+        repositoryName: string,
+        signal: AbortSignal,
+    ): Promise<GitHubCreatedRepository> {
+        const url =
+            ownerType === 'organization'
+                ? new URL(
+                      `/orgs/${encodeURIComponent(owner)}/repos`,
+                      'https://api.github.com',
+                  )
+                : new URL('/user/repos', 'https://api.github.com');
+        const response = await githubRequest(
+            url,
+            accessToken,
+            signal,
+            'manual',
+            {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: repositoryName,
+                    private: true,
+                    auto_init: false,
+                }),
+            },
+        );
+        if (!response.ok) {
+            throwGitHubApiError(response);
+        }
+        const repository = GitHubCreatedRepositorySchema.parse(
+            await readGitHubJsonResponse(
+                response,
+                GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES,
+            ),
+        );
+        if (
+            repository.owner.login.toLowerCase() !== owner.toLowerCase() ||
+            repository.name !== repositoryName
+        ) {
+            throw new Error('GitHub created an unexpected repository');
+        }
+        return repository;
+    }
 }
 
 /** Returns whether one installation has approved repository clone access. */
@@ -229,10 +291,12 @@ async function githubRequest(
     accessToken: string,
     signal: AbortSignal,
     redirect: RequestRedirect = 'follow',
+    init: Pick<RequestInit, 'body' | 'method'> = {},
 ): Promise<Response> {
     try {
         return await fetch(url, {
-            headers: githubHeaders(accessToken),
+            ...init,
+            headers: githubHeaders(accessToken, init.body !== undefined),
             signal: AbortSignal.any([
                 signal,
                 AbortSignal.timeout(GITHUB_REQUEST_TIMEOUT_MS),
@@ -371,7 +435,24 @@ function toAccessTarget(
                 ? 'organization'
                 : 'user',
         manageUrl: manageUrl.toString(),
+        capabilities: getInstallationCapabilities(installation),
     };
+}
+
+/** Returns the provider-neutral capabilities approved for one installation. */
+function getInstallationCapabilities(
+    installation: GitHubInstallation,
+): AppIntegrationAccessTargetCapability[] {
+    const capabilities: AppIntegrationAccessTargetCapability[] = [
+        'repository-browsing',
+    ];
+    if (
+        installation.permissions.contents === 'write' &&
+        installation.permissions.administration === 'write'
+    ) {
+        capabilities.push('repository-creation');
+    }
+    return capabilities;
 }
 
 /**
@@ -380,10 +461,14 @@ function toAccessTarget(
  * @param accessToken - GitHub App user access token.
  * @returns The GitHub API request headers.
  */
-function githubHeaders(accessToken: string): Record<string, string> {
+function githubHeaders(
+    accessToken: string,
+    hasBody = false,
+): Record<string, string> {
     return {
         Accept: 'application/vnd.github+json',
         Authorization: `Bearer ${accessToken}`,
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
         'User-Agent': 'Godot-Launcher',
         'X-GitHub-Api-Version': '2022-11-28',
     };

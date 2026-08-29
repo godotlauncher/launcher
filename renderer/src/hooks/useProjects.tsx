@@ -5,11 +5,13 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
+    CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
     InitializeProjectGitResult,
     InstalledRelease,
     LaunchProjectResult,
+    ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectGitIdentityResult,
     ReleaseSummary,
@@ -112,7 +114,14 @@ interface ProjectsContext {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
     ) => Promise<CreateProjectResult>;
+    listCreateProjectPublicationTargets: () => Promise<ListCreateProjectPublicationTargetsResult>;
+    retryCreateProjectPublication: (
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+    ) => Promise<CreateProjectResult>;
+    discardCreateProjectPublication: (attemptId: string) => Promise<void>;
 }
 
 export const projectsContext = createContext<ProjectsContext>(
@@ -180,6 +189,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
      * @param withGit - Whether to initialize Git when it is available.
      * @param overwriteProjectPath - Optional target project path.
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
+     * @param publication - Optional private GitHub repository publication request.
      * @returns The project creation result.
      */
     const createProject = async (
@@ -190,6 +200,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
     ) => {
         const result = await projectsBridge.createProject(
             projectName,
@@ -199,14 +210,40 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             withGit,
             overwriteProjectPath,
             gitOptions,
+            publication,
         );
 
-        if (result.success) {
+        if (result.projectDetails) {
             await refreshProjects();
         }
 
         return result;
     };
+
+    /** Lists GitHub owners eligible for Create Project publishing. */
+    const listCreateProjectPublicationTargets = () =>
+        projectsBridge.listCreateProjectPublicationTargets('github');
+
+    /**
+     * Retries a process-local Create Project publication attempt.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @param publication - Optional edited selection before remote creation.
+     * @returns The latest project creation and publication result.
+     */
+    const retryCreateProjectPublication = (
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+    ) => projectsBridge.retryCreateProjectPublication(attemptId, publication);
+
+    /**
+     * Forgets a process-local publication attempt without changing repositories.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @returns A promise that resolves after the attempt is forgotten.
+     */
+    const discardCreateProjectPublication = (attemptId: string) =>
+        projectsBridge.discardCreateProjectPublication(attemptId);
 
     const addProject = async (
         projectPath: string,
@@ -550,6 +587,9 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 refreshProjects,
                 checkProjectValid,
                 createProject,
+                listCreateProjectPublicationTargets,
+                retryCreateProjectPublication,
+                discardCreateProjectPublication,
             }}
         >
             {children}

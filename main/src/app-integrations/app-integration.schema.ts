@@ -24,6 +24,13 @@ const AccessTargetSchema = z.object({
     type: z.enum(['organization', 'user']),
     manageUrl: z.url(),
     availability: z.enum(['available', 'unavailable']).default('available'),
+    capabilities: z.array(
+        z.enum(['repository-browsing', 'repository-creation']),
+    ),
+});
+
+const VersionTwoAccessTargetSchema = AccessTargetSchema.omit({
+    capabilities: true,
 });
 
 const ConnectionFields = {
@@ -48,6 +55,12 @@ const ConnectionRecordSchema = z.object({
     accessTargets: z.array(AccessTargetSchema).default([]),
 });
 
+const VersionTwoConnectionRecordSchema = z.object({
+    ...ConnectionFields,
+    requiresReauthorisation: z.boolean().default(false),
+    accessTargets: z.array(VersionTwoAccessTargetSchema).default([]),
+});
+
 const LegacyAppIntegrationStoreFileSchema = z.object({
     schemaVersion: z.literal(1),
     connections: z.record(
@@ -59,6 +72,11 @@ const LegacyAppIntegrationStoreFileSchema = z.object({
 const AppIntegrationStoreFileSchema = z.object({
     schemaVersion: z.literal(APP_INTEGRATION_SCHEMA_VERSION),
     connections: z.record(z.uuid(), ConnectionRecordSchema),
+});
+
+const VersionTwoAppIntegrationStoreFileSchema = z.object({
+    schemaVersion: z.literal(2),
+    connections: z.record(z.uuid(), VersionTwoConnectionRecordSchema),
 });
 
 const AppIntegrationSecretsStoreFileSchema = z.object({
@@ -100,6 +118,36 @@ export function normalizeAppIntegrationStore(
         };
     }
 
+    const versionTwo = VersionTwoAppIntegrationStoreFileSchema.safeParse(value);
+    if (versionTwo.success) {
+        return {
+            schemaVersion: APP_INTEGRATION_SCHEMA_VERSION,
+            connections: Object.fromEntries(
+                Object.entries(versionTwo.data.connections)
+                    .map(
+                        ([id, record]): [
+                            string,
+                            AppIntegrationConnectionRecord,
+                        ] => [
+                            id,
+                            {
+                                ...record,
+                                accessTargets: record.accessTargets.map(
+                                    (target) => ({
+                                        ...target,
+                                        capabilities: [
+                                            'repository-browsing' as const,
+                                        ],
+                                    }),
+                                ),
+                            },
+                        ],
+                    )
+                    .sort(([left], [right]) => left.localeCompare(right)),
+            ),
+        };
+    }
+
     const legacy = LegacyAppIntegrationStoreFileSchema.parse(value);
     const connections = Object.fromEntries(
         Object.values(legacy.connections)
@@ -127,6 +175,7 @@ export function normalizeAppIntegrationStore(
                                   type: record.accessTarget.type,
                                   manageUrl: record.accessTarget.manageUrl,
                                   availability: 'available',
+                                  capabilities: ['repository-browsing'],
                               },
                           ]
                         : [],

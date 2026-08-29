@@ -19,6 +19,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobbli",
         "compatible": "Kompatibbli",
+        "forwardPlusHelp": "L-aħjar għal logħob desktop bi grafika 3D avvanzata.",
+        "mobileHelp": "L-aħjar għal logħob mobbli u xeni aktar sempliċi.",
+        "compatibleHelp": "L-aħjar għall-web, apparat eqdem u kompatibbiltà wiesgħa.",
         "forwardPlusFeatures": {
             "desktop": "Jappoġġja pjattaformi desktop biss.",
             "advanced3d": "Grafika 3D avvanzata disponibbli.",
@@ -39,6 +42,58 @@
             "lowEnd": "Maħsub għal tagħmir antik/low-end.",
             "opengl": "Juża backend OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2).",
             "fastest": "L-aktar rendering mgħaġġel ta' xeni sempliċi."
+        }
+    },
+    "publishToGitHub": {
+        "label": "Ippubblika fuq GitHub",
+        "repositoryTitle": "Repożitorju GitHub",
+        "description": "Oħloq repożitorju privat u ibgħat il-proġett wara li jinħoloq lokalment.",
+        "loadingOwners": "Qed jiġu ċċekkjati s-sidien GitHub konnessi...",
+        "owner": "Sid",
+        "ownerHelp": "Agħżel il-kont jew l-organizzazzjoni GitHub li se jkollha r-repożitorju.",
+        "ownerPlaceholder": "Agħżel sid",
+        "ownerViaAccount": "{{owner}} (permezz ta' @{{account}})",
+        "repositoryName": "Isem tar-repożitorju",
+        "repositoryNameHelp": "Ittri, numri, punti, sings u linji ta' taħt biss.",
+        "repositoryNameInvalid": "Daħħal 1-100 ittra, numru, punt, sing jew linja ta' taħt.",
+        "privateTitle": "Repożitorju privat",
+        "privateDescription": "Int u n-nies li tagħtihom aċċess biss jistgħu jarawh.",
+        "openConnections": "Iftaħ il-Konnessjonijiet",
+        "leaveTitle": "Titlaq minn Oħloq Proġett?",
+        "leaveMessage": "Id-dettalji mhux salvati jitħassru meta tiftaħ il-Konnessjonijiet.",
+        "successTitle": "Ippubblikat fuq GitHub",
+        "successMessage": "{{owner}}/{{name}} inħoloq bħala repożitorju privat u l-proġett intbagħat.",
+        "recoveryTitle": "Il-proġett lokali huwa sigur",
+        "retry": "Erġa' pprova ppubblika",
+        "retryFailed": "Ma setax jerġa' jipprova. Il-proġett lokali għadu sigur.",
+        "continueLocally": "Kompli lokalment",
+        "openGitHub": "Iftaħ GitHub",
+        "localTitle": "Il-proġett inżamm lokalment",
+        "localMessage": "Il-proġett jibqa' fuq dan il-kompjuter u fil-librerija tal-Launcher.",
+        "requiresInitialCommit": "Il-pubblikazzjoni teħtieġ repożitorju Git ġdid b'commit inizjali.",
+        "publicationFailed": "Il-proġett inħoloq lokalment, iżda l-pubblikazzjoni fuq GitHub ma tlestietx.",
+        "attemptExpired": "Dan it-tentattiv skada. Il-proġett lokali għadu sigur.",
+        "targetFailure": {
+            "connection-required": "Qabbad GitHub qabel tippubblika proġett.",
+            "permission-update-required": "Il-konnessjoni GitHub teħtieġ permess biex toħloq repożitorji.",
+            "secure-storage-unavailable": "Il-ħażna sigura tal-kredenzjali mhix disponibbli.",
+            "provider-unavailable": "Is-sidien GitHub ma setgħux jitgħabbew. Iċċekkja l-konnessjoni u erġa' pprova."
+        },
+        "failure": {
+            "connection-required": "Il-konnessjoni GitHub m'għadhiex disponibbli.",
+            "permission-update-required": "Il-konnessjoni GitHub teħtieġ permessi aġġornati.",
+            "secure-storage-unavailable": "Il-ħażna sigura tal-kredenzjali m'għadhiex disponibbli.",
+            "target-unavailable": "Is-sid GitHub magħżul m'għadux disponibbli.",
+            "invalid-repository-name": "L-isem tar-repożitorju mhux validu.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub ma setax juża dan l-isem. Jista' jeżisti jew ikun imblukkat minn regola tal-organizzazzjoni.",
+            "rate-limited": "GitHub qed jillimita t-talbiet temporanjament. Erġa' pprova aktar tard.",
+            "network-unavailable": "Il-konnessjoni tan-netwerk falliet waqt il-pubblikazzjoni.",
+            "remote-creation-uncertain": "Launcher ma setax jikkonferma li nħoloq ir-repożitorju. Iċċekkja GitHub qabel tkompli lokalment.",
+            "remote-created-origin-failed": "Ir-repożitorju privat inħoloq, iżda Launcher ma setax jgħaqqdu mal-proġett lokali.",
+            "remote-created-push-failed": "Ir-repożitorju privat inħoloq, iżda l-proġett ma setax jintbagħat.",
+            "remote-created-verification-failed": "Il-proġett seta' ntbagħat, iżda Launcher ma setax jivverifika.",
+            "local-repository-changed": "Ir-repożitorju Git lokali nbidel, għalhekk Launcher waqqaf it-tentattiv.",
+            "provider-unavailable": "GitHub ma setax ilesti t-talba."
         }
     },
     "otherSettings": {
@@ -97,7 +152,9 @@
     "buttons": {
         "editNow": "Editja issa",
         "create": "Oħloq Proġett",
-        "creating": "Qed jinħoloq il-proġett..."
+        "createAndPublish": "Oħloq u ppubblika",
+        "creating": "Qed jinħoloq il-proġett...",
+        "publishing": "Qed jinħoloq il-proġett u jiġi ppubblikat fuq GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "Verżjoni tal-editur invalida: {{version}}",

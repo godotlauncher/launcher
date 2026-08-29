@@ -5,6 +5,7 @@ import { GitService } from './git.service.js';
 import { GitCloneService } from './git-clone.service.js';
 import { GitCredentialSessionService } from './git-credential-session.service.js';
 import { GitIdentitySettingsService } from './git-identity-settings.service.js';
+import { GitPushService } from './git-push.service.js';
 import { GitSubmoduleService } from './git-submodule.service.js';
 import { GitToolIntegration } from './git-tool.integration.js';
 import { GitToolConfigurationService } from './git-tool-configuration.service.js';
@@ -18,6 +19,7 @@ import { PublicGitSourceService } from './public-git-source.service.js';
         GitCredentialSessionService,
         GitCloneService,
         GitService,
+        GitPushService,
         GitSubmoduleService,
         GitIdentitySettingsService,
         PublicGitSourceService,
@@ -26,6 +28,7 @@ import { PublicGitSourceService } from './public-git-source.service.js';
     exports: [
         GitToolConfigurationService,
         GitService,
+        GitPushService,
         GitSubmoduleService,
         GitIdentitySettingsService,
         GitCloneService,

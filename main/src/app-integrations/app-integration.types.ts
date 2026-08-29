@@ -10,6 +10,10 @@ export type AppIntegrationModuleOptions = {
     secretsFileName: string;
 };
 
+export type AppIntegrationAccessTargetCapability =
+    | 'repository-browsing'
+    | 'repository-creation';
+
 export type AppIntegrationAccessTarget = {
     id: string;
     providerTargetId: string;
@@ -17,6 +21,7 @@ export type AppIntegrationAccessTarget = {
     type: 'organization' | 'user';
     manageUrl: string;
     availability: 'available' | 'unavailable';
+    capabilities: AppIntegrationAccessTargetCapability[];
 };
 
 export type AppIntegrationProviderAccessTarget = Omit<
@@ -87,7 +92,7 @@ export type AppIntegrationPreparedCredential = {
 };
 
 export type AppIntegrationStoreFile = {
-    schemaVersion: 2;
+    schemaVersion: 3;
     connections: Record<string, AppIntegrationConnectionRecord>;
 };
 

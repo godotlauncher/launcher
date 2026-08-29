@@ -5,6 +5,7 @@ import { GitHubAppIntegrationProvider } from './github-app-integration.provider.
 import { GitHubAuthBrokerClient } from './github-auth-broker.client.js';
 import { GitHubAuthLoopbackListenerService } from './github-auth-loopback-listener.service.js';
 import { GitHubRepositoryBrowsingCapability } from './github-repository-browsing.capability.js';
+import { GitHubRepositoryCreationCapability } from './github-repository-creation.capability.js';
 
 /** Registers the GitHub app integration provider. */
 @Module({
@@ -15,6 +16,7 @@ import { GitHubRepositoryBrowsingCapability } from './github-repository-browsing
         GitHubAuthLoopbackListenerService,
         GitHubAppIntegrationProvider,
         GitHubRepositoryBrowsingCapability,
+        GitHubRepositoryCreationCapability,
     ],
 })
 export class GitHubAppIntegrationModule {}
