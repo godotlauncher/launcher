@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
     addProject: vi.fn(),
     checkAllProjectsValid: vi.fn(),
+    checkAndUpdateProjectHealth: vi.fn(),
+    checkProjectHealth: vi.fn(),
     checkProjectValid: vi.fn(),
     createProject: vi.fn(),
     exportProjectEditorSettings: vi.fn(),
@@ -27,6 +29,7 @@ const mocks = vi.hoisted(() => ({
     updateGodotProjectName: vi.fn(),
     updateLinuxTray: vi.fn(),
     writeProjectLauncherConfig: vi.fn(),
+    hasProjectHealthChanged: vi.fn(),
 }));
 
 vi.mock('electron', () => ({
@@ -37,8 +40,11 @@ vi.mock('electron-log', () => ({
 }));
 
 vi.mock('../checks.js', () => ({
+    checkAndUpdateProjectHealth: mocks.checkAndUpdateProjectHealth,
     checkAndUpdateProjects: mocks.checkAllProjectsValid,
+    checkProjectHealth: mocks.checkProjectHealth,
     checkProjectValid: mocks.checkProjectValid,
+    hasProjectHealthChanged: mocks.hasProjectHealthChanged,
 }));
 vi.mock('../commands/projectEditorSettings.js', () => ({
     exportProjectEditorSettings: mocks.exportProjectEditorSettings,
@@ -114,12 +120,29 @@ describe('ProjectsService', () => {
         snapshot: vi.fn(),
         update: vi.fn(),
     };
+    const remoteSources = {
+        inspectPublicGitSource: vi.fn(),
+        listConnectedRepositories: vi.fn(),
+    };
+    const remoteImport = {
+        importRemoteProject: vi.fn(),
+        cancelRemoteProjectImport: vi.fn(),
+        resolveRemoteProjectClone: vi.fn(),
+        setRemoteProjectGitIdentity: vi.fn(),
+        initialiseRemoteProjectSubmodules: vi.fn(),
+    };
     let service: ProjectsService;
 
     beforeEach(() => {
         vi.clearAllMocks();
         store.list.mockResolvedValue([]);
         store.remove.mockResolvedValue([]);
+        mocks.checkProjectHealth.mockImplementation(async (project) => project);
+        mocks.hasProjectHealthChanged.mockReturnValue(false);
+        mocks.checkAndUpdateProjectHealth.mockResolvedValue({
+            projects: [],
+            changed: false,
+        });
         service = new ProjectsService(
             codeEditors as never,
             projectImport as never,
@@ -127,6 +150,8 @@ describe('ProjectsService', () => {
             projectCreation as never,
             trayAvailability as never,
             store as never,
+            remoteSources as never,
+            remoteImport as never,
         );
     });
 
@@ -143,6 +168,19 @@ describe('ProjectsService', () => {
             { initialCommit: 'skip' },
         );
         await service.addProject('/projects/game');
+        await service.importRemoteProject({
+            source: 'public-git-url',
+            url: 'https://example.com/game.git',
+            parentDirectory: '/projects',
+            directoryName: 'game',
+        });
+        await service.cancelRemoteProjectImport('job-id');
+        await service.resolveRemoteProjectClone('job-id', 'keep');
+        await service.setRemoteProjectGitIdentity('job-id', {
+            name: 'Import User',
+            email: 'import@example.com',
+        });
+        await service.initialiseRemoteProjectSubmodules('job-id');
 
         expect(mocks.createProject).toHaveBeenCalledWith(
             'Game',
@@ -157,6 +195,21 @@ describe('ProjectsService', () => {
             '/projects/game',
             undefined,
         );
+        expect(remoteImport.importRemoteProject).toHaveBeenCalledOnce();
+        expect(remoteImport.cancelRemoteProjectImport).toHaveBeenCalledWith(
+            'job-id',
+        );
+        expect(remoteImport.resolveRemoteProjectClone).toHaveBeenCalledWith(
+            'job-id',
+            'keep',
+        );
+        expect(remoteImport.setRemoteProjectGitIdentity).toHaveBeenCalledWith(
+            'job-id',
+            { name: 'Import User', email: 'import@example.com' },
+        );
+        expect(
+            remoteImport.initialiseRemoteProjectSubmodules,
+        ).toHaveBeenCalledWith('job-id');
     });
 
     it('preserves stateless workflow arguments', async () => {
@@ -184,6 +237,31 @@ describe('ProjectsService', () => {
         store.list.mockResolvedValue(projects);
 
         await expect(service.getProjectsDetails()).resolves.toBe(projects);
+    });
+
+    it('publishes project health only when it changes', async () => {
+        const projects = [{ path: '/projects/game' }] as ProjectDetails[];
+        mocks.checkAndUpdateProjectHealth.mockResolvedValueOnce({
+            projects,
+            changed: true,
+        });
+
+        await service.refreshProjectHealth();
+
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            { id: 'web-contents' },
+            projects,
+        );
+
+        mocks.ipcWebContentsSend.mockClear();
+        mocks.checkAndUpdateProjectHealth.mockResolvedValueOnce({
+            projects,
+            changed: false,
+        });
+        await service.refreshProjectHealth();
+
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
     });
 
     it('persists and publishes a windowed-mode update once', async () => {

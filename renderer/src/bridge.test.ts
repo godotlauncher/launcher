@@ -118,6 +118,12 @@ describe('renderer bridge', () => {
     const refreshToolIntegration = vi.fn(async () => ({}));
     const rescanToolIntegration = vi.fn(async () => ({}));
     const unsubscribe = vi.fn();
+    const subscribeProjects = vi.fn(
+        (listener: (projects: unknown[]) => void) => {
+            projectsListener = listener;
+            return unsubscribe;
+        },
+    );
     let projectsListener: ((projects: unknown[]) => void) | undefined;
 
     beforeEach(() => {
@@ -160,10 +166,7 @@ describe('renderer bridge', () => {
             'toolIntegration.rescanIntegrations': rescanToolIntegrations,
             'toolIntegration.refreshIntegration': refreshToolIntegration,
             'toolIntegration.rescanIntegration': rescanToolIntegration,
-            subscribeProjects: (listener) => {
-                projectsListener = listener;
-                return unsubscribe;
-            },
+            subscribeProjects,
         };
 
         (
@@ -288,16 +291,33 @@ describe('renderer bridge', () => {
         expect(getProjectsDetails).toHaveBeenCalledOnce();
     });
 
-    it('subscribes and unsubscribes from application events', () => {
-        const callback = vi.fn();
-        const dispose = subscribeAppEvent('projects-updated', callback);
+    it('multiplexes application events through one transport listener', () => {
+        const firstCallback = vi.fn();
+        const secondCallback = vi.fn();
+        const disposeFirst = subscribeAppEvent(
+            'projects-updated',
+            firstCallback,
+        );
+        const disposeSecond = subscribeAppEvent(
+            'projects-updated',
+            secondCallback,
+        );
         const projects = [{ name: 'Example' }];
 
         projectsListener?.(projects);
-        dispose();
 
-        expect(callback).toHaveBeenCalledWith(projects);
-        expect(unsubscribe).toHaveBeenCalledOnce();
+        expect(subscribeProjects).toHaveBeenCalledOnce();
+        expect(firstCallback).toHaveBeenCalledWith(projects);
+        expect(secondCallback).toHaveBeenCalledWith(projects);
+
+        disposeFirst();
+        projectsListener?.([{ name: 'Second' }]);
+        disposeSecond();
+        projectsListener?.([{ name: 'Third' }]);
+
+        expect(firstCallback).toHaveBeenCalledOnce();
+        expect(secondCallback).toHaveBeenCalledTimes(2);
+        expect(unsubscribe).not.toHaveBeenCalled();
     });
 
     it('delegates native file paths to the preload transport', () => {

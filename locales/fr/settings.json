@@ -7,6 +7,7 @@
         "behavior": "Comportement",
         "tools": "Outils",
         "codeEditors": "Éditeurs de code",
+        "connections": "Connexions",
         "updates": "Mises à jour"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "Impossible de charger les intégrations d'outils.",
             "rescan": "Impossible de réanalyser cet outil."
+        }
+    },
+    "connections": {
+        "title": "Gérer les connexions",
+        "overview": "Connectez des services externes pour les utiliser dans Godot Launcher.",
+        "loading": "Chargement des connexions...",
+        "loadError": "Impossible de charger les connexions.",
+        "genericDescription": "Connectez ce service pour l'utiliser dans Godot Launcher.",
+        "github": {
+            "description": "Connectez GitHub pour rendre vos dépôts disponibles dans Godot Launcher.",
+            "accessNote": "Vous gardez le contrôle des dépôts auxquels l'application GitHub peut accéder.",
+            "summary": "{{count}} connexions"
+        },
+        "secureStorageUnavailable": "Configurez le trousseau ou le gestionnaire d'identifiants du système avant de connecter GitHub.",
+        "status": {
+            "notConnected": "Non connecté",
+            "connecting": "Connexion...",
+            "selectionRequired": "Choisir une connexion",
+            "connected": "Connecté",
+            "unavailable": "Indisponible",
+            "reauthorisationRequired": "Reconnexion requise",
+            "secureStorageUnavailable": "Stockage sécurisé indisponible"
+        },
+        "actions": {
+            "connect": "Connecter {{provider}}",
+            "addConnection": "Ajouter une connexion",
+            "selectAll": "Tout sélectionner",
+            "selectInstallation": "Sélectionner {{connection}}",
+            "connectSelected": "Connecter la sélection ({{count}})",
+            "installAnother": "Installer sur un autre compte ou une autre organisation",
+            "cancel": "Annuler",
+            "reconnect": "Reconnecter",
+            "manageConnections": "Gérer les connexions GitHub",
+            "manageAccess": "Gérer l'accès aux dépôts",
+            "disconnect": "Déconnecter"
+        },
+        "errors": {
+            "accountMismatch": "GitHub a renvoyé un autre compte. Sélectionnez le compte à gérer et réessayez.",
+            "denied": "La connexion à GitHub a été annulée.",
+            "timedOut": "La demande de connexion a expiré. Réessayez.",
+            "secureStorageUnavailable": "Le stockage sécurisé des identifiants est indisponible.",
+            "installationRequired": "L'installation de l'application GitHub n'a pas pu être vérifiée. Vérifiez son accès aux dépôts et réessayez.",
+            "generic": "Impossible de terminer cette action. Réessayez."
+        },
+        "drawer": {
+            "title": "Connexions GitHub",
+            "description": "Gérez les connexions GitHub disponibles pour Godot Launcher.",
+            "connections": "Connexions",
+            "chooseConnection": "Choisir des connexions",
+            "chooseConnectionDescription": "Choisissez une ou plusieurs installations GitHub App existantes ou installez l'application ailleurs.",
+            "finishSetup": "Terminer la configuration sur GitHub",
+            "finishSetupDescription": "Terminez l'installation dans votre navigateur. Vous pouvez revenir ici pendant que Launcher reste en attente.",
+            "installations": "Installations de l'application",
+            "noInstallations": "Cette connexion ne possède encore aucune installation accessible de l'application.",
+            "organization": "Organisation",
+            "personalAccount": "Compte personnel"
+        },
+        "disconnectConfirm": {
+            "title": "Déconnecter {{connection}} ?",
+            "description": "Cela supprime la connexion de Godot Launcher. L'application GitHub n'est pas désinstallée et les dépôts distants des projets ne sont pas modifiés.",
+            "finalDescription": "Cela supprime la connexion de cet appareil. L'application GitHub n'est pas désinstallée, et l'accès aux dépôts ainsi que les dépôts distants des projets ne sont pas modifiés.",
+            "revokeAllDevices": "Révoquer également cette autorisation GitHub sur tous les appareils utilisant Launcher.",
+            "revokeDetail": "Les autres appareils utilisant Launcher avec ce compte GitHub devront se reconnecter.",
+            "localOnlyWarning": "L'accès à GitHub reste actif sur les autres appareils, et les jetons copiés restent valides jusqu'à leur expiration ou leur révocation.",
+            "failureDetail": "La connexion n'a pas pu être supprimée. L'identifiant local a été conservé. Réessayez.",
+            "revokeAction": "Révoquer et déconnecter",
+            "localOnlyAction": "Déconnecter cet appareil"
         }
     },
     "updates": {

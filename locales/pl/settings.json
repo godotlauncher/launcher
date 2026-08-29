@@ -7,6 +7,7 @@
         "behavior": "Zachowanie",
         "tools": "Narzędzia",
         "codeEditors": "Edytory kodu",
+        "connections": "Połączenia",
         "updates": "Aktualizacje"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "Nie można załadować integracji narzędzi.",
             "rescan": "Nie można ponownie przeskanować tego narzędzia."
+        }
+    },
+    "connections": {
+        "title": "Zarządzaj połączeniami",
+        "overview": "Połącz usługi zewnętrzne, aby używać ich w Godot Launcher.",
+        "loading": "Wczytywanie połączeń...",
+        "loadError": "Nie udało się wczytać połączeń.",
+        "genericDescription": "Połącz tę usługę, aby używać jej w Godot Launcher.",
+        "github": {
+            "description": "Połącz GitHub, aby udostępnić swoje repozytoria w Godot Launcher.",
+            "accessNote": "To Ty wybierasz repozytoria, do których aplikacja GitHub ma dostęp.",
+            "summary": "Połączenia: {{count}}"
+        },
+        "secureStorageUnavailable": "Skonfiguruj systemowy pęk kluczy lub magazyn poświadczeń przed połączeniem z GitHub.",
+        "status": {
+            "notConnected": "Niepołączono",
+            "connecting": "Łączenie...",
+            "selectionRequired": "Wybierz połączenie",
+            "connected": "Połączono",
+            "unavailable": "Niedostępne",
+            "reauthorisationRequired": "Wymagane ponowne połączenie",
+            "secureStorageUnavailable": "Bezpieczny magazyn jest niedostępny"
+        },
+        "actions": {
+            "connect": "Połącz {{provider}}",
+            "addConnection": "Dodaj połączenie",
+            "selectAll": "Zaznacz wszystko",
+            "selectInstallation": "Wybierz {{connection}}",
+            "connectSelected": "Połącz wybrane ({{count}})",
+            "installAnother": "Zainstaluj na innym koncie lub w innej organizacji",
+            "cancel": "Anuluj",
+            "reconnect": "Połącz ponownie",
+            "manageConnections": "Zarządzaj połączeniami GitHub",
+            "manageAccess": "Zarządzaj dostępem do repozytoriów",
+            "disconnect": "Rozłącz"
+        },
+        "errors": {
+            "accountMismatch": "GitHub zwrócił inne konto. Wybierz konto, którym chcesz zarządzać, i spróbuj ponownie.",
+            "denied": "Połączenie z GitHub zostało anulowane.",
+            "timedOut": "Żądanie połączenia wygasło. Spróbuj ponownie.",
+            "secureStorageUnavailable": "Bezpieczny magazyn poświadczeń jest niedostępny.",
+            "installationRequired": "Nie udało się zweryfikować instalacji aplikacji GitHub. Sprawdź jej dostęp do repozytoriów i spróbuj ponownie.",
+            "generic": "Nie udało się wykonać tej czynności. Spróbuj ponownie."
+        },
+        "drawer": {
+            "title": "Połączenia GitHub",
+            "description": "Zarządzaj połączeniami GitHub dostępnymi dla Godot Launcher.",
+            "connections": "Połączenia",
+            "chooseConnection": "Wybierz połączenia",
+            "chooseConnectionDescription": "Wybierz co najmniej jedną istniejącą instalację GitHub App lub zainstaluj aplikację w nowym miejscu.",
+            "finishSetup": "Dokończ konfigurację w GitHub",
+            "finishSetupDescription": "Dokończ instalację w przeglądarce. Możesz tu wrócić, gdy Launcher nadal czeka.",
+            "installations": "Instalacje aplikacji",
+            "noInstallations": "To połączenie nie ma jeszcze dostępnych instalacji aplikacji.",
+            "organization": "Organizacja",
+            "personalAccount": "Konto osobiste"
+        },
+        "disconnectConfirm": {
+            "title": "Rozłączyć {{connection}}?",
+            "description": "Spowoduje to usunięcie połączenia z Godot Launcher. Aplikacja GitHub nie zostanie odinstalowana, a zdalne adresy projektów nie zostaną zmienione.",
+            "finalDescription": "Spowoduje to usunięcie połączenia z tego urządzenia. Aplikacja GitHub nie zostanie odinstalowana, a dostęp do repozytoriów i zdalne adresy projektów nie zostaną zmienione.",
+            "revokeAllDevices": "Unieważnij też tę autoryzację GitHub na wszystkich urządzeniach z Launcherem.",
+            "revokeDetail": "Inne urządzenia z Launcherem połączone z tym kontem GitHub będą wymagały ponownego połączenia.",
+            "localOnlyWarning": "Dostęp do GitHub pozostanie aktywny na innych urządzeniach, a skopiowane tokeny pozostaną ważne do wygaśnięcia lub unieważnienia.",
+            "failureDetail": "Nie udało się usunąć połączenia. Lokalne dane uwierzytelniające zostały zachowane. Spróbuj ponownie.",
+            "revokeAction": "Unieważnij i rozłącz",
+            "localOnlyAction": "Rozłącz to urządzenie"
         }
     },
     "updates": {

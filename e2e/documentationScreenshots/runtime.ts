@@ -1356,6 +1356,7 @@ export async function stubAddProjectEditorResolution(
                     success: false,
                     editorResolution: {
                         requested: {
+                            kind: 'exact',
                             channel: 'official',
                             flavor: 'gdscript',
                             base_version: '4.6',
@@ -1363,6 +1364,7 @@ export async function stubAddProjectEditorResolution(
                         },
                         fallback: fallbackRelease,
                         downloadable: {
+                            match: 'exact',
                             version: '4.6.3-stable',
                             flavor: 'gdscript',
                             prerelease: false,

@@ -7,6 +7,7 @@ export const settingsTabs = [
     'behavior',
     'codeEditors',
     'tools',
+    'connections',
     'updates',
 ] as const;
 
@@ -51,4 +52,14 @@ export function getViewFromPathname(pathname: string): View {
 
 export function isSettingsTab(value: string | undefined): value is SettingsTab {
     return settingsTabs.some((tab) => tab === value);
+}
+
+/**
+ * Checks whether a pathname targets the Connections settings panel.
+ *
+ * @param pathname - Current application pathname.
+ * @returns Whether the Connections promotional shortcut should be active.
+ */
+export function isConnectionsPathname(pathname: string): boolean {
+    return pathname === appRoutePaths.settingsTab('connections');
 }

@@ -96,6 +96,162 @@
             "noStableReleases": "Ebda releases Stabbli installati ma nstabu għal Godot {{version}}.x\nJekk jogħġbok installa stable release għal Godot {{version}}.x, u mbagħad erġa' ipprova żid il-proġett.",
             "noDotNetRelease": "Il-proġett jidher li huwa proġett .NET iżda ebda Editur b'release .NET ma nstab",
             "noCompatibleRelease": "Ebda releases installati ma nstabu għal Godot {{version}}.x li jappoġġjaw config_version {{configVersion}}."
+        },
+        "sources": {
+            "title": "Żid proġett minn",
+            "fromComputer": "Minn dan il-kompjuter",
+            "publicGit": "Iklonu repożitorju Git pubbliku",
+            "github": "Minn GitHub",
+            "checkingGit": "Niċċekkja d-disponibbiltà ta' Git...",
+            "gitUnavailable": "Git mhux disponibbli. Ikkonfiguraha f'Settings > Għodod."
+        },
+        "remote": {
+            "gitIdentity": {
+                "title": "Issettja l-identità ta' Git",
+                "message": "Issettja l-isem u l-email li Git għandu juża għal commits futuri f'dan ir-repożitorju kklonat.",
+                "continueWithout": "Kompli mingħajr identità",
+                "presetMessage": "Applika din l-identità ssejvjata għar-repożitorju kklonat.",
+                "usePreset": "Uża l-preset u kompli",
+                "formMessage": "Agħżel l-identità li Git għandu juża għal dan ir-repożitorju kklonat.",
+                "saveAndContinue": "Issejvja u kompli",
+                "identityWriteFailed": "L-identità ta' Git ma setgħetx tiġi ssejvjata. Ir-repożitorju kklonat inżamm u l-importazzjoni tista' tkompli.",
+                "presetWriteFailed": "L-identità ġiet applikata, iżda l-identità lokali predefinita ma setgħetx tiġi ssejvjata għal repożitorji futuri."
+            },
+            "public": {
+                "title": "Iklonu repożitorju Git pubbliku",
+                "description": "Daħħal URL ta' repożitorju HTTPS Git pubbliku anonimu.",
+                "urlLabel": "URL tar-repożitorju",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "Daħħal URL ta' repożitorju HTTPS pubbliku validu.",
+                    "dnsUnavailable": "Il-host tar-repożitorju ma setax jiġi solvut."
+                }
+            },
+            "github": {
+                "title": "Importa minn GitHub",
+                "description": "Agħżel repożitorju disponibbli permezz tal-konnessjonijiet GitHub tiegħek.",
+                "loading": "Tagħbija repożitorji...",
+                "searchPlaceholder": "Fittex repożitorji",
+                "loadedSearchOnly": "It-tfittxija tkopri repożitorji mgħobbija biss. Tagħbija aktar biex tfittex riżultati addizzjonali.",
+                "empty": "L-ebda repożitorji li jaqblu ma huma mgħobbija.",
+                "loadMore": "Tagħbija aktar",
+                "alreadyAdded": "Diġà miżjud",
+                "openConnections": "Konnessjonijiet Miftuħa",
+                "visibility": {
+                    "public": "Pubbliku",
+                    "private": "Privat",
+                    "internal": "Intern"
+                },
+                "errors": {
+                    "connectionRequired": "Qabbad jew erġa' qabbad GitHub qabel ma timporta repożitorju.",
+                    "temporarilyUnavailable": "GitHub mhux disponibbli temporanjament. Erġa' pprova aktar tard.",
+                    "sessionExpired": "Is-sessjoni tar-repożitorju skadiet. Erġa' tagħbija l-lista."
+                }
+            },
+            "destination": {
+                "description": "Agħżel fejn se jiġi kklonat ir-repożitorju.",
+                "repository": "Repożitorju",
+                "projectName": "Isem tal-proġett",
+                "projectNameHelp": "Jissettja l-isem tal-folder lokali. L-isem fi project.godot ma jinbidilx.",
+                "cloneTo": "Ikkolona ġo",
+                "useDefault": "Uża l-awtomatiku",
+                "parent": "Folder tal-ġenituri",
+                "chooseParent": "Agħżel folder ġenitur",
+                "selectParent": "Agħżel Folder Ġenitur tal-Proġett",
+                "directoryName": "Isem il-folder tal-proġett",
+                "completePath": "Destinazzjoni kompluta"
+            },
+            "actions": {
+                "clone": "Iklonja r-repożitorju",
+                "addProjects": "Żid il-proġetti magħżula ({{count}})",
+                "cloneAndAdd": "Iklonja u żid il-proġett",
+                "cancelImport": "Ikkanċella l-importazzjoni",
+                "retryRegistration": "Erġa' ipprova żid mal-Launcher",
+                "reviewAndRetry": "Irrevedi u erġa' pprova",
+                "close": "Agħlaq",
+                "done": "Lest",
+                "openCloneFolder": "Iftaħ il-folder tal-klonu",
+                "deleteCloneAndClose": "Ħassar il-klonu u agħlaq",
+                "keepCloneAndClose": "Żomm il-klonu u agħlaq"
+            },
+            "progress": {
+                "preparing": "Nipprepara l-importazzjoni...",
+                "cloning": "Klonazzjoni tar-repożitorju...",
+                "discovering": "Qed jinstabu l-proġetti Godot...",
+                "cancelling": "Tħassir l-importazzjoni..."
+            },
+            "submodules": {
+                "title": "Dan ir-repożitorju juża submodules ta' Git",
+                "description": "Launcher jista' jinizjalizza submodules HTTPS pubbliċi u anonimi qabel jerġa' jiskennja. Jieqaf jekk submodule ikun privat jew juża URL mhux appoġġjat.",
+                "preparing": "Qed titħejja l-inizjalizzazzjoni tas-submodules...",
+                "initialise": "Inizjalizza s-submodules",
+                "continueWithoutSubmodules": "Kompli mingħajr submodules",
+                "failure": "Xi submodules ma setgħux jiġu inizjalizzati. Il-clone parzjalment inizjalizzat inżamm biex tkun tista' tkompli manwalment.",
+                "activityTitle": "Attività",
+                "activityAriaLabel": "Attività tal-inizjalizzazzjoni tas-submodules",
+                "activity": {
+                    "found": "Submodules misjuba: {{count}}",
+                    "validating": "Qed jiġi vvalidat {{path}}",
+                    "initialising": "Qed jiġi inizjalizzat {{path}}",
+                    "initialised": "Ġie inizjalizzat {{path}}",
+                    "scanning-projects": "Qed jiġu mfittxija proġetti Godot",
+                    "complete": "Proġetti Godot misjuba: {{count}}",
+                    "stopped": "Waqaf f'{{path}}"
+                }
+            },
+            "review": {
+                "title": "Agħżel il-proġetti li trid iżżid",
+                "cancelTitle": "Tikkanċella l-importazzjoni tar-repożitorju?",
+                "cancelDescription": "Ir-repożitorju diġà ġie kklonat. Agħżel jekk iżżommx il-klonu jew tħassrux qabel tagħlaq.",
+                "description": "Il-proġetti kollha misjuba huma magħżula. Neħħi l-għażla minn eżempji, testijiet, jew proġetti oħra li ma tridx iżżid.",
+                "selectAll": "Agħżel il-proġetti kollha",
+                "empty": "Ma nstab l-ebda proġett Godot validu. Ir-repożitorju kklonat inżamm."
+            },
+            "registration": {
+                "preserved": "Ir-repożitorju ġie kklonat b'suċċess u nżamm f'dan il-post.",
+                "editorsQueued": "It-tniżżil tal-edituri magħżula żdied ma' Installazzjonijiet. Il-proġetti jaġġornaw awtomatikament meta l-edituri jkunu lesti.",
+                "adding": "Qed jiżdiedu l-proġetti: {{current}}/{{total}}",
+                "complete": "L-importazzjoni tal-proġetti tlestiet",
+                "added": "Miżjud",
+                "skipped": "Maqbuż",
+                "failed": "Falla",
+                "alreadyAdded": "Proġett b'dan l-isem jew triq diġà jinsab fil-Launcher.",
+                "notAdded": "Il-proġett ma żdiedx."
+            },
+            "editorBatch": {
+                "title": "Edituri meħtieġa",
+                "description": "{{count}} proġetti magħżula jeħtieġu editur ta' Godot qabel ma jitlesta s-setup.",
+                "summary": "{{editors}} edituri | {{projects}} proġetti",
+                "affectedProjects": "Proġetti affettwati",
+                "resolution": "Riżoluzzjoni",
+                "status": "Status",
+                "checking": "Qed jiġu ċċekkjati l-proġetti: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Lesti mingħajr il-proġetti li fadal",
+                "apply": "Żid il-proġetti u kompli",
+                "statuses": {
+                    "ready": "Lest"
+                }
+            },
+            "errors": {
+                "invalidSource": "Is-sors tar-repożitorju m'għadux validu.",
+                "alreadyRunning": "Importazzjoni oħra ta 'proġett remot diġà qed taħdem.",
+                "gitUnavailable": "Git mhux disponibbli. Ikkonfiguraha f'Settings > Għodod.",
+                "connectionRequired": "Konnessjoni ta' repożitorju li tista' tintuża hija meħtieġa.",
+                "repositoryUnavailable": "Ir-repożitorju magħżul m'għadux disponibbli.",
+                "temporarilyUnavailable": "Il-fornitur tar-repożitorju jew in-netwerk huwa temporanjament mhux disponibbli.",
+                "destinationInvalid": "Agħżel folder ta' destinazzjoni validu.",
+                "destinationConflict": "Id-destinazzjoni diġà teżisti.",
+                "cloneFailed": "Git ma setax jikklona r-repożitorju.",
+                "notGodotProject": "Ir-repożitorju ma fihx project.godot fl-għerq tiegħu.",
+                "discoveryFailed": "Ir-repożitorju ġie kklonat, iżda l-proġetti Godot tiegħu ma setgħux jinstabu.",
+                "discoveryLimitExceeded": "Ir-repożitorju ġie kklonat, iżda huwa kbir wisq jew imdaħħal fil-fond biex jiġi skannjat b'mod sigur.",
+                "finaliseFailed": "Il-klonu komplut ma setax jiġi mċaqlaq lejn id-destinazzjoni tiegħu.",
+                "cancelled": "L-importazzjoni ġiet ikkanċellata.",
+                "registration-failed": "Ir-repożitorju ġie kklonat iżda ma setax jiġi miżjud mal-Launcher.",
+                "cloneFolderOpenFailed": "Il-folder tal-klonu ma setax jinfetaħ.",
+                "cloneCleanupChanged": "Il-klonu nbidel jew ġie sostitwit wara l-importazzjoni, għalhekk ma tħassarx.",
+                "cloneCleanupFailed": "Il-klonu ma setax jitħassar. Inżamm."
+            }
         }
     },
     "messages": {

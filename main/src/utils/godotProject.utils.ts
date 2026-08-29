@@ -9,13 +9,18 @@ export {
 export type { GodotProjectFile } from './godotProject/projectFile.utils.js';
 export {
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectRendererFromParsed,
     getProjectRendererFromPath,
     parseGodotProjectFile,
     serializeGodotProjectFile,
     writeProjectFile,
 } from './godotProject/projectFile.utils.js';
-export { getProjectIconUrlFromParsed } from './godotProject/projectIcon.utils.js';
+export {
+    getProjectIconPathFromParsed,
+    getProjectIconUrlFromParsed,
+    readProjectIconUrl,
+} from './godotProject/projectIcon.utils.js';
 export {
     getProjectNameFromParsed,
     readGodotProjectName,

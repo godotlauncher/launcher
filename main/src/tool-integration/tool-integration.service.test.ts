@@ -9,6 +9,7 @@ import type {
     ToolSettings,
 } from './tool-integration.types.js';
 import type { ToolProcessExecutor } from './tool-process.executor.js';
+import type { ToolStreamingProcessExecutor } from './tool-streaming-process.executor.js';
 
 const settings: ToolSettings = {
     enabled: true,
@@ -34,6 +35,7 @@ function createService(): {
     settingsStore: ToolIntegrationStore;
     installationCache: ToolInstallationCache;
     processExecutor: ToolProcessExecutor;
+    streamingProcessExecutor: ToolStreamingProcessExecutor;
 } {
     const integration: ToolIntegration = {
         metadata: { id: 'example', displayName: 'Example', order: 10 },
@@ -83,6 +85,9 @@ function createService(): {
             exitCode: 0,
         }),
     } as unknown as ToolProcessExecutor;
+    const streamingProcessExecutor = {
+        execute: vi.fn().mockResolvedValue({ success: true, exitCode: 0 }),
+    } as unknown as ToolStreamingProcessExecutor;
 
     return {
         service: new ToolIntegrationService(
@@ -90,11 +95,13 @@ function createService(): {
             settingsStore,
             installationCache,
             processExecutor,
+            streamingProcessExecutor,
         ),
         integration,
         settingsStore,
         installationCache,
         processExecutor,
+        streamingProcessExecutor,
     };
 }
 
@@ -146,6 +153,31 @@ describe('ToolIntegrationService', () => {
         );
     });
 
+    it('validates once for multiple commands in one execution session', async () => {
+        const { service, installationCache, processExecutor } = createService();
+        const execute = await service.createExecutionSession('example');
+
+        await expect(
+            Promise.all([
+                execute({ args: ['status'], cwd: '/project-one' }),
+                execute({ args: ['status'], cwd: '/project-two' }),
+            ]),
+        ).resolves.toHaveLength(2);
+
+        expect(installationCache.requireAvailable).toHaveBeenCalledOnce();
+        expect(processExecutor.execute).toHaveBeenCalledTimes(2);
+        expect(processExecutor.execute).toHaveBeenNthCalledWith(
+            1,
+            installation,
+            { args: ['status'], cwd: '/project-one' },
+        );
+        expect(processExecutor.execute).toHaveBeenNthCalledWith(
+            2,
+            installation,
+            { args: ['status'], cwd: '/project-two' },
+        );
+    });
+
     it('does not resolve or execute a disabled tool', async () => {
         const { service, settingsStore, installationCache, processExecutor } =
             createService();
@@ -162,6 +194,29 @@ describe('ToolIntegrationService', () => {
         });
         expect(installationCache.requireAvailable).not.toHaveBeenCalled();
         expect(processExecutor.execute).not.toHaveBeenCalled();
+    });
+
+    it('revalidates and executes through the streaming process boundary', async () => {
+        const { service, installationCache, streamingProcessExecutor } =
+            createService();
+        const request = {
+            args: ['clone'],
+            env: {},
+            signal: new AbortController().signal,
+            timeoutMs: 5_000,
+        };
+
+        await expect(
+            service.executeStreaming('example', request),
+        ).resolves.toEqual({ success: true, exitCode: 0 });
+        expect(installationCache.requireAvailable).toHaveBeenCalledWith(
+            'example',
+            settings,
+        );
+        expect(streamingProcessExecutor.execute).toHaveBeenCalledWith(
+            installation,
+            request,
+        );
     });
 
     it('rejects an invalid execution override before persistence', async () => {

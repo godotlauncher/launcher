@@ -23,6 +23,11 @@ on:
         required: true
         default: "release-windows"
         type: string
+      signpath_windows_helper_artifact_configuration_slug:
+        description: "SignPath Windows helper artifact configuration slug"
+        required: true
+        default: "release-windows-helper"
+        type: string
       signpath_wait_timeout_seconds:
         description: "Maximum seconds to wait for SignPath approval and signing"
         required: true
@@ -150,10 +155,142 @@ jobs:
 
           gh release create "v${VERSION}" "${args[@]}"
 
+  build-windows-helper:
+    needs:
+      - tag-release
+      - create-release
+    strategy:
+      matrix:
+        include:
+          - runner: windows-2025
+            arch: x64
+            build-script: build:native:git-askpass:x64
+          - runner: windows-11-arm
+            arch: arm64
+            build-script: build:native:git-askpass:arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Sync npm version
+        run: npm install --global npm@12.0.2
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native helper
+        run: npm run ${{ matrix.build-script }}
+
+      - name: Test native helper
+        run: npm run test:native:git-askpass -- ${{ matrix.arch }}
+
+      - name: Upload unsigned helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-git-askpass-unsigned-${{ matrix.arch }}
+          path: native/git-credentials-helper/windows-askpass/out/win32-${{ matrix.arch }}/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
+  sign-windows-helper:
+    needs:
+      - tag-release
+      - build-windows-helper
+    runs-on: windows-2025
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Download unsigned x64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-unsigned-x64
+          path: signpath-unsigned-helper/win32-x64
+
+      - name: Download unsigned ARM64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-unsigned-arm64
+          path: signpath-unsigned-helper/win32-arm64
+
+      - name: Upload SignPath helper input
+        id: upload_unsigned_helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: signpath-windows-helper
+          path: signpath-unsigned-helper
+          if-no-files-found: error
+
+      - name: Submit helper signing request
+        id: submit_signpath_helper
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ inputs.signpath_signing_policy_slug }}
+          artifact-configuration-slug: ${{ inputs.signpath_windows_helper_artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload_unsigned_helper.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: ${{ inputs.signpath_wait_timeout_seconds }}
+          output-artifact-directory: ${{ github.workspace }}\signpath-signed-helper
+          parameters: |
+            version: ${{ toJSON(needs.tag-release.outputs.version) }}
+
+      - name: Show helper SignPath request
+        shell: pwsh
+        run: |
+          Write-Host "SignPath request: ${{ steps.submit_signpath_helper.outputs.signing-request-web-url }}"
+
+      - name: Verify and stage signed helpers
+        shell: pwsh
+        run: |
+          foreach ($arch in @('x64', 'arm64')) {
+              $helper = "signpath-signed-helper/win32-$arch/godot-launcher-git-askpass.exe"
+              if (-not (Test-Path -LiteralPath $helper -PathType Leaf)) {
+                  throw "Signed $arch helper was not returned at the expected path."
+              }
+
+              $signature = Get-AuthenticodeSignature -FilePath $helper
+              if ($signature.Status -ne 'Valid') {
+                  throw "Signed $arch helper signature status is $($signature.Status)."
+              }
+
+              $destination = "signed-helper/win32-$arch"
+              New-Item -ItemType Directory -Force -Path $destination | Out-Null
+              Copy-Item -LiteralPath $helper -Destination "$destination/godot-launcher-git-askpass.exe"
+          }
+
+      - name: Upload signed x64 helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-git-askpass-signed-x64
+          path: signed-helper/win32-x64/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
+      - name: Upload signed ARM64 helper
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-git-askpass-signed-arm64
+          path: signed-helper/win32-arm64/godot-launcher-git-askpass.exe
+          if-no-files-found: error
+
   sign-windows:
     needs:
       - tag-release
       - create-release
+      - sign-windows-helper
     runs-on: windows-latest
     permissions:
       actions: read
@@ -205,6 +342,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download signed x64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-signed-x64
+          path: native/git-credentials-helper/windows-askpass/out/win32-x64
+
+      - name: Download signed ARM64 helper
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-git-askpass-signed-arm64
+          path: native/git-credentials-helper/windows-askpass/out/win32-arm64
+
+      - name: Verify staged helper signatures
+        shell: pwsh
+        run: |
+          foreach ($arch in @('x64', 'arm64')) {
+              $helper = "native/git-credentials-helper/windows-askpass/out/win32-$arch/godot-launcher-git-askpass.exe"
+              $signature = Get-AuthenticodeSignature -FilePath $helper
+              if ($signature.Status -ne 'Valid') {
+                  throw "$arch helper signature status is $($signature.Status)."
+              }
+          }
+
       - name: Resolve Windows updater metadata filename
         id: windows_update_metadata
         shell: pwsh
@@ -223,7 +383,21 @@ jobs:
           Write-Host "Windows updater metadata: dist/$file"
 
       - name: Build unsigned Windows artifacts
-        run: npm run dist:win -- --publish never
+        run: npm run dist:win:prepared
+
+      - name: Verify packaged helper signatures
+        shell: pwsh
+        run: |
+          $helpers = Get-ChildItem -Path dist -Filter godot-launcher-git-askpass.exe -Recurse -File
+          if ($helpers.Count -ne 2) {
+              throw "Expected two packaged helpers, found $($helpers.Count)."
+          }
+          foreach ($helper in $helpers) {
+              $signature = Get-AuthenticodeSignature -FilePath $helper.FullName
+              if ($signature.Status -ne 'Valid') {
+                  throw "Packaged helper signature status is $($signature.Status)."
+              }
+          }
 
       - name: Upload unsigned Windows dist artifact
         uses: actions/upload-artifact@v7
@@ -290,6 +464,9 @@ jobs:
               Copy-Item -LiteralPath $installer.FullName -Destination $target -Force
 
               $signature = Get-AuthenticodeSignature -FilePath $target
+              if ($signature.Status -ne 'Valid') {
+                  throw "Signed installer signature status is $($signature.Status)."
+              }
               Write-Host "Signed artifact: $($installer.Name)"
               Write-Host "  Signature status: $($signature.Status)"
               Write-Host "  Signer subject: $($signature.SignerCertificate.Subject)"
@@ -442,9 +619,9 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            distCommand: npm run dist:mac -- --publish onTagOrDraft
+            platformArgs: --mac
           - os: ubuntu-latest
-            distCommand: npm run dist:linux -- --publish onTagOrDraft
+            platformArgs: --linux
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -478,7 +655,7 @@ jobs:
         run: npm run build:sources
 
       - name: Build and publish ${{ matrix.os }} artifacts
-        run: ${{ matrix.distCommand }}
+        run: npx electron-builder --config electron-builder-config.ts ${{ matrix.platformArgs }} --publish onTagOrDraft
 
   finalize-release:
     needs:

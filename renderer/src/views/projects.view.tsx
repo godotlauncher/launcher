@@ -4,7 +4,7 @@ import type {
     ProjectDetails,
 } from '@shared/contracts';
 import { FolderPlus, HardDriveDownload, TriangleAlert } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import {
@@ -18,12 +18,18 @@ import { useAppNavigation } from '../hooks/useAppNavigation';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
+import { useToolIntegrations } from '../hooks/useToolIntegrations';
 import { appRoutePaths } from '../routes.ts';
+import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectFoldersMenu } from './projects/components/projectFoldersMenu.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
 import { ProjectsList } from './projects/components/projectsList.component';
+import {
+    RemoteProjectImportModal,
+    type RemoteProjectSource,
+} from './projects/components/remote-project-import.modal';
 import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
 import { useProjectActions } from './projects/hooks/useProjectActions';
 import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
@@ -32,6 +38,10 @@ import {
     getProjectSections,
     getProjectsViewState,
 } from './projects/projectsView.model';
+import {
+    type GitAvailability,
+    getGitAvailability,
+} from './projects/remote-project-import.model';
 import { CreateProjectDrawer } from './subViews/createProjectDrawer.subview';
 import { ProjectSettingsDrawer } from './subViews/projectSettingsDrawer.subview';
 
@@ -80,6 +90,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const [projectFoldersMenu, setProjectFoldersMenu] =
         useState<ProjectFoldersMenuState | null>(null);
     const [addingProject, setAddingProject] = useState<boolean>(false);
+    const [addSourceMenuAnchor, setAddSourceMenuAnchor] =
+        useState<ActionMenuAnchorRect | null>(null);
+    const [remoteProjectSource, setRemoteProjectSource] =
+        useState<RemoteProjectSource | null>(null);
+    const [gitAvailability, setGitAvailability] =
+        useState<GitAvailability>('loading');
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
     const [highlightedPinnedProjectPath, setHighlightedPinnedProjectPath] =
@@ -92,6 +108,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const { addAlert, addCustomConfirm } = useAlerts();
 
     const { preferences, updatePreferences } = usePreferences();
+    const { listIntegrations: listToolIntegrations } = useToolIntegrations();
     const {
         installedReleases,
         availableReleases,
@@ -118,6 +135,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         exportProjectEditorSettings,
         importProjectEditorSettings,
         addProject,
+        queueProjectEditorRepairs,
         launchProject,
         openProjectFolder,
         openProjectEditorFolder,
@@ -163,6 +181,32 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectEditor,
         showRecoveredCodeEditorConfigWarning,
     });
+
+    const refreshGitAvailability = useCallback(async () => {
+        setGitAvailability('loading');
+        try {
+            const integrations = await listToolIntegrations();
+            setGitAvailability(getGitAvailability(integrations));
+        } catch {
+            setGitAvailability('unavailable');
+        }
+    }, [listToolIntegrations]);
+
+    useEffect(() => {
+        void refreshGitAvailability();
+    }, [refreshGitAvailability]);
+
+    const openAddProjectSourceMenu: React.MouseEventHandler<
+        HTMLButtonElement
+    > = (event) => {
+        setAddSourceMenuAnchor(getActionMenuAnchorRect(event.currentTarget));
+        void refreshGitAvailability();
+    };
+
+    const openRemoteProjectSource = (source: RemoteProjectSource) => {
+        setAddSourceMenuAnchor(null);
+        setRemoteProjectSource(source);
+    };
     const {
         isDraggingOver,
         loadingProgress,
@@ -303,7 +347,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     searchPlaceholder={t('search.placeholder')}
                     searchValue={textSearch}
                     onSearchChange={setTextSearch}
-                    onAddProject={() => void onAddProject()}
+                    onAddProject={openAddProjectSourceMenu}
                     onCreateProject={() => setCreateOpen(true)}
                     createDisabled={validInstalledReleaseCount < 1}
                     addLabel={t('buttons.add')}
@@ -349,7 +393,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onPrimaryAction={() =>
                             navigate(appRoutePaths.installEditor)
                         }
-                        onSecondaryAction={() => void onAddProject()}
+                        onSecondaryAction={openAddProjectSourceMenu}
                     />
                 )}
                 {viewState === 'empty-with-editor' && (
@@ -364,7 +408,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             'emptyState.addExistingProject',
                         )}
                         onPrimaryAction={() => setCreateOpen(true)}
-                        onSecondaryAction={() => void onAddProject()}
+                        onSecondaryAction={openAddProjectSourceMenu}
                     />
                 )}
                 {viewState === 'empty-installing-editor' && (
@@ -381,7 +425,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         secondaryActionLabel={t(
                             'emptyState.addExistingProject',
                         )}
-                        onSecondaryAction={() => void onAddProject()}
+                        onSecondaryAction={openAddProjectSourceMenu}
                     />
                 )}
                 {!showEmptyState && (
@@ -454,6 +498,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     runProjectAction(() => openProjectEditorFolder(project))
                 }
             />
+            <AddProjectSourceMenu
+                anchorRect={addSourceMenuAnchor}
+                gitAvailability={gitAvailability}
+                t={t}
+                onClose={() => setAddSourceMenuAnchor(null)}
+                onFromComputer={() => void onAddProject()}
+                onPublicGit={() => openRemoteProjectSource('public-git-url')}
+                onGitHub={() => openRemoteProjectSource('github')}
+            />
             <ProjectActionsMenu
                 project={projectActionsMenu?.project ?? null}
                 anchorRect={projectActionsMenu?.anchorRect ?? null}
@@ -487,6 +540,16 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             <CreateProjectDrawer
                 open={createOpen}
                 onOpenChange={setCreateOpen}
+            />
+            <RemoteProjectImportModal
+                source={remoteProjectSource}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setRemoteProjectSource(null);
+                    }
+                }}
+                handleAddProjectResult={handleAddProjectResult}
+                queueProjectEditorRepairs={queueProjectEditorRepairs}
             />
         </>
     );

@@ -96,6 +96,162 @@
             "noStableReleases": "Aucune version Stable installée trouvée pour Godot {{version}}.x\nVeuillez installer une version stable pour Godot {{version}}.x, puis réessayez d'ajouter le projet.",
             "noDotNetRelease": "Le projet semble être un projet .NET mais aucun éditeur avec version .NET n'a été trouvé",
             "noCompatibleRelease": "Aucune version installée trouvée pour Godot {{version}}.x qui prend en charge config_version {{configVersion}}."
+        },
+        "sources": {
+            "title": "Ajouter un projet de",
+            "fromComputer": "Depuis cet ordinateur",
+            "publicGit": "Cloner le dépôt Git public",
+            "github": "Depuis GitHub",
+            "checkingGit": "Vérification de la disponibilité de Git...",
+            "gitUnavailable": "Git n'est pas disponible. Configurez-le dans Paramètres > Outils."
+        },
+        "remote": {
+            "gitIdentity": {
+                "title": "Définir l'identité Git",
+                "message": "Définissez le nom et l'adresse e-mail que Git utilisera pour les futurs commits de ce dépôt cloné.",
+                "continueWithout": "Continuer sans identité",
+                "presetMessage": "Appliquez cette identité enregistrée au dépôt cloné.",
+                "usePreset": "Utiliser le préréglage et continuer",
+                "formMessage": "Choisissez l'identité que Git utilisera pour ce dépôt cloné.",
+                "saveAndContinue": "Enregistrer et continuer",
+                "identityWriteFailed": "L'identité Git n'a pas pu être enregistrée. Le dépôt cloné a été conservé et l'importation peut continuer.",
+                "presetWriteFailed": "L'identité a été appliquée, mais l'identité locale par défaut n'a pas pu être enregistrée pour les futurs dépôts."
+            },
+            "public": {
+                "title": "Cloner le dépôt Git public",
+                "description": "Saisissez une URL de référentiel Git HTTPS public anonyme.",
+                "urlLabel": "URL du référentiel",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "Saisissez une URL de référentiel HTTPS public valide.",
+                    "dnsUnavailable": "L'hôte du référentiel n'a pas pu être résolu."
+                }
+            },
+            "github": {
+                "title": "Importer depuis GitHub",
+                "description": "Choisissez un référentiel disponible via vos connexions GitHub.",
+                "loading": "Chargement des référentiels...",
+                "searchPlaceholder": "Rechercher des référentiels",
+                "loadedSearchOnly": "La recherche couvre uniquement les référentiels chargés. Chargez-en davantage pour rechercher des résultats supplémentaires.",
+                "empty": "Aucun référentiel correspondant n'est chargé.",
+                "loadMore": "Charger plus",
+                "alreadyAdded": "Déjà ajouté",
+                "openConnections": "Connexions ouvertes",
+                "visibility": {
+                    "public": "Publique",
+                    "private": "Privé",
+                    "internal": "Interne"
+                },
+                "errors": {
+                    "connectionRequired": "Connectez ou reconnectez GitHub avant d'importer un référentiel.",
+                    "temporarilyUnavailable": "GitHub est temporairement indisponible. Réessayez plus tard.",
+                    "sessionExpired": "La session du référentiel a expiré. Chargez à nouveau la liste."
+                }
+            },
+            "destination": {
+                "description": "Choisissez où le référentiel sera cloné.",
+                "repository": "Référentiel",
+                "projectName": "Nom du projet",
+                "projectNameHelp": "Définit le nom du dossier local. Le nom dans project.godot reste inchangé.",
+                "cloneTo": "Cloner dans",
+                "useDefault": "Utiliser par défaut",
+                "parent": "Dossier parent",
+                "chooseParent": "Choisir le dossier parent",
+                "selectParent": "Sélectionner le dossier parent du projet",
+                "directoryName": "Nom du dossier du projet",
+                "completePath": "Destination complète"
+            },
+            "actions": {
+                "clone": "Cloner le dépôt",
+                "addProjects": "Ajouter les projets sélectionnés ({{count}})",
+                "cloneAndAdd": "Cloner et ajouter un projet",
+                "cancelImport": "Annuler l'importation",
+                "retryRegistration": "Réessayez d'ajouter au lanceur",
+                "reviewAndRetry": "Vérifier et réessayer",
+                "close": "Fermer",
+                "done": "Terminé",
+                "openCloneFolder": "Ouvrir le dossier du clone",
+                "deleteCloneAndClose": "Supprimer le clone et fermer",
+                "keepCloneAndClose": "Conserver le clone et fermer"
+            },
+            "progress": {
+                "preparing": "Préparation de l'importation...",
+                "cloning": "Clonage du référentiel...",
+                "discovering": "Recherche des projets Godot...",
+                "cancelling": "Annulation de l'importation..."
+            },
+            "submodules": {
+                "title": "Ce dépôt utilise des sous-modules Git",
+                "description": "Launcher peut initialiser les sous-modules HTTPS publics et anonymes avant une nouvelle analyse. L’opération s’arrête si un sous-module est privé ou utilise une URL non prise en charge.",
+                "preparing": "Préparation de l’initialisation des sous-modules...",
+                "initialise": "Initialiser les sous-modules",
+                "continueWithoutSubmodules": "Continuer sans les sous-modules",
+                "failure": "Certains sous-modules n’ont pas pu être initialisés. Le clone partiellement initialisé a été conservé pour vous permettre de continuer manuellement.",
+                "activityTitle": "Activité",
+                "activityAriaLabel": "Activité d’initialisation des sous-modules",
+                "activity": {
+                    "found": "Sous-modules trouvés : {{count}}",
+                    "validating": "Validation de {{path}}",
+                    "initialising": "Initialisation de {{path}}",
+                    "initialised": "{{path}} initialisé",
+                    "scanning-projects": "Recherche de projets Godot",
+                    "complete": "Projets Godot trouvés : {{count}}",
+                    "stopped": "Arrêt à {{path}}"
+                }
+            },
+            "review": {
+                "title": "Choisir les projets à ajouter",
+                "cancelTitle": "Annuler l'importation du dépôt ?",
+                "cancelDescription": "Le dépôt a déjà été cloné. Choisissez de conserver le clone ou de le supprimer avant de fermer.",
+                "description": "Tous les projets trouvés sont sélectionnés. Désélectionnez les exemples, les tests ou les autres projets que vous ne souhaitez pas ajouter.",
+                "selectAll": "Sélectionner tous les projets",
+                "empty": "Aucun projet Godot valide n'a été trouvé. Le dépôt cloné a été conservé."
+            },
+            "registration": {
+                "preserved": "Le référentiel a été cloné avec succès et a été conservé à cet emplacement.",
+                "editorsQueued": "Les téléchargements d'éditeurs sélectionnés ont été ajoutés aux installations. Les projets se mettent à jour automatiquement lorsque leurs éditeurs sont prêts.",
+                "adding": "Ajout des projets : {{current}}/{{total}}",
+                "complete": "Importation des projets terminée",
+                "added": "Ajouté",
+                "skipped": "Ignoré",
+                "failed": "Échec",
+                "alreadyAdded": "Un projet portant ce nom ou ce chemin existe déjà dans Launcher.",
+                "notAdded": "Le projet n'a pas été ajouté."
+            },
+            "editorBatch": {
+                "title": "Éditeurs requis",
+                "description": "{{count}} projets sélectionnés nécessitent un éditeur Godot avant de terminer la configuration.",
+                "summary": "{{editors}} éditeurs | {{projects}} projets",
+                "affectedProjects": "Projets concernés",
+                "resolution": "Résolution",
+                "status": "État",
+                "checking": "Vérification des projets : {{current}}/{{total}}",
+                "finishWithoutRemaining": "Terminer sans les projets restants",
+                "apply": "Ajouter les projets et continuer",
+                "statuses": {
+                    "ready": "Prêt"
+                }
+            },
+            "errors": {
+                "invalidSource": "La source du référentiel n'est plus valide.",
+                "alreadyRunning": "Une autre importation de projet distant est déjà en cours.",
+                "gitUnavailable": "Git n'est pas disponible. Configurez-le dans Paramètres > Outils.",
+                "connectionRequired": "Une connexion au référentiel utilisable est requise.",
+                "repositoryUnavailable": "Le référentiel sélectionné n'est plus disponible.",
+                "temporarilyUnavailable": "Le fournisseur ou le réseau du référentiel est temporairement indisponible.",
+                "destinationInvalid": "Choisissez un dossier de destination valide.",
+                "destinationConflict": "La destination existe déjà.",
+                "cloneFailed": "Git n'a pas pu cloner le référentiel.",
+                "notGodotProject": "Le référentiel ne contient pas project.godot à sa racine.",
+                "discoveryFailed": "Le dépôt a été cloné, mais ses projets Godot n'ont pas pu être trouvés.",
+                "discoveryLimitExceeded": "Le dépôt a été cloné, mais il est trop volumineux ou trop imbriqué pour être analysé en toute sécurité.",
+                "finaliseFailed": "Le clone terminé n'a pas pu être déplacé vers sa destination.",
+                "cancelled": "L'importation a été annulée.",
+                "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Launcher.",
+                "cloneFolderOpenFailed": "Le dossier du clone n'a pas pu être ouvert.",
+                "cloneCleanupChanged": "Le clone a été modifié ou remplacé depuis l'importation, il n'a donc pas été supprimé.",
+                "cloneCleanupFailed": "Le clone n'a pas pu être supprimé. Il a été conservé."
+            }
         }
     },
     "messages": {

@@ -1,3 +1,5 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { CodeEditorId } from '@shared/contracts';
 import type {
@@ -58,8 +60,14 @@ export class VSCodiumIntegration implements CodeEditorIntegration {
               };
     }
 
-    async isConfiguredForProject(_projectPath: string): Promise<boolean> {
-        return false;
+    /**
+     * Reports whether the shared VS Code-family project directory is present.
+     *
+     * @param projectPath - Godot project directory.
+     * @returns Whether a .vscode directory exists for the project.
+     */
+    async isConfiguredForProject(projectPath: string): Promise<boolean> {
+        return fs.existsSync(path.resolve(projectPath, '.vscode'));
     }
 
     resolveGodotConfiguration(input: {

@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InstalledEditorService } from './installed-editor.service.js';
@@ -92,6 +93,33 @@ describe('InstalledEditorService', () => {
         expect(store.replace).toHaveBeenCalledWith(releases);
     });
 
+    it('publishes quick health only when editor validity changes', async () => {
+        const valid = createRelease('4.3-stable');
+        const missing = createRelease('4.4-stable');
+        store.list.mockResolvedValue([valid, missing]);
+        fsMocks.promises.access
+            .mockResolvedValueOnce(undefined)
+            .mockRejectedValueOnce(new Error('missing'));
+        const service = createService();
+
+        await expect(service.refreshInstalledEditorHealth()).resolves.toEqual([
+            expect.objectContaining({ version: '4.3-stable', valid: true }),
+            expect.objectContaining({ version: '4.4-stable', valid: false }),
+        ]);
+        expect(store.replace).toHaveBeenCalledOnce();
+
+        store.replace.mockClear();
+        store.list.mockResolvedValue([valid, { ...missing, valid: false }]);
+        fsMocks.promises.access
+            .mockResolvedValueOnce(undefined)
+            .mockRejectedValueOnce(new Error('missing'));
+
+        await expect(
+            service.refreshInstalledEditorHealth(),
+        ).resolves.toBeNull();
+        expect(store.replace).not.toHaveBeenCalled();
+    });
+
     it('rejects a duplicate custom editor unless replacement is explicit', async () => {
         const custom = createRelease('studio-build', { source: 'custom' });
         manifestMocks.parseCustomEngineManifest.mockResolvedValue(custom);
@@ -131,14 +159,15 @@ describe('InstalledEditorService', () => {
 
     it('opens the platform-specific project manager executable', () => {
         osMocks.platform.mockReturnValue('darwin');
+        const editorPath = path.resolve('Applications', 'Godot.app');
         const release = createRelease('4.3-stable', {
-            editor_path: '/Applications/Godot.app',
+            editor_path: editorPath,
         });
 
         createService().openProjectManager(release);
 
         expect(spawnMocks.spawn).toHaveBeenCalledWith(
-            '/Applications/Godot.app/Contents/MacOS/Godot',
+            path.resolve(editorPath, 'Contents', 'MacOS', 'Godot'),
             ['-p'],
             { detached: true, stdio: 'ignore' },
         );

@@ -11,6 +11,7 @@ const settingsTabTestIds: Record<SettingsTab, string> = {
     behavior: 'tabBehavior',
     codeEditors: 'tabCodeEditors',
     tools: 'tabTools',
+    connections: 'tabConnections',
     updates: 'tabUpdates',
 };
 
@@ -25,7 +26,10 @@ export const SettingsTabs: React.FC<SettingsTabsProps> = ({
     t,
     onActiveTabChange,
 }) => (
-    <div role="tablist" className="flex tabs tabs-lift">
+    <div
+        role="tablist"
+        className="flex w-full flex-nowrap tabs tabs-lift overflow-x-auto"
+    >
         {settingsTabs.map((tab) => (
             <button
                 key={tab}
@@ -33,12 +37,18 @@ export const SettingsTabs: React.FC<SettingsTabsProps> = ({
                 data-testid={settingsTabTestIds[tab]}
                 onClick={() => onActiveTabChange(tab)}
                 role="tab"
-                className={clsx('tab', {
+                aria-selected={activeTab === tab}
+                className={clsx('tab shrink-0', {
                     'tab-active': activeTab === tab,
                 })}
             >
                 {t(`tabs.${tab}`)}
             </button>
         ))}
+        <span
+            className="tab min-w-4 flex-1 pointer-events-none"
+            data-testid="settingsTabRailEnd"
+            aria-hidden="true"
+        />
     </div>
 );

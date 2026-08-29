@@ -34,8 +34,27 @@ describe('configuration', () => {
                 disableDevMenu: true,
                 startHidden: true,
                 docsScreenshots: true,
+                useLocalGitHubBroker: false,
             }),
         );
+    });
+
+    it('allows the fixed local GitHub broker only in development', () => {
+        const development = configuration({
+            args: argv(),
+            env: { GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER: '1' },
+            isPackaged: false,
+            appPath: '/workspace/launcher',
+        });
+        const packaged = configuration({
+            args: argv(),
+            env: { GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER: '1' },
+            isPackaged: true,
+            appPath: '/opt/launcher/app.asar',
+        });
+
+        expect(development.useLocalGitHubBroker).toBe(true);
+        expect(packaged.useLocalGitHubBroker).toBe(false);
     });
 
     it('keeps cli true when env explicitly parses false', () => {

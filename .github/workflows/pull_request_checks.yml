@@ -7,6 +7,41 @@ on:
       - release/**
 
 jobs:
+  windows-packaging-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.detect.outputs.changed }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Detect Windows packaging changes
+        id: detect
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
+              'native/git-credentials-helper/windows-askpass/**' \
+              'electron-builder-config.ts' \
+              'package.json' \
+              'package-lock.json' \
+              '.github/workflows/pull_request_checks.yml' \
+              '.github/workflows/release.yml'; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+              status=$?
+              if [ "$status" -ne 1 ]; then
+                  exit "$status"
+              fi
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   lint-and-build:
     runs-on: ubuntu-latest
 
@@ -40,6 +75,67 @@ jobs:
       # Run Unit tests
       - name: Run Unit tests
         run: npm run test:unit
-      
 
+  windows-git-askpass:
+    needs: windows-packaging-changes
+    if: needs.windows-packaging-changes.outputs.changed == 'true'
+    strategy:
+      matrix:
+        include:
+          - runner: windows-2025
+            arch: x64
+            build-script: build:native:git-askpass:x64
+          - runner: windows-11-arm
+            arch: arm64
+            build-script: build:native:git-askpass:arm64
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Sync npm version
+        run: npm install --global npm@12.0.2
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native helper
+        run: npm run ${{ matrix.build-script }}
+
+      - name: Test native helper
+        run: npm run test:native:git-askpass -- ${{ matrix.arch }}
+
+      - name: Build Windows application directory
+        run: npm run build:sources && npx electron-builder --dir --config electron-builder-config.ts --win --${{ matrix.arch }} --publish never
+
+      - name: Verify packaged helper architecture
+        shell: pwsh
+        run: |
+          $helper = Get-ChildItem -Path dist -Filter godot-launcher-git-askpass.exe -Recurse -File
+          if ($helper.Count -ne 1) {
+              throw "Expected one packaged helper, found $($helper.Count)."
+          }
+          if ($helper.Directory.Name -ne 'git-credentials-helper') {
+              throw "Helper was packaged outside the expected resources directory."
+          }
+
+          $bytes = [System.IO.File]::ReadAllBytes($helper.FullName)
+          $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
+          $machine = [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+          $expected = if ('${{ matrix.arch }}' -eq 'arm64') { 0xaa64 } else { 0x8664 }
+          if ($machine -ne $expected) {
+              throw "Packaged helper has PE machine 0x$($machine.ToString('x4')); expected 0x$($expected.ToString('x4'))."
+          }
       

@@ -7,6 +7,7 @@
         "behavior": "行为",
         "tools": "工具",
         "codeEditors": "代码编辑器",
+        "connections": "连接",
         "updates": "更新"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "无法加载工具集成。",
             "rescan": "无法重新扫描此工具。"
+        }
+    },
+    "connections": {
+        "title": "管理连接",
+        "overview": "连接外部服务，以便在 Godot Launcher 中使用。",
+        "loading": "正在加载连接...",
+        "loadError": "无法加载连接。",
+        "genericDescription": "连接此服务，以便在 Godot Launcher 中使用。",
+        "github": {
+            "description": "连接 GitHub，让 Godot Launcher 可以使用你的仓库。",
+            "accessNote": "你可以决定 GitHub 应用有权访问哪些仓库。",
+            "summary": "{{count}} 个连接"
+        },
+        "secureStorageUnavailable": "连接 GitHub 前，请先设置系统密钥环或凭据存储。",
+        "status": {
+            "notConnected": "未连接",
+            "connecting": "正在连接...",
+            "selectionRequired": "选择连接",
+            "connected": "已连接",
+            "unavailable": "不可用",
+            "reauthorisationRequired": "需要重新连接",
+            "secureStorageUnavailable": "安全存储不可用"
+        },
+        "actions": {
+            "connect": "连接 {{provider}}",
+            "addConnection": "添加连接",
+            "selectAll": "全选",
+            "selectInstallation": "选择 {{connection}}",
+            "connectSelected": "连接所选项 ({{count}})",
+            "installAnother": "安装到其他账户或组织",
+            "cancel": "取消",
+            "reconnect": "重新连接",
+            "manageConnections": "管理 GitHub 连接",
+            "manageAccess": "管理仓库访问权限",
+            "disconnect": "断开连接"
+        },
+        "errors": {
+            "accountMismatch": "GitHub 返回了其他账户。请选择你要管理的账户，然后重试。",
+            "denied": "GitHub 连接已取消。",
+            "timedOut": "连接请求已过期。请重试。",
+            "secureStorageUnavailable": "安全凭据存储不可用。",
+            "installationRequired": "无法验证 GitHub App 的安装。请检查其仓库访问权限并重试。",
+            "generic": "无法完成此操作。请重试。"
+        },
+        "drawer": {
+            "title": "GitHub 连接",
+            "description": "管理 Godot Launcher 可用的 GitHub 连接。",
+            "connections": "连接",
+            "chooseConnection": "选择连接",
+            "chooseConnectionDescription": "选择一个或多个现有的 GitHub App 安装，或将 App 安装到新的位置。",
+            "finishSetup": "在 GitHub 上完成设置",
+            "finishSetupDescription": "请在浏览器中完成安装。Launcher 会继续等待，你可以随时返回此处。",
+            "installations": "应用安装",
+            "noInstallations": "此连接还没有可访问的应用安装。",
+            "organization": "组织",
+            "personalAccount": "个人账户"
+        },
+        "disconnectConfirm": {
+            "title": "断开 {{connection}} 的连接？",
+            "description": "这会从 Godot Launcher 中移除连接，但不会卸载 GitHub 应用，也不会更改任何项目的远程仓库。",
+            "finalDescription": "这会从此设备移除连接，但不会卸载 GitHub 应用，也不会更改仓库访问权限或项目的远程仓库。",
+            "revokeAllDevices": "同时撤销所有 Launcher 设备上的此 GitHub 授权。",
+            "revokeDetail": "连接到此 GitHub 帐户的其他 Launcher 设备需要重新连接。",
+            "localOnlyWarning": "其他设备上的 GitHub 访问权限仍然有效，任何已复制的令牌在过期或被撤销前仍可使用。",
+            "failureDetail": "无法移除连接。本地凭据已保留。请重试。",
+            "revokeAction": "撤销并断开连接",
+            "localOnlyAction": "仅断开此设备"
         }
     },
     "updates": {

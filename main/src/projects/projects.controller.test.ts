@@ -44,6 +44,19 @@ describe('ProjectsController', () => {
         const service = createServiceMock();
         const controller = new ProjectsController(service);
 
+        const remoteRequest = {
+            source: 'public-git-url' as const,
+            url: 'https://example.com/game.git',
+            parentDirectory: '/projects',
+            directoryName: 'game',
+        };
+        await controller.importRemoteProject(remoteRequest);
+        await controller.cancelRemoteProjectImport('job-id');
+        await controller.resolveRemoteProjectClone('job-id', 'delete');
+        await controller.setRemoteProjectGitIdentity('job-id', identity);
+        await controller.initialiseRemoteProjectSubmodules('job-id');
+        await controller.inspectPublicGitSource('https://example.com/game.git');
+        await controller.listConnectedRepositories('github', 'cursor');
         await controller.getProjectsDetails();
         await controller.createProject(
             'Game',
@@ -73,6 +86,28 @@ describe('ProjectsController', () => {
         await controller.checkProjectValid(project);
         await controller.checkAllProjectsValid();
 
+        expect(service.importRemoteProject).toHaveBeenCalledWith(remoteRequest);
+        expect(service.cancelRemoteProjectImport).toHaveBeenCalledWith(
+            'job-id',
+        );
+        expect(service.resolveRemoteProjectClone).toHaveBeenCalledWith(
+            'job-id',
+            'delete',
+        );
+        expect(service.setRemoteProjectGitIdentity).toHaveBeenCalledWith(
+            'job-id',
+            identity,
+        );
+        expect(service.initialiseRemoteProjectSubmodules).toHaveBeenCalledWith(
+            'job-id',
+        );
+        expect(service.inspectPublicGitSource).toHaveBeenCalledWith(
+            'https://example.com/game.git',
+        );
+        expect(service.listConnectedRepositories).toHaveBeenCalledWith(
+            'github',
+            'cursor',
+        );
         expect(service.getProjectsDetails).toHaveBeenCalledOnce();
         expect(service.createProject).toHaveBeenCalledWith(
             'Game',
@@ -130,6 +165,36 @@ describe('ProjectsController', () => {
 /** Creates a complete ProjectsService test double. */
 function createServiceMock(): ProjectsService {
     return {
+        importRemoteProject: vi.fn(async () => ({
+            ok: false,
+            jobId: null,
+            reason: 'invalid-request',
+        })),
+        cancelRemoteProjectImport: vi.fn(async (jobId) => ({
+            jobId,
+            status: 'not-found',
+        })),
+        resolveRemoteProjectClone: vi.fn(async (jobId) => ({
+            jobId,
+            status: 'not-found',
+        })),
+        setRemoteProjectGitIdentity: vi.fn(async (jobId) => ({
+            jobId,
+            status: 'configured',
+        })),
+        initialiseRemoteProjectSubmodules: vi.fn(async (jobId) => ({
+            ok: false,
+            jobId,
+            reason: 'not-found',
+        })),
+        inspectPublicGitSource: vi.fn(async () => ({
+            ok: false,
+            reason: 'invalid-url',
+        })),
+        listConnectedRepositories: vi.fn(async () => ({
+            ok: false,
+            reason: 'session-expired',
+        })),
         getProjectsDetails: vi.fn(async () => []),
         createProject: vi.fn(async () => ({ success: true })),
         removeProject: vi.fn(async () => []),

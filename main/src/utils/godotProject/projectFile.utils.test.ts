@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectRendererFromParsed,
     getProjectRendererFromPath,
     parseGodotProjectFile,
@@ -94,6 +95,30 @@ describe('projectFile utilities', () => {
         await expect(
             getProjectConfigVersionFromParsed(parsedProject),
         ).resolves.toBe(5);
+    });
+
+    test.each([
+        ['PackedStringArray("4.4", "GL Compatibility")', '4.4'],
+        ['PackedStringArray("C#", "4.3", "Forward Plus")', '4.3'],
+        ['PackedStringArray("4.4.1", "GL Compatibility")', null],
+        ['PackedStringArray("GL Compatibility")', null],
+        ['Array["4.4"]', null],
+    ])(
+        'reads the Godot branch from project features %s',
+        (features, expected) => {
+            const parsedProject = new Map([
+                ['ROOT', new Map([['config_version', '5']])],
+                ['application', new Map([['config/features', features]])],
+            ]);
+
+            expect(getProjectGodotVersionFromParsed(parsedProject)).toBe(
+                expected,
+            );
+        },
+    );
+
+    test('returns no Godot branch when project features are absent', () => {
+        expect(getProjectGodotVersionFromParsed(new Map())).toBeNull();
     });
 
     test('reads and parses a project before resolving its renderer', async () => {

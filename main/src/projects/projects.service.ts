@@ -15,15 +15,20 @@ import type {
     ProjectDetails,
     ProjectGitIdentityResult,
     ProjectGitIdentityValue,
+    RemoteProjectImportRequest,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
+    ResolveRemoteProjectCloneAction,
     SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
 import {
+    checkAndUpdateProjectHealth,
     checkAndUpdateProjects,
+    checkProjectHealth,
+    hasProjectHealthChanged,
     type ProjectValidationOptions,
     checkProjectValid as validateProject,
 } from '../checks.js';
@@ -60,6 +65,10 @@ import { ProjectCreationService } from './project-creation.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectImportService } from './project-import.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectRemoteImportService } from './project-remote-import.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectRemoteSourceService } from './project-remote-source.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
 /** Provides the application-facing boundary for existing project workflows. */
@@ -74,6 +83,8 @@ export class ProjectsService {
      * @param projectCreation - Transactional Create Project workflow.
      * @param trayAvailability - System tray availability service.
      * @param store - Canonical project persistence store.
+     * @param remoteSources - Remote project source discovery boundary.
+     * @param remoteImport - Cancellable remote clone transaction boundary.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -82,7 +93,78 @@ export class ProjectsService {
         private readonly projectCreation: ProjectCreationService,
         private readonly trayAvailability: TrayAvailabilityService,
         private readonly store: ProjectsStore,
+        private readonly remoteSources: ProjectRemoteSourceService,
+        private readonly remoteImport: ProjectRemoteImportService,
     ) {}
+
+    /**
+     * Clones and validates one remote project without registering it.
+     *
+     * @param request - Renderer-safe remote source and destination request.
+     */
+    importRemoteProject(request: RemoteProjectImportRequest) {
+        return this.remoteImport.importRemoteProject(request);
+    }
+
+    /**
+     * Cancels the active remote clone job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    cancelRemoteProjectImport(jobId: string) {
+        return this.remoteImport.cancelRemoteProjectImport(jobId);
+    }
+
+    /**
+     * Keeps or deletes the exact final clone owned by an import job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param action - Whether to retain the clone or delete it.
+     */
+    resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ) {
+        return this.remoteImport.resolveRemoteProjectClone(jobId, action);
+    }
+
+    /**
+     * Sets repository-scoped Git identity for an unchanged imported clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param identity - Complete identity to write to the clone.
+     */
+    setRemoteProjectGitIdentity(jobId: string, identity: GitIdentity) {
+        return this.remoteImport.setRemoteProjectGitIdentity(jobId, identity);
+    }
+
+    /**
+     * Initialises validated public submodules for one retained remote clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    initialiseRemoteProjectSubmodules(jobId: string) {
+        return this.remoteImport.initialiseRemoteProjectSubmodules(jobId);
+    }
+
+    /**
+     * Inspects one anonymous public Git source.
+     *
+     * @param url - Anonymous HTTPS repository URL.
+     */
+    inspectPublicGitSource(url: string) {
+        return this.remoteSources.inspectPublicGitSource(url);
+    }
+
+    /**
+     * Lists one page of connected hosting repositories.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param cursor - Optional opaque browse cursor.
+     */
+    listConnectedRepositories(providerId: string, cursor?: string) {
+        return this.remoteSources.listConnectedRepositories(providerId, cursor);
+    }
 
     /** Gets every stored project. */
     getProjectsDetails() {
@@ -737,6 +819,34 @@ export class ProjectsService {
         project: ProjectDetails,
         options: LaunchProjectOptions = {},
     ): Promise<LaunchProjectResult> {
+        const currentProject = (await this.store.list()).find(
+            (candidate) => candidate.path === project.path,
+        );
+        const checkedProject = await checkProjectHealth(
+            currentProject ?? project,
+        );
+        if (
+            hasProjectHealthChanged(currentProject ?? project, checkedProject)
+        ) {
+            const updatedProjects = await this.store.update((currentProjects) =>
+                currentProjects.map((candidate) =>
+                    candidate.path === checkedProject.path
+                        ? checkedProject
+                        : candidate,
+                ),
+            );
+            this.publishProjects(updatedProjects);
+        }
+        project = checkedProject;
+
+        if (!project.valid) {
+            return {
+                launched: false,
+                reason: 'project_unavailable',
+                project,
+            };
+        }
+
         if (project.codeEditorId && !options.allowMissingCodeEditor) {
             const integrationSettings =
                 await this.codeEditors.rescanIntegration(project.codeEditorId);
@@ -757,20 +867,20 @@ export class ProjectsService {
                     : candidate,
             ),
         );
-        const storedProject = projects.find(
+        const launchedProject = projects.find(
             (candidate) => candidate.path === project.path,
         );
 
-        if (storedProject) {
-            project = storedProject;
+        if (launchedProject) {
+            project = launchedProject;
             try {
-                await writeProjectLauncherConfig(storedProject.path, {
-                    release: storedProject.release,
+                await writeProjectLauncherConfig(launchedProject.path, {
+                    release: launchedProject.release,
                     launcherVersion: app.getVersion(),
                 });
             } catch (error) {
                 logger.warn(
-                    `Failed to write project launcher config for '${storedProject.name}'`,
+                    `Failed to write project launcher config for '${launchedProject.name}'`,
                     error,
                 );
             }
@@ -870,6 +980,14 @@ export class ProjectsService {
             this.publishProjects(projects);
         }
         return projects;
+    }
+
+    /** Quickly refreshes renderer-visible health for every stored project. */
+    async refreshProjectHealth(): Promise<void> {
+        const result = await checkAndUpdateProjectHealth(this.store);
+        if (result.changed) {
+            this.publishProjects(result.projects);
+        }
     }
 
     /**

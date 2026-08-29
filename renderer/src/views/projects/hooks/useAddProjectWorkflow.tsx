@@ -11,10 +11,18 @@ import type {
 import logger from 'electron-log';
 import { ChevronDown, TriangleAlert } from 'lucide-react';
 import type React from 'react';
+import { useState } from 'react';
 import { appBridge } from '../../../bridge.ts';
 import type { ConfirmButton } from '../../../components/confirm.component';
+import { findDownloadableProjectEditor } from '../project-editor-resolution.model.ts';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+export type ProjectEditorInstallTarget = {
+    projectPath: string;
+    version: string;
+    mono: boolean;
+};
 
 type AddProjectWorkflowArgs = {
     t: Translate;
@@ -64,19 +72,8 @@ export function useAddProjectWorkflow({
     setProjectEditor,
     showRecoveredCodeEditorConfigWarning,
 }: AddProjectWorkflowArgs) {
-    const findDownloadableRelease = (
-        result: AddProjectToListResult,
-    ): ReleaseSummary | undefined => {
-        const downloadable = result.editorResolution?.downloadable;
-        if (!downloadable) {
-            return undefined;
-        }
-
-        return [...availableReleases, ...availablePrereleases].find(
-            (release) => release.version === downloadable.version,
-        );
-    };
-
+    const [projectEditorInstallTargets, setProjectEditorInstallTargets] =
+        useState<ProjectEditorInstallTarget[]>([]);
     const getRequestedMono = (result: AddProjectToListResult): boolean =>
         result.editorResolution?.requested.flavor === 'dotnet';
 
@@ -89,60 +86,112 @@ export function useAddProjectWorkflow({
         );
     };
 
+    /**
+     * Retries project registration with the supplied options.
+     *
+     * @param projectPath - Project file path being registered.
+     * @param options - Registration choices to preserve for the retry.
+     * @returns Whether the shared result workflow added the project.
+     */
     const retryAddProject = async (
         projectPath: string,
         options?: AddProjectOptions,
-    ) => {
+    ): Promise<boolean> => {
         const result = await addProject(projectPath, options);
-        await handleAddProjectResult(projectPath, result);
+        return handleAddProjectResult(projectPath, result, options);
     };
 
+    /**
+     * Adds the project as missing, installs its editor, and repairs the project.
+     *
+     * @param projectPath - Project file path being registered.
+     * @param result - Initial result containing the editor requirement.
+     * @param release - Editor release selected for installation.
+     * @param projectOptions - Registration choices to preserve while adding.
+     * @returns Whether the project was added before installation and repair.
+     */
     const downloadEditorAndAddProject = async (
         projectPath: string,
         result: AddProjectToListResult,
         release: ReleaseSummary,
-    ) => {
+        projectOptions: AddProjectOptions,
+    ): Promise<boolean> => {
         const mono = getRequestedMono(result);
         const addMissingResult = await addProject(projectPath, {
+            ...projectOptions,
             resolution: 'add_missing',
         });
 
         if (!addMissingResult.success || !addMissingResult.newProject) {
             showAddProjectError(addMissingResult.error);
-            return;
+            return false;
         }
 
-        const installResult = await installRelease(release, mono, 'project');
+        const installTarget = {
+            projectPath,
+            version: release.version,
+            mono,
+        };
+        setProjectEditorInstallTargets((current) => [
+            ...current.filter((target) => target.projectPath !== projectPath),
+            installTarget,
+        ]);
 
-        if (!installResult.success || !installResult.release) {
-            addAlert(
-                t('common:error'),
-                installResult.error || t('messages.addProjectError'),
-                <TriangleAlert className="stroke-error" />,
+        try {
+            const installResult = await installRelease(
+                release,
+                mono,
+                'project',
             );
-            return;
-        }
 
-        const changeResult = await setProjectEditor(
-            addMissingResult.newProject,
-            installResult.release,
-        );
+            if (!installResult.success || !installResult.release) {
+                addAlert(
+                    t('common:error'),
+                    installResult.error || t('messages.addProjectError'),
+                    <TriangleAlert className="stroke-error" />,
+                );
+                return true;
+            }
 
-        if (!changeResult.success) {
-            showAddProjectError(changeResult.error);
+            const changeResult = await setProjectEditor(
+                addMissingResult.newProject,
+                installResult.release,
+            );
+
+            if (!changeResult.success) {
+                showAddProjectError(changeResult.error);
+            }
+            return true;
+        } finally {
+            setProjectEditorInstallTargets((current) =>
+                current.filter((target) => target.projectPath !== projectPath),
+            );
         }
     };
 
+    /**
+     * Shows the available resolutions for a missing project editor.
+     *
+     * @param projectPath - Project file path being registered.
+     * @param result - Registration result containing the editor requirement.
+     * @param projectOptions - Registration choices to preserve on retry.
+     * @returns Whether the chosen resolution adds the project.
+     */
     const showEditorResolutionDialog = (
         projectPath: string,
         result: AddProjectToListResult,
-    ): Promise<void> => {
+        projectOptions: AddProjectOptions,
+    ): Promise<boolean> => {
         const resolution = result.editorResolution;
         if (!resolution) {
-            return Promise.resolve();
+            return Promise.resolve(false);
         }
 
-        const downloadableRelease = findDownloadableRelease(result);
+        const downloadableRelease = findDownloadableProjectEditor(
+            resolution,
+            availableReleases,
+            availablePrereleases,
+        );
         const canDownload = Boolean(
             downloadableRelease &&
                 (resolution.requested.flavor === 'gdscript' ||
@@ -156,13 +205,13 @@ export function useAddProjectWorkflow({
                           label: t('addProject.editorResolution.download', {
                               version: downloadableRelease.version,
                           }),
-                          run: () => {
-                              void downloadEditorAndAddProject(
+                          run: () =>
+                              downloadEditorAndAddProject(
                                   projectPath,
                                   result,
                                   downloadableRelease,
-                              );
-                          },
+                                  projectOptions,
+                              ),
                       },
                   ]
                 : []),
@@ -172,27 +221,31 @@ export function useAddProjectWorkflow({
                           label: t('addProject.editorResolution.useFallback', {
                               version: fallback.version,
                           }),
-                          run: () => {
-                              void retryAddProject(projectPath, {
+                          run: () =>
+                              retryAddProject(projectPath, {
+                                  ...projectOptions,
                                   resolution: 'use_fallback',
                                   release: fallback,
-                              });
-                          },
+                              }),
                       },
                   ]
                 : []),
         ];
 
-        return new Promise((resolve) => {
+        return new Promise<boolean>((resolve) => {
             addCustomConfirm(
                 t('addProject.editorResolution.title'),
                 <div className="flex flex-col gap-3">
                     <p>{t('addProject.editorResolution.message')}</p>
                     <div className="bg-base-200 rounded-md p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                        <span className="text-base-content/60">
-                            {t('addProject.editorResolution.version')}
-                        </span>
-                        <code>{resolution.requested.version}</code>
+                        {resolution.requested.kind === 'exact' && (
+                            <>
+                                <span className="text-base-content/60">
+                                    {t('addProject.editorResolution.version')}
+                                </span>
+                                <code>{resolution.requested.version}</code>
+                            </>
+                        )}
                         <span className="text-base-content/60">
                             {t('addProject.editorResolution.channel')}
                         </span>
@@ -247,8 +300,11 @@ export function useAddProjectWorkflow({
                                                           type="button"
                                                           onClick={() => {
                                                               close();
-                                                              resolve();
-                                                              action.run();
+                                                              void action
+                                                                  .run()
+                                                                  .then(
+                                                                      resolve,
+                                                                  );
                                                           }}
                                                       >
                                                           {action.label}
@@ -265,10 +321,12 @@ export function useAddProjectWorkflow({
                         typeClass: 'btn-warning',
                         text: t('addProject.editorResolution.addMissing'),
                         onClick: async () => {
-                            await retryAddProject(projectPath, {
-                                resolution: 'add_missing',
-                            });
-                            resolve();
+                            resolve(
+                                await retryAddProject(projectPath, {
+                                    ...projectOptions,
+                                    resolution: 'add_missing',
+                                }),
+                            );
                             return true;
                         },
                     },
@@ -277,7 +335,7 @@ export function useAddProjectWorkflow({
                         typeClass: 'btn-neutral',
                         text: t('common:buttons.cancel'),
                         onClick: () => {
-                            resolve();
+                            resolve(false);
                             return true;
                         },
                     },
@@ -287,23 +345,36 @@ export function useAddProjectWorkflow({
         });
     };
 
+    /**
+     * Handles one registration result and any required editor resolution.
+     *
+     * @param projectPath - Project file path being registered.
+     * @param result - Main-process registration result.
+     * @param projectOptions - Registration choices to preserve on retry.
+     * @returns Whether the project was added.
+     */
     const handleAddProjectResult = async (
         projectPath: string,
         result: AddProjectToListResult,
-    ): Promise<void> => {
+        projectOptions: AddProjectOptions = {},
+    ): Promise<boolean> => {
         if (result.editorResolution) {
-            await showEditorResolutionDialog(projectPath, result);
-            return;
+            return showEditorResolutionDialog(
+                projectPath,
+                result,
+                projectOptions,
+            );
         }
 
         if (!result.success) {
             showAddProjectError(result.error);
-            return;
+            return false;
         }
 
         showRecoveredCodeEditorConfigWarning(
             result.recoveredCodeEditorConfigFiles,
         );
+        return true;
     };
 
     const onAddProject = async () => {
@@ -328,5 +399,6 @@ export function useAddProjectWorkflow({
     return {
         handleAddProjectResult,
         onAddProject,
+        projectEditorInstallTargets,
     };
 }

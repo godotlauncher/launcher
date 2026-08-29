@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import { CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
-import { useEffect } from 'react';
+import { Cable, CircleHelp, HardDrive, Package, Settings } from 'lucide-react';
+import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Navigate,
@@ -23,7 +23,13 @@ import { useAppNavigation } from './hooks/useAppNavigation';
 import { usePreferences } from './hooks/usePreferences';
 import { useRelease } from './hooks/useRelease';
 import { useTheme } from './hooks/useTheme';
-import { appRoutePaths, defaultSettingsTab, isSettingsTab } from './routes';
+import {
+    appRoutePaths,
+    defaultSettingsTab,
+    isConnectionsPathname,
+    isSettingsTab,
+    type SettingsTab,
+} from './routes';
 import { useSplashscreenHandoff } from './splashscreen/useSplashscreenHandoff';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
@@ -221,9 +227,20 @@ function InstallsRoute() {
     );
 }
 
+/**
+ * Keeps Settings tab navigation stable across child state updates.
+ *
+ * @returns The route-controlled Settings view or its default redirect.
+ */
 function SettingsRoute() {
     const navigate = useNavigate();
     const { tab } = useParams();
+    const handleActiveTabChange = useCallback(
+        (nextTab: SettingsTab) => {
+            navigate(appRoutePaths.settingsTab(nextTab));
+        },
+        [navigate],
+    );
 
     if (!isSettingsTab(tab)) {
         return <DefaultSettingsRoute />;
@@ -232,9 +249,7 @@ function SettingsRoute() {
     return (
         <SettingsView
             activeTab={tab}
-            onActiveTabChange={(nextTab) => {
-                navigate(appRoutePaths.settingsTab(nextTab));
-            }}
+            onActiveTabChange={handleActiveTabChange}
         />
     );
 }
@@ -246,6 +261,7 @@ function SettingsRoute() {
  */
 function MainLayout() {
     const { t } = useTranslation('common');
+    const location = useLocation();
     const { currentView, openExternalLink } = useAppNavigation();
     const {
         updateAvailable,
@@ -258,6 +274,7 @@ function MainLayout() {
         clsx('py-2 rounded-md', {
             'menu-active': currentView === view,
         });
+    const connectionsActive = isConnectionsPathname(location.pathname);
 
     return (
         <div className="flex h-full overflow-hidden">
@@ -269,7 +286,8 @@ function MainLayout() {
                             data-testid="btnProjects"
                             className={viewClassName('projects')}
                         >
-                            <Package /> {t('app.navigation.projects')}
+                            <Package className="size-5" />{' '}
+                            {t('app.navigation.projects')}
                         </NavLink>
                     </li>
                     <li>
@@ -279,7 +297,7 @@ function MainLayout() {
                             className={viewClassName('installs')}
                         >
                             {' '}
-                            <HardDrive />
+                            <HardDrive className="size-5" />
                             {t('app.navigation.installs')}
                         </NavLink>
                     </li>
@@ -292,7 +310,11 @@ function MainLayout() {
                     skipAppUpdate={skipAppUpdate}
                     openUpdateUrl={openExternalLink}
                 />
-                <div className="border-t-2 border-solid border-base-200">
+                <div className="pt-2">
+                    <div
+                        className="mx-3 border-t border-base-content/5"
+                        aria-hidden="true"
+                    />
                     <ul className="menu menu-md rounded-box w-56 gap-1 ">
                         <li>
                             <button
@@ -307,7 +329,7 @@ function MainLayout() {
                                 <img
                                     src={IconDiscord}
                                     alt="Discord"
-                                    className="w-6 h-6"
+                                    className="size-5"
                                 />
                                 {t('app.navigation.joinCommunity')}
                             </button>
@@ -321,8 +343,26 @@ function MainLayout() {
                                     'menu-active': currentView === 'help',
                                 })}
                             >
-                                <CircleHelp />
+                                <CircleHelp className="size-5" />
                                 {t('app.navigation.help')}
+                            </NavLink>
+                        </li>
+
+                        <li>
+                            <NavLink
+                                to={appRoutePaths.settingsTab('connections')}
+                                data-testid="btnConnections"
+                                className={clsx('py-2 rounded-md relative', {
+                                    'menu-active': connectionsActive,
+                                })}
+                            >
+                                <Cable className="size-5" />
+                                <span className="flex-1">
+                                    {t('app.navigation.connections')}
+                                </span>
+                                <span className="badge badge-primary badge-xs">
+                                    {t('app.navigation.new')}
+                                </span>
                             </NavLink>
                         </li>
 
@@ -333,10 +373,12 @@ function MainLayout() {
                                 )}
                                 data-testid="btnSettings"
                                 className={clsx('py-2 rounded-md relative', {
-                                    'menu-active': currentView === 'settings',
+                                    'menu-active':
+                                        currentView === 'settings' &&
+                                        !connectionsActive,
                                 })}
                             >
-                                <Settings />
+                                <Settings className="size-5" />
                                 {t('app.navigation.settings')}
                             </NavLink>
                         </li>

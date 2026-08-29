@@ -29,6 +29,7 @@ const godotProjectMocks = vi.hoisted(() => ({
     getProjectNameFromParsed: vi.fn(),
     getProjectRendererFromParsed: vi.fn(),
     getProjectConfigVersionFromParsed: vi.fn(),
+    getProjectGodotVersionFromParsed: vi.fn(),
     getProjectIconUrlFromParsed: vi.fn(),
 }));
 
@@ -141,6 +142,7 @@ const {
     getProjectNameFromParsed,
     getProjectRendererFromParsed,
     getProjectConfigVersionFromParsed,
+    getProjectGodotVersionFromParsed,
     getProjectIconUrlFromParsed,
 } = godotProjectMocks;
 const { getDefaultDirs } = platformMocks;
@@ -162,6 +164,8 @@ const projectsStore = {
 } as unknown as ProjectsStore;
 const codeEditorIntegrationService = {
     findConfiguredIntegrations: vi.fn(),
+    resolveConfiguredIntegration: vi.fn(),
+    assertIntegrationSelectable: vi.fn(),
     getSelectionEligibility: vi.fn(),
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
@@ -169,6 +173,8 @@ const codeEditorIntegrationService = {
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
     findConfiguredIntegrations: ReturnType<typeof vi.fn>;
+    resolveConfiguredIntegration: ReturnType<typeof vi.fn>;
+    assertIntegrationSelectable: ReturnType<typeof vi.fn>;
     getSelectionEligibility: ReturnType<typeof vi.fn>;
     applyToProject: ReturnType<typeof vi.fn>;
 };
@@ -216,6 +222,7 @@ describe('addProject', () => {
         getProjectNameFromParsed.mockResolvedValue('Sample Project');
         getProjectRendererFromParsed.mockResolvedValue('FORWARD_PLUS');
         getProjectConfigVersionFromParsed.mockResolvedValue(5);
+        getProjectGodotVersionFromParsed.mockReturnValue(null);
         getProjectIconUrlFromParsed.mockReturnValue(undefined);
 
         getDefaultDirs.mockReturnValue({
@@ -271,6 +278,15 @@ describe('addProject', () => {
                     ? ['vscode']
                     : [],
         );
+        integrationMocks.resolveConfiguredIntegration.mockImplementation(
+            async (projectDir: string) =>
+                existsSync(path.resolve(projectDir, '.vscode'))
+                    ? 'vscode'
+                    : null,
+        );
+        integrationMocks.assertIntegrationSelectable.mockResolvedValue(
+            undefined,
+        );
         integrationMocks.getSelectionEligibility.mockResolvedValue('eligible');
         integrationMocks.applyToProject.mockImplementation(
             async (_id, context) => ({
@@ -303,6 +319,142 @@ describe('addProject', () => {
                 launcherVersion: '1.0.0',
             }),
         );
+    });
+
+    it('selects the newest installed stable editor for the project Godot branch', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.5-stable',
+                version_number: 4.5,
+                install_path: '/install/4.5',
+                editor_path: '/install/4.5/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            {
+                version: '4.4.1-stable',
+                version_number: 4.4,
+                install_path: '/install/4.4.1',
+                editor_path: '/install/4.4.1/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+            {
+                version: '4.4.3-stable',
+                version_number: 4.4,
+                install_path: '/install/4.4.3',
+                editor_path: '/install/4.4.3/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.release.version).toBe('4.4.3-stable');
+    });
+
+    it('requests the inferred stable branch instead of using a newer minor', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        getInstalledReleases.mockResolvedValue([
+            {
+                version: '4.5-stable',
+                version_number: 4.5,
+                install_path: '/install/4.5',
+                editor_path: '/install/4.5/Godot',
+                platform: process.platform,
+                arch: process.arch,
+                mono: false,
+                prerelease: false,
+                config_version: 5,
+                published_at: null,
+                valid: true,
+            },
+        ]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result).toMatchObject({
+            success: false,
+            editorResolution: {
+                requested: {
+                    kind: 'stable-base',
+                    channel: 'official',
+                    flavor: 'gdscript',
+                    base_version: '4.4',
+                },
+                downloadable: {
+                    match: 'stable-base',
+                    base_version: '4.4',
+                    flavor: 'gdscript',
+                },
+            },
+        });
+        expect(addProjectToList).not.toHaveBeenCalled();
+    });
+
+    it('infers the .NET flavour for a project that has a solution file', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        readdirSync.mockReturnValue(['project.godot', 'sample.sln']);
+        getInstalledReleases.mockResolvedValue([]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.editorResolution?.requested).toMatchObject({
+            kind: 'stable-base',
+            flavor: 'dotnet',
+            base_version: '4.4',
+        });
+    });
+
+    it('adds an inferred project with a missing editor when requested', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        getInstalledReleases.mockResolvedValue([]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { resolution: 'add_missing' },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject).toMatchObject({
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: {
+                version: '4.4-stable',
+                base_version: '4.4',
+                source: 'official',
+                valid: false,
+            },
+        });
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 
     it('marks an imported project as covered by an enclosing repository', async () => {
@@ -346,9 +498,9 @@ describe('addProject', () => {
     });
 
     it('uses the locally configured code editor when importing', async () => {
-        integrationMocks.findConfiguredIntegrations.mockResolvedValue([
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(
             'vscode',
-        ]);
+        );
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -357,8 +509,8 @@ describe('addProject', () => {
 
         expect(result.success).toBe(true);
         expect(
-            integrationMocks.findConfiguredIntegrations,
-        ).toHaveBeenCalledWith('/fake/project');
+            integrationMocks.resolveConfiguredIntegration,
+        ).toHaveBeenCalledWith('/fake/project', false);
         expect(result.newProject?.codeEditorId).toBe('vscode');
         expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
             'vscode',
@@ -368,11 +520,26 @@ describe('addProject', () => {
         expect(input).not.toHaveProperty('codeEditorId');
     });
 
-    it('imports ambiguous project-file matches as explicit None', async () => {
-        integrationMocks.findConfiguredIntegrations.mockResolvedValue([
+    it('allows the sole eligible code editor fallback for a .NET import', async () => {
+        readdirSync.mockReturnValue(['project.godot', 'sample.csproj']);
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(
             'vscode',
-            'future-editor',
-        ]);
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+        );
+
+        expect(result.success).toBe(true);
+        expect(
+            integrationMocks.resolveConfiguredIntegration,
+        ).toHaveBeenCalledWith('/fake/project', true);
+        expect(result.newProject?.codeEditorId).toBe('vscode');
+    });
+
+    it('imports ambiguous project-file matches as explicit None', async () => {
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(null);
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -386,7 +553,7 @@ describe('addProject', () => {
     });
 
     it('does not infer a disabled integration from project files', async () => {
-        integrationMocks.findConfiguredIntegrations.mockResolvedValue([]);
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(null);
 
         const result = await addProject(
             '/fake/project/project.godot',
@@ -398,7 +565,61 @@ describe('addProject', () => {
         expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
     });
 
+    it('preserves an explicit None choice without automatic detection', async () => {
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { codeEditorId: null },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBeNull();
+        expect(
+            integrationMocks.resolveConfiguredIntegration,
+        ).not.toHaveBeenCalled();
+        expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
+    });
+
+    it('applies an explicit eligible code editor without project metadata', async () => {
+        integrationMocks.resolveConfiguredIntegration.mockResolvedValue(null);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { codeEditorId: 'vscodium' },
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.newProject?.codeEditorId).toBe('vscodium');
+        expect(
+            integrationMocks.assertIntegrationSelectable,
+        ).toHaveBeenCalledWith('vscodium');
+        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+            'vscodium',
+            expect.objectContaining({ projectPath: '/fake/project' }),
+        );
+    });
+
+    it('rejects an explicit unavailable code editor before registration', async () => {
+        integrationMocks.assertIntegrationSelectable.mockRejectedValue(
+            new Error('VSCodium installation was not found.'),
+        );
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { codeEditorId: 'vscodium' },
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: 'VSCodium installation was not found.',
+        });
+        expect(addProjectToList).not.toHaveBeenCalled();
+    });
+
     it('prefers an exact .godotlauncher editor match when importing', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.6');
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },
             launcher: { version: '1.9.0' },

@@ -96,6 +96,162 @@
             "noStableReleases": "Godot {{version}}.x için kurulu Kararlı sürüm bulunamadı\nLütfen Godot {{version}}.x için kararlı bir sürüm yükleyin, ardından projeyi tekrar eklemeyi deneyin.",
             "noDotNetRelease": "Proje bir .NET projesi gibi görünüyor ancak .NET sürümüne sahip Editör bulunamadı",
             "noCompatibleRelease": "config_version {{configVersion}} destekleyen Godot {{version}}.x için kurulu sürüm bulunamadı."
+        },
+        "sources": {
+            "title": "Şuradan proje ekle:",
+            "fromComputer": "Bu bilgisayardan",
+            "publicGit": "Genel Git deposunu klonlayın",
+            "github": "GitHub'dan",
+            "checkingGit": "Git'in kullanılabilirliği kontrol ediliyor...",
+            "gitUnavailable": "Git kullanılamıyor. Ayarlar > Araçlar'da yapılandırın."
+        },
+        "remote": {
+            "gitIdentity": {
+                "title": "Git kimliğini ayarla",
+                "message": "Git'in bu klonlanmış depodaki gelecekteki commit'ler için kullanacağı adı ve e-posta adresini ayarlayın.",
+                "continueWithout": "Kimlik olmadan devam et",
+                "presetMessage": "Bu kayıtlı kimliği klonlanmış depoya uygulayın.",
+                "usePreset": "Ön ayarı kullan ve devam et",
+                "formMessage": "Git'in bu klonlanmış depo için kullanacağı kimliği seçin.",
+                "saveAndContinue": "Kaydet ve devam et",
+                "identityWriteFailed": "Git kimliği kaydedilemedi. Klonlanmış depo korundu ve içe aktarma devam edebilir.",
+                "presetWriteFailed": "Kimlik uygulandı, ancak gelecekteki depolar için varsayılan yerel kimlik kaydedilemedi."
+            },
+            "public": {
+                "title": "Genel Git deposunu klonlayın",
+                "description": "Anonim bir genel HTTPS Git deposu URL'si girin.",
+                "urlLabel": "Depo URL'si",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "Geçerli bir genel HTTPS veri deposu URL'si girin.",
+                    "dnsUnavailable": "Depo ana bilgisayarı çözümlenemedi."
+                }
+            },
+            "github": {
+                "title": "GitHub'dan içe aktar",
+                "description": "GitHub bağlantılarınız aracılığıyla kullanılabilen bir depo seçin.",
+                "loading": "Depolar yükleniyor...",
+                "searchPlaceholder": "Depoları ara",
+                "loadedSearchOnly": "Arama yalnızca yüklü depoları kapsar. Ek sonuçları aramak için daha fazlasını yükleyin.",
+                "empty": "Eşleşen kod deposu yüklenmedi.",
+                "loadMore": "Daha fazlasını yükle",
+                "alreadyAdded": "Zaten eklendi",
+                "openConnections": "Bağlantıları Aç",
+                "visibility": {
+                    "public": "halka açık",
+                    "private": "Özel",
+                    "internal": "Dahili"
+                },
+                "errors": {
+                    "connectionRequired": "Bir depoyu içe aktarmadan önce GitHub'ı bağlayın veya yeniden bağlayın.",
+                    "temporarilyUnavailable": "GitHub geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
+                    "sessionExpired": "Depo oturumunun süresi doldu. Listeyi tekrar yükleyin."
+                }
+            },
+            "destination": {
+                "description": "Deponun nereye kopyalanacağını seçin.",
+                "repository": "Depo",
+                "projectName": "Proje adı",
+                "projectNameHelp": "Yerel klasör adını belirler. project.godot içindeki ad değiştirilmez.",
+                "cloneTo": "Şuraya klonla",
+                "useDefault": "Varsayılanı kullan",
+                "parent": "Ana klasör",
+                "chooseParent": "Ana klasörü seç",
+                "selectParent": "Proje Ana Klasörünü Seçin",
+                "directoryName": "Proje klasörü adı",
+                "completePath": "Hedefi tamamla"
+            },
+            "actions": {
+                "clone": "Depoyu klonla",
+                "addProjects": "Seçili projeleri ekle ({{count}})",
+                "cloneAndAdd": "Projeyi kopyala ve ekle",
+                "cancelImport": "İçe aktarmayı iptal et",
+                "retryRegistration": "Başlatıcıya eklemeyi yeniden deneyin",
+                "reviewAndRetry": "İnceleyin ve yeniden deneyin",
+                "close": "Kapat",
+                "done": "Bitti",
+                "openCloneFolder": "Klon klasörünü aç",
+                "deleteCloneAndClose": "Klonu sil ve kapat",
+                "keepCloneAndClose": "Klonu tut ve kapat"
+            },
+            "progress": {
+                "preparing": "İçe aktarma hazırlanıyor...",
+                "cloning": "Depo klonlanıyor...",
+                "discovering": "Godot projeleri aranıyor...",
+                "cancelling": "İçe aktarma iptal ediliyor..."
+            },
+            "submodules": {
+                "title": "Bu depo Git alt modülleri kullanıyor",
+                "description": "Launcher yeniden taramadan önce anonim ve herkese açık HTTPS alt modüllerini başlatabilir. Bir alt modül gizliyse veya desteklenmeyen bir URL kullanıyorsa işlem durur.",
+                "preparing": "Alt modül başlatma hazırlanıyor...",
+                "initialise": "Alt modülleri başlat",
+                "continueWithoutSubmodules": "Alt modüller olmadan devam et",
+                "failure": "Bazı alt modüller başlatılamadı. El ile devam edebilmeniz için kısmen başlatılmış klon korundu.",
+                "activityTitle": "Etkinlik",
+                "activityAriaLabel": "Alt modül başlatma etkinliği",
+                "activity": {
+                    "found": "Bulunan alt modüller: {{count}}",
+                    "validating": "{{path}} doğrulanıyor",
+                    "initialising": "{{path}} başlatılıyor",
+                    "initialised": "{{path}} başlatıldı",
+                    "scanning-projects": "Godot projeleri aranıyor",
+                    "complete": "Bulunan Godot projeleri: {{count}}",
+                    "stopped": "{{path}} konumunda durdu"
+                }
+            },
+            "review": {
+                "title": "Eklenecek projeleri seçin",
+                "cancelTitle": "Depo içe aktarması iptal edilsin mi?",
+                "cancelDescription": "Depo zaten klonlandı. Kapatmadan önce klonu tutmayı veya silmeyi seçin.",
+                "description": "Bulunan tüm projeler seçilidir. Eklemek istemediğiniz örneklerin, testlerin veya diğer projelerin seçimini kaldırın.",
+                "selectAll": "Tüm projeleri seç",
+                "empty": "Geçerli bir Godot projesi bulunamadı. Klonlanan depo korundu."
+            },
+            "registration": {
+                "preserved": "Depo başarıyla klonlandı ve bu konumda tutuldu.",
+                "editorsQueued": "Seçilen düzenleyici indirmeleri Kurulumlar'a eklendi. Düzenleyicileri hazır olduğunda projeler otomatik olarak güncellenir.",
+                "adding": "Projeler ekleniyor: {{current}}/{{total}}",
+                "complete": "Proje içe aktarma tamamlandı",
+                "added": "Eklendi",
+                "skipped": "Atlandı",
+                "failed": "Başarısız",
+                "alreadyAdded": "Bu ada veya yola sahip bir proje zaten Launcher'da bulunuyor.",
+                "notAdded": "Proje eklenmedi."
+            },
+            "editorBatch": {
+                "title": "Gerekli düzenleyiciler",
+                "description": "Seçilen {{count}} projenin kurulumu tamamlanmadan önce bir Godot düzenleyicisine ihtiyacı var.",
+                "summary": "{{editors}} düzenleyici | {{projects}} proje",
+                "affectedProjects": "Etkilenen projeler",
+                "resolution": "Çözüm",
+                "status": "Durum",
+                "checking": "Projeler denetleniyor: {{current}}/{{total}}",
+                "finishWithoutRemaining": "Kalan projeler olmadan tamamla",
+                "apply": "Projeleri ekle ve devam et",
+                "statuses": {
+                    "ready": "Hazır"
+                }
+            },
+            "errors": {
+                "invalidSource": "Depo kaynağı artık geçerli değil.",
+                "alreadyRunning": "Başka bir uzak proje içe aktarımı zaten çalışıyor.",
+                "gitUnavailable": "Git kullanılamıyor. Ayarlar > Araçlar'da yapılandırın.",
+                "connectionRequired": "Kullanılabilir bir depo bağlantısı gereklidir.",
+                "repositoryUnavailable": "Seçilen depo artık mevcut değil.",
+                "temporarilyUnavailable": "Depo sağlayıcısı veya ağ geçici olarak kullanılamıyor.",
+                "destinationInvalid": "Geçerli bir hedef klasör seçin.",
+                "destinationConflict": "Hedef zaten mevcut.",
+                "cloneFailed": "Git, depoyu klonlayamadı.",
+                "notGodotProject": "Deponun kökünde project.godot bulunmuyor.",
+                "discoveryFailed": "Depo klonlandı ancak Godot projeleri bulunamadı.",
+                "discoveryLimitExceeded": "Depo klonlandı ancak güvenli biçimde taranamayacak kadar büyük veya derin iç içe geçmiş durumda.",
+                "finaliseFailed": "Tamamlanan klon hedefine taşınamadı.",
+                "cancelled": "İçe aktarma iptal edildi.",
+                "registration-failed": "Depo klonlandı ancak Başlatıcıya eklenemedi.",
+                "cloneFolderOpenFailed": "Klon klasörü açılamadı.",
+                "cloneCleanupChanged": "Klon içe aktarıldıktan sonra değiştirildi veya yenisiyle değiştirildi, bu nedenle silinmedi.",
+                "cloneCleanupFailed": "Klon silinemedi. Korundu."
+            }
         }
     },
     "messages": {

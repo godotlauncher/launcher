@@ -1,14 +1,19 @@
 import type {
+    AppIntegrationAccessTargetSummary,
+    AppIntegrationActionFailureReason,
+    AppIntegrationActionResult,
+    AppIntegrationConnectionSummary,
+    AppIntegrationSummary,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     ToolIntegrationSummary,
 } from '@shared/contracts';
-import clsx from 'clsx';
 import logger from 'electron-log';
 import { TriangleAlert } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../hooks/useAlerts';
+import { useAppIntegrations } from '../hooks/useAppIntegrations';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
@@ -16,9 +21,11 @@ import { useTheme } from '../hooks/useTheme';
 import { useToolIntegrations } from '../hooks/useToolIntegrations';
 import type { SettingsTab } from '../routes';
 import { getCodeEditorProjectUsage } from './projects/projectCodeEditorHealth.model';
+import { AppIntegrationDisconnectConfirm } from './settings/components/app-integration-disconnect-confirm.component';
 import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
 import { BehaviorSettingsPanel } from './settings/components/behaviorSettingsPanel.component';
 import { CodeEditorSettingsPanel } from './settings/components/codeEditorSettingsPanel.component';
+import { ConnectionsSettingsPanel } from './settings/components/connectionsSettingsPanel.component';
 import { InstallsSettingsPanel } from './settings/components/installsSettingsPanel.component';
 import { ProjectsSettingsPanel } from './settings/components/projectsSettingsPanel.component';
 import { SettingsTabs } from './settings/components/settingsTabs.component';
@@ -43,14 +50,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const [localActiveTab, setLocalActiveTab] =
         useState<SettingsTab>('projects');
     const activeTab = controlledActiveTab ?? localActiveTab;
-    const setActiveTab = (tab: SettingsTab) => {
-        if (onActiveTabChange) {
-            onActiveTabChange(tab);
-            return;
-        }
+    const setActiveTab = useCallback(
+        (tab: SettingsTab) => {
+            if (onActiveTabChange) {
+                onActiveTabChange(tab);
+                return;
+            }
 
-        setLocalActiveTab(tab);
-    };
+            setLocalActiveTab(tab);
+        },
+        [onActiveTabChange],
+    );
     const { preferences, savePreferences, loadPreferences } = usePreferences();
     const { theme, setTheme } = useTheme();
     const {
@@ -60,6 +70,31 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         validateIntegrationPath,
     } = useCodeEditorIntegrations();
     const { listIntegrations, rescanIntegration } = useToolIntegrations();
+    const {
+        listIntegrations: listAppIntegrations,
+        connect: connectAppIntegration,
+        finishConnections: finishAppIntegrationConnections,
+        installConnection: installAppIntegrationConnection,
+        cancel: cancelAppIntegration,
+        reconnect: reconnectAppIntegration,
+        refresh: refreshAppIntegration,
+        manageAccess: manageAppIntegrationAccess,
+        disconnect: disconnectAppIntegration,
+    } = useAppIntegrations();
+
+    const [appIntegrations, setAppIntegrations] = useState<
+        AppIntegrationSummary[]
+    >([]);
+    const appIntegrationsRef = useRef<AppIntegrationSummary[]>([]);
+    appIntegrationsRef.current = appIntegrations;
+    const [appIntegrationsLoading, setAppIntegrationsLoading] = useState(false);
+    const [appIntegrationsLoadError, setAppIntegrationsLoadError] =
+        useState(false);
+    const [appIntegrationActionErrors, setAppIntegrationActionErrors] =
+        useState<Partial<Record<string, AppIntegrationActionFailureReason>>>(
+            {},
+        );
+    const appIntegrationActionVersions = useRef<Record<string, number>>({});
 
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -86,6 +121,278 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         Record<string, string | undefined>
     >({});
     const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
+
+    /** Loads renderer-safe integration summaries for the Connections panel. */
+    const syncAppIntegrations = useCallback(async () => {
+        const initialLoad = appIntegrationsRef.current.length === 0;
+        if (initialLoad) {
+            setAppIntegrationsLoading(true);
+        }
+        setAppIntegrationsLoadError(false);
+
+        try {
+            const listed = await listAppIntegrations();
+            setAppIntegrations((current) =>
+                listed.map((integration) => {
+                    const active = current.find(
+                        (candidate) => candidate.id === integration.id,
+                    );
+                    return active?.state === 'connecting'
+                        ? active
+                        : integration;
+                }),
+            );
+        } catch {
+            logger.error('Failed to load app integrations');
+            setAppIntegrationsLoadError(true);
+        } finally {
+            if (initialLoad) {
+                setAppIntegrationsLoading(false);
+            }
+        }
+    }, [listAppIntegrations]);
+
+    /** Replaces one renderer-safe app integration summary. */
+    const replaceAppIntegration = useCallback(
+        (updated: AppIntegrationSummary) => {
+            setAppIntegrations((current) =>
+                current.map((integration) =>
+                    integration.id === updated.id ? updated : integration,
+                ),
+            );
+        },
+        [],
+    );
+
+    /**
+     * Runs one bridge action while ignoring stale responses from earlier actions.
+     *
+     * @param integrationId - Registered integration ID.
+     * @param action - Bridge action to run.
+     * @param connectionStage - Browser stage to present while the action runs.
+     * @param supersede - Whether this action invalidates an earlier response.
+     * @returns Whether the action completed successfully.
+     */
+    const runAppIntegrationAction = useCallback(
+        async (
+            integrationId: string,
+            action: (id: string) => Promise<AppIntegrationActionResult>,
+            connectionStage: 'authorising' | 'installing' | null = null,
+            supersede = true,
+        ): Promise<boolean> => {
+            const currentVersion =
+                appIntegrationActionVersions.current[integrationId] ?? 0;
+            const version = supersede ? currentVersion + 1 : currentVersion;
+            if (
+                supersede ||
+                appIntegrationActionVersions.current[integrationId] ===
+                    undefined
+            ) {
+                appIntegrationActionVersions.current[integrationId] = version;
+            }
+            setAppIntegrationActionErrors((current) => ({
+                ...current,
+                [integrationId]: undefined,
+            }));
+            if (connectionStage) {
+                setAppIntegrations((current) =>
+                    current.map((integration) =>
+                        integration.id === integrationId
+                            ? {
+                                  ...integration,
+                                  state: 'connecting',
+                                  connectionStage,
+                              }
+                            : integration,
+                    ),
+                );
+            }
+
+            try {
+                const result = await action(integrationId);
+                if (
+                    appIntegrationActionVersions.current[integrationId] !==
+                    version
+                ) {
+                    return false;
+                }
+                if (result.integration.state === 'selection-required') {
+                    setActiveTab('connections');
+                }
+                replaceAppIntegration(result.integration);
+                if (!result.ok) {
+                    setAppIntegrationActionErrors((current) => ({
+                        ...current,
+                        [integrationId]: result.reason,
+                    }));
+                }
+                return result.ok;
+            } catch {
+                if (
+                    appIntegrationActionVersions.current[integrationId] ===
+                    version
+                ) {
+                    setAppIntegrationActionErrors((current) => ({
+                        ...current,
+                        [integrationId]: 'unknown',
+                    }));
+                    void syncAppIntegrations();
+                }
+                return false;
+            }
+        },
+        [replaceAppIntegration, setActiveTab, syncAppIntegrations],
+    );
+
+    /** Confirms and removes one local integration connection. */
+    const confirmAppIntegrationDisconnect = useCallback(
+        (
+            integration: AppIntegrationSummary,
+            connection: AppIntegrationConnectionSummary,
+            accessTarget: AppIntegrationAccessTargetSummary,
+        ) => {
+            const disconnect = (revokeAuthorisation: boolean) =>
+                runAppIntegrationAction(integration.id, () =>
+                    disconnectAppIntegration(
+                        integration.id,
+                        connection.id,
+                        accessTarget.id,
+                        { revokeAuthorisation },
+                    ),
+                );
+            const revocationAvailable =
+                integration.id === 'github' &&
+                connection.accessTargets.length === 1;
+            if (revocationAvailable) {
+                addCustomConfirm(
+                    t('connections.disconnectConfirm.title', {
+                        connection: accessTarget.login,
+                    }),
+                    <p>
+                        {t('connections.disconnectConfirm.finalDescription')}
+                    </p>,
+                    [
+                        {
+                            key: 'github-final-disconnect',
+                            render: (close) => (
+                                <AppIntegrationDisconnectConfirm
+                                    close={close}
+                                    copy={{
+                                        checkbox: t(
+                                            'connections.disconnectConfirm.revokeAllDevices',
+                                        ),
+                                        checkedDetail: t(
+                                            'connections.disconnectConfirm.revokeDetail',
+                                        ),
+                                        checkedAction: t(
+                                            'connections.disconnectConfirm.revokeAction',
+                                        ),
+                                        uncheckedDetail: t(
+                                            'connections.disconnectConfirm.localOnlyWarning',
+                                        ),
+                                        uncheckedAction: t(
+                                            'connections.disconnectConfirm.localOnlyAction',
+                                        ),
+                                        failureDetail: t(
+                                            'connections.disconnectConfirm.failureDetail',
+                                        ),
+                                        cancel: t('common:buttons.cancel'),
+                                    }}
+                                    onConfirm={disconnect}
+                                />
+                            ),
+                        },
+                    ],
+                    <TriangleAlert className="stroke-warning" />,
+                );
+                return;
+            }
+
+            addCustomConfirm(
+                t('connections.disconnectConfirm.title', {
+                    connection: accessTarget.login,
+                }),
+                <p>{t('connections.disconnectConfirm.description')}</p>,
+                [
+                    {
+                        typeClass: 'btn-error',
+                        text: t('connections.actions.disconnect'),
+                        onClick: () => disconnect(false),
+                    },
+                    {
+                        isCancel: true,
+                        typeClass: 'btn-ghost',
+                        text: t('common:buttons.cancel'),
+                    },
+                ],
+                <TriangleAlert className="stroke-warning" />,
+            );
+        },
+        [
+            addCustomConfirm,
+            disconnectAppIntegration,
+            runAppIntegrationAction,
+            t,
+        ],
+    );
+
+    /**
+     * Refreshes one integration without presenting it as a browser action.
+     *
+     * @param integrationId - Registered integration ID.
+     */
+    const refreshAppIntegrationState = useCallback(
+        (integrationId: string) => {
+            const integration = appIntegrationsRef.current.find(
+                (candidate) => candidate.id === integrationId,
+            );
+            if (integration?.connectionStage) {
+                return;
+            }
+            void runAppIntegrationAction(
+                integrationId,
+                refreshAppIntegration,
+                null,
+                false,
+            );
+        },
+        [refreshAppIntegration, runAppIntegrationAction],
+    );
+
+    useEffect(() => {
+        const handleFocus = () => {
+            const pending = appIntegrationsRef.current.some(
+                (integration) =>
+                    integration.connectionStage === 'choosing' ||
+                    integration.connectionStage === 'installing',
+            );
+            if (pending) {
+                setActiveTab('connections');
+            }
+        };
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [setActiveTab]);
+
+    useEffect(() => {
+        if (activeTab !== 'connections') {
+            return;
+        }
+
+        void syncAppIntegrations();
+        const handleFocus = () => {
+            for (const integration of appIntegrationsRef.current) {
+                if (
+                    integration.connections.length > 0 &&
+                    integration.state !== 'connecting'
+                ) {
+                    refreshAppIntegrationState(integration.id);
+                }
+            }
+        };
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [activeTab, refreshAppIntegrationState, syncAppIntegrations]);
 
     const quickCheckTools = useCallback(async () => {
         return await listIntegrations();
@@ -467,10 +774,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 />
 
                 <div
-                    className={clsx(
-                        'flex flex-col py-6 flex-1 max-h-full border border-base-300 border-t-0 bg-base-100 rounded-box overflow-hidden',
-                        { 'rounded-tl-none': activeTab === 'projects' },
-                    )}
+                    className="flex flex-col py-6 flex-1 max-h-full border border-base-300 border-t-0 bg-base-100 rounded-box rounded-t-none overflow-hidden"
+                    data-testid="settingsPanelContainer"
                 >
                     <div className="flex-1 overflow-y-auto px-6">
                         <ProjectsSettingsPanel
@@ -515,6 +820,75 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             actionErrors={toolActionErrors}
                             onEdit={(tool) => setSelectedToolId(tool.id)}
                             onRescan={rescanTool}
+                        />
+                        <ConnectionsSettingsPanel
+                            active={activeTab === 'connections'}
+                            t={t}
+                            integrations={appIntegrations}
+                            loading={appIntegrationsLoading}
+                            loadError={appIntegrationsLoadError}
+                            actionErrors={appIntegrationActionErrors}
+                            onRetry={() => void syncAppIntegrations()}
+                            onConnect={(integrationId) =>
+                                void runAppIntegrationAction(
+                                    integrationId,
+                                    connectAppIntegration,
+                                    'authorising',
+                                )
+                            }
+                            onCancel={(integrationId) =>
+                                void runAppIntegrationAction(
+                                    integrationId,
+                                    cancelAppIntegration,
+                                    null,
+                                    false,
+                                )
+                            }
+                            onFinishConnections={(integrationId, optionIds) =>
+                                runAppIntegrationAction(integrationId, () =>
+                                    finishAppIntegrationConnections(
+                                        integrationId,
+                                        optionIds,
+                                    ),
+                                )
+                            }
+                            onInstallConnection={(integrationId) =>
+                                void runAppIntegrationAction(
+                                    integrationId,
+                                    installAppIntegrationConnection,
+                                    'installing',
+                                )
+                            }
+                            onRefresh={refreshAppIntegrationState}
+                            onReconnect={(integrationId, connectionId) =>
+                                void runAppIntegrationAction(
+                                    integrationId,
+                                    () =>
+                                        reconnectAppIntegration(
+                                            integrationId,
+                                            connectionId,
+                                        ),
+                                    'authorising',
+                                )
+                            }
+                            onManageAccess={(
+                                integrationId,
+                                connectionId,
+                                accessTargetId,
+                            ) =>
+                                void runAppIntegrationAction(
+                                    integrationId,
+                                    () =>
+                                        manageAppIntegrationAccess(
+                                            integrationId,
+                                            connectionId,
+                                            accessTargetId,
+                                        ),
+                                    null,
+                                    false,
+                                )
+                            }
+                            onDisconnect={confirmAppIntegrationDisconnect}
                         />
                         <UpdatesSettingsPanel
                             active={activeTab === 'updates'}

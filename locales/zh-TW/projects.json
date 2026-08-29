@@ -96,6 +96,162 @@
             "noStableReleases": "找不到 Godot {{version}}.x 的已安裝穩定版\n請先為 Godot {{version}}.x 安裝穩定版，再嘗試新增專案。",
             "noDotNetRelease": "此專案似乎為 .NET 專案，但未找到含 .NET 的編輯器發行版",
             "noCompatibleRelease": "找不到支援 config_version {{configVersion}} 的 Godot {{version}}.x 已安裝發行版。"
+        },
+        "sources": {
+            "title": "新增項目來自",
+            "fromComputer": "從這台計算機",
+            "publicGit": "克隆公共 Git 儲存庫",
+            "github": "來自 GitHub",
+            "checkingGit": "檢查 Git 可用性...",
+            "gitUnavailable": "Git 不可用。在“設定”>“工具”中配置它。"
+        },
+        "remote": {
+            "gitIdentity": {
+                "title": "設定 Git 身分",
+                "message": "設定 Git 在此複製儲存庫的後續提交中使用的姓名和電子郵件地址。",
+                "continueWithout": "不設定身分並繼續",
+                "presetMessage": "將此已儲存身分套用到複製的儲存庫。",
+                "usePreset": "使用預設並繼續",
+                "formMessage": "選擇 Git 在此複製儲存庫中使用的身分。",
+                "saveAndContinue": "儲存並繼續",
+                "identityWriteFailed": "無法儲存 Git 身分。複製的儲存庫已保留，可以繼續匯入。",
+                "presetWriteFailed": "身分已套用，但無法儲存供未來儲存庫使用的預設本機身分。"
+            },
+            "public": {
+                "title": "克隆公共 Git 儲存庫",
+                "description": "輸入匿名公用 HTTPS Git 儲存庫 URL。",
+                "urlLabel": "儲存庫網址",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "輸入有效的公共 HTTPS 儲存庫 URL。",
+                    "dnsUnavailable": "無法解析儲存庫主機。"
+                }
+            },
+            "github": {
+                "title": "從 GitHub 導入",
+                "description": "選擇透過 GitHub 連接可用的儲存庫。",
+                "loading": "正在加載存儲庫...",
+                "searchPlaceholder": "搜尋儲存庫",
+                "loadedSearchOnly": "搜尋僅涵蓋已載入的儲存庫。加載更多以搜尋其他結果。",
+                "empty": "沒有載入匹配的存儲庫。",
+                "loadMore": "加載更多",
+                "alreadyAdded": "已新增",
+                "openConnections": "開啟連接",
+                "visibility": {
+                    "public": "公有",
+                    "private": "私人",
+                    "internal": "內部"
+                },
+                "errors": {
+                    "connectionRequired": "在匯入儲存庫之前連接或重新連接 GitHub。",
+                    "temporarilyUnavailable": "GitHub 暫時無法使用。稍後再試。",
+                    "sessionExpired": "儲存庫會話已過期。再次載入列表。"
+                }
+            },
+            "destination": {
+                "description": "選擇將克隆儲存庫的位置。",
+                "repository": "儲存庫",
+                "projectName": "專案名稱",
+                "projectNameHelp": "設定本機資料夾名稱。project.godot 中的名稱不會變更。",
+                "cloneTo": "複製到",
+                "useDefault": "使用預設值",
+                "parent": "父資料夾",
+                "chooseParent": "選擇父資料夾",
+                "selectParent": "選擇項目父資料夾",
+                "directoryName": "項目資料夾名稱",
+                "completePath": "完整目的地"
+            },
+            "actions": {
+                "clone": "克隆儲存庫",
+                "addProjects": "新增所選專案（{{count}}）",
+                "cloneAndAdd": "克隆並添加項目",
+                "cancelImport": "取消導入",
+                "retryRegistration": "重試添加到啟動器",
+                "reviewAndRetry": "檢查並重試",
+                "close": "關閉",
+                "done": "完成",
+                "openCloneFolder": "開啟克隆資料夾",
+                "deleteCloneAndClose": "刪除克隆並關閉",
+                "keepCloneAndClose": "保留克隆並關閉"
+            },
+            "progress": {
+                "preparing": "準備導入...",
+                "cloning": "克隆存儲庫...",
+                "discovering": "正在尋找 Godot 專案...",
+                "cancelling": "正在取消導入..."
+            },
+            "submodules": {
+                "title": "此儲存庫使用 Git 子模組",
+                "description": "Launcher 可以在重新掃描前初始化可匿名存取的公開 HTTPS 子模組。如果子模組是私人儲存庫或使用不支援的 URL，操作將停止。",
+                "preparing": "正在準備初始化子模組...",
+                "initialise": "初始化子模組",
+                "continueWithoutSubmodules": "不初始化子模組並繼續",
+                "failure": "部分子模組無法初始化。已保留部分初始化的複製內容，讓你可以手動繼續。",
+                "activityTitle": "活動",
+                "activityAriaLabel": "子模組初始化活動",
+                "activity": {
+                    "found": "找到的子模組：{{count}}",
+                    "validating": "正在驗證 {{path}}",
+                    "initialising": "正在初始化 {{path}}",
+                    "initialised": "已初始化 {{path}}",
+                    "scanning-projects": "正在掃描 Godot 專案",
+                    "complete": "找到的 Godot 專案：{{count}}",
+                    "stopped": "已在 {{path}} 停止"
+                }
+            },
+            "review": {
+                "title": "選擇要新增的專案",
+                "cancelTitle": "取消儲存庫匯入？",
+                "cancelDescription": "儲存庫已克隆。請選擇在關閉前保留或刪除克隆。",
+                "description": "已選取所有找到的專案。請取消選取不想新增的範例、測試或其他專案。",
+                "selectAll": "選取所有專案",
+                "empty": "找不到有效的 Godot 專案。已保留克隆的儲存庫。"
+            },
+            "registration": {
+                "preserved": "存儲庫已成功克隆並已保存在此位置。",
+                "editorsQueued": "所選編輯器下載已加入安裝佇列。編輯器準備就緒後，專案會自動更新。",
+                "adding": "正在新增專案：{{current}}/{{total}}",
+                "complete": "專案匯入完成",
+                "added": "已新增",
+                "skipped": "已略過",
+                "failed": "失敗",
+                "alreadyAdded": "Launcher 中已有相同名稱或路徑的專案。",
+                "notAdded": "未新增此專案。"
+            },
+            "editorBatch": {
+                "title": "需要編輯器",
+                "description": "{{count}} 個所選專案需要 Godot 編輯器才能完成設定。",
+                "summary": "{{editors}} 個編輯器 | {{projects}} 個專案",
+                "affectedProjects": "受影響的專案",
+                "resolution": "解決方式",
+                "status": "狀態",
+                "checking": "正在檢查專案：{{current}}/{{total}}",
+                "finishWithoutRemaining": "不加入其餘專案並完成",
+                "apply": "加入專案並繼續",
+                "statuses": {
+                    "ready": "就緒"
+                }
+            },
+            "errors": {
+                "invalidSource": "儲存庫來源不再有效。",
+                "alreadyRunning": "另一個遠端專案導入已在運行。",
+                "gitUnavailable": "Git 不可用。在“設定”>“工具”中配置它。",
+                "connectionRequired": "需要可用的儲存庫連線。",
+                "repositoryUnavailable": "所選存儲庫不再可用。",
+                "temporarilyUnavailable": "儲存庫提供者或網路暫時無法使用。",
+                "destinationInvalid": "選擇有效的目標資料夾。",
+                "destinationConflict": "目的地已經存在。",
+                "cloneFailed": "Git 無法克隆儲存庫。",
+                "notGodotProject": "該儲存庫的根目錄不包含project.godot。",
+                "discoveryFailed": "儲存庫已克隆，但無法找到其中的 Godot 專案。",
+                "discoveryLimitExceeded": "儲存庫已克隆，但規模過大或巢狀層級過深，無法安全掃描。",
+                "finaliseFailed": "已完成的克隆無法移動到其目的地。",
+                "cancelled": "進口被取消。",
+                "registration-failed": "儲存庫已克隆，但無法新增至啟動器。",
+                "cloneFolderOpenFailed": "無法開啟克隆資料夾。",
+                "cloneCleanupChanged": "匯入後克隆已被變更或取代，因此未將其刪除。",
+                "cloneCleanupFailed": "無法刪除克隆。克隆已保留。"
+            }
         }
     },
     "messages": {

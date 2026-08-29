@@ -7,6 +7,7 @@
         "behavior": "Imġiba",
         "tools": "Għodod",
         "codeEditors": "Edituri tal-Kodiċi",
+        "connections": "Konnessjonijiet",
         "updates": "Aġġornamenti"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "Ma tistax tgħabbi l-integrazzjonijiet tal-għodda.",
             "rescan": "Ma tistax tiskennja mill-ġdid din l-għodda."
+        }
+    },
+    "connections": {
+        "title": "Immaniġġja l-konnessjonijiet",
+        "overview": "Qabbad servizzi esterni biex tużahom f'Godot Launcher.",
+        "loading": "Qed jitgħabbew il-konnessjonijiet...",
+        "loadError": "Ma setgħux jitgħabbew il-konnessjonijiet.",
+        "genericDescription": "Qabbad dan is-servizz biex tużah f'Godot Launcher.",
+        "github": {
+            "description": "Qabbad GitHub biex ir-repożitorji tiegħek ikunu disponibbli f'Godot Launcher.",
+            "accessNote": "Int tagħżel liema repożitorji tista' taċċessa l-app GitHub.",
+            "summary": "{{count}} konnessjonijiet"
+        },
+        "secureStorageUnavailable": "Issettja l-keyring jew il-ħażna tal-kredenzjali tas-sistema qabel tqabbad GitHub.",
+        "status": {
+            "notConnected": "Mhux konness",
+            "connecting": "Qed jikkonnettja...",
+            "selectionRequired": "Agħżel konnessjoni",
+            "connected": "Konness",
+            "unavailable": "Mhux disponibbli",
+            "reauthorisationRequired": "Jeħtieġ terġa' tikkonnettja",
+            "secureStorageUnavailable": "Ħażna sigura mhix disponibbli"
+        },
+        "actions": {
+            "connect": "Qabbad {{provider}}",
+            "addConnection": "Żid konnessjoni",
+            "selectAll": "Agħżel kollox",
+            "selectInstallation": "Agħżel {{connection}}",
+            "connectSelected": "Ikkonnettja l-għażla ({{count}})",
+            "installAnother": "Installa fuq kont jew organizzazzjoni oħra",
+            "cancel": "Ikkanċella",
+            "reconnect": "Erġa' qabbad",
+            "manageConnections": "Immaniġġja l-konnessjonijiet ta' GitHub",
+            "manageAccess": "Immaniġġja l-aċċess għar-repożitorji",
+            "disconnect": "Skonnettja"
+        },
+        "errors": {
+            "accountMismatch": "GitHub irritorna kont differenti. Agħżel il-kont li ridt timmaniġġja u erġa' pprova.",
+            "denied": "Il-konnessjoni ma' GitHub ġiet ikkanċellata.",
+            "timedOut": "It-talba għall-konnessjoni skadiet. Erġa' pprova.",
+            "secureStorageUnavailable": "Il-ħażna sigura tal-kredenzjali mhix disponibbli.",
+            "installationRequired": "L-installazzjoni tal-App ta' GitHub ma setgħetx tiġi vverifikata. Iċċekkja l-aċċess għar-repożitorji u erġa' pprova.",
+            "generic": "Din l-azzjoni ma setgħetx titlesta. Erġa' pprova."
+        },
+        "drawer": {
+            "title": "Konnessjonijiet ta' GitHub",
+            "description": "Immaniġġja l-konnessjonijiet ta' GitHub disponibbli għal Godot Launcher.",
+            "connections": "Konnessjonijiet",
+            "chooseConnection": "Agħżel konnessjonijiet",
+            "chooseConnectionDescription": "Agħżel installazzjoni waħda jew aktar tal-GitHub App, jew installa l-App f'post ġdid.",
+            "finishSetup": "Lesti s-setup fuq GitHub",
+            "finishSetupDescription": "Lesti l-installazzjoni fil-browser. Tista' terġa' lura hawn waqt li Launcher jibqa' jistenna.",
+            "installations": "Installazzjonijiet tal-App",
+            "noInstallations": "Din il-konnessjoni għad m'għandhiex installazzjonijiet tal-App aċċessibbli.",
+            "organization": "Organizzazzjoni",
+            "personalAccount": "Kont personali"
+        },
+        "disconnectConfirm": {
+            "title": "Tiskonnettja {{connection}}?",
+            "description": "Dan ineħħi l-konnessjoni minn Godot Launcher. Ma jneħħix l-app GitHub u ma jibdilx ir-remotes tal-proġetti.",
+            "finalDescription": "Dan ineħħi l-konnessjoni minn dan l-apparat. Ma jneħħix l-app GitHub, ma jibdilx l-aċċess għar-repożitorji jew ir-remotes tal-proġetti.",
+            "revokeAllDevices": "Irrevoka wkoll din l-awtorizzazzjoni ta' GitHub fuq l-apparati kollha ta' Launcher.",
+            "revokeDetail": "Apparati oħra ta' Launcher konnessi ma' dan il-kont ta' GitHub ikollhom jerġgħu jikkonnettjaw.",
+            "localOnlyWarning": "L-aċċess għal GitHub jibqa' attiv fuq apparati oħra, u tokens ikkupjati jibqgħu validi sakemm jiskadu jew jiġu rrevokati.",
+            "failureDetail": "Il-konnessjoni ma setgħetx titneħħa. Il-kredenzjali lokali nżammu. Erġa' pprova.",
+            "revokeAction": "Irrevoka u skonnettja",
+            "localOnlyAction": "Skonnettja dan l-apparat"
         }
     },
     "updates": {

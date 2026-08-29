@@ -1,4 +1,5 @@
 export type * from './app/index.js';
+export type * from './app-integrations/index.js';
 export type * from './bridge.types.js';
 export type * from './codeEditorIntegration/index.js';
 export type * from './editor-catalog/index.js';

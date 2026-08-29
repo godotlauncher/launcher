@@ -33,7 +33,7 @@ export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
 }) => (
     <SettingsPanelSection active={active}>
         <p className="text-sm text-base-content/70">{t('tools.overview')}</p>
-        {loading && (
+        {loading && tools.length === 0 && (
             <div className="mt-4 flex items-center gap-2" role="status">
                 <span className="loading loading-spinner loading-sm" />
                 <span>{t('tools.actions.loading')}</span>
@@ -44,7 +44,7 @@ export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
                 {t('tools.errors.load')}
             </p>
         )}
-        {!loading && !loadError && (
+        {(!loading || tools.length > 0) && !loadError && (
             <div className="mt-4 grid gap-4">
                 {tools.map((tool) => {
                     const pending = pendingToolId === tool.id;

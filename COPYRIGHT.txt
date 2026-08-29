@@ -52,6 +52,17 @@ Source: https://lucide.dev
 Lucide Icons are used throughout the Godot Launcher interface for a unified and clean visual style.  
 Full license text is included in the Appendix.
 
+GitHub Invertocat Logo
+----------------------
+
+Owner: GitHub, Inc.
+Source: https://brand.github.com/foundations/logo
+Usage: Governed by the GitHub Logo Guidelines and trademark policy.
+
+The official Invertocat logo is used only to identify the GitHub integration.
+GitHub and the Invertocat logo are trademarks of GitHub, Inc. Godot Launcher
+is not affiliated with or endorsed by GitHub.
+
 VSCodium Icon
 -------------
 

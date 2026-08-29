@@ -1,4 +1,5 @@
 import type { AppBridge } from './app/index.js';
+import type { AppIntegrationsBridge } from './app-integrations/index.js';
 import type { CodeEditorIntegrationBridge } from './codeEditorIntegration/index.js';
 import type { EditorCatalogBridge } from './editor-catalog/index.js';
 import type { EditorInstallsBridge } from './editor-installs/index.js';
@@ -12,6 +13,7 @@ import type { ToolIntegrationBridge } from './tools/index.js';
  */
 export type BridgeNamespaces = {
     app: AppBridge;
+    appIntegrations: AppIntegrationsBridge;
     codeEditorIntegration: CodeEditorIntegrationBridge;
     editorCatalog: EditorCatalogBridge;
     editorInstalls: EditorInstallsBridge;

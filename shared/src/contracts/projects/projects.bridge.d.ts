@@ -3,23 +3,70 @@ import type { InstalledRelease } from '../releases/index.js';
 import type {
     AddProjectOptions,
     AddProjectToListResult,
+    CancelRemoteProjectImportResult,
     ChangeProjectEditorResult,
     CreateProjectGitOptions,
     CreateProjectResult,
     GitIdentity,
+    InitialiseRemoteProjectSubmodulesResult,
     InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
+    ListConnectedRepositoriesResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    PublicGitSourceInspectionResult,
+    RemoteProjectImportRequest,
+    RemoteProjectImportResult,
     RenameProjectOptions,
     RenameProjectResult,
     RendererType,
+    ResolveRemoteProjectCloneAction,
+    ResolveRemoteProjectCloneResult,
     SetProjectCodeEditorResult,
+    SetRemoteProjectGitIdentityResult,
 } from './index.js';
 
 /** Defines project requests available to the renderer. */
 export type ProjectsBridge = {
+    /** Clones a repository and discovers its Godot projects. */
+    importRemoteProject(
+        request: RemoteProjectImportRequest,
+    ): Promise<RemoteProjectImportResult>;
+
+    /** Cancels the active remote project import when it is still cancellable. */
+    cancelRemoteProjectImport(
+        jobId: string,
+    ): Promise<CancelRemoteProjectImportResult>;
+
+    /** Keeps or deletes the exact final clone owned by an import job. */
+    resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ): Promise<ResolveRemoteProjectCloneResult>;
+
+    /** Sets repository-scoped Git identity for an unchanged imported clone. */
+    setRemoteProjectGitIdentity(
+        jobId: string,
+        identity: GitIdentity,
+    ): Promise<SetRemoteProjectGitIdentityResult>;
+
+    /** Initialises validated anonymous public submodules for an owned clone. */
+    initialiseRemoteProjectSubmodules(
+        jobId: string,
+    ): Promise<InitialiseRemoteProjectSubmodulesResult>;
+
+    /** Inspects an anonymous public Git repository URL. */
+    inspectPublicGitSource(
+        url: string,
+    ): Promise<PublicGitSourceInspectionResult>;
+
+    /** Lists repositories available through a connected hosting provider. */
+    listConnectedRepositories(
+        providerId: string,
+        cursor?: string,
+    ): Promise<ListConnectedRepositoriesResult>;
+
     /** Gets every stored project. */
     getProjectsDetails(): Promise<ProjectDetails[]>;
 

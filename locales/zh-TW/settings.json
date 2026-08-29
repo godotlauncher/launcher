@@ -7,6 +7,7 @@
         "behavior": "行為",
         "tools": "工具",
         "codeEditors": "程式碼編輯器",
+        "connections": "連線",
         "updates": "更新"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "無法載入工具整合。",
             "rescan": "無法重新掃描此工具。"
+        }
+    },
+    "connections": {
+        "title": "管理連線",
+        "overview": "連接外部服務，以便在 Godot Launcher 中使用。",
+        "loading": "正在載入連線...",
+        "loadError": "無法載入連線。",
+        "genericDescription": "連接此服務，以便在 Godot Launcher 中使用。",
+        "github": {
+            "description": "連接 GitHub，讓 Godot Launcher 可以使用你的儲存庫。",
+            "accessNote": "你可以決定 GitHub 應用程式有權存取哪些儲存庫。",
+            "summary": "{{count}} 個連線"
+        },
+        "secureStorageUnavailable": "連接 GitHub 前，請先設定系統鑰匙圈或憑證儲存空間。",
+        "status": {
+            "notConnected": "未連線",
+            "connecting": "正在連線...",
+            "selectionRequired": "選擇連線",
+            "connected": "已連線",
+            "unavailable": "無法使用",
+            "reauthorisationRequired": "需要重新連線",
+            "secureStorageUnavailable": "安全儲存空間無法使用"
+        },
+        "actions": {
+            "connect": "連接 {{provider}}",
+            "addConnection": "新增連線",
+            "selectAll": "全選",
+            "selectInstallation": "選擇 {{connection}}",
+            "connectSelected": "連線所選項目 ({{count}})",
+            "installAnother": "安裝到其他帳戶或組織",
+            "cancel": "取消",
+            "reconnect": "重新連線",
+            "manageConnections": "管理 GitHub 連線",
+            "manageAccess": "管理儲存庫存取權限",
+            "disconnect": "中斷連線"
+        },
+        "errors": {
+            "accountMismatch": "GitHub 傳回了其他帳戶。請選擇你要管理的帳戶，然後再試一次。",
+            "denied": "GitHub 連線已取消。",
+            "timedOut": "連線要求已過期。請再試一次。",
+            "secureStorageUnavailable": "安全憑證儲存空間無法使用。",
+            "installationRequired": "無法驗證 GitHub App 的安裝。請檢查其儲存庫存取權限，然後再試一次。",
+            "generic": "無法完成此操作。請再試一次。"
+        },
+        "drawer": {
+            "title": "GitHub 連線",
+            "description": "管理 Godot Launcher 可用的 GitHub 連線。",
+            "connections": "連線",
+            "chooseConnection": "選擇連線",
+            "chooseConnectionDescription": "選擇一個或多個現有的 GitHub App 安裝，或將 App 安裝到新的位置。",
+            "finishSetup": "在 GitHub 上完成設定",
+            "finishSetupDescription": "請在瀏覽器中完成安裝。Launcher 會繼續等待，你可以隨時返回此處。",
+            "installations": "應用程式安裝",
+            "noInstallations": "此連線尚無可存取的應用程式安裝。",
+            "organization": "組織",
+            "personalAccount": "個人帳戶"
+        },
+        "disconnectConfirm": {
+            "title": "中斷 {{connection}} 的連線？",
+            "description": "這會從 Godot Launcher 移除連線，但不會解除安裝 GitHub 應用程式，也不會變更任何專案的遠端儲存庫。",
+            "finalDescription": "這會從此裝置移除連線，但不會解除安裝 GitHub 應用程式，也不會變更儲存庫存取權或專案的遠端儲存庫。",
+            "revokeAllDevices": "同時撤銷所有 Launcher 裝置上的此 GitHub 授權。",
+            "revokeDetail": "連接到此 GitHub 帳戶的其他 Launcher 裝置需要重新連線。",
+            "localOnlyWarning": "其他裝置上的 GitHub 存取權仍然有效，任何已複製的權杖在到期或被撤銷前仍可使用。",
+            "failureDetail": "無法移除連線。本機憑證已保留。請再試一次。",
+            "revokeAction": "撤銷並中斷連線",
+            "localOnlyAction": "僅中斷此裝置"
         }
     },
     "updates": {

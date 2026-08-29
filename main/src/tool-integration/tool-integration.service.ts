@@ -8,13 +8,18 @@ import { ToolIntegrationStore } from './tool-integration.store.js';
 import type {
     ToolExecutionRequest,
     ToolExecutionResult,
+    ToolExecutionSession,
     ToolId,
     ToolSettings,
+    ToolStreamingExecutionRequest,
+    ToolStreamingExecutionResult,
     ToolSummary,
     UpdateToolSettings,
 } from './tool-integration.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolProcessExecutor } from './tool-process.executor.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ToolStreamingProcessExecutor } from './tool-streaming-process.executor.js';
 
 @Injectable()
 export class ToolIntegrationService {
@@ -25,12 +30,14 @@ export class ToolIntegrationService {
      * @param settingsStore - Store for per-tool settings and snapshots.
      * @param installationCache - Cache for discovery and revalidation.
      * @param processExecutor - Main-process command execution boundary.
+     * @param streamingProcessExecutor - Long-running process execution boundary.
      */
     constructor(
         private readonly registry: ToolIntegrationRegistry,
         private readonly settingsStore: ToolIntegrationStore,
         private readonly installationCache: ToolInstallationCache,
         private readonly processExecutor: ToolProcessExecutor,
+        private readonly streamingProcessExecutor: ToolStreamingProcessExecutor,
     ) {}
 
     /**
@@ -204,10 +211,28 @@ export class ToolIntegrationService {
         toolId: ToolId,
         request: ToolExecutionRequest,
     ): Promise<ToolExecutionResult> {
+        const execute = await this.createExecutionSession(toolId);
+        return execute(request);
+    }
+
+    /**
+     * Creates a process execution session from one freshly validated tool.
+     *
+     * The returned function reuses the exact validated installation for a
+     * bounded compound operation. Command failures still report through the
+     * normal structured result.
+     *
+     * @param toolId - Stable tool ID to validate for the session.
+     * @returns An execution function bound to the validated installation.
+     */
+    async createExecutionSession(
+        toolId: ToolId,
+    ): Promise<ToolExecutionSession> {
         this.registry.get(toolId);
         const settings = await this.settingsStore.get(toolId);
         if (!settings.enabled) {
-            return this.createUnavailableResult('disabled');
+            const unavailable = this.createUnavailableResult('disabled');
+            return async () => unavailable;
         }
 
         const resolution = await this.installationCache.requireAvailable(
@@ -215,12 +240,49 @@ export class ToolIntegrationService {
             settings,
         );
         if (!resolution.installation) {
-            return this.createUnavailableResult(
+            const unavailable = this.createUnavailableResult(
                 resolution.status === 'invalid' ? 'invalid' : 'unavailable',
             );
+            return async () => unavailable;
         }
 
-        return this.processExecutor.execute(resolution.installation, request);
+        const installation = resolution.installation;
+        return (sessionRequest) =>
+            this.processExecutor.execute(installation, sessionRequest);
+    }
+
+    /**
+     * Revalidates and streams one long-running tool operation.
+     *
+     * @param toolId - Stable tool ID to execute.
+     * @param request - Complete streaming process request.
+     * @returns The terminal process state without buffered output.
+     */
+    async executeStreaming(
+        toolId: ToolId,
+        request: ToolStreamingExecutionRequest,
+    ): Promise<ToolStreamingExecutionResult> {
+        this.registry.get(toolId);
+        const settings = await this.settingsStore.get(toolId);
+        if (!settings.enabled) {
+            return { success: false, reason: 'disabled', exitCode: null };
+        }
+        const resolution = await this.installationCache.requireAvailable(
+            toolId,
+            settings,
+        );
+        if (!resolution.installation) {
+            return {
+                success: false,
+                reason:
+                    resolution.status === 'invalid' ? 'invalid' : 'unavailable',
+                exitCode: null,
+            };
+        }
+        return this.streamingProcessExecutor.execute(
+            resolution.installation,
+            request,
+        );
     }
 
     /**

@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     appRemoveListener: vi.fn(),
     autoUpdaterOn: vi.fn(),
     autoUpdaterRemoveListener: vi.fn(),
+    createEditingMenu: vi.fn(),
     createMenu: vi.fn(),
     createTray: vi.fn(),
     disposeFocusRevalidation: vi.fn(),
@@ -85,6 +86,7 @@ vi.mock('./autoUpdater.js', () => ({
     stopAutoUpdateChecks: mocks.stopAutoUpdateChecks,
 }));
 vi.mock('./helpers/menu.helper.js', () => ({
+    createEditingMenu: mocks.createEditingMenu,
     createMenu: mocks.createMenu,
 }));
 vi.mock('./helpers/revalidate.helper.js', () => ({
@@ -150,9 +152,9 @@ describe('AppLifecycleService', () => {
         getSystemLocale: vi.fn(() => 'en'),
         setLocale: vi.fn(),
     };
-    const codeEditorIntegrationService = {};
     const installedEditorService = {
         revalidateInstalledEditors: vi.fn(),
+        refreshInstalledEditorHealth: vi.fn(),
     };
     const toolIntegrationService = {
         refreshAll: vi.fn(),
@@ -164,6 +166,7 @@ describe('AppLifecycleService', () => {
         checkAllProjectsValid: vi.fn(),
         getProjectsDetails: vi.fn(),
         launchProject: vi.fn(),
+        refreshProjectHealth: vi.fn(),
     };
 
     function createService() {
@@ -172,7 +175,6 @@ describe('AppLifecycleService', () => {
             electronAppService as never,
             windowManager as never,
             i18nService as never,
-            codeEditorIntegrationService as never,
             installedEditorService as never,
             toolIntegrationService as never,
             trayAvailabilityService as never,
@@ -286,7 +288,6 @@ describe('AppLifecycleService', () => {
             mainWindow,
             expect.any(Function),
             expect.any(Function),
-            expect.any(Function),
         );
         expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
 
@@ -294,6 +295,32 @@ describe('AppLifecycleService', () => {
         service.revealInitialWindow();
 
         expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+    });
+
+    it('uses quick project and editor health checks on focus', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+        const refreshEditors = mocks.setupFocusRevalidation.mock.calls[0]?.[1];
+        const refreshProjects = mocks.setupFocusRevalidation.mock.calls[0]?.[2];
+
+        await refreshEditors?.();
+        await refreshProjects?.();
+
+        expect(
+            installedEditorService.refreshInstalledEditorHealth,
+        ).toHaveBeenCalledOnce();
+        expect(projectsService.refreshProjectHealth).toHaveBeenCalledOnce();
+        expect(projectsService.checkAllProjectsValid).not.toHaveBeenCalled();
+    });
+
+    it('installs native editing commands in a production window', async () => {
+        const service = createService();
+
+        await initializeLifecycle(service);
+
+        expect(mocks.createEditingMenu).toHaveBeenCalledOnce();
+        expect(mocks.createMenu).not.toHaveBeenCalled();
     });
 
     it('does not install focus revalidation for documentation screenshots', async () => {

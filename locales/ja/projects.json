@@ -96,6 +96,162 @@
             "noStableReleases": "Godot {{version}}.xの安定版リリースがインストールされていません\nGodot {{version}}.xの安定版をインストールしてから、再度プロジェクトを追加してください。",
             "noDotNetRelease": "プロジェクトは.NETプロジェクトのようですが、.NET対応エディタが見つかりません",
             "noCompatibleRelease": "config_version {{configVersion}}をサポートするGodot {{version}}.xのインストール済みリリースが見つかりません。"
+        },
+        "sources": {
+            "title": "からプロジェクトを追加",
+            "fromComputer": "このコンピュータから",
+            "publicGit": "パブリック Git リポジトリのクローンを作成する",
+            "github": "GitHub から",
+            "checkingGit": "Git の可用性を確認しています...",
+            "gitUnavailable": "Git は使用できません。 [設定] > [ツール] で設定します。"
+        },
+        "remote": {
+            "gitIdentity": {
+                "title": "Git ID を設定",
+                "message": "このクローンしたリポジトリで今後のコミットに使用する名前とメールアドレスを設定します。",
+                "continueWithout": "ID を設定せずに続行",
+                "presetMessage": "保存済みの ID をクローンしたリポジトリに適用します。",
+                "usePreset": "プリセットを使用して続行",
+                "formMessage": "このクローンしたリポジトリで Git が使用する ID を選択します。",
+                "saveAndContinue": "保存して続行",
+                "identityWriteFailed": "Git ID を保存できませんでした。クローンしたリポジトリは保持され、インポートを続行できます。",
+                "presetWriteFailed": "ID は適用されましたが、今後のリポジトリ用の既定のローカル ID を保存できませんでした。"
+            },
+            "public": {
+                "title": "パブリック Git リポジトリのクローンを作成する",
+                "description": "匿名のパブリック HTTPS Git リポジトリ URL を入力します。",
+                "urlLabel": "リポジトリURL",
+                "urlPlaceholder": "https://example.com/owner/project.git",
+                "errors": {
+                    "invalid": "有効なパブリック HTTPS リポジトリ URL を入力します。",
+                    "dnsUnavailable": "リポジトリ ホストを解決できませんでした。"
+                }
+            },
+            "github": {
+                "title": "GitHub からインポートする",
+                "description": "GitHub 接続を通じて利用可能なリポジトリを選択します。",
+                "loading": "リポジトリをロードしています...",
+                "searchPlaceholder": "リポジトリを検索",
+                "loadedSearchOnly": "検索では、ロードされたリポジトリのみが対象になります。さらにロードして追加の結果を検索します。",
+                "empty": "一致するリポジトリがロードされていません。",
+                "loadMore": "さらにロードする",
+                "alreadyAdded": "すでに追加されています",
+                "openConnections": "オープンコネクション",
+                "visibility": {
+                    "public": "公共",
+                    "private": "プライベート",
+                    "internal": "内部"
+                },
+                "errors": {
+                    "connectionRequired": "リポジトリをインポートする前に、GitHub に接続または再接続します。",
+                    "temporarilyUnavailable": "GitHub が一時的に利用できなくなりました。後でもう一度試してください。",
+                    "sessionExpired": "リポジトリ セッションの有効期限が切れました。リストを再度ロードします。"
+                }
+            },
+            "destination": {
+                "description": "リポジトリのクローンを作成する場所を選択します。",
+                "repository": "リポジトリ",
+                "projectName": "プロジェクト名",
+                "projectNameHelp": "ローカルフォルダー名を設定します。project.godot 内の名前は変更されません。",
+                "cloneTo": "クローン先",
+                "useDefault": "既定値を使用",
+                "parent": "親フォルダー",
+                "chooseParent": "親フォルダーを選択してください",
+                "selectParent": "プロジェクトの親フォルダーを選択",
+                "directoryName": "プロジェクトフォルダー名",
+                "completePath": "完全な目的地"
+            },
+            "actions": {
+                "clone": "リポジトリをクローン",
+                "addProjects": "選択したプロジェクトを追加 ({{count}})",
+                "cloneAndAdd": "プロジェクトのクローンを作成して追加する",
+                "cancelImport": "インポートをキャンセルする",
+                "retryRegistration": "ランチャーへの追加を再試行します",
+                "reviewAndRetry": "確認して再試行してください",
+                "close": "閉じる",
+                "done": "完了",
+                "openCloneFolder": "クローンのフォルダーを開く",
+                "deleteCloneAndClose": "クローンを削除して閉じる",
+                "keepCloneAndClose": "クローンを保持して閉じる"
+            },
+            "progress": {
+                "preparing": "インポートを準備しています...",
+                "cloning": "リポジトリのクローンを作成しています...",
+                "discovering": "Godot プロジェクトを検索しています...",
+                "cancelling": "インポートをキャンセルしています..."
+            },
+            "submodules": {
+                "title": "このリポジトリは Git サブモジュールを使用しています",
+                "description": "Launcher は再スキャンの前に、匿名でアクセスできる公開 HTTPS サブモジュールを初期化できます。非公開または未対応の URL を使用するサブモジュールがある場合は停止します。",
+                "preparing": "サブモジュールの初期化を準備しています...",
+                "initialise": "サブモジュールを初期化",
+                "continueWithoutSubmodules": "サブモジュールなしで続行",
+                "failure": "一部のサブモジュールを初期化できませんでした。手動で続行できるよう、部分的に初期化されたクローンは保持されています。",
+                "activityTitle": "アクティビティ",
+                "activityAriaLabel": "サブモジュール初期化のアクティビティ",
+                "activity": {
+                    "found": "検出されたサブモジュール: {{count}}",
+                    "validating": "{{path}} を検証中",
+                    "initialising": "{{path}} を初期化中",
+                    "initialised": "{{path}} を初期化しました",
+                    "scanning-projects": "Godot プロジェクトを検索中",
+                    "complete": "検出された Godot プロジェクト: {{count}}",
+                    "stopped": "{{path}} で停止しました"
+                }
+            },
+            "review": {
+                "title": "追加するプロジェクトを選択",
+                "cancelTitle": "リポジトリのインポートをキャンセルしますか？",
+                "cancelDescription": "リポジトリはすでにクローンされています。閉じる前にクローンを保持するか削除するかを選択してください。",
+                "description": "見つかったすべてのプロジェクトが選択されています。追加しないサンプル、テスト、その他のプロジェクトの選択を解除してください。",
+                "selectAll": "すべてのプロジェクトを選択",
+                "empty": "有効な Godot プロジェクトが見つかりませんでした。クローンしたリポジトリは保持されています。"
+            },
+            "registration": {
+                "preserved": "リポジトリは正常に複製され、この場所に保存されています。",
+                "editorsQueued": "選択したエディターのダウンロードをインストールに追加しました。エディターの準備ができると、プロジェクトは自動的に更新されます。",
+                "adding": "プロジェクトを追加中: {{current}}/{{total}}",
+                "complete": "プロジェクトのインポートが完了しました",
+                "added": "追加済み",
+                "skipped": "スキップ",
+                "failed": "失敗",
+                "alreadyAdded": "同じ名前またはパスのプロジェクトが既に Launcher にあります。",
+                "notAdded": "プロジェクトは追加されませんでした。"
+            },
+            "editorBatch": {
+                "title": "必要なエディター",
+                "description": "選択した{{count}}件のプロジェクトは、セットアップを完了する前に Godot エディターが必要です。",
+                "summary": "エディター {{editors}}件 | プロジェクト {{projects}}件",
+                "affectedProjects": "対象プロジェクト",
+                "resolution": "解決方法",
+                "status": "状態",
+                "checking": "プロジェクトを確認中: {{current}}/{{total}}",
+                "finishWithoutRemaining": "残りのプロジェクトを追加せずに完了",
+                "apply": "プロジェクトを追加して続行",
+                "statuses": {
+                    "ready": "準備完了"
+                }
+            },
+            "errors": {
+                "invalidSource": "リポジトリ ソースは有効ではなくなりました。",
+                "alreadyRunning": "別のリモート プロジェクトのインポートがすでに実行されています。",
+                "gitUnavailable": "Git は使用できません。 [設定] > [ツール] で設定します。",
+                "connectionRequired": "使用可能なリポジトリ接続が必要です。",
+                "repositoryUnavailable": "選択したリポジトリは使用できなくなりました。",
+                "temporarilyUnavailable": "リポジトリ プロバイダーまたはネットワークが一時的に利用できなくなりました。",
+                "destinationInvalid": "有効な宛先フォルダーを選択してください。",
+                "destinationConflict": "宛先はすでに存在します。",
+                "cloneFailed": "Git はリポジトリのクローンを作成できませんでした。",
+                "notGodotProject": "リポジトリのルートには project.godot が含まれていません。",
+                "discoveryFailed": "リポジトリはクローンされましたが、Godot プロジェクトを見つけられませんでした。",
+                "discoveryLimitExceeded": "リポジトリはクローンされましたが、安全に検索するには大きすぎるか、深くネストされています。",
+                "finaliseFailed": "完成したクローンを目的地に移動できませんでした。",
+                "cancelled": "輸入はキャンセルされました。",
+                "registration-failed": "リポジトリは複製されましたが、Launcher に追加できませんでした。",
+                "cloneFolderOpenFailed": "クローンのフォルダーを開けませんでした。",
+                "cloneCleanupChanged": "インポート後にクローンが変更または置換されたため、削除されませんでした。",
+                "cloneCleanupFailed": "クローンを削除できませんでした。クローンは保持されています。"
+            }
         }
     },
     "messages": {

@@ -13,10 +13,14 @@ import { ToolIntegrationService } from '../../tool-integration.service.js';
 import type {
     ToolExecutionRequest,
     ToolExecutionResult,
+    ToolExecutionSession,
 } from '../../tool-integration.types.js';
+import { normalizeGitRemoteUrl } from './git-remote-url-normalizer.util.js';
 
 const GIT_INSPECTION_TIMEOUT_MS = 5000;
 const GIT_INSPECTION_ENV = { LC_ALL: 'C', LANG: 'C' } as const;
+
+export type GitRepositoryInspector = Pick<GitService, 'inspectRepository'>;
 
 @Injectable()
 export class GitService {
@@ -50,6 +54,45 @@ export class GitService {
     async inspectRepository(
         projectPath: string,
     ): Promise<GitRepositoryInspection> {
+        const inspector = await this.createRepositoryInspectionSession();
+        return inspector.inspectRepository(projectPath);
+    }
+
+    /**
+     * Creates a repository inspector that validates Git once for a compound scan.
+     *
+     * @returns A repository inspector bound to one validated Git installation.
+     */
+    async createRepositoryInspectionSession(): Promise<GitRepositoryInspector> {
+        let execute: ToolExecutionSession;
+        try {
+            execute =
+                await this.toolIntegrationService.createExecutionSession('git');
+        } catch {
+            logger.error('Git command failed unexpectedly');
+            return {
+                inspectRepository: async () => ({
+                    status: 'inspection-failed',
+                }),
+            };
+        }
+        return {
+            inspectRepository: (projectPath) =>
+                this.inspectRepositoryWithSession(projectPath, execute),
+        };
+    }
+
+    /**
+     * Inspects one repository through an existing validated execution session.
+     *
+     * @param projectPath - Existing or planned project directory to inspect.
+     * @param execute - Git execution function validated for this scan.
+     * @returns A typed repository inspection result.
+     */
+    private async inspectRepositoryWithSession(
+        projectPath: string,
+        execute: ToolExecutionSession,
+    ): Promise<GitRepositoryInspection> {
         const inspectionDirectory =
             await this.findInspectionDirectory(projectPath);
         if (!inspectionDirectory) {
@@ -60,23 +103,27 @@ export class GitService {
             env: GIT_INSPECTION_ENV,
             timeoutMs: GIT_INSPECTION_TIMEOUT_MS,
         };
-        const insideResult = await this.run(
-            ['rev-parse', '--is-inside-work-tree'],
-            inspectionDirectory,
-            false,
-            requestOptions,
-        );
-        if (!insideResult.success) {
+        const inspectionResult = await execute({
+            args: [
+                'rev-parse',
+                '--is-inside-work-tree',
+                '--show-toplevel',
+                '--show-superproject-working-tree',
+            ],
+            cwd: inspectionDirectory,
+            ...requestOptions,
+        });
+        if (!inspectionResult.success) {
             if (
-                insideResult.reason === 'disabled' ||
-                insideResult.reason === 'invalid' ||
-                insideResult.reason === 'unavailable'
+                inspectionResult.reason === 'disabled' ||
+                inspectionResult.reason === 'invalid' ||
+                inspectionResult.reason === 'unavailable'
             ) {
                 return { status: 'git-unavailable' };
             }
             if (
-                insideResult.reason === 'command-failed' &&
-                insideResult.stderr
+                inspectionResult.reason === 'command-failed' &&
+                inspectionResult.stderr
                     .toLowerCase()
                     .includes('not a git repository')
             ) {
@@ -84,34 +131,20 @@ export class GitService {
             }
             return { status: 'inspection-failed' };
         }
-        if (insideResult.stdout.trim() !== 'true') {
+        const [insideWorkTree, rootOutput, superprojectOutput] =
+            inspectionResult.stdout.split(/\r?\n/);
+        if (insideWorkTree?.trim() !== 'true') {
             return { status: 'not-a-repository' };
         }
-
-        const rootResult = await this.run(
-            ['rev-parse', '--show-toplevel'],
-            inspectionDirectory,
-            false,
-            requestOptions,
-        );
-        if (!rootResult.success || !rootResult.stdout.trim()) {
+        if (!rootOutput?.trim()) {
             return { status: 'inspection-failed' };
         }
 
-        const root = await this.normalizePath(rootResult.stdout.trim());
+        const root = await this.normalizePath(rootOutput.trim());
         const normalizedProjectPath = await this.normalizePath(projectPath);
-        const superprojectResult = await this.run(
-            ['rev-parse', '--show-superproject-working-tree'],
-            inspectionDirectory,
-            false,
-            requestOptions,
-        );
-        if (!superprojectResult.success) {
-            return { status: 'inspection-failed' };
-        }
 
         let kind: GitRepositoryKind = 'standard';
-        if (superprojectResult.stdout.trim()) {
+        if (superprojectOutput?.trim()) {
             kind = 'submodule';
         } else if (await this.isGitFile(path.resolve(root, '.git'))) {
             kind = 'linked-worktree';
@@ -123,6 +156,39 @@ export class GitService {
             isProjectRoot: this.pathsEqual(root, normalizedProjectPath),
             kind,
         };
+    }
+
+    /**
+     * Reads and normalises the local origin visible from a stored project.
+     *
+     * The project may be at the repository root or nested inside its work tree.
+     * Raw origin output is never logged or returned.
+     *
+     * @param projectPath - Stored project working directory.
+     * @returns A token-free canonical HTTPS origin, or null.
+     */
+    async getNormalizedRemoteOrigin(
+        projectPath: string,
+    ): Promise<string | null> {
+        const result = await this.run(
+            [
+                'config',
+                '--local',
+                '--no-includes',
+                '--get',
+                'remote.origin.url',
+            ],
+            projectPath,
+            false,
+            {
+                env: GIT_INSPECTION_ENV,
+                timeoutMs: GIT_INSPECTION_TIMEOUT_MS,
+            },
+        );
+        if (!result.success) {
+            return null;
+        }
+        return normalizeGitRemoteUrl(this.removeLineTerminator(result.stdout));
     }
 
     /**

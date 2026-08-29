@@ -7,6 +7,7 @@
         "behavior": "Davranış",
         "tools": "Araçlar",
         "codeEditors": "Kod Düzenleyicileri",
+        "connections": "Bağlantılar",
         "updates": "Güncellemeler"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "Araç entegrasyonları yüklenemiyor.",
             "rescan": "Bu araç yeniden taranamıyor."
+        }
+    },
+    "connections": {
+        "title": "Bağlantıları yönet",
+        "overview": "Harici hizmetleri Godot Launcher'da kullanmak için bağlayın.",
+        "loading": "Bağlantılar yükleniyor...",
+        "loadError": "Bağlantılar yüklenemedi.",
+        "genericDescription": "Bu hizmeti Godot Launcher'da kullanmak için bağlayın.",
+        "github": {
+            "description": "Depolarınızı Godot Launcher'da kullanabilmek için GitHub'ı bağlayın.",
+            "accessNote": "GitHub uygulamasının hangi depolara erişebileceğini siz belirlersiniz.",
+            "summary": "{{count}} bağlantı"
+        },
+        "secureStorageUnavailable": "GitHub'ı bağlamadan önce sistem anahtarlığını veya kimlik bilgisi deposunu ayarlayın.",
+        "status": {
+            "notConnected": "Bağlı değil",
+            "connecting": "Bağlanıyor...",
+            "selectionRequired": "Bağlantı seç",
+            "connected": "Bağlandı",
+            "unavailable": "Kullanılamıyor",
+            "reauthorisationRequired": "Yeniden bağlanma gerekli",
+            "secureStorageUnavailable": "Güvenli depolama kullanılamıyor"
+        },
+        "actions": {
+            "connect": "{{provider}} bağlantısını kur",
+            "addConnection": "Bağlantı ekle",
+            "selectAll": "Tümünü seç",
+            "selectInstallation": "{{connection}} seç",
+            "connectSelected": "Seçilenleri bağla ({{count}})",
+            "installAnother": "Başka bir hesap veya kuruluşa yükle",
+            "cancel": "İptal",
+            "reconnect": "Yeniden bağlan",
+            "manageConnections": "GitHub bağlantılarını yönet",
+            "manageAccess": "Depo erişimini yönet",
+            "disconnect": "Bağlantıyı kes"
+        },
+        "errors": {
+            "accountMismatch": "GitHub farklı bir hesap döndürdü. Yönetmek istediğiniz hesabı seçip yeniden deneyin.",
+            "denied": "GitHub bağlantısı iptal edildi.",
+            "timedOut": "Bağlantı isteğinin süresi doldu. Yeniden deneyin.",
+            "secureStorageUnavailable": "Güvenli kimlik bilgisi deposu kullanılamıyor.",
+            "installationRequired": "GitHub App kurulumu doğrulanamadı. Depo erişimini kontrol edip yeniden deneyin.",
+            "generic": "Bu işlem tamamlanamadı. Yeniden deneyin."
+        },
+        "drawer": {
+            "title": "GitHub bağlantıları",
+            "description": "Godot Launcher'ın kullanabildiği GitHub bağlantılarını yönetin.",
+            "connections": "Bağlantılar",
+            "chooseConnection": "Bağlantıları seç",
+            "chooseConnectionDescription": "Mevcut bir veya daha fazla GitHub App kurulumunu seçin ya da uygulamayı yeni bir yere yükleyin.",
+            "finishSetup": "Kurulumu GitHub'da tamamlayın",
+            "finishSetupDescription": "Kurulumu tarayıcınızda tamamlayın. Launcher beklemeye devam ederken buraya dönebilirsiniz.",
+            "installations": "Uygulama kurulumları",
+            "noInstallations": "Bu bağlantının henüz erişilebilir bir uygulama kurulumu yok.",
+            "organization": "Kuruluş",
+            "personalAccount": "Kişisel hesap"
+        },
+        "disconnectConfirm": {
+            "title": "{{connection}} bağlantısı kesilsin mi?",
+            "description": "Bu işlem bağlantıyı Godot Launcher'dan kaldırır. GitHub uygulamasını kaldırmaz veya proje uzak adreslerini değiştirmez.",
+            "finalDescription": "Bu işlem bağlantıyı bu cihazdan kaldırır. GitHub uygulamasını kaldırmaz; depo erişimini veya proje uzak adreslerini değiştirmez.",
+            "revokeAllDevices": "Bu GitHub yetkilendirmesini tüm Launcher cihazlarında da iptal et.",
+            "revokeDetail": "Bu GitHub hesabına bağlı diğer Launcher cihazlarının yeniden bağlanması gerekir.",
+            "localOnlyWarning": "GitHub erişimi diğer cihazlarda etkin kalır ve kopyalanmış belirteçler süreleri dolana veya iptal edilene kadar geçerli olur.",
+            "failureDetail": "Bağlantı kaldırılamadı. Yerel kimlik bilgisi korundu. Tekrar deneyin.",
+            "revokeAction": "İptal et ve bağlantıyı kes",
+            "localOnlyAction": "Bu cihazın bağlantısını kes"
         }
     },
     "updates": {

@@ -29,6 +29,8 @@
             "installs": "安装",
             "help": "帮助",
             "settings": "设置",
+            "connections": "连接",
+            "new": "新增",
             "joinCommunity": "加入社区"
         },
         "update": {

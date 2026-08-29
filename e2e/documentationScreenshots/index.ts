@@ -2,6 +2,7 @@ import { HELP_SCREENSHOTS } from './screenshots.help';
 import { INSTALLS_SCREENSHOTS } from './screenshots.installs';
 import { ONBOARDING_SCREENSHOTS } from './screenshots.onboarding';
 import { PROJECT_SCREENSHOTS } from './screenshots.projects';
+import { REMOTE_REPOSITORY_SCREENSHOTS } from './screenshots.remote-repositories';
 import { SETTINGS_SCREENSHOTS } from './screenshots.settings';
 import type { ScreenshotConfig } from './types';
 
@@ -15,6 +16,11 @@ export const SCREENSHOT_GROUPS = [
         name: 'projects',
         timeout: 180000,
         screenshots: PROJECT_SCREENSHOTS,
+    },
+    {
+        name: 'remote repositories',
+        timeout: 180000,
+        screenshots: REMOTE_REPOSITORY_SCREENSHOTS,
     },
     {
         name: 'installs',
@@ -40,6 +46,7 @@ export const SCREENSHOT_GROUPS = [
 export const SCREENSHOTS: ScreenshotConfig[] = [
     ...ONBOARDING_SCREENSHOTS,
     ...PROJECT_SCREENSHOTS,
+    ...REMOTE_REPOSITORY_SCREENSHOTS,
     ...INSTALLS_SCREENSHOTS,
     ...SETTINGS_SCREENSHOTS,
     ...HELP_SCREENSHOTS,

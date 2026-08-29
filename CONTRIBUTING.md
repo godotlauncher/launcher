@@ -152,6 +152,27 @@ This improves usability and saves time navigating the project list.
 - **End-to-End (E2E) Tests**: If your change affects user interactions or workflows, consider adding E2E tests to confirm everything works as intended.  
 - **Increase Your Chances of a Merge**: PRs that include relevant tests are more likely to be accepted, as they provide confidence that changes won't introduce regressions.  
 
+### Testing Distribution Packages
+
+Build final installation packages on the corresponding operating system:
+
+```bash
+npm run dist:mac
+npm run dist:linux
+npm run dist:win
+```
+
+These commands build all configured architectures and package targets for one
+operating system without publishing them. The macOS command uses the configured
+signing and notarisation credentials when they are available. The Windows
+command builds and tests the native Git askpass helper before creating unsigned
+installers. The native build requires Visual Studio 2019 or later with the
+Desktop development with C++ workload and MSVC ARM64 build tools. The helper is
+built directly through MSBuild; the workload supplies MSBuild, the compiler,
+linker, resource compiler, and Windows SDK. Run the command from a Visual Studio
+Developer PowerShell or Developer Command Prompt so `msbuild` is available on
+`PATH`. Publishing is performed only by the release workflow.
+
 ---
 
 ## Need Help?

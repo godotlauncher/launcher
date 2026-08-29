@@ -3,6 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorProjectContext } from '../../codeEditorIntegration.types.js';
 import { VSCodiumIntegration } from './vscodiumIntegration.js';
 
+const fsMocks = vi.hoisted(() => ({
+    existsSync: vi.fn(),
+}));
+
+vi.mock('node:fs', () => ({
+    existsSync: fsMocks.existsSync,
+    default: { existsSync: fsMocks.existsSync },
+}));
+
 const installationMocks = vi.hoisted(() => ({
     getVSCodiumInstallation: vi.fn(),
     resolveVSCodiumGodotConfiguration: vi.fn(),
@@ -32,6 +41,7 @@ function createContext(): CodeEditorProjectContext {
 describe('VSCodiumIntegration', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        fsMocks.existsSync.mockReturnValue(false);
         projectConfigurationMocks.configureVSCodiumProject.mockResolvedValue(
             [],
         );
@@ -122,16 +132,20 @@ describe('VSCodiumIntegration', () => {
         ).toHaveBeenCalledWith(executablePath, '--custom {file}');
     });
 
-    it('configures VSCodium project files without claiming legacy .vscode inference', async () => {
+    it('detects the shared .vscode directory and configures project files', async () => {
         const integration = new VSCodiumIntegration();
         const context = createContext();
+        fsMocks.existsSync.mockReturnValue(true);
         projectConfigurationMocks.configureVSCodiumProject.mockResolvedValue([
             path.resolve('settings.bad'),
         ]);
 
         await expect(
             integration.isConfiguredForProject('project'),
-        ).resolves.toBe(false);
+        ).resolves.toBe(true);
+        expect(fsMocks.existsSync).toHaveBeenCalledWith(
+            path.resolve('project', '.vscode'),
+        );
         await expect(integration.configureProject(context)).resolves.toEqual({
             recoveredConfigFiles: [path.resolve('settings.bad')],
         });

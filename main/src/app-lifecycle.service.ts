@@ -20,13 +20,11 @@ import { I18nService } from '@mariodebono/di-electron-i18n';
 import { app, dialog, autoUpdater as electronAutoUpdater } from 'electron';
 import logger from 'electron-log/main.js';
 import { setupAutoUpdate, stopAutoUpdateChecks } from './autoUpdater.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { CodeEditorIntegrationService } from './codeEditorIntegration/codeEditorIntegration.service.js';
 import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
-import { createMenu } from './helpers/menu.helper.js';
+import { createEditingMenu, createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
 import { configureI18n } from './i18n/index.js';
@@ -55,7 +53,6 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
      * @param electronAppService - Electron application lifecycle facade.
      * @param windowManager - Main-window lifecycle service.
      * @param i18nService - Main-process localization service.
-     * @param codeEditorIntegrationService - Code editor lifecycle facade.
      * @param installedEditorService - Installed editor lifecycle facade.
      * @param toolIntegrationService - Command-line tool lifecycle facade.
      * @param trayAvailabilityService - System tray availability service.
@@ -66,7 +63,6 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         private readonly electronAppService: ElectronAppService,
         private readonly windowManager: WindowManagerService,
         private readonly i18nService: I18nService,
-        private readonly codeEditorIntegrationService: CodeEditorIntegrationService,
         private readonly installedEditorService: InstalledEditorService,
         private readonly toolIntegrationService: ToolIntegrationService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
@@ -129,11 +125,13 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
                     await this.projectsService.launchProject(project);
                 if (!result.launched) {
                     this.showMainWindow();
-                    ipcWebContentsSend(
-                        'project-launch-code-editor-warning',
-                        mainWindow.webContents,
-                        { project, result },
-                    );
+                    if (result.reason === 'code_editor_unavailable') {
+                        ipcWebContentsSend(
+                            'project-launch-code-editor-warning',
+                            mainWindow.webContents,
+                            { project, result },
+                        );
+                    }
                 }
             },
             () => this.showMainWindow(),
@@ -142,7 +140,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         if (this.config.isDev && !this.config.disableDevMenu) {
             createMenu(mainWindow);
         } else {
-            this.electronAppService.clearApplicationMenu();
+            createEditingMenu();
         }
 
         const prefs = await getUserPreferences();
@@ -165,14 +163,9 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         if (!this.config.docsScreenshots) {
             this.disposeFocusRevalidation = setupFocusRevalidation(
                 mainWindow,
-                () => this.installedEditorService.revalidateInstalledEditors(),
                 () =>
-                    this.codeEditorIntegrationService.revalidateIntegrationSettings(),
-                () =>
-                    this.projectsService.checkAllProjectsValid({
-                        repairMissingLaunchPath: false,
-                        publishResult: true,
-                    }),
+                    this.installedEditorService.refreshInstalledEditorHealth(),
+                () => this.projectsService.refreshProjectHealth(),
             );
         }
         electronAutoUpdater.on(

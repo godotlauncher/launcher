@@ -57,17 +57,25 @@ export class InstalledEditorService {
     async revalidateInstalledEditors(): Promise<InstalledRelease[]> {
         logger.info('Checking and updating releases');
         const releases = await this.store.list();
+        return this.store.replace(await this.validateEditorPaths(releases));
+    }
 
-        for (const release of releases) {
-            release.valid = this.configService.get('docsScreenshots')
-                ? true
-                : await this.pathExistsForValidation(release.editor_path);
-            if (!release.valid) {
-                logger.warn(`Release '${release.version}' has an invalid path`);
-            }
+    /**
+     * Quickly refreshes installed-editor paths for focus handling.
+     *
+     * @returns Updated releases when validity changed, otherwise null.
+     */
+    async refreshInstalledEditorHealth(): Promise<InstalledRelease[] | null> {
+        const releases = await this.store.list();
+        const validated = await this.validateEditorPaths(releases);
+        const changed = validated.some(
+            (release, index) => release.valid !== releases[index]?.valid,
+        );
+        if (!changed) {
+            return null;
         }
 
-        return this.store.replace(releases);
+        return this.store.replace(validated);
     }
 
     /**
@@ -192,5 +200,29 @@ export class InstalledEditorService {
         } finally {
             clearTimeout(timeout);
         }
+    }
+
+    /**
+     * Validates editor paths in parallel without mutating stored snapshots.
+     *
+     * @param releases - Installed editors to validate.
+     * @returns Copies containing current path validity.
+     */
+    private validateEditorPaths(
+        releases: InstalledRelease[],
+    ): Promise<InstalledRelease[]> {
+        return Promise.all(
+            releases.map(async (release) => {
+                const valid = this.configService.get('docsScreenshots')
+                    ? true
+                    : await this.pathExistsForValidation(release.editor_path);
+                if (!valid) {
+                    logger.warn(
+                        `Release '${release.version}' has an invalid path`,
+                    );
+                }
+                return { ...release, valid };
+            }),
+        );
     }
 }

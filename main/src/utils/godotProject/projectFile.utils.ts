@@ -104,6 +104,32 @@ export async function getProjectConfigVersionFromParsed(
     return +(parsedProject.get('ROOT')?.get('config_version') || '0');
 }
 
+/**
+ * Reads the Godot major/minor branch required by a parsed project file.
+ *
+ * @param parsedProject - Parsed project.godot sections.
+ * @returns The required Godot 4 branch, or null when it cannot be inferred.
+ */
+export function getProjectGodotVersionFromParsed(
+    parsedProject: GodotProjectFile,
+): string | null {
+    const rawFeatures = parsedProject
+        .get('application')
+        ?.get('config/features');
+
+    if (!rawFeatures?.startsWith('PackedStringArray(')) {
+        return null;
+    }
+
+    for (const match of rawFeatures.matchAll(/"((?:\\.|[^"\\])*)"/g)) {
+        if (/^4\.\d+$/.test(match[1])) {
+            return match[1];
+        }
+    }
+
+    return null;
+}
+
 export function cleanGodotStringValue(value: string): string {
     return value.replace(/^"+|"+$/g, '').trim();
 }

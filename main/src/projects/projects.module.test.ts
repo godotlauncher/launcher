@@ -23,11 +23,13 @@ vi.mock('electron-updater', () => ({
     },
 }));
 
+import { AppIntegrationsModule } from '../app-integrations/app-integrations.module.js';
 import type { AppConfig } from '../config/index.js';
 import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js';
 import { EditorProjectRepairAdapter } from '../editor-installs/editor-project-repair.adapter.js';
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import { ToolIntegrationModule } from '../tool-integration/tool-integration.module.js';
+import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
 import { ProjectsController } from './projects.controller.js';
 import { ProjectsModule } from './projects.module.js';
 import { ProjectsService } from './projects.service.js';
@@ -51,6 +53,11 @@ describe('ProjectsModule', () => {
                     directory: '/config',
                     fileName: 'tool-integrations.json',
                 }),
+                AppIntegrationsModule.forRoot({
+                    directory: '/config',
+                    metadataFileName: 'app-integrations.json',
+                    secretsFileName: 'app-integration-secrets.json',
+                }),
                 ProjectsModule,
             ],
         })
@@ -66,6 +73,9 @@ describe('ProjectsModule', () => {
         expect(application.get(ProjectsController)).toBeInstanceOf(
             ProjectsController,
         );
+        expect(
+            application.get(ProjectRepositoryOriginIndexService),
+        ).toBeInstanceOf(ProjectRepositoryOriginIndexService);
         expect(application.get(ProjectsStore)).toBe(
             application.get(ProjectsStore),
         );

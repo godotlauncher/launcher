@@ -70,6 +70,7 @@ export type ToolExecutionRequest = {
     args: readonly string[];
     cwd?: string;
     env?: Readonly<Record<string, string | undefined>>;
+    inheritEnv?: boolean;
     timeoutMs?: number;
 };
 
@@ -96,6 +97,28 @@ export type ToolExecutionFailure = {
 };
 
 export type ToolExecutionResult = ToolExecutionSuccess | ToolExecutionFailure;
+
+export type ToolExecutionSession = (
+    request: ToolExecutionRequest,
+) => Promise<ToolExecutionResult>;
+
+export type ToolStreamingExecutionRequest = {
+    args: readonly string[];
+    cwd?: string;
+    env: NodeJS.ProcessEnv;
+    signal: AbortSignal;
+    timeoutMs: number;
+    onStdout?: (chunk: string) => void;
+    onStderr?: (chunk: string) => void;
+};
+
+export type ToolStreamingExecutionResult =
+    | { success: true; exitCode: 0 }
+    | {
+          success: false;
+          reason: ToolExecutionFailureReason | 'cancelled';
+          exitCode: number | null;
+      };
 
 export interface ToolIntegration {
     readonly metadata: ToolMetadata;

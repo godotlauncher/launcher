@@ -29,6 +29,8 @@
             "installs": "インストール",
             "help": "ヘルプ",
             "settings": "設定",
+            "connections": "接続",
+            "new": "新着",
             "joinCommunity": "コミュニティに参加"
         },
         "update": {

@@ -11,8 +11,10 @@ import type {
     LaunchProjectOptions,
     ProjectDetails,
     ProjectsBridge,
+    RemoteProjectImportRequest,
     RenameProjectOptions,
     RendererType,
+    ResolveRemoteProjectCloneAction,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsService } from './projects.service.js';
@@ -28,6 +30,82 @@ export class ProjectsController implements ProjectsBridge {
      * @param projects - Project workflow facade.
      */
     constructor(private readonly projects: ProjectsService) {}
+
+    /**
+     * Clones a remote repository and discovers its Godot projects.
+     *
+     * @param request - Renderer-safe remote source and destination request.
+     */
+    @ProjectsHandler('importRemoteProject')
+    importRemoteProject(request: RemoteProjectImportRequest) {
+        return this.projects.importRemoteProject(request);
+    }
+
+    /**
+     * Cancels the active remote clone job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    @ProjectsHandler('cancelRemoteProjectImport')
+    cancelRemoteProjectImport(jobId: string) {
+        return this.projects.cancelRemoteProjectImport(jobId);
+    }
+
+    /**
+     * Keeps or deletes the exact final clone owned by an import job.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param action - Whether to retain the clone or delete it.
+     */
+    @ProjectsHandler('resolveRemoteProjectClone')
+    resolveRemoteProjectClone(
+        jobId: string,
+        action: ResolveRemoteProjectCloneAction,
+    ) {
+        return this.projects.resolveRemoteProjectClone(jobId, action);
+    }
+
+    /**
+     * Sets repository-scoped Git identity for an unchanged imported clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     * @param identity - Complete identity to write to the clone.
+     */
+    @ProjectsHandler('setRemoteProjectGitIdentity')
+    setRemoteProjectGitIdentity(jobId: string, identity: GitIdentity) {
+        return this.projects.setRemoteProjectGitIdentity(jobId, identity);
+    }
+
+    /**
+     * Initialises validated public submodules for one retained remote clone.
+     *
+     * @param jobId - Exact process-local clone job ID.
+     */
+    @ProjectsHandler('initialiseRemoteProjectSubmodules')
+    initialiseRemoteProjectSubmodules(jobId: string) {
+        return this.projects.initialiseRemoteProjectSubmodules(jobId);
+    }
+
+    /**
+     * Inspects one anonymous public Git source.
+     *
+     * @param url - Anonymous HTTPS repository URL.
+     */
+    @ProjectsHandler('inspectPublicGitSource')
+    inspectPublicGitSource(url: string) {
+        return this.projects.inspectPublicGitSource(url);
+    }
+
+    /**
+     * Lists one page of connected hosting repositories.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param cursor - Optional opaque browse cursor.
+     */
+    @ProjectsHandler('listConnectedRepositories')
+    listConnectedRepositories(providerId: string, cursor?: string) {
+        return this.projects.listConnectedRepositories(providerId, cursor);
+    }
 
     /** Gets every stored project. */
     @ProjectsHandler('getProjectsDetails')

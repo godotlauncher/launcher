@@ -86,6 +86,35 @@ describe('ToolProcessExecutor', () => {
         });
     });
 
+    it('can replace the inherited environment for isolated commands', async () => {
+        processMocks.execFile.mockImplementation(
+            (
+                _file: string,
+                _args: readonly string[],
+                _options: object,
+                callback: (
+                    error: ExecFileException | null,
+                    stdout: string,
+                    stderr: string,
+                ) => void,
+            ) => callback(null, '', ''),
+        );
+        const environment = { LANG: 'C', GIT_CONFIG_NOSYSTEM: '1' };
+
+        await new ToolProcessExecutor().execute(installation, {
+            args: ['config'],
+            env: environment,
+            inheritEnv: false,
+        });
+
+        expect(processMocks.execFile).toHaveBeenCalledWith(
+            '/tools/example',
+            ['--prefix', 'config'],
+            expect.objectContaining({ env: environment }),
+            expect.any(Function),
+        );
+    });
+
     it('returns a structured failure when process creation throws', async () => {
         processMocks.execFile.mockImplementation(() => {
             throw new TypeError('Invalid command');

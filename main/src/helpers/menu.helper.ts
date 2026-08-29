@@ -47,6 +47,9 @@ function buildMenu(): Electron.Menu {
             ],
         },
         {
+            role: 'editMenu',
+        },
+        {
             label: t('menus:developer.label'),
             submenu: [
                 {
@@ -71,4 +74,16 @@ function buildMenu(): Electron.Menu {
             ],
         },
     ]);
+}
+
+/** Installs native editing commands without exposing an application menu elsewhere. */
+export function createEditingMenu(): void {
+    const menu =
+        process.platform === 'darwin'
+            ? Menu.buildFromTemplate([
+                  { role: 'appMenu' },
+                  { role: 'editMenu' },
+              ])
+            : null;
+    Menu.setApplicationMenu(menu);
 }

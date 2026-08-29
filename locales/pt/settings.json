@@ -7,6 +7,7 @@
         "behavior": "Comportamento",
         "tools": "Ferramentas",
         "codeEditors": "Editores de código",
+        "connections": "Ligações",
         "updates": "Atualizações"
     },
     "appearance": {
@@ -222,6 +223,73 @@
         "errors": {
             "load": "Não foi possível carregar integrações de ferramentas.",
             "rescan": "Não foi possível verificar novamente esta ferramenta."
+        }
+    },
+    "connections": {
+        "title": "Gerir ligações",
+        "overview": "Liga serviços externos para os utilizares no Godot Launcher.",
+        "loading": "A carregar ligações...",
+        "loadError": "Não foi possível carregar as ligações.",
+        "genericDescription": "Liga este serviço para o utilizares no Godot Launcher.",
+        "github": {
+            "description": "Liga o GitHub para disponibilizares os teus repositórios no Godot Launcher.",
+            "accessNote": "Tu controlas os repositórios a que a aplicação GitHub pode aceder.",
+            "summary": "{{count}} ligações"
+        },
+        "secureStorageUnavailable": "Configura o porta-chaves ou o armazenamento de credenciais do sistema antes de ligares o GitHub.",
+        "status": {
+            "notConnected": "Sem ligação",
+            "connecting": "A ligar...",
+            "selectionRequired": "Escolher uma ligação",
+            "connected": "Ligado",
+            "unavailable": "Indisponível",
+            "reauthorisationRequired": "É necessário voltar a ligar",
+            "secureStorageUnavailable": "Armazenamento seguro indisponível"
+        },
+        "actions": {
+            "connect": "Ligar {{provider}}",
+            "addConnection": "Adicionar ligação",
+            "selectAll": "Selecionar tudo",
+            "selectInstallation": "Selecionar {{connection}}",
+            "connectSelected": "Ligar selecionadas ({{count}})",
+            "installAnother": "Instalar noutra conta ou organização",
+            "cancel": "Cancelar",
+            "reconnect": "Voltar a ligar",
+            "manageConnections": "Gerir ligações do GitHub",
+            "manageAccess": "Gerir acesso aos repositórios",
+            "disconnect": "Desligar"
+        },
+        "errors": {
+            "accountMismatch": "O GitHub devolveu uma conta diferente. Seleciona a conta que querias gerir e tenta novamente.",
+            "denied": "A ligação ao GitHub foi cancelada.",
+            "timedOut": "O pedido de ligação expirou. Tenta novamente.",
+            "secureStorageUnavailable": "O armazenamento seguro de credenciais está indisponível.",
+            "installationRequired": "Não foi possível verificar a instalação da aplicação do GitHub. Verifica o acesso aos repositórios e tenta novamente.",
+            "generic": "Não foi possível concluir esta ação. Tenta novamente."
+        },
+        "drawer": {
+            "title": "Ligações do GitHub",
+            "description": "Gere as ligações do GitHub disponíveis para o Godot Launcher.",
+            "connections": "Ligações",
+            "chooseConnection": "Escolher ligações",
+            "chooseConnectionDescription": "Escolhe uma ou mais instalações existentes da GitHub App ou instala a aplicação noutro local.",
+            "finishSetup": "Concluir a configuração no GitHub",
+            "finishSetupDescription": "Conclui a instalação no navegador. Podes voltar aqui enquanto o Launcher continua à espera.",
+            "installations": "Instalações da aplicação",
+            "noInstallations": "Esta ligação ainda não tem instalações acessíveis da aplicação.",
+            "organization": "Organização",
+            "personalAccount": "Conta pessoal"
+        },
+        "disconnectConfirm": {
+            "title": "Desligar {{connection}}?",
+            "description": "Isto remove a ligação do Godot Launcher. Não desinstala a aplicação GitHub nem altera os remotos dos projetos.",
+            "finalDescription": "Isto remove a ligação deste dispositivo. Não desinstala a aplicação GitHub nem altera o acesso aos repositórios ou os remotos dos projetos.",
+            "revokeAllDevices": "Revogar também esta autorização do GitHub em todos os dispositivos com o Launcher.",
+            "revokeDetail": "Os outros dispositivos com o Launcher ligados a esta conta do GitHub terão de voltar a ligar-se.",
+            "localOnlyWarning": "O acesso ao GitHub continuará ativo noutros dispositivos, e os tokens copiados permanecerão válidos até expirarem ou serem revogados.",
+            "failureDetail": "Não foi possível remover a ligação. A credencial local foi mantida. Tente novamente.",
+            "revokeAction": "Revogar e desligar",
+            "localOnlyAction": "Desligar este dispositivo"
         }
     },
     "updates": {

@@ -5,6 +5,8 @@ import {
     type I18nModuleOptions,
 } from '@mariodebono/di-electron-i18n';
 import { AppController } from './app.controller.js';
+import { AppIntegrationsModule } from './app-integrations/app-integrations.module.js';
+import { GitHubAppIntegrationModule } from './app-integrations/providers/github/github-app-integration.module.js';
 import { AppLifecycleService } from './app-lifecycle.service.js';
 import { AppMigrationsModule } from './app-migrations/app-migrations.module.js';
 import { CodeEditorIntegrationModule } from './codeEditorIntegration/codeEditorIntegration.module.js';
@@ -14,6 +16,8 @@ import {
     getCurrentAppConfig,
 } from './config/index.js';
 import {
+    APP_INTEGRATION_SECRETS_FILENAME,
+    APP_INTEGRATIONS_FILENAME,
     EDITOR_CATALOG_FILENAME,
     TOOL_INTEGRATIONS_FILENAME,
 } from './constants.js';
@@ -41,6 +45,15 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
             validationSchema: AppConfigSchema,
         }),
         AppMigrationsModule,
+        AppIntegrationsModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService<AppConfig>) => ({
+                directory: configService.getOrThrow('paths.configDir'),
+                metadataFileName: APP_INTEGRATIONS_FILENAME,
+                secretsFileName: APP_INTEGRATION_SECRETS_FILENAME,
+            }),
+        }),
+        GitHubAppIntegrationModule,
         CodeEditorIntegrationModule,
         EditorCatalogModule.forRootAsync({
             inject: [ConfigService],

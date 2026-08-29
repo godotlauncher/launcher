@@ -98,6 +98,11 @@ export type LaunchProjectResult =
     | { launched: true }
     | {
           launched: false;
+          reason: 'project_unavailable';
+          project: ProjectDetails;
+      }
+    | {
+          launched: false;
           reason: 'code_editor_unavailable';
           integration: CodeEditorIntegrationSummary;
       };
@@ -140,13 +145,27 @@ export type InitializeProjectGitResult = {
 };
 
 export type ProjectLauncherEditorRequest = {
+    kind: 'exact';
     channel: EditorChannel;
     flavor: EditorFlavor;
     base_version: string;
     version: string;
 };
 
-export type AddProjectOptions =
+export type ProjectInferredEditorRequest = {
+    kind: 'stable-base';
+    channel: 'official';
+    flavor: 'gdscript' | 'dotnet';
+    base_version: string;
+};
+
+export type ProjectEditorRequest =
+    | ProjectLauncherEditorRequest
+    | ProjectInferredEditorRequest;
+
+export type AddProjectOptions = {
+    codeEditorId?: CodeEditorId | null;
+} & (
     | {
           resolution?: undefined;
       }
@@ -156,16 +175,24 @@ export type AddProjectOptions =
     | {
           resolution: 'use_fallback';
           release: InstalledRelease;
-      };
+      }
+);
 
 export type AddProjectEditorResolution = {
-    requested: ProjectLauncherEditorRequest;
+    requested: ProjectEditorRequest;
     fallback?: InstalledRelease;
-    downloadable?: {
-        version: string;
-        flavor: EditorFlavor;
-        prerelease: boolean;
-    };
+    downloadable?:
+        | {
+              match: 'exact';
+              version: string;
+              flavor: EditorFlavor;
+              prerelease: boolean;
+          }
+        | {
+              match: 'stable-base';
+              base_version: string;
+              flavor: 'gdscript' | 'dotnet';
+          };
 };
 
 export type AddProjectToListResult = BackendResult & {
@@ -211,3 +238,5 @@ export type ProjectConfig = {
 export type ProjectDefinition = Map<number, ProjectConfig>;
 
 export type * from './projects.bridge.js';
+export type * from './remote-project-import.types.js';
+export type * from './remote-project-source.types.js';
