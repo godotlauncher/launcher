@@ -21,6 +21,35 @@ const options = {
 const project = { path: '/projects/my-game' } as ProjectDetails;
 
 describe('ProjectPublicationService', () => {
+    it('returns a cautious repository-name availability result', async () => {
+        const repositories = {
+            checkRepositoryNameAvailability: vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: true as const,
+                    availability: 'unavailable' as const,
+                })
+                .mockResolvedValueOnce({
+                    ok: false as const,
+                    reason: 'network-unavailable' as const,
+                }),
+        };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            { pushMain: vi.fn() } as never,
+        );
+
+        await expect(
+            service.checkRepositoryNameAvailability(options),
+        ).resolves.toEqual({ status: 'unavailable' });
+        await expect(
+            service.checkRepositoryNameAvailability(options),
+        ).resolves.toEqual({
+            status: 'unknown',
+            reason: 'network-unavailable',
+        });
+    });
+
     it('retries a confirmed repository without creating it twice', async () => {
         const repositories = {
             listRepositoryCreationTargets: vi.fn(async () => ({

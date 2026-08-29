@@ -25,14 +25,11 @@ describe('CreateProjectGitHubPublishingSection', () => {
                 targetFailure={null}
                 selectedTargetValue='["connection-id","target-id"]'
                 repositoryName="my-game"
+                availability="available"
                 disabled={false}
-                failure={null}
                 onTargetChange={vi.fn()}
                 onRepositoryNameChange={vi.fn()}
                 onOpenConnections={vi.fn()}
-                onRetry={vi.fn()}
-                onContinueLocally={vi.fn()}
-                onOpenGitHub={vi.fn()}
             />,
         );
 
@@ -43,7 +40,7 @@ describe('CreateProjectGitHubPublishingSection', () => {
         expect(html).not.toContain('Change connection');
     });
 
-    it('shows safe recovery actions without losing the local project', () => {
+    it('shows a confirmed repository-name conflict in the shared field', () => {
         const html = renderToStaticMarkup(
             <CreateProjectGitHubPublishingSection
                 t={t}
@@ -53,32 +50,15 @@ describe('CreateProjectGitHubPublishingSection', () => {
                 targetFailure={null}
                 selectedTargetValue=""
                 repositoryName="my-game"
+                availability="unavailable"
                 disabled={false}
-                failure={{
-                    status: 'failed',
-                    attemptId: 'attempt-id',
-                    stage: 'push',
-                    reason: 'remote-created-push-failed',
-                    repository: {
-                        owner: 'godotlauncher',
-                        name: 'my-game',
-                        webUrl: 'https://github.com/godotlauncher/my-game',
-                    },
-                    canRetry: true,
-                    canEdit: false,
-                }}
                 onTargetChange={vi.fn()}
                 onRepositoryNameChange={vi.fn()}
                 onOpenConnections={vi.fn()}
-                onRetry={vi.fn()}
-                onContinueLocally={vi.fn()}
-                onOpenGitHub={vi.fn()}
             />,
         );
 
-        expect(html).toContain('publishToGitHub.recoveryTitle');
-        expect(html).toContain('publishToGitHub.retry');
-        expect(html).toContain('publishToGitHub.openGitHub');
-        expect(html).toContain('publishToGitHub.continueLocally');
+        expect(html).toContain('publishToGitHub.availabilityUnavailable');
+        expect(html).toContain('input-error');
     });
 });

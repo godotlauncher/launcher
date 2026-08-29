@@ -207,6 +207,39 @@ describe('RepositoryHostingService', () => {
         ).resolves.toEqual({ ok: false, reason: 'session-expired' });
         expect(capability.resolveRepository).not.toHaveBeenCalled();
     });
+
+    it('checks repository availability inside the exact credential lease', async () => {
+        const selectedRoute = route('one');
+        selectedRoute.connectionId = '5c2d1cf0-d9a2-4db5-a095-23764076bc7e';
+        selectedRoute.accessTarget.id = 'f82aa4ee-0570-4fc5-97bf-00bb6253ff23';
+        const checkRepositoryNameAvailability = vi.fn(async () => 'available');
+        const service = new RepositoryHostingService(
+            {
+                get: vi.fn(() => ({ checkRepositoryNameAvailability })),
+            } as never,
+            {
+                withCredentialLease: vi.fn(async (_providerId, operation) => ({
+                    ok: true,
+                    value: await operation([selectedRoute]),
+                })),
+            } as never,
+        );
+
+        await expect(
+            service.checkRepositoryNameAvailability('github', {
+                connectionId: selectedRoute.connectionId,
+                accessTargetId: selectedRoute.accessTarget.id,
+                repositoryName: 'my-game',
+            }),
+        ).resolves.toEqual({ ok: true, availability: 'available' });
+        expect(checkRepositoryNameAvailability).toHaveBeenCalledWith(
+            expect.objectContaining({
+                credential: selectedRoute.credential,
+                accessTarget: selectedRoute.accessTarget,
+                repositoryName: 'my-game',
+            }),
+        );
+    });
 });
 
 /** Creates a repository service with callback-scoped fake credentials. */

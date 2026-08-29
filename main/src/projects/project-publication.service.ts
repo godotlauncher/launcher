@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { OnModuleDestroy } from '@mariodebono/di';
 import { Injectable } from '@mariodebono/di';
 import type {
+    CheckCreateProjectRepositoryNameAvailabilityResult,
     CreateProjectPublicationOptions,
     CreateProjectPublicationOutcome,
     CreateProjectPublicationTargetFailureReason,
@@ -86,6 +87,32 @@ export class ProjectPublicationService implements OnModuleDestroy {
             };
         }
         return { success: true, targets: result.targets };
+    }
+
+    /**
+     * Checks whether one selected owner visibly contains a repository name.
+     *
+     * @param options - Renderer-safe owner route and repository name.
+     * @returns A cautious availability result for the Create Project form.
+     */
+    async checkRepositoryNameAvailability(
+        options: CreateProjectPublicationOptions,
+    ): Promise<CheckCreateProjectRepositoryNameAvailabilityResult> {
+        const repositoryName = options.repositoryName.trim();
+        if (!GITHUB_REPOSITORY_NAME_PATTERN.test(repositoryName)) {
+            return { status: 'unknown', reason: 'invalid-repository-name' };
+        }
+        const result = await this.repositories.checkRepositoryNameAvailability(
+            options.providerId,
+            { ...options, repositoryName },
+        );
+        if (result.ok) {
+            return { status: result.availability };
+        }
+        return {
+            status: 'unknown',
+            reason: mapAvailabilityFailure(result.reason),
+        };
     }
 
     /**
@@ -331,6 +358,34 @@ function mapTargetFailure(
         return reason;
     }
     if (reason === 'secure-storage-unavailable') {
+        return reason;
+    }
+    return 'provider-unavailable';
+}
+
+/**
+ * Maps provider failures to the availability check's renderer-safe contract.
+ *
+ * @param reason - Provider-neutral repository access failure.
+ * @returns The renderer-safe reason for an inconclusive name check.
+ */
+function mapAvailabilityFailure(
+    reason: RepositoryCreationFailureReason,
+): Extract<
+    CheckCreateProjectRepositoryNameAvailabilityResult,
+    { status: 'unknown' }
+>['reason'] {
+    if (reason === 'no-usable-connection') {
+        return 'connection-required';
+    }
+    if (
+        reason === 'permission-update-required' ||
+        reason === 'secure-storage-unavailable' ||
+        reason === 'target-unavailable' ||
+        reason === 'invalid-repository-name' ||
+        reason === 'rate-limited' ||
+        reason === 'network-unavailable'
+    ) {
         return reason;
     }
     return 'provider-unavailable';

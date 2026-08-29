@@ -36,6 +36,7 @@ type DrawerProps = {
     panelClassName?: string;
     backdropClassName?: string;
     width?: number | string;
+    initialFocusRef?: React.RefObject<HTMLElement | null>;
 };
 
 type DrawerSlotProps = {
@@ -364,6 +365,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
     panelClassName,
     backdropClassName,
     width,
+    initialFocusRef,
 }) => {
     const titleId = useId();
     const panelRef = useRef<HTMLElement | null>(null);
@@ -442,14 +444,23 @@ const DrawerRoot: React.FC<DrawerProps> = ({
 
         const animationFrameId = window.requestAnimationFrame(() => {
             if (panelRef.current) {
-                focusFirstDrawerElement(panelRef.current);
+                const initialFocusTarget = initialFocusRef?.current;
+                if (
+                    initialFocusTarget?.isConnected &&
+                    panelRef.current.contains(initialFocusTarget) &&
+                    !initialFocusTarget.matches(':disabled')
+                ) {
+                    focusDrawerElement(initialFocusTarget);
+                } else {
+                    focusFirstDrawerElement(panelRef.current);
+                }
             }
         });
 
         return () => {
             window.cancelAnimationFrame(animationFrameId);
         };
-    }, [open, shouldRender]);
+    }, [initialFocusRef, open, shouldRender]);
 
     useEffect(() => {
         if (!open || typeof window === 'undefined') {

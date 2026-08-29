@@ -125,6 +125,20 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Checks whether one selected owner visibly contains a repository name.
+     *
+     * @param publication - Renderer-safe owner route and repository name.
+     */
+    @ProjectsHandler('checkCreateProjectRepositoryNameAvailability')
+    checkCreateProjectRepositoryNameAvailability(
+        publication: CreateProjectPublicationOptions,
+    ) {
+        return this.projects.checkCreateProjectRepositoryNameAvailability(
+            publication,
+        );
+    }
+
+    /**
      * Creates and registers a project.
      *
      * @param name - Display name for the new project.

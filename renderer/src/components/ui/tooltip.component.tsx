@@ -255,6 +255,10 @@ export const Tooltip: FC<TooltipProps> = ({
                   : child.props['aria-describedby'],
           })
         : children;
+    const portalHost =
+        typeof document === 'undefined'
+            ? null
+            : (triggerRef.current?.closest('dialog') ?? document.body);
 
     return (
         <>
@@ -308,7 +312,7 @@ export const Tooltip: FC<TooltipProps> = ({
                 {describedChild}
             </span>
             {open &&
-                typeof document !== 'undefined' &&
+                portalHost &&
                 createPortal(
                     <div
                         ref={tooltipRef}
@@ -316,7 +320,7 @@ export const Tooltip: FC<TooltipProps> = ({
                         role="tooltip"
                         data-side={position?.side ?? placement}
                         className={clsx(
-                            'pointer-events-none fixed z-70 w-max whitespace-normal rounded-field px-2 py-1 text-center text-sm leading-tight shadow-md',
+                            'pointer-events-none fixed z-70 w-max whitespace-normal rounded-field px-2 py-1 text-center text-sm leading-tight shadow-sm shadow-black/40',
                             tooltipToneClassNames[tone],
                         )}
                         style={{
@@ -335,7 +339,7 @@ export const Tooltip: FC<TooltipProps> = ({
                             />
                         )}
                     </div>,
-                    document.body,
+                    portalHost,
                 )}
         </>
     );

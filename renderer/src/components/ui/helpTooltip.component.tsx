@@ -14,8 +14,11 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
 }) => (
     <Tooltip
         tip={help}
-        tone="info"
-        className={clsx('text-info', className)}
+        tone="default"
+        className={clsx(
+            'text-base-content/60 transition-colors hover:text-base-content',
+            className,
+        )}
         role="img"
         ariaLabel={help}
     >

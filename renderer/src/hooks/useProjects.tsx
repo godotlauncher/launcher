@@ -2,6 +2,7 @@ import type {
     AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
+    CheckCreateProjectRepositoryNameAvailabilityResult,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
@@ -117,6 +118,9 @@ interface ProjectsContext {
         publication?: CreateProjectPublicationOptions,
     ) => Promise<CreateProjectResult>;
     listCreateProjectPublicationTargets: () => Promise<ListCreateProjectPublicationTargetsResult>;
+    checkCreateProjectRepositoryNameAvailability: (
+        publication: CreateProjectPublicationOptions,
+    ) => Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
     retryCreateProjectPublication: (
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
@@ -223,6 +227,14 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     /** Lists GitHub owners eligible for Create Project publishing. */
     const listCreateProjectPublicationTargets = () =>
         projectsBridge.listCreateProjectPublicationTargets('github');
+
+    /** Checks a Create Project repository name through its selected owner route. */
+    const checkCreateProjectRepositoryNameAvailability = (
+        publication: CreateProjectPublicationOptions,
+    ) =>
+        projectsBridge.checkCreateProjectRepositoryNameAvailability(
+            publication,
+        );
 
     /**
      * Retries a process-local Create Project publication attempt.
@@ -588,6 +600,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 checkProjectValid,
                 createProject,
                 listCreateProjectPublicationTargets,
+                checkCreateProjectRepositoryNameAvailability,
                 retryCreateProjectPublication,
                 discardCreateProjectPublication,
             }}

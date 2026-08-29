@@ -12,9 +12,12 @@ import {
     createFixtureHome,
     ensureMainNavigationReady,
     prepareAppWithStubbedData,
+    stubCreateProjectRepositoryNameAvailability,
     stubCreateProjectPublicationTargets,
+    stubCreateProjectResult,
     stubGlobalGitIdentity,
 } from './documentationScreenshots/runtime';
+import { SAMPLE_PROJECTS } from './documentationScreenshots/sampleData';
 import { THEMES } from './documentationScreenshots/themes';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
@@ -55,6 +58,9 @@ test.beforeEach(async () => {
         ],
     });
     await stubGlobalGitIdentity(electronApp, { name: '', email: '' });
+    await stubCreateProjectRepositoryNameAvailability(electronApp, {
+        status: 'available',
+    });
 });
 
 /** Resizes the real Electron window to the selected design viewport. */
@@ -76,9 +82,17 @@ test.afterAll(async () => {
 test('reveals connected private repository fields and preserves a manual name', async () => {
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectCreate').click();
-    await mainPage
-        .getByTestId('inputProjectName')
-        .fill('My Next Awesome Game');
+    const projectName = mainPage.getByTestId('inputProjectName');
+    await expect(projectName).toBeFocused();
+    await projectName.fill('My Awesome Game');
+    await expect(
+        mainPage.getByLabel('A project with this name already exists'),
+    ).toBeVisible();
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
+    await projectName.fill('My Next Awesome Game');
+    await expect(
+        mainPage.getByLabel('A project with this name already exists'),
+    ).toHaveCount(0);
 
     const publish = mainPage.getByRole('checkbox', {
         name: 'Publish to GitHub',
@@ -107,6 +121,9 @@ test('reveals connected private repository fields and preserves a manual name', 
         '#createProjectGitHubRepositoryName',
     );
     await expect(repositoryName).toHaveValue('My-Next-Awesome-Game');
+    await expect(
+        mainPage.getByText('Name looks available', { exact: true }),
+    ).toBeVisible();
     await expect(
         mainPage.getByText('Private GitHub repository', { exact: true }),
     ).toBeVisible();
@@ -182,6 +199,21 @@ test('reveals connected private repository fields and preserves a manual name', 
     }
 
     await repositoryName.fill('hand-picked-name');
+    await stubCreateProjectRepositoryNameAvailability(electronApp, {
+        status: 'unavailable',
+    });
+    await repositoryName.fill('existing-game');
+    await expect(
+        mainPage.getByText('Name already in use', { exact: true }),
+    ).toBeVisible();
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
+    await stubCreateProjectRepositoryNameAvailability(electronApp, {
+        status: 'available',
+    });
+    await repositoryName.fill('hand-picked-name');
+    await expect(
+        mainPage.getByText('Name looks available', { exact: true }),
+    ).toBeVisible();
     await mainPage.getByTestId('inputProjectName').fill('Renamed Project');
     await expect(repositoryName).toHaveValue('hand-picked-name');
     await mainPage.getByTestId('btnCreateProject').click();
@@ -192,6 +224,96 @@ test('reveals connected private repository fields and preserves a manual name', 
     await expect(
         mainPage.getByRole('button', { name: 'Add Git identity' }),
     ).toBeVisible();
+    await mainPage.getByRole('button', { name: 'Add Git identity' }).click();
+    await mainPage
+        .getByLabel('Recorded as the commit author name.')
+        .hover();
+    const identityTooltip = mainPage.getByRole('tooltip', {
+        name: 'Recorded as the commit author name.',
+    });
+    await expect(identityTooltip).toBeVisible();
+    expect(
+        await identityTooltip.evaluate(
+            (element) => element.parentElement?.tagName,
+        ),
+    ).toBe('DIALOG');
+    await mainPage.keyboard.press('Escape');
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
+test('blocks a conflicting name and shows app-style recovery', async () => {
+    await stubGlobalGitIdentity(electronApp, {
+        name: 'Mario Debono',
+        email: 'mario@example.com',
+    });
+    await stubCreateProjectResult(electronApp, {
+        success: false,
+        error: 'The project was created locally.',
+        projectDetails: {
+            ...SAMPLE_PROJECTS[0],
+            name: 'Conflict Game',
+            path: path.join(fixtureHome, 'Projects', 'Conflict Game'),
+        },
+        publication: {
+            status: 'failed',
+            attemptId: 'availability-conflict-attempt',
+            stage: 'remote-create',
+            reason: 'repository-name-unavailable-or-policy-rejected',
+            intendedRepository: {
+                owner: 'mariodebono',
+                name: 'Conflict-Game',
+                webUrl: 'https://github.com/mariodebono/Conflict-Game',
+            },
+            canRetry: true,
+            canEdit: true,
+        },
+    });
+
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage.getByTestId('inputProjectName').fill('Conflict Game');
+    await mainPage
+        .getByRole('checkbox', { name: 'Publish to GitHub' })
+        .check();
+    await expect(
+        mainPage.getByText('Name looks available', { exact: true }),
+    ).toBeVisible();
+    await stubCreateProjectRepositoryNameAvailability(electronApp, {
+        status: 'unavailable',
+    });
+
+    await mainPage.getByTestId('btnCreateProject').click();
+    const recoveryDialog = mainPage.getByRole('dialog', {
+        name: 'Could not publish to GitHub',
+    });
+    await expect(recoveryDialog).toBeVisible();
+    await expect(
+        recoveryDialog.locator('.lucide-triangle-alert.text-error'),
+    ).toBeVisible();
+    await expect(
+        recoveryDialog.getByText('Name already in use', { exact: true }),
+    ).toBeVisible();
+    await expect(
+        recoveryDialog.getByRole('button', { name: 'Retry publishing' }),
+    ).toBeDisabled();
+    await expect(
+        recoveryDialog.getByRole('button', { name: 'Open on GitHub' }),
+    ).toHaveCount(0);
+
+    if (process.env.GODOT_LAUNCHER_DESIGN_QA === '1') {
+        await mainPage.screenshot({
+            path: path.resolve(
+                process.cwd(),
+                '.internal-docs',
+                'create-project-github-publishing-recovery-modal.png',
+            ),
+        });
+    }
+
+    await recoveryDialog
+        .getByRole('button', { name: 'Continue locally' })
+        .click();
+    await expect(recoveryDialog).toBeHidden();
 });
 
 /**

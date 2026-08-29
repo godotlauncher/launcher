@@ -120,6 +120,24 @@ export type CreateProjectPublicationOptions = {
     repositoryName: string;
 };
 
+export type CreateProjectRepositoryNameAvailabilityFailureReason =
+    | 'invalid-repository-name'
+    | 'connection-required'
+    | 'permission-update-required'
+    | 'secure-storage-unavailable'
+    | 'target-unavailable'
+    | 'rate-limited'
+    | 'network-unavailable'
+    | 'provider-unavailable';
+
+export type CheckCreateProjectRepositoryNameAvailabilityResult =
+    | { status: 'available' }
+    | { status: 'unavailable' }
+    | {
+          status: 'unknown';
+          reason: CreateProjectRepositoryNameAvailabilityFailureReason;
+      };
+
 export type ProjectPublicationFailureReason =
     | 'connection-required'
     | 'permission-update-required'

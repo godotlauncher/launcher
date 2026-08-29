@@ -17,10 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appBridge } from '../../bridge.ts';
 import { BusyOverlay } from '../../components/busy-overlay.component';
-import {
-    Drawer,
-    focusDrawerElement,
-} from '../../components/ui/drawer/drawer.component';
+import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useGit } from '../../hooks/git.hook';
 import { useGitLfs } from '../../hooks/git-lfs.hook';
@@ -37,12 +34,14 @@ import {
     CreateProjectGitIdentityDialog,
     type GitIdentityDialogPage,
 } from './createProject/components/create-project-git-identity-dialog.component';
+import { CreateProjectGitHubPublishingRecoveryDialog } from './createProject/components/create-project-github-publishing-recovery-dialog.component';
 import { CreateProjectGitHubPublishingSection } from './createProject/components/create-project-github-publishing-section.component';
 import { CreateProjectSourceControlSection } from './createProject/components/create-project-source-control-section.component';
 import { CreateProjectActions } from './createProject/components/createProjectActions.component';
 import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
 import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
 import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
+import type { RepositoryNameAvailabilityState } from './createProject/components/repository-creation-fields.component';
 import {
     addCreateProjectGitLfsOptions,
     buildCreateProjectReleaseRows,
@@ -53,12 +52,15 @@ import {
     getProjectPathSuffixDisplay,
     getPublicationTargetValue,
     getSuggestedGitHubRepositoryName,
+    isCreateProjectNameAvailable,
     isGitHubRepositoryNameValid,
     isGitIdentityComplete,
     isToolIntegrationAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
+    PROJECT_NAME_CHECK_DEBOUNCE_MS,
+    REPOSITORY_NAME_CHECK_DEBOUNCE_MS,
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
@@ -96,6 +98,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [releaseKey, setReleaseKey] = useState<string | null>(null);
     const [projectName, setProjectName] = useState<string>('');
+    const [projectNameAvailability, setProjectNameAvailability] = useState<
+        'idle' | 'checking' | 'available' | 'unavailable'
+    >('idle');
     const [overwriteBasePath, setOverwriteBasePath] = useState<string>('');
     const [overwriteBasePathMissing, setOverwriteBasePathMissing] =
         useState<boolean>(false);
@@ -161,21 +166,27 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         useState('');
     const [repositoryName, setRepositoryName] = useState('');
     const [repositoryNameEdited, setRepositoryNameEdited] = useState(false);
+    const [repositoryNameAvailability, setRepositoryNameAvailability] =
+        useState<RepositoryNameAvailabilityState>('idle');
     const [publicationFailure, setPublicationFailure] =
         useState<FailedPublication | null>(null);
     const [publicationProject, setPublicationProject] =
         useState<ProjectDetails | null>(null);
     const inputNameRef = useRef<HTMLInputElement>(null);
+    const projectNameCheckRequestRef = useRef<number>(0);
     const overwritePathCheckRequestRef = useRef<number>(0);
+    const repositoryNameCheckRequestRef = useRef<number>(0);
     const overwriteBasePathInitializedRef = useRef<boolean>(false);
     const defaultOverwriteBasePathRef = useRef('');
 
     const { installedReleases, downloadingReleases } = useRelease();
     const { addAlert, addCustomConfirm } = useAlerts();
     const {
+        projects,
         createProject,
         launchProject,
         listCreateProjectPublicationTargets,
+        checkCreateProjectRepositoryNameAvailability,
         retryCreateProjectPublication,
         discardCreateProjectPublication,
     } = useProjects();
@@ -195,10 +206,80 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     );
 
     useEffect(() => {
+        projectNameCheckRequestRef.current += 1;
+        const requestId = projectNameCheckRequestRef.current;
+        if (!open || projectName.trim().length === 0) {
+            setProjectNameAvailability('idle');
+            return;
+        }
+
+        setProjectNameAvailability('checking');
+        const timeoutId = window.setTimeout(() => {
+            if (projectNameCheckRequestRef.current !== requestId) {
+                return;
+            }
+            setProjectNameAvailability(
+                isCreateProjectNameAvailable(projects, projectName)
+                    ? 'available'
+                    : 'unavailable',
+            );
+        }, PROJECT_NAME_CHECK_DEBOUNCE_MS);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [open, projectName, projects]);
+
+    useEffect(() => {
         if (!repositoryNameEdited) {
             setRepositoryName(getSuggestedGitHubRepositoryName(projectName));
         }
     }, [projectName, repositoryNameEdited]);
+
+    useEffect(() => {
+        repositoryNameCheckRequestRef.current += 1;
+        const requestId = repositoryNameCheckRequestRef.current;
+        const target = publicationTargets.find(
+            (candidate) =>
+                getPublicationTargetValue(candidate) ===
+                selectedPublicationTarget,
+        );
+        if (
+            !open ||
+            !publishToGitHub ||
+            !target ||
+            !isGitHubRepositoryNameValid(repositoryName) ||
+            (publicationFailure !== null && !publicationFailure.canEdit)
+        ) {
+            setRepositoryNameAvailability('idle');
+            return;
+        }
+
+        setRepositoryNameAvailability('checking');
+        const timeoutId = window.setTimeout(() => {
+            checkCreateProjectRepositoryNameAvailability(
+                toCreateProjectPublicationOptions(target, repositoryName),
+            )
+                .then((result) => {
+                    if (repositoryNameCheckRequestRef.current === requestId) {
+                        setRepositoryNameAvailability(result.status);
+                    }
+                })
+                .catch(() => {
+                    if (repositoryNameCheckRequestRef.current === requestId) {
+                        setRepositoryNameAvailability('unknown');
+                    }
+                });
+        }, REPOSITORY_NAME_CHECK_DEBOUNCE_MS);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [
+        checkCreateProjectRepositoryNameAvailability,
+        open,
+        publicationFailure,
+        publicationTargets,
+        publishToGitHub,
+        repositoryName,
+        selectedPublicationTarget,
+    ]);
 
     const allReleases = useMemo(
         () =>
@@ -448,6 +529,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         ) {
             setPublicationProject(result.projectDetails);
             setPublicationFailure(result.publication);
+            if (
+                result.publication.reason ===
+                'repository-name-unavailable-or-policy-rejected'
+            ) {
+                setRepositoryNameAvailability('unavailable');
+            }
             setError(undefined);
         } else {
             setError(result.error);
@@ -487,6 +574,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setPublishToGitHub(enabled);
         setPublicationFailure(null);
         setPublicationProject(null);
+        setRepositoryNameAvailability('idle');
         if (enabled) {
             void loadPublicationTargets();
             return;
@@ -500,6 +588,16 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     /** Retries the exact failed publication attempt without recreating local work. */
     const handleRetryPublication = async () => {
         if (!publicationFailure) return;
+
+        if (
+            publicationFailure.canEdit &&
+            ((repositoryNameAvailability !== 'available' &&
+                repositoryNameAvailability !== 'unknown') ||
+                !selectedPublicationTarget ||
+                !isGitHubRepositoryNameValid(repositoryName))
+        ) {
+            return;
+        }
 
         const target = publicationTargets.find(
             (candidate) =>
@@ -515,6 +613,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     : undefined,
             );
             if (result.publication?.status === 'published') {
+                setPublicationFailure(null);
                 onOpenChange(false);
                 if (editNow && result.projectDetails) {
                     void launchProject(result.projectDetails);
@@ -524,6 +623,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             }
             if (result.publication?.status === 'failed') {
                 setPublicationFailure(result.publication);
+                if (
+                    result.publication.reason ===
+                    'repository-name-unavailable-or-policy-rejected'
+                ) {
+                    setRepositoryNameAvailability('unavailable');
+                }
             }
         } catch {
             setError(t('publishToGitHub.retryFailed'));
@@ -536,6 +641,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const handleContinueLocally = async () => {
         if (!publicationFailure) return;
         await discardCreateProjectPublication(publicationFailure.attemptId);
+        setPublicationFailure(null);
         onOpenChange(false);
         if (editNow && publicationProject) {
             void launchProject(publicationProject);
@@ -591,13 +697,19 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         if (
             publishToGitHub &&
             (!selectedPublicationTarget ||
-                !isGitHubRepositoryNameValid(repositoryName))
+                !isGitHubRepositoryNameValid(repositoryName) ||
+                (repositoryNameAvailability !== 'available' &&
+                    repositoryNameAvailability !== 'unknown'))
         ) {
             return;
         }
 
-        if (projectName === '') {
+        if (projectName.trim() === '') {
             setError(t('project.nameRequired'));
+            return;
+        }
+
+        if (!isCreateProjectNameAvailable(projects, projectName)) {
             return;
         }
 
@@ -791,12 +903,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         }
 
         let active = true;
-        const animationFrameId = window.requestAnimationFrame(() => {
-            if (inputNameRef.current) {
-                focusDrawerElement(inputNameRef.current);
-            }
-        });
-
         listIntegrations()
             .then((integrations) => {
                 if (active) {
@@ -816,7 +922,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
 
         return () => {
             active = false;
-            window.cancelAnimationFrame(animationFrameId);
         };
     }, [listIntegrations, open]);
 
@@ -930,6 +1035,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setRenderer('FORWARD_PLUS');
         setReleaseKey(null);
         setProjectName('');
+        setProjectNameAvailability('idle');
         setOverwriteBasePath(defaultOverwriteBasePathRef.current);
         setOverwriteBasePathMissing(false);
         setCheckingOverwriteBasePath(false);
@@ -966,9 +1072,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setSelectedPublicationTarget('');
         setRepositoryName('');
         setRepositoryNameEdited(false);
+        setRepositoryNameAvailability('idle');
         setPublicationFailure(null);
         setPublicationProject(null);
         overwritePathCheckRequestRef.current += 1;
+        repositoryNameCheckRequestRef.current += 1;
         overwriteBasePathInitializedRef.current = Boolean(
             defaultOverwriteBasePathRef.current,
         );
@@ -979,7 +1087,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         checkingGitIdentity ||
         savingGitIdentityPreset ||
         selectingFolder ||
-        gitIdentityDialogPage !== null;
+        gitIdentityDialogPage !== null ||
+        publicationFailure !== null;
 
     return (
         <>
@@ -989,7 +1098,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 side="right"
                 closeOnBackdrop={!closeDisabled}
                 closeOnEscape={!closeDisabled}
-                trapFocus={gitIdentityDialogPage === null}
+                trapFocus={
+                    gitIdentityDialogPage === null &&
+                    publicationFailure === null
+                }
+                initialFocusRef={inputNameRef}
                 width="min(680px, 100vw)"
                 panelClassName={
                     gitIdentityDialogPage
@@ -1003,7 +1116,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                         message={t('projects:messages.waitingForDialog')}
                     />
                 )}
-                {creating && (
+                {creating && !publicationFailure && (
                     <BusyOverlay
                         className="z-60"
                         message={t(
@@ -1043,6 +1156,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             inputNameRef={inputNameRef}
                             installedReleaseCount={validInstalledReleaseCount}
                             projectName={projectName}
+                            projectNameError={
+                                projectNameAvailability === 'unavailable'
+                                    ? t('project.nameExists')
+                                    : undefined
+                            }
                             derivedProjectPath={derivedProjectPath}
                             overwriteProjectPath={overwriteProjectPath}
                             overwriteBasePath={overwriteBasePath}
@@ -1117,6 +1235,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             targetFailure={publicationTargetFailure}
                             selectedTargetValue={selectedPublicationTarget}
                             repositoryName={repositoryName}
+                            availability={repositoryNameAvailability}
                             repositoryNameError={
                                 publishToGitHub &&
                                 repositoryName.length > 0 &&
@@ -1125,18 +1244,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                                     : undefined
                             }
                             disabled={!withGit || !gitAvailable}
-                            failure={publicationFailure}
                             onTargetChange={setSelectedPublicationTarget}
                             onRepositoryNameChange={(name) => {
                                 setRepositoryNameEdited(true);
                                 setRepositoryName(name);
                             }}
                             onOpenConnections={handleOpenConnections}
-                            onRetry={() => void handleRetryPublication()}
-                            onContinueLocally={() =>
-                                void handleContinueLocally()
-                            }
-                            onOpenGitHub={handleOpenPublicationRepository}
                         />
                     </Drawer.Body>
                     <Drawer.Footer className="justify-between">
@@ -1148,6 +1261,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                                 loadingGitLfsPolicy ||
                                 validInstalledReleaseCount < 1 ||
                                 selectedReleaseIndex < 0 ||
+                                projectNameAvailability === 'checking' ||
+                                projectNameAvailability === 'unavailable' ||
                                 isOverwritePathEmpty ||
                                 publicationFailure !== null ||
                                 (publishToGitHub &&
@@ -1156,7 +1271,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                                         !selectedPublicationTarget ||
                                         !isGitHubRepositoryNameValid(
                                             repositoryName,
-                                        )))
+                                        ) ||
+                                        (repositoryNameAvailability !==
+                                            'available' &&
+                                            repositoryNameAvailability !==
+                                                'unknown')))
                             }
                             editNowLabel={t('buttons.editNow')}
                             cancelLabel={t('common:buttons.cancel')}
@@ -1173,6 +1292,39 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     </Drawer.Footer>
                 </form>
             </Drawer>
+            {publicationFailure && (
+                <CreateProjectGitHubPublishingRecoveryDialog
+                    t={t}
+                    failure={publicationFailure}
+                    targets={publicationTargets}
+                    selectedTargetValue={selectedPublicationTarget}
+                    repositoryName={repositoryName}
+                    availability={repositoryNameAvailability}
+                    repositoryNameError={
+                        repositoryName.length > 0 &&
+                        !isGitHubRepositoryNameValid(repositoryName)
+                            ? t('publishToGitHub.repositoryNameInvalid')
+                            : undefined
+                    }
+                    busy={creating}
+                    retryDisabled={
+                        publicationFailure.canEdit &&
+                        (!selectedPublicationTarget ||
+                            !isGitHubRepositoryNameValid(repositoryName) ||
+                            (repositoryNameAvailability !== 'available' &&
+                                repositoryNameAvailability !== 'unknown'))
+                    }
+                    returnFocusRef={createButtonRef}
+                    onTargetChange={setSelectedPublicationTarget}
+                    onRepositoryNameChange={(name) => {
+                        setRepositoryNameEdited(true);
+                        setRepositoryName(name);
+                    }}
+                    onRetry={() => void handleRetryPublication()}
+                    onContinueLocally={() => void handleContinueLocally()}
+                    onOpenGitHub={handleOpenPublicationRepository}
+                />
+            )}
             {gitIdentityDialogPage && (
                 <CreateProjectGitIdentityDialog
                     page={gitIdentityDialogPage}

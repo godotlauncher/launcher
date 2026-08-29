@@ -266,6 +266,40 @@ export class GitHubApiClient {
         }
         return repository;
     }
+
+    /**
+     * Checks whether an exact repository name is visible for one owner.
+     *
+     * @param accessToken - GitHub App user access token.
+     * @param owner - Exact personal or organisation installation owner.
+     * @param repositoryName - Locally validated repository name.
+     * @param signal - Caller cancellation signal.
+     * @returns Available when GitHub reports no visible repository, otherwise unavailable.
+     */
+    async checkRepositoryNameAvailability(
+        accessToken: string,
+        owner: string,
+        repositoryName: string,
+        signal: AbortSignal,
+    ): Promise<'available' | 'unavailable'> {
+        const url = new URL(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repositoryName)}`,
+            'https://api.github.com',
+        );
+        const response = await githubRequest(
+            url,
+            accessToken,
+            signal,
+            'manual',
+        );
+        if (response.status === 404) {
+            return 'available';
+        }
+        if (response.ok) {
+            return 'unavailable';
+        }
+        throwGitHubApiError(response);
+    }
 }
 
 /** Returns whether one installation has approved repository clone access. */

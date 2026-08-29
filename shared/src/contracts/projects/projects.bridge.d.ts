@@ -5,6 +5,7 @@ import type {
     AddProjectToListResult,
     CancelRemoteProjectImportResult,
     ChangeProjectEditorResult,
+    CheckCreateProjectRepositoryNameAvailabilityResult,
     CreateProjectGitOptions,
     CreateProjectPublicationOptions,
     CreateProjectResult,
@@ -76,6 +77,11 @@ export type ProjectsBridge = {
     listCreateProjectPublicationTargets(
         providerId: string,
     ): Promise<ListCreateProjectPublicationTargetsResult>;
+
+    /** Checks whether one owner route visibly contains the requested repository name. */
+    checkCreateProjectRepositoryNameAvailability(
+        publication: CreateProjectPublicationOptions,
+    ): Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
 
     /** Creates and registers a project. */
     createProject(

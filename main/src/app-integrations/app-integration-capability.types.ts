@@ -71,6 +71,8 @@ export type RepositoryCreationRequest = {
     signal: AbortSignal;
 };
 
+export type RepositoryNameAvailability = 'available' | 'unavailable';
+
 export type RepositoryPushCredentialRequest = {
     credential: string;
     accessTarget: AppIntegrationAccessTarget;
@@ -146,6 +148,11 @@ export interface RepositoryCreationCapability {
     createRepository(
         request: RepositoryCreationRequest,
     ): Promise<RepositoryCreation>;
+
+    /** Checks whether the requested name is visible on one approved owner route. */
+    checkRepositoryNameAvailability(
+        request: RepositoryCreationRequest,
+    ): Promise<RepositoryNameAvailability>;
 
     /** Formats a fresh credential for a retry against a confirmed repository. */
     getGitCredential(request: RepositoryPushCredentialRequest): {

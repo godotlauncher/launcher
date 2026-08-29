@@ -12,6 +12,7 @@ import type {
     AppBridge,
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
+    CreateProjectResult,
     GitIdentity,
     GitIdentitySettings,
     GitLfsTrackingPolicyDescriptor,
@@ -679,6 +680,58 @@ export async function stubCreateProjectPublicationTargets(
             injectedResult: ListCreateProjectPublicationTargetsResult,
         ) => {
             const channel = 'projects.listCreateProjectPublicationTargets';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs the cautious repository-name availability result used by Create Project.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic renderer-safe availability result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectRepositoryNameAvailability(
+    electronApp: ElectronApplication,
+    result: ProjectsResult<'checkCreateProjectRepositoryNameAvailability'>,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedResult: ProjectsResult<'checkCreateProjectRepositoryNameAvailability'>,
+        ) => {
+            const channel =
+                'projects.checkCreateProjectRepositoryNameAvailability';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs one complete Create Project result without touching the filesystem.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic renderer-safe creation result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectResult(
+    electronApp: ElectronApplication,
+    result: CreateProjectResult,
+): Promise<void> {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResult: CreateProjectResult) => {
+            const channel = 'projects.createProject';
             ipcMain.removeHandler(channel);
             ipcMain.handle(channel, async () => ({
                 success: true,

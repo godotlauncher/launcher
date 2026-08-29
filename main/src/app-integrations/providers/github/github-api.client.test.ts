@@ -154,6 +154,39 @@ describe('GitHubApiClient', () => {
         });
     });
 
+    it('checks an exact repository name without following redirects', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, { status: 404 }))
+            .mockResolvedValueOnce(Response.json({ id: 42 }));
+        vi.stubGlobal('fetch', fetchMock);
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.checkRepositoryNameAvailability(
+                'access-token',
+                'godotlauncher',
+                'new-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toBe('available');
+        await expect(
+            client.checkRepositoryNameAvailability(
+                'access-token',
+                'godotlauncher',
+                'existing-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toBe('unavailable');
+
+        expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+            'https://api.github.com/repos/godotlauncher/new-game',
+        );
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+            redirect: 'manual',
+        });
+    });
+
     it('omits suspended installations', async () => {
         vi.stubGlobal(
             'fetch',

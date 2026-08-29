@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     InstalledRelease,
+    ProjectDetails,
 } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
@@ -12,6 +13,7 @@ import {
     getProjectPathSuffixDisplay,
     getPublicationTargetValue,
     getSuggestedGitHubRepositoryName,
+    isCreateProjectNameAvailable,
     isGitHubRepositoryNameValid,
     isGitIdentityComplete,
     isToolIntegrationAvailable,
@@ -66,6 +68,24 @@ const codeEditorSettings = (
 });
 
 describe('create project model helpers', () => {
+    it('checks trimmed project names against the Launcher project library', () => {
+        const projects = [
+            { name: 'Existing Project' },
+            { name: 'Other Project' },
+        ] as ProjectDetails[];
+
+        expect(
+            isCreateProjectNameAvailable(projects, ' Existing Project '),
+        ).toBe(false);
+        expect(isCreateProjectNameAvailable(projects, 'existing project')).toBe(
+            true,
+        );
+        expect(isCreateProjectNameAvailable(projects, 'New Project')).toBe(
+            true,
+        );
+        expect(isCreateProjectNameAvailable(projects, '   ')).toBe(false);
+    });
+
     it('suggests and validates conservative GitHub repository names', () => {
         expect(getSuggestedGitHubRepositoryName('  My Café Game!  ')).toBe(
             'My-Caf-Game',

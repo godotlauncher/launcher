@@ -12,6 +12,7 @@ import {
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
     stubCreateProjectPublicationTargets,
+    stubCreateProjectRepositoryNameAvailability,
     stubGlobalGitIdentity,
     stubProjectGitIdentity,
     stubProjectGitInitializationFailure,
@@ -975,6 +976,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                     },
                 ],
             });
+            await stubCreateProjectRepositoryNameAvailability(electronApp, {
+                status: 'available',
+            });
             await page.getByTestId('btnProjects').click();
             await stubCodeEditorIntegrationSettings(electronApp, [
                 SAMPLE_VSCODE_SETTINGS_AVAILABLE,
@@ -989,7 +993,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await expect(
                 page.getByTestId('selectCreateProjectGitHubOwner'),
             ).toBeVisible();
-            await page.waitForTimeout(600);
+            await expect(
+                page.getByText('Name looks available', { exact: true }),
+            ).toBeVisible();
         },
         cleanup: async (
             page: ElectronPage,

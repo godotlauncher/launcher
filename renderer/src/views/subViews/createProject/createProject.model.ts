@@ -8,6 +8,7 @@ import type {
     GitIdentityScope,
     GitLfsTrackingPolicy,
     InstalledRelease,
+    ProjectDetails,
     ProjectGitIdentityPreset,
     ReleaseInstallProgressStage,
     RendererType,
@@ -21,8 +22,28 @@ import {
 import { sortReleases } from '../../../releaseStoring.utils';
 
 export const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;
+export const PROJECT_NAME_CHECK_DEBOUNCE_MS = 500;
+export const REPOSITORY_NAME_CHECK_DEBOUNCE_MS = 900;
 
 export const GITHUB_REPOSITORY_NAME_PATTERN = /^[A-Za-z0-9._-]{1,100}$/;
+
+/**
+ * Checks whether the entered project name is unused in the Launcher library.
+ *
+ * @param projects - Projects currently registered with Launcher.
+ * @param projectName - Project name entered in the Create Project drawer.
+ * @returns Whether the trimmed name is non-empty and unused.
+ */
+export function isCreateProjectNameAvailable(
+    projects: Pick<ProjectDetails, 'name'>[],
+    projectName: string,
+): boolean {
+    const trimmedName = projectName.trim();
+    return (
+        trimmedName.length > 0 &&
+        !projects.some((project) => project.name === trimmedName)
+    );
+}
 
 /**
  * Suggests a GitHub-safe repository name from the project name.

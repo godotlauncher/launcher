@@ -20,7 +20,8 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Use an absolute path."');
-        expect(html).toContain('text-info');
+        expect(html).toContain('text-base-content/60');
+        expect(html).toContain('hover:text-base-content');
         expect(html).toContain('lucide-circle-question-mark');
     });
 

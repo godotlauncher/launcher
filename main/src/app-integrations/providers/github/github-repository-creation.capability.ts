@@ -27,16 +27,24 @@ export class GitHubRepositoryCreationCapability
      */
     constructor(private readonly github: GitHubApiClient) {}
 
+    /** Checks whether an exact repository name is visible for an approved owner. */
+    async checkRepositoryNameAvailability(request: RepositoryCreationRequest) {
+        validateRequest(request);
+        try {
+            return await this.github.checkRepositoryNameAvailability(
+                readAccessToken(request.credential),
+                request.accessTarget.login,
+                request.repositoryName,
+                request.signal,
+            );
+        } catch (error) {
+            throw mapAvailabilityError(error);
+        }
+    }
+
     /** Creates one empty private repository for an approved owner route. */
     async createRepository(request: RepositoryCreationRequest) {
-        if (
-            !request.accessTarget.capabilities.includes('repository-creation')
-        ) {
-            throw new RepositoryCreationError('permission-update-required');
-        }
-        if (!GITHUB_REPOSITORY_NAME_PATTERN.test(request.repositoryName)) {
-            throw new RepositoryCreationError('invalid-repository-name');
-        }
+        validateRequest(request);
         try {
             const accessToken = readAccessToken(request.credential);
             const repository = await this.github.createPrivateRepository(
@@ -79,6 +87,45 @@ export class GitHubRepositoryCreationCapability
             password: readAccessToken(request.credential),
         };
     }
+}
+
+/**
+ * Validates the shared GitHub repository-creation request boundary.
+ *
+ * @param request - Credential-scoped repository request to validate.
+ */
+function validateRequest(request: RepositoryCreationRequest): void {
+    if (!request.accessTarget.capabilities.includes('repository-creation')) {
+        throw new RepositoryCreationError('permission-update-required');
+    }
+    if (!GITHUB_REPOSITORY_NAME_PATTERN.test(request.repositoryName)) {
+        throw new RepositoryCreationError('invalid-repository-name');
+    }
+}
+
+/**
+ * Maps a GitHub name-check failure without treating it as a remote mutation.
+ *
+ * @param error - Provider error raised by the availability request.
+ * @returns A stable repository-creation failure classification.
+ */
+function mapAvailabilityError(error: unknown): RepositoryCreationError {
+    if (error instanceof RepositoryCreationError) {
+        return error;
+    }
+    if (!(error instanceof GitHubApiError)) {
+        return new RepositoryCreationError('provider-unavailable');
+    }
+    if (error.rateLimited) {
+        return new RepositoryCreationError('rate-limited');
+    }
+    if (error.status === null) {
+        return new RepositoryCreationError('network-unavailable');
+    }
+    if (error.status === 401 || error.status === 403) {
+        return new RepositoryCreationError('permission-update-required');
+    }
+    return new RepositoryCreationError('provider-unavailable');
 }
 
 /**

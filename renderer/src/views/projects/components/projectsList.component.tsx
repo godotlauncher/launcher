@@ -268,7 +268,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                       })
                                     : t('table.invalidReasons.missingEditor')
                             }
-                            tone={releaseInstalled ? 'primary' : 'warning'}
+                            tone={releaseInstalled ? 'default' : 'warning'}
                         >
                             <span
                                 className={`badge badge-outline h-7 gap-1.5 px-2 text-xs ${releaseInstalled ? 'border-base-content/25' : 'border-warning/60 text-warning'}`}
@@ -297,7 +297,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                 tone={
                                     codeEditorUnavailable
                                         ? 'warning'
-                                        : 'primary'
+                                        : 'default'
                                 }
                             >
                                 <span
@@ -325,7 +325,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                             <Tooltip
                                 placement="top"
                                 tip={t('table.gitProject')}
-                                tone="primary"
+                                tone="default"
                             >
                                 <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
                                     <img
@@ -342,7 +342,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                             <Tooltip
                                 placement="top"
                                 tip={t('table.windowedMode')}
-                                tone="primary"
+                                tone="default"
                             >
                                 <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
                                     <PanelTop size={13} />

@@ -22,6 +22,7 @@ type CreateProjectProjectSectionProps = {
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     installedReleaseCount: number;
     projectName: string;
+    projectNameError?: string;
     derivedProjectPath: string;
     overwriteProjectPath: boolean;
     overwriteBasePath: string;
@@ -47,6 +48,7 @@ export const CreateProjectProjectSection: React.FC<
     inputNameRef,
     installedReleaseCount,
     projectName,
+    projectNameError,
     derivedProjectPath,
     overwriteProjectPath,
     overwriteBasePath,
@@ -138,6 +140,7 @@ export const CreateProjectProjectSection: React.FC<
                             placeholder={t('project.nameplaceholder')}
                             value={projectName}
                             onChange={onProjectNameChange}
+                            error={projectNameError}
                             compact
                             regularText
                         />

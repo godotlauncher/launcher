@@ -12,6 +12,7 @@ import type {
     RepositoryCreationCapability,
     RepositoryCreationFailureReason,
     RepositoryHostingFailureReason,
+    RepositoryNameAvailability,
     RepositorySelection,
 } from './app-integration-capability.types.js';
 import {
@@ -82,6 +83,10 @@ export type RepositoryCreationSelection = {
 
 export type RepositoryCreationAccessResult<T> =
     | { ok: true; value: T }
+    | { ok: false; reason: RepositoryCreationFailureReason };
+
+export type RepositoryNameAvailabilityResult =
+    | { ok: true; availability: RepositoryNameAvailability }
     | { ok: false; reason: RepositoryCreationFailureReason };
 
 export type RepositoryPushAccess = {
@@ -169,6 +174,71 @@ export class RepositoryHostingService implements OnModuleDestroy {
             return { ok: false, reason: 'permission-update-required' };
         }
         return { ok: true, targets: lease.value };
+    }
+
+    /**
+     * Checks one repository name through an exact refreshed owner route.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param selection - Exact renderer-safe target and repository name.
+     * @returns A visible availability result or one stable failure.
+     */
+    async checkRepositoryNameAvailability(
+        providerId: string,
+        selection: RepositoryCreationSelection,
+    ): Promise<RepositoryNameAvailabilityResult> {
+        if (
+            !providerId.trim() ||
+            !isOpaqueId(selection.connectionId) ||
+            !isOpaqueId(selection.accessTargetId)
+        ) {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        let capability: RepositoryCreationCapability;
+        try {
+            capability = this.capabilities.get(
+                providerId,
+                'repository-creation',
+            );
+        } catch {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        const lease = await this.integrations.withCredentialLease(
+            providerId,
+            async (routes): Promise<RepositoryNameAvailabilityResult> => {
+                const route = routes.find(
+                    (candidate) =>
+                        candidate.connectionId === selection.connectionId &&
+                        candidate.accessTarget.id === selection.accessTargetId,
+                );
+                if (!route) {
+                    return { ok: false, reason: 'target-unavailable' };
+                }
+                try {
+                    const availability =
+                        await capability.checkRepositoryNameAvailability({
+                            credential: route.credential,
+                            accessTarget: route.accessTarget,
+                            repositoryName: selection.repositoryName,
+                            signal: AbortSignal.timeout(
+                                REPOSITORY_OPERATION_TIMEOUT_MS,
+                            ),
+                        });
+                    return { ok: true, availability };
+                } catch (error) {
+                    return {
+                        ok: false,
+                        reason:
+                            error instanceof RepositoryCreationError
+                                ? error.reason
+                                : 'provider-unavailable',
+                    };
+                }
+            },
+        );
+        return lease.ok
+            ? lease.value
+            : { ok: false, reason: mapLeaseFailure(lease.reason) };
     }
 
     /**
