@@ -743,6 +743,25 @@ export async function stubCreateProjectResult(
 }
 
 /**
+ * Stubs discarding a process-local Create Project publication attempt.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @returns A promise that ends when the discard handler is ready.
+ */
+export async function stubDiscardCreateProjectPublication(
+    electronApp: ElectronApplication,
+): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const channel = 'projects.discardCreateProjectPublication';
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, async () => ({
+            success: true,
+            data: undefined,
+        }));
+    });
+}
+
+/**
  * Stubs the effective Git identity shown in Project Settings.
  *
  * @param electronApp - The Electron app whose handler should be replaced.

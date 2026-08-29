@@ -13,6 +13,8 @@ import {
     stubCodeEditorIntegrationSettings,
     stubCreateProjectPublicationTargets,
     stubCreateProjectRepositoryNameAvailability,
+    stubCreateProjectResult,
+    stubDiscardCreateProjectPublication,
     stubGlobalGitIdentity,
     stubProjectGitIdentity,
     stubProjectGitInitializationFailure,
@@ -1007,6 +1009,120 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_new_project_github',
+        description: 'New Project with private GitHub publishing enabled',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectGitHubPublishing(page, electronApp);
+        },
+        cleanup: closeNewProjectScreenshot,
+    },
+    {
+        fileBase: 'screen_projects_new_project_github_available',
+        description: 'New Project with an available GitHub repository name',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectGitHubPublishing(page, electronApp, {
+                projectName: 'Skyline Sprinter',
+                availability: 'available',
+            });
+        },
+        cleanup: closeNewProjectScreenshot,
+    },
+    {
+        fileBase: 'screen_projects_new_project_github_unavailable',
+        description:
+            'New Project with an unavailable GitHub repository name',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectGitHubPublishing(page, electronApp, {
+                projectName: 'Existing Skyline Game',
+                availability: 'unavailable',
+            });
+        },
+        cleanup: closeNewProjectScreenshot,
+    },
+    {
+        fileBase: 'screen_projects_new_project_github_recovery',
+        description: 'New Project GitHub publishing recovery modal',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await stubGlobalGitIdentity(electronApp, {
+                name: 'Launcher Docs',
+                email: 'launcher-docs@example.invalid',
+            });
+            await stubCreateProjectResult(electronApp, {
+                success: false,
+                error: 'The project was created locally.',
+                projectDetails: {
+                    ...SAMPLE_PROJECTS[0],
+                    name: 'Skyline Recovery',
+                    path: '/Users/docs/Godot/Projects/skyline-recovery',
+                },
+                publication: {
+                    status: 'failed',
+                    attemptId: 'docs-github-recovery',
+                    stage: 'remote-create',
+                    reason: 'repository-name-unavailable-or-policy-rejected',
+                    intendedRepository: {
+                        owner: 'pixel-forge',
+                        name: 'Skyline-Recovery',
+                        webUrl:
+                            'https://github.com/pixel-forge/Skyline-Recovery',
+                    },
+                    canRetry: true,
+                    canEdit: true,
+                },
+            });
+            await openNewProjectGitHubPublishing(page, electronApp, {
+                projectName: 'Skyline Recovery',
+                availability: 'available',
+            });
+            await stubCreateProjectRepositoryNameAvailability(electronApp, {
+                status: 'unavailable',
+            });
+            await page.getByTestId('btnCreateProject').click();
+            const recoveryDialog = page.getByRole('dialog', {
+                name: 'Could not publish to GitHub',
+            });
+            await expect(recoveryDialog).toBeVisible({ timeout: 10000 });
+            await expect(
+                recoveryDialog.getByText('Name already in use', {
+                    exact: true,
+                }),
+            ).toBeVisible({ timeout: 10000 });
+        },
+        cleanup: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await stubDiscardCreateProjectPublication(electronApp);
+            await page
+                .getByRole('button', { name: 'Continue locally' })
+                .click();
+            await expect(
+                page.getByRole('dialog', {
+                    name: 'Could not publish to GitHub',
+                }),
+            ).toBeHidden();
+            const alertOk = page.getByTestId('btnAlertOk');
+            if (await alertOk.isVisible().catch(() => false)) {
+                await alertOk.click();
+            }
+            await expect(page.getByTestId('drawerBackdrop')).toBeHidden();
+            await expect(page).toHaveURL(/#\/projects$/u);
+            await page.waitForTimeout(300);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project_git_identity_warning',
         description: 'New Project missing Git identity warning',
         navigate: async (
@@ -1447,6 +1563,87 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
 ];
+
+type GitHubPublishingScreenshotOptions = {
+    projectName?: string;
+    availability?: 'available' | 'unavailable';
+};
+
+/**
+ * Opens the Create Project drawer with deterministic private GitHub publishing.
+ *
+ * @param page - Electron renderer page to drive.
+ * @param electronApp - Electron app whose bridge handlers should be stubbed.
+ * @param options - Optional project name and confirmed availability state.
+ * @returns A promise that ends when the requested publishing state is visible.
+ */
+async function openNewProjectGitHubPublishing(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    options: GitHubPublishingScreenshotOptions = {},
+): Promise<void> {
+    await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
+    await stubCodeEditorIntegrationSettings(electronApp, [
+        SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+    ]);
+    await stubCreateProjectPublicationTargets(electronApp, {
+        success: true,
+        targets: [
+            {
+                providerId: 'github',
+                connectionId: 'docs-github-connection',
+                accessTargetId: 'docs-pixel-forge-target',
+                ownerLogin: 'pixel-forge',
+                ownerType: 'organization',
+                accountLogin: 'launcher-docs',
+            },
+        ],
+    });
+    await stubCreateProjectRepositoryNameAvailability(electronApp, {
+        status: options.availability ?? 'available',
+    });
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectCreate').click();
+    if (options.projectName) {
+        await page
+            .getByTestId('inputProjectName')
+            .fill(options.projectName);
+    }
+    const publishToGitHub = page.getByRole('checkbox', {
+        name: 'Publish to GitHub',
+    });
+    await publishToGitHub.check();
+    await expect(publishToGitHub).toBeChecked();
+    await expect(
+        page.getByTestId('selectCreateProjectGitHubOwner'),
+    ).toContainText('pixel-forge');
+
+    if (options.availability === 'available') {
+        await expect(
+            page.getByText('Name looks available', { exact: true }),
+        ).toBeVisible({ timeout: 10000 });
+    } else if (options.availability === 'unavailable') {
+        await expect(
+            page.getByText('Name already in use', { exact: true }),
+        ).toBeVisible({ timeout: 10000 });
+    } else {
+        await expect(
+            page.getByText('Private GitHub repository', { exact: true }),
+        ).toBeVisible();
+    }
+    await page.waitForTimeout(200);
+}
+
+/**
+ * Closes the Create Project drawer after a canonical screenshot.
+ *
+ * @param page - Electron renderer page to drive.
+ * @returns A promise that ends when the drawer has closed.
+ */
+async function closeNewProjectScreenshot(page: ElectronPage): Promise<void> {
+    await page.getByTestId('btnCloseCreateProject').click();
+    await page.waitForTimeout(600);
+}
 
 /**
  * Opens Create Project and submits it with a missing global Git identity.
