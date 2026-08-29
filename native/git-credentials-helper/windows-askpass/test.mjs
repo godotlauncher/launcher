@@ -193,7 +193,7 @@ async function testGitCredentialFill(executable) {
                 '-c',
                 'credential.helper=',
                 '-c',
-                'credential.interactive=false',
+                'credential.interactive=true',
                 'credential',
                 'fill',
             ],

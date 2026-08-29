@@ -7,7 +7,7 @@ on:
       - release/**
 
 jobs:
-  askpass-changes:
+  windows-packaging-changes:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.detect.outputs.changed }}
@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Detect Windows askpass changes
+      - name: Detect Windows packaging changes
         id: detect
         shell: bash
         env:
@@ -27,7 +27,12 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
-              'native/git-credentials-helper/windows-askpass/**'; then
+              'native/git-credentials-helper/windows-askpass/**' \
+              'electron-builder-config.ts' \
+              'package.json' \
+              'package-lock.json' \
+              '.github/workflows/pull_request_checks.yml' \
+              '.github/workflows/release.yml'; then
               echo "changed=false" >> "$GITHUB_OUTPUT"
           else
               status=$?
@@ -72,8 +77,8 @@ jobs:
         run: npm run test:unit
 
   windows-git-askpass:
-    needs: askpass-changes
-    if: needs.askpass-changes.outputs.changed == 'true'
+    needs: windows-packaging-changes
+    if: needs.windows-packaging-changes.outputs.changed == 'true'
     strategy:
       matrix:
         include:
@@ -106,7 +111,7 @@ jobs:
         run: npm run test:native:git-askpass -- ${{ matrix.arch }}
 
       - name: Build Windows application directory
-        run: npm run build:sources && npx electron-builder --dir --config electron-builder-config.ts --win --${{ matrix.arch }}
+        run: npm run build:sources && npx electron-builder --dir --config electron-builder-config.ts --win --${{ matrix.arch }} --publish never
 
       - name: Verify packaged helper architecture
         shell: pwsh

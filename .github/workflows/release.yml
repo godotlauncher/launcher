@@ -356,7 +356,7 @@ jobs:
           Write-Host "Windows updater metadata: dist/$file"
 
       - name: Build unsigned Windows artifacts
-        run: npm run dist:win:prepared -- --publish never
+        run: npm run dist:win:prepared
 
       - name: Verify packaged helper signatures
         shell: pwsh
@@ -592,9 +592,9 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            distCommand: npm run dist:mac -- --publish onTagOrDraft
+            platformArgs: --mac
           - os: ubuntu-latest
-            distCommand: npm run dist:linux -- --publish onTagOrDraft
+            platformArgs: --linux
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -628,7 +628,7 @@ jobs:
         run: npm run build:sources
 
       - name: Build and publish ${{ matrix.os }} artifacts
-        run: ${{ matrix.distCommand }}
+        run: npx electron-builder --config electron-builder-config.ts ${{ matrix.platformArgs }} --publish onTagOrDraft
 
   finalize-release:
     needs:
