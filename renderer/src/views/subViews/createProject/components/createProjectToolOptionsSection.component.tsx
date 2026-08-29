@@ -67,6 +67,8 @@ export const CreateProjectToolOptionsSection: React.FC<
                 )
             }
             options={getCodeEditorOptions(t, codeEditorSettings)}
+            compact
+            regularText
         />
         {codeEditorLoadFailed && (
             <p className="text-sm text-error" role="alert">

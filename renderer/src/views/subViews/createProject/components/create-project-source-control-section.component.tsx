@@ -57,7 +57,7 @@ export const CreateProjectSourceControlSection: React.FC<
             <label className="flex items-center gap-2">
                 <input
                     type="checkbox"
-                    className="checkbox"
+                    className="checkbox checkbox-sm rounded-sm"
                     disabled={!gitAvailable}
                     checked={withGit}
                     onChange={(event) => onWithGitChange(event.target.checked)}
@@ -81,7 +81,7 @@ export const CreateProjectSourceControlSection: React.FC<
                     <label className="flex items-center gap-2">
                         <input
                             type="checkbox"
-                            className="checkbox"
+                            className="checkbox checkbox-sm rounded-sm"
                             checked={publishToGitHub}
                             disabled={publishingLocked}
                             onChange={(event) =>
@@ -90,7 +90,7 @@ export const CreateProjectSourceControlSection: React.FC<
                         />
                         <span>{t('publishToGitHub.label')}</span>
                     </label>
-                    <p className="pl-8 text-sm text-base-content/70">
+                    <p className="pl-7 text-sm text-base-content/70">
                         {t('publishToGitHub.description')}
                     </p>
                 </>

@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "Publier sur GitHub",
-        "repositoryTitle": "Dépôt GitHub",
+        "repositoryTitle": "Dépôt GitHub privé",
         "description": "Crée un dépôt privé et y envoie ce projet après sa création locale.",
         "loadingOwners": "Vérification des propriétaires GitHub connectés...",
         "owner": "Propriétaire",
@@ -56,8 +56,6 @@
         "repositoryName": "Nom du dépôt",
         "repositoryNameHelp": "Lettres, chiffres, points, tirets et traits de soulignement uniquement.",
         "repositoryNameInvalid": "Saisissez 1 à 100 lettres, chiffres, points, tirets ou traits de soulignement.",
-        "privateTitle": "Dépôt privé",
-        "privateDescription": "Seuls vous et les personnes autorisées pouvez le voir.",
         "openConnections": "Ouvrir Connexions",
         "leaveTitle": "Quitter la création du projet ?",
         "leaveMessage": "Les informations de projet non enregistrées seront effacées à l'ouverture de Connexions.",

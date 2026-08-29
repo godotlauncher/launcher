@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "发布到 GitHub",
-        "repositoryTitle": "GitHub 仓库",
+        "repositoryTitle": "私有 GitHub 仓库",
         "description": "在本地创建项目后，创建私有仓库并推送项目。",
         "loadingOwners": "正在检查已连接的 GitHub 所有者...",
         "owner": "所有者",
@@ -56,8 +56,6 @@
         "repositoryName": "仓库名称",
         "repositoryNameHelp": "仅可使用字母、数字、点、连字符和下划线。",
         "repositoryNameInvalid": "请输入 1-100 个字母、数字、点、连字符或下划线。",
-        "privateTitle": "私有仓库",
-        "privateDescription": "只有你和获得授权的人员可以查看。",
         "openConnections": "打开连接",
         "leaveTitle": "离开创建项目？",
         "leaveMessage": "打开连接时，未保存的项目信息将被清除。",

@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "Opublikuj w GitHub",
-        "repositoryTitle": "Repozytorium GitHub",
+        "repositoryTitle": "Prywatne repozytorium GitHub",
         "description": "Tworzy prywatne repozytorium i wysyła projekt po utworzeniu go lokalnie.",
         "loadingOwners": "Sprawdzanie połączonych właścicieli GitHub...",
         "owner": "Właściciel",
@@ -56,8 +56,6 @@
         "repositoryName": "Nazwa repozytorium",
         "repositoryNameHelp": "Tylko litery, cyfry, kropki, łączniki i podkreślenia.",
         "repositoryNameInvalid": "Wpisz 1-100 liter, cyfr, kropek, łączników lub podkreśleń.",
-        "privateTitle": "Prywatne repozytorium",
-        "privateDescription": "Tylko Ty i upoważnione osoby możecie je zobaczyć.",
         "openConnections": "Otwórz Połączenia",
         "leaveTitle": "Opuścić tworzenie projektu?",
         "leaveMessage": "Niezapisane dane projektu zostaną wyczyszczone po otwarciu Połączeń.",

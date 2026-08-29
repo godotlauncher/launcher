@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "發佈到 GitHub",
-        "repositoryTitle": "GitHub 儲存庫",
+        "repositoryTitle": "私人 GitHub 儲存庫",
         "description": "在本機建立專案後，建立私人儲存庫並推送專案。",
         "loadingOwners": "正在檢查已連線的 GitHub 擁有者...",
         "owner": "擁有者",
@@ -56,8 +56,6 @@
         "repositoryName": "儲存庫名稱",
         "repositoryNameHelp": "僅可使用字母、數字、句點、連字號和底線。",
         "repositoryNameInvalid": "請輸入 1-100 個字母、數字、句點、連字號或底線。",
-        "privateTitle": "私人儲存庫",
-        "privateDescription": "只有你和獲得授權的人員可以查看。",
         "openConnections": "開啟連線",
         "leaveTitle": "離開建立專案？",
         "leaveMessage": "開啟連線時，未儲存的專案資料將被清除。",

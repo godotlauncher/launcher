@@ -36,7 +36,7 @@ export const CreateProjectActions: React.FC<CreateProjectActionsProps> = ({
         <label className="flex items-center">
             <input
                 type="checkbox"
-                className="checkbox checkbox-primary"
+                className="checkbox checkbox-primary checkbox-sm rounded-sm"
                 checked={editNow}
                 disabled={creating}
                 onChange={(event) =>

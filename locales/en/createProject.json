@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "Publish to GitHub",
-        "repositoryTitle": "GitHub repository",
+        "repositoryTitle": "Private GitHub repository",
         "description": "Create a private repository and push main.",
         "loadingOwners": "Checking connected GitHub owners...",
         "owner": "Owner",
@@ -56,8 +56,6 @@
         "repositoryName": "Repository name",
         "repositoryNameHelp": "Letters, numbers, dots, hyphens, and underscores only.",
         "repositoryNameInvalid": "Enter 1-100 letters, numbers, dots, hyphens, or underscores.",
-        "privateTitle": "Private repository",
-        "privateDescription": "Only you and people you grant access to can see it.",
         "openConnections": "Open Connections",
         "leaveTitle": "Leave Create Project?",
         "leaveMessage": "Your unsaved project details will be cleared when you open Connections.",

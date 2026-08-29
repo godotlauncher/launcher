@@ -93,7 +93,10 @@ async function withDocumentationApp(
     // This env var makes Electron behave like plain Node and breaks Playwright's Electron launch.
     delete launchEnv.ELECTRON_RUN_AS_NODE;
     const electronApp = await _electron.launch({
-        args: ['.'],
+        args: [
+            '.',
+            `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`,
+        ],
         env: launchEnv,
     });
 

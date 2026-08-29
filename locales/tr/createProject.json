@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "GitHub'da yayımla",
-        "repositoryTitle": "GitHub deposu",
+        "repositoryTitle": "Özel GitHub deposu",
         "description": "Yerel oluşturmanın ardından özel bir depo oluşturur ve projeyi gönderir.",
         "loadingOwners": "Bağlı GitHub sahipleri denetleniyor...",
         "owner": "Sahip",
@@ -56,8 +56,6 @@
         "repositoryName": "Depo adı",
         "repositoryNameHelp": "Yalnızca harf, rakam, nokta, kısa çizgi ve alt çizgi.",
         "repositoryNameInvalid": "1-100 harf, rakam, nokta, kısa çizgi veya alt çizgi girin.",
-        "privateTitle": "Özel depo",
-        "privateDescription": "Yalnızca siz ve erişim verdiğiniz kişiler görebilir.",
         "openConnections": "Bağlantıları aç",
         "leaveTitle": "Proje oluşturmadan çıkılsın mı?",
         "leaveMessage": "Bağlantılar açıldığında kaydedilmemiş proje bilgileri temizlenecek.",

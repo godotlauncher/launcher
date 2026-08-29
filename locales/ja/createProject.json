@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "GitHub に公開",
-        "repositoryTitle": "GitHub リポジトリ",
+        "repositoryTitle": "プライベート GitHub リポジトリ",
         "description": "ローカルで作成した後、プライベートリポジトリを作成してプロジェクトをプッシュします。",
         "loadingOwners": "接続済みの GitHub 所有者を確認しています...",
         "owner": "所有者",
@@ -56,8 +56,6 @@
         "repositoryName": "リポジトリ名",
         "repositoryNameHelp": "英数字、ピリオド、ハイフン、アンダースコアのみ使用できます。",
         "repositoryNameInvalid": "1～100文字の英数字、ピリオド、ハイフン、アンダースコアを入力してください。",
-        "privateTitle": "プライベートリポジトリ",
-        "privateDescription": "自分とアクセスを許可したユーザーだけが表示できます。",
         "openConnections": "接続を開く",
         "leaveTitle": "プロジェクト作成を終了しますか？",
         "leaveMessage": "接続を開くと、保存されていないプロジェクト情報は消去されます。",

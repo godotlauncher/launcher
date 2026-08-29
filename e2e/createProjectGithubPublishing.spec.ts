@@ -27,7 +27,10 @@ test.describe.configure({ mode: 'serial' });
 test.beforeAll(async () => {
     fixtureHome = await createFixtureHome();
     electronApp = await _electron.launch({
-        args: ['.'],
+        args: [
+            '.',
+            `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`,
+        ],
         env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
@@ -60,13 +63,13 @@ async function resizeMainWindow(): Promise<void> {
         const window = BrowserWindow.getAllWindows().find(
             (candidate) => !candidate.isDestroyed(),
         );
-        window?.setSize(1440, 810);
+        window?.setSize(1024, 600);
     });
-    await mainPage.setViewportSize({ width: 1440, height: 810 });
+    await mainPage.setViewportSize({ width: 1024, height: 600 });
 }
 
 test.afterAll(async () => {
-    await electronApp.close();
+    if (electronApp) await electronApp.close();
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
@@ -81,16 +84,48 @@ test('reveals connected private repository fields and preserves a manual name', 
         name: 'Publish to GitHub',
     });
     await publish.check();
-    await expect(
-        mainPage.getByTestId('selectCreateProjectGitHubOwner'),
-    ).toContainText('mariodebono');
+    const ownerSelect = mainPage.getByTestId(
+        'selectCreateProjectGitHubOwner',
+    );
+    await expect(ownerSelect).toContainText('mariodebono');
+    await ownerSelect.click();
+    const selectedOwnerOption = mainPage.getByRole('option', {
+        name: 'mariodebono',
+    });
+    await expect(selectedOwnerOption).toBeVisible();
+    expect(
+        await selectedOwnerOption.evaluate(
+            (element) => getComputedStyle(element).fontSize,
+        ),
+    ).toBe(
+        await ownerSelect.evaluate(
+            (element) => getComputedStyle(element).fontSize,
+        ),
+    );
+    await mainPage.keyboard.press('Escape');
     const repositoryName = mainPage.locator(
         '#createProjectGitHubRepositoryName',
     );
     await expect(repositoryName).toHaveValue('My-Next-Awesome-Game');
     await expect(
-        mainPage.getByText('Private repository', { exact: true }),
+        mainPage.getByText('Private GitHub repository', { exact: true }),
     ).toBeVisible();
+    await expect(mainPage.locator('.drawer-panel')).toHaveCSS('width', '680px');
+    const initialiseGitCheckbox = mainPage.getByRole('checkbox', {
+        name: 'Initialize Git Repository',
+    });
+    await expect(initialiseGitCheckbox).toHaveClass(/checkbox-sm/u);
+    await expect(initialiseGitCheckbox).toHaveClass(/rounded-sm/u);
+    const drawerBody = mainPage.locator(
+        '.drawer-panel form > div.overflow-y-auto',
+    );
+    await expect
+        .poll(() =>
+            drawerBody.evaluate(
+                (element) => element.scrollHeight <= element.clientHeight + 1,
+            ),
+        )
+        .toBe(true);
     await expect(
         mainPage.getByTestId('btnCreateProject'),
     ).toContainText('Create and publish to GitHub');
@@ -104,6 +139,46 @@ test('reveals connected private repository fields and preserves a manual name', 
         );
         await fs.mkdir(path.dirname(output), { recursive: true });
         await mainPage.screenshot({ path: output });
+
+        await mainPage
+            .getByTestId('checkboxOverwriteProjectPath')
+            .check();
+        await expect(
+            mainPage.getByTestId('btnSelectProjectFolder'),
+        ).toBeVisible();
+        const pathInputShell = mainPage
+            .getByTestId('inputProjectPath')
+            .locator('..');
+        const browseButton = mainPage.getByTestId(
+            'btnSelectProjectFolder',
+        );
+        expect(
+            await browseButton.evaluate(
+                (element) => getComputedStyle(element).borderColor,
+            ),
+        ).toBe(
+            await pathInputShell.evaluate(
+                (element) => getComputedStyle(element).borderColor,
+            ),
+        );
+        await mainPage.screenshot({
+            path: path.resolve(
+                process.cwd(),
+                '.internal-docs',
+                'create-project-path-field-compact.png',
+            ),
+        });
+        await browseButton.hover();
+        await mainPage.screenshot({
+            path: path.resolve(
+                process.cwd(),
+                '.internal-docs',
+                'create-project-path-field-hover.png',
+            ),
+        });
+        await mainPage
+            .getByTestId('checkboxOverwriteProjectPath')
+            .uncheck();
     }
 
     await repositoryName.fill('hand-picked-name');

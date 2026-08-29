@@ -990,7 +990,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 closeOnBackdrop={!closeDisabled}
                 closeOnEscape={!closeDisabled}
                 trapFocus={gitIdentityDialogPage === null}
-                width="min(900px, 100vw)"
+                width="min(680px, 100vw)"
                 panelClassName={
                     gitIdentityDialogPage
                         ? 'max-w-[100vw] border-l-0'
@@ -1052,7 +1052,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             }
                             showUseDefaultPathAction={showUseDefaultPathAction}
                             showFolderCreateIcon={showFolderCreateIcon}
-                            overwriteBasePathMissing={overwriteBasePathMissing}
                             isOverwritePathEmpty={isOverwritePathEmpty}
                             onProjectNameChange={setProjectName}
                             onReleaseChange={changeRelease}

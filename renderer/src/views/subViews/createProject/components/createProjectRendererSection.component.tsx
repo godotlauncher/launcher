@@ -61,6 +61,8 @@ export const CreateProjectRendererSection: React.FC<
                         }
                         options={options}
                         showSelectedCheck
+                        compact
+                        regularText
                     />
                     {selected && (
                         <p className="text-sm text-base-content/70">

@@ -4,9 +4,13 @@ import { FormField } from './formField.component';
 
 export type TextFieldProps = {
     id: string;
-    label: string;
+    label?: string;
     labelAction?: React.ReactNode;
-    help: string;
+    help?: string;
+    ariaLabel?: string;
+    testId?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
+    title?: string;
     value: string;
     onChange: (value: string) => void;
     onBlur?: () => void;
@@ -14,6 +18,7 @@ export type TextFieldProps = {
     error?: string;
     disabled?: boolean;
     compact?: boolean;
+    regularText?: boolean;
 };
 
 export const TextField: React.FC<TextFieldProps> = ({
@@ -21,6 +26,10 @@ export const TextField: React.FC<TextFieldProps> = ({
     label,
     labelAction,
     help,
+    ariaLabel,
+    testId,
+    inputRef,
+    title,
     value,
     onChange,
     onBlur,
@@ -28,6 +37,7 @@ export const TextField: React.FC<TextFieldProps> = ({
     error,
     disabled = false,
     compact = false,
+    regularText = false,
 }) => (
     <FormField
         id={id}
@@ -36,18 +46,24 @@ export const TextField: React.FC<TextFieldProps> = ({
         help={help}
         error={error}
         compact={compact}
+        regularText={regularText}
     >
         <input
+            ref={inputRef}
             id={id}
+            data-testid={testId}
             type="text"
             className={clsx('input input-bordered w-full pr-8', {
                 'input-sm': compact,
+                'text-sm': regularText,
                 'input-error': Boolean(error),
             })}
             value={value}
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
             placeholder={placeholder}
+            aria-label={ariaLabel}
+            title={title}
             disabled={disabled}
         />
     </FormField>

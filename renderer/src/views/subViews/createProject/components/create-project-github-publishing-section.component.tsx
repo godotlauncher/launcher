@@ -3,7 +3,7 @@ import type {
     CreateProjectPublicationTarget,
     CreateProjectPublicationTargetFailureReason,
 } from '@shared/contracts';
-import { ExternalLink, LockKeyhole } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import type React from 'react';
 import {
     SelectField,
@@ -135,6 +135,8 @@ export const CreateProjectGitHubPublishingSection: React.FC<
                             options={getTargetOptions(t, targets)}
                             disabled={disabled || repositoryKnown}
                             showSelectedCheck
+                            compact
+                            regularText
                         />
                         <TextField
                             id="createProjectGitHubRepositoryName"
@@ -144,18 +146,9 @@ export const CreateProjectGitHubPublishingSection: React.FC<
                             onChange={onRepositoryNameChange}
                             error={repositoryNameError}
                             disabled={disabled || repositoryKnown}
+                            compact
+                            regularText
                         />
-                        <div className="flex items-start gap-3 rounded-md border border-base-300 bg-base-100 p-3 md:col-span-2">
-                            <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
-                            <div className="flex flex-col gap-0.5">
-                                <span className="font-medium">
-                                    {t('publishToGitHub.privateTitle')}
-                                </span>
-                                <span className="text-sm text-base-content/70">
-                                    {t('publishToGitHub.privateDescription')}
-                                </span>
-                            </div>
-                        </div>
                     </div>
                 )}
             </div>

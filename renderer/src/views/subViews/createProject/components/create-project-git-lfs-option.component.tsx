@@ -27,7 +27,7 @@ export const CreateProjectGitLfsOption: React.FC<
             <label className="flex items-center gap-2">
                 <input
                     type="checkbox"
-                    className="checkbox checkbox-sm"
+                    className="checkbox checkbox-sm rounded-sm"
                     disabled={!available}
                     checked={selected}
                     onChange={(event) => onSelectedChange(event.target.checked)}

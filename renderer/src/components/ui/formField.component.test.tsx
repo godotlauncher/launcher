@@ -100,6 +100,10 @@ describe('UI form primitives', () => {
 
         expect(directoryHtml).toContain('lucide-folder');
         expect(directoryHtml).not.toContain('lucide-file');
+        expect(directoryHtml).toContain('border-base-content/20');
+        expect(directoryHtml).toContain('bg-base-100');
+        expect(directoryHtml).toContain('hover:bg-base-content/5');
+        expect(directoryHtml).not.toContain('btn-outline');
         expect(fileHtml).toContain('lucide-file');
     });
 

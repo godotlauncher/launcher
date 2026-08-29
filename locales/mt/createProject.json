@@ -46,7 +46,7 @@
     },
     "publishToGitHub": {
         "label": "Ippubblika fuq GitHub",
-        "repositoryTitle": "Repożitorju GitHub",
+        "repositoryTitle": "Repożitorju privat fuq GitHub",
         "description": "Oħloq repożitorju privat u ibgħat il-proġett wara li jinħoloq lokalment.",
         "loadingOwners": "Qed jiġu ċċekkjati s-sidien GitHub konnessi...",
         "owner": "Sid",
@@ -56,8 +56,6 @@
         "repositoryName": "Isem tar-repożitorju",
         "repositoryNameHelp": "Ittri, numri, punti, sings u linji ta' taħt biss.",
         "repositoryNameInvalid": "Daħħal 1-100 ittra, numru, punt, sing jew linja ta' taħt.",
-        "privateTitle": "Repożitorju privat",
-        "privateDescription": "Int u n-nies li tagħtihom aċċess biss jistgħu jarawh.",
         "openConnections": "Iftaħ il-Konnessjonijiet",
         "leaveTitle": "Titlaq minn Oħloq Proġett?",
         "leaveMessage": "Id-dettalji mhux salvati jitħassru meta tiftaħ il-Konnessjonijiet.",
