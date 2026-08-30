@@ -1,5 +1,7 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { formatGitAlternateObjectPath } from './git-alternate-object-path.util.js';
 import { GitPushService } from './git-push.service.js';
 
 const MAIN_SHA = 'a'.repeat(40);
@@ -7,6 +9,7 @@ const MAIN_SHA = 'a'.repeat(40);
 describe('GitPushService', () => {
     it('adds a token-free origin, pushes main, and verifies its upstream', async () => {
         let originAdded = false;
+        let stagingAlternate: string | undefined;
         const execute = vi.fn(async ({ args, cwd }) => {
             if (args[0] === 'branch') {
                 return { success: true, stdout: 'main\n', stderr: '' };
@@ -32,6 +35,12 @@ describe('GitPushService', () => {
             if (args[0] === 'remote' && cwd === '/projects/my-game') {
                 originAdded = true;
                 return { success: true, stdout: '', stderr: '' };
+            }
+            if (args[0] === 'update-ref' && cwd !== '/projects/my-game') {
+                stagingAlternate = await fs.readFile(
+                    path.join(cwd, 'objects', 'info', 'alternates'),
+                    'utf8',
+                );
             }
             return {
                 success: true,
@@ -109,11 +118,14 @@ describe('GitPushService', () => {
             ]),
             env: expect.objectContaining({
                 GIT_CONFIG_NOSYSTEM: '1',
-                GIT_ALTERNATE_OBJECT_DIRECTORIES: JSON.stringify(
-                    path.join('/projects/my-game', '.git', 'objects'),
-                ),
             }),
         });
+        expect(stagingInit?.env).not.toHaveProperty(
+            'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+        );
+        expect(stagingAlternate).toBe(
+            `${formatGitAlternateObjectPath(path.join('/projects/my-game', '.git', 'objects'))}\n`,
+        );
         expect(stagingInit?.cwd).not.toBe('/projects/my-game');
         expect(execute).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -154,8 +166,8 @@ describe('GitPushService', () => {
         expect(request.args).toContain('--no-verify');
         expect(request.args).toContain('refs/heads/main:refs/heads/main');
         expect(request.args).not.toContain('--set-upstream');
-        expect(request.env.GIT_ALTERNATE_OBJECT_DIRECTORIES).toBe(
-            JSON.stringify(path.join('/projects/my-game', '.git', 'objects')),
+        expect(request.env).not.toHaveProperty(
+            'GIT_ALTERNATE_OBJECT_DIRECTORIES',
         );
         expect(request.env.GIT_ASKPASS).toBeUndefined();
         expect(readCommandArguments(request.args)).toMatchObject({

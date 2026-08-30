@@ -8,13 +8,13 @@ import type { ToolExecutionSession } from '../../tool-integration.types.js';
 import { GIT_LFS_TOOL_ID } from '../git-lfs/git-lfs-tool.constants.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from './git.service.js';
+import { formatGitAlternateObjectPath } from './git-alternate-object-path.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitCredentialSessionService } from './git-credential-session.service.js';
 import {
     createGitHttpsSafetyArguments,
     createGitNetworkEnvironment,
     createIsolatedGitConfig,
-    type IsolatedGitConfigPaths,
 } from './git-network-process.util.js';
 import type {
     GitPushFailureReason,
@@ -153,16 +153,16 @@ export class GitPushService {
                 supportDirectory,
                 'repository.git',
             );
-            const stagingEnvironment = createStagingGitEnvironment(
+            const stagingEnvironment = createGitNetworkEnvironment(
                 configPaths,
                 {},
-                request.projectPath,
             );
             if (
                 !(await prepareStagingRepository(
                     execute,
                     stagingRepository,
                     stagingEnvironment,
+                    request.projectPath,
                     canonicalUrl,
                     expectedMainSha,
                 ))
@@ -180,10 +180,9 @@ export class GitPushService {
                 networkCredentialSession = await this.credentials.open(
                     request.credential,
                 );
-                networkEnvironment = createStagingGitEnvironment(
+                networkEnvironment = createGitNetworkEnvironment(
                     configPaths,
                     networkCredentialSession.environment,
-                    request.projectPath,
                 );
             }
             if (request.requiresEmptyRemote && networkEnvironment) {
@@ -254,10 +253,9 @@ export class GitPushService {
                 request.credential,
                 canonicalUrl,
             );
-            const pushEnvironment = createStagingGitEnvironment(
+            const pushEnvironment = createGitNetworkEnvironment(
                 configPaths,
                 pushCredentialSession.environment,
-                request.projectPath,
             );
             let bufferedError = '';
             const pushResult = await this.tools.executeStreaming('git', {
@@ -517,34 +515,13 @@ function createGitLfsPushEnvironment(
 }
 
 /**
- * Creates an isolated environment that exposes only the project's Git objects
- * to an attempt-owned staging repository.
- *
- * @param configPaths - Attempt-owned empty Git configuration paths.
- * @param askPassEnvironment - Opaque askpass session environment.
- * @param projectPath - Exact standard project repository root.
- * @returns Isolated Git environment with one trusted alternate object path.
- */
-function createStagingGitEnvironment(
-    configPaths: IsolatedGitConfigPaths,
-    askPassEnvironment: NodeJS.ProcessEnv,
-    projectPath: string,
-): NodeJS.ProcessEnv {
-    return {
-        ...createGitNetworkEnvironment(configPaths, askPassEnvironment),
-        GIT_ALTERNATE_OBJECT_DIRECTORIES: JSON.stringify(
-            path.join(projectPath, '.git', 'objects'),
-        ),
-    };
-}
-
-/**
  * Creates one clean bare repository containing only the approved main ref and
  * canonical origin.
  *
  * @param execute - Validated Git execution session.
  * @param stagingRepository - Attempt-owned bare repository path.
  * @param environment - Isolated staging Git environment.
+ * @param projectPath - Exact standard project repository root.
  * @param canonicalUrl - Validated token-free HTTPS clone URL.
  * @param expectedMainSha - Validated project main commit object ID.
  * @returns Whether every staging repository setup command succeeded.
@@ -553,22 +530,33 @@ async function prepareStagingRepository(
     execute: ToolExecutionSession,
     stagingRepository: string,
     environment: NodeJS.ProcessEnv,
+    projectPath: string,
     canonicalUrl: string,
     expectedMainSha: string,
 ): Promise<boolean> {
+    const initResult = await execute({
+        args: [
+            '-c',
+            'init.templateDir=',
+            'init',
+            '--bare',
+            '--initial-branch=main',
+            '--',
+            stagingRepository,
+        ],
+        cwd: path.dirname(stagingRepository),
+        env: environment,
+        timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+    });
+    if (!initResult.success) {
+        return false;
+    }
+    try {
+        await writeStagingObjectAlternate(stagingRepository, projectPath);
+    } catch {
+        return false;
+    }
     const requests = [
-        {
-            args: [
-                '-c',
-                'init.templateDir=',
-                'init',
-                '--bare',
-                '--initial-branch=main',
-                '--',
-                stagingRepository,
-            ],
-            cwd: path.dirname(stagingRepository),
-        },
         {
             args: ['update-ref', 'refs/heads/main', expectedMainSha],
             cwd: stagingRepository,
@@ -589,6 +577,28 @@ async function prepareStagingRepository(
         }
     }
     return true;
+}
+
+/**
+ * Exposes one validated project's Git objects to a staging repository.
+ *
+ * @param stagingRepository - Attempt-owned bare repository path.
+ * @param projectPath - Exact standard project repository root.
+ */
+async function writeStagingObjectAlternate(
+    stagingRepository: string,
+    projectPath: string,
+): Promise<void> {
+    const objectsDirectory = formatGitAlternateObjectPath(
+        path.join(projectPath, '.git', 'objects'),
+    );
+    const infoDirectory = path.join(stagingRepository, 'objects', 'info');
+    await fs.mkdir(infoDirectory, { recursive: true, mode: 0o700 });
+    await fs.writeFile(
+        path.join(infoDirectory, 'alternates'),
+        `${objectsDirectory}\n`,
+        { encoding: 'utf8', flag: 'wx', mode: 0o600 },
+    );
 }
 
 /**
