@@ -14,6 +14,7 @@ import {
     createGitHttpsSafetyArguments,
     createGitNetworkEnvironment,
     createIsolatedGitConfig,
+    type IsolatedGitConfigPaths,
 } from './git-network-process.util.js';
 import type {
     GitPushFailureReason,
@@ -117,10 +118,11 @@ export class GitPushService {
         if (!(await this.hasMainBranch(execute, request.projectPath))) {
             return { ok: false, reason: 'local-repository-changed' };
         }
-        const expectedMainSha = request.requiresEmptyRemote
-            ? await this.readMainCommit(execute, request.projectPath)
-            : null;
-        if (request.requiresEmptyRemote && !expectedMainSha) {
+        const expectedMainSha = await this.readMainCommit(
+            execute,
+            request.projectPath,
+        );
+        if (!expectedMainSha) {
             return { ok: false, reason: 'local-repository-changed' };
         }
 
@@ -147,14 +149,41 @@ export class GitPushService {
             const hooksDirectory = path.join(supportDirectory, 'hooks');
             await fs.mkdir(hooksDirectory, { mode: 0o700 });
             const configPaths = await createIsolatedGitConfig(supportDirectory);
+            const stagingRepository = path.join(
+                supportDirectory,
+                'repository.git',
+            );
+            const stagingEnvironment = createStagingGitEnvironment(
+                configPaths,
+                {},
+                request.projectPath,
+            );
+            if (
+                !(await prepareStagingRepository(
+                    execute,
+                    stagingRepository,
+                    stagingEnvironment,
+                    canonicalUrl,
+                    expectedMainSha,
+                ))
+            ) {
+                return { ok: false, reason: 'push-failed' };
+            }
+            if (
+                (await this.readMainCommit(execute, request.projectPath)) !==
+                expectedMainSha
+            ) {
+                return { ok: false, reason: 'local-repository-changed' };
+            }
             let networkEnvironment: NodeJS.ProcessEnv | undefined;
             if (request.requiresEmptyRemote || request.requiresGitLfsUpload) {
                 networkCredentialSession = await this.credentials.open(
                     request.credential,
                 );
-                networkEnvironment = createGitNetworkEnvironment(
+                networkEnvironment = createStagingGitEnvironment(
                     configPaths,
                     networkCredentialSession.environment,
+                    request.projectPath,
                 );
             }
             if (request.requiresEmptyRemote && networkEnvironment) {
@@ -191,10 +220,11 @@ export class GitPushService {
                     GIT_LFS_TOOL_ID,
                     {
                         args: ['push', 'origin', 'main'],
-                        cwd: request.projectPath,
+                        cwd: stagingRepository,
                         env: createGitLfsPushEnvironment(
                             networkEnvironment,
                             createGitLfsEndpoint(canonicalUrl),
+                            path.join(request.projectPath, '.git', 'lfs'),
                         ),
                         signal: request.signal,
                         timeoutMs: GIT_PUSH_TIMEOUT_MS,
@@ -214,13 +244,20 @@ export class GitPushService {
             }
             await networkCredentialSession?.close();
             networkCredentialSession = undefined;
+            if (
+                (await this.readMainCommit(execute, request.projectPath)) !==
+                expectedMainSha
+            ) {
+                return { ok: false, reason: 'local-repository-changed' };
+            }
             pushCredentialSession = await this.credentials.openBound(
                 request.credential,
                 canonicalUrl,
             );
-            const pushEnvironment = createGitNetworkEnvironment(
+            const pushEnvironment = createStagingGitEnvironment(
                 configPaths,
                 pushCredentialSession.environment,
+                request.projectPath,
             );
             let bufferedError = '';
             const pushResult = await this.tools.executeStreaming('git', {
@@ -238,11 +275,10 @@ export class GitPushService {
                     `core.hooksPath=${hooksDirectory}`,
                     'push',
                     '--no-verify',
-                    '--set-upstream',
                     'origin',
-                    'main',
+                    'refs/heads/main:refs/heads/main',
                 ],
-                cwd: request.projectPath,
+                cwd: stagingRepository,
                 env: pushEnvironment,
                 signal: request.signal,
                 timeoutMs: GIT_PUSH_TIMEOUT_MS,
@@ -256,6 +292,54 @@ export class GitPushService {
                     reason: toGitPushFailureReason(bufferedError),
                 };
             }
+            await pushCredentialSession.close().catch(() => undefined);
+            pushCredentialSession = undefined;
+
+            if (
+                !(await this.isExactStandardRoot(request.projectPath)) ||
+                (await this.readMainCommit(execute, request.projectPath)) !==
+                    expectedMainSha
+            ) {
+                return { ok: false, reason: 'local-repository-changed' };
+            }
+            const verifiedOrigin = await readOrigin(
+                execute,
+                request.projectPath,
+            );
+            if (
+                verifiedOrigin.status !== 'present' ||
+                verifiedOrigin.canonicalUrl !==
+                    normalizeGitRemoteUrl(canonicalUrl)
+            ) {
+                return { ok: false, reason: 'local-repository-changed' };
+            }
+            if (
+                !(await reconcileLocalUpstream(
+                    execute,
+                    request.projectPath,
+                    expectedMainSha,
+                    hooksDirectory,
+                ))
+            ) {
+                return { ok: false, reason: 'verification-failed' };
+            }
+            const upstream = await execute({
+                args: [
+                    'rev-parse',
+                    '--abbrev-ref',
+                    '--symbolic-full-name',
+                    '@{upstream}',
+                ],
+                cwd: request.projectPath,
+                timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+            });
+            if (
+                !upstream.success ||
+                trimLine(upstream.stdout) !== 'origin/main'
+            ) {
+                return { ok: false, reason: 'verification-failed' };
+            }
+            return { ok: true, canonicalUrl };
         } catch {
             return { ok: false, reason: 'push-failed' };
         } finally {
@@ -265,31 +349,6 @@ export class GitPushService {
                 .rm(supportDirectory, { recursive: true, force: true })
                 .catch(() => undefined);
         }
-
-        if (!(await this.isExactStandardRoot(request.projectPath))) {
-            return { ok: false, reason: 'local-repository-changed' };
-        }
-        const verifiedOrigin = await readOrigin(execute, request.projectPath);
-        const upstream = await execute({
-            args: [
-                'rev-parse',
-                '--abbrev-ref',
-                '--symbolic-full-name',
-                '@{upstream}',
-            ],
-            cwd: request.projectPath,
-            timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
-        });
-        if (
-            verifiedOrigin.status !== 'present' ||
-            verifiedOrigin.canonicalUrl !==
-                normalizeGitRemoteUrl(canonicalUrl) ||
-            !upstream.success ||
-            trimLine(upstream.stdout) !== 'origin/main'
-        ) {
-            return { ok: false, reason: 'verification-failed' };
-        }
-        return { ok: true, canonicalUrl };
     }
 
     /**
@@ -430,16 +489,19 @@ export class GitPushService {
  *
  * @param environment - Isolated network environment with the askpass session.
  * @param endpoint - Confirmed repository-specific Git LFS API endpoint.
+ * @param storage - Exact project-owned Git LFS object storage path.
  * @returns Environment with command-scoped Git LFS safety configuration.
  */
 function createGitLfsPushEnvironment(
     environment: NodeJS.ProcessEnv,
     endpoint: string,
+    storage: string,
 ): NodeJS.ProcessEnv {
     const entries = [
         ['credential.helper', ''],
         ['lfs.url', endpoint],
         ['lfs.pushurl', endpoint],
+        ['lfs.storage', storage],
         ['lfs.standalonetransferagent', ''],
         ['lfs.basictransfersonly', 'true'],
     ] as const;
@@ -452,6 +514,120 @@ function createGitLfsPushEnvironment(
         configuredEnvironment[`GIT_CONFIG_VALUE_${index}`] = value;
     });
     return configuredEnvironment;
+}
+
+/**
+ * Creates an isolated environment that exposes only the project's Git objects
+ * to an attempt-owned staging repository.
+ *
+ * @param configPaths - Attempt-owned empty Git configuration paths.
+ * @param askPassEnvironment - Opaque askpass session environment.
+ * @param projectPath - Exact standard project repository root.
+ * @returns Isolated Git environment with one trusted alternate object path.
+ */
+function createStagingGitEnvironment(
+    configPaths: IsolatedGitConfigPaths,
+    askPassEnvironment: NodeJS.ProcessEnv,
+    projectPath: string,
+): NodeJS.ProcessEnv {
+    return {
+        ...createGitNetworkEnvironment(configPaths, askPassEnvironment),
+        GIT_ALTERNATE_OBJECT_DIRECTORIES: JSON.stringify(
+            path.join(projectPath, '.git', 'objects'),
+        ),
+    };
+}
+
+/**
+ * Creates one clean bare repository containing only the approved main ref and
+ * canonical origin.
+ *
+ * @param execute - Validated Git execution session.
+ * @param stagingRepository - Attempt-owned bare repository path.
+ * @param environment - Isolated staging Git environment.
+ * @param canonicalUrl - Validated token-free HTTPS clone URL.
+ * @param expectedMainSha - Validated project main commit object ID.
+ * @returns Whether every staging repository setup command succeeded.
+ */
+async function prepareStagingRepository(
+    execute: ToolExecutionSession,
+    stagingRepository: string,
+    environment: NodeJS.ProcessEnv,
+    canonicalUrl: string,
+    expectedMainSha: string,
+): Promise<boolean> {
+    const requests = [
+        {
+            args: [
+                '-c',
+                'init.templateDir=',
+                'init',
+                '--bare',
+                '--initial-branch=main',
+                '--',
+                stagingRepository,
+            ],
+            cwd: path.dirname(stagingRepository),
+        },
+        {
+            args: ['update-ref', 'refs/heads/main', expectedMainSha],
+            cwd: stagingRepository,
+        },
+        {
+            args: ['remote', 'add', '--', 'origin', canonicalUrl],
+            cwd: stagingRepository,
+        },
+    ];
+    for (const request of requests) {
+        const result = await execute({
+            ...request,
+            env: environment,
+            timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+        });
+        if (!result.success) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Records the successfully pushed snapshot as the local main upstream.
+ *
+ * @param execute - Validated Git execution session.
+ * @param projectPath - Exact standard project repository root.
+ * @param expectedMainSha - Commit object ID that was pushed successfully.
+ * @param hooksDirectory - Attempt-owned empty hooks directory.
+ * @returns Whether the remote-tracking ref and upstream configuration were set.
+ */
+async function reconcileLocalUpstream(
+    execute: ToolExecutionSession,
+    projectPath: string,
+    expectedMainSha: string,
+    hooksDirectory: string,
+): Promise<boolean> {
+    const commands = [
+        [
+            '-c',
+            `core.hooksPath=${hooksDirectory}`,
+            'update-ref',
+            'refs/remotes/origin/main',
+            expectedMainSha,
+        ],
+        ['config', '--local', 'branch.main.remote', 'origin'],
+        ['config', '--local', 'branch.main.merge', 'refs/heads/main'],
+    ];
+    for (const args of commands) {
+        const result = await execute({
+            args,
+            cwd: projectPath,
+            timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+        });
+        if (!result.success) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /**

@@ -7,7 +7,7 @@ const MAIN_SHA = 'a'.repeat(40);
 describe('GitPushService', () => {
     it('adds a token-free origin, pushes main, and verifies its upstream', async () => {
         let originAdded = false;
-        const execute = vi.fn(async ({ args }) => {
+        const execute = vi.fn(async ({ args, cwd }) => {
             if (args[0] === 'branch') {
                 return { success: true, stdout: 'main\n', stderr: '' };
             }
@@ -29,7 +29,7 @@ describe('GitPushService', () => {
                           stderr: '',
                       };
             }
-            if (args[0] === 'remote') {
+            if (args[0] === 'remote' && cwd === '/projects/my-game') {
                 originAdded = true;
                 return { success: true, stdout: '', stderr: '' };
             }
@@ -98,13 +98,65 @@ describe('GitPushService', () => {
                 ],
             }),
         );
+        const stagingInit = execute.mock.calls.find(
+            ([executionRequest]) => executionRequest.args[2] === 'init',
+        )?.[0];
+        expect(stagingInit).toMatchObject({
+            args: expect.arrayContaining([
+                'init.templateDir=',
+                '--bare',
+                '--initial-branch=main',
+            ]),
+            env: expect.objectContaining({
+                GIT_CONFIG_NOSYSTEM: '1',
+                GIT_ALTERNATE_OBJECT_DIRECTORIES: JSON.stringify(
+                    path.join('/projects/my-game', '.git', 'objects'),
+                ),
+            }),
+        });
+        expect(stagingInit?.cwd).not.toBe('/projects/my-game');
+        expect(execute).toHaveBeenCalledWith(
+            expect.objectContaining({
+                args: ['update-ref', 'refs/heads/main', MAIN_SHA],
+                cwd: expect.not.stringContaining('/projects/my-game'),
+            }),
+        );
+        expect(execute).toHaveBeenCalledWith(
+            expect.objectContaining({
+                args: [
+                    '-c',
+                    expect.stringMatching(/^core\.hooksPath=/u),
+                    'update-ref',
+                    'refs/remotes/origin/main',
+                    MAIN_SHA,
+                ],
+                cwd: '/projects/my-game',
+            }),
+        );
+        expect(execute).toHaveBeenCalledWith(
+            expect.objectContaining({
+                args: [
+                    'config',
+                    '--local',
+                    'branch.main.merge',
+                    'refs/heads/main',
+                ],
+                cwd: '/projects/my-game',
+            }),
+        );
         expect(JSON.stringify(execute.mock.calls)).not.toContain(
             'secret-token',
         );
         expect(tools.executeStreaming).toHaveBeenCalledOnce();
         const [toolId, request] = tools.executeStreaming.mock.calls[0];
         expect(toolId).toBe('git');
+        expect(request.cwd).not.toBe('/projects/my-game');
         expect(request.args).toContain('--no-verify');
+        expect(request.args).toContain('refs/heads/main:refs/heads/main');
+        expect(request.args).not.toContain('--set-upstream');
+        expect(request.env.GIT_ALTERNATE_OBJECT_DIRECTORIES).toBe(
+            JSON.stringify(path.join('/projects/my-game', '.git', 'objects')),
+        );
         expect(request.env.GIT_ASKPASS).toBeUndefined();
         expect(readCommandArguments(request.args)).toMatchObject({
             'core.askPass': '',
@@ -136,18 +188,31 @@ describe('GitPushService', () => {
             expect.objectContaining({ password: 'secret-token' }),
             'https://github.com/godotlauncher/my-game.git',
         );
+        const reconciliationIndex = execute.mock.calls.findIndex(
+            ([executionRequest]) =>
+                executionRequest.args.includes('refs/remotes/origin/main'),
+        );
+        expect(
+            credentialSession.close.mock.invocationCallOrder[0],
+        ).toBeLessThan(
+            execute.mock.invocationCallOrder[reconciliationIndex] ?? 0,
+        );
     });
 
     it('refuses to overwrite a different existing origin', async () => {
-        const execute = vi.fn(async ({ args }) =>
-            args[0] === 'branch'
-                ? { success: true, stdout: 'main\n', stderr: '' }
-                : {
-                      success: true,
-                      stdout: 'https://github.com/someone/else.git\n',
-                      stderr: '',
-                  },
-        );
+        const execute = vi.fn(async ({ args }) => {
+            if (args[0] === 'branch') {
+                return { success: true, stdout: 'main\n', stderr: '' };
+            }
+            if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                return { success: true, stdout: `${MAIN_SHA}\n`, stderr: '' };
+            }
+            return {
+                success: true,
+                stdout: 'https://github.com/someone/else.git\n',
+                stderr: '',
+            };
+        });
         const tools = {
             createExecutionSession: vi.fn(async () => execute),
             executeStreaming: vi.fn(),
@@ -183,21 +248,30 @@ describe('GitPushService', () => {
     it.each(['command-failed', 'cancelled'])(
         'closes the bound session after a %s branch push',
         async (reason) => {
-            const execute = vi.fn(async ({ args }) =>
-                args[0] === 'branch'
-                    ? { success: true, stdout: 'main\n', stderr: '' }
-                    : args[0] === 'config'
-                      ? {
-                            success: true,
-                            stdout: 'https://github.com/godotlauncher/my-game.git\n',
-                            stderr: '',
-                        }
-                      : {
-                            success: true,
-                            stdout: 'origin/main\n',
-                            stderr: '',
-                        },
-            );
+            const execute = vi.fn(async ({ args }) => {
+                if (args[0] === 'branch') {
+                    return { success: true, stdout: 'main\n', stderr: '' };
+                }
+                if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                    return {
+                        success: true,
+                        stdout: `${MAIN_SHA}\n`,
+                        stderr: '',
+                    };
+                }
+                if (args[0] === 'config') {
+                    return {
+                        success: true,
+                        stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                        stderr: '',
+                    };
+                }
+                return {
+                    success: true,
+                    stdout: 'origin/main\n',
+                    stderr: '',
+                };
+            });
             const boundCredentialSession = {
                 environment: {
                     GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION: 'bound-session-ref',
@@ -339,11 +413,14 @@ describe('GitPushService', () => {
                 signal: new AbortController().signal,
             }),
         ).resolves.toEqual({ ok: false, reason: 'remote-not-empty' });
-        expect(execute).not.toHaveBeenCalledWith(
-            expect.objectContaining({
-                args: expect.arrayContaining(['remote', 'add']),
-            }),
-        );
+        expect(
+            execute.mock.calls.some(
+                ([request]) =>
+                    request.cwd === '/projects/my-game' &&
+                    request.args[0] === 'remote' &&
+                    request.args[1] === 'add',
+            ),
+        ).toBe(false);
         expect(executeStreaming).toHaveBeenCalledOnce();
         expect(executeStreaming.mock.calls[0]?.[0]).toBe('git');
     });
@@ -431,6 +508,7 @@ describe('GitPushService', () => {
         );
         const [lfsToolId, lfsRequest] = tools.executeStreaming.mock.calls[1];
         expect(lfsToolId).toBe('git-lfs');
+        expect(lfsRequest.cwd).not.toBe('/projects/my-game');
         expect(lfsRequest.args).toEqual(['push', 'origin', 'main']);
         const lfsConfig = readCommandConfig(lfsRequest.env);
         expect(lfsConfig).toEqual({
@@ -438,6 +516,7 @@ describe('GitPushService', () => {
             'lfs.url': 'https://github.com/godotlauncher/my-game.git/info/lfs',
             'lfs.pushurl':
                 'https://github.com/godotlauncher/my-game.git/info/lfs',
+            'lfs.storage': path.join('/projects/my-game', '.git', 'lfs'),
             'lfs.standalonetransferagent': '',
             'lfs.basictransfersonly': 'true',
         });
@@ -462,6 +541,9 @@ describe('GitPushService', () => {
         const execute = vi.fn(async ({ args }) => {
             if (args[0] === 'branch') {
                 return { success: true, stdout: 'main\n', stderr: '' };
+            }
+            if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                return { success: true, stdout: `${MAIN_SHA}\n`, stderr: '' };
             }
             return {
                 success: true,
@@ -511,6 +593,142 @@ describe('GitPushService', () => {
         });
         expect(tools.executeStreaming).toHaveBeenCalledOnce();
         expect(tools.executeStreaming.mock.calls[0][0]).toBe('git-lfs');
+        expect(credentialSession.close).toHaveBeenCalledOnce();
+    });
+
+    it('refuses authenticated work when main changes after staging', async () => {
+        const changedSha = 'b'.repeat(40);
+        let mainReadCount = 0;
+        const execute = vi.fn(async ({ args }) => {
+            if (args[0] === 'branch') {
+                return { success: true, stdout: 'main\n', stderr: '' };
+            }
+            if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                mainReadCount += 1;
+                return {
+                    success: true,
+                    stdout: `${mainReadCount === 1 ? MAIN_SHA : changedSha}\n`,
+                    stderr: '',
+                };
+            }
+            if (args[0] === 'config') {
+                return {
+                    success: true,
+                    stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                    stderr: '',
+                };
+            }
+            return { success: true, stdout: '', stderr: '' };
+        });
+        const credentials = {
+            open: vi.fn(),
+            openBound: vi.fn(),
+        };
+        const executeStreaming = vi.fn();
+        const service = new GitPushService(
+            {
+                createExecutionSession: vi.fn(async () => execute),
+                executeStreaming,
+            } as never,
+            credentials as never,
+            {
+                inspectRepository: vi.fn(async () => ({
+                    status: 'inside-work-tree',
+                    isProjectRoot: true,
+                    kind: 'standard',
+                })),
+            } as never,
+        );
+
+        await expect(
+            service.pushMain({
+                projectPath: '/projects/my-game',
+                canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
+                requiresGitLfsUpload: false,
+                requiresEmptyRemote: false,
+                credential: { username: 'x-access-token', password: 'secret' },
+                signal: new AbortController().signal,
+            }),
+        ).resolves.toEqual({
+            ok: false,
+            reason: 'local-repository-changed',
+        });
+        expect(credentials.open).not.toHaveBeenCalled();
+        expect(credentials.openBound).not.toHaveBeenCalled();
+        expect(executeStreaming).not.toHaveBeenCalled();
+    });
+
+    it('does not reconcile upstream when main changes after the remote push', async () => {
+        const changedSha = 'b'.repeat(40);
+        let mainReadCount = 0;
+        const execute = vi.fn(async ({ args }) => {
+            if (args[0] === 'branch') {
+                return { success: true, stdout: 'main\n', stderr: '' };
+            }
+            if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                mainReadCount += 1;
+                return {
+                    success: true,
+                    stdout: `${mainReadCount < 4 ? MAIN_SHA : changedSha}\n`,
+                    stderr: '',
+                };
+            }
+            if (args[0] === 'config') {
+                return {
+                    success: true,
+                    stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                    stderr: '',
+                };
+            }
+            return { success: true, stdout: '', stderr: '' };
+        });
+        const credentialSession = {
+            environment: {},
+            helper: "!exec '/tmp/credential-helper'",
+            close: vi.fn(async () => undefined),
+        };
+        const service = new GitPushService(
+            {
+                createExecutionSession: vi.fn(async () => execute),
+                executeStreaming: vi.fn(async () => ({
+                    success: true,
+                    exitCode: 0,
+                })),
+            } as never,
+            {
+                open: vi.fn(),
+                openBound: vi.fn(async () => credentialSession),
+            } as never,
+            {
+                inspectRepository: vi.fn(async () => ({
+                    status: 'inside-work-tree',
+                    isProjectRoot: true,
+                    kind: 'standard',
+                })),
+            } as never,
+        );
+
+        await expect(
+            service.pushMain({
+                projectPath: '/projects/my-game',
+                canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
+                requiresGitLfsUpload: false,
+                requiresEmptyRemote: false,
+                credential: { username: 'x-access-token', password: 'secret' },
+                signal: new AbortController().signal,
+            }),
+        ).resolves.toEqual({
+            ok: false,
+            reason: 'local-repository-changed',
+        });
+        expect(
+            execute.mock.calls.some(
+                ([request]) =>
+                    request.cwd === '/projects/my-game' &&
+                    request.args.includes('update-ref') &&
+                    request.args.includes('refs/remotes/origin/main'),
+            ),
+        ).toBe(false);
         expect(credentialSession.close).toHaveBeenCalledOnce();
     });
 });
