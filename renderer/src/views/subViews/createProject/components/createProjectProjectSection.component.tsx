@@ -1,9 +1,11 @@
+import { FlaskConical } from 'lucide-react';
 import type React from 'react';
 import {
     SelectField,
     type SelectFieldOption,
 } from '../../../../components/ui/selectField.component';
 import { TextField } from '../../../../components/ui/textField.component';
+import { Tooltip } from '../../../../components/ui/tooltip.component';
 import {
     type CreateProjectReleaseRow,
     getCreateProjectReleaseKey,
@@ -113,14 +115,24 @@ export const CreateProjectProjectSection: React.FC<
         <div className="flex flex-col gap-2">
             <div className="flex flex-row gap-2 items-center">
                 <h2 className="text-md">{t('project.title')}</h2>
+                
+                {selectedRelease?.prerelease && (
+                    <Tooltip
+                        placement="top"
+                        tip={t('project.prereleaseBadge')}
+                        tone="secondary"
+                        role="img"
+                        ariaLabel={t('project.prereleaseBadge')}
+                    >
+                        <span className="inline-flex size-5 shrink-0 items-center justify-center text-secondary">
+                            <FlaskConical size={13} aria-hidden="true" />
+                        </span>
+                    </Tooltip>
+                )}
+
                 {selectedRelease?.mono && (
                     <p className="badge badge-outline badge-xs text-base-content/50">
                         {t('project.dotNetBadge')}
-                    </p>
-                )}
-                {selectedRelease?.prerelease && (
-                    <p className="badge badge-outline text-base-content/50">
-                        {t('project.prereleaseBadge')}
                     </p>
                 )}
             </div>
