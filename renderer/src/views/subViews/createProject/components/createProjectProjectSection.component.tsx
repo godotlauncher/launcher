@@ -114,7 +114,7 @@ export const CreateProjectProjectSection: React.FC<
             <div className="flex flex-row gap-2 items-center">
                 <h2 className="text-md">{t('project.title')}</h2>
                 {selectedRelease?.mono && (
-                    <p className="badge badge-outline text-base-content/50">
+                    <p className="badge badge-outline badge-xs text-base-content/50">
                         {t('project.dotNetBadge')}
                     </p>
                 )}
