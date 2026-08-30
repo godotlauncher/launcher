@@ -137,23 +137,31 @@ export class GitPushService {
         const supportDirectory = await fs.mkdtemp(
             path.join(os.tmpdir(), 'godot-launcher-git-push-'),
         );
-        let credentialSession:
+        let networkCredentialSession:
             | Awaited<ReturnType<GitCredentialSessionService['open']>>
+            | undefined;
+        let pushCredentialSession:
+            | Awaited<ReturnType<GitCredentialSessionService['openBound']>>
             | undefined;
         try {
             const hooksDirectory = path.join(supportDirectory, 'hooks');
             await fs.mkdir(hooksDirectory, { mode: 0o700 });
             const configPaths = await createIsolatedGitConfig(supportDirectory);
-            credentialSession = await this.credentials.open(request.credential);
-            const environment = createGitNetworkEnvironment(
-                configPaths,
-                credentialSession.environment,
-            );
-            if (request.requiresEmptyRemote) {
+            let networkEnvironment: NodeJS.ProcessEnv | undefined;
+            if (request.requiresEmptyRemote || request.requiresGitLfsUpload) {
+                networkCredentialSession = await this.credentials.open(
+                    request.credential,
+                );
+                networkEnvironment = createGitNetworkEnvironment(
+                    configPaths,
+                    networkCredentialSession.environment,
+                );
+            }
+            if (request.requiresEmptyRemote && networkEnvironment) {
                 const remote = await this.inspectRemoteEmpty(
                     canonicalUrl,
                     supportDirectory,
-                    environment,
+                    networkEnvironment,
                     request.signal,
                     expectedMainSha,
                 );
@@ -177,7 +185,7 @@ export class GitPushService {
                     return { ok: false, reason: 'origin-failed' };
                 }
             }
-            if (request.requiresGitLfsUpload) {
+            if (request.requiresGitLfsUpload && networkEnvironment) {
                 let bufferedError = '';
                 const lfsResult = await this.tools.executeStreaming(
                     GIT_LFS_TOOL_ID,
@@ -185,7 +193,7 @@ export class GitPushService {
                         args: ['push', 'origin', 'main'],
                         cwd: request.projectPath,
                         env: createGitLfsPushEnvironment(
-                            environment,
+                            networkEnvironment,
                             createGitLfsEndpoint(canonicalUrl),
                         ),
                         signal: request.signal,
@@ -204,10 +212,28 @@ export class GitPushService {
                     };
                 }
             }
+            await networkCredentialSession?.close();
+            networkCredentialSession = undefined;
+            pushCredentialSession = await this.credentials.openBound(
+                request.credential,
+                canonicalUrl,
+            );
+            const pushEnvironment = createGitNetworkEnvironment(
+                configPaths,
+                pushCredentialSession.environment,
+            );
             let bufferedError = '';
             const pushResult = await this.tools.executeStreaming('git', {
                 args: [
                     ...createGitHttpsSafetyArguments(true),
+                    '-c',
+                    `credential.helper=${pushCredentialSession.helper}`,
+                    '-c',
+                    'core.askPass=',
+                    '-c',
+                    'remote.origin.pushurl=',
+                    '-c',
+                    `remote.origin.pushurl=${canonicalUrl}`,
                     '-c',
                     `core.hooksPath=${hooksDirectory}`,
                     'push',
@@ -217,7 +243,7 @@ export class GitPushService {
                     'main',
                 ],
                 cwd: request.projectPath,
-                env: environment,
+                env: pushEnvironment,
                 signal: request.signal,
                 timeoutMs: GIT_PUSH_TIMEOUT_MS,
                 onStderr: (chunk) => {
@@ -233,7 +259,8 @@ export class GitPushService {
         } catch {
             return { ok: false, reason: 'push-failed' };
         } finally {
-            await credentialSession?.close().catch(() => undefined);
+            await networkCredentialSession?.close().catch(() => undefined);
+            await pushCredentialSession?.close().catch(() => undefined);
             await fs
                 .rm(supportDirectory, { recursive: true, force: true })
                 .catch(() => undefined);

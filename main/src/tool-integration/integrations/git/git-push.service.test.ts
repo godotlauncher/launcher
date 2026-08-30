@@ -48,11 +48,15 @@ describe('GitPushService', () => {
             })),
         };
         const credentialSession = {
-            environment: { GIT_ASKPASS: '/tmp/askpass' },
+            environment: {
+                GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION: 'bound-session-ref',
+            },
+            helper: "!exec '/tmp/credential-helper'",
             close: vi.fn(async () => undefined),
         };
         const credentials = {
-            open: vi.fn(async () => credentialSession),
+            open: vi.fn(),
+            openBound: vi.fn(async () => credentialSession),
         };
         const git = {
             inspectRepository: vi.fn(async () => ({
@@ -101,6 +105,19 @@ describe('GitPushService', () => {
         const [toolId, request] = tools.executeStreaming.mock.calls[0];
         expect(toolId).toBe('git');
         expect(request.args).toContain('--no-verify');
+        expect(request.env.GIT_ASKPASS).toBeUndefined();
+        expect(readCommandArguments(request.args)).toMatchObject({
+            'core.askPass': '',
+            'credential.helper': "!exec '/tmp/credential-helper'",
+            'remote.origin.pushurl':
+                'https://github.com/godotlauncher/my-game.git',
+        });
+        expect(
+            readCommandArgumentValues(request.args, 'credential.helper'),
+        ).toEqual(['', "!exec '/tmp/credential-helper'"]);
+        expect(
+            readCommandArgumentValues(request.args, 'remote.origin.pushurl'),
+        ).toEqual(['', 'https://github.com/godotlauncher/my-game.git']);
         const hooksArgument = request.args.find((argument) =>
             argument.startsWith('core.hooksPath='),
         );
@@ -114,6 +131,11 @@ describe('GitPushService', () => {
             'secret-token',
         );
         expect(credentialSession.close).toHaveBeenCalledOnce();
+        expect(credentials.open).not.toHaveBeenCalled();
+        expect(credentials.openBound).toHaveBeenCalledWith(
+            expect.objectContaining({ password: 'secret-token' }),
+            'https://github.com/godotlauncher/my-game.git',
+        );
     });
 
     it('refuses to overwrite a different existing origin', async () => {
@@ -157,6 +179,71 @@ describe('GitPushService', () => {
         });
         expect(tools.executeStreaming).not.toHaveBeenCalled();
     });
+
+    it.each(['command-failed', 'cancelled'])(
+        'closes the bound session after a %s branch push',
+        async (reason) => {
+            const execute = vi.fn(async ({ args }) =>
+                args[0] === 'branch'
+                    ? { success: true, stdout: 'main\n', stderr: '' }
+                    : args[0] === 'config'
+                      ? {
+                            success: true,
+                            stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                            stderr: '',
+                        }
+                      : {
+                            success: true,
+                            stdout: 'origin/main\n',
+                            stderr: '',
+                        },
+            );
+            const boundCredentialSession = {
+                environment: {
+                    GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION: 'bound-session-ref',
+                },
+                helper: "!exec '/tmp/credential-helper'",
+                close: vi.fn(async () => undefined),
+            };
+            const service = new GitPushService(
+                {
+                    createExecutionSession: vi.fn(async () => execute),
+                    executeStreaming: vi.fn(async () => ({
+                        success: false,
+                        reason,
+                        exitCode: null,
+                    })),
+                } as never,
+                {
+                    open: vi.fn(),
+                    openBound: vi.fn(async () => boundCredentialSession),
+                } as never,
+                {
+                    inspectRepository: vi.fn(async () => ({
+                        status: 'inside-work-tree',
+                        isProjectRoot: true,
+                        kind: 'standard',
+                    })),
+                } as never,
+            );
+
+            await expect(
+                service.pushMain({
+                    projectPath: '/projects/my-game',
+                    canonicalUrl:
+                        'https://github.com/godotlauncher/my-game.git',
+                    requiresGitLfsUpload: false,
+                    requiresEmptyRemote: false,
+                    credential: {
+                        username: 'x-access-token',
+                        password: 'secret',
+                    },
+                    signal: new AbortController().signal,
+                }),
+            ).resolves.toEqual({ ok: false, reason: 'push-failed' });
+            expect(boundCredentialSession.close).toHaveBeenCalledOnce();
+        },
+    );
 
     it('checks remote refs through the isolated credential session', async () => {
         const executeStreaming = vi.fn(async (_toolId, request) => {
@@ -297,9 +384,20 @@ describe('GitPushService', () => {
             },
             close: vi.fn(async () => undefined),
         };
+        const boundCredentialSession = {
+            environment: {
+                GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION: 'bound-session-ref',
+            },
+            helper: "!exec '/tmp/credential-helper'",
+            close: vi.fn(async () => undefined),
+        };
+        const credentials = {
+            open: vi.fn(async () => credentialSession),
+            openBound: vi.fn(async () => boundCredentialSession),
+        };
         const service = new GitPushService(
             tools as never,
-            { open: vi.fn(async () => credentialSession) } as never,
+            credentials as never,
             {
                 inspectRepository: vi.fn(async () => ({
                     status: 'inside-work-tree',
@@ -347,6 +445,14 @@ describe('GitPushService', () => {
             'session-ref',
         );
         expect(tools.executeStreaming.mock.calls[2][0]).toBe('git');
+        expect(credentialSession.close).toHaveBeenCalledOnce();
+        expect(boundCredentialSession.close).toHaveBeenCalledOnce();
+        expect(credentials.open.mock.invocationCallOrder[0]).toBeLessThan(
+            credentials.openBound.mock.invocationCallOrder[0] ?? 0,
+        );
+        expect(
+            credentialSession.close.mock.invocationCallOrder[0],
+        ).toBeLessThan(credentials.openBound.mock.invocationCallOrder[0] ?? 0);
         expect(JSON.stringify(tools.executeStreaming.mock.calls)).not.toContain(
             'secret-token',
         );
@@ -425,4 +531,45 @@ function readCommandConfig(
             environment[`GIT_CONFIG_VALUE_${index}`] ?? '',
         ]),
     );
+}
+
+/**
+ * Reads the final value for each command-scoped Git configuration argument.
+ *
+ * @param argumentsList - Git command arguments.
+ * @returns Final command configuration keyed by setting name.
+ */
+function readCommandArguments(argumentsList: string[]): Record<string, string> {
+    const result: Record<string, string> = {};
+    for (let index = 0; index < argumentsList.length - 1; index += 1) {
+        if (argumentsList[index] !== '-c') {
+            continue;
+        }
+        const entry = argumentsList[index + 1] ?? '';
+        const separator = entry.indexOf('=');
+        if (separator > 0) {
+            result[entry.slice(0, separator)] = entry.slice(separator + 1);
+        }
+    }
+    return result;
+}
+
+/**
+ * Reads every command-scoped value for one Git configuration key.
+ *
+ * @param argumentsList - Git command arguments.
+ * @param key - Exact configuration key.
+ * @returns Values in command precedence order.
+ */
+function readCommandArgumentValues(
+    argumentsList: string[],
+    key: string,
+): string[] {
+    return argumentsList
+        .filter(
+            (value, index) =>
+                argumentsList[index - 1] === '-c' &&
+                value.startsWith(`${key}=`),
+        )
+        .map((value) => value.slice(key.length + 1));
 }

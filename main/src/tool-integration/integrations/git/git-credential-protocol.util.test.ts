@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    createBoundGitCredentialRequest,
     createGitCredentialRequest,
     createGitCredentialResponse,
     parseGitCredentialRequest,
@@ -18,8 +19,54 @@ describe('Git credential protocol', () => {
             expect(parseGitCredentialRequest(frame)).toEqual({
                 kind,
                 sessionRef,
+                target: null,
             });
         }
+    });
+
+    it('round trips a fixed destination-bound request', () => {
+        const frame = createBoundGitCredentialRequest(sessionRef, 'password', {
+            protocol: 'https',
+            host: 'github.com',
+            path: 'godotlauncher/my-game.git',
+        });
+
+        expect(frame).toHaveLength(2_364);
+        expect(parseGitCredentialRequest(frame)).toEqual({
+            kind: 'password',
+            sessionRef,
+            target: {
+                protocol: 'https',
+                host: 'github.com',
+                path: 'godotlauncher/my-game.git',
+            },
+        });
+    });
+
+    it.each([
+        { protocol: '', host: 'github.com', path: 'owner/repository.git' },
+        { protocol: 'https', host: '', path: 'owner/repository.git' },
+        { protocol: 'https', host: 'github.com', path: '' },
+        {
+            protocol: 'https',
+            host: 'github.com',
+            path: 'owner/repository.git\nextra',
+        },
+    ])('rejects an invalid destination-bound target', (target) => {
+        expect(() =>
+            createBoundGitCredentialRequest(sessionRef, 'username', target),
+        ).toThrow('Git credential target is invalid');
+    });
+
+    it('rejects malformed destination-bound padding', () => {
+        const frame = createBoundGitCredentialRequest(sessionRef, 'username', {
+            protocol: 'https',
+            host: 'github.com',
+            path: 'owner/repository.git',
+        });
+        frame[57] = 1;
+
+        expect(parseGitCredentialRequest(frame)).toBeNull();
     });
 
     it.each([
