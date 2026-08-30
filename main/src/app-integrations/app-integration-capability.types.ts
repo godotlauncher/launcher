@@ -104,6 +104,7 @@ export type RepositoryCreationFailureReason =
     | 'rate-limited'
     | 'network-unavailable'
     | 'remote-creation-uncertain'
+    | 'remote-creation-response-invalid'
     | 'provider-unavailable';
 
 export class RepositoryCreationError extends Error {

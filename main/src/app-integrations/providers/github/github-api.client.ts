@@ -49,6 +49,14 @@ export class GitHubApiError extends Error {
     }
 }
 
+export class GitHubRepositoryCreationResponseError extends Error {
+    /** Creates a safe error for an unusable response after creation was accepted. */
+    constructor() {
+        super('GitHub returned an invalid repository creation response');
+        this.name = 'GitHubRepositoryCreationResponseError';
+    }
+}
+
 @Injectable()
 export class GitHubApiClient {
     /**
@@ -252,19 +260,23 @@ export class GitHubApiClient {
         if (!response.ok) {
             throwGitHubApiError(response);
         }
-        const repository = GitHubCreatedRepositorySchema.parse(
-            await readGitHubJsonResponse(
-                response,
-                GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES,
-            ),
-        );
-        if (
-            repository.owner.login.toLowerCase() !== owner.toLowerCase() ||
-            repository.name !== repositoryName
-        ) {
-            throw new Error('GitHub created an unexpected repository');
+        try {
+            const repository = GitHubCreatedRepositorySchema.parse(
+                await readGitHubJsonResponse(
+                    response,
+                    GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES,
+                ),
+            );
+            if (
+                repository.owner.login.toLowerCase() !== owner.toLowerCase() ||
+                repository.name !== repositoryName
+            ) {
+                throw new GitHubRepositoryCreationResponseError();
+            }
+            return repository;
+        } catch {
+            throw new GitHubRepositoryCreationResponseError();
         }
-        return repository;
     }
 
     /**

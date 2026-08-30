@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GitHubApiClient } from './github-api.client.js';
+import {
+    GitHubApiClient,
+    GitHubRepositoryCreationResponseError,
+} from './github-api.client.js';
+import { GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES } from './github-app-integration.constants.js';
 
 describe('GitHubApiClient', () => {
     afterEach(() => vi.unstubAllGlobals());
@@ -153,6 +157,62 @@ describe('GitHubApiClient', () => {
             }),
         });
     });
+
+    it.each([
+        ['missing body', () => new Response(null, { status: 201 })],
+        ['malformed JSON', () => new Response('{', { status: 201 })],
+        [
+            'an oversized body',
+            () =>
+                new Response('{}', {
+                    status: 201,
+                    headers: {
+                        'content-length': String(
+                            GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES + 1,
+                        ),
+                    },
+                }),
+        ],
+        [
+            'invalid repository schema',
+            () => Response.json({ id: 42 }, { status: 201 }),
+        ],
+        [
+            'unexpected repository identity',
+            () =>
+                Response.json(
+                    {
+                        id: 42,
+                        owner: { login: 'different-owner' },
+                        name: 'my-game',
+                        full_name: 'different-owner/my-game',
+                        private: true,
+                        clone_url:
+                            'https://github.com/different-owner/my-game.git',
+                        html_url: 'https://github.com/different-owner/my-game',
+                    },
+                    { status: 201 },
+                ),
+        ],
+    ] as const)(
+        'treats a successful creation response with %s as uncertain',
+        async (_description, createResponse) => {
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async () => createResponse()),
+            );
+
+            await expect(
+                new GitHubApiClient().createPrivateRepository(
+                    'access-token',
+                    'godotlauncher',
+                    'organization',
+                    'my-game',
+                    new AbortController().signal,
+                ),
+            ).rejects.toBeInstanceOf(GitHubRepositoryCreationResponseError);
+        },
+    );
 
     it('checks an exact repository name without following redirects', async () => {
         const fetchMock = vi

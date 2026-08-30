@@ -6,7 +6,11 @@ import {
     type RepositoryCreationRequest,
 } from '../../app-integration-capability.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { GitHubApiClient, GitHubApiError } from './github-api.client.js';
+import {
+    GitHubApiClient,
+    GitHubApiError,
+    GitHubRepositoryCreationResponseError,
+} from './github-api.client.js';
 import { GitHubStoredCredentialSchema } from './github-app-integration.schema.js';
 
 const GITHUB_REPOSITORY_NAME_PATTERN = /^[A-Za-z0-9._-]{1,100}$/u;
@@ -179,6 +183,9 @@ function readAccessToken(credential: string): string {
 function mapCreationError(error: unknown): RepositoryCreationError {
     if (error instanceof RepositoryCreationError) {
         return error;
+    }
+    if (error instanceof GitHubRepositoryCreationResponseError) {
+        return new RepositoryCreationError('remote-creation-response-invalid');
     }
     if (!(error instanceof GitHubApiError)) {
         return new RepositoryCreationError('provider-unavailable');

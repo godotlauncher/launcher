@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GitHubApiError } from './github-api.client.js';
+import {
+    GitHubApiError,
+    GitHubRepositoryCreationResponseError,
+} from './github-api.client.js';
 import { GitHubRepositoryCreationCapability } from './github-repository-creation.capability.js';
 
 const request = {
@@ -31,6 +34,20 @@ const request = {
 };
 
 describe('GitHubRepositoryCreationCapability', () => {
+    it('preserves uncertainty after GitHub accepts an unusable creation response', async () => {
+        const capability = new GitHubRepositoryCreationCapability({
+            createPrivateRepository: vi.fn(async () => {
+                throw new GitHubRepositoryCreationResponseError();
+            }),
+        } as never);
+
+        await expect(
+            capability.createRepository(request),
+        ).rejects.toMatchObject({
+            reason: 'remote-creation-response-invalid',
+        });
+    });
+
     it('returns a validated exact repository for ambiguous creation recovery', async () => {
         const github = {
             recoverPrivateRepository: vi.fn(async () => ({

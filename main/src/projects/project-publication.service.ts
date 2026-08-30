@@ -40,6 +40,7 @@ type PublicationAttempt = {
     repository: RepositoryCreationRepository | null;
     recoveredRepository: RepositoryCreationRepository | null;
     requiresEmptyRemote: boolean;
+    canRecreateAfterConfirmedAbsence: boolean;
     outcome: Extract<
         CreateProjectPublicationOutcome,
         { status: 'failed' }
@@ -143,6 +144,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
             repository: null,
             recoveredRepository: null,
             requiresEmptyRemote: false,
+            canRecreateAfterConfirmedAbsence: true,
             outcome: null,
         };
         this.attempts.set(attempt.id, attempt);
@@ -287,6 +289,9 @@ export class ProjectPublicationService implements OnModuleDestroy {
             },
         );
         if (!result.ok) {
+            if (result.reason === 'remote-creation-response-invalid') {
+                attempt.canRecreateAfterConfirmedAbsence = false;
+            }
             return createFailure(
                 attempt,
                 'remote-create',
@@ -326,6 +331,13 @@ export class ProjectPublicationService implements OnModuleDestroy {
         if (result.recovery.status === 'absent') {
             logPublicationEvent(attempt, 'recovery-repository-absent');
             attempt.recoveredRepository = null;
+            if (!attempt.canRecreateAfterConfirmedAbsence) {
+                return createFailure(
+                    attempt,
+                    'remote-create',
+                    'remote-creation-uncertain',
+                );
+            }
             attempt.outcome = null;
             return this.runAttempt(attempt);
         }
@@ -550,6 +562,9 @@ function mapCreationFailure(
     }
     if (reason === 'invalid-request') {
         return 'provider-unavailable';
+    }
+    if (reason === 'remote-creation-response-invalid') {
+        return 'remote-creation-uncertain';
     }
     return reason;
 }

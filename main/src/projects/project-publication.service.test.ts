@@ -267,6 +267,113 @@ describe('ProjectPublicationService', () => {
         );
     });
 
+    it('never recreates after GitHub accepts an unusable creation response', async () => {
+        const withRepositoryCreationAccess = vi.fn(async () => ({
+            ok: false as const,
+            reason: 'remote-creation-response-invalid' as const,
+        }));
+        const recoverRepositoryCreation = vi
+            .fn()
+            .mockResolvedValueOnce({
+                ok: true as const,
+                recovery: { status: 'absent' as const },
+            })
+            .mockResolvedValueOnce({
+                ok: true as const,
+                recovery: { status: 'absent' as const },
+            })
+            .mockResolvedValueOnce({
+                ok: true as const,
+                recovery: { status: 'present' as const, repository },
+            })
+            .mockResolvedValueOnce({
+                ok: true as const,
+                recovery: { status: 'present' as const, repository },
+            });
+        const repositories = {
+            listRepositoryCreationTargets: vi.fn(async () => ({
+                ok: true as const,
+                targets: [target],
+            })),
+            withRepositoryCreationAccess,
+            recoverRepositoryCreation,
+            withRepositoryPushAccess: vi.fn(
+                async (_providerId, _selection, operation) => ({
+                    ok: true as const,
+                    value: await operation({
+                        credential: {
+                            username: 'x-access-token',
+                            password: 'secret',
+                        },
+                    }),
+                }),
+            ),
+        };
+        const gitPush = {
+            checkRemoteEmpty: vi.fn(async () => ({
+                ok: true as const,
+                empty: true,
+            })),
+            pushMain: vi.fn(async () => ({
+                ok: true as const,
+                canonicalUrl: repository.cloneUrl,
+            })),
+        };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            gitPush as never,
+        );
+
+        const failed = await service.publish(project, options, false);
+        expect(failed).toMatchObject({
+            status: 'failed',
+            reason: 'remote-creation-uncertain',
+            recoveryAction: 'check-and-retry',
+            canEdit: false,
+            intendedRepository: {
+                owner: 'godotlauncher',
+                name: 'my-game',
+            },
+        });
+        if (failed.status !== 'failed') throw new Error('Expected failure');
+
+        for (let check = 0; check < 2; check += 1) {
+            await expect(
+                service.retry(failed.attemptId, undefined, 'check-and-retry'),
+            ).resolves.toMatchObject({
+                publication: {
+                    status: 'failed',
+                    reason: 'remote-creation-uncertain',
+                    recoveryAction: 'check-and-retry',
+                    canEdit: false,
+                },
+            });
+        }
+        expect(withRepositoryCreationAccess).toHaveBeenCalledOnce();
+        expect(gitPush.pushMain).not.toHaveBeenCalled();
+
+        await expect(
+            service.retry(failed.attemptId, undefined, 'check-and-retry'),
+        ).resolves.toMatchObject({
+            publication: {
+                status: 'failed',
+                recoveryAction: 'confirm-recovered-repository',
+            },
+        });
+        await expect(
+            service.retry(
+                failed.attemptId,
+                undefined,
+                'confirm-recovered-repository',
+            ),
+        ).resolves.toMatchObject({
+            publication: { status: 'published' },
+        });
+        expect(withRepositoryCreationAccess).toHaveBeenCalledOnce();
+        expect(recoverRepositoryCreation).toHaveBeenCalledTimes(4);
+        expect(gitPush.pushMain).toHaveBeenCalledOnce();
+    });
+
     it('requires confirmation before publishing to a recovered empty repository', async () => {
         const recoverRepositoryCreation = vi.fn(async () => ({
             ok: true as const,
