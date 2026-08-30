@@ -63,6 +63,7 @@ function renderProjectsList(
     ],
     locale = 'en',
     pinnedReorderingDisabled = false,
+    projectGitHubUrls: ReadonlyMap<string, string> = new Map(),
 ): string {
     return renderToStaticMarkup(
         <ProjectsList
@@ -75,6 +76,7 @@ function renderProjectsList(
             loading={false}
             locale={locale}
             busyProjects={[]}
+            projectGitHubUrls={projectGitHubUrls}
             codeEditorSettings={codeEditorSettings}
             highlightedPinnedProjectPath={null}
             pinnedReorderingDisabled={pinnedReorderingDisabled}
@@ -218,6 +220,24 @@ describe('ProjectsList', () => {
         );
         expect(html).toContain('card.windowed');
         expect(html).toContain('>Git<');
+        expect(html).toContain('data-testid="gitProjectIcon"');
+        expect(html).not.toContain('data-testid="githubProjectIcon"');
+    });
+
+    it('uses the GitHub icon when the cached origin is on GitHub', () => {
+        const html = renderProjectsList(
+            {
+                newProjects: [{ ...baseProject, withGit: true }],
+            },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map([[baseProject.path, 'https://github.com/example/sample']]),
+        );
+
+        expect(html).toContain('>Git<');
+        expect(html).toContain('data-testid="githubProjectIcon"');
+        expect(html).not.toContain('data-testid="gitProjectIcon"');
     });
 
     it('renders localized relative times', () => {

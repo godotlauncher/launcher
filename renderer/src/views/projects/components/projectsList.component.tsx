@@ -27,9 +27,12 @@ import {
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
+import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black.svg';
+import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
+import { useTheme } from '../../../hooks/useTheme';
 import { formatRelativeTime } from '../../../i18n/relativeTime';
 import {
     getInvalidProjectTableKey,
@@ -40,6 +43,7 @@ type ProjectSectionKey = 'new' | 'pinned' | 'recents';
 
 type ProjectsListProps = {
     sections: ProjectSections;
+    projectGitHubUrls: ReadonlyMap<string, string>;
     loading: boolean;
     locale: string;
     busyProjects: string[];
@@ -74,6 +78,7 @@ type ProjectListItemProps = Omit<
     | 'onReorderPinnedProjects'
 > & {
     project: ProjectDetails;
+    githubIconSrc: string;
     sectionKey: ProjectSectionKey;
     highlighted: boolean;
     pinnedItemRef?: (element: HTMLLIElement | null) => void;
@@ -81,6 +86,7 @@ type ProjectListItemProps = Omit<
     reorderStateClassName?: string;
 };
 
+/** Renders one project row with its cached repository-provider badge. */
 const ProjectListItem: React.FC<ProjectListItemProps> = ({
     project,
     sectionKey,
@@ -91,6 +97,8 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     locale,
     busyProjects,
     codeEditorSettings,
+    projectGitHubUrls,
+    githubIconSrc,
     isInstalledRelease,
     isProjectEditorDownloading,
     onLaunchProject,
@@ -328,11 +336,22 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                 tone="default"
                             >
                                 <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
-                                    <img
-                                        src={gitIconColor}
-                                        className="h-3.5 w-3.5"
-                                        alt=""
-                                    />
+                                    {projectGitHubUrls.has(project.path) ? (
+                                        <img
+                                            src={githubIconSrc}
+                                            className="h-3.5 w-3.5"
+                                            alt=""
+                                            aria-hidden="true"
+                                            data-testid="githubProjectIcon"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={gitIconColor}
+                                            className="h-3.5 w-3.5"
+                                            alt=""
+                                            data-testid="gitProjectIcon"
+                                        />
+                                    )}
                                     Git
                                 </span>
                             </Tooltip>
@@ -449,6 +468,7 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
     );
 };
 
+/** Renders the grouped project list and its reorderable pinned section. */
 export const ProjectsList: React.FC<ProjectsListProps> = ({
     sections,
     loading,
@@ -458,6 +478,12 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     onReorderPinnedProjects,
     ...itemProps
 }) => {
+    const { theme, systemTheme } = useTheme();
+    const effectiveTheme = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
+    const githubIconSrc =
+        effectiveTheme === 'dark'
+            ? githubInvertocatWhite
+            : githubInvertocatBlack;
     const pinnedItemRefs = useRef(new Map<string, HTMLLIElement>());
     const [isPersistingPinnedOrder, setIsPersistingPinnedOrder] =
         useState(false);
@@ -648,6 +674,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                                     <SortablePinnedProjectItem
                                         key={`${section.key}_${project.path}`}
                                         {...itemProps}
+                                        githubIconSrc={githubIconSrc}
                                         project={project}
                                         index={index}
                                         reorderingDisabled={
@@ -680,6 +707,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                                 <ProjectListItem
                                     key={`${section.key}_${project.path}`}
                                     {...itemProps}
+                                    githubIconSrc={githubIconSrc}
                                     project={project}
                                     sectionKey={section.key}
                                     highlighted={

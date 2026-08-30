@@ -115,6 +115,12 @@ export class ProjectsController implements ProjectsBridge {
         return this.projects.getProjectsDetails();
     }
 
+    /** Refreshes safe GitHub links for the current stored projects. */
+    @ProjectsHandler('refreshProjectGitHubLinks')
+    refreshProjectGitHubLinks() {
+        return this.projects.refreshProjectGitHubLinks();
+    }
+
     /**
      * Lists current owner routes eligible for Create Project publishing.
      *

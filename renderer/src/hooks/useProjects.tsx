@@ -29,6 +29,7 @@ import {
     type PropsWithChildren,
     useContext,
     useEffect,
+    useRef,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -51,6 +52,7 @@ export type ProjectEditorRepairRequest = {
 
 interface ProjectsContext {
     projects: ProjectDetails[];
+    projectGitHubUrls: ReadonlyMap<string, string>;
     codeEditorSettings: CodeEditorIntegrationSettings[];
     loading: boolean;
     rescanCodeEditorIntegration: (
@@ -150,11 +152,35 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     const { addAlert, addCustomConfirm } = useAlerts();
     const { installRelease } = useRelease();
     const [projects, setProjects] = useState<ProjectDetails[]>([]);
+    const [projectGitHubUrls, setProjectGitHubUrls] = useState<
+        ReadonlyMap<string, string>
+    >(new Map());
+    const githubLinksRequestRef = useRef(0);
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
     >([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    /** Refreshes the process-local project-to-GitHub URL cache. */
+    const refreshProjectGitHubLinks = async (): Promise<void> => {
+        const requestId = ++githubLinksRequestRef.current;
+        try {
+            const links = await projectsBridge.refreshProjectGitHubLinks();
+            if (githubLinksRequestRef.current === requestId) {
+                setProjectGitHubUrls(
+                    new Map(
+                        links.map(({ projectPath, url }) => [projectPath, url]),
+                    ),
+                );
+            }
+        } catch {
+            if (githubLinksRequestRef.current === requestId) {
+                setProjectGitHubUrls(new Map());
+            }
+        }
+    };
+
+    /** Refreshes stored projects, editor integrations, and cached GitHub links. */
     const getProjects = async () => {
         setLoading(true);
         const [projects, integrations] = await Promise.all([
@@ -166,6 +192,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         setProjects(projects);
         setCodeEditorSettings(integrations);
         setLoading(false);
+        void refreshProjectGitHubLinks();
     };
 
     const rescanCodeEditorIntegration = async (integrationId: CodeEditorId) => {
@@ -246,16 +273,21 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
      * @param recoveryAction - Exact uncertain-recovery action shown by main.
      * @returns The latest project creation and publication result.
      */
-    const retryCreateProjectPublication = (
+    const retryCreateProjectPublication = async (
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
         recoveryAction?: ProjectPublicationRecoveryAction,
-    ) =>
-        projectsBridge.retryCreateProjectPublication(
+    ) => {
+        const result = await projectsBridge.retryCreateProjectPublication(
             attemptId,
             publication,
             recoveryAction,
         );
+        if (result.publication?.status === 'published') {
+            void refreshProjectGitHubLinks();
+        }
+        return result;
+    };
 
     /**
      * Forgets a process-local publication attempt without changing repositories.
@@ -559,7 +591,10 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
-        const off = subscribeAppEvent('projects-updated', setProjects);
+        const off = subscribeAppEvent('projects-updated', (updatedProjects) => {
+            setProjects(updatedProjects);
+            void refreshProjectGitHubLinks();
+        });
         const offCodeEditorIntegrations = subscribeAppEvent(
             'code-editor-integrations-updated',
             setCodeEditorSettings,
@@ -583,6 +618,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         <projectsContext.Provider
             value={{
                 projects,
+                projectGitHubUrls,
                 codeEditorSettings,
                 loading,
                 rescanCodeEditorIntegration,

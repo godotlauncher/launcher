@@ -15,6 +15,7 @@
         "pinProject": "Waħħal il-proġett",
         "unpinProject": "Neħħi l-proġett minn Imwaħħla",
         "openProjectFolder": "Iftaħ Folder tal-Proġett",
+        "openInGitHub": "Iftaħ fuq GitHub",
         "launchEditor": "Editja f'Godot",
         "projectSettings": "Settings tal-Proġett",
         "openEditorSettingsFolder": "Iftaħ Folder tas-Settings tal-Editur",

@@ -45,5 +45,6 @@ describe('ActionMenu', () => {
         expect(html).toContain('aria-hidden="true"');
         expect(html).toContain('bg-base-300');
         expect(html).toContain('text-error');
+        expect(html).toContain('visibility:hidden');
     });
 });

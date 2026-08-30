@@ -75,6 +75,8 @@ import { ProjectRemoteImportService } from './project-remote-import.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
 /** Provides the application-facing boundary for existing project workflows. */
@@ -92,6 +94,7 @@ export class ProjectsService {
      * @param remoteSources - Remote project source discovery boundary.
      * @param remoteImport - Cancellable remote clone transaction boundary.
      * @param projectPublication - Follow-on remote publication and retry workflow.
+     * @param projectOrigins - Process-local stored-project origin index.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -103,6 +106,7 @@ export class ProjectsService {
         private readonly remoteSources: ProjectRemoteSourceService,
         private readonly remoteImport: ProjectRemoteImportService,
         private readonly projectPublication: ProjectPublicationService,
+        private readonly projectOrigins: ProjectRepositoryOriginIndexService,
     ) {}
 
     /**
@@ -177,6 +181,11 @@ export class ProjectsService {
     /** Gets every stored project. */
     getProjectsDetails() {
         return this.store.list();
+    }
+
+    /** Refreshes safe GitHub links for the current stored projects. */
+    refreshProjectGitHubLinks() {
+        return this.projectOrigins.refreshGitHubLinks();
     }
 
     /**

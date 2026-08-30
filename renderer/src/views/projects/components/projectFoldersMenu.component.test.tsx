@@ -46,9 +46,11 @@ describe('ProjectFoldersMenu', () => {
                     height: 0,
                 }}
                 t={(key) => key}
+                githubUrl={null}
                 onClose={vi.fn()}
                 onOpenProjectFolder={vi.fn()}
                 onOpenEditorSettingsFolder={vi.fn()}
+                onOpenGitHub={vi.fn()}
             />,
         );
 
@@ -56,6 +58,7 @@ describe('ProjectFoldersMenu', () => {
         expect(html).toContain('project.openEditorSettingsFolder');
         expect(html).toContain('lucide-folder-open');
         expect(html).toContain('lucide-folder-cog');
+        expect(html).not.toContain('project.openInGitHub');
     });
 
     it('disables destinations with missing paths', () => {
@@ -75,12 +78,39 @@ describe('ProjectFoldersMenu', () => {
                     height: 0,
                 }}
                 t={(key) => key}
+                githubUrl={null}
                 onClose={vi.fn()}
                 onOpenProjectFolder={vi.fn()}
                 onOpenEditorSettingsFolder={vi.fn()}
+                onOpenGitHub={vi.fn()}
             />,
         );
 
         expect(html.match(/disabled=""/g)).toHaveLength(2);
+    });
+
+    it('renders the GitHub destination when one is cached', () => {
+        const html = renderToStaticMarkup(
+            <ProjectFoldersMenu
+                project={project}
+                anchorRect={{
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: 0,
+                    height: 0,
+                }}
+                t={(key) => key}
+                githubUrl="https://github.com/example/demo"
+                onClose={vi.fn()}
+                onOpenProjectFolder={vi.fn()}
+                onOpenEditorSettingsFolder={vi.fn()}
+                onOpenGitHub={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('project.openInGitHub');
+        expect(html).toContain('data-testid="githubProjectLinkIcon"');
     });
 });

@@ -15,6 +15,7 @@
         "pinProject": "釘選專案",
         "unpinProject": "取消釘選專案",
         "openProjectFolder": "開啟專案資料夾",
+        "openInGitHub": "在 GitHub 中開啟",
         "launchEditor": "在 Godot 中編輯",
         "projectSettings": "專案設定",
         "openEditorSettingsFolder": "開啟編輯器設定資料夾",

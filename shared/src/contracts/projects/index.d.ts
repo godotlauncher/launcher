@@ -52,6 +52,11 @@ export type ProjectGitIdentityResult =
     | { status: 'git-unavailable' }
     | { status: 'inspection-failed' };
 
+export type ProjectGitHubLink = {
+    projectPath: string;
+    url: string;
+};
+
 export type ProjectGitSetupOutcome =
     | { status: 'not-requested' }
     | { status: 'git-unavailable' }

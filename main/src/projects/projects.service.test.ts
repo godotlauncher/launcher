@@ -135,6 +135,9 @@ describe('ProjectsService', () => {
         publish: vi.fn(),
         retry: vi.fn(),
     };
+    const projectOrigins = {
+        refreshGitHubLinks: vi.fn(),
+    };
     let service: ProjectsService;
 
     beforeEach(() => {
@@ -157,7 +160,24 @@ describe('ProjectsService', () => {
             remoteSources as never,
             remoteImport as never,
             projectPublication as never,
+            projectOrigins as never,
         );
+    });
+
+    it('refreshes safe project GitHub links through the origin index', async () => {
+        projectOrigins.refreshGitHubLinks.mockResolvedValueOnce([
+            {
+                projectPath: '/projects/game',
+                url: 'https://github.com/team/game',
+            },
+        ]);
+
+        await expect(service.refreshProjectGitHubLinks()).resolves.toEqual([
+            {
+                projectPath: '/projects/game',
+                url: 'https://github.com/team/game',
+            },
+        ]);
     });
 
     it('delegates create and import transactions to internal services', async () => {

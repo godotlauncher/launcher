@@ -17,6 +17,7 @@ import type {
     ListConnectedRepositoriesResult,
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
+    ProjectGitHubLink,
     ProjectGitIdentityResult,
     ProjectPublicationRecoveryAction,
     PublicGitSourceInspectionResult,
@@ -73,6 +74,9 @@ export type ProjectsBridge = {
 
     /** Gets every stored project. */
     getProjectsDetails(): Promise<ProjectDetails[]>;
+
+    /** Refreshes safe GitHub links for the current stored projects. */
+    refreshProjectGitHubLinks(): Promise<readonly ProjectGitHubLink[]>;
 
     /** Lists current GitHub owners eligible for Create Project publishing. */
     listCreateProjectPublicationTargets(
