@@ -11,6 +11,7 @@ import type {
     InstalledRelease,
     LaunchProjectOptions,
     ProjectDetails,
+    ProjectPublicationRecoveryAction,
     ProjectsBridge,
     RemoteProjectImportRequest,
     RenameProjectOptions,
@@ -180,15 +181,18 @@ export class ProjectsController implements ProjectsBridge {
      *
      * @param attemptId - Opaque failed publication attempt ID.
      * @param publication - Optional edited selection before remote creation.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
      */
     @ProjectsHandler('retryCreateProjectPublication')
     retryCreateProjectPublication(
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
     ) {
         return this.projects.retryCreateProjectPublication(
             attemptId,
             publication,
+            recoveryAction,
         );
     }
 

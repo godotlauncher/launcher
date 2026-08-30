@@ -133,6 +133,7 @@ describe('ProjectsService', () => {
     };
     const projectPublication = {
         publish: vi.fn(),
+        retry: vi.fn(),
     };
     let service: ProjectsService;
 
@@ -262,6 +263,34 @@ describe('ProjectsService', () => {
             );
         },
     );
+
+    it('forwards the exact publication recovery action', async () => {
+        const project = { path: '/projects/game' } as ProjectDetails;
+        projectPublication.retry.mockResolvedValueOnce({
+            projectDetails: project,
+            publication: {
+                status: 'failed',
+                attemptId: 'attempt-id',
+                stage: 'remote-create',
+                reason: 'remote-creation-uncertain',
+                recoveryAction: 'confirm-recovered-repository',
+                canRetry: true,
+                canEdit: false,
+            },
+        });
+
+        await service.retryCreateProjectPublication(
+            'attempt-id',
+            undefined,
+            'confirm-recovered-repository',
+        );
+
+        expect(projectPublication.retry).toHaveBeenCalledWith(
+            'attempt-id',
+            undefined,
+            'confirm-recovered-repository',
+        );
+    });
 
     it('preserves stateless workflow arguments', async () => {
         const project = { path: '/projects/game' } as ProjectDetails;

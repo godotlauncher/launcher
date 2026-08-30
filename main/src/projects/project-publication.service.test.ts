@@ -1,5 +1,9 @@
 import type { ProjectDetails } from '@shared/contracts';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const logger = vi.hoisted(() => ({ info: vi.fn() }));
+vi.mock('electron-log', () => ({ default: logger }));
+
 import { ProjectPublicationService } from './project-publication.service.js';
 
 const target = {
@@ -19,8 +23,17 @@ const options = {
 };
 
 const project = { path: '/projects/my-game' } as ProjectDetails;
+const repository = {
+    id: '42',
+    owner: 'godotlauncher',
+    name: 'my-game',
+    cloneUrl: 'https://github.com/godotlauncher/my-game.git',
+    webUrl: 'https://github.com/godotlauncher/my-game',
+};
 
 describe('ProjectPublicationService', () => {
+    beforeEach(() => vi.clearAllMocks());
+
     it('returns a cautious repository-name availability result', async () => {
         const repositories = {
             checkRepositoryNameAvailability: vi
@@ -60,14 +73,7 @@ describe('ProjectPublicationService', () => {
                 async (_providerId, _selection, operation) => ({
                     ok: true as const,
                     value: await operation({
-                        repository: {
-                            id: '42',
-                            owner: 'godotlauncher',
-                            name: 'my-game',
-                            cloneUrl:
-                                'https://github.com/godotlauncher/my-game.git',
-                            webUrl: 'https://github.com/godotlauncher/my-game',
-                        },
+                        repository,
                         gitCredential: {
                             username: 'x-access-token',
                             password: 'secret',
@@ -125,15 +131,89 @@ describe('ProjectPublicationService', () => {
         expect(gitPush.pushMain).toHaveBeenCalledTimes(2);
         expect(gitPush.pushMain).toHaveBeenNthCalledWith(
             1,
-            expect.objectContaining({ requiresGitLfsUpload: true }),
+            expect.objectContaining({
+                requiresGitLfsUpload: true,
+                requiresEmptyRemote: false,
+            }),
         );
         expect(gitPush.pushMain).toHaveBeenNthCalledWith(
             2,
-            expect.objectContaining({ requiresGitLfsUpload: true }),
+            expect.objectContaining({
+                requiresGitLfsUpload: true,
+                requiresEmptyRemote: false,
+            }),
         );
     });
 
-    it('does not retry an uncertain remote creation', async () => {
+    it('checks an uncertain creation and retries one create after confirmed absence', async () => {
+        const withRepositoryCreationAccess = vi
+            .fn()
+            .mockResolvedValueOnce({
+                ok: false as const,
+                reason: 'remote-creation-uncertain' as const,
+            })
+            .mockImplementationOnce(
+                async (_providerId, _selection, operation) => ({
+                    ok: true as const,
+                    value: await operation({
+                        repository,
+                        gitCredential: {
+                            username: 'x-access-token',
+                            password: 'secret',
+                        },
+                    }),
+                }),
+            );
+        const repositories = {
+            listRepositoryCreationTargets: vi.fn(async () => ({
+                ok: true as const,
+                targets: [target],
+            })),
+            withRepositoryCreationAccess,
+            recoverRepositoryCreation: vi.fn(async () => ({
+                ok: true as const,
+                recovery: { status: 'absent' as const },
+            })),
+        };
+        const gitPush = {
+            pushMain: vi.fn(async () => ({
+                ok: true as const,
+                canonicalUrl: repository.cloneUrl,
+            })),
+        };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            gitPush as never,
+        );
+
+        const failed = await service.publish(project, options, false);
+        expect(failed).toMatchObject({
+            status: 'failed',
+            reason: 'remote-creation-uncertain',
+            recoveryAction: 'check-and-retry',
+            canRetry: true,
+            canEdit: false,
+        });
+        if (failed.status !== 'failed') throw new Error('Expected failure');
+
+        await expect(
+            service.retry(failed.attemptId, undefined, 'check-and-retry'),
+        ).resolves.toMatchObject({
+            publication: {
+                status: 'published',
+            },
+        });
+        expect(withRepositoryCreationAccess).toHaveBeenCalledTimes(2);
+        expect(gitPush.pushMain).toHaveBeenCalledWith(
+            expect.objectContaining({ requiresEmptyRemote: false }),
+        );
+    });
+
+    it('requires confirmation before publishing to a recovered empty repository', async () => {
+        const recoverRepositoryCreation = vi.fn(async () => ({
+            ok: true as const,
+            recovery: { status: 'present' as const, repository },
+        }));
         const repositories = {
             listRepositoryCreationTargets: vi.fn(async () => ({
                 ok: true as const,
@@ -143,29 +223,163 @@ describe('ProjectPublicationService', () => {
                 ok: false as const,
                 reason: 'remote-creation-uncertain' as const,
             })),
+            recoverRepositoryCreation,
+            withRepositoryPushAccess: vi.fn(
+                async (_providerId, _selection, operation) => ({
+                    ok: true as const,
+                    value: await operation({
+                        credential: {
+                            username: 'x-access-token',
+                            password: 'secret',
+                        },
+                    }),
+                }),
+            ),
+        };
+        const gitPush = {
+            checkRemoteEmpty: vi.fn(async () => ({
+                ok: true as const,
+                empty: true,
+            })),
+            pushMain: vi.fn(async () => ({
+                ok: true as const,
+                canonicalUrl: repository.cloneUrl,
+            })),
         };
         const service = new ProjectPublicationService(
             repositories as never,
-            { pushMain: vi.fn() } as never,
+            gitPush as never,
         );
-
-        const failed = await service.publish(project, options, false);
-        expect(failed).toMatchObject({
-            status: 'failed',
-            reason: 'remote-creation-uncertain',
-            canRetry: false,
-        });
+        const failed = await service.publish(project, options, true);
         if (failed.status !== 'failed') throw new Error('Expected failure');
 
-        await expect(service.retry(failed.attemptId)).resolves.toMatchObject({
+        const checked = await service.retry(
+            failed.attemptId,
+            undefined,
+            'check-and-retry',
+        );
+        expect(checked?.publication).toMatchObject({
+            status: 'failed',
+            reason: 'remote-creation-uncertain',
+            recoveryAction: 'confirm-recovered-repository',
+            repository: { owner: 'godotlauncher', name: 'my-game' },
+            canEdit: false,
+        });
+        expect(gitPush.pushMain).not.toHaveBeenCalled();
+
+        await expect(
+            service.retry(
+                failed.attemptId,
+                undefined,
+                'confirm-recovered-repository',
+            ),
+        ).resolves.toMatchObject({
+            publication: { status: 'published' },
+        });
+        expect(recoverRepositoryCreation).toHaveBeenCalledTimes(2);
+        expect(gitPush.pushMain).toHaveBeenCalledWith(
+            expect.objectContaining({
+                requiresEmptyRemote: true,
+                requiresGitLfsUpload: true,
+            }),
+        );
+    });
+
+    it('does not create or push when uncertain recovery remains inconclusive', async () => {
+        const repositories = {
+            listRepositoryCreationTargets: vi.fn(async () => ({
+                ok: true as const,
+                targets: [target],
+            })),
+            withRepositoryCreationAccess: vi.fn(async () => ({
+                ok: false as const,
+                reason: 'remote-creation-uncertain' as const,
+            })),
+            recoverRepositoryCreation: vi.fn(async () => ({
+                ok: false as const,
+                reason: 'network-unavailable' as const,
+            })),
+        };
+        const gitPush = {
+            checkRemoteEmpty: vi.fn(),
+            pushMain: vi.fn(),
+        };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            gitPush as never,
+        );
+        const failed = await service.publish(project, options, false);
+        if (failed.status !== 'failed') throw new Error('Expected failure');
+
+        await expect(
+            service.retry(failed.attemptId, undefined, 'check-and-retry'),
+        ).resolves.toMatchObject({
             publication: {
                 status: 'failed',
                 reason: 'remote-creation-uncertain',
-                canRetry: false,
+                recoveryAction: 'check-and-retry',
             },
         });
         expect(
             repositories.withRepositoryCreationAccess,
         ).toHaveBeenCalledOnce();
+        expect(gitPush.checkRemoteEmpty).not.toHaveBeenCalled();
+        expect(gitPush.pushMain).not.toHaveBeenCalled();
+        const logs = JSON.stringify(logger.info.mock.calls);
+        expect(logs).not.toContain(project.path);
+        expect(logs).not.toContain(options.repositoryName);
+        expect(logs).not.toContain('secret');
+    });
+
+    it('refuses a recovered repository that contains refs', async () => {
+        const repositories = {
+            listRepositoryCreationTargets: vi.fn(async () => ({
+                ok: true as const,
+                targets: [target],
+            })),
+            withRepositoryCreationAccess: vi.fn(async () => ({
+                ok: false as const,
+                reason: 'remote-creation-uncertain' as const,
+            })),
+            recoverRepositoryCreation: vi.fn(async () => ({
+                ok: true as const,
+                recovery: { status: 'present' as const, repository },
+            })),
+            withRepositoryPushAccess: vi.fn(
+                async (_providerId, _selection, operation) => ({
+                    ok: true as const,
+                    value: await operation({
+                        credential: {
+                            username: 'x-access-token',
+                            password: 'secret',
+                        },
+                    }),
+                }),
+            ),
+        };
+        const gitPush = {
+            checkRemoteEmpty: vi.fn(async () => ({
+                ok: true as const,
+                empty: false,
+            })),
+            pushMain: vi.fn(),
+        };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            gitPush as never,
+        );
+        const failed = await service.publish(project, options, false);
+        if (failed.status !== 'failed') throw new Error('Expected failure');
+
+        await expect(
+            service.retry(failed.attemptId, undefined, 'check-and-retry'),
+        ).resolves.toMatchObject({
+            publication: {
+                status: 'failed',
+                reason: 'recovered-repository-not-empty',
+                canRetry: false,
+            },
+        });
+        expect(gitPush.pushMain).not.toHaveBeenCalled();
     });
 });

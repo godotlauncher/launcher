@@ -16,6 +16,7 @@ import {
     stubCreateProjectPublicationTargets,
     stubCreateProjectResult,
     stubGlobalGitIdentity,
+    stubRetryCreateProjectPublicationResults,
 } from './documentationScreenshots/runtime';
 import { SAMPLE_PROJECTS } from './documentationScreenshots/sampleData';
 import { THEMES } from './documentationScreenshots/themes';
@@ -314,6 +315,97 @@ test('blocks a conflicting name and shows app-style recovery', async () => {
         .getByRole('button', { name: 'Continue locally' })
         .click();
     await expect(recoveryDialog).toBeHidden();
+});
+
+test('checks and confirms an exact empty repository after uncertain creation', async () => {
+    await stubGlobalGitIdentity(electronApp, {
+        name: 'Mario Debono',
+        email: 'mario@example.com',
+    });
+    const projectDetails = {
+        ...SAMPLE_PROJECTS[0],
+        name: 'Recovery Game',
+        path: path.join(fixtureHome, 'Projects', 'Recovery Game'),
+    };
+    const repository = {
+        owner: 'mariodebono',
+        name: 'Recovery-Game',
+        webUrl: 'https://github.com/mariodebono/Recovery-Game',
+    };
+    await stubCreateProjectResult(electronApp, {
+        success: false,
+        error: 'The project was created locally.',
+        projectDetails,
+        publication: {
+            status: 'failed',
+            attemptId: 'uncertain-creation-attempt',
+            stage: 'remote-create',
+            reason: 'remote-creation-uncertain',
+            intendedRepository: repository,
+            recoveryAction: 'check-and-retry',
+            canRetry: true,
+            canEdit: false,
+        },
+    });
+    await stubRetryCreateProjectPublicationResults(electronApp, [
+        {
+            success: false,
+            error: 'Confirmation required.',
+            projectDetails,
+            publication: {
+                status: 'failed',
+                attemptId: 'uncertain-creation-attempt',
+                stage: 'remote-create',
+                reason: 'remote-creation-uncertain',
+                repository,
+                recoveryAction: 'confirm-recovered-repository',
+                canRetry: true,
+                canEdit: false,
+            },
+        },
+        {
+            success: true,
+            projectDetails,
+            publication: { status: 'published', repository },
+        },
+    ]);
+
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage.getByTestId('inputProjectName').fill('Recovery Game');
+    await mainPage
+        .getByRole('checkbox', { name: 'Publish to GitHub' })
+        .check();
+    await expect(
+        mainPage.getByText('Name looks available', { exact: true }),
+    ).toBeVisible();
+    await mainPage.getByTestId('btnCreateProject').click();
+
+    const recoveryDialog = mainPage.getByRole('dialog', {
+        name: 'Could not publish to GitHub',
+    });
+    await expect(
+        recoveryDialog.getByRole('button', { name: 'Check and retry' }),
+    ).toBeVisible();
+    await recoveryDialog
+        .getByRole('button', { name: 'Check and retry' })
+        .click();
+    await expect(
+        recoveryDialog.getByText(
+            'GitHub contains this exact empty repository. Confirm that you want Launcher to use it.',
+        ),
+    ).toBeVisible();
+    await expect(
+        recoveryDialog.getByRole('button', {
+            name: 'Use this repository',
+        }),
+    ).toBeVisible();
+    await recoveryDialog
+        .getByRole('button', { name: 'Use this repository' })
+        .click();
+
+    await expect(recoveryDialog).toBeHidden();
+    await expect(mainPage.getByText('Published to GitHub')).toBeVisible();
 });
 
 /**

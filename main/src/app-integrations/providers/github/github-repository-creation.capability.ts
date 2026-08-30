@@ -42,6 +42,33 @@ export class GitHubRepositoryCreationCapability
         }
     }
 
+    /** Resolves the exact private repository after an ambiguous create response. */
+    async recoverRepositoryCreation(request: RepositoryCreationRequest) {
+        validateRequest(request);
+        try {
+            const repository = await this.github.recoverPrivateRepository(
+                readAccessToken(request.credential),
+                request.accessTarget.login,
+                request.repositoryName,
+                request.signal,
+            );
+            return repository
+                ? {
+                      status: 'present' as const,
+                      repository: {
+                          id: String(repository.id),
+                          owner: repository.owner.login,
+                          name: repository.name,
+                          cloneUrl: repository.clone_url,
+                          webUrl: repository.html_url,
+                      },
+                  }
+                : { status: 'absent' as const };
+        } catch (error) {
+            throw mapAvailabilityError(error);
+        }
+    }
+
     /** Creates one empty private repository for an approved owner route. */
     async createRepository(request: RepositoryCreationRequest) {
         validateRequest(request);

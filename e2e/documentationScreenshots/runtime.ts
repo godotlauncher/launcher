@@ -743,6 +743,33 @@ export async function stubCreateProjectResult(
 }
 
 /**
+ * Stubs sequential process-local Create Project publication retry results.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param results - Deterministic renderer-safe retry results in call order.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubRetryCreateProjectPublicationResults(
+    electronApp: ElectronApplication,
+    results: CreateProjectResult[],
+): Promise<void> {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResults: CreateProjectResult[]) => {
+            const channel = 'projects.retryCreateProjectPublication';
+            let index = 0;
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResults[
+                    Math.min(index++, injectedResults.length - 1)
+                ],
+            }));
+        },
+        results,
+    );
+}
+
+/**
  * Stubs discarding a process-local Create Project publication attempt.
  *
  * @param electronApp - Electron app whose bridge handler should be replaced.

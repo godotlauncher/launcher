@@ -86,6 +86,13 @@ export type RepositoryCreation = {
     };
 };
 
+export type RepositoryCreationRecovery =
+    | { status: 'absent' }
+    | {
+          status: 'present';
+          repository: RepositoryCreationRepository;
+      };
+
 export type RepositoryCreationFailureReason =
     | 'invalid-request'
     | 'no-usable-connection'
@@ -153,6 +160,11 @@ export interface RepositoryCreationCapability {
     checkRepositoryNameAvailability(
         request: RepositoryCreationRequest,
     ): Promise<RepositoryNameAvailability>;
+
+    /** Resolves the exact repository after an ambiguous creation response. */
+    recoverRepositoryCreation(
+        request: RepositoryCreationRequest,
+    ): Promise<RepositoryCreationRecovery>;
 
     /** Formats a fresh credential for a retry against a confirmed repository. */
     getGitCredential(request: RepositoryPushCredentialRequest): {

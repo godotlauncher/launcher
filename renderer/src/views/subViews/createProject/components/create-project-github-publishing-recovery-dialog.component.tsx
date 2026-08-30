@@ -66,6 +66,16 @@ export const CreateProjectGitHubPublishingRecoveryDialog: React.FC<
             (failure.reason === 'remote-creation-uncertain' &&
                 failure.intendedRepository),
     );
+    const recoveryMessageKey =
+        failure.recoveryAction === 'confirm-recovered-repository'
+            ? 'publishToGitHub.recoveryRepositoryFound'
+            : `publishToGitHub.failure.${failure.reason}`;
+    const retryLabelKey =
+        failure.recoveryAction === 'check-and-retry'
+            ? 'publishToGitHub.checkAndRetry'
+            : failure.recoveryAction === 'confirm-recovered-repository'
+              ? 'publishToGitHub.useRepository'
+              : 'publishToGitHub.retry';
 
     return (
         <Dialog
@@ -107,7 +117,7 @@ export const CreateProjectGitHubPublishingRecoveryDialog: React.FC<
                             {busy && (
                                 <span className="loading loading-spinner loading-xs" />
                             )}
-                            {t('publishToGitHub.retry')}
+                            {t(retryLabelKey)}
                         </button>
                     )}
                 </>
@@ -118,9 +128,7 @@ export const CreateProjectGitHubPublishingRecoveryDialog: React.FC<
                     <p className="font-medium text-base-content">
                         {t('publishToGitHub.recoverySafe')}
                     </p>
-                    <p className="mt-1">
-                        {t(`publishToGitHub.failure.${failure.reason}`)}
-                    </p>
+                    <p className="mt-1">{t(recoveryMessageKey)}</p>
                 </div>
                 <RepositoryCreationFields
                     t={t}

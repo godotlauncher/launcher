@@ -78,4 +78,80 @@ describe('CreateProjectGitHubPublishingRecoveryDialog', () => {
 
         expect(html).toContain('publishToGitHub.openGitHub');
     });
+
+    it('shows check and retry for an uncertain creation', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectGitHubPublishingRecoveryDialog
+                t={t}
+                failure={{
+                    status: 'failed',
+                    attemptId: 'attempt-id',
+                    stage: 'remote-create',
+                    reason: 'remote-creation-uncertain',
+                    intendedRepository: {
+                        owner: 'godotlauncher',
+                        name: 'my-game',
+                        webUrl: 'https://github.com/godotlauncher/my-game',
+                    },
+                    recoveryAction: 'check-and-retry',
+                    canRetry: true,
+                    canEdit: false,
+                }}
+                targets={[]}
+                selectedTargetValue=""
+                repositoryName="my-game"
+                availability="unknown"
+                busy={false}
+                retryDisabled={false}
+                returnFocusRef={{ current: null }}
+                onTargetChange={vi.fn()}
+                onRepositoryNameChange={vi.fn()}
+                onRetry={vi.fn()}
+                onContinueLocally={vi.fn()}
+                onOpenGitHub={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('publishToGitHub.checkAndRetry');
+        expect(html).toContain('publishToGitHub.openGitHub');
+        expect(html).not.toContain('publishToGitHub.useRepository');
+    });
+
+    it('requires a distinct confirmation for a recovered empty repository', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectGitHubPublishingRecoveryDialog
+                t={t}
+                failure={{
+                    status: 'failed',
+                    attemptId: 'attempt-id',
+                    stage: 'remote-create',
+                    reason: 'remote-creation-uncertain',
+                    repository: {
+                        owner: 'godotlauncher',
+                        name: 'my-game',
+                        webUrl: 'https://github.com/godotlauncher/my-game',
+                    },
+                    recoveryAction: 'confirm-recovered-repository',
+                    canRetry: true,
+                    canEdit: false,
+                }}
+                targets={[]}
+                selectedTargetValue=""
+                repositoryName="my-game"
+                availability="idle"
+                busy={false}
+                retryDisabled={false}
+                returnFocusRef={{ current: null }}
+                onTargetChange={vi.fn()}
+                onRepositoryNameChange={vi.fn()}
+                onRetry={vi.fn()}
+                onContinueLocally={vi.fn()}
+                onOpenGitHub={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('publishToGitHub.recoveryRepositoryFound');
+        expect(html).toContain('publishToGitHub.useRepository');
+        expect(html).not.toContain('publishToGitHub.checkAndRetry');
+    });
 });

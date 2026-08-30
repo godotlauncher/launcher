@@ -18,6 +18,7 @@ import type {
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    ProjectPublicationRecoveryAction,
     PublicGitSourceInspectionResult,
     RemoteProjectImportRequest,
     RemoteProjectImportResult,
@@ -99,6 +100,7 @@ export type ProjectsBridge = {
     retryCreateProjectPublication(
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
     ): Promise<CreateProjectResult>;
 
     /** Discards one process-local publication attempt without changing either repository. */

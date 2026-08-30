@@ -9,8 +9,10 @@ import type {
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectPublicationFailureReason,
+    ProjectPublicationRecoveryAction,
     PublishedGitHubRepository,
 } from '@shared/contracts';
+import logger from 'electron-log';
 import type {
     RepositoryCreationFailureReason,
     RepositoryCreationRepository,
@@ -38,6 +40,8 @@ type PublicationAttempt = {
     options: CreateProjectPublicationOptions;
     ownerLogin: string | null;
     repository: RepositoryCreationRepository | null;
+    recoveredRepository: RepositoryCreationRepository | null;
+    requiresEmptyRemote: boolean;
     outcome: Extract<
         CreateProjectPublicationOutcome,
         { status: 'failed' }
@@ -141,9 +145,12 @@ export class ProjectPublicationService implements OnModuleDestroy {
             },
             ownerLogin: null,
             repository: null,
+            recoveredRepository: null,
+            requiresEmptyRemote: false,
             outcome: null,
         };
         this.attempts.set(attempt.id, attempt);
+        logPublicationEvent(attempt, 'attempt-started');
         return this.runAttempt(attempt);
     }
 
@@ -152,16 +159,49 @@ export class ProjectPublicationService implements OnModuleDestroy {
      *
      * @param attemptId - Opaque attempt returned by the failed publication.
      * @param options - Optional edited route before remote creation is confirmed.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
      * @returns The bound project and latest publication outcome.
      */
     async retry(
         attemptId: string,
         options?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
     ): Promise<ProjectPublicationRetryResult | null> {
         this.pruneExpiredAttempts();
         const attempt = this.attempts.get(attemptId);
         if (!attempt) {
             return null;
+        }
+        const expectedRecoveryAction = attempt.outcome?.recoveryAction;
+        if (expectedRecoveryAction && attempt.outcome) {
+            attempt.expiresAt = Date.now() + PUBLICATION_ATTEMPT_EXPIRY_MS;
+            if (options || recoveryAction !== expectedRecoveryAction) {
+                return {
+                    projectDetails: attempt.project,
+                    publication: attempt.outcome,
+                };
+            }
+            const publication =
+                recoveryAction === 'confirm-recovered-repository'
+                    ? await this.confirmRecoveredRepository(attempt)
+                    : await this.recoverUncertainCreation(attempt);
+            return { projectDetails: attempt.project, publication };
+        }
+        if (attempt.outcome && !attempt.outcome.canRetry) {
+            return {
+                projectDetails: attempt.project,
+                publication: attempt.outcome,
+            };
+        }
+        if (recoveryAction) {
+            return {
+                projectDetails: attempt.project,
+                publication: createFailure(
+                    attempt,
+                    'verification',
+                    'local-repository-changed',
+                ),
+            };
         }
         if (attempt.repository) {
             if (options && !samePublicationOptions(attempt.options, options)) {
@@ -206,12 +246,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
     private async runAttempt(
         attempt: PublicationAttempt,
     ): Promise<CreateProjectPublicationOutcome> {
-        if (
-            attempt.outcome?.reason === 'remote-creation-uncertain' &&
-            !attempt.repository
-        ) {
-            return attempt.outcome;
-        }
         if (attempt.repository) {
             return this.pushConfirmedRepository(attempt);
         }
@@ -252,6 +286,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
                     projectPath: attempt.project.path,
                     canonicalUrl: creation.repository.cloneUrl,
                     requiresGitLfsUpload: attempt.requiresGitLfsUpload,
+                    requiresEmptyRemote: attempt.requiresEmptyRemote,
                     credential: creation.gitCredential,
                     signal: AbortSignal.timeout(30 * 60 * 1_000),
                 });
@@ -269,6 +304,130 @@ export class ProjectPublicationService implements OnModuleDestroy {
             this.attempts.delete(attempt.id);
         }
         return result.value;
+    }
+
+    /**
+     * Reconciles one ambiguous creation before making another mutation.
+     *
+     * @param attempt - Exact process-local attempt with an uncertain outcome.
+     * @returns A retry, confirmation prompt, or unchanged safe failure.
+     */
+    private async recoverUncertainCreation(
+        attempt: PublicationAttempt,
+    ): Promise<CreateProjectPublicationOutcome> {
+        logPublicationEvent(attempt, 'recovery-check-started');
+        const result = await this.repositories.recoverRepositoryCreation(
+            attempt.options.providerId,
+            attempt.options,
+        );
+        if (!result.ok) {
+            logPublicationEvent(attempt, 'recovery-check-failed', {
+                reason: mapCreationFailure(result.reason),
+            });
+            return createFailure(
+                attempt,
+                'remote-create',
+                'remote-creation-uncertain',
+            );
+        }
+        if (result.recovery.status === 'absent') {
+            logPublicationEvent(attempt, 'recovery-repository-absent');
+            attempt.recoveredRepository = null;
+            attempt.outcome = null;
+            return this.runAttempt(attempt);
+        }
+
+        const recoveredRepository = result.recovery.repository;
+        attempt.recoveredRepository = recoveredRepository;
+        const remoteCheck = await this.repositories.withRepositoryPushAccess(
+            attempt.options.providerId,
+            attempt.options,
+            ({ credential }) =>
+                this.gitPush.checkRemoteEmpty({
+                    canonicalUrl: recoveredRepository.cloneUrl,
+                    credential,
+                    signal: AbortSignal.timeout(30 * 60 * 1_000),
+                }),
+        );
+        if (!remoteCheck.ok) {
+            logPublicationEvent(attempt, 'recovery-empty-check-failed', {
+                reason: mapCreationFailure(remoteCheck.reason),
+            });
+            return createFailure(
+                attempt,
+                'remote-create',
+                'remote-creation-uncertain',
+            );
+        }
+        if (!remoteCheck.value.ok) {
+            logPublicationEvent(attempt, 'recovery-empty-check-failed', {
+                reason: mapPushFailure(remoteCheck.value.reason),
+            });
+            return createFailure(
+                attempt,
+                'remote-create',
+                'remote-creation-uncertain',
+            );
+        }
+        if (!remoteCheck.value.empty) {
+            logPublicationEvent(attempt, 'recovery-repository-not-empty');
+            return createFailure(
+                attempt,
+                'remote-create',
+                'recovered-repository-not-empty',
+            );
+        }
+        logPublicationEvent(attempt, 'recovery-confirmation-required');
+        return createFailure(
+            attempt,
+            'remote-create',
+            'remote-creation-uncertain',
+            'confirm-recovered-repository',
+        );
+    }
+
+    /**
+     * Revalidates and accepts one exact empty recovered repository.
+     *
+     * @param attempt - Exact process-local attempt awaiting confirmation.
+     * @returns The guarded publication outcome.
+     */
+    private async confirmRecoveredRepository(
+        attempt: PublicationAttempt,
+    ): Promise<CreateProjectPublicationOutcome> {
+        const expected = attempt.recoveredRepository;
+        if (!expected) {
+            return createFailure(
+                attempt,
+                'remote-create',
+                'remote-creation-uncertain',
+            );
+        }
+        logPublicationEvent(attempt, 'recovery-confirmation-started');
+        const result = await this.repositories.recoverRepositoryCreation(
+            attempt.options.providerId,
+            attempt.options,
+        );
+        if (
+            !result.ok ||
+            result.recovery.status !== 'present' ||
+            !sameRepository(expected, result.recovery.repository)
+        ) {
+            if (result.ok && result.recovery.status === 'absent') {
+                attempt.recoveredRepository = null;
+            }
+            logPublicationEvent(attempt, 'recovery-confirmation-rejected');
+            return createFailure(
+                attempt,
+                'remote-create',
+                'remote-creation-uncertain',
+            );
+        }
+        attempt.repository = result.recovery.repository;
+        attempt.recoveredRepository = null;
+        attempt.requiresEmptyRemote = true;
+        logPublicationEvent(attempt, 'recovery-repository-confirmed');
+        return this.pushConfirmedRepository(attempt);
     }
 
     /**
@@ -296,6 +455,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
                     projectPath: attempt.project.path,
                     canonicalUrl: repository.cloneUrl,
                     requiresGitLfsUpload: attempt.requiresGitLfsUpload,
+                    requiresEmptyRemote: attempt.requiresEmptyRemote,
                     credential,
                     signal: AbortSignal.timeout(30 * 60 * 1_000),
                 }),
@@ -326,6 +486,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
         push: GitPushResult,
     ): CreateProjectPublicationOutcome {
         if (push.ok && attempt.repository) {
+            logPublicationEvent(attempt, 'published');
             return {
                 status: 'published',
                 repository: toPublishedRepository(attempt.repository),
@@ -429,6 +590,9 @@ function mapPushFailure(
     if (reason === 'verification-failed') {
         return 'remote-created-verification-failed';
     }
+    if (reason === 'remote-not-empty') {
+        return 'recovered-repository-not-empty';
+    }
     return 'remote-created-push-failed';
 }
 
@@ -453,11 +617,18 @@ function createFailure(
         { status: 'failed' }
     >['stage'],
     reason: ProjectPublicationFailureReason,
+    recoveryAction?: ProjectPublicationRecoveryAction,
 ): Extract<CreateProjectPublicationOutcome, { status: 'failed' }> {
-    const repository = attempt.repository
-        ? toPublishedRepository(attempt.repository)
+    const visibleRepository = attempt.repository ?? attempt.recoveredRepository;
+    const repository = visibleRepository
+        ? toPublishedRepository(visibleRepository)
         : undefined;
     const intendedRepository = createIntendedRepository(attempt);
+    const resolvedRecoveryAction =
+        recoveryAction ??
+        (reason === 'remote-creation-uncertain'
+            ? 'check-and-retry'
+            : undefined);
     const outcome = {
         status: 'failed' as const,
         attemptId: attempt.id,
@@ -465,11 +636,58 @@ function createFailure(
         reason,
         ...(repository ? { repository } : {}),
         ...(intendedRepository ? { intendedRepository } : {}),
-        canRetry: reason !== 'remote-creation-uncertain',
-        canEdit: attempt.repository === null,
+        ...(resolvedRecoveryAction
+            ? { recoveryAction: resolvedRecoveryAction }
+            : {}),
+        canRetry:
+            resolvedRecoveryAction !== undefined ||
+            reason !== 'recovered-repository-not-empty',
+        canEdit:
+            attempt.repository === null &&
+            attempt.recoveredRepository === null &&
+            reason !== 'remote-creation-uncertain',
     };
     attempt.outcome = outcome;
+    logPublicationEvent(attempt, 'failed', {
+        stage,
+        reason,
+        hasRepository: repository !== undefined,
+    });
     return outcome;
+}
+
+/** Returns whether two trusted repository identities describe the same remote. */
+function sameRepository(
+    left: RepositoryCreationRepository,
+    right: RepositoryCreationRepository,
+): boolean {
+    return (
+        left.id === right.id &&
+        left.owner.toLowerCase() === right.owner.toLowerCase() &&
+        left.name === right.name &&
+        left.cloneUrl === right.cloneUrl &&
+        left.webUrl === right.webUrl
+    );
+}
+
+/**
+ * Writes one credential-safe publication diagnostic event.
+ *
+ * @param attempt - Process-local attempt used only for safe correlation data.
+ * @param event - Stable diagnostic event name.
+ * @param details - Optional stable categories without user or provider content.
+ */
+function logPublicationEvent(
+    attempt: PublicationAttempt,
+    event: string,
+    details: Readonly<Record<string, boolean | string>> = {},
+): void {
+    logger.info('Project publication', {
+        attemptId: attempt.id,
+        event,
+        requiresGitLfsUpload: attempt.requiresGitLfsUpload,
+        ...details,
+    });
 }
 
 /** Returns a safe intended GitHub URL for pre-creation recovery. */

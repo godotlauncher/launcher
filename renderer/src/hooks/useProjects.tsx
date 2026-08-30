@@ -15,6 +15,7 @@ import type {
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    ProjectPublicationRecoveryAction,
     ReleaseSummary,
     RenameProjectOptions,
     RenameProjectResult,
@@ -124,6 +125,7 @@ interface ProjectsContext {
     retryCreateProjectPublication: (
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
     ) => Promise<CreateProjectResult>;
     discardCreateProjectPublication: (attemptId: string) => Promise<void>;
 }
@@ -241,12 +243,19 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
      *
      * @param attemptId - Opaque failed publication attempt ID.
      * @param publication - Optional edited selection before remote creation.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
      * @returns The latest project creation and publication result.
      */
     const retryCreateProjectPublication = (
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
-    ) => projectsBridge.retryCreateProjectPublication(attemptId, publication);
+        recoveryAction?: ProjectPublicationRecoveryAction,
+    ) =>
+        projectsBridge.retryCreateProjectPublication(
+            attemptId,
+            publication,
+            recoveryAction,
+        );
 
     /**
      * Forgets a process-local publication attempt without changing repositories.

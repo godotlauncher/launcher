@@ -187,6 +187,47 @@ describe('GitHubApiClient', () => {
         });
     });
 
+    it('recovers only an exact private repository without following redirects', async () => {
+        const recovered = {
+            id: 42,
+            owner: { login: 'godotlauncher' },
+            name: 'my-game',
+            full_name: 'godotlauncher/my-game',
+            private: true,
+            clone_url: 'https://github.com/godotlauncher/my-game.git',
+            html_url: 'https://github.com/godotlauncher/my-game',
+        };
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, { status: 404 }))
+            .mockResolvedValueOnce(Response.json(recovered));
+        vi.stubGlobal('fetch', fetchMock);
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.recoverPrivateRepository(
+                'access-token',
+                'godotlauncher',
+                'missing-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toBeNull();
+        await expect(
+            client.recoverPrivateRepository(
+                'access-token',
+                'godotlauncher',
+                'my-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toEqual(recovered);
+        expect(String(fetchMock.mock.calls[1]?.[0])).toBe(
+            'https://api.github.com/repos/godotlauncher/my-game',
+        );
+        expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({
+            redirect: 'manual',
+        });
+    });
+
     it('omits suspended installations', async () => {
         vi.stubGlobal(
             'fetch',

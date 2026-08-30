@@ -17,6 +17,7 @@ import type {
     ProjectDetails,
     ProjectGitIdentityResult,
     ProjectGitIdentityValue,
+    ProjectPublicationRecoveryAction,
     RemoteProjectImportRequest,
     RenameProjectOptions,
     RenameProjectResult,
@@ -264,14 +265,17 @@ export class ProjectsService {
      *
      * @param attemptId - Opaque failed publication attempt ID.
      * @param publication - Optional edited selection before remote creation.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
      */
     async retryCreateProjectPublication(
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
     ): Promise<CreateProjectResult> {
         const result = await this.projectPublication.retry(
             attemptId,
             publication,
+            recoveryAction,
         );
         if (!result) {
             return {

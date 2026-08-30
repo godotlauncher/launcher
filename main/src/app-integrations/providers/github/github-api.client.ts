@@ -300,6 +300,52 @@ export class GitHubApiClient {
         }
         throwGitHubApiError(response);
     }
+
+    /**
+     * Resolves an exact private repository after an ambiguous creation request.
+     *
+     * @param accessToken - GitHub App user access token.
+     * @param owner - Exact personal or organisation installation owner.
+     * @param repositoryName - Locally validated repository name.
+     * @param signal - Caller cancellation signal.
+     * @returns The validated repository, or null when it is absent.
+     */
+    async recoverPrivateRepository(
+        accessToken: string,
+        owner: string,
+        repositoryName: string,
+        signal: AbortSignal,
+    ): Promise<GitHubCreatedRepository | null> {
+        const url = new URL(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repositoryName)}`,
+            'https://api.github.com',
+        );
+        const response = await githubRequest(
+            url,
+            accessToken,
+            signal,
+            'manual',
+        );
+        if (response.status === 404) {
+            return null;
+        }
+        if (!response.ok) {
+            throwGitHubApiError(response);
+        }
+        const repository = GitHubCreatedRepositorySchema.parse(
+            await readGitHubJsonResponse(
+                response,
+                GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES,
+            ),
+        );
+        if (
+            repository.owner.login.toLowerCase() !== owner.toLowerCase() ||
+            repository.name !== repositoryName
+        ) {
+            throw new Error('GitHub resolved an unexpected repository');
+        }
+        return repository;
+    }
 }
 
 /** Returns whether one installation has approved repository clone access. */

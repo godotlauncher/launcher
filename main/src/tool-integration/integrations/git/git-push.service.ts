@@ -15,11 +15,22 @@ import {
     createGitNetworkEnvironment,
     createIsolatedGitConfig,
 } from './git-network-process.util.js';
-import type { GitPushRequest, GitPushResult } from './git-push.types.js';
+import type {
+    GitPushFailureReason,
+    GitPushRequest,
+    GitPushResult,
+    GitRemoteEmptyCheckRequest,
+    GitRemoteEmptyCheckResult,
+} from './git-push.types.js';
 import { normalizeGitRemoteUrl } from './git-remote-url-normalizer.util.js';
 
 const GIT_PUSH_TIMEOUT_MS = 30 * 60 * 1_000;
 const GIT_LOCAL_COMMAND_TIMEOUT_MS = 15_000;
+const GIT_REMOTE_REFS_MAX_BYTES = 4 * 1024;
+
+type GitRemoteInspectionResult =
+    | { ok: true; empty: boolean; matchesExpectedMain: boolean }
+    | { ok: false; reason: GitPushFailureReason };
 
 @Injectable()
 export class GitPushService {
@@ -35,6 +46,52 @@ export class GitPushService {
         private readonly credentials: GitCredentialSessionService,
         private readonly git: GitService,
     ) {}
+
+    /**
+     * Checks whether one exact HTTPS remote has no refs.
+     *
+     * @param request - Exact remote, credential, and cancellation data.
+     * @returns Whether the remote is empty, or one safe network failure.
+     */
+    async checkRemoteEmpty(
+        request: GitRemoteEmptyCheckRequest,
+    ): Promise<GitRemoteEmptyCheckResult> {
+        const canonicalUrl = validateCanonicalUrl(request.canonicalUrl);
+        if (!canonicalUrl) {
+            return { ok: false, reason: 'origin-failed' };
+        }
+        const supportDirectory = await fs.mkdtemp(
+            path.join(os.tmpdir(), 'godot-launcher-git-remote-check-'),
+        );
+        let credentialSession:
+            | Awaited<ReturnType<GitCredentialSessionService['open']>>
+            | undefined;
+        try {
+            const configPaths = await createIsolatedGitConfig(supportDirectory);
+            credentialSession = await this.credentials.open(request.credential);
+            const environment = createGitNetworkEnvironment(
+                configPaths,
+                credentialSession.environment,
+            );
+            const inspection = await this.inspectRemoteEmpty(
+                canonicalUrl,
+                supportDirectory,
+                environment,
+                request.signal,
+                null,
+            );
+            return inspection.ok
+                ? { ok: true, empty: inspection.empty }
+                : inspection;
+        } catch {
+            return { ok: false, reason: 'push-failed' };
+        } finally {
+            await credentialSession?.close().catch(() => undefined);
+            await fs
+                .rm(supportDirectory, { recursive: true, force: true })
+                .catch(() => undefined);
+        }
+    }
 
     /**
      * Adds or reuses one matching origin, pushes main, and verifies upstream.
@@ -60,6 +117,12 @@ export class GitPushService {
         if (!(await this.hasMainBranch(execute, request.projectPath))) {
             return { ok: false, reason: 'local-repository-changed' };
         }
+        const expectedMainSha = request.requiresEmptyRemote
+            ? await this.readMainCommit(execute, request.projectPath)
+            : null;
+        if (request.requiresEmptyRemote && !expectedMainSha) {
+            return { ok: false, reason: 'local-repository-changed' };
+        }
 
         const origin = await readOrigin(execute, request.projectPath);
         if (origin.status === 'failed') {
@@ -71,20 +134,6 @@ export class GitPushService {
         ) {
             return { ok: false, reason: 'local-repository-changed' };
         }
-        if (origin.status === 'missing') {
-            if (!(await this.isExactStandardRoot(request.projectPath))) {
-                return { ok: false, reason: 'local-repository-changed' };
-            }
-            const addResult = await execute({
-                args: ['remote', 'add', '--', 'origin', canonicalUrl],
-                cwd: request.projectPath,
-                timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
-            });
-            if (!addResult.success) {
-                return { ok: false, reason: 'origin-failed' };
-            }
-        }
-
         const supportDirectory = await fs.mkdtemp(
             path.join(os.tmpdir(), 'godot-launcher-git-push-'),
         );
@@ -100,6 +149,34 @@ export class GitPushService {
                 configPaths,
                 credentialSession.environment,
             );
+            if (request.requiresEmptyRemote) {
+                const remote = await this.inspectRemoteEmpty(
+                    canonicalUrl,
+                    supportDirectory,
+                    environment,
+                    request.signal,
+                    expectedMainSha,
+                );
+                if (!remote.ok) {
+                    return remote;
+                }
+                if (!remote.empty && !remote.matchesExpectedMain) {
+                    return { ok: false, reason: 'remote-not-empty' };
+                }
+            }
+            if (origin.status === 'missing') {
+                if (!(await this.isExactStandardRoot(request.projectPath))) {
+                    return { ok: false, reason: 'local-repository-changed' };
+                }
+                const addResult = await execute({
+                    args: ['remote', 'add', '--', 'origin', canonicalUrl],
+                    cwd: request.projectPath,
+                    timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+                });
+                if (!addResult.success) {
+                    return { ok: false, reason: 'origin-failed' };
+                }
+            }
             if (request.requiresGitLfsUpload) {
                 let bufferedError = '';
                 const lfsResult = await this.tools.executeStreaming(
@@ -220,6 +297,103 @@ export class GitPushService {
             timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
         });
         return result.success && trimLine(result.stdout) === 'main';
+    }
+
+    /**
+     * Reads the exact local main commit used for idempotent recovered retries.
+     *
+     * @param execute - Validated Git execution session.
+     * @param projectPath - Exact project root.
+     * @returns A validated object ID, or null.
+     */
+    private async readMainCommit(
+        execute: ToolExecutionSession,
+        projectPath: string,
+    ): Promise<string | null> {
+        const result = await execute({
+            args: ['rev-parse', '--verify', 'main^{commit}'],
+            cwd: projectPath,
+            timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+        });
+        if (!result.success) {
+            return null;
+        }
+        const value = trimLine(result.stdout).toLowerCase();
+        return /^[0-9a-f]{40}$|^[0-9a-f]{64}$/u.test(value) ? value : null;
+    }
+
+    /**
+     * Reads remote refs without retaining provider-controlled output.
+     *
+     * @param canonicalUrl - Validated token-free HTTPS clone URL.
+     * @param supportDirectory - Attempt-owned directory outside the repository.
+     * @param environment - Isolated Git network environment.
+     * @param signal - Cancellation signal for the remote operation.
+     * @param expectedMainSha - Optional local main object ID accepted as an idempotent retry.
+     * @returns Whether the remote is empty or contains only the expected main ref.
+     */
+    private async inspectRemoteEmpty(
+        canonicalUrl: string,
+        supportDirectory: string,
+        environment: NodeJS.ProcessEnv,
+        signal: AbortSignal,
+        expectedMainSha: string | null,
+    ): Promise<GitRemoteInspectionResult> {
+        let bufferedOutput = '';
+        let outputExceededLimit = false;
+        let bufferedError = '';
+        const result = await this.tools.executeStreaming('git', {
+            args: [
+                ...createGitHttpsSafetyArguments(true),
+                'ls-remote',
+                '--refs',
+                '--',
+                canonicalUrl,
+            ],
+            cwd: supportDirectory,
+            env: environment,
+            signal,
+            timeoutMs: GIT_PUSH_TIMEOUT_MS,
+            onStdout: (chunk) => {
+                if (outputExceededLimit) {
+                    return;
+                }
+                if (
+                    Buffer.byteLength(bufferedOutput, 'utf8') +
+                        Buffer.byteLength(chunk, 'utf8') >
+                    GIT_REMOTE_REFS_MAX_BYTES
+                ) {
+                    outputExceededLimit = true;
+                    return;
+                }
+                bufferedOutput += chunk;
+            },
+            onStderr: (chunk) => {
+                bufferedError = `${bufferedError}${chunk}`.slice(-512);
+            },
+        });
+        if (!result.success) {
+            return {
+                ok: false,
+                reason: toGitPushFailureReason(bufferedError),
+            };
+        }
+        const refs = bufferedOutput
+            .split(/\r?\n/u)
+            .map((line) => line.trim())
+            .filter(Boolean);
+        const expectedLine = expectedMainSha
+            ? `${expectedMainSha}\trefs/heads/main`
+            : null;
+        return {
+            ok: true,
+            empty: !outputExceededLimit && refs.length === 0,
+            matchesExpectedMain:
+                !outputExceededLimit &&
+                expectedLine !== null &&
+                refs.length === 1 &&
+                refs[0]?.toLowerCase() === expectedLine,
+        };
     }
 }
 

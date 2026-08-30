@@ -611,6 +611,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 publicationFailure.canEdit && target
                     ? toCreateProjectPublicationOptions(target, repositoryName)
                     : undefined,
+                publicationFailure.recoveryAction,
             );
             if (result.publication?.status === 'published') {
                 setPublicationFailure(null);

@@ -11,6 +11,7 @@ import type {
     RepositoryCreation,
     RepositoryCreationCapability,
     RepositoryCreationFailureReason,
+    RepositoryCreationRecovery,
     RepositoryHostingFailureReason,
     RepositoryNameAvailability,
     RepositorySelection,
@@ -87,6 +88,10 @@ export type RepositoryCreationAccessResult<T> =
 
 export type RepositoryNameAvailabilityResult =
     | { ok: true; availability: RepositoryNameAvailability }
+    | { ok: false; reason: RepositoryCreationFailureReason };
+
+export type RepositoryCreationRecoveryResult =
+    | { ok: true; recovery: RepositoryCreationRecovery }
     | { ok: false; reason: RepositoryCreationFailureReason };
 
 export type RepositoryPushAccess = {
@@ -225,6 +230,82 @@ export class RepositoryHostingService implements OnModuleDestroy {
                             ),
                         });
                     return { ok: true, availability };
+                } catch (error) {
+                    return {
+                        ok: false,
+                        reason:
+                            error instanceof RepositoryCreationError
+                                ? error.reason
+                                : 'provider-unavailable',
+                    };
+                }
+            },
+        );
+        return lease.ok
+            ? lease.value
+            : { ok: false, reason: mapLeaseFailure(lease.reason) };
+    }
+
+    /**
+     * Resolves the exact repository after an ambiguous creation response.
+     *
+     * @param providerId - Registered hosting provider ID.
+     * @param selection - Exact renderer-safe target and repository name.
+     * @returns An absent or validated present repository, or one safe failure.
+     */
+    async recoverRepositoryCreation(
+        providerId: string,
+        selection: RepositoryCreationSelection,
+    ): Promise<RepositoryCreationRecoveryResult> {
+        if (
+            !providerId.trim() ||
+            !isOpaqueId(selection.connectionId) ||
+            !isOpaqueId(selection.accessTargetId)
+        ) {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        let capability: RepositoryCreationCapability;
+        try {
+            capability = this.capabilities.get(
+                providerId,
+                'repository-creation',
+            );
+        } catch {
+            return { ok: false, reason: 'invalid-request' };
+        }
+        const lease = await this.integrations.withCredentialLease(
+            providerId,
+            async (routes): Promise<RepositoryCreationRecoveryResult> => {
+                const route = routes.find(
+                    (candidate) =>
+                        candidate.connectionId === selection.connectionId &&
+                        candidate.accessTarget.id === selection.accessTargetId,
+                );
+                if (!route) {
+                    return { ok: false, reason: 'target-unavailable' };
+                }
+                if (
+                    !route.accessTarget.capabilities.includes(
+                        'repository-creation',
+                    )
+                ) {
+                    return {
+                        ok: false,
+                        reason: 'permission-update-required',
+                    };
+                }
+                try {
+                    const recovery = await capability.recoverRepositoryCreation(
+                        {
+                            credential: route.credential,
+                            accessTarget: route.accessTarget,
+                            repositoryName: selection.repositoryName,
+                            signal: AbortSignal.timeout(
+                                REPOSITORY_OPERATION_TIMEOUT_MS,
+                            ),
+                        },
+                    );
+                    return { ok: true, recovery };
                 } catch (error) {
                     return {
                         ok: false,

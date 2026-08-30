@@ -148,6 +148,7 @@ export type ProjectPublicationFailureReason =
     | 'rate-limited'
     | 'network-unavailable'
     | 'remote-creation-uncertain'
+    | 'recovered-repository-not-empty'
     | 'remote-created-origin-failed'
     | 'remote-created-push-failed'
     | 'remote-created-verification-failed'
@@ -159,6 +160,10 @@ export type PublishedGitHubRepository = {
     name: string;
     webUrl: string;
 };
+
+export type ProjectPublicationRecoveryAction =
+    | 'check-and-retry'
+    | 'confirm-recovered-repository';
 
 export type CreateProjectPublicationOutcome =
     | { status: 'not-requested' }
@@ -173,6 +178,7 @@ export type CreateProjectPublicationOutcome =
           reason: ProjectPublicationFailureReason;
           repository?: PublishedGitHubRepository;
           intendedRepository?: { owner: string; name: string; webUrl: string };
+          recoveryAction?: ProjectPublicationRecoveryAction;
           canRetry: boolean;
           canEdit: boolean;
       };
