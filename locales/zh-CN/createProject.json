@@ -114,11 +114,12 @@
             "notFound": "未找到"
         },
         "initGit": "初始化 Git 仓库",
+        "unavailableLabel": "不可用",
         "gitNotInstalled": "此电脑未安装 Git",
         "gitLfs": {
             "label": "使用 Git LFS",
             "description": "将 Godot 文档中的文件模式配置为起点。",
-            "unavailable": "请在设置 > 工具中安装并启用 Git LFS 后使用。",
+            "unavailable": "此电脑未安装 Git LFS",
             "patternsTitle": "跟踪的文件类型",
             "groups": {
                 "models": "3D 模型",

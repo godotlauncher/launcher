@@ -114,11 +114,12 @@
             "notFound": "Ma nstabx"
         },
         "initGit": "Ibda Git Repository",
+        "unavailableLabel": "Mhux disponibbli",
         "gitNotInstalled": "Git mhuwiex installat fuq dan il-kompjuter",
         "gitLfs": {
             "label": "Uża Git LFS",
             "description": "Ikkonfigura l-mudelli tal-fajls mid-dokumentazzjoni ta' Godot bħala punt tat-tluq.",
-            "unavailable": "Installa u attiva Git LFS f'Settings > Tools biex tużah.",
+            "unavailable": "Git LFS mhuwiex installat fuq dan il-kompjuter",
             "patternsTitle": "Tipi ta' fajls segwiti",
             "groups": {
                 "models": "Mudelli 3D",

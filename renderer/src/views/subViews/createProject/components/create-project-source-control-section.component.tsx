@@ -2,6 +2,7 @@ import type { GitLfsTrackingPolicyDescriptor } from '@shared/contracts';
 import clsx from 'clsx';
 import type React from 'react';
 import { CreateProjectGitLfsOption } from './create-project-git-lfs-option.component';
+import { CreateProjectUnavailableStatus } from './create-project-unavailable-status.component';
 
 type Translate = (key: string) => string;
 
@@ -54,21 +55,30 @@ export const CreateProjectSourceControlSection: React.FC<
                 invisible: loading,
             })}
         >
-            <label className="flex items-center gap-2">
-                <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm rounded-sm"
-                    disabled={!gitAvailable}
-                    checked={withGit}
-                    onChange={(event) => onWithGitChange(event.target.checked)}
-                />
-                <span>{t('otherSettings.initGit')}</span>
-            </label>
-            {!gitAvailable && (
-                <span className="text-sm text-warning">
-                    {t('otherSettings.gitNotInstalled')}
-                </span>
-            )}
+            <div className="flex items-center gap-2">
+                <label
+                    className={clsx('flex items-center gap-2', {
+                        'text-base-content/50': !gitAvailable,
+                    })}
+                >
+                    <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm rounded-sm"
+                        disabled={!gitAvailable}
+                        checked={withGit}
+                        onChange={(event) =>
+                            onWithGitChange(event.target.checked)
+                        }
+                    />
+                    <span>{t('otherSettings.initGit')}</span>
+                </label>
+                {!gitAvailable && (
+                    <CreateProjectUnavailableStatus
+                        label={t('otherSettings.unavailableLabel')}
+                        help={t('otherSettings.gitNotInstalled')}
+                    />
+                )}
+            </div>
             {withGit && (
                 <>
                     <CreateProjectGitLfsOption

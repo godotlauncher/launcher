@@ -114,11 +114,12 @@
             "notFound": "Bulunamadı"
         },
         "initGit": "Git Deposu Başlat",
+        "unavailableLabel": "Kullanılamıyor",
         "gitNotInstalled": "Git bu bilgisayarda yüklü değil",
         "gitLfs": {
             "label": "Git LFS kullan",
             "description": "Godot belgelerindeki dosya kalıplarını başlangıç noktası olarak yapılandır.",
-            "unavailable": "Kullanmak için Ayarlar > Araçlar bölümünde Git LFS'yi yükleyip etkinleştirin.",
+            "unavailable": "Git LFS bu bilgisayarda yüklü değil",
             "patternsTitle": "İzlenen dosya türleri",
             "groups": {
                 "models": "3D modeller",

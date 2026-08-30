@@ -114,11 +114,12 @@
             "notFound": "Não encontrado"
         },
         "initGit": "Inicializar repositório Git",
+        "unavailableLabel": "Indisponível",
         "gitNotInstalled": "O Git não está instalado neste computador",
         "gitLfs": {
             "label": "Usar Git LFS",
             "description": "Configure como ponto de partida os padrões de arquivos da documentação do Godot.",
-            "unavailable": "Instale e habilite o Git LFS em Configurações > Ferramentas para usá-lo.",
+            "unavailable": "O Git LFS não está instalado neste computador",
             "patternsTitle": "Tipos de arquivos rastreados",
             "groups": {
                 "models": "Modelos 3D",

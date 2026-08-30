@@ -114,11 +114,12 @@
             "notFound": "見つかりません"
         },
         "initGit": "Gitリポジトリを初期化",
+        "unavailableLabel": "利用できません",
         "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
         "gitLfs": {
             "label": "Git LFSを使用",
             "description": "Godotドキュメントのファイルパターンを出発点として設定します。",
-            "unavailable": "使用するには、設定 > ツールでGit LFSをインストールして有効にしてください。",
+            "unavailable": "Git LFSがこのコンピュータにインストールされていません",
             "patternsTitle": "追跡するファイル形式",
             "groups": {
                 "models": "3Dモデル",

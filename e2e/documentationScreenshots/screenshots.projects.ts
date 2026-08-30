@@ -1179,6 +1179,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_new_project_no_git_lfs',
         description: 'New Project view when Git LFS is not installed',
+        preservePointer: true,
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
@@ -1196,10 +1197,15 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                 page.getByRole('checkbox', { name: 'Use Git LFS' }),
             ).toBeDisabled();
             await expect(
-                page.getByText(
-                    'Install and enable Git LFS in Settings > Tools to use it.',
-                ),
+                page.getByText('Unavailable', { exact: true }),
             ).toBeVisible();
+            const unavailableHelp = page.getByRole('button', {
+                name: 'Git LFS is not installed on this computer',
+            });
+            await unavailableHelp.hover();
+            await expect(page.getByRole('tooltip')).toHaveText(
+                'Git LFS is not installed on this computer',
+            );
             await page.waitForTimeout(400);
         },
         cleanup: async (page: ElectronPage) => {
@@ -1350,6 +1356,7 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
     {
         fileBase: 'screen_projects_new_project_no_git',
         description: 'New Project view when Git is not installed',
+        preservePointer: true,
         navigate: async (
             page: ElectronPage,
             electronApp: ElectronApplication,
@@ -1366,6 +1373,13 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
             await page
                 .getByTestId('inputProjectName')
                 .fill('My Next Awesome Game');
+            const unavailableHelp = page.getByRole('button', {
+                name: 'Git is not installed on this computer',
+            });
+            await unavailableHelp.hover();
+            await expect(page.getByRole('tooltip')).toHaveText(
+                'Git is not installed on this computer',
+            );
             await page.waitForTimeout(600);
         },
         cleanup: async (

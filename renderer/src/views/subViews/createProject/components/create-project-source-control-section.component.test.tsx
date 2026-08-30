@@ -5,6 +5,7 @@ import { CreateProjectSourceControlSection } from './create-project-source-contr
 const labels: Record<string, string> = {
     'projects:editProject.sourceControl.title': 'Source Control',
     'otherSettings.initGit': 'Initialize Git Repository',
+    'otherSettings.unavailableLabel': 'Unavailable',
     'otherSettings.gitNotInstalled': 'Git is not installed',
     'otherSettings.gitLfs.label': 'Use Git LFS',
     'otherSettings.gitLfs.description': 'Track common Godot assets.',
@@ -35,5 +36,27 @@ describe('CreateProjectSourceControlSection', () => {
 
         expect(html).toContain('Source Control');
         expect(html).not.toContain('Use Git LFS');
+    });
+
+    it('keeps missing Git guidance inline behind an accessible tooltip', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectSourceControlSection
+                t={t}
+                loading={false}
+                gitAvailable={false}
+                gitLfsAvailable={false}
+                gitLfsPolicy={null}
+                withGit={false}
+                withGitLfs={false}
+                publishToGitHub={false}
+                onWithGitChange={vi.fn()}
+                onWithGitLfsChange={vi.fn()}
+                onPublishToGitHubChange={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('Unavailable');
+        expect(html).toContain('aria-label="Git is not installed"');
+        expect(html).not.toContain('>Git is not installed<');
     });
 });

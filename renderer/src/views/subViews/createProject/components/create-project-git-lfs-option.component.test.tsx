@@ -6,7 +6,8 @@ import { CreateProjectGitLfsOption } from './create-project-git-lfs-option.compo
 const labels: Record<string, string> = {
     'otherSettings.gitLfs.label': 'Use Git LFS',
     'otherSettings.gitLfs.description': 'Track common Godot assets.',
-    'otherSettings.gitLfs.unavailable': 'Git LFS is unavailable.',
+    'otherSettings.gitLfs.unavailable': 'Git LFS is not installed',
+    'otherSettings.unavailableLabel': 'Unavailable',
     'otherSettings.gitLfs.patternsTitle': 'Tracked file types',
     'otherSettings.gitLfs.groups.models': '3D models',
     'otherSettings.gitLfs.groups.godot': 'Godot resources',
@@ -62,14 +63,16 @@ describe('CreateProjectGitLfsOption', () => {
             <CreateProjectGitLfsOption
                 t={t}
                 available={false}
-                policy={null}
+                policy={policy}
                 selected={false}
                 onSelectedChange={vi.fn()}
             />,
         );
 
-        expect(html).toContain('Git LFS is unavailable.');
+        expect(html).toContain('Unavailable');
+        expect(html).toContain('aria-label="Git LFS is not installed"');
+        expect(html).not.toContain('>Git LFS is not installed<');
         expect(html).toContain('disabled=""');
-        expect(html).not.toContain('Tracked file types');
+        expect(html).not.toContain('aria-label="Tracked file types"');
     });
 });

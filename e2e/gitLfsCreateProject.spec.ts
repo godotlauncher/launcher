@@ -82,10 +82,15 @@ test('Missing Git LFS stays disabled with setup guidance', async () => {
         mainPage.getByRole('checkbox', { name: 'Use Git LFS' }),
     ).toBeDisabled();
     await expect(
-        mainPage.getByText(
-            'Install and enable Git LFS in Settings > Tools to use it.',
-        ),
+        mainPage.getByText('Unavailable', { exact: true }),
     ).toBeVisible();
+    const unavailableHelp = mainPage.getByRole('button', {
+        name: 'Git LFS is not installed on this computer',
+    });
+    await unavailableHelp.hover();
+    await expect(mainPage.getByRole('tooltip')).toHaveText(
+        'Git LFS is not installed on this computer',
+    );
 });
 
 test('Create Project submits only the main-owned Git LFS policy ID', async () => {
