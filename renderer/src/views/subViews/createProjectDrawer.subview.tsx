@@ -65,6 +65,7 @@ import {
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
     resolveCreateProjectReleaseIndex,
+    shouldShowCreateProjectPublishedAlert,
     toCreateProjectPublicationOptions,
 } from './createProject/createProject.model';
 
@@ -520,7 +521,10 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             if (editNow) {
                 launchProject(result.projectDetails);
             }
-            if (result.publication?.status === 'published') {
+            if (
+                result.publication?.status === 'published' &&
+                shouldShowCreateProjectPublishedAlert(editNow)
+            ) {
                 showPublishedAlert(result.publication.repository);
             }
         } else if (
@@ -619,7 +623,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 if (editNow && result.projectDetails) {
                     void launchProject(result.projectDetails);
                 }
-                showPublishedAlert(result.publication.repository);
+                if (shouldShowCreateProjectPublishedAlert(editNow)) {
+                    showPublishedAlert(result.publication.repository);
+                }
                 return;
             }
             if (result.publication?.status === 'failed') {

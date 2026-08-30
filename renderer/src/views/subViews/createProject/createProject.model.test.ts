@@ -23,6 +23,7 @@ import {
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
     resolveCreateProjectReleaseIndex,
+    shouldShowCreateProjectPublishedAlert,
     toCreateProjectPublicationOptions,
 } from './createProject.model';
 
@@ -114,6 +115,11 @@ describe('create project model helpers', () => {
             accessTargetId: 'target-id',
             repositoryName: 'my-game',
         });
+    });
+
+    it('skips the published alert when the new project opens immediately', () => {
+        expect(shouldShowCreateProjectPublishedAlert(true)).toBe(false);
+        expect(shouldShowCreateProjectPublishedAlert(false)).toBe(true);
     });
 
     it.each([

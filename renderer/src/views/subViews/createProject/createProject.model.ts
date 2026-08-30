@@ -100,6 +100,18 @@ export function toCreateProjectPublicationOptions(
     };
 }
 
+/**
+ * Decides whether publishing success needs an in-app acknowledgement.
+ *
+ * @param editNow - Whether the new project launches immediately.
+ * @returns Whether the publication success alert should be shown.
+ */
+export function shouldShowCreateProjectPublishedAlert(
+    editNow: boolean,
+): boolean {
+    return !editNow;
+}
+
 export type PathSeparator = '\\' | '/';
 
 export type DownloadingCreateProjectRelease = {
