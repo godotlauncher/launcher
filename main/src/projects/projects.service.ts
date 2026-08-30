@@ -247,6 +247,7 @@ export class ProjectsService {
         const publicationOutcome = await this.projectPublication.publish(
             result.projectDetails,
             publication,
+            result.gitLfsSetup?.status === 'configured',
         );
         return publicationOutcome.status === 'published'
             ? { ...result, publication: publicationOutcome }

@@ -102,7 +102,7 @@ describe('ProjectPublicationService', () => {
             gitPush as never,
         );
 
-        const failed = await service.publish(project, options);
+        const failed = await service.publish(project, options, true);
         expect(failed).toMatchObject({
             status: 'failed',
             reason: 'remote-created-push-failed',
@@ -123,6 +123,14 @@ describe('ProjectPublicationService', () => {
         ).toHaveBeenCalledOnce();
         expect(repositories.withRepositoryPushAccess).toHaveBeenCalledOnce();
         expect(gitPush.pushMain).toHaveBeenCalledTimes(2);
+        expect(gitPush.pushMain).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({ requiresGitLfsUpload: true }),
+        );
+        expect(gitPush.pushMain).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({ requiresGitLfsUpload: true }),
+        );
     });
 
     it('does not retry an uncertain remote creation', async () => {
@@ -141,7 +149,7 @@ describe('ProjectPublicationService', () => {
             { pushMain: vi.fn() } as never,
         );
 
-        const failed = await service.publish(project, options);
+        const failed = await service.publish(project, options, false);
         expect(failed).toMatchObject({
             status: 'failed',
             reason: 'remote-creation-uncertain',

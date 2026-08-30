@@ -10,6 +10,7 @@ export type GitPushFailureReason =
 export type GitPushRequest = {
     projectPath: string;
     canonicalUrl: string;
+    requiresGitLfsUpload: boolean;
     credential: {
         username: string;
         password: string;

@@ -34,6 +34,7 @@ type PublicationAttempt = {
     id: string;
     expiresAt: number;
     project: ProjectDetails;
+    requiresGitLfsUpload: boolean;
     options: CreateProjectPublicationOptions;
     ownerLogin: string | null;
     repository: RepositoryCreationRepository | null;
@@ -120,17 +121,20 @@ export class ProjectPublicationService implements OnModuleDestroy {
      *
      * @param project - Exact project returned by local creation.
      * @param options - Renderer-safe owner route and repository name.
+     * @param requiresGitLfsUpload - Whether creation configured Git LFS successfully.
      * @returns Published or recoverable partial-success outcome.
      */
     async publish(
         project: ProjectDetails,
         options: CreateProjectPublicationOptions,
+        requiresGitLfsUpload: boolean,
     ): Promise<CreateProjectPublicationOutcome> {
         this.pruneExpiredAttempts();
         const attempt: PublicationAttempt = {
             id: randomUUID(),
             expiresAt: Date.now() + PUBLICATION_ATTEMPT_EXPIRY_MS,
             project,
+            requiresGitLfsUpload,
             options: {
                 ...options,
                 repositoryName: options.repositoryName.trim(),
@@ -247,6 +251,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
                 const push = await this.gitPush.pushMain({
                     projectPath: attempt.project.path,
                     canonicalUrl: creation.repository.cloneUrl,
+                    requiresGitLfsUpload: attempt.requiresGitLfsUpload,
                     credential: creation.gitCredential,
                     signal: AbortSignal.timeout(30 * 60 * 1_000),
                 });
@@ -290,6 +295,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
                 this.gitPush.pushMain({
                     projectPath: attempt.project.path,
                     canonicalUrl: repository.cloneUrl,
+                    requiresGitLfsUpload: attempt.requiresGitLfsUpload,
                     credential,
                     signal: AbortSignal.timeout(30 * 60 * 1_000),
                 }),

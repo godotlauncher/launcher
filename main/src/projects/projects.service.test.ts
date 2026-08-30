@@ -131,6 +131,9 @@ describe('ProjectsService', () => {
         setRemoteProjectGitIdentity: vi.fn(),
         initialiseRemoteProjectSubmodules: vi.fn(),
     };
+    const projectPublication = {
+        publish: vi.fn(),
+    };
     let service: ProjectsService;
 
     beforeEach(() => {
@@ -152,6 +155,7 @@ describe('ProjectsService', () => {
             store as never,
             remoteSources as never,
             remoteImport as never,
+            projectPublication as never,
         );
     });
 
@@ -211,6 +215,53 @@ describe('ProjectsService', () => {
             remoteImport.initialiseRemoteProjectSubmodules,
         ).toHaveBeenCalledWith('job-id');
     });
+
+    it.each([
+        ['configured Git LFS', { status: 'configured' }, true],
+        ['no configured Git LFS', { status: 'not-requested' }, false],
+    ] as const)(
+        'derives the publication LFS requirement from %s',
+        async (_name, gitLfsSetup, requiresGitLfsUpload) => {
+            const release = { version: '4.5-stable' } as InstalledRelease;
+            const project = { path: '/projects/game' } as ProjectDetails;
+            const publication = {
+                providerId: 'github',
+                connectionId: 'connection-id',
+                accessTargetId: 'access-target-id',
+                repositoryName: 'game',
+            };
+            mocks.createProject.mockResolvedValueOnce({
+                success: true,
+                projectDetails: project,
+                gitLfsSetup,
+            });
+            projectPublication.publish.mockResolvedValueOnce({
+                status: 'published',
+                repository: {
+                    owner: 'godotlauncher',
+                    name: 'game',
+                    webUrl: 'https://github.com/godotlauncher/game',
+                },
+            });
+
+            await service.createProject(
+                'Game',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                undefined,
+                { initialCommit: 'create' },
+                publication,
+            );
+
+            expect(projectPublication.publish).toHaveBeenCalledWith(
+                project,
+                publication,
+                requiresGitLfsUpload,
+            );
+        },
+    );
 
     it('preserves stateless workflow arguments', async () => {
         const project = { path: '/projects/game' } as ProjectDetails;

@@ -5,6 +5,7 @@ import { Injectable } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationService } from '../../tool-integration.service.js';
 import type { ToolExecutionSession } from '../../tool-integration.types.js';
+import { GIT_LFS_TOOL_ID } from '../git-lfs/git-lfs-tool.constants.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from './git.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -91,17 +92,49 @@ export class GitPushService {
             | Awaited<ReturnType<GitCredentialSessionService['open']>>
             | undefined;
         try {
+            const hooksDirectory = path.join(supportDirectory, 'hooks');
+            await fs.mkdir(hooksDirectory, { mode: 0o700 });
             const configPaths = await createIsolatedGitConfig(supportDirectory);
             credentialSession = await this.credentials.open(request.credential);
             const environment = createGitNetworkEnvironment(
                 configPaths,
                 credentialSession.environment,
             );
+            if (request.requiresGitLfsUpload) {
+                let bufferedError = '';
+                const lfsResult = await this.tools.executeStreaming(
+                    GIT_LFS_TOOL_ID,
+                    {
+                        args: ['push', 'origin', 'main'],
+                        cwd: request.projectPath,
+                        env: createGitLfsPushEnvironment(
+                            environment,
+                            createGitLfsEndpoint(canonicalUrl),
+                        ),
+                        signal: request.signal,
+                        timeoutMs: GIT_PUSH_TIMEOUT_MS,
+                        onStderr: (chunk) => {
+                            bufferedError = `${bufferedError}${chunk}`.slice(
+                                -512,
+                            );
+                        },
+                    },
+                );
+                if (!lfsResult.success) {
+                    return {
+                        ok: false,
+                        reason: toGitPushFailureReason(bufferedError),
+                    };
+                }
+            }
             let bufferedError = '';
             const pushResult = await this.tools.executeStreaming('git', {
                 args: [
                     ...createGitHttpsSafetyArguments(true),
+                    '-c',
+                    `core.hooksPath=${hooksDirectory}`,
                     'push',
+                    '--no-verify',
                     '--set-upstream',
                     'origin',
                     'main',
@@ -115,16 +148,9 @@ export class GitPushService {
                 },
             });
             if (!pushResult.success) {
-                const diagnostic = classifyPushFailure(bufferedError);
                 return {
                     ok: false,
-                    reason:
-                        diagnostic === 'network-failed'
-                            ? 'network-unavailable'
-                            : diagnostic === 'authentication-denied' ||
-                                diagnostic === 'credential-helper-failed'
-                              ? 'authentication-failed'
-                              : 'push-failed',
+                    reason: toGitPushFailureReason(bufferedError),
                 };
             }
         } catch {
@@ -195,6 +221,48 @@ export class GitPushService {
         });
         return result.success && trimLine(result.stdout) === 'main';
     }
+}
+
+/**
+ * Creates the command-scoped Git configuration used by the direct Git LFS
+ * executable without allowing repository-selected helpers or transfer agents.
+ *
+ * @param environment - Isolated network environment with the askpass session.
+ * @param endpoint - Confirmed repository-specific Git LFS API endpoint.
+ * @returns Environment with command-scoped Git LFS safety configuration.
+ */
+function createGitLfsPushEnvironment(
+    environment: NodeJS.ProcessEnv,
+    endpoint: string,
+): NodeJS.ProcessEnv {
+    const entries = [
+        ['credential.helper', ''],
+        ['lfs.url', endpoint],
+        ['lfs.pushurl', endpoint],
+        ['lfs.standalonetransferagent', ''],
+        ['lfs.basictransfersonly', 'true'],
+    ] as const;
+    const configuredEnvironment: NodeJS.ProcessEnv = {
+        ...environment,
+        GIT_CONFIG_COUNT: String(entries.length),
+    };
+    entries.forEach(([key, value], index) => {
+        configuredEnvironment[`GIT_CONFIG_KEY_${index}`] = key;
+        configuredEnvironment[`GIT_CONFIG_VALUE_${index}`] = value;
+    });
+    return configuredEnvironment;
+}
+
+/**
+ * Derives the standard GitHub Git LFS API endpoint from a validated clone URL.
+ *
+ * @param canonicalUrl - Validated token-free HTTPS clone URL.
+ * @returns Repository-specific Git LFS API endpoint.
+ */
+function createGitLfsEndpoint(canonicalUrl: string): string {
+    const url = new URL(canonicalUrl);
+    url.pathname = `${url.pathname}/info/lfs`;
+    return url.toString();
 }
 
 type OriginState =
@@ -282,6 +350,28 @@ type GitPushDiagnostic =
     | 'network-failed'
     | 'rejected'
     | 'unknown';
+
+/**
+ * Maps bounded Git or Git LFS diagnostics to the existing safe push contract.
+ *
+ * @param value - Bounded recent standard error text.
+ * @returns Stable push failure reason.
+ */
+function toGitPushFailureReason(
+    value: string,
+): Extract<GitPushResult, { ok: false }>['reason'] {
+    const diagnostic = classifyPushFailure(value);
+    if (diagnostic === 'network-failed') {
+        return 'network-unavailable';
+    }
+    if (
+        diagnostic === 'authentication-denied' ||
+        diagnostic === 'credential-helper-failed'
+    ) {
+        return 'authentication-failed';
+    }
+    return 'push-failed';
+}
 
 /**
  * Classifies bounded push output without retaining or logging it.
