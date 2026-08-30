@@ -63,7 +63,7 @@ describe('ProjectPublicationService', () => {
         });
     });
 
-    it('retries a confirmed repository without creating it twice', async () => {
+    it('reuses a confirmed attempt and removes it after publication', async () => {
         const repositories = {
             listRepositoryCreationTargets: vi.fn(async () => ({
                 ok: true as const,
@@ -97,6 +97,7 @@ describe('ProjectPublicationService', () => {
             pushMain: vi
                 .fn()
                 .mockResolvedValueOnce({ ok: false, reason: 'push-failed' })
+                .mockResolvedValueOnce({ ok: false, reason: 'push-failed' })
                 .mockResolvedValueOnce({
                     ok: true,
                     canonicalUrl:
@@ -120,6 +121,12 @@ describe('ProjectPublicationService', () => {
 
         await expect(service.retry(failed.attemptId)).resolves.toMatchObject({
             publication: {
+                status: 'failed',
+                attemptId: failed.attemptId,
+            },
+        });
+        await expect(service.retry(failed.attemptId)).resolves.toMatchObject({
+            publication: {
                 status: 'published',
                 repository: { owner: 'godotlauncher', name: 'my-game' },
             },
@@ -127,8 +134,8 @@ describe('ProjectPublicationService', () => {
         expect(
             repositories.withRepositoryCreationAccess,
         ).toHaveBeenCalledOnce();
-        expect(repositories.withRepositoryPushAccess).toHaveBeenCalledOnce();
-        expect(gitPush.pushMain).toHaveBeenCalledTimes(2);
+        expect(repositories.withRepositoryPushAccess).toHaveBeenCalledTimes(2);
+        expect(gitPush.pushMain).toHaveBeenCalledTimes(3);
         expect(gitPush.pushMain).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
@@ -143,6 +150,57 @@ describe('ProjectPublicationService', () => {
                 requiresEmptyRemote: false,
             }),
         );
+        expect(gitPush.pushMain).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                requiresGitLfsUpload: true,
+                requiresEmptyRemote: false,
+            }),
+        );
+        await expect(service.retry(failed.attemptId)).resolves.toBeNull();
+    });
+
+    it('discards only the selected failed attempt', async () => {
+        const service = new ProjectPublicationService({} as never, {} as never);
+        const invalidOptions = { ...options, repositoryName: 'invalid/name' };
+        const first = await service.publish(project, invalidOptions, false);
+        const second = await service.publish(
+            { ...project, path: '/projects/other-game' },
+            invalidOptions,
+            false,
+        );
+        if (first.status !== 'failed' || second.status !== 'failed') {
+            throw new Error('Expected failed attempts');
+        }
+
+        service.discard(first.attemptId);
+
+        await expect(service.retry(first.attemptId)).resolves.toBeNull();
+        await expect(service.retry(second.attemptId)).resolves.toMatchObject({
+            publication: {
+                status: 'failed',
+                attemptId: second.attemptId,
+            },
+        });
+    });
+
+    it('clears every failed attempt during shutdown', async () => {
+        const service = new ProjectPublicationService({} as never, {} as never);
+        const invalidOptions = { ...options, repositoryName: 'invalid/name' };
+        const first = await service.publish(project, invalidOptions, false);
+        const second = await service.publish(
+            { ...project, path: '/projects/other-game' },
+            invalidOptions,
+            false,
+        );
+        if (first.status !== 'failed' || second.status !== 'failed') {
+            throw new Error('Expected failed attempts');
+        }
+
+        service.onModuleDestroy();
+
+        await expect(service.retry(first.attemptId)).resolves.toBeNull();
+        await expect(service.retry(second.attemptId)).resolves.toBeNull();
     });
 
     it('checks an uncertain creation and retries one create after confirmed absence', async () => {

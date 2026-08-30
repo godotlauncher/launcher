@@ -630,6 +630,15 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 ) {
                     setRepositoryNameAvailability('unavailable');
                 }
+                return;
+            }
+            if (result.publication?.status === 'not-requested') {
+                setPublicationFailure(null);
+                onOpenChange(false);
+                addAlert(
+                    t('publishToGitHub.recoveryTitle'),
+                    result.error ?? t('publishToGitHub.retryFailed'),
+                );
             }
         } catch {
             setError(t('publishToGitHub.retryFailed'));

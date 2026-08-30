@@ -29,12 +29,10 @@ import type {
     GitPushResult,
 } from '../tool-integration/integrations/git/git-push.types.js';
 
-const PUBLICATION_ATTEMPT_EXPIRY_MS = 10 * 60 * 1_000;
 const GITHUB_REPOSITORY_NAME_PATTERN = /^[A-Za-z0-9._-]{1,100}$/u;
 
 type PublicationAttempt = {
     id: string;
-    expiresAt: number;
     project: ProjectDetails;
     requiresGitLfsUpload: boolean;
     options: CreateProjectPublicationOptions;
@@ -133,10 +131,8 @@ export class ProjectPublicationService implements OnModuleDestroy {
         options: CreateProjectPublicationOptions,
         requiresGitLfsUpload: boolean,
     ): Promise<CreateProjectPublicationOutcome> {
-        this.pruneExpiredAttempts();
         const attempt: PublicationAttempt = {
             id: randomUUID(),
-            expiresAt: Date.now() + PUBLICATION_ATTEMPT_EXPIRY_MS,
             project,
             requiresGitLfsUpload,
             options: {
@@ -167,14 +163,12 @@ export class ProjectPublicationService implements OnModuleDestroy {
         options?: CreateProjectPublicationOptions,
         recoveryAction?: ProjectPublicationRecoveryAction,
     ): Promise<ProjectPublicationRetryResult | null> {
-        this.pruneExpiredAttempts();
         const attempt = this.attempts.get(attemptId);
         if (!attempt) {
             return null;
         }
         const expectedRecoveryAction = attempt.outcome?.recoveryAction;
         if (expectedRecoveryAction && attempt.outcome) {
-            attempt.expiresAt = Date.now() + PUBLICATION_ATTEMPT_EXPIRY_MS;
             if (options || recoveryAction !== expectedRecoveryAction) {
                 return {
                     projectDetails: attempt.project,
@@ -221,7 +215,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
             };
             attempt.ownerLogin = null;
         }
-        attempt.expiresAt = Date.now() + PUBLICATION_ATTEMPT_EXPIRY_MS;
         return {
             projectDetails: attempt.project,
             publication: await this.runAttempt(attempt),
@@ -496,16 +489,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
             ? 'remote-created-verification-failed'
             : mapPushFailure(push.reason);
         return createFailure(attempt, failureStageForPush(push), reason);
-    }
-
-    /** Removes attempts that have exceeded the first-release retry window. */
-    private pruneExpiredAttempts(): void {
-        const now = Date.now();
-        for (const [id, attempt] of this.attempts) {
-            if (attempt.expiresAt <= now) {
-                this.attempts.delete(id);
-            }
-        }
     }
 }
 
