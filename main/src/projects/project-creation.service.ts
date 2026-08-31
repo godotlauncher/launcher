@@ -448,6 +448,25 @@ export class ProjectCreationService {
                 launcherVersion: app.getVersion(),
             });
 
+            recordCreatedEntry(
+                createdEntries,
+                projectPath,
+                path.resolve(projectPath, '.gitignore'),
+            );
+            await fs.promises.copyFile(
+                path.resolve(projectResDir, 'default_gitignore'),
+                path.resolve(projectPath, '.gitignore'),
+            );
+            recordCreatedEntry(
+                createdEntries,
+                projectPath,
+                path.resolve(projectPath, '.gitattributes'),
+            );
+            await fs.promises.copyFile(
+                path.resolve(projectResDir, 'default-gitattributes'),
+                path.resolve(projectPath, '.gitattributes'),
+            );
+
             // Initialize only when the project is not already covered by a work tree.
             if (withGit) {
                 let inspection = await this.git.inspectRepository(projectPath);
@@ -521,26 +540,6 @@ export class ProjectCreationService {
                 }
 
                 if (gitSetup.status === 'initialized') {
-                    await requireProjectRepositoryRoot(this.git, projectPath);
-                    recordCreatedEntry(
-                        createdEntries,
-                        projectPath,
-                        path.resolve(projectPath, '.gitignore'),
-                    );
-                    await fs.promises.copyFile(
-                        path.resolve(projectResDir, 'default_gitignore'),
-                        path.resolve(projectPath, '.gitignore'),
-                    );
-                    await requireProjectRepositoryRoot(this.git, projectPath);
-                    recordCreatedEntry(
-                        createdEntries,
-                        projectPath,
-                        path.resolve(projectPath, '.gitattributes'),
-                    );
-                    await fs.promises.copyFile(
-                        path.resolve(projectResDir, 'default-gitattributes'),
-                        path.resolve(projectPath, '.gitattributes'),
-                    );
                     if (validatedGitLfsPolicy) {
                         const lfsResult =
                             await this.gitLfs.configureProjectRepository(
