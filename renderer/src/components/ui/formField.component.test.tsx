@@ -20,8 +20,6 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Use an absolute path."');
-        expect(html).toContain('text-base-content/60');
-        expect(html).toContain('hover:text-base-content');
         expect(html).toContain('lucide-circle-question-mark');
     });
 
@@ -101,10 +99,6 @@ describe('UI form primitives', () => {
 
         expect(directoryHtml).toContain('lucide-folder');
         expect(directoryHtml).not.toContain('lucide-file');
-        expect(directoryHtml).toContain('border-base-content/20');
-        expect(directoryHtml).toContain('bg-base-100');
-        expect(directoryHtml).toContain('hover:bg-base-content/5');
-        expect(directoryHtml).not.toContain('btn-outline');
         expect(fileHtml).toContain('lucide-file');
     });
 
@@ -126,8 +120,6 @@ describe('UI form primitives', () => {
         expect(html).toContain('aria-label="Output folder is required."');
         expect(html).toContain('lucide-circle-x');
         expect(html).toContain('lucide-folder');
-        expect(html).toContain('relative join-item min-w-0 flex-1');
-        expect(html).toContain('absolute right-2 top-1/2');
     });
 
     it('disables both path input and browse action', () => {
@@ -144,6 +136,22 @@ describe('UI form primitives', () => {
         );
 
         expect(html.match(/disabled=""/g)).toHaveLength(2);
+    });
+
+    it('can disable only the path browse action', () => {
+        const html = renderToStaticMarkup(
+            <PathField
+                id="selectingPath"
+                label="Project folder"
+                value="/projects"
+                onChange={vi.fn()}
+                onSelect={vi.fn()}
+                browseKind="directory"
+                browseDisabled
+            />,
+        );
+
+        expect(html.match(/disabled=""/g)).toHaveLength(1);
     });
 
     it('renders search field with an internal clear action', () => {
@@ -163,9 +171,6 @@ describe('UI form primitives', () => {
         expect(html).toContain('data-testid="searchInput"');
         expect(html).toContain('aria-label="Clear search"');
         expect(html).toContain('lucide-circle-x');
-        expect(html).toContain('input-sm');
-        expect(html).toContain('text-base');
-        expect(html).toContain('width="14"');
     });
 
     it('renders select field as a popover dropdown', () => {

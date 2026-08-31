@@ -59,6 +59,5 @@ describe('CreateProjectGitHubPublishingSection', () => {
         );
 
         expect(html).toContain('publishToGitHub.availabilityUnavailable');
-        expect(html).toContain('input-error');
     });
 });

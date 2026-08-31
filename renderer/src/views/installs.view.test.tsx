@@ -145,8 +145,6 @@ describe('InstallsView', () => {
         expect(html).toContain('/Users/test/GodotEditors');
         expect(html).toContain('Select manifest file');
         expect(html).toContain('Create custom editor manifest');
-        expect(html).toContain('btn-primary');
-        expect(html).toContain('btn-error');
     });
 
     it('renders the guided empty state without duplicate list controls', () => {

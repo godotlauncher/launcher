@@ -16,14 +16,17 @@ export type PathFieldProps = {
     inputRef?: React.Ref<HTMLInputElement>;
     title?: string;
     suffix?: string;
+    suffixTestId?: string;
     inputAction?: React.ReactNode;
     value: string;
     onChange: (value: string) => void;
     onSelect: () => void;
     onBlur?: () => void;
+    onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
     placeholder?: string;
     error?: string;
     disabled?: boolean;
+    browseDisabled?: boolean;
     compact?: boolean;
     regularText?: boolean;
     browseKind?: PathFieldBrowseKind;
@@ -33,6 +36,12 @@ export type PathFieldProps = {
     browseText?: string;
 };
 
+/**
+ * Renders a controlled path input with an optional suffix and browse action.
+ *
+ * @param props - Path field content, state, and interaction callbacks.
+ * @returns A reusable path form field.
+ */
 export const PathField: React.FC<PathFieldProps> = ({
     id,
     label,
@@ -43,14 +52,17 @@ export const PathField: React.FC<PathFieldProps> = ({
     inputRef,
     title,
     suffix,
+    suffixTestId,
     inputAction,
     value,
     onChange,
     onSelect,
     onBlur,
+    onKeyDown,
     placeholder,
     error,
     disabled = false,
+    browseDisabled = false,
     compact = false,
     regularText = false,
     browseKind = 'file',
@@ -75,7 +87,7 @@ export const PathField: React.FC<PathFieldProps> = ({
             <div className="join w-full">
                 <label
                     className={clsx(
-                        'relative join-item min-w-0 flex-1 input input-bordered rounded-r-none gap-2',
+                        'relative join-item min-w-0 flex-1 input input-bordered gap-2 outline-0 p-0',
                         {
                             'input-sm': compact,
                             'text-sm': regularText,
@@ -88,17 +100,21 @@ export const PathField: React.FC<PathFieldProps> = ({
                         id={id}
                         data-testid={testId}
                         type="text"
-                        className="min-w-0 flex-1 outline-0"
+                        className="input min-w-0 flex-1 text-sm"
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
                         onBlur={onBlur}
+                        onKeyDown={onKeyDown}
                         placeholder={placeholder}
                         aria-label={ariaLabel}
                         title={title}
                         disabled={disabled}
                     />
                     {suffix && (
-                        <span className="max-w-40 shrink-0 whitespace-nowrap text-base-content/50 select-none">
+                        <span
+                            data-testid={suffixTestId}
+                            className="max-w-40 shrink-0 whitespace-nowrap text-base-content/50 select-none"
+                        >
                             {suffix}
                         </span>
                     )}
@@ -115,24 +131,27 @@ export const PathField: React.FC<PathFieldProps> = ({
                             <CircleX size={15} aria-hidden="true" />
                         </Tooltip>
                     )}
+                    <button
+                        type="button"
+                        data-testid={browseTestId}
+                        className={clsx(
+                            'btn btn-ghost border-0 text-base-content shadow-none btn-primary',
+                            {
+                                'btn-sm h-6 px-2 m-1': compact,
+                                'btn-sm m-1 ': !compact,
+                                'text-sm': regularText,
+                            },
+                        )}
+                        onClick={onSelect}
+                        disabled={disabled || browseDisabled}
+                        aria-label={resolvedBrowseLabel}
+                    >
+                        {browseIcon ?? (
+                            <BrowseIcon size={18} aria-hidden="true" />
+                        )}
+                        {browseText && <span>{browseText}</span>}
+                    </button>
                 </label>
-                <button
-                    type="button"
-                    data-testid={browseTestId}
-                    className={clsx(
-                        'btn join-item border-base-content/20 bg-base-100 text-base-content shadow-none hover:border-base-content/20 hover:bg-base-content/5',
-                        {
-                            'btn-sm': compact,
-                            'text-sm': regularText,
-                        },
-                    )}
-                    onClick={onSelect}
-                    disabled={disabled}
-                    aria-label={resolvedBrowseLabel}
-                >
-                    {browseIcon ?? <BrowseIcon size={18} aria-hidden="true" />}
-                    {browseText && <span>{browseText}</span>}
-                </button>
             </div>
         </FormField>
     );

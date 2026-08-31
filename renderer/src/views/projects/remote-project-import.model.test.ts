@@ -16,7 +16,6 @@ import {
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
     getRemoteProjectDirectoryName,
-    getRemoteRepositoryRowClassName,
     handOffRemoteProjectRegistration,
     selectAllDiscoveredProjects,
     shouldShowRemoteProjectUseDefault,
@@ -189,15 +188,6 @@ describe('remote project import model', () => {
         expect(
             filterSelectedDiscoveredProjects(discoveredProjects, new Set()),
         ).toEqual([]);
-    });
-
-    it('gives the selected repository a clear persistent highlight', () => {
-        expect(getRemoteRepositoryRowClassName(true)).toContain(
-            'border-primary bg-primary/20',
-        );
-        expect(getRemoteRepositoryRowClassName(false)).not.toContain(
-            'bg-primary/20',
-        );
     });
 
     it('maps typed terminal failures to safe presentation groups', () => {

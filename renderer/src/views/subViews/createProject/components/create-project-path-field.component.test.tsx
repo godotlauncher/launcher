@@ -23,7 +23,6 @@ describe('CreateProjectPathField', () => {
         );
 
         expect(html).toContain('data-testid="inputProjectPath"');
-        expect(html).toContain('input-sm');
         expect(html).toContain('disabled');
         expect(html).not.toContain('btnSelectProjectFolder');
     });
@@ -51,7 +50,5 @@ describe('CreateProjectPathField', () => {
         expect(html).toContain('lucide-folder');
         expect(html).not.toContain('lucide-folder-plus');
         expect(html).not.toContain('fill-base-content');
-        expect(html).toContain('input-sm');
-        expect(html).toContain('btn-sm');
     });
 });

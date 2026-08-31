@@ -97,10 +97,13 @@
 }
 
 .input:focus-within,
+.input:focus-visible,
+.input:focus,
 .select:focus-within,
 .select:focus,
 .select:open {
     outline: none; 
+    box-shadow: none;
 }
 
 .reveal-after-one-second {
