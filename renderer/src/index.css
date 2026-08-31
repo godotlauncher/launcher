@@ -96,7 +96,10 @@
   @apply border-primary/50;
 }
 
-.input:focus-within {
+.input:focus-within,
+.select:focus-within,
+.select:focus,
+.select:open {
     outline: none; 
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appBridge } from '../../bridge.ts';
 import { changeLanguage } from '../../i18n';
+import { SelectField } from '../ui/selectField.component';
 
 interface LanguageOption {
     code: string;
@@ -30,6 +31,11 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
     // Add more languages here as they become available
 ];
 
+/**
+ * Renders the application language preference.
+ *
+ * @returns The language selector and its update status.
+ */
 export const LanguageSelector: React.FC = () => {
     const { t } = useTranslation('settings');
     const [selectedLanguage, setSelectedLanguage] = useState<string>('system');
@@ -52,11 +58,13 @@ export const LanguageSelector: React.FC = () => {
         loadCurrentLanguage();
     }, []);
 
-    const handleLanguageChange = async (
-        event: React.ChangeEvent<HTMLSelectElement>,
-    ) => {
-        const newLanguage = event.target.value;
-
+    /**
+     * Persists and applies a new application language.
+     *
+     * @param newLanguage - Locale code selected by the user.
+     * @returns A promise that ends when the language update finishes.
+     */
+    const handleLanguageChange = async (newLanguage: string): Promise<void> => {
         if (newLanguage === selectedLanguage) {
             return; // No change
         }
@@ -82,46 +90,39 @@ export const LanguageSelector: React.FC = () => {
                 '[LanguageSelector] Failed to change language:',
                 error,
             );
-            // Revert to previous selection on error
-            event.target.value = selectedLanguage;
         } finally {
             setIsChanging(false);
         }
     };
 
     return (
-        <div className="form-control w-full ">
-            <div className="label">
-                <span className="label-text font-semibold">
-                    {t('general.language.label', 'Language')}
-                </span>
-            </div>
-            <select
-                className="select outline-0 w-full"
+        <div className="flex w-full flex-col gap-1">
+            <SelectField
+                id="selectLanguage"
+                testId="selectLanguage"
+                label={t('general.language.label', 'Language')}
                 value={selectedLanguage}
-                onChange={handleLanguageChange}
+                onChange={(value) => void handleLanguageChange(value)}
                 disabled={isChanging}
-            >
-                {LANGUAGE_OPTIONS.map((option) => (
-                    <option key={option.code} value={option.code} className="">
-                        {option.code === 'system'
+                options={LANGUAGE_OPTIONS.map((option) => ({
+                    value: option.code,
+                    label:
+                        option.code === 'system'
                             ? t('general.language.system', option.name)
-                            : option.name}
-                    </option>
-                ))}
-            </select>
-            <div className="label">
-                <span className="label-text-alt text-base-content/70">
-                    {t(
-                        'general.language.description',
-                        'Select your preferred language',
-                    )}
-                </span>
-            </div>
+                            : option.name,
+                }))}
+                showSelectedCheck
+            />
+            <p className="text-xs text-base-content/70">
+                {t(
+                    'general.language.description',
+                    'Select your preferred language',
+                )}
+            </p>
 
             {isChanging && (
-                <div className="flex items-center gap-2 mt-2">
-                    <span className="loading loading-spinner loading-sm"></span>
+                <div className="mt-2 flex items-center gap-2">
+                    <span className="loading loading-spinner loading-sm" />
                     <span className="text-sm text-base-content/70">
                         Changing language...
                     </span>
