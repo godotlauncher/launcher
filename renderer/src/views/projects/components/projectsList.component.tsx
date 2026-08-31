@@ -141,7 +141,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`relative overflow-hidden rounded-xl border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors motion-reduce:transition-none hover:border-base-content/20 hover:bg-base-200/55 focus-visible:outline-2 focus-visible:outline-primary ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
+            className={`relative overflow-hidden rounded-lg border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors motion-reduce:transition-none hover:border-base-content/20 hover:bg-base-200/55 ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
             data-project-path={project.path}
             data-project-section={sectionKey}
         >
@@ -150,14 +150,14 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                 aria-hidden="true"
             />
             {busyProjects.includes(project.path) && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/55">
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/55">
                     <div className="loading loading-bars" />
                 </div>
             )}
 
             <div className="flex min-w-0 flex-col gap-4 pl-2">
                 <div className="grid min-w-0 grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-base-content/8">
+                    <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-base-content/8">
                         {project.icon_path ? (
                             <img
                                 src={project.icon_path}
@@ -380,7 +380,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                             data-testid="btnEditProjectInGodot"
                             disabled={launchDisabled}
                             onClick={() => onLaunchProject(project)}
-                            className="btn btn-primary btn-sm min-w-32 gap-2"
+                            className="btn btn-primary btn-sm min-w-32 gap-2 rounded-md"
                         >
                             <Play size={16} />
                             {t('card.editInGodot')}

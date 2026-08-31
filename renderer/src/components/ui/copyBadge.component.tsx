@@ -50,8 +50,7 @@ export const CopyBadge: React.FC<CopyBadgeProps> = ({
             type="button"
             onClick={(event) => void handleCopy(event)}
             className={clsx(
-                'inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-base-100 pl-2 pr-1 py-1 text-left text-xs text-base-content/50 hover:text-base-content/80',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info',
+                'btn btn-ghost h-auto min-h-0 min-w-0 max-w-full gap-1 rounded-full bg-base-100 pl-2 pr-1 py-1 text-left text-xs font-normal text-base-content/50 hover:text-base-content/80',
                 className,
             )}
             aria-label={copied ? copiedLabel : label}

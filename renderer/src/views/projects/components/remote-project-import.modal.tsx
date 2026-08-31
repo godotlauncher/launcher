@@ -1514,7 +1514,7 @@ export const RemoteProjectImportModal: React.FC<
                                 {t('addProject.remote.github.loadedSearchOnly')}
                             </p>
                         )}
-                        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
+                        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2 overflow-auto">
                             {filteredRepositories.length === 0 ? (
                                 <p>{t('addProject.remote.github.empty')}</p>
                             ) : (
@@ -1630,11 +1630,11 @@ export const RemoteProjectImportModal: React.FC<
                             </button>
                         )}
                     </div>
-                    <label className="input z-10 w-full min-w-0 focus-within:outline-none">
+                    <label className="input z-10 w-full min-w-0">
                         <input
                             ref={remoteProjectPathInputRef}
                             data-testid="inputRemoteProjectPath"
-                            className="w-full min-w-0 outline-none"
+                            className="w-full min-w-0"
                             type="text"
                             value={parentDirectory}
                             title={destinationDisplay}

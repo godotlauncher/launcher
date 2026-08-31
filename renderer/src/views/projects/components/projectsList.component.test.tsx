@@ -179,6 +179,8 @@ describe('ProjectsList', () => {
         expect(html).toContain('aria-label="project.pinProject"');
         expect(html).toContain('aria-label="card.projectSettings"');
         expect(html).toContain('card.editInGodot');
+        expect(html).toContain('overflow-hidden rounded-lg');
+        expect(html).toContain('min-w-32 gap-2 rounded-md');
         expect(html).toContain('btn btn-primary btn-sm min-w-32');
         expect(html).toContain('vscode.svg');
         expect(html).toContain('lucide-flask-conical');

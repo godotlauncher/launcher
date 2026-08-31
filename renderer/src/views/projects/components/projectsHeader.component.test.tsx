@@ -23,6 +23,7 @@ describe('ProjectsHeader', () => {
 
         expect(html).toContain('btnProjectAdd');
         expect(html).toContain('iconProjectAddMenu');
+        expect(html).toContain('input-sm');
     });
 
     it('keeps the title and location while hiding list controls', () => {

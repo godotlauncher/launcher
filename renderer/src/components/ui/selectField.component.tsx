@@ -287,7 +287,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 aria-expanded={isOpen}
                 aria-controls={popoverId}
                 className={clsx(
-                    'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left focus:outline-none focus-visible:border-primary focus-visible:outline-none',
+                    'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left',
                     {
                         'select-sm': compact,
                         'text-sm': regularText,

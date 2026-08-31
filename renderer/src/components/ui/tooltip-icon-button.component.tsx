@@ -35,7 +35,7 @@ export const TooltipIconButton: React.FC<TooltipIconButtonProps> = ({
         <button
             type="button"
             className={clsx(
-                'inline-flex size-6 items-center justify-center rounded-full bg-transparent p-0 shadow-none transition-colors hover:bg-transparent hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary',
+                'btn btn-circle btn-ghost btn-xs size-6 min-h-6 bg-transparent p-0 shadow-none transition-colors hover:bg-transparent hover:shadow-none',
                 className,
             )}
             aria-label={label}

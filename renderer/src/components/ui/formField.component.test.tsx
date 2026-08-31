@@ -153,6 +153,7 @@ describe('UI form primitives', () => {
                 onChange={vi.fn()}
                 placeholder="Search"
                 clearLabel="Clear search"
+                compact
                 data-testid="searchInput"
             />,
         );
@@ -162,6 +163,9 @@ describe('UI form primitives', () => {
         expect(html).toContain('data-testid="searchInput"');
         expect(html).toContain('aria-label="Clear search"');
         expect(html).toContain('lucide-circle-x');
+        expect(html).toContain('input-sm');
+        expect(html).toContain('text-base');
+        expect(html).toContain('width="14"');
     });
 
     it('renders select field as a popover dropdown', () => {
