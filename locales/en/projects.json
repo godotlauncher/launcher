@@ -64,6 +64,7 @@
         "prerelease": "Using a pre-release Godot editor version",
         "windowedMode": "This project is open in windowed mode",
         "gitProject": "Project uses Git version control",
+        "githubProject": "Project is on GitHub",
         "invalidReasons": {
             "missingProjectFile": "Project file not found. Check the project location.",
             "missingEditor": "Editor not found. Check the editor location."

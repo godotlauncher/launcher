@@ -64,6 +64,7 @@
         "windowedMode": "Bu proje pencere modunda açık",
         "codeEditorProject": "{{editor}} kullanılıyor",
         "gitProject": "Proje sürüm kontrolü için Git kullanıyor",
+        "githubProject": "Proje GitHub'da",
         "invalidReasons": {
             "missingProjectFile": "Proje dosyası bulunamadı. Proje konumunu kontrol edin.",
             "missingEditor": "Düzenleyici bulunamadı. Düzenleyici konumunu kontrol edin."

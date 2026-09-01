@@ -136,6 +136,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     const launchDisabled =
         !project.valid || !releaseInstalled || editorDownloading;
     const versionLabel = `${project.version}${project.release.mono ? ' (.NET)' : ''}`;
+    const isGitHubProject = projectGitHubUrls.has(project.path);
 
     return (
         <li
@@ -332,11 +333,15 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                         {project.withGit && (
                             <Tooltip
                                 placement="top"
-                                tip={t('table.gitProject')}
+                                tip={t(
+                                    isGitHubProject
+                                        ? 'table.githubProject'
+                                        : 'table.gitProject',
+                                )}
                                 tone="default"
                             >
                                 <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
-                                    {projectGitHubUrls.has(project.path) ? (
+                                    {isGitHubProject ? (
                                         <img
                                             src={githubIconSrc}
                                             className="h-3.5 w-3.5"
@@ -352,7 +357,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                             data-testid="gitProjectIcon"
                                         />
                                     )}
-                                    Git
+                                    {isGitHubProject ? 'GitHub' : 'Git'}
                                 </span>
                             </Tooltip>
                         )}

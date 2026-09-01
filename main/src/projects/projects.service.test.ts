@@ -146,6 +146,7 @@ describe('ProjectsService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.addProject.mockResolvedValue({ success: false });
         store.list.mockResolvedValue([]);
         store.remove.mockResolvedValue([]);
         mocks.checkProjectHealth.mockImplementation(async (project) => project);
@@ -182,6 +183,41 @@ describe('ProjectsService', () => {
                 url: 'https://github.com/team/game',
             },
         ]);
+    });
+
+    it('publishes the updated project list after adding a project', async () => {
+        const projects = [{ path: '/projects/game' }] as ProjectDetails[];
+        mocks.addProject.mockResolvedValueOnce({
+            success: true,
+            projects,
+            newProject: projects[0],
+        });
+
+        await expect(
+            service.addProject('/projects/game/project.godot'),
+        ).resolves.toMatchObject({ success: true, projects });
+
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            { id: 'web-contents' },
+            projects,
+        );
+    });
+
+    it('does not publish a project-list update after an add failure', async () => {
+        mocks.addProject.mockResolvedValueOnce({
+            success: false,
+            error: 'invalid project',
+        });
+
+        await expect(
+            service.addProject('/projects/game/project.godot'),
+        ).resolves.toEqual({
+            success: false,
+            error: 'invalid project',
+        });
+
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
     });
 
     it('delegates Create Project repository inspection', async () => {

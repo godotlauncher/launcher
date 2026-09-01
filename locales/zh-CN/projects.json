@@ -64,6 +64,7 @@
         "windowedMode": "此项目以窗口模式打开",
         "codeEditorProject": "正在使用 {{editor}}",
         "gitProject": "该项目使用 Git 进行版本控制",
+        "githubProject": "该项目托管在 GitHub 上",
         "invalidReasons": {
             "missingProjectFile": "未找到项目文件。请检查项目位置。",
             "missingEditor": "未找到编辑器。请检查编辑器位置。"

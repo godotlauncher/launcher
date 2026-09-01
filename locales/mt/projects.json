@@ -64,6 +64,7 @@
         "windowedMode": "Dan il-proġett huwa miftuħ f'windowed mode",
         "codeEditorProject": "Qed jintuża {{editor}}",
         "gitProject": "Il-proġett juża Git għall-kontroll tal-verżjoni",
+        "githubProject": "Il-proġett jinsab fuq GitHub",
         "invalidReasons": {
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett.",
             "missingEditor": "L-editur ma nstabx. Iċċekkja l-post tal-editur."

@@ -64,6 +64,7 @@
         "windowedMode": "このプロジェクトはウィンドウモードで開かれています",
         "codeEditorProject": "{{editor}} を使用中",
         "gitProject": "このプロジェクトはバージョン管理に Git を使用しています",
+        "githubProject": "このプロジェクトは GitHub 上にあります",
         "invalidReasons": {
             "missingProjectFile": "プロジェクトファイルが見つかりません。プロジェクトの場所を確認してください。",
             "missingEditor": "エディターが見つかりません。エディターの場所を確認してください。"

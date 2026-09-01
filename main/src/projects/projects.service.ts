@@ -476,9 +476,17 @@ export class ProjectsService {
      *
      * @param projectPath - Selected project file or directory path.
      * @param options - Optional missing-editor resolution.
+     * @returns The import result after publishing a successful project-list update.
      */
-    addProject(projectPath: string, options?: AddProjectOptions) {
-        return this.projectImport.addProject(projectPath, options);
+    async addProject(projectPath: string, options?: AddProjectOptions) {
+        const result = await this.projectImport.addProject(
+            projectPath,
+            options,
+        );
+        if (result.success && result.projects) {
+            this.publishProjects(result.projects);
+        }
+        return result;
     }
 
     /**
