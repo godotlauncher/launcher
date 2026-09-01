@@ -45,6 +45,7 @@ type PublicationAttempt = {
         CreateProjectPublicationOutcome,
         { status: 'failed' }
     > | null;
+    inFlight: Promise<CreateProjectPublicationOutcome> | null;
 };
 
 export type ProjectPublicationRetryResult = {
@@ -148,6 +149,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
             requiresEmptyRemote: false,
             canRecreateAfterConfirmedAbsence: true,
             outcome: null,
+            inFlight: null,
         };
         logPublicationEvent(attempt, 'attempt-started');
         if (!localRepositoryReady) {
@@ -158,7 +160,9 @@ export class ProjectPublicationService implements OnModuleDestroy {
             );
         }
         this.attempts.set(attempt.id, attempt);
-        return this.runAttempt(attempt);
+        return this.runAttemptExclusively(attempt, () =>
+            this.runAttempt(attempt),
+        );
     }
 
     /**
@@ -178,46 +182,51 @@ export class ProjectPublicationService implements OnModuleDestroy {
         if (!attempt) {
             return null;
         }
+        const publication = await this.runAttemptExclusively(attempt, () =>
+            this.retryAttempt(attempt, options, recoveryAction),
+        );
+        return { projectDetails: attempt.project, publication };
+    }
+
+    /**
+     * Applies one retry request after the attempt has acquired its operation slot.
+     *
+     * @param attempt - Process-local attempt bound to one project.
+     * @param options - Optional edited route before remote creation is confirmed.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
+     * @returns The latest publication outcome.
+     */
+    private async retryAttempt(
+        attempt: PublicationAttempt,
+        options?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
+    ): Promise<CreateProjectPublicationOutcome> {
         const expectedRecoveryAction = attempt.outcome?.recoveryAction;
         if (expectedRecoveryAction && attempt.outcome) {
             if (options || recoveryAction !== expectedRecoveryAction) {
-                return {
-                    projectDetails: attempt.project,
-                    publication: attempt.outcome,
-                };
+                return attempt.outcome;
             }
-            const publication =
-                recoveryAction === 'confirm-recovered-repository'
-                    ? await this.confirmRecoveredRepository(attempt)
-                    : await this.recoverUncertainCreation(attempt);
-            return { projectDetails: attempt.project, publication };
+            return recoveryAction === 'confirm-recovered-repository'
+                ? this.confirmRecoveredRepository(attempt)
+                : this.recoverUncertainCreation(attempt);
         }
         if (attempt.outcome && !attempt.outcome.canRetry) {
-            return {
-                projectDetails: attempt.project,
-                publication: attempt.outcome,
-            };
+            return attempt.outcome;
         }
         if (recoveryAction) {
-            return {
-                projectDetails: attempt.project,
-                publication: createFailure(
-                    attempt,
-                    'verification',
-                    'local-repository-changed',
-                ),
-            };
+            return createFailure(
+                attempt,
+                'verification',
+                'local-repository-changed',
+            );
         }
         if (attempt.repository) {
             if (options && !samePublicationOptions(attempt.options, options)) {
-                return {
-                    projectDetails: attempt.project,
-                    publication: createFailure(
-                        attempt,
-                        'verification',
-                        'local-repository-changed',
-                    ),
-                };
+                return createFailure(
+                    attempt,
+                    'verification',
+                    'local-repository-changed',
+                );
             }
         } else if (options) {
             attempt.options = {
@@ -226,10 +235,7 @@ export class ProjectPublicationService implements OnModuleDestroy {
             };
             attempt.ownerLogin = null;
         }
-        return {
-            projectDetails: attempt.project,
-            publication: await this.runAttempt(attempt),
-        };
+        return this.runAttempt(attempt);
     }
 
     /**
@@ -239,6 +245,31 @@ export class ProjectPublicationService implements OnModuleDestroy {
      */
     discard(attemptId: string): void {
         this.attempts.delete(attemptId);
+    }
+
+    /**
+     * Shares one active remote operation between concurrent callers.
+     *
+     * @param attempt - Process-local attempt bound to one project.
+     * @param operation - Publication work to start when the attempt is idle.
+     * @returns The active or newly started publication outcome promise.
+     */
+    private runAttemptExclusively(
+        attempt: PublicationAttempt,
+        operation: () => Promise<CreateProjectPublicationOutcome>,
+    ): Promise<CreateProjectPublicationOutcome> {
+        if (attempt.inFlight) {
+            return attempt.inFlight;
+        }
+        const inFlight = operation();
+        attempt.inFlight = inFlight;
+        const clearInFlight = () => {
+            if (attempt.inFlight === inFlight) {
+                attempt.inFlight = null;
+            }
+        };
+        void inFlight.then(clearInFlight, clearInFlight);
+        return inFlight;
     }
 
     /**

@@ -310,6 +310,82 @@ describe('ProjectPublicationService', () => {
         );
     });
 
+    it('shares one remote operation between concurrent retries', async () => {
+        let resolveRecovery: (value: {
+            ok: true;
+            recovery: { status: 'absent' };
+        }) => void = () => undefined;
+        const pendingRecovery = new Promise<{
+            ok: true;
+            recovery: { status: 'absent' };
+        }>((resolve) => {
+            resolveRecovery = resolve;
+        });
+        const withRepositoryCreationAccess = vi
+            .fn()
+            .mockResolvedValueOnce({
+                ok: false as const,
+                reason: 'remote-creation-uncertain' as const,
+            })
+            .mockImplementationOnce(
+                async (_providerId, _selection, operation) => ({
+                    ok: true as const,
+                    value: await operation({
+                        repository,
+                        gitCredential: {
+                            username: 'x-access-token',
+                            password: 'secret',
+                        },
+                    }),
+                }),
+            );
+        const repositories = {
+            listRepositoryCreationTargets: vi.fn(async () => ({
+                ok: true as const,
+                targets: [target],
+            })),
+            withRepositoryCreationAccess,
+            recoverRepositoryCreation: vi.fn(() => pendingRecovery),
+        };
+        const gitPush = {
+            pushMain: vi.fn(async () => ({
+                ok: true as const,
+                canonicalUrl: repository.cloneUrl,
+            })),
+        };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            gitPush as never,
+        );
+
+        const failed = await service.publish(project, options, false, true);
+        if (failed.status !== 'failed') throw new Error('Expected failure');
+
+        const firstRetry = service.retry(
+            failed.attemptId,
+            undefined,
+            'check-and-retry',
+        );
+        const secondRetry = service.retry(
+            failed.attemptId,
+            undefined,
+            'check-and-retry',
+        );
+        resolveRecovery({ ok: true, recovery: { status: 'absent' } });
+
+        await expect(Promise.all([firstRetry, secondRetry])).resolves.toEqual([
+            expect.objectContaining({
+                publication: expect.objectContaining({ status: 'published' }),
+            }),
+            expect.objectContaining({
+                publication: expect.objectContaining({ status: 'published' }),
+            }),
+        ]);
+        expect(repositories.recoverRepositoryCreation).toHaveBeenCalledOnce();
+        expect(withRepositoryCreationAccess).toHaveBeenCalledTimes(2);
+        expect(gitPush.pushMain).toHaveBeenCalledOnce();
+    });
+
     it('never recreates after GitHub accepts an unusable creation response', async () => {
         const withRepositoryCreationAccess = vi.fn(async () => ({
             ok: false as const,
