@@ -15,4 +15,17 @@ describe('Dialog', () => {
         expect(html).not.toContain('role="dialog"');
         expect(html).not.toContain('aria-modal="true"');
     });
+
+    it('blocks text selection while preserving explicit selectable content', () => {
+        const html = renderToStaticMarkup(
+            <Dialog title="Example dialog">
+                <span className="select-text">Selectable content</span>
+            </Dialog>,
+        );
+
+        expect(html).toMatch(/<dialog[^>]*class="[^"]*select-none[^"]*"/);
+        expect(html).toContain(
+            '<span class="select-text">Selectable content</span>',
+        );
+    });
 });

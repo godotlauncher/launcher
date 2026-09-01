@@ -90,7 +90,7 @@ export const Dialog: React.FC<DialogProps> = ({
         <dialog
             ref={dialogRef}
             aria-labelledby={titleId}
-            className="fixed z-60 inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 bg-transparent p-0 text-inherit backdrop:bg-transparent"
+            className="fixed z-60 inset-0 m-0 h-full w-full max-h-none max-w-none select-none overflow-hidden border-0 bg-transparent p-0 text-inherit backdrop:bg-transparent"
         >
             <div className="h-full w-full bg-black/80 flex items-center justify-center p-4">
                 <section
