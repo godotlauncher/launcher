@@ -145,6 +145,7 @@ export class GitPushService {
         let pushCredentialSession:
             | Awaited<ReturnType<GitCredentialSessionService['openBound']>>
             | undefined;
+        let recoveredMainLease: string | null = null;
         try {
             const hooksDirectory = path.join(supportDirectory, 'hooks');
             await fs.mkdir(hooksDirectory, { mode: 0o700 });
@@ -199,6 +200,9 @@ export class GitPushService {
                 if (!remote.empty && !remote.matchesExpectedMain) {
                     return { ok: false, reason: 'remote-not-empty' };
                 }
+                recoveredMainLease = remote.matchesExpectedMain
+                    ? expectedMainSha
+                    : '';
             }
             if (origin.status === 'missing') {
                 if (!(await this.isExactStandardRoot(request.projectPath))) {
@@ -272,6 +276,11 @@ export class GitPushService {
                     '-c',
                     `core.hooksPath=${hooksDirectory}`,
                     'push',
+                    ...(recoveredMainLease !== null
+                        ? [
+                              `--force-with-lease=refs/heads/main:${recoveredMainLease}`,
+                          ]
+                        : []),
                     '--no-verify',
                     'origin',
                     'refs/heads/main:refs/heads/main',
@@ -285,6 +294,12 @@ export class GitPushService {
                 },
             });
             if (!pushResult.success) {
+                if (
+                    recoveredMainLease !== null &&
+                    classifyPushFailure(bufferedError) === 'rejected'
+                ) {
+                    return { ok: false, reason: 'remote-not-empty' };
+                }
                 return {
                     ok: false,
                     reason: toGitPushFailureReason(bufferedError),

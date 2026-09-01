@@ -437,6 +437,89 @@ describe('GitPushService', () => {
         expect(executeStreaming.mock.calls[0]?.[0]).toBe('git');
     });
 
+    it('refuses a recovered remote when main appears after inspection', async () => {
+        let originAdded = false;
+        const execute = vi.fn(async ({ args }) => {
+            if (args[0] === 'branch') {
+                return { success: true, stdout: 'main\n', stderr: '' };
+            }
+            if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                return { success: true, stdout: `${MAIN_SHA}\n`, stderr: '' };
+            }
+            if (args[0] === 'config') {
+                return originAdded
+                    ? {
+                          success: true,
+                          stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                          stderr: '',
+                      }
+                    : {
+                          success: false,
+                          reason: 'command-failed',
+                          exitCode: 1,
+                          stdout: '',
+                          stderr: '',
+                      };
+            }
+            if (args[0] === 'remote') {
+                originAdded = true;
+            }
+            return { success: true, stdout: '', stderr: '' };
+        });
+        const executeStreaming = vi.fn(async (_toolId, request) => {
+            if (request.args.includes('push')) {
+                request.onStderr?.('[rejected] main -> main (stale info)');
+                return {
+                    success: false,
+                    reason: 'command-failed',
+                    exitCode: 1,
+                };
+            }
+            return { success: true, exitCode: 0 };
+        });
+        const credentialSession = {
+            environment: { GIT_ASKPASS: '/tmp/askpass' },
+            close: vi.fn(async () => undefined),
+        };
+        const service = new GitPushService(
+            {
+                createExecutionSession: vi.fn(async () => execute),
+                executeStreaming,
+            } as never,
+            {
+                open: vi.fn(async () => credentialSession),
+                openBound: vi.fn(async () => ({
+                    ...credentialSession,
+                    helper: "!exec '/tmp/credential-helper'",
+                })),
+            } as never,
+            {
+                inspectRepository: vi.fn(async () => ({
+                    status: 'inside-work-tree',
+                    isProjectRoot: true,
+                    kind: 'standard',
+                })),
+            } as never,
+        );
+
+        await expect(
+            service.pushMain({
+                projectPath: '/projects/my-game',
+                canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
+                requiresGitLfsUpload: false,
+                requiresEmptyRemote: true,
+                credential: { username: 'x-access-token', password: 'secret' },
+                signal: new AbortController().signal,
+            }),
+        ).resolves.toEqual({ ok: false, reason: 'remote-not-empty' });
+        const pushRequest = executeStreaming.mock.calls.find(([, request]) =>
+            request.args.includes('push'),
+        )?.[1];
+        expect(pushRequest?.args).toContain(
+            '--force-with-lease=refs/heads/main:',
+        );
+    });
+
     it('uploads Git LFS objects through pinned configuration before pushing Git', async () => {
         const execute = vi.fn(async ({ args }) => {
             if (args[0] === 'branch') {
@@ -536,6 +619,9 @@ describe('GitPushService', () => {
             'session-ref',
         );
         expect(tools.executeStreaming.mock.calls[2][0]).toBe('git');
+        expect(tools.executeStreaming.mock.calls[2][1].args).toContain(
+            `--force-with-lease=refs/heads/main:${MAIN_SHA}`,
+        );
         expect(credentialSession.close).toHaveBeenCalledOnce();
         expect(boundCredentialSession.close).toHaveBeenCalledOnce();
         expect(credentials.open.mock.invocationCallOrder[0]).toBeLessThan(
