@@ -4,6 +4,7 @@ import { Injectable } from '@mariodebono/di';
 import type {
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     CreateProjectResult,
     GitLfsTrackingPolicy,
     GitRepositoryInfo,
@@ -249,6 +250,7 @@ export class ProjectCreationService {
      * @param withGit - Whether to initialise Git when it is available.
      * @param overwriteProjectPath - Optional path used to choose the project parent directory.
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
+     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      * @returns The project creation result.
      */
     async createProject(
@@ -259,13 +261,14 @@ export class ProjectCreationService {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ): Promise<CreateProjectResult> {
         let gitSetup: ProjectGitSetupOutcome = { status: 'not-requested' };
         let gitLfsSetup: ProjectGitLfsSetupOutcome = {
             status: 'not-requested',
         };
-        const gitLfsRequested = gitOptions?.gitLfs !== undefined;
-        const requestedGitLfsPolicy = gitOptions?.gitLfs?.trackingPolicy;
+        let gitLfsRequested = gitOptions?.gitLfs !== undefined;
+        let requestedGitLfsPolicy = gitOptions?.gitLfs?.trackingPolicy;
         let validatedGitLfsPolicy: GitLfsTrackingPolicy | null = null;
         if (codeEditorId) {
             try {
@@ -345,6 +348,41 @@ export class ProjectCreationService {
                     }),
                 };
             }
+        }
+
+        const repositoryInspection =
+            await this.git.inspectRepository(projectPath);
+        const enclosingRepository =
+            repositoryInspection.status === 'inside-work-tree' &&
+            !repositoryInspection.isProjectRoot
+                ? repositoryInspection
+                : null;
+        if (parentRepositoryConsent) {
+            if (
+                !enclosingRepository ||
+                enclosingRepository.root !== parentRepositoryConsent.root
+            ) {
+                return {
+                    success: false,
+                    error: t(
+                        'createProject:errors.parentRepositoryContextChanged',
+                    ),
+                };
+            }
+            gitSetup = {
+                status: 'existing-repository',
+                root: enclosingRepository.root,
+                isProjectRoot: false,
+                kind: enclosingRepository.kind,
+            };
+            gitOptions = undefined;
+            gitLfsRequested = false;
+            requestedGitLfsPolicy = undefined;
+        } else if (enclosingRepository) {
+            return {
+                success: false,
+                parentRepositoryConfirmation: enclosingRepository,
+            };
         }
 
         if (gitLfsRequested) {
@@ -521,7 +559,9 @@ export class ProjectCreationService {
 
             // Initialize only when the project is not already covered by a work tree.
             if (withGit) {
-                let inspection = await this.git.inspectRepository(projectPath);
+                let inspection =
+                    enclosingRepository ??
+                    (await this.git.inspectRepository(projectPath));
                 if (inspection.status === 'inspection-failed') {
                     throw new Error(t('createProject:errors.failedGitInit'));
                 }

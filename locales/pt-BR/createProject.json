@@ -188,6 +188,7 @@
         "failedGitBranch": "Falha ao renomear o branch Git para main",
         "invalidGitIdentity": "O nome e o e-mail do Git são obrigatórios",
         "failedGitIdentity": "Falha ao salvar a identidade do Git",
+        "parentRepositoryContextChanged": "O repositório Git no local selecionado foi alterado. Revise o local e tente novamente.",
         "failedGitCommit": "Falha ao criar o commit inicial do Git",
         "gitLfsRequiresGit": "O Git LFS requer um novo repositório Git",
         "gitLfsExistingRepository": "O Git LFS não pode ser configurado porque o projeto está dentro de um repositório Git existente",

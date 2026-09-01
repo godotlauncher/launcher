@@ -7,6 +7,7 @@ import type {
     ChangeProjectEditorResult,
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
@@ -237,6 +238,7 @@ export class ProjectsService {
      * @param overwriteProjectPath - Optional existing target to replace.
      * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
      * @param publication - Optional private repository publication request.
+     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      */
     async createProject(
         name: string,
@@ -247,8 +249,13 @@ export class ProjectsService {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ): Promise<CreateProjectResult> {
-        if (publication && (!withGit || gitOptions?.initialCommit === 'skip')) {
+        if (
+            publication &&
+            !parentRepositoryConsent &&
+            (!withGit || gitOptions?.initialCommit === 'skip')
+        ) {
             return {
                 success: false,
                 error: t('createProject:publishToGitHub.requiresInitialCommit'),
@@ -263,8 +270,17 @@ export class ProjectsService {
             withGit,
             overwriteProjectPath,
             gitOptions,
+            parentRepositoryConsent,
         );
-        if (!publication || !result.success || !result.projectDetails) {
+        const usesParentRepository =
+            result.gitSetup?.status === 'existing-repository' &&
+            !result.gitSetup.isProjectRoot;
+        if (
+            !publication ||
+            !result.success ||
+            !result.projectDetails ||
+            usesParentRepository
+        ) {
             return {
                 ...result,
                 publication: { status: 'not-requested' as const },

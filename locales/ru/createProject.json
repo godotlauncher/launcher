@@ -188,6 +188,7 @@
         "failedGitBranch": "Не удалось переименовать ветку Git в main",
         "invalidGitIdentity": "Необходимо указать имя и электронную почту Git",
         "failedGitIdentity": "Не удалось сохранить профиль Git",
+        "parentRepositoryContextChanged": "Репозиторий Git в выбранном расположении изменился. Проверьте расположение и повторите попытку.",
         "failedGitCommit": "Не удалось создать первый коммит Git",
         "gitLfsRequiresGit": "Для Git LFS требуется новый репозиторий Git",
         "gitLfsExistingRepository": "Git LFS нельзя настроить, поскольку проект находится внутри существующего репозитория Git",

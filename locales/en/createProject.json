@@ -188,6 +188,7 @@
         "failedGitBranch": "Failed to rename the Git branch to main",
         "invalidGitIdentity": "Git name and email are required",
         "failedGitIdentity": "Failed to save the Git identity",
+        "parentRepositoryContextChanged": "The Git repository at the selected project location changed. Review the location and try again.",
         "failedGitCommit": "Failed to create the initial Git commit",
         "gitLfsRequiresGit": "Git LFS requires a new Git repository",
         "gitLfsExistingRepository": "Git LFS cannot be configured because the project is inside an existing Git repository",

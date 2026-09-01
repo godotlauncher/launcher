@@ -188,6 +188,7 @@
         "failedGitBranch": "Ma rnexxiex jinbidel l-isem tal-branch Git għal main",
         "invalidGitIdentity": "L-isem u l-email ta' Git huma meħtieġa",
         "failedGitIdentity": "Ma rnexxiex tinżamm l-identità ta' Git",
+        "parentRepositoryContextChanged": "Ir-repożitorju Git fil-post magħżul inbidel. Iċċekkja l-post u erġa' pprova.",
         "failedGitCommit": "Ma rnexxiex jinħoloq l-ewwel commit ta' Git",
         "gitLfsRequiresGit": "Git LFS jeħtieġ repository Git ġdid",
         "gitLfsExistingRepository": "Git LFS ma jistax jiġi kkonfigurat għax il-proġett jinsab ġewwa repository Git eżistenti",

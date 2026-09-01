@@ -6,6 +6,7 @@ import type {
     AddProjectOptions,
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     GitIdentity,
     InstalledRelease,
@@ -173,6 +174,7 @@ export class ProjectsController implements ProjectsBridge {
      * @param overwriteProjectPath - Optional existing target to replace.
      * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
      * @param publication - Optional private repository publication request.
+     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      */
     @ProjectsHandler('createProject')
     createProject(
@@ -184,8 +186,9 @@ export class ProjectsController implements ProjectsBridge {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ) {
-        const args = [
+        return this.projects.createProject(
             name,
             release,
             renderer,
@@ -193,10 +196,9 @@ export class ProjectsController implements ProjectsBridge {
             withGit,
             overwriteProjectPath,
             gitOptions,
-        ] as const;
-        return publication
-            ? this.projects.createProject(...args, publication)
-            : this.projects.createProject(...args);
+            publication,
+            parentRepositoryConsent,
+        );
     }
 
     /**

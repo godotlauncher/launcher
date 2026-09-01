@@ -188,6 +188,7 @@
         "failedGitBranch": "Échec du renommage de la branche Git en main",
         "invalidGitIdentity": "Le nom et l'e-mail Git sont requis",
         "failedGitIdentity": "Échec de l'enregistrement de l'identité Git",
+        "parentRepositoryContextChanged": "Le dépôt Git associé à l'emplacement sélectionné a changé. Vérifiez l'emplacement et réessayez.",
         "failedGitCommit": "Échec de la création du commit Git initial",
         "gitLfsRequiresGit": "Git LFS nécessite un nouveau dépôt Git",
         "gitLfsExistingRepository": "Git LFS ne peut pas être configuré car le projet se trouve dans un dépôt Git existant",

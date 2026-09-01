@@ -95,6 +95,10 @@ export type CreateProjectGitOptions = {
       }
 );
 
+export type CreateProjectParentRepositoryConsent = {
+    root: string;
+};
+
 export type CreateProjectPublicationTarget = {
     providerId: string;
     connectionId: string;
@@ -232,6 +236,7 @@ export type ProjectDetails = {
 export type CreateProjectResult = BackendResult & {
     projectPath?: string;
     projectDetails?: ProjectDetails;
+    parentRepositoryConfirmation?: GitRepositoryInfo;
     gitSetup?: ProjectGitSetupOutcome;
     gitLfsSetup?: ProjectGitLfsSetupOutcome;
     publication?: CreateProjectPublicationOutcome;

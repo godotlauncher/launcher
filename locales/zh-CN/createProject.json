@@ -188,6 +188,7 @@
         "failedGitBranch": "无法将 Git 分支重命名为 main",
         "invalidGitIdentity": "Git 姓名和电子邮件为必填项",
         "failedGitIdentity": "无法保存 Git 身份信息",
+        "parentRepositoryContextChanged": "所选位置中的 Git 仓库已更改。请检查该位置，然后重试。",
         "failedGitCommit": "无法创建初始 Git 提交",
         "gitLfsRequiresGit": "Git LFS 需要一个新的 Git 仓库",
         "gitLfsExistingRepository": "项目位于现有 Git 仓库中，因此无法配置 Git LFS",

@@ -54,6 +54,7 @@ type TestElectronApi = {
     'git.saveGlobalIdentity': (identity: unknown) => Promise<unknown>;
     'git.saveProjectIdentityPreset': (preset: unknown) => Promise<unknown>;
     'gitLfs.getTrackingPolicy': () => Promise<unknown>;
+    'projects.createProject': (...args: unknown[]) => Promise<unknown>;
     'projects.getProjectsDetails': () => Promise<unknown[]>;
     'toolIntegration.listIntegrations': () => Promise<unknown[]>;
     'toolIntegration.rescanIntegrations': () => Promise<unknown[]>;
@@ -112,6 +113,7 @@ describe('renderer bridge', () => {
         id: 'godot-documentation-defaults',
         groups: [],
     }));
+    const createProject = vi.fn(async () => ({ success: false }));
     const getProjectsDetails = vi.fn(async () => []);
     const listToolIntegrations = vi.fn(async () => []);
     const rescanToolIntegrations = vi.fn(async () => []);
@@ -161,6 +163,7 @@ describe('renderer bridge', () => {
             'git.saveGlobalIdentity': saveGlobalIdentity,
             'git.saveProjectIdentityPreset': saveProjectIdentityPreset,
             'gitLfs.getTrackingPolicy': getGitLfsTrackingPolicy,
+            'projects.createProject': createProject,
             'projects.getProjectsDetails': getProjectsDetails,
             'toolIntegration.listIntegrations': listToolIntegrations,
             'toolIntegration.rescanIntegrations': rescanToolIntegrations,
@@ -289,6 +292,37 @@ describe('renderer bridge', () => {
         await expect(projectsBridge.getProjectsDetails()).resolves.toEqual([]);
 
         expect(getProjectsDetails).toHaveBeenCalledOnce();
+    });
+
+    it('forwards parent repository consent through the projects namespace', async () => {
+        const release = {
+            version: '4.6.0',
+        } as Parameters<typeof projectsBridge.createProject>[1];
+        const consent = { root: '/workspace/parent' };
+
+        await projectsBridge.createProject(
+            'Captured Project',
+            release,
+            'gl_compatibility',
+            'vscode',
+            true,
+            '/workspace/parent/Captured Project',
+            { initialCommit: 'create' },
+            undefined,
+            consent,
+        );
+
+        expect(createProject).toHaveBeenCalledWith(
+            'Captured Project',
+            release,
+            'gl_compatibility',
+            'vscode',
+            true,
+            '/workspace/parent/Captured Project',
+            { initialCommit: 'create' },
+            undefined,
+            consent,
+        );
     });
 
     it('multiplexes application events through one transport listener', () => {

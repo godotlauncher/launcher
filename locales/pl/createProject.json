@@ -188,6 +188,7 @@
         "failedGitBranch": "Nie udało się zmienić nazwy gałęzi Git na main",
         "invalidGitIdentity": "Nazwa i e-mail Git są wymagane",
         "failedGitIdentity": "Nie udało się zapisać tożsamości Git",
+        "parentRepositoryContextChanged": "Repozytorium Git w wybranej lokalizacji uległo zmianie. Sprawdź lokalizację i spróbuj ponownie.",
         "failedGitCommit": "Nie udało się utworzyć pierwszego commitu Git",
         "gitLfsRequiresGit": "Git LFS wymaga nowego repozytorium Git",
         "gitLfsExistingRepository": "Nie można skonfigurować Git LFS, ponieważ projekt znajduje się w istniejącym repozytorium Git",

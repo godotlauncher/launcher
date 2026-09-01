@@ -1,6 +1,7 @@
 import type {
     AddProjectOptions,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
@@ -34,6 +35,9 @@ describe('ProjectsController', () => {
         const gitOptions = {
             initialCommit: 'skip',
         } satisfies CreateProjectGitOptions;
+        const parentRepositoryConsent = {
+            root: '/projects/parent',
+        } satisfies CreateProjectParentRepositoryConsent;
         const identity = {
             name: 'Project User',
             email: 'project@example.com',
@@ -70,6 +74,8 @@ describe('ProjectsController', () => {
             true,
             '/projects/game',
             gitOptions,
+            undefined,
+            parentRepositoryConsent,
         );
         await controller.removeProject(project);
         await controller.renameProject(project, renameOptions);
@@ -125,6 +131,8 @@ describe('ProjectsController', () => {
             true,
             '/projects/game',
             gitOptions,
+            undefined,
+            parentRepositoryConsent,
         );
         expect(service.removeProject).toHaveBeenCalledWith(project);
         expect(service.renameProject).toHaveBeenCalledWith(

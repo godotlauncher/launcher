@@ -7,6 +7,7 @@ import type {
     ChangeProjectEditorResult,
     CheckCreateProjectRepositoryNameAvailabilityResult,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
@@ -105,6 +106,7 @@ export type ProjectsBridge = {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ): Promise<CreateProjectResult>;
 
     /** Retries one process-local publication attempt for its exact project. */

@@ -6,6 +6,7 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
@@ -120,6 +121,7 @@ interface ProjectsContext {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ) => Promise<CreateProjectResult>;
     listCreateProjectPublicationTargets: () => Promise<ListCreateProjectPublicationTargetsResult>;
     checkCreateProjectRepositoryNameAvailability: (
@@ -228,6 +230,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
      * @param overwriteProjectPath - Optional target project path.
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
      * @param publication - Optional private GitHub repository publication request.
+     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      * @returns The project creation result.
      */
     const createProject = async (
@@ -239,6 +242,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ) => {
         const result = await projectsBridge.createProject(
             projectName,
@@ -249,6 +253,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             overwriteProjectPath,
             gitOptions,
             publication,
+            parentRepositoryConsent,
         );
 
         if (result.projectDetails) {

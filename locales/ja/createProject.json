@@ -188,6 +188,7 @@
         "failedGitBranch": "Gitブランチをmainに変更できませんでした",
         "invalidGitIdentity": "Gitの名前とメールアドレスが必要です",
         "failedGitIdentity": "Git IDを保存できませんでした",
+        "parentRepositoryContextChanged": "選択した場所の Git リポジトリが変更されました。場所を確認して、もう一度お試しください。",
         "failedGitCommit": "最初のGitコミットを作成できませんでした",
         "gitLfsRequiresGit": "Git LFSには新しいGitリポジトリが必要です",
         "gitLfsExistingRepository": "プロジェクトが既存のGitリポジトリ内にあるため、Git LFSを設定できません",

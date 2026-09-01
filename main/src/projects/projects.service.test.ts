@@ -147,6 +147,7 @@ describe('ProjectsService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.addProject.mockResolvedValue({ success: false });
+        mocks.createProject.mockResolvedValue({ success: true });
         store.list.mockResolvedValue([]);
         store.remove.mockResolvedValue([]);
         mocks.checkProjectHealth.mockImplementation(async (project) => project);
@@ -252,6 +253,7 @@ describe('ProjectsService', () => {
             true,
             '/projects/game',
             { initialCommit: 'skip' },
+            undefined,
         );
         await service.addProject('/projects/game');
         await service.importRemoteProject({
@@ -276,6 +278,7 @@ describe('ProjectsService', () => {
             true,
             '/projects/game',
             { initialCommit: 'skip' },
+            undefined,
         );
         expect(mocks.addProject).toHaveBeenCalledWith(
             '/projects/game',
@@ -352,7 +355,7 @@ describe('ProjectsService', () => {
         },
     );
 
-    it('marks an enclosing repository as unavailable for publishing', async () => {
+    it('never publishes a project created inside an enclosing repository', async () => {
         const release = { version: '4.5-stable' } as InstalledRelease;
         const project = { path: '/projects/parent/game' } as ProjectDetails;
         const publication = {
@@ -371,15 +374,6 @@ describe('ProjectsService', () => {
                 kind: 'standard',
             },
         });
-        projectPublication.publish.mockResolvedValueOnce({
-            status: 'failed',
-            attemptId: 'attempt-id',
-            stage: 'verification',
-            reason: 'local-repository-not-standalone',
-            canRetry: false,
-            canEdit: false,
-        });
-
         const result = await service.createProject(
             'Game',
             release,
@@ -389,20 +383,30 @@ describe('ProjectsService', () => {
             undefined,
             { initialCommit: 'create' },
             publication,
+            { root: '/projects/parent' },
         );
 
-        expect(projectPublication.publish).toHaveBeenCalledWith(
-            project,
-            publication,
-            false,
-            false,
+        expect(mocks.createProject).toHaveBeenCalledWith(
+            'Game',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            undefined,
+            { initialCommit: 'create' },
+            { root: '/projects/parent' },
         );
-        expect(result).toMatchObject({
-            success: false,
+        expect(projectPublication.publish).not.toHaveBeenCalled();
+        expect(result).toEqual({
+            success: true,
             projectDetails: project,
-            publication: {
-                reason: 'local-repository-not-standalone',
+            gitSetup: {
+                status: 'existing-repository',
+                root: '/projects/parent',
+                isProjectRoot: false,
+                kind: 'standard',
             },
+            publication: { status: 'not-requested' },
         });
     });
 

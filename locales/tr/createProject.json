@@ -188,6 +188,7 @@
         "failedGitBranch": "Git dalı main olarak yeniden adlandırılamadı",
         "invalidGitIdentity": "Git adı ve e-posta adresi gerekli",
         "failedGitIdentity": "Git kimliği kaydedilemedi",
+        "parentRepositoryContextChanged": "Seçilen konumdaki Git deposu değişti. Konumu gözden geçirip yeniden deneyin.",
         "failedGitCommit": "İlk Git commit'i oluşturulamadı",
         "gitLfsRequiresGit": "Git LFS yeni bir Git deposu gerektirir",
         "gitLfsExistingRepository": "Proje mevcut bir Git deposunun içinde olduğu için Git LFS yapılandırılamıyor",

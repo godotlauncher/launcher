@@ -2,6 +2,7 @@ import path from 'node:path';
 import type {
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     InstalledRelease,
     RendererType,
 } from '@shared/contracts';
@@ -130,6 +131,7 @@ const projectsStore = {
  * @param codeEditorService - Code editor integration service.
  * @param overwriteProjectPath - Optional target project path.
  * @param gitOptions - Optional Git initialization settings.
+ * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
  * @returns The project creation result.
  */
 function createProject(
@@ -141,6 +143,7 @@ function createProject(
     codeEditorService: CodeEditorIntegrationService,
     overwriteProjectPath?: string,
     gitOptions?: CreateProjectGitOptions,
+    parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
 ) {
     return new ProjectCreationService(
         codeEditorService,
@@ -155,6 +158,7 @@ function createProject(
         withGit,
         overwriteProjectPath,
         gitOptions,
+        parentRepositoryConsent,
     );
 }
 
@@ -572,13 +576,14 @@ describe('createProject', () => {
         },
     );
 
-    it('refuses an enclosing repository before project or Git mutation', async () => {
-        gitServiceMocks.inspectRepository.mockResolvedValueOnce({
+    it('requires confirmation for an enclosing repository before project or Git mutation', async () => {
+        const repository = {
             status: 'inside-work-tree',
-            root: '/projects',
+            root: path.resolve('/projects'),
             isProjectRoot: false,
-            kind: 'standard',
-        });
+            kind: 'standard' as const,
+        } as const;
+        gitServiceMocks.inspectRepository.mockResolvedValueOnce(repository);
 
         const result = await createProject(
             'Nested LFS',
@@ -594,9 +599,10 @@ describe('createProject', () => {
             },
         );
 
-        expect(result.error).toBe(
-            'createProject:errors.gitLfsExistingRepository',
-        );
+        expect(result).toEqual({
+            success: false,
+            parentRepositoryConfirmation: repository,
+        });
         expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
         expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
@@ -604,6 +610,45 @@ describe('createProject', () => {
             gitLfsServiceMocks.configureProjectRepository,
         ).not.toHaveBeenCalled();
     });
+
+    it.each([
+        ['missing', { status: 'not-a-repository' as const }],
+        [
+            'changed',
+            {
+                status: 'inside-work-tree' as const,
+                root: path.resolve('/projects/Other-Parent'),
+                isProjectRoot: false,
+                kind: 'standard' as const,
+            },
+        ],
+        ['unverifiable', { status: 'inspection-failed' as const }],
+    ])(
+        'rejects %s parent repository consent before writing files',
+        async (_state, inspection) => {
+            gitServiceMocks.inspectRepository.mockResolvedValueOnce(inspection);
+
+            const result = await createProject(
+                'Stale Consent',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                codeEditorIntegrationService,
+                undefined,
+                undefined,
+                { root: path.resolve('/projects/Parent') },
+            );
+
+            expect(result).toEqual({
+                success: false,
+                error: 'createProject:errors.parentRepositoryContextChanged',
+            });
+            expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+            expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(gitServiceMocks.init).not.toHaveBeenCalled();
+        },
+    );
 
     it.each(['install', 'track', 'verify'] as const)(
         'rolls back and stops after Git LFS %s failure',
@@ -884,6 +929,7 @@ describe('createProject', () => {
             if (mock === gitServiceMocks.init) {
                 gitServiceMocks.inspectRepository
                     .mockResolvedValueOnce({ status: 'not-a-repository' })
+                    .mockResolvedValueOnce({ status: 'not-a-repository' })
                     .mockResolvedValueOnce({ status: 'not-a-repository' });
             }
 
@@ -939,7 +985,7 @@ describe('createProject', () => {
         expect(fsMocks.promises.rm).toHaveBeenCalled();
     });
 
-    it('creates default Git files without inspecting Git when Git is disabled', async () => {
+    it('checks repository context without performing Git setup when Git is disabled', async () => {
         const result = await createProject(
             'No Git Project',
             release,
@@ -961,7 +1007,7 @@ describe('createProject', () => {
             path.resolve('/projects/No-Git-Project/.gitattributes'),
         );
         expect(gitServiceMocks.exists).not.toHaveBeenCalled();
-        expect(gitServiceMocks.inspectRepository).not.toHaveBeenCalled();
+        expect(gitServiceMocks.inspectRepository).toHaveBeenCalledOnce();
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
     });
@@ -1012,6 +1058,11 @@ describe('createProject', () => {
             true,
             codeEditorIntegrationService,
             projectPath,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+            { root: path.resolve('/projects/Parent') },
         );
 
         expect(result.success).toBe(true);
@@ -1036,6 +1087,9 @@ describe('createProject', () => {
         expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
         expect(gitServiceMocks.setIdentity).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+        expect(
+            gitLfsServiceMocks.configureProjectRepository,
+        ).not.toHaveBeenCalled();
     });
 
     it.each(['disabled', 'unavailable'])(

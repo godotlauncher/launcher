@@ -2,10 +2,13 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
+    CreateProjectPublicationOptions,
     CreateProjectPublicationOutcome,
     CreateProjectPublicationTarget,
     GitIdentityScope,
+    GitLfsTrackingPolicy,
     GitLfsTrackingPolicyDescriptor,
+    InstalledRelease,
     ProjectDetails,
     ProjectGitIdentityPreset,
     PublishedGitHubRepository,
@@ -78,17 +81,32 @@ type FailedPublication = Extract<
     { status: 'failed' }
 >;
 
+type CreateProjectSubmission = {
+    projectName: string;
+    release: InstalledRelease;
+    renderer: RendererType[5];
+    codeEditorId: CodeEditorId | null;
+    withGit: boolean;
+    withGitLfs: boolean;
+    gitLfsTrackingPolicy?: GitLfsTrackingPolicy;
+    overwriteProjectPath?: string;
+    publication?: CreateProjectPublicationOptions;
+    editNow: boolean;
+};
+
 type ExistingRepositoryDialogState =
     | {
           mode: 'confirmation';
           root: string;
           consequences: ExistingRepositoryConsequences;
+          submission: CreateProjectSubmission;
       }
     | {
           mode: 'completion';
           root: string;
           consequences: ExistingRepositoryConsequences;
           project: ProjectDetails;
+          submission: CreateProjectSubmission;
       };
 
 type SubViewProps = {
@@ -204,6 +222,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const repositoryNameCheckRequestRef = useRef<number>(0);
     const overwriteBasePathInitializedRef = useRef<boolean>(false);
     const defaultOverwriteBasePathRef = useRef('');
+    const pendingSubmissionRef = useRef<CreateProjectSubmission | null>(null);
 
     const { installedReleases, downloadingReleases } = useRelease();
     const { addAlert, addCustomConfirm } = useAlerts();
@@ -495,11 +514,13 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     /**
      * Creates the selected project with an optional Git setup choice.
      *
-     * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
+     * @param submission - Immutable values captured for this Create submission.
+     * @param gitOptions - Optional initial commit and identity choice.
      * @param existingRepository - Confirmed parent repository and skipped option summary.
      * @returns A promise that resolves after creation handling completes.
      */
     const createSelectedProject = async (
+        submission: CreateProjectSubmission,
         gitOptions?: CreateProjectGitOptions,
         existingRepository?: {
             root: string;
@@ -508,36 +529,39 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     ) => {
         setCreating(true);
         const consequences = existingRepository?.consequences ?? {
-            git: withGit,
-            gitLfs: withGitLfs,
-            github: publishToGitHub,
+            git: submission.withGit,
+            gitLfs: submission.withGitLfs,
+            github: Boolean(submission.publication),
         };
-        const publicationTarget = publicationTargets.find(
-            (target) =>
-                getPublicationTargetValue(target) === selectedPublicationTarget,
-        );
         const result = await createProject(
-            projectName,
-            allReleases[selectedReleaseIndex],
-            renderer,
-            codeEditorId,
-            withGit,
-            overwriteProjectPath ? overwriteSubmitPath : undefined,
+            submission.projectName,
+            submission.release,
+            submission.renderer,
+            submission.codeEditorId,
+            submission.withGit,
+            submission.overwriteProjectPath,
             existingRepository
                 ? undefined
                 : addCreateProjectGitLfsOptions(
                       gitOptions,
-                      withGitLfs ? gitLfsPolicy?.id : undefined,
+                      submission.gitLfsTrackingPolicy,
                   ),
-            !existingRepository && publishToGitHub && publicationTarget
-                ? toCreateProjectPublicationOptions(
-                      publicationTarget,
-                      repositoryName,
-                  )
-                : undefined,
+            existingRepository ? undefined : submission.publication,
+            existingRepository ? { root: existingRepository.root } : undefined,
         );
 
         setCreating(false);
+
+        if (result.parentRepositoryConfirmation) {
+            setError(undefined);
+            setExistingRepositoryDialog({
+                mode: 'confirmation',
+                root: result.parentRepositoryConfirmation.root,
+                consequences,
+                submission,
+            });
+            return;
+        }
 
         if (result.success && result.projectDetails) {
             const repositoryRoot =
@@ -551,16 +575,18 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     root: repositoryRoot,
                     consequences,
                     project: result.projectDetails,
+                    submission,
                 });
                 return;
             }
+            pendingSubmissionRef.current = null;
             onOpenChange(false);
-            if (editNow) {
+            if (submission.editNow) {
                 launchProject(result.projectDetails);
             }
             if (
                 result.publication?.status === 'published' &&
-                shouldShowCreateProjectPublishedAlert(editNow)
+                shouldShowCreateProjectPublishedAlert(submission.editNow)
             ) {
                 showPublishedAlert(result.publication.repository);
             }
@@ -582,6 +608,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     root: result.gitSetup.root,
                     consequences,
                     project: result.projectDetails,
+                    submission,
                 });
                 return;
             }
@@ -595,6 +622,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             }
             setError(undefined);
         } else {
+            pendingSubmissionRef.current = null;
             setError(result.error);
         }
     };
@@ -759,11 +787,14 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     /**
      * Continues the existing Git identity and project creation flow.
      *
+     * @param submission - Immutable values captured for this Create submission.
      * @returns A promise that resolves after identity or creation handling.
      */
-    const continueCreateProject = async () => {
-        if (!withGit || !gitAvailable) {
-            await createSelectedProject();
+    const continueCreateProject = async (
+        submission: CreateProjectSubmission,
+    ) => {
+        if (!submission.withGit || !gitAvailable) {
+            await createSelectedProject(submission);
             return;
         }
 
@@ -788,11 +819,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             identitySettings.projectPreset,
         );
         if (decision.action === 'use-global') {
-            await createSelectedProject();
+            await createSelectedProject(submission);
             return;
         }
         if (decision.action === 'apply-preset') {
-            await createSelectedProject({
+            await createSelectedProject(submission, {
                 initialCommit: 'create',
                 identity: {
                     name: decision.preset.name,
@@ -852,11 +883,40 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             return;
         }
 
+        const publicationTarget = publicationTargets.find(
+            (target) =>
+                getPublicationTargetValue(target) === selectedPublicationTarget,
+        );
+        if (!selectedRelease) {
+            return;
+        }
+        const submission: CreateProjectSubmission = {
+            projectName,
+            release: selectedRelease,
+            renderer,
+            codeEditorId,
+            withGit,
+            withGitLfs,
+            gitLfsTrackingPolicy: withGitLfs ? gitLfsPolicy?.id : undefined,
+            overwriteProjectPath: overwriteProjectPath
+                ? overwriteSubmitPath
+                : undefined,
+            publication:
+                publishToGitHub && publicationTarget
+                    ? toCreateProjectPublicationOptions(
+                          publicationTarget,
+                          repositoryName,
+                      )
+                    : undefined,
+            editNow,
+        };
+        pendingSubmissionRef.current = submission;
+
         setCheckingProjectRepository(true);
         try {
             const inspection = await inspectCreateProjectRepository(
-                projectName,
-                overwriteProjectPath ? overwriteSubmitPath : undefined,
+                submission.projectName,
+                submission.overwriteProjectPath,
             );
             if (
                 inspection.status === 'inside-work-tree' &&
@@ -866,10 +926,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     mode: 'confirmation',
                     root: inspection.root,
                     consequences: {
-                        git: withGit,
-                        gitLfs: withGitLfs,
-                        github: publishToGitHub,
+                        git: submission.withGit,
+                        gitLfs: submission.withGitLfs,
+                        github: Boolean(submission.publication),
                     },
+                    submission,
                 });
                 return;
             }
@@ -879,11 +940,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             setCheckingProjectRepository(false);
         }
 
-        await continueCreateProject();
+        await continueCreateProject(submission);
     };
 
     /** Cancels the one-submission parent repository confirmation. */
     const handleCancelExistingRepository = () => {
+        pendingSubmissionRef.current = null;
         setExistingRepositoryDialog(null);
     };
 
@@ -900,7 +962,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setExistingRepositoryDialog(null);
         setCreatingInsideExistingRepository(true);
         try {
-            await createSelectedProject(undefined, context);
+            await createSelectedProject(context.submission, undefined, context);
         } finally {
             setCreatingInsideExistingRepository(false);
         }
@@ -911,18 +973,21 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         if (existingRepositoryDialog?.mode !== 'completion') {
             return;
         }
-        const { project } = existingRepositoryDialog;
+        const { project, submission } = existingRepositoryDialog;
+        pendingSubmissionRef.current = null;
         setExistingRepositoryDialog(null);
         onOpenChange(false);
-        if (editNow) {
+        if (submission.editNow) {
             void launchProject(project);
         }
     };
 
     /** Initializes the project repository without staging or committing. */
     const handleSkipInitialCommit = () => {
+        const submission = pendingSubmissionRef.current;
+        if (!submission) return;
         setGitIdentityDialogPage(null);
-        void createSelectedProject({ initialCommit: 'skip' });
+        void createSelectedProject(submission, { initialCommit: 'skip' });
     };
 
     /**
@@ -973,8 +1038,10 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             }
         }
 
+        const submission = pendingSubmissionRef.current;
+        if (!submission) return;
         setGitIdentityDialogPage(null);
-        await createSelectedProject({
+        await createSelectedProject(submission, {
             initialCommit: 'create',
             identity: { ...identity, scope },
         });
@@ -982,8 +1049,16 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
 
     /** Uses the complete global identity without writing repository settings. */
     const handleUseGlobalGitIdentity = () => {
+        const submission = pendingSubmissionRef.current;
+        if (!submission) return;
         setGitIdentityDialogPage(null);
-        void createSelectedProject();
+        void createSelectedProject(submission);
+    };
+
+    /** Closes Git identity without retaining a stale Create submission. */
+    const handleCloseGitIdentity = () => {
+        pendingSubmissionRef.current = null;
+        setGitIdentityDialogPage(null);
     };
 
     /** Opens the existing identity form with the partial global values. */
@@ -1221,6 +1296,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setRepositoryNameAvailability('idle');
         setPublicationFailure(null);
         setPublicationProject(null);
+        pendingSubmissionRef.current = null;
         overwritePathCheckRequestRef.current += 1;
         repositoryNameCheckRequestRef.current += 1;
         overwriteBasePathInitializedRef.current = Boolean(
@@ -1504,7 +1580,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     saveChoice={gitIdentitySaveChoice}
                     saving={savingGitIdentityPreset}
                     saveError={gitIdentitySaveError}
-                    allowSkip={!publishToGitHub}
+                    allowSkip={!pendingSubmissionRef.current?.publication}
                     t={t}
                     onNameChange={(name) => {
                         setGitIdentityName(name);
@@ -1528,7 +1604,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     onUseDifferentIdentity={handleUseDifferentGitIdentity}
                     onBack={handleGitIdentityBack}
                     onSave={() => void handleSaveGitIdentity()}
-                    onRequestClose={() => setGitIdentityDialogPage(null)}
+                    onRequestClose={handleCloseGitIdentity}
                     returnFocusRef={createButtonRef}
                 />
             )}

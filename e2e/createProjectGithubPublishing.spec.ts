@@ -430,7 +430,7 @@ test('confirms a parent repository before creating locally once', async () => {
         isProjectRoot: false,
         kind: 'standard',
     });
-    await stubRecordedCreateProjectResult(electronApp, {
+    await stubRecordedCreateProjectResults(electronApp, [{
         success: true,
         projectDetails,
         gitSetup: {
@@ -440,7 +440,7 @@ test('confirms a parent repository before creating locally once', async () => {
             kind: 'standard',
         },
         publication: { status: 'not-requested' },
-    });
+    }]);
 
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectCreate').click();
@@ -481,7 +481,20 @@ test('confirms a parent repository before creating locally once', async () => {
         .poll(async () => await readRecordedCreateProjectCalls(electronApp))
         .toHaveLength(0);
 
+    await stubDelayedCreateProjectRepositoryInspection(
+        electronApp,
+        {
+            status: 'inside-work-tree',
+            root: repositoryRoot,
+            isProjectRoot: false,
+            kind: 'standard',
+        },
+        150,
+    );
     await mainPage.getByTestId('btnCreateProject').click();
+    await mainPage
+        .getByTestId('inputProjectName')
+        .fill('Changed After Submission');
     dialog = mainPage.getByRole('dialog', {
         name: 'This project will be inside another Git repository',
     });
@@ -498,6 +511,8 @@ test('confirms a parent repository before creating locally once', async () => {
     expect(request[4]).toBe(true);
     expect(request[6]).toBeUndefined();
     expect(request[7]).toBeUndefined();
+    expect(request[0]).toBe('Parent Repository Game');
+    expect(request[8]).toEqual({ root: repositoryRoot });
     await completion.getByRole('button', { name: 'Done' }).click();
     await expect(mainPage.getByTestId('btnCloseCreateProject')).toBeHidden();
 });
@@ -513,25 +528,27 @@ test('shows local completion when a parent repository appears after preflight', 
         name: 'Mario Debono',
         email: 'mario@example.com',
     });
-    await stubCreateProjectResult(electronApp, {
-        success: false,
-        error: 'The project was created locally.',
-        projectDetails,
-        gitSetup: {
-            status: 'existing-repository',
-            root: repositoryRoot,
-            isProjectRoot: false,
-            kind: 'standard',
+    await stubRecordedCreateProjectResults(electronApp, [
+        {
+            success: false,
+            parentRepositoryConfirmation: {
+                root: repositoryRoot,
+                isProjectRoot: false,
+                kind: 'standard',
+            },
         },
-        publication: {
-            status: 'failed',
-            attemptId: 'late-parent-attempt',
-            stage: 'verification',
-            reason: 'local-repository-not-standalone',
-            canRetry: false,
-            canEdit: false,
+        {
+            success: true,
+            projectDetails,
+            gitSetup: {
+                status: 'existing-repository',
+                root: repositoryRoot,
+                isProjectRoot: false,
+                kind: 'standard',
+            },
+            publication: { status: 'not-requested' },
         },
-    });
+    ]);
 
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectCreate').click();
@@ -546,6 +563,12 @@ test('shows local completion when a parent repository appears after preflight', 
         .getByRole('checkbox', { name: 'Edit now' })
         .uncheck();
     await mainPage.getByTestId('btnCreateProject').click();
+
+    const confirmation = mainPage.getByRole('dialog', {
+        name: 'This project will be inside another Git repository',
+    });
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Continue' }).click();
 
     const completion = mainPage.getByRole('dialog', {
         name: 'Project created',
@@ -603,29 +626,77 @@ function createIsolatedLaunchEnvironment(
  * @param result - Result returned after recording each request.
  * @returns A promise that ends when the handler is ready.
  */
-async function stubRecordedCreateProjectResult(
+async function stubRecordedCreateProjectResults(
     app: ElectronApplication,
-    result: Parameters<typeof stubCreateProjectResult>[1],
+    results: Parameters<typeof stubCreateProjectResult>[1][],
 ): Promise<void> {
     await app.evaluate(
         (
             { ipcMain },
-            injectedResult: Parameters<typeof stubCreateProjectResult>[1],
+            injectedResults: Parameters<typeof stubCreateProjectResult>[1][],
         ) => {
             const state = globalThis as typeof globalThis & {
                 __parentRepositoryCreateProjectCalls?: unknown[][];
+                __parentRepositoryCreateProjectResultIndex?: number;
             };
             state.__parentRepositoryCreateProjectCalls = [];
+            state.__parentRepositoryCreateProjectResultIndex = 0;
             ipcMain.removeHandler('projects.createProject');
             ipcMain.handle(
                 'projects.createProject',
                 async (_event, ...args) => {
                     state.__parentRepositoryCreateProjectCalls?.push(args);
-                    return { success: true, data: injectedResult };
+                    const index =
+                        state.__parentRepositoryCreateProjectResultIndex ?? 0;
+                    state.__parentRepositoryCreateProjectResultIndex =
+                        index + 1;
+                    return {
+                        success: true,
+                        data:
+                            injectedResults[
+                                Math.min(index, injectedResults.length - 1)
+                            ],
+                    };
                 },
             );
         },
-        result,
+        results,
+    );
+}
+
+/**
+ * Delays one repository inspection so the form can change after submission.
+ *
+ * @param app - Electron app whose repository inspection should be replaced.
+ * @param result - Repository inspection returned after the delay.
+ * @param delayMs - Delay before returning the inspection.
+ * @returns A promise that ends when the handler is ready.
+ */
+async function stubDelayedCreateProjectRepositoryInspection(
+    app: ElectronApplication,
+    result: Parameters<typeof stubCreateProjectRepositoryInspection>[1],
+    delayMs: number,
+): Promise<void> {
+    await app.evaluate(
+        (
+            { ipcMain },
+            input: {
+                result: Parameters<
+                    typeof stubCreateProjectRepositoryInspection
+                >[1];
+                delayMs: number;
+            },
+        ) => {
+            const channel = 'projects.inspectCreateProjectRepository';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, input.delayMs),
+                );
+                return { success: true, data: input.result };
+            });
+        },
+        { result, delayMs },
     );
 }
 

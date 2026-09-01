@@ -188,6 +188,7 @@
         "failedGitBranch": "Der Git-Branch konnte nicht in main umbenannt werden",
         "invalidGitIdentity": "Git-Name und E-Mail-Adresse sind erforderlich",
         "failedGitIdentity": "Die Git-Identität konnte nicht gespeichert werden",
+        "parentRepositoryContextChanged": "Das Git-Repository am ausgewählten Projektpfad hat sich geändert. Prüfen Sie den Speicherort und versuchen Sie es erneut.",
         "failedGitCommit": "Der erste Git-Commit konnte nicht erstellt werden",
         "gitLfsRequiresGit": "Git LFS erfordert ein neues Git-Repository",
         "gitLfsExistingRepository": "Git LFS kann nicht konfiguriert werden, da sich das Projekt in einem vorhandenen Git-Repository befindet",
