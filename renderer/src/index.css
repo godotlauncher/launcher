@@ -87,13 +87,10 @@
 }
 
 :focus-visible {
-  outline: 2px solid color-mix(
-    in oklab,
-    var(--color-primary) 40%,
-    transparent
-  );
-  outline-offset: 1px;
-  @apply border-primary/50;
+    outline: 2px solid
+        color-mix(in oklab, var(--color-primary) 40%, transparent);
+    outline-offset: 1px;
+    @apply border-primary/50;
 }
 
 .input:focus-within,
@@ -102,7 +99,7 @@
 .select:focus-within,
 .select:focus,
 .select:open {
-    outline: none; 
+    outline: none;
     box-shadow: none;
 }
 

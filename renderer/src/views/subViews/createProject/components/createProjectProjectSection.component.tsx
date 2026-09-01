@@ -115,7 +115,7 @@ export const CreateProjectProjectSection: React.FC<
         <div className="flex flex-col gap-2">
             <div className="flex flex-row gap-2 items-center">
                 <h2 className="text-md">{t('project.title')}</h2>
-                
+
                 {selectedRelease?.prerelease && (
                     <Tooltip
                         placement="top"
