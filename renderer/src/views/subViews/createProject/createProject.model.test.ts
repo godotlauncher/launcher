@@ -69,7 +69,7 @@ const codeEditorSettings = (
 });
 
 describe('create project model helpers', () => {
-    it('checks trimmed project names against the Launcher project library', () => {
+    it('checks trimmed, case-insensitive project names against the Launcher project library', () => {
         const projects = [
             { name: 'Existing Project' },
             { name: 'Other Project' },
@@ -79,7 +79,7 @@ describe('create project model helpers', () => {
             isCreateProjectNameAvailable(projects, ' Existing Project '),
         ).toBe(false);
         expect(isCreateProjectNameAvailable(projects, 'existing project')).toBe(
-            true,
+            false,
         );
         expect(isCreateProjectNameAvailable(projects, 'New Project')).toBe(
             true,

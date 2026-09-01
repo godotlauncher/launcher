@@ -38,10 +38,12 @@ export function isCreateProjectNameAvailable(
     projects: Pick<ProjectDetails, 'name'>[],
     projectName: string,
 ): boolean {
-    const trimmedName = projectName.trim();
+    const normalisedName = projectName.trim().toLowerCase();
     return (
-        trimmedName.length > 0 &&
-        !projects.some((project) => project.name === trimmedName)
+        normalisedName.length > 0 &&
+        !projects.some(
+            (project) => project.name.trim().toLowerCase() === normalisedName,
+        )
     );
 }
 
