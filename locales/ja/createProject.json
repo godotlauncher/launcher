@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub がリクエストを完了できませんでした。"
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "このプロジェクトは別の Git リポジトリ内に作成されます",
+        "warningMessage": "選択したフォルダーは {{root}} の Git リポジトリ内にあります。",
+        "gitSkipped": "Launcher は別の Git リポジトリや最初のコミットを作成しません。",
+        "gitLfsSkipped": "Git LFS は設定されません。",
+        "githubSkipped": "プロジェクトは GitHub に公開されません。",
+        "question": "続行しますか？",
+        "completionTitle": "プロジェクトを作成しました",
+        "completionLead": "このコンピューターでプロジェクトを使用できます。",
+        "completionMessage": "このプロジェクトは {{root}} の既存の Git リポジトリ内にあります。",
+        "done": "完了"
+    },
     "otherSettings": {
         "title": "その他の設定",
         "codeEditor": {

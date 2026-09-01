@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub nie mógł wykonać żądania."
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "Ten projekt znajdzie się w innym repozytorium Git",
+        "warningMessage": "Wybrany folder znajduje się w repozytorium Git w lokalizacji {{root}}.",
+        "gitSkipped": "Launcher nie utworzy oddzielnego repozytorium Git ani początkowego commita.",
+        "gitLfsSkipped": "Git LFS nie zostanie skonfigurowany.",
+        "githubSkipped": "Projekt nie zostanie opublikowany w serwisie GitHub.",
+        "question": "Czy chcesz kontynuować?",
+        "completionTitle": "Projekt utworzony",
+        "completionLead": "Projekt jest gotowy na tym komputerze.",
+        "completionMessage": "Ten projekt znajduje się w istniejącym repozytorium Git w lokalizacji {{root}}.",
+        "done": "Gotowe"
+    },
     "otherSettings": {
         "title": "Inne ustawienia",
         "codeEditor": {

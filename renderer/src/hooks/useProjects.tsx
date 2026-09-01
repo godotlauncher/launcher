@@ -9,6 +9,7 @@ import type {
     CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
+    GitRepositoryInspection,
     InitializeProjectGitResult,
     InstalledRelease,
     LaunchProjectResult,
@@ -124,6 +125,10 @@ interface ProjectsContext {
     checkCreateProjectRepositoryNameAvailability: (
         publication: CreateProjectPublicationOptions,
     ) => Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
+    inspectCreateProjectRepository: (
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) => Promise<GitRepositoryInspection>;
     retryCreateProjectPublication: (
         attemptId: string,
         publication?: CreateProjectPublicationOptions,
@@ -263,6 +268,22 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     ) =>
         projectsBridge.checkCreateProjectRepositoryNameAvailability(
             publication,
+        );
+
+    /**
+     * Inspects the final planned Create Project path for an enclosing repository.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     * @returns The repository inspection for the final sanitised project path.
+     */
+    const inspectCreateProjectRepository = (
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) =>
+        projectsBridge.inspectCreateProjectRepository(
+            projectName,
+            overwriteProjectPath,
         );
 
     /**
@@ -646,6 +667,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 createProject,
                 listCreateProjectPublicationTargets,
                 checkCreateProjectRepositoryNameAvailability,
+                inspectCreateProjectRepository,
                 retryCreateProjectPublication,
                 discardCreateProjectPublication,
             }}

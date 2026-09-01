@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub 無法完成請求。"
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "此專案將位於另一個 Git 儲存庫中",
+        "warningMessage": "你選擇的資料夾位於 {{root}} 的 Git 儲存庫中。",
+        "gitSkipped": "Launcher 不會建立獨立的 Git 儲存庫或初始提交。",
+        "gitLfsSkipped": "不會設定 Git LFS。",
+        "githubSkipped": "不會將專案發佈到 GitHub。",
+        "question": "是否繼續？",
+        "completionTitle": "專案已建立",
+        "completionLead": "你的專案已在此電腦上準備就緒。",
+        "completionMessage": "此專案位於 {{root}} 的現有 Git 儲存庫中。",
+        "done": "完成"
+    },
     "otherSettings": {
         "title": "其他設定",
         "codeEditor": {

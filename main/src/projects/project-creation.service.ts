@@ -7,6 +7,7 @@ import type {
     CreateProjectResult,
     GitLfsTrackingPolicy,
     GitRepositoryInfo,
+    GitRepositoryInspection,
     InstalledRelease,
     ProjectGitLfsRecovery,
     ProjectGitLfsSetupOutcome,
@@ -45,6 +46,41 @@ import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.util
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
+
+type CreateProjectLocation = {
+    projectName: string;
+    projectDirectoryName: string;
+    projectPath: string;
+};
+
+/**
+ * Resolves the exact directory used by Create Project.
+ *
+ * @param projectName - Display name entered for the project.
+ * @param defaultBasePath - Default projects directory from preferences.
+ * @param overwriteProjectPath - Optional path used to choose a different parent directory.
+ * @returns The trimmed name, safe directory name, and absolute project path.
+ */
+function resolveCreateProjectLocation(
+    projectName: string,
+    defaultBasePath: string,
+    overwriteProjectPath?: string,
+): CreateProjectLocation {
+    const trimmedProjectName = projectName.trim();
+    const projectDirectoryName = sanitiseProjectDirectoryName(
+        trimmedProjectName.replaceAll(' ', '-'),
+    );
+    return {
+        projectName: trimmedProjectName,
+        projectDirectoryName,
+        projectPath: overwriteProjectPath
+            ? path.resolve(
+                  path.dirname(overwriteProjectPath),
+                  projectDirectoryName,
+              )
+            : path.resolve(defaultBasePath, projectDirectoryName),
+    };
+}
 
 /**
  * Verifies that a project directory is exactly its current repository root.
@@ -184,6 +220,26 @@ export class ProjectCreationService {
     ) {}
 
     /**
+     * Inspects the exact planned Create Project path for an enclosing repository.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     * @returns The repository inspection for the final sanitised project path.
+     */
+    async inspectCreateProjectRepository(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ): Promise<GitRepositoryInspection> {
+        const { projects_location: projectDir } = await getUserPreferences();
+        const { projectPath } = resolveCreateProjectLocation(
+            projectName,
+            projectDir,
+            overwriteProjectPath,
+        );
+        return this.git.inspectRepository(projectPath);
+    }
+
+    /**
      * Creates a project and configures its selected editor integrations.
      *
      * @param projectName - Display name for the new project.
@@ -257,20 +313,16 @@ export class ProjectCreationService {
             gitSetup = { status: 'git-unavailable' };
         }
 
-        projectName = projectName.trim();
-        const projectDirectoryName = sanitiseProjectDirectoryName(
-            projectName.replaceAll(' ', '-'),
-        );
-
         const { projects_location: projectDir, install_location: installDir } =
             await getUserPreferences();
         logger.info(overwriteProjectPath);
-        const projectPath = overwriteProjectPath
-            ? path.resolve(
-                  path.dirname(overwriteProjectPath),
-                  projectDirectoryName,
-              )
-            : path.resolve(projectDir, projectDirectoryName);
+        const location = resolveCreateProjectLocation(
+            projectName,
+            projectDir,
+            overwriteProjectPath,
+        );
+        projectName = location.projectName;
+        const { projectDirectoryName, projectPath } = location;
         const projectRootExisted = fs.existsSync(projectPath);
 
         // If the target exists, allow it only when it's an empty directory.

@@ -10,6 +10,7 @@ import type {
     CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
+    GitRepositoryInspection,
     InitialiseRemoteProjectSubmodulesResult,
     InitializeProjectGitResult,
     LaunchProjectOptions,
@@ -87,6 +88,12 @@ export type ProjectsBridge = {
     checkCreateProjectRepositoryNameAvailability(
         publication: CreateProjectPublicationOptions,
     ): Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
+
+    /** Inspects the final planned Create Project path for an enclosing repository. */
+    inspectCreateProjectRepository(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ): Promise<GitRepositoryInspection>;
 
     /** Creates and registers a project. */
     createProject(

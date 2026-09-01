@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub n'a pas pu terminer la requête."
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "Ce projet sera placé dans un autre dépôt Git",
+        "warningMessage": "Le dossier sélectionné se trouve dans le dépôt Git situé à {{root}}.",
+        "gitSkipped": "Launcher ne créera pas de dépôt Git séparé ni de commit initial.",
+        "gitLfsSkipped": "Git LFS ne sera pas configuré.",
+        "githubSkipped": "Le projet ne sera pas publié sur GitHub.",
+        "question": "Voulez-vous continuer ?",
+        "completionTitle": "Projet créé",
+        "completionLead": "Votre projet est prêt sur cet ordinateur.",
+        "completionMessage": "Ce projet se trouve dans le dépôt Git existant situé à {{root}}.",
+        "done": "Terminé"
+    },
     "otherSettings": {
         "title": "Autres paramètres",
         "codeEditor": {

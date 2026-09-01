@@ -105,6 +105,18 @@
             "provider-unavailable": "O GitHub não conseguiu concluir o pedido."
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "Este projeto ficará dentro de outro repositório Git",
+        "warningMessage": "A pasta selecionada está dentro do repositório Git em {{root}}.",
+        "gitSkipped": "O Launcher não criará um repositório Git separado nem um commit inicial.",
+        "gitLfsSkipped": "O Git LFS não será configurado.",
+        "githubSkipped": "O projeto não será publicado no GitHub.",
+        "question": "Pretende continuar?",
+        "completionTitle": "Projeto criado",
+        "completionLead": "O projeto está pronto neste computador.",
+        "completionMessage": "Este projeto está dentro do repositório Git existente em {{root}}.",
+        "done": "Concluído"
+    },
     "otherSettings": {
         "title": "Outras definições",
         "codeEditor": {

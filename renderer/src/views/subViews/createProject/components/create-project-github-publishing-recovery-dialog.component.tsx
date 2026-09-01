@@ -69,7 +69,9 @@ export const CreateProjectGitHubPublishingRecoveryDialog: React.FC<
     const recoveryMessageKey =
         failure.recoveryAction === 'confirm-recovered-repository'
             ? 'publishToGitHub.recoveryRepositoryFound'
-            : `publishToGitHub.failure.${failure.reason}`;
+            : failure.reason === 'local-repository-not-standalone'
+              ? 'publishToGitHub.requiresInitialCommit'
+              : `publishToGitHub.failure.${failure.reason}`;
     const retryLabelKey =
         failure.recoveryAction === 'check-and-retry'
             ? 'publishToGitHub.checkAndRetry'

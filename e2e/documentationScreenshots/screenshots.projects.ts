@@ -12,6 +12,7 @@ import {
     stubAddProjectRecoveredCodeEditorConfig,
     stubCodeEditorIntegrationSettings,
     stubCreateProjectPublicationTargets,
+    stubCreateProjectRepositoryInspection,
     stubCreateProjectRepositoryNameAvailability,
     stubCreateProjectResult,
     stubDiscardCreateProjectPublication,
@@ -1123,6 +1124,45 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
         },
     },
     {
+        fileBase: 'screen_projects_new_project_existing_repository_warning',
+        description: 'New Project existing parent repository warning',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectExistingRepository(
+                page,
+                electronApp,
+                false,
+            );
+        },
+        cleanup: async (page: ElectronPage) => {
+            await page
+                .getByRole('dialog', {
+                    name: 'This project will be inside another Git repository',
+                })
+                .getByRole('button', { name: 'Cancel' })
+                .click();
+            await closeNewProjectScreenshot(page);
+        },
+    },
+    {
+        fileBase:
+            'screen_projects_new_project_existing_repository_completion',
+        description: 'New Project existing parent repository completion',
+        navigate: async (
+            page: ElectronPage,
+            electronApp: ElectronApplication,
+        ) => {
+            await openNewProjectExistingRepository(page, electronApp, true);
+        },
+        cleanup: async (page: ElectronPage) => {
+            await page.getByRole('button', { name: 'Done' }).click();
+            await expect(page.getByTestId('drawerBackdrop')).toBeHidden();
+            await page.waitForTimeout(300);
+        },
+    },
+    {
         fileBase: 'screen_projects_new_project_git_identity_warning',
         description: 'New Project missing Git identity warning',
         navigate: async (
@@ -1616,6 +1656,9 @@ async function openNewProjectGitHubPublishing(
     await stubCreateProjectRepositoryNameAvailability(electronApp, {
         status: options.availability ?? 'available',
     });
+    await stubCreateProjectRepositoryInspection(electronApp, {
+        status: 'not-a-repository',
+    });
     await page.getByTestId('btnProjects').click();
     await page.getByTestId('btnProjectCreate').click();
     if (options.projectName) {
@@ -1672,6 +1715,9 @@ async function openNewProjectGitIdentityWarning(
 ): Promise<void> {
     await stubToolIntegrations(electronApp, DEFAULT_TOOL_INTEGRATIONS);
     await stubGlobalGitIdentity(electronApp, { name: '', email: '' });
+    await stubCreateProjectRepositoryInspection(electronApp, {
+        status: 'not-a-repository',
+    });
     await stubCodeEditorIntegrationSettings(electronApp, [
         SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     ]);
@@ -1683,5 +1729,62 @@ async function openNewProjectGitIdentityWarning(
     await createButton.click();
     await expect(
         page.getByRole('dialog', { name: 'Git identity required' }),
+    ).toBeVisible({ timeout: 10000 });
+}
+
+/**
+ * Opens the deterministic parent-repository warning or completion state.
+ *
+ * @param page - Electron renderer page to drive.
+ * @param electronApp - Electron app whose bridge handlers should be stubbed.
+ * @param completion - Whether to continue through to the completion state.
+ * @returns A promise that ends when the requested dialog is visible.
+ */
+async function openNewProjectExistingRepository(
+    page: ElectronPage,
+    electronApp: ElectronApplication,
+    completion: boolean,
+): Promise<void> {
+    const repositoryRoot = '/Users/docs/Godot/Workspace';
+    await openNewProjectGitHubPublishing(page, electronApp, {
+        projectName: 'Skyline Workshop',
+        availability: 'available',
+    });
+    await page.getByRole('checkbox', { name: 'Use Git LFS' }).check();
+    await page.getByRole('checkbox', { name: 'Edit now' }).uncheck();
+    await stubCreateProjectRepositoryInspection(electronApp, {
+        status: 'inside-work-tree',
+        root: repositoryRoot,
+        isProjectRoot: false,
+        kind: 'standard',
+    });
+    await stubCreateProjectResult(electronApp, {
+        success: true,
+        projectDetails: {
+            ...SAMPLE_PROJECTS[0],
+            name: 'Skyline Workshop',
+            path: `${repositoryRoot}/Skyline-Workshop`,
+        },
+        gitSetup: {
+            status: 'existing-repository',
+            root: repositoryRoot,
+            isProjectRoot: false,
+            kind: 'standard',
+        },
+        publication: { status: 'not-requested' },
+    });
+
+    await page.getByTestId('btnCreateProject').click();
+    const warning = page.getByRole('dialog', {
+        name: 'This project will be inside another Git repository',
+    });
+    await expect(warning).toBeVisible({ timeout: 10000 });
+    if (!completion) {
+        return;
+    }
+
+    await warning.getByRole('button', { name: 'Continue' }).click();
+    await expect(
+        page.getByRole('dialog', { name: 'Project created' }),
     ).toBeVisible({ timeout: 10000 });
 }

@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub 无法完成请求。"
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "此项目将位于另一个 Git 仓库中",
+        "warningMessage": "你选择的文件夹位于 {{root}} 的 Git 仓库中。",
+        "gitSkipped": "Launcher 不会创建单独的 Git 仓库或初始提交。",
+        "gitLfsSkipped": "不会设置 Git LFS。",
+        "githubSkipped": "不会将项目发布到 GitHub。",
+        "question": "是否继续？",
+        "completionTitle": "项目已创建",
+        "completionLead": "你的项目已在此计算机上准备就绪。",
+        "completionMessage": "此项目位于 {{root}} 的现有 Git 仓库中。",
+        "done": "完成"
+    },
     "otherSettings": {
         "title": "其他设置",
         "codeEditor": {

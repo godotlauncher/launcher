@@ -63,6 +63,37 @@ describe('ProjectPublicationService', () => {
         });
     });
 
+    it('keeps a project without a standalone repository local', async () => {
+        const repositories = {
+            listRepositoryCreationTargets: vi.fn(),
+            withRepositoryCreationAccess: vi.fn(),
+        };
+        const gitPush = { pushMain: vi.fn() };
+        const service = new ProjectPublicationService(
+            repositories as never,
+            gitPush as never,
+        );
+
+        const failed = await service.publish(project, options, false, false);
+
+        expect(failed).toMatchObject({
+            status: 'failed',
+            stage: 'verification',
+            reason: 'local-repository-not-standalone',
+            canRetry: false,
+            canEdit: false,
+        });
+        expect(
+            repositories.listRepositoryCreationTargets,
+        ).not.toHaveBeenCalled();
+        expect(
+            repositories.withRepositoryCreationAccess,
+        ).not.toHaveBeenCalled();
+        expect(gitPush.pushMain).not.toHaveBeenCalled();
+        if (failed.status !== 'failed') throw new Error('Expected failure');
+        await expect(service.retry(failed.attemptId)).resolves.toBeNull();
+    });
+
     it('reuses a confirmed attempt and removes it after publication', async () => {
         const repositories = {
             listRepositoryCreationTargets: vi.fn(async () => ({
@@ -109,7 +140,7 @@ describe('ProjectPublicationService', () => {
             gitPush as never,
         );
 
-        const failed = await service.publish(project, options, true);
+        const failed = await service.publish(project, options, true, true);
         expect(failed).toMatchObject({
             status: 'failed',
             reason: 'remote-created-push-failed',
@@ -163,11 +194,17 @@ describe('ProjectPublicationService', () => {
     it('discards only the selected failed attempt', async () => {
         const service = new ProjectPublicationService({} as never, {} as never);
         const invalidOptions = { ...options, repositoryName: 'invalid/name' };
-        const first = await service.publish(project, invalidOptions, false);
+        const first = await service.publish(
+            project,
+            invalidOptions,
+            false,
+            true,
+        );
         const second = await service.publish(
             { ...project, path: '/projects/other-game' },
             invalidOptions,
             false,
+            true,
         );
         if (first.status !== 'failed' || second.status !== 'failed') {
             throw new Error('Expected failed attempts');
@@ -187,11 +224,17 @@ describe('ProjectPublicationService', () => {
     it('clears every failed attempt during shutdown', async () => {
         const service = new ProjectPublicationService({} as never, {} as never);
         const invalidOptions = { ...options, repositoryName: 'invalid/name' };
-        const first = await service.publish(project, invalidOptions, false);
+        const first = await service.publish(
+            project,
+            invalidOptions,
+            false,
+            true,
+        );
         const second = await service.publish(
             { ...project, path: '/projects/other-game' },
             invalidOptions,
             false,
+            true,
         );
         if (first.status !== 'failed' || second.status !== 'failed') {
             throw new Error('Expected failed attempts');
@@ -244,7 +287,7 @@ describe('ProjectPublicationService', () => {
             gitPush as never,
         );
 
-        const failed = await service.publish(project, options, false);
+        const failed = await service.publish(project, options, false, true);
         expect(failed).toMatchObject({
             status: 'failed',
             reason: 'remote-creation-uncertain',
@@ -324,7 +367,7 @@ describe('ProjectPublicationService', () => {
             gitPush as never,
         );
 
-        const failed = await service.publish(project, options, false);
+        const failed = await service.publish(project, options, false, true);
         expect(failed).toMatchObject({
             status: 'failed',
             reason: 'remote-creation-uncertain',
@@ -415,7 +458,7 @@ describe('ProjectPublicationService', () => {
             repositories as never,
             gitPush as never,
         );
-        const failed = await service.publish(project, options, true);
+        const failed = await service.publish(project, options, true, true);
         if (failed.status !== 'failed') throw new Error('Expected failure');
 
         const checked = await service.retry(
@@ -473,7 +516,7 @@ describe('ProjectPublicationService', () => {
             repositories as never,
             gitPush as never,
         );
-        const failed = await service.publish(project, options, false);
+        const failed = await service.publish(project, options, false, true);
         if (failed.status !== 'failed') throw new Error('Expected failure');
 
         await expect(
@@ -533,7 +576,7 @@ describe('ProjectPublicationService', () => {
             repositories as never,
             gitPush as never,
         );
-        const failed = await service.publish(project, options, false);
+        const failed = await service.publish(project, options, false, true);
         if (failed.status !== 'failed') throw new Error('Expected failure');
 
         await expect(

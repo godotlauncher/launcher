@@ -146,6 +146,23 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Inspects the final planned Create Project path for an enclosing repository.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     */
+    @ProjectsHandler('inspectCreateProjectRepository')
+    inspectCreateProjectRepository(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) {
+        return this.projects.inspectCreateProjectRepository(
+            projectName,
+            overwriteProjectPath,
+        );
+    }
+
+    /**
      * Creates and registers a project.
      *
      * @param name - Display name for the new project.

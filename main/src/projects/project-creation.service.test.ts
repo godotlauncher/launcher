@@ -244,6 +244,45 @@ describe('createProject', () => {
         });
     });
 
+    it.each([
+        ['default path', undefined, path.resolve('/projects/My-Game')],
+        [
+            'selected path',
+            path.resolve('/custom/placeholder'),
+            path.resolve('/custom/My-Game'),
+        ],
+    ])(
+        'inspects the final sanitised %s before creation',
+        async (_label, overwriteProjectPath, expectedPath) => {
+            const inspection = {
+                status: 'inside-work-tree' as const,
+                root: path.dirname(expectedPath),
+                isProjectRoot: false,
+                kind: 'standard' as const,
+            };
+            gitServiceMocks.inspectRepository.mockResolvedValueOnce(inspection);
+            const service = new ProjectCreationService(
+                codeEditorIntegrationService,
+                gitService,
+                gitLfsService,
+                projectsStore,
+            );
+
+            await expect(
+                service.inspectCreateProjectRepository(
+                    '  My Game  ',
+                    overwriteProjectPath,
+                ),
+            ).resolves.toEqual(inspection);
+
+            expect(gitServiceMocks.inspectRepository).toHaveBeenCalledWith(
+                expectedPath,
+            );
+            expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        },
+    );
+
     it('writes project launcher config after creating a project', async () => {
         const result = await createProject(
             'Test Project',

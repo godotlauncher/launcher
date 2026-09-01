@@ -31,6 +31,10 @@ import { useRelease } from '../../hooks/useRelease';
 import { useToolIntegrations } from '../../hooks/useToolIntegrations';
 import { appRoutePaths } from '../../routes';
 import {
+    CreateProjectExistingRepositoryDialog,
+    type ExistingRepositoryConsequences,
+} from './createProject/components/create-project-existing-repository-dialog.component';
+import {
     CreateProjectGitIdentityDialog,
     type GitIdentityDialogPage,
 } from './createProject/components/create-project-git-identity-dialog.component';
@@ -74,6 +78,19 @@ type FailedPublication = Extract<
     { status: 'failed' }
 >;
 
+type ExistingRepositoryDialogState =
+    | {
+          mode: 'confirmation';
+          root: string;
+          consequences: ExistingRepositoryConsequences;
+      }
+    | {
+          mode: 'completion';
+          root: string;
+          consequences: ExistingRepositoryConsequences;
+          project: ProjectDetails;
+      };
+
 type SubViewProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -112,6 +129,14 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const [creating, setCreating] = useState<boolean>(false);
     const [checkingGitIdentity, setCheckingGitIdentity] =
         useState<boolean>(false);
+    const [checkingProjectRepository, setCheckingProjectRepository] =
+        useState<boolean>(false);
+    const [
+        creatingInsideExistingRepository,
+        setCreatingInsideExistingRepository,
+    ] = useState<boolean>(false);
+    const [existingRepositoryDialog, setExistingRepositoryDialog] =
+        useState<ExistingRepositoryDialogState | null>(null);
     const [gitIdentityDialogPage, setGitIdentityDialogPage] =
         useState<GitIdentityDialogPage | null>(null);
     const [gitIdentityName, setGitIdentityName] = useState('');
@@ -188,6 +213,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         launchProject,
         listCreateProjectPublicationTargets,
         checkCreateProjectRepositoryNameAvailability,
+        inspectCreateProjectRepository,
         retryCreateProjectPublication,
         discardCreateProjectPublication,
     } = useProjects();
@@ -470,12 +496,22 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
      * Creates the selected project with an optional Git setup choice.
      *
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
+     * @param existingRepository - Confirmed parent repository and skipped option summary.
      * @returns A promise that resolves after creation handling completes.
      */
     const createSelectedProject = async (
         gitOptions?: CreateProjectGitOptions,
+        existingRepository?: {
+            root: string;
+            consequences: ExistingRepositoryConsequences;
+        },
     ) => {
         setCreating(true);
+        const consequences = existingRepository?.consequences ?? {
+            git: withGit,
+            gitLfs: withGitLfs,
+            github: publishToGitHub,
+        };
         const publicationTarget = publicationTargets.find(
             (target) =>
                 getPublicationTargetValue(target) === selectedPublicationTarget,
@@ -487,11 +523,13 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             codeEditorId,
             withGit,
             overwriteProjectPath ? overwriteSubmitPath : undefined,
-            addCreateProjectGitLfsOptions(
-                gitOptions,
-                withGitLfs ? gitLfsPolicy?.id : undefined,
-            ),
-            publishToGitHub && publicationTarget
+            existingRepository
+                ? undefined
+                : addCreateProjectGitLfsOptions(
+                      gitOptions,
+                      withGitLfs ? gitLfsPolicy?.id : undefined,
+                  ),
+            !existingRepository && publishToGitHub && publicationTarget
                 ? toCreateProjectPublicationOptions(
                       publicationTarget,
                       repositoryName,
@@ -502,20 +540,19 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setCreating(false);
 
         if (result.success && result.projectDetails) {
-            if (result.gitSetup?.status === 'existing-repository') {
-                addAlert(
-                    t(
-                        'projects:editProject.sourceControl.existingRepositoryTitle',
-                    ),
-                    result.gitSetup.isProjectRoot
-                        ? t(
-                              'projects:editProject.sourceControl.existingRepositoryRoot',
-                          )
-                        : t(
-                              'projects:editProject.sourceControl.existingRepositoryParent',
-                              { root: result.gitSetup.root },
-                          ),
-                );
+            const repositoryRoot =
+                result.gitSetup?.status === 'existing-repository' &&
+                !result.gitSetup.isProjectRoot
+                    ? result.gitSetup.root
+                    : existingRepository?.root;
+            if (repositoryRoot) {
+                setExistingRepositoryDialog({
+                    mode: 'completion',
+                    root: repositoryRoot,
+                    consequences,
+                    project: result.projectDetails,
+                });
+                return;
             }
             onOpenChange(false);
             if (editNow) {
@@ -531,6 +568,23 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             result.projectDetails &&
             result.publication?.status === 'failed'
         ) {
+            if (
+                result.publication.reason ===
+                    'local-repository-not-standalone' &&
+                result.gitSetup?.status === 'existing-repository' &&
+                !result.gitSetup.isProjectRoot
+            ) {
+                setPublicationProject(null);
+                setPublicationFailure(null);
+                setError(undefined);
+                setExistingRepositoryDialog({
+                    mode: 'completion',
+                    root: result.gitSetup.root,
+                    consequences,
+                    project: result.projectDetails,
+                });
+                return;
+            }
             setPublicationProject(result.projectDetails);
             setPublicationFailure(result.publication);
             if (
@@ -703,32 +757,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     };
 
     /**
-     * Validates the form and checks Git identity before project creation.
+     * Continues the existing Git identity and project creation flow.
      *
-     * @returns A promise that resolves after preflight or creation completes.
+     * @returns A promise that resolves after identity or creation handling.
      */
-    const onCreateProject = async () => {
-        setError(undefined);
-
-        if (
-            publishToGitHub &&
-            (!selectedPublicationTarget ||
-                !isGitHubRepositoryNameValid(repositoryName) ||
-                (repositoryNameAvailability !== 'available' &&
-                    repositoryNameAvailability !== 'unknown'))
-        ) {
-            return;
-        }
-
-        if (projectName.trim() === '') {
-            setError(t('project.nameRequired'));
-            return;
-        }
-
-        if (!isCreateProjectNameAvailable(projects, projectName)) {
-            return;
-        }
-
+    const continueCreateProject = async () => {
         if (!withGit || !gitAvailable) {
             await createSelectedProject();
             return;
@@ -790,6 +823,100 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setShowGitIdentityValidation(false);
         setGitIdentitySaveError(null);
         setGitIdentityDialogPage('warning');
+    };
+
+    /**
+     * Validates and inspects the final project path before identity or creation.
+     *
+     * @returns A promise that resolves after preflight or creation handling.
+     */
+    const onCreateProject = async () => {
+        setError(undefined);
+
+        if (
+            publishToGitHub &&
+            (!selectedPublicationTarget ||
+                !isGitHubRepositoryNameValid(repositoryName) ||
+                (repositoryNameAvailability !== 'available' &&
+                    repositoryNameAvailability !== 'unknown'))
+        ) {
+            return;
+        }
+
+        if (projectName.trim() === '') {
+            setError(t('project.nameRequired'));
+            return;
+        }
+
+        if (!isCreateProjectNameAvailable(projects, projectName)) {
+            return;
+        }
+
+        setCheckingProjectRepository(true);
+        try {
+            const inspection = await inspectCreateProjectRepository(
+                projectName,
+                overwriteProjectPath ? overwriteSubmitPath : undefined,
+            );
+            if (
+                inspection.status === 'inside-work-tree' &&
+                !inspection.isProjectRoot
+            ) {
+                setExistingRepositoryDialog({
+                    mode: 'confirmation',
+                    root: inspection.root,
+                    consequences: {
+                        git: withGit,
+                        gitLfs: withGitLfs,
+                        github: publishToGitHub,
+                    },
+                });
+                return;
+            }
+        } catch {
+            // Repository inspection is advisory. Main-process creation remains authoritative.
+        } finally {
+            setCheckingProjectRepository(false);
+        }
+
+        await continueCreateProject();
+    };
+
+    /** Cancels the one-submission parent repository confirmation. */
+    const handleCancelExistingRepository = () => {
+        setExistingRepositoryDialog(null);
+    };
+
+    /**
+     * Creates the project once without separate repository, LFS, or publication work.
+     *
+     * @returns A promise that resolves after local project creation.
+     */
+    const handleContinueExistingRepository = async () => {
+        if (existingRepositoryDialog?.mode !== 'confirmation') {
+            return;
+        }
+        const context = existingRepositoryDialog;
+        setExistingRepositoryDialog(null);
+        setCreatingInsideExistingRepository(true);
+        try {
+            await createSelectedProject(undefined, context);
+        } finally {
+            setCreatingInsideExistingRepository(false);
+        }
+    };
+
+    /** Finishes local completion and honours the Edit now choice. */
+    const handleExistingRepositoryDone = () => {
+        if (existingRepositoryDialog?.mode !== 'completion') {
+            return;
+        }
+        const { project } = existingRepositoryDialog;
+        setExistingRepositoryDialog(null);
+        onOpenChange(false);
+        if (editNow) {
+            void launchProject(project);
+        }
     };
 
     /** Initializes the project repository without staging or committing. */
@@ -1059,6 +1186,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setError(undefined);
         setCreating(false);
         setCheckingGitIdentity(false);
+        setCheckingProjectRepository(false);
+        setCreatingInsideExistingRepository(false);
+        setExistingRepositoryDialog(null);
         setGitIdentityDialogPage(null);
         setGitIdentityName('');
         setGitIdentityEmail('');
@@ -1101,10 +1231,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const closeDisabled =
         creating ||
         checkingGitIdentity ||
+        checkingProjectRepository ||
         savingGitIdentityPreset ||
         selectingFolder ||
         gitIdentityDialogPage !== null ||
-        publicationFailure !== null;
+        publicationFailure !== null ||
+        existingRepositoryDialog !== null;
 
     return (
         <>
@@ -1116,7 +1248,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 closeOnEscape={!closeDisabled}
                 trapFocus={
                     gitIdentityDialogPage === null &&
-                    publicationFailure === null
+                    publicationFailure === null &&
+                    existingRepositoryDialog === null
                 }
                 initialFocusRef={inputNameRef}
                 width="min(680px, 100vw)"
@@ -1136,7 +1269,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     <BusyOverlay
                         className="z-60"
                         message={t(
-                            publishToGitHub
+                            publishToGitHub && !creatingInsideExistingRepository
                                 ? 'buttons.publishing'
                                 : 'buttons.creating',
                         )}
@@ -1271,7 +1404,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     <Drawer.Footer className="justify-between">
                         <CreateProjectActions
                             editNow={editNow}
-                            creating={creating || checkingGitIdentity}
+                            creating={
+                                creating ||
+                                checkingGitIdentity ||
+                                checkingProjectRepository
+                            }
                             createDisabled={
                                 loadingTools ||
                                 loadingGitLfsPolicy ||
@@ -1339,6 +1476,18 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     onRetry={() => void handleRetryPublication()}
                     onContinueLocally={() => void handleContinueLocally()}
                     onOpenGitHub={handleOpenPublicationRepository}
+                />
+            )}
+            {existingRepositoryDialog && (
+                <CreateProjectExistingRepositoryDialog
+                    mode={existingRepositoryDialog.mode}
+                    root={existingRepositoryDialog.root}
+                    consequences={existingRepositoryDialog.consequences}
+                    t={t}
+                    returnFocusRef={createButtonRef}
+                    onCancel={handleCancelExistingRepository}
+                    onContinue={() => void handleContinueExistingRepository()}
+                    onDone={handleExistingRepositoryDone}
                 />
             )}
             {gitIdentityDialogPage && (

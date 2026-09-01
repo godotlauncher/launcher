@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub ma setax ilesti t-talba."
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "Dan il-proġett se jkun ġewwa repożitorju Git ieħor",
+        "warningMessage": "Il-folder li għażilt jinsab fir-repożitorju Git f'{{root}}.",
+        "gitSkipped": "Launcher mhux se joħloq repożitorju Git separat jew commit inizjali.",
+        "gitLfsSkipped": "Git LFS mhux se jiġi kkonfigurat.",
+        "githubSkipped": "Il-proġett mhux se jiġi ppubblikat fuq GitHub.",
+        "question": "Trid tkompli?",
+        "completionTitle": "Il-proġett inħoloq",
+        "completionLead": "Il-proġett tiegħek huwa lest fuq dan il-kompjuter.",
+        "completionMessage": "Dan il-proġett jinsab fir-repożitorju Git eżistenti f'{{root}}.",
+        "done": "Lest"
+    },
     "otherSettings": {
         "title": "Settings Oħra",
         "codeEditor": {

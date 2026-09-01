@@ -719,6 +719,33 @@ export async function stubCreateProjectRepositoryNameAvailability(
 }
 
 /**
+ * Stubs the repository inspection used before Create Project begins.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic repository inspection result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectRepositoryInspection(
+    electronApp: ElectronApplication,
+    result: ProjectsResult<'inspectCreateProjectRepository'>,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedResult: ProjectsResult<'inspectCreateProjectRepository'>,
+        ) => {
+            const channel = 'projects.inspectCreateProjectRepository';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
  * Stubs one complete Create Project result without touching the filesystem.
  *
  * @param electronApp - Electron app whose bridge handler should be replaced.

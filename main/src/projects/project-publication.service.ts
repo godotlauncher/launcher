@@ -125,12 +125,14 @@ export class ProjectPublicationService implements OnModuleDestroy {
      * @param project - Exact project returned by local creation.
      * @param options - Renderer-safe owner route and repository name.
      * @param requiresGitLfsUpload - Whether creation configured Git LFS successfully.
+     * @param localRepositoryReady - Whether Launcher created the standalone repository and initial commit.
      * @returns Published or recoverable partial-success outcome.
      */
     async publish(
         project: ProjectDetails,
         options: CreateProjectPublicationOptions,
         requiresGitLfsUpload: boolean,
+        localRepositoryReady: boolean,
     ): Promise<CreateProjectPublicationOutcome> {
         const attempt: PublicationAttempt = {
             id: randomUUID(),
@@ -147,8 +149,15 @@ export class ProjectPublicationService implements OnModuleDestroy {
             canRecreateAfterConfirmedAbsence: true,
             outcome: null,
         };
-        this.attempts.set(attempt.id, attempt);
         logPublicationEvent(attempt, 'attempt-started');
+        if (!localRepositoryReady) {
+            return createFailure(
+                attempt,
+                'verification',
+                'local-repository-not-standalone',
+            );
+        }
+        this.attempts.set(attempt.id, attempt);
         return this.runAttempt(attempt);
     }
 
@@ -627,6 +636,8 @@ function createFailure(
         (reason === 'remote-creation-uncertain'
             ? 'check-and-retry'
             : undefined);
+    const localRepositoryNotStandalone =
+        reason === 'local-repository-not-standalone';
     const outcome = {
         status: 'failed' as const,
         attemptId: attempt.id,
@@ -638,9 +649,11 @@ function createFailure(
             ? { recoveryAction: resolvedRecoveryAction }
             : {}),
         canRetry:
-            resolvedRecoveryAction !== undefined ||
-            reason !== 'recovered-repository-not-empty',
+            !localRepositoryNotStandalone &&
+            (resolvedRecoveryAction !== undefined ||
+                reason !== 'recovered-repository-not-empty'),
         canEdit:
+            !localRepositoryNotStandalone &&
             attempt.repository === null &&
             attempt.recoveredRepository === null &&
             reason !== 'remote-creation-uncertain',

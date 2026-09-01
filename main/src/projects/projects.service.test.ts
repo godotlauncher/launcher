@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     getProjectGitIdentity: vi.fn(),
     getProjectGodotName: vi.fn(),
     getProjectsDetails: vi.fn(),
+    inspectCreateProjectRepository: vi.fn(),
     importProjectEditorSettings: vi.fn(),
     initializeProjectGit: vi.fn(),
     launchProject: vi.fn(),
@@ -110,7 +111,10 @@ describe('ProjectsService', () => {
         inspectRepository: vi.fn(),
         setIdentity: vi.fn(),
     };
-    const projectCreation = { createProject: mocks.createProject };
+    const projectCreation = {
+        createProject: mocks.createProject,
+        inspectCreateProjectRepository: mocks.inspectCreateProjectRepository,
+    };
     const trayAvailability = { id: 'tray' };
     const store = {
         list: vi.fn(),
@@ -178,6 +182,27 @@ describe('ProjectsService', () => {
                 url: 'https://github.com/team/game',
             },
         ]);
+    });
+
+    it('delegates Create Project repository inspection', async () => {
+        const inspection = {
+            status: 'inside-work-tree' as const,
+            root: '/projects/parent',
+            isProjectRoot: false,
+            kind: 'standard' as const,
+        };
+        mocks.inspectCreateProjectRepository.mockResolvedValueOnce(inspection);
+
+        await expect(
+            service.inspectCreateProjectRepository(
+                'Game',
+                '/projects/parent/game',
+            ),
+        ).resolves.toEqual(inspection);
+        expect(mocks.inspectCreateProjectRepository).toHaveBeenCalledWith(
+            'Game',
+            '/projects/parent/game',
+        );
     });
 
     it('delegates create and import transactions to internal services', async () => {
@@ -254,6 +279,12 @@ describe('ProjectsService', () => {
             mocks.createProject.mockResolvedValueOnce({
                 success: true,
                 projectDetails: project,
+                gitSetup: {
+                    status: 'initialized',
+                    root: project.path,
+                    isProjectRoot: true,
+                    kind: 'standard',
+                },
                 gitLfsSetup,
             });
             projectPublication.publish.mockResolvedValueOnce({
@@ -280,9 +311,64 @@ describe('ProjectsService', () => {
                 project,
                 publication,
                 requiresGitLfsUpload,
+                true,
             );
         },
     );
+
+    it('marks an enclosing repository as unavailable for publishing', async () => {
+        const release = { version: '4.5-stable' } as InstalledRelease;
+        const project = { path: '/projects/parent/game' } as ProjectDetails;
+        const publication = {
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'access-target-id',
+            repositoryName: 'game',
+        };
+        mocks.createProject.mockResolvedValueOnce({
+            success: true,
+            projectDetails: project,
+            gitSetup: {
+                status: 'existing-repository',
+                root: '/projects/parent',
+                isProjectRoot: false,
+                kind: 'standard',
+            },
+        });
+        projectPublication.publish.mockResolvedValueOnce({
+            status: 'failed',
+            attemptId: 'attempt-id',
+            stage: 'verification',
+            reason: 'local-repository-not-standalone',
+            canRetry: false,
+            canEdit: false,
+        });
+
+        const result = await service.createProject(
+            'Game',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            undefined,
+            { initialCommit: 'create' },
+            publication,
+        );
+
+        expect(projectPublication.publish).toHaveBeenCalledWith(
+            project,
+            publication,
+            false,
+            false,
+        );
+        expect(result).toMatchObject({
+            success: false,
+            projectDetails: project,
+            publication: {
+                reason: 'local-repository-not-standalone',
+            },
+        });
+    });
 
     it('forwards the exact publication recovery action', async () => {
         const project = { path: '/projects/game' } as ProjectDetails;

@@ -12,6 +12,7 @@ import {
     createFixtureHome,
     ensureMainNavigationReady,
     prepareAppWithStubbedData,
+    stubCreateProjectRepositoryInspection,
     stubCreateProjectRepositoryNameAvailability,
     stubCreateProjectPublicationTargets,
     stubCreateProjectResult,
@@ -61,6 +62,9 @@ test.beforeEach(async () => {
     await stubGlobalGitIdentity(electronApp, { name: '', email: '' });
     await stubCreateProjectRepositoryNameAvailability(electronApp, {
         status: 'available',
+    });
+    await stubCreateProjectRepositoryInspection(electronApp, {
+        status: 'not-a-repository',
     });
 });
 
@@ -379,6 +383,9 @@ test('checks and confirms an exact empty repository after uncertain creation', a
     await expect(
         mainPage.getByText('Name looks available', { exact: true }),
     ).toBeVisible();
+    await mainPage
+        .getByRole('checkbox', { name: 'Edit now' })
+        .uncheck();
     await mainPage.getByTestId('btnCreateProject').click();
 
     const recoveryDialog = mainPage.getByRole('dialog', {
@@ -406,6 +413,149 @@ test('checks and confirms an exact empty repository after uncertain creation', a
 
     await expect(recoveryDialog).toBeHidden();
     await expect(mainPage.getByText('Published to GitHub')).toBeVisible();
+});
+
+test('confirms a parent repository before creating locally once', async () => {
+    const repositoryRoot = path.join(fixtureHome, 'Projects', 'Parent');
+    const projectDetails = {
+        ...SAMPLE_PROJECTS[0],
+        name: 'Parent Repository Game',
+        path: path.join(repositoryRoot, 'Parent-Repository-Game'),
+    };
+    await stubCreateProjectRepositoryInspection(electronApp, {
+        status: 'inside-work-tree',
+        root: repositoryRoot,
+        isProjectRoot: false,
+        kind: 'standard',
+    });
+    await stubRecordedCreateProjectResult(electronApp, {
+        success: true,
+        projectDetails,
+        gitSetup: {
+            status: 'existing-repository',
+            root: repositoryRoot,
+            isProjectRoot: false,
+            kind: 'standard',
+        },
+        publication: { status: 'not-requested' },
+    });
+
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage
+        .getByTestId('inputProjectName')
+        .fill('Parent Repository Game');
+    await mainPage.getByRole('checkbox', { name: 'Use Git LFS' }).check();
+    await mainPage
+        .getByRole('checkbox', { name: 'Publish to GitHub' })
+        .check();
+    await expect(
+        mainPage.getByText('Name looks available', { exact: true }),
+    ).toBeVisible();
+    await mainPage
+        .getByRole('checkbox', { name: 'Edit now' })
+        .uncheck();
+
+    await mainPage.getByTestId('btnCreateProject').click();
+    let dialog = mainPage.getByRole('dialog', {
+        name: 'This project will be inside another Git repository',
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(repositoryRoot);
+    await expect(dialog).toContainText(
+        'Launcher will not create a separate Git repository or initial commit.',
+    );
+    await expect(dialog).toContainText('Git LFS will not be set up.');
+    await expect(dialog).toContainText(
+        'The project will not be published to GitHub.',
+    );
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+
+    await expect(dialog).toBeHidden();
+    await expect(mainPage.getByTestId('inputProjectName')).toHaveValue(
+        'Parent Repository Game',
+    );
+    await expect
+        .poll(async () => await readRecordedCreateProjectCalls(electronApp))
+        .toHaveLength(0);
+
+    await mainPage.getByTestId('btnCreateProject').click();
+    dialog = mainPage.getByRole('dialog', {
+        name: 'This project will be inside another Git repository',
+    });
+    await dialog.getByRole('button', { name: 'Continue' }).click();
+
+    const completion = mainPage.getByRole('dialog', {
+        name: 'Project created',
+    });
+    await expect(completion).toBeVisible();
+    await expect(completion).toContainText(
+        'Your project is ready on this computer.',
+    );
+    const [request] = await readRecordedCreateProjectCalls(electronApp);
+    expect(request[4]).toBe(true);
+    expect(request[6]).toBeUndefined();
+    expect(request[7]).toBeUndefined();
+    await completion.getByRole('button', { name: 'Done' }).click();
+    await expect(mainPage.getByTestId('btnCloseCreateProject')).toBeHidden();
+});
+
+test('shows local completion when a parent repository appears after preflight', async () => {
+    const repositoryRoot = path.join(fixtureHome, 'Projects', 'Late Parent');
+    const projectDetails = {
+        ...SAMPLE_PROJECTS[0],
+        name: 'Late Parent Game',
+        path: path.join(repositoryRoot, 'Late-Parent-Game'),
+    };
+    await stubGlobalGitIdentity(electronApp, {
+        name: 'Mario Debono',
+        email: 'mario@example.com',
+    });
+    await stubCreateProjectResult(electronApp, {
+        success: false,
+        error: 'The project was created locally.',
+        projectDetails,
+        gitSetup: {
+            status: 'existing-repository',
+            root: repositoryRoot,
+            isProjectRoot: false,
+            kind: 'standard',
+        },
+        publication: {
+            status: 'failed',
+            attemptId: 'late-parent-attempt',
+            stage: 'verification',
+            reason: 'local-repository-not-standalone',
+            canRetry: false,
+            canEdit: false,
+        },
+    });
+
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage.getByTestId('inputProjectName').fill('Late Parent Game');
+    await mainPage
+        .getByRole('checkbox', { name: 'Publish to GitHub' })
+        .check();
+    await expect(
+        mainPage.getByText('Name looks available', { exact: true }),
+    ).toBeVisible();
+    await mainPage
+        .getByRole('checkbox', { name: 'Edit now' })
+        .uncheck();
+    await mainPage.getByTestId('btnCreateProject').click();
+
+    const completion = mainPage.getByRole('dialog', {
+        name: 'Project created',
+    });
+    await expect(completion).toBeVisible();
+    await expect(completion).toContainText(repositoryRoot);
+    await expect(
+        mainPage.getByRole('dialog', {
+            name: 'Could not publish to GitHub',
+        }),
+    ).toHaveCount(0);
+    await completion.getByRole('button', { name: 'Done' }).click();
 });
 
 /**
@@ -442,4 +592,54 @@ function createIsolatedLaunchEnvironment(
     };
     delete environment.ELECTRON_RUN_AS_NODE;
     return environment;
+}
+
+/**
+ * Replaces Create Project with a recorder and deterministic result.
+ *
+ * @param app - Electron app whose Create Project handler should be replaced.
+ * @param result - Result returned after recording each request.
+ * @returns A promise that ends when the handler is ready.
+ */
+async function stubRecordedCreateProjectResult(
+    app: ElectronApplication,
+    result: Parameters<typeof stubCreateProjectResult>[1],
+): Promise<void> {
+    await app.evaluate(
+        (
+            { ipcMain },
+            injectedResult: Parameters<typeof stubCreateProjectResult>[1],
+        ) => {
+            const state = globalThis as typeof globalThis & {
+                __parentRepositoryCreateProjectCalls?: unknown[][];
+            };
+            state.__parentRepositoryCreateProjectCalls = [];
+            ipcMain.removeHandler('projects.createProject');
+            ipcMain.handle(
+                'projects.createProject',
+                async (_event, ...args) => {
+                    state.__parentRepositoryCreateProjectCalls?.push(args);
+                    return { success: true, data: injectedResult };
+                },
+            );
+        },
+        result,
+    );
+}
+
+/**
+ * Reads the Create Project requests recorded by the parent-repository test.
+ *
+ * @param app - Electron app that owns the recorder.
+ * @returns Recorded Create Project argument arrays.
+ */
+async function readRecordedCreateProjectCalls(
+    app: ElectronApplication,
+): Promise<unknown[][]> {
+    return await app.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __parentRepositoryCreateProjectCalls?: unknown[][];
+        };
+        return state.__parentRepositoryCreateProjectCalls ?? [];
+    });
 }

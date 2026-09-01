@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub не смог выполнить запрос."
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "Этот проект будет находиться внутри другого репозитория Git",
+        "warningMessage": "Выбранная папка находится внутри репозитория Git по пути {{root}}.",
+        "gitSkipped": "Launcher не создаст отдельный репозиторий Git и начальный коммит.",
+        "gitLfsSkipped": "Git LFS не будет настроен.",
+        "githubSkipped": "Проект не будет опубликован на GitHub.",
+        "question": "Продолжить?",
+        "completionTitle": "Проект создан",
+        "completionLead": "Проект готов на этом компьютере.",
+        "completionMessage": "Этот проект находится внутри существующего репозитория Git по пути {{root}}.",
+        "done": "Готово"
+    },
     "otherSettings": {
         "title": "Другие настройки",
         "codeEditor": {

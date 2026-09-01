@@ -211,6 +211,22 @@ export class ProjectsService {
     }
 
     /**
+     * Inspects the final planned Create Project path for an enclosing repository.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     */
+    inspectCreateProjectRepository(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) {
+        return this.projectCreation.inspectCreateProjectRepository(
+            projectName,
+            overwriteProjectPath,
+        );
+    }
+
+    /**
      * Creates and registers a project.
      *
      * @param name - Display name for the new project.
@@ -258,6 +274,7 @@ export class ProjectsService {
             result.projectDetails,
             publication,
             result.gitLfsSetup?.status === 'configured',
+            result.gitSetup?.status === 'initialized',
         );
         return publicationOutcome.status === 'published'
             ? { ...result, publication: publicationOutcome }

@@ -157,6 +157,7 @@ export type ProjectPublicationFailureReason =
     | 'remote-created-origin-failed'
     | 'remote-created-push-failed'
     | 'remote-created-verification-failed'
+    | 'local-repository-not-standalone'
     | 'local-repository-changed'
     | 'provider-unavailable';
 

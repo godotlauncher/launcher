@@ -105,6 +105,18 @@
             "provider-unavailable": "GitHub isteği tamamlayamadı."
         }
     },
+    "existingRepository": {
+        "confirmationTitle": "Bu proje başka bir Git deposunun içinde olacak",
+        "warningMessage": "Seçtiğiniz klasör {{root}} konumundaki Git deposunun içindedir.",
+        "gitSkipped": "Launcher ayrı bir Git deposu veya ilk commit oluşturmayacak.",
+        "gitLfsSkipped": "Git LFS ayarlanmayacak.",
+        "githubSkipped": "Proje GitHub'da yayımlanmayacak.",
+        "question": "Devam etmek istiyor musunuz?",
+        "completionTitle": "Proje oluşturuldu",
+        "completionLead": "Projeniz bu bilgisayarda hazır.",
+        "completionMessage": "Bu proje {{root}} konumundaki mevcut Git deposunun içindedir.",
+        "done": "Bitti"
+    },
     "otherSettings": {
         "title": "Diğer Ayarlar",
         "codeEditor": {
