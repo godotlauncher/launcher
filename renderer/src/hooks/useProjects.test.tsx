@@ -80,7 +80,7 @@ describe('useProjects', () => {
         const publication: CreateProjectPublicationOptions = {
             providerId: 'github',
             connectionId: 'connection-id',
-            owner: 'godotlauncher',
+            accessTargetId: 'godotlauncher',
             repositoryName: 'captured-project',
         };
         const consent: CreateProjectParentRepositoryConsent = {
@@ -90,7 +90,7 @@ describe('useProjects', () => {
         await hook.createProject(
             'Captured Project',
             release,
-            'gl_compatibility',
+            'COMPATIBLE',
             'vscode',
             true,
             '/workspace/parent/Captured Project',
@@ -102,7 +102,7 @@ describe('useProjects', () => {
         expect(mocks.createProject).toHaveBeenCalledWith(
             'Captured Project',
             release,
-            'gl_compatibility',
+            'COMPATIBLE',
             'vscode',
             true,
             '/workspace/parent/Captured Project',

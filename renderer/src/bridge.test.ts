@@ -303,7 +303,7 @@ describe('renderer bridge', () => {
         await projectsBridge.createProject(
             'Captured Project',
             release,
-            'gl_compatibility',
+            'COMPATIBLE',
             'vscode',
             true,
             '/workspace/parent/Captured Project',
@@ -315,7 +315,7 @@ describe('renderer bridge', () => {
         expect(createProject).toHaveBeenCalledWith(
             'Captured Project',
             release,
-            'gl_compatibility',
+            'COMPATIBLE',
             'vscode',
             true,
             '/workspace/parent/Captured Project',
