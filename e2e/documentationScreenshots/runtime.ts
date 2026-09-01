@@ -1035,6 +1035,37 @@ export async function prepareAppWithStubbedData(
 }
 
 /**
+ * Sets the running Electron app language through the user-facing selector.
+ *
+ * @param page - Electron page whose language should change.
+ * @param languageName - Stable native language name shown in the selector.
+ * @param returnToProjects - Whether to restore the Projects route afterwards.
+ * @returns A promise that ends when the selected language is active.
+ */
+export async function setAppLanguage(
+    page: ElectronPage,
+    languageName: string,
+    returnToProjects = true,
+): Promise<void> {
+    await page.getByTestId('btnSettings').click();
+    await page.getByTestId('tabAppearance').click();
+    const languageSelector = page.getByTestId('selectLanguage');
+    await expect(languageSelector).toBeVisible();
+
+    if (!(await languageSelector.innerText()).includes(languageName)) {
+        await languageSelector.click();
+        await page
+            .getByRole('option', { name: languageName, exact: true })
+            .click();
+        await expect(languageSelector).toContainText(languageName);
+    }
+
+    if (returnToProjects) {
+        await page.getByTestId('btnProjects').click();
+    }
+}
+
+/**
  * Activates the Electron app and its launcher window for keyboard interaction.
  *
  * @param electronApp - The Electron app to activate.

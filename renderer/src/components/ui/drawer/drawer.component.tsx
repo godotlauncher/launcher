@@ -31,6 +31,7 @@ type DrawerProps = {
     closeOnEscape?: boolean;
     trapFocus?: boolean;
     ariaLabel?: string;
+    testId?: string;
     children?: ReactNode;
     className?: string;
     panelClassName?: string;
@@ -360,6 +361,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
     closeOnEscape = true,
     trapFocus = true,
     ariaLabel,
+    testId,
     children,
     className,
     panelClassName,
@@ -535,6 +537,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
             />
             <section
                 ref={panelRef}
+                data-testid={testId}
                 tabIndex={-1}
                 role="dialog"
                 aria-modal="true"

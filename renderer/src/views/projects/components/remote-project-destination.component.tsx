@@ -123,6 +123,7 @@ export function RemoteProjectDestinationFooter({
             <div className="flex items-center gap-3">
                 <button
                     type="button"
+                    data-testid="btnCancelRemoteProjectImport"
                     className="btn btn-ghost"
                     onClick={onCancel}
                 >
@@ -130,6 +131,7 @@ export function RemoteProjectDestinationFooter({
                 </button>
                 <button
                     type="button"
+                    data-testid="btnCloneRemoteProjectRepository"
                     className="btn btn-primary"
                     disabled={!canStart}
                     onClick={onStartImport}

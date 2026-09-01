@@ -18,6 +18,7 @@ import {
     prepareAppWithStubbedData,
     prepareOnboardingScreenshot,
     reloadScreenshotPage,
+    setAppLanguage,
     stubAppData,
 } from './documentationScreenshots/runtime.ts';
 import {
@@ -44,6 +45,7 @@ test.beforeAll(async () => {
         env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
+    await setAppLanguage(mainPage, 'English');
 });
 
 test.afterAll(async () => {
@@ -59,9 +61,7 @@ test('Installs empty actions open the editor drawer and both custom editor workf
     await primaryAction.focus();
     await primaryAction.click();
 
-    const installDrawer = mainPage.getByRole('dialog', {
-        name: 'Install Godot Editor',
-    });
+    const installDrawer = mainPage.getByTestId('installEditorDrawer');
     await expect(mainPage).toHaveURL(/#\/installs\/install$/);
     await expect(installDrawer).toBeVisible();
     await expect(installDrawer.locator(':focus')).toHaveCount(1);
@@ -116,9 +116,7 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await expect.poll(readOpenFileDialogCallCount).toBe(1);
 
     await mainPage.getByTestId('btnEmptyStatePrimary').click();
-    const installDrawer = mainPage.getByRole('dialog', {
-        name: 'Install Godot Editor',
-    });
+    const installDrawer = mainPage.getByTestId('installEditorDrawer');
     await expect(mainPage).toHaveURL(/#\/installs\/install$/);
     await expect(installDrawer).toBeVisible();
 
@@ -834,20 +832,23 @@ test('Preserved clone recovery remains contained with a long locale', async () =
     await setRemoteCloneResolutionStatus('delete-failed');
     await mainPage.getByTestId('btnSettings').click();
     await mainPage.getByTestId('tabAppearance').click();
-    await mainPage.locator('select').selectOption('de');
-    await mainPage.getByTestId('btnProjects').click();
-    await mainPage.getByTestId('btnProjectAdd').click();
-    await mainPage.getByTestId('btnAddProjectPublicGit').click();
-
-    const modal = mainPage.getByRole('dialog');
-    await modal
-        .getByTestId('inputPublicGitRepositoryUrl')
-        .fill('https://example.com/team/games.git');
-    await modal.locator('button.btn-primary').click();
-    await modal.locator('button.btn-primary').click();
-    await modal.getByTestId('btnDeletePreservedClone').click();
+    const languageSelector = mainPage.getByTestId('selectLanguage');
+    const modal = mainPage.getByTestId('remoteProjectImportDialog');
 
     try {
+        await languageSelector.click();
+        await mainPage.getByRole('option', { name: 'Deutsch' }).click();
+        await expect(languageSelector).toContainText('Deutsch');
+        await mainPage.getByTestId('btnProjects').click();
+        await mainPage.getByTestId('btnProjectAdd').click();
+        await mainPage.getByTestId('btnAddProjectPublicGit').click();
+        await modal
+            .getByTestId('inputPublicGitRepositoryUrl')
+            .fill('https://example.com/team/games.git');
+        await modal.getByTestId('btnContinueRemoteProjectImport').click();
+        await modal.getByTestId('btnCloneRemoteProjectRepository').click();
+        await modal.getByTestId('btnDeletePreservedClone').click();
+
         await expect(
             modal.getByText(
                 'Der Klon konnte nicht gelöscht werden. Er wurde beibehalten.',
@@ -873,10 +874,21 @@ test('Preserved clone recovery remains contained with a long locale', async () =
             modalBox.x + modalBox.width,
         );
     } finally {
-        await modal.locator('button.btn-primary').last().click();
+        if (await modal.isVisible()) {
+            const closeModalButton = modal
+                .getByTestId('btnCloseRemoteProjectImport')
+                .or(modal.getByTestId('btnCancelRemoteProjectImport'))
+                .or(modal.getByTestId('btnCompleteRemoteProjectImport'));
+            if (await closeModalButton.isVisible()) {
+                await closeModalButton.click();
+                await expect(modal).not.toBeVisible();
+            }
+        }
         await mainPage.getByTestId('btnSettings').click();
         await mainPage.getByTestId('tabAppearance').click();
-        await mainPage.locator('select').selectOption('en');
+        await languageSelector.click();
+        await mainPage.getByRole('option', { name: 'English' }).click();
+        await expect(languageSelector).toContainText('English');
     }
 });
 
@@ -1134,9 +1146,7 @@ test('Onboarding without an editor finishes inside the install drawer', async ()
     await expect(finishButton).toBeVisible();
     await finishButton.click();
 
-    const installDrawer = mainPage.getByRole('dialog', {
-        name: 'Install Godot Editor',
-    });
+    const installDrawer = mainPage.getByTestId('installEditorDrawer');
     await expect(mainPage).toHaveURL(/#\/installs\/install$/);
     await expect(installDrawer).toBeVisible();
 

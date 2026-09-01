@@ -10,6 +10,7 @@ import {
 import {
     createFixtureHome,
     prepareAppWithStubbedData,
+    setAppLanguage,
     stubCodeEditorIntegrationSettings,
     stubGlobalGitIdentity,
 } from './documentationScreenshots/runtime';
@@ -35,6 +36,7 @@ test.beforeAll(async () => {
         env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
+    await setAppLanguage(mainPage, 'English');
 });
 
 test.beforeEach(async () => {

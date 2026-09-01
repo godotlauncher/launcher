@@ -11,6 +11,7 @@ type DialogProps = {
     title: string;
     children: ReactNode;
     footer?: ReactNode;
+    testId?: string;
     panelClassName?: string;
     initialFocusRef?: RefObject<HTMLElement | null>;
     returnFocusRef?: RefObject<HTMLElement | null>;
@@ -28,6 +29,7 @@ export const Dialog: React.FC<DialogProps> = ({
     title,
     children,
     footer,
+    testId,
     panelClassName = '',
     initialFocusRef,
     returnFocusRef,
@@ -89,6 +91,7 @@ export const Dialog: React.FC<DialogProps> = ({
     return (
         <dialog
             ref={dialogRef}
+            data-testid={testId}
             aria-labelledby={titleId}
             className="fixed z-60 inset-0 m-0 h-full w-full max-h-none max-w-none select-none overflow-hidden border-0 bg-transparent p-0 text-inherit backdrop:bg-transparent"
         >

@@ -831,11 +831,17 @@ export const RemoteProjectImportModal: React.FC<
         );
         footer = (
             <>
-                <button type="button" className="btn btn-ghost" onClick={close}>
+                <button
+                    type="button"
+                    data-testid="btnCancelRemoteProjectImport"
+                    className="btn btn-ghost"
+                    onClick={close}
+                >
                     {t('common:buttons.cancel')}
                 </button>
                 <button
                     type="button"
+                    data-testid="btnContinueRemoteProjectImport"
                     className="btn btn-primary"
                     disabled={!publicUrl.trim() || inspectingPublicUrl}
                     onClick={() => void inspectPublicSource()}
@@ -872,11 +878,17 @@ export const RemoteProjectImportModal: React.FC<
         );
         footer = (
             <>
-                <button type="button" className="btn btn-ghost" onClick={close}>
+                <button
+                    type="button"
+                    data-testid="btnCancelRemoteProjectImport"
+                    className="btn btn-ghost"
+                    onClick={close}
+                >
                     {t('common:buttons.cancel')}
                 </button>
                 <button
                     type="button"
+                    data-testid="btnContinueRemoteProjectImport"
                     className="btn btn-primary"
                     disabled={!selectedRepository || Boolean(repositoryError)}
                     onClick={() => continueWithRepository(selectedRepository)}
@@ -935,6 +947,7 @@ export const RemoteProjectImportModal: React.FC<
         footer = progress?.canCancel ? (
             <button
                 type="button"
+                data-testid="btnCancelRemoteProjectImport"
                 className="btn btn-ghost"
                 onClick={() => void cancelImport()}
             >
@@ -1012,6 +1025,7 @@ export const RemoteProjectImportModal: React.FC<
                     {preservedCloneActions}
                     <button
                         type="button"
+                        data-testid="btnCloseRemoteProjectImport"
                         className="btn btn-primary"
                         disabled={resolvingClone}
                         onClick={close}
@@ -1023,6 +1037,7 @@ export const RemoteProjectImportModal: React.FC<
                 <>
                     <button
                         type="button"
+                        data-testid="btnCancelRemoteProjectImport"
                         className="btn btn-ghost"
                         onClick={() => setStep('cancel-review')}
                     >
@@ -1202,6 +1217,7 @@ export const RemoteProjectImportModal: React.FC<
                 ) : (
                     <button
                         type="button"
+                        data-testid="btnCloseRemoteProjectImport"
                         className="btn btn-ghost"
                         onClick={close}
                     >
@@ -1222,6 +1238,7 @@ export const RemoteProjectImportModal: React.FC<
                 {clonePreservedPath && (
                     <button
                         type="button"
+                        data-testid="btnCloseRemoteProjectImport"
                         className="btn btn-primary"
                         disabled={resolvingClone}
                         onClick={close}
@@ -1236,6 +1253,7 @@ export const RemoteProjectImportModal: React.FC<
     return (
         <Dialog
             icon={sourceIcon}
+            testId="remoteProjectImportDialog"
             title={remoteTitle}
             footer={footer}
             panelClassName="h-[85vh] max-w-5xl"

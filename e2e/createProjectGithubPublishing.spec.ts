@@ -12,6 +12,7 @@ import {
     createFixtureHome,
     ensureMainNavigationReady,
     prepareAppWithStubbedData,
+    setAppLanguage,
     stubCreateProjectRepositoryInspection,
     stubCreateProjectRepositoryNameAvailability,
     stubCreateProjectPublicationTargets,
@@ -40,6 +41,7 @@ test.beforeAll(async () => {
     });
     mainPage = await getMainWindow(electronApp);
     await ensureMainNavigationReady(mainPage, electronApp);
+    await setAppLanguage(mainPage, 'English');
 });
 
 test.beforeEach(async () => {
