@@ -122,6 +122,7 @@ describe('GitPushService', () => {
             env: expect.objectContaining({
                 GIT_CONFIG_NOSYSTEM: '1',
             }),
+            inheritEnv: false,
         });
         expect(stagingInit?.env).not.toHaveProperty(
             'GIT_ALTERNATE_OBJECT_DIRECTORIES',
@@ -134,6 +135,20 @@ describe('GitPushService', () => {
             expect.objectContaining({
                 args: ['update-ref', 'refs/heads/main', MAIN_SHA],
                 cwd: expect.not.stringContaining('/projects/my-game'),
+                inheritEnv: false,
+            }),
+        );
+        expect(execute).toHaveBeenCalledWith(
+            expect.objectContaining({
+                args: [
+                    'remote',
+                    'add',
+                    '--',
+                    'origin',
+                    'https://github.com/godotlauncher/my-game.git',
+                ],
+                cwd: expect.not.stringContaining('/projects/my-game'),
+                inheritEnv: false,
             }),
         );
         expect(execute).toHaveBeenCalledWith(

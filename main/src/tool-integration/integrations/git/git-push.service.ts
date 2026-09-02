@@ -627,6 +627,7 @@ async function prepareStagingRepository(
         ],
         cwd: path.dirname(stagingRepository),
         env: environment,
+        inheritEnv: false,
         timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
     });
     if (!initResult.success) {
@@ -651,6 +652,7 @@ async function prepareStagingRepository(
         const result = await execute({
             ...request,
             env: environment,
+            inheritEnv: false,
             timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
         });
         if (!result.success) {
