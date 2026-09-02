@@ -29,8 +29,20 @@ const GIT_PUSH_TIMEOUT_MS = 30 * 60 * 1_000;
 const GIT_LOCAL_COMMAND_TIMEOUT_MS = 15_000;
 const GIT_REMOTE_REFS_MAX_BYTES = 4 * 1024;
 
-type GitRemoteInspectionResult =
-    | { ok: true; empty: boolean; matchesExpectedMain: boolean }
+type GitRemoteEmptyInspectionResult =
+    | { ok: true; empty: boolean }
+    | { ok: false; reason: GitPushFailureReason };
+
+type GitRemoteMainExpectation =
+    | { state: 'absent' }
+    | { state: 'exact'; commit: string };
+
+type GitRemoteMainInspectionResult =
+    | { ok: true; expectation: GitRemoteMainExpectation }
+    | { ok: false; reason: GitPushFailureReason };
+
+type GitRemoteRefsResult =
+    | { ok: true; refs: string[]; outputExceededLimit: boolean }
     | { ok: false; reason: GitPushFailureReason };
 
 @Injectable()
@@ -79,7 +91,6 @@ export class GitPushService {
                 supportDirectory,
                 environment,
                 request.signal,
-                null,
             );
             return inspection.ok
                 ? { ok: true, empty: inspection.empty }
@@ -95,7 +106,7 @@ export class GitPushService {
     }
 
     /**
-     * Adds or reuses one matching origin, pushes main, and verifies upstream.
+     * Pushes main, adds or reuses one matching origin, and verifies upstream.
      *
      * @param request - Exact project, remote, credential, and cancellation data.
      * @returns The verified token-free origin or one safe failure.
@@ -145,7 +156,6 @@ export class GitPushService {
         let pushCredentialSession:
             | Awaited<ReturnType<GitCredentialSessionService['openBound']>>
             | undefined;
-        let recoveredMainLease: string | null = null;
         try {
             const hooksDirectory = path.join(supportDirectory, 'hooks');
             await fs.mkdir(hooksDirectory, { mode: 0o700 });
@@ -176,48 +186,24 @@ export class GitPushService {
             ) {
                 return { ok: false, reason: 'local-repository-changed' };
             }
-            let networkEnvironment: NodeJS.ProcessEnv | undefined;
-            if (request.requiresEmptyRemote || request.requiresGitLfsUpload) {
-                networkCredentialSession = await this.credentials.open(
-                    request.credential,
-                );
-                networkEnvironment = createGitNetworkEnvironment(
-                    configPaths,
-                    networkCredentialSession.environment,
-                );
+            networkCredentialSession = await this.credentials.open(
+                request.credential,
+            );
+            const networkEnvironment = createGitNetworkEnvironment(
+                configPaths,
+                networkCredentialSession.environment,
+            );
+            const remoteMain = await this.inspectRemoteMain(
+                canonicalUrl,
+                supportDirectory,
+                networkEnvironment,
+                request.signal,
+                expectedMainSha,
+            );
+            if (!remoteMain.ok) {
+                return remoteMain;
             }
-            if (request.requiresEmptyRemote && networkEnvironment) {
-                const remote = await this.inspectRemoteEmpty(
-                    canonicalUrl,
-                    supportDirectory,
-                    networkEnvironment,
-                    request.signal,
-                    expectedMainSha,
-                );
-                if (!remote.ok) {
-                    return remote;
-                }
-                if (!remote.empty && !remote.matchesExpectedMain) {
-                    return { ok: false, reason: 'remote-not-empty' };
-                }
-                recoveredMainLease = remote.matchesExpectedMain
-                    ? expectedMainSha
-                    : '';
-            }
-            if (origin.status === 'missing') {
-                if (!(await this.isExactStandardRoot(request.projectPath))) {
-                    return { ok: false, reason: 'local-repository-changed' };
-                }
-                const addResult = await execute({
-                    args: ['remote', 'add', '--', 'origin', canonicalUrl],
-                    cwd: request.projectPath,
-                    timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
-                });
-                if (!addResult.success) {
-                    return { ok: false, reason: 'origin-failed' };
-                }
-            }
-            if (request.requiresGitLfsUpload && networkEnvironment) {
+            if (request.requiresGitLfsUpload) {
                 let bufferedError = '';
                 const lfsResult = await this.tools.executeStreaming(
                     GIT_LFS_TOOL_ID,
@@ -276,11 +262,7 @@ export class GitPushService {
                     '-c',
                     `core.hooksPath=${hooksDirectory}`,
                     'push',
-                    ...(recoveredMainLease !== null
-                        ? [
-                              `--force-with-lease=refs/heads/main:${recoveredMainLease}`,
-                          ]
-                        : []),
+                    createMainLease(remoteMain.expectation),
                     '--no-verify',
                     'origin',
                     'refs/heads/main:refs/heads/main',
@@ -294,10 +276,7 @@ export class GitPushService {
                 },
             });
             if (!pushResult.success) {
-                if (
-                    recoveredMainLease !== null &&
-                    classifyPushFailure(bufferedError) === 'rejected'
-                ) {
+                if (classifyPushFailure(bufferedError) === 'stale-info') {
                     return { ok: false, reason: 'remote-not-empty' };
                 }
                 return {
@@ -314,6 +293,16 @@ export class GitPushService {
                     expectedMainSha
             ) {
                 return { ok: false, reason: 'local-repository-changed' };
+            }
+            if (origin.status === 'missing') {
+                const addResult = await execute({
+                    args: ['remote', 'add', '--', 'origin', canonicalUrl],
+                    cwd: request.projectPath,
+                    timeoutMs: GIT_LOCAL_COMMAND_TIMEOUT_MS,
+                });
+                if (!addResult.success) {
+                    return { ok: false, reason: 'origin-failed' };
+                }
             }
             const verifiedOrigin = await readOrigin(
                 execute,
@@ -428,16 +417,91 @@ export class GitPushService {
      * @param supportDirectory - Attempt-owned directory outside the repository.
      * @param environment - Isolated Git network environment.
      * @param signal - Cancellation signal for the remote operation.
-     * @param expectedMainSha - Optional local main object ID accepted as an idempotent retry.
-     * @returns Whether the remote is empty or contains only the expected main ref.
+     * @returns Whether the remote has no refs.
      */
     private async inspectRemoteEmpty(
         canonicalUrl: string,
         supportDirectory: string,
         environment: NodeJS.ProcessEnv,
         signal: AbortSignal,
-        expectedMainSha: string | null,
-    ): Promise<GitRemoteInspectionResult> {
+    ): Promise<GitRemoteEmptyInspectionResult> {
+        const result = await this.readRemoteRefs(
+            canonicalUrl,
+            supportDirectory,
+            environment,
+            signal,
+        );
+        return result.ok
+            ? {
+                  ok: true,
+                  empty:
+                      !result.outputExceededLimit && result.refs.length === 0,
+              }
+            : result;
+    }
+
+    /**
+     * Reads only remote main and derives the exact lease for one guarded push.
+     *
+     * @param canonicalUrl - Validated token-free HTTPS clone URL.
+     * @param supportDirectory - Attempt-owned directory outside the repository.
+     * @param environment - Isolated Git network environment.
+     * @param signal - Cancellation signal for the remote operation.
+     * @param expectedMainSha - Captured local main object ID accepted for an idempotent retry.
+     * @returns An absent or exact-main expectation, or one safe failure.
+     */
+    private async inspectRemoteMain(
+        canonicalUrl: string,
+        supportDirectory: string,
+        environment: NodeJS.ProcessEnv,
+        signal: AbortSignal,
+        expectedMainSha: string,
+    ): Promise<GitRemoteMainInspectionResult> {
+        const result = await this.readRemoteRefs(
+            canonicalUrl,
+            supportDirectory,
+            environment,
+            signal,
+            'refs/heads/main',
+        );
+        if (!result.ok) {
+            return result;
+        }
+        if (result.outputExceededLimit) {
+            return { ok: false, reason: 'remote-not-empty' };
+        }
+        if (result.refs.length === 0) {
+            return { ok: true, expectation: { state: 'absent' } };
+        }
+        if (
+            result.refs.length === 1 &&
+            result.refs[0] === `${expectedMainSha}\trefs/heads/main`
+        ) {
+            return {
+                ok: true,
+                expectation: { state: 'exact', commit: expectedMainSha },
+            };
+        }
+        return { ok: false, reason: 'remote-not-empty' };
+    }
+
+    /**
+     * Reads bounded remote refs through one isolated credential session.
+     *
+     * @param canonicalUrl - Validated token-free HTTPS clone URL.
+     * @param supportDirectory - Attempt-owned directory outside the repository.
+     * @param environment - Isolated Git network environment.
+     * @param signal - Cancellation signal for the remote operation.
+     * @param patterns - Optional exact ref patterns passed after the remote URL.
+     * @returns Normalised ref lines, or one safe failure.
+     */
+    private async readRemoteRefs(
+        canonicalUrl: string,
+        supportDirectory: string,
+        environment: NodeJS.ProcessEnv,
+        signal: AbortSignal,
+        ...patterns: string[]
+    ): Promise<GitRemoteRefsResult> {
         let bufferedOutput = '';
         let outputExceededLimit = false;
         let bufferedError = '';
@@ -448,6 +512,7 @@ export class GitPushService {
                 '--refs',
                 '--',
                 canonicalUrl,
+                ...patterns,
             ],
             cwd: supportDirectory,
             env: environment,
@@ -479,21 +544,22 @@ export class GitPushService {
         }
         const refs = bufferedOutput
             .split(/\r?\n/u)
-            .map((line) => line.trim())
+            .map((line) => line.trim().toLowerCase())
             .filter(Boolean);
-        const expectedLine = expectedMainSha
-            ? `${expectedMainSha}\trefs/heads/main`
-            : null;
-        return {
-            ok: true,
-            empty: !outputExceededLimit && refs.length === 0,
-            matchesExpectedMain:
-                !outputExceededLimit &&
-                expectedLine !== null &&
-                refs.length === 1 &&
-                refs[0]?.toLowerCase() === expectedLine,
-        };
+        return { ok: true, refs, outputExceededLimit };
     }
+}
+
+/**
+ * Creates the only force-with-lease form allowed for publication.
+ *
+ * @param expectation - Captured absent or exact remote main state.
+ * @returns Explicit refs/heads/main lease argument.
+ */
+function createMainLease(expectation: GitRemoteMainExpectation): string {
+    return `--force-with-lease=refs/heads/main:${
+        expectation.state === 'exact' ? expectation.commit : ''
+    }`;
 }
 
 /**
@@ -751,6 +817,7 @@ type GitPushDiagnostic =
     | 'credential-helper-failed'
     | 'network-failed'
     | 'rejected'
+    | 'stale-info'
     | 'unknown';
 
 /**
@@ -793,6 +860,9 @@ function classifyPushFailure(value: string): GitPushDiagnostic {
         /(?:authentication failed|access denied|http (?:401|403))/iu.test(value)
     ) {
         return 'authentication-denied';
+    }
+    if (/\(stale info\)/iu.test(value)) {
+        return 'stale-info';
     }
     if (/(?:rejected|non-fast-forward|fetch first)/iu.test(value)) {
         return 'rejected';

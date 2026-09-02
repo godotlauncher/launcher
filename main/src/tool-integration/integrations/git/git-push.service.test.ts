@@ -56,6 +56,10 @@ describe('GitPushService', () => {
                 stderr: '',
             })),
         };
+        const networkCredentialSession = {
+            environment: { GIT_ASKPASS: '/tmp/askpass' },
+            close: vi.fn(async () => undefined),
+        };
         const credentialSession = {
             environment: {
                 GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION: 'bound-session-ref',
@@ -64,7 +68,7 @@ describe('GitPushService', () => {
             close: vi.fn(async () => undefined),
         };
         const credentials = {
-            open: vi.fn(),
+            open: vi.fn(async () => networkCredentialSession),
             openBound: vi.fn(async () => credentialSession),
         };
         const git = {
@@ -85,7 +89,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: false,
-                requiresEmptyRemote: false,
                 credential: {
                     username: 'x-access-token',
                     password: 'secret-token',
@@ -159,13 +162,18 @@ describe('GitPushService', () => {
         expect(JSON.stringify(execute.mock.calls)).not.toContain(
             'secret-token',
         );
-        expect(tools.executeStreaming).toHaveBeenCalledOnce();
-        const [toolId, request] = tools.executeStreaming.mock.calls[0];
+        expect(tools.executeStreaming).toHaveBeenCalledTimes(2);
+        const [toolId, request] = tools.executeStreaming.mock.calls[1];
         expect(toolId).toBe('git');
         expect(request.cwd).not.toBe('/projects/my-game');
         expect(request.args).toContain('--no-verify');
+        expect(request.args).toContain('--force-with-lease=refs/heads/main:');
         expect(request.args).toContain('refs/heads/main:refs/heads/main');
         expect(request.args).not.toContain('--set-upstream');
+        expect(request.args).not.toContain('--force');
+        expect(request.args).not.toContain('--mirror');
+        expect(request.args).not.toContain('--all');
+        expect(request.args).not.toContain('--tags');
         expect(request.env).not.toHaveProperty(
             'GIT_ALTERNATE_OBJECT_DIRECTORIES',
         );
@@ -195,7 +203,8 @@ describe('GitPushService', () => {
             'secret-token',
         );
         expect(credentialSession.close).toHaveBeenCalledOnce();
-        expect(credentials.open).not.toHaveBeenCalled();
+        expect(networkCredentialSession.close).toHaveBeenCalledOnce();
+        expect(credentials.open).toHaveBeenCalledOnce();
         expect(credentials.openBound).toHaveBeenCalledWith(
             expect.objectContaining({ password: 'secret-token' }),
             'https://github.com/godotlauncher/my-game.git',
@@ -208,6 +217,14 @@ describe('GitPushService', () => {
             credentialSession.close.mock.invocationCallOrder[0],
         ).toBeLessThan(
             execute.mock.invocationCallOrder[reconciliationIndex] ?? 0,
+        );
+        const originAddIndex = execute.mock.calls.findIndex(
+            ([executionRequest]) =>
+                executionRequest.cwd === '/projects/my-game' &&
+                executionRequest.args[0] === 'remote',
+        );
+        expect(tools.executeStreaming.mock.invocationCallOrder[1]).toBeLessThan(
+            execute.mock.invocationCallOrder[originAddIndex] ?? 0,
         );
     });
 
@@ -246,7 +263,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: false,
-                requiresEmptyRemote: false,
                 credential: { username: 'x-access-token', password: 'secret' },
                 signal: new AbortController().signal,
             }),
@@ -291,17 +307,25 @@ describe('GitPushService', () => {
                 helper: "!exec '/tmp/credential-helper'",
                 close: vi.fn(async () => undefined),
             };
+            const networkCredentialSession = {
+                environment: { GIT_ASKPASS: '/tmp/askpass' },
+                close: vi.fn(async () => undefined),
+            };
             const service = new GitPushService(
                 {
                     createExecutionSession: vi.fn(async () => execute),
-                    executeStreaming: vi.fn(async () => ({
-                        success: false,
-                        reason,
-                        exitCode: null,
-                    })),
+                    executeStreaming: vi.fn(async (_toolId, request) =>
+                        request.args.includes('ls-remote')
+                            ? { success: true, exitCode: 0 }
+                            : {
+                                  success: false,
+                                  reason,
+                                  exitCode: null,
+                              },
+                    ),
                 } as never,
                 {
-                    open: vi.fn(),
+                    open: vi.fn(async () => networkCredentialSession),
                     openBound: vi.fn(async () => boundCredentialSession),
                 } as never,
                 {
@@ -319,7 +343,6 @@ describe('GitPushService', () => {
                     canonicalUrl:
                         'https://github.com/godotlauncher/my-game.git',
                     requiresGitLfsUpload: false,
-                    requiresEmptyRemote: false,
                     credential: {
                         username: 'x-access-token',
                         password: 'secret',
@@ -328,6 +351,7 @@ describe('GitPushService', () => {
                 }),
             ).resolves.toEqual({ ok: false, reason: 'push-failed' });
             expect(boundCredentialSession.close).toHaveBeenCalledOnce();
+            expect(networkCredentialSession.close).toHaveBeenCalledOnce();
         },
     );
 
@@ -372,7 +396,7 @@ describe('GitPushService', () => {
         expect(credentialSession.close).toHaveBeenCalledOnce();
     });
 
-    it('refuses a recovered non-empty remote before origin or LFS mutation', async () => {
+    it('refuses a different remote main before origin or LFS mutation', async () => {
         const execute = vi.fn(async ({ args }) => {
             if (args[0] === 'branch') {
                 return { success: true, stdout: 'main\n', stderr: '' };
@@ -392,7 +416,7 @@ describe('GitPushService', () => {
             return { success: true, stdout: '', stderr: '' };
         });
         const executeStreaming = vi.fn(async (_toolId, request) => {
-            request.onStdout?.('abc123\trefs/heads/main\n');
+            request.onStdout?.(`${'b'.repeat(40)}\trefs/heads/main\n`);
             return { success: true, exitCode: 0 };
         });
         const service = new GitPushService(
@@ -420,7 +444,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: true,
-                requiresEmptyRemote: true,
                 credential: { username: 'x-access-token', password: 'secret' },
                 signal: new AbortController().signal,
             }),
@@ -507,7 +530,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: false,
-                requiresEmptyRemote: true,
                 credential: { username: 'x-access-token', password: 'secret' },
                 signal: new AbortController().signal,
             }),
@@ -520,7 +542,138 @@ describe('GitPushService', () => {
         );
     });
 
-    it('uploads Git LFS objects through pinned configuration before pushing Git', async () => {
+    it('refuses an exact remote main that changes before the push', async () => {
+        const execute = createSuccessfulLocalGitExecution();
+        const executeStreaming = vi.fn(async (_toolId, request) => {
+            if (request.args.includes('ls-remote')) {
+                request.onStdout?.(`${MAIN_SHA}\trefs/heads/main\n`);
+                return { success: true, exitCode: 0 };
+            }
+            request.onStderr?.('[rejected] main -> main (stale info)');
+            return {
+                success: false,
+                reason: 'command-failed',
+                exitCode: 1,
+            };
+        });
+        const service = createPushService(execute, executeStreaming);
+
+        await expect(pushTestMain(service)).resolves.toEqual({
+            ok: false,
+            reason: 'remote-not-empty',
+        });
+        const pushRequest = executeStreaming.mock.calls.find(([, request]) =>
+            request.args.includes('push'),
+        )?.[1];
+        expect(pushRequest?.args).toContain(
+            `--force-with-lease=refs/heads/main:${MAIN_SHA}`,
+        );
+    });
+
+    it('reports a generic protected-branch rejection as a push failure', async () => {
+        const execute = createSuccessfulLocalGitExecution();
+        const executeStreaming = vi.fn(async (_toolId, request) => {
+            if (request.args.includes('ls-remote')) {
+                return { success: true, exitCode: 0 };
+            }
+            request.onStderr?.(
+                '[remote rejected] main -> main (protected branch hook declined)',
+            );
+            return {
+                success: false,
+                reason: 'command-failed',
+                exitCode: 1,
+            };
+        });
+        const service = createPushService(execute, executeStreaming);
+
+        await expect(pushTestMain(service)).resolves.toEqual({
+            ok: false,
+            reason: 'push-failed',
+        });
+    });
+
+    it('keeps concurrent non-main refs outside inspection and the push refspec', async () => {
+        const execute = createSuccessfulLocalGitExecution();
+        const executeStreaming = vi.fn(async () => ({
+            success: true,
+            exitCode: 0,
+        }));
+        const service = createPushService(execute, executeStreaming);
+
+        await expect(pushTestMain(service)).resolves.toMatchObject({
+            ok: true,
+        });
+        const inspectionRequest = executeStreaming.mock.calls[0]?.[1];
+        expect(inspectionRequest?.args.slice(-2)).toEqual([
+            'https://github.com/godotlauncher/my-game.git',
+            'refs/heads/main',
+        ]);
+        const pushRequest = executeStreaming.mock.calls[1]?.[1];
+        expect(pushRequest?.args).toContain('refs/heads/main:refs/heads/main');
+        expect(pushRequest?.args).not.toContain('--mirror');
+        expect(pushRequest?.args).not.toContain('--all');
+        expect(pushRequest?.args).not.toContain('--tags');
+        expect(
+            pushRequest?.args.some(
+                (argument) =>
+                    argument.startsWith('refs/tags/') ||
+                    (argument.startsWith('refs/heads/') &&
+                        argument !== 'refs/heads/main:refs/heads/main'),
+            ),
+        ).toBe(false);
+    });
+
+    it('reports origin failure only after the guarded push succeeds', async () => {
+        const execute = vi.fn(async ({ args, cwd }) => {
+            if (args[0] === 'branch') {
+                return { success: true, stdout: 'main\n', stderr: '' };
+            }
+            if (args[0] === 'rev-parse' && args[1] === '--verify') {
+                return { success: true, stdout: `${MAIN_SHA}\n`, stderr: '' };
+            }
+            if (args[0] === 'config') {
+                return {
+                    success: false,
+                    reason: 'command-failed',
+                    exitCode: 1,
+                    stdout: '',
+                    stderr: '',
+                };
+            }
+            if (args[0] === 'remote' && cwd === '/projects/my-game') {
+                return {
+                    success: false,
+                    reason: 'command-failed',
+                    exitCode: 1,
+                    stdout: '',
+                    stderr: '',
+                };
+            }
+            return { success: true, stdout: '', stderr: '' };
+        });
+        const executeStreaming = vi.fn(async () => ({
+            success: true,
+            exitCode: 0,
+        }));
+        const service = createPushService(execute, executeStreaming);
+
+        await expect(pushTestMain(service)).resolves.toEqual({
+            ok: false,
+            reason: 'origin-failed',
+        });
+        const originAddIndex = execute.mock.calls.findIndex(
+            ([request]) =>
+                request.cwd === '/projects/my-game' &&
+                request.args[0] === 'remote',
+        );
+        expect(executeStreaming).toHaveBeenCalledTimes(2);
+        expect(executeStreaming.mock.invocationCallOrder[1]).toBeLessThan(
+            execute.mock.invocationCallOrder[originAddIndex] ?? 0,
+        );
+    });
+
+    it('accepts exact remote main for an idempotent retry', async () => {
         const execute = vi.fn(async ({ args }) => {
             if (args[0] === 'branch') {
                 return { success: true, stdout: 'main\n', stderr: '' };
@@ -584,7 +737,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: true,
-                requiresEmptyRemote: true,
                 credential: {
                     username: 'x-access-token',
                     password: 'secret-token',
@@ -636,22 +788,40 @@ describe('GitPushService', () => {
     });
 
     it('stops before Git push when the controlled Git LFS upload fails', async () => {
-        const execute = vi.fn(async ({ args }) => {
+        let originAdded = false;
+        const execute = vi.fn(async ({ args, cwd }) => {
             if (args[0] === 'branch') {
                 return { success: true, stdout: 'main\n', stderr: '' };
             }
             if (args[0] === 'rev-parse' && args[1] === '--verify') {
                 return { success: true, stdout: `${MAIN_SHA}\n`, stderr: '' };
             }
-            return {
-                success: true,
-                stdout: 'https://github.com/godotlauncher/my-game.git\n',
-                stderr: '',
-            };
+            if (args[0] === 'config') {
+                return originAdded
+                    ? {
+                          success: true,
+                          stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                          stderr: '',
+                      }
+                    : {
+                          success: false,
+                          reason: 'command-failed',
+                          exitCode: 1,
+                          stdout: '',
+                          stderr: '',
+                      };
+            }
+            if (args[0] === 'remote' && cwd === '/projects/my-game') {
+                originAdded = true;
+            }
+            return { success: true, stdout: '', stderr: '' };
         });
         const tools = {
             createExecutionSession: vi.fn(async () => execute),
             executeStreaming: vi.fn(async (_toolId, request) => {
+                if (request.args.includes('ls-remote')) {
+                    return { success: true, exitCode: 0 };
+                }
                 request.onStderr?.('authentication failed');
                 return {
                     success: false,
@@ -681,7 +851,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: true,
-                requiresEmptyRemote: false,
                 credential: { username: 'x-access-token', password: 'secret' },
                 signal: new AbortController().signal,
             }),
@@ -689,8 +858,16 @@ describe('GitPushService', () => {
             ok: false,
             reason: 'authentication-failed',
         });
-        expect(tools.executeStreaming).toHaveBeenCalledOnce();
-        expect(tools.executeStreaming.mock.calls[0][0]).toBe('git-lfs');
+        expect(tools.executeStreaming).toHaveBeenCalledTimes(2);
+        expect(tools.executeStreaming.mock.calls[0][0]).toBe('git');
+        expect(tools.executeStreaming.mock.calls[1][0]).toBe('git-lfs');
+        expect(
+            execute.mock.calls.some(
+                ([request]) =>
+                    request.cwd === '/projects/my-game' &&
+                    request.args[0] === 'remote',
+            ),
+        ).toBe(false);
         expect(credentialSession.close).toHaveBeenCalledOnce();
     });
 
@@ -743,7 +920,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: false,
-                requiresEmptyRemote: false,
                 credential: { username: 'x-access-token', password: 'secret' },
                 signal: new AbortController().signal,
             }),
@@ -785,6 +961,10 @@ describe('GitPushService', () => {
             helper: "!exec '/tmp/credential-helper'",
             close: vi.fn(async () => undefined),
         };
+        const networkCredentialSession = {
+            environment: { GIT_ASKPASS: '/tmp/askpass' },
+            close: vi.fn(async () => undefined),
+        };
         const service = new GitPushService(
             {
                 createExecutionSession: vi.fn(async () => execute),
@@ -794,7 +974,7 @@ describe('GitPushService', () => {
                 })),
             } as never,
             {
-                open: vi.fn(),
+                open: vi.fn(async () => networkCredentialSession),
                 openBound: vi.fn(async () => credentialSession),
             } as never,
             {
@@ -811,7 +991,6 @@ describe('GitPushService', () => {
                 projectPath: '/projects/my-game',
                 canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
                 requiresGitLfsUpload: false,
-                requiresEmptyRemote: false,
                 credential: { username: 'x-access-token', password: 'secret' },
                 signal: new AbortController().signal,
             }),
@@ -830,6 +1009,79 @@ describe('GitPushService', () => {
         expect(credentialSession.close).toHaveBeenCalledOnce();
     });
 });
+
+/** Creates a local Git execution mock with a matching origin and stable main. */
+function createSuccessfulLocalGitExecution() {
+    return vi.fn(async ({ args }) => {
+        if (args[0] === 'branch') {
+            return { success: true, stdout: 'main\n', stderr: '' };
+        }
+        if (args[0] === 'rev-parse' && args[1] === '--verify') {
+            return { success: true, stdout: `${MAIN_SHA}\n`, stderr: '' };
+        }
+        if (args[0] === 'config') {
+            return {
+                success: true,
+                stdout: 'https://github.com/godotlauncher/my-game.git\n',
+                stderr: '',
+            };
+        }
+        return { success: true, stdout: 'origin/main\n', stderr: '' };
+    });
+}
+
+/**
+ * Creates a push service with isolated credential sessions.
+ *
+ * @param execute - Local Git execution mock.
+ * @param executeStreaming - Network execution mock.
+ * @returns Configured Git push service.
+ */
+function createPushService(
+    execute: ReturnType<typeof vi.fn>,
+    executeStreaming: ReturnType<typeof vi.fn>,
+): GitPushService {
+    return new GitPushService(
+        {
+            createExecutionSession: vi.fn(async () => execute),
+            executeStreaming,
+        } as never,
+        {
+            open: vi.fn(async () => ({
+                environment: { GIT_ASKPASS: '/tmp/askpass' },
+                close: vi.fn(async () => undefined),
+            })),
+            openBound: vi.fn(async () => ({
+                environment: {},
+                helper: "!exec '/tmp/credential-helper'",
+                close: vi.fn(async () => undefined),
+            })),
+        } as never,
+        {
+            inspectRepository: vi.fn(async () => ({
+                status: 'inside-work-tree',
+                isProjectRoot: true,
+                kind: 'standard',
+            })),
+        } as never,
+    );
+}
+
+/**
+ * Pushes the standard test project.
+ *
+ * @param service - Configured service under test.
+ * @returns Guarded push outcome.
+ */
+function pushTestMain(service: GitPushService) {
+    return service.pushMain({
+        projectPath: '/projects/my-game',
+        canonicalUrl: 'https://github.com/godotlauncher/my-game.git',
+        requiresGitLfsUpload: false,
+        credential: { username: 'x-access-token', password: 'secret' },
+        signal: new AbortController().signal,
+    });
+}
 
 /**
  * Reads command-scoped Git configuration from one process environment.

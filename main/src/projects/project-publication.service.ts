@@ -39,7 +39,6 @@ type PublicationAttempt = {
     ownerLogin: string | null;
     repository: RepositoryCreationRepository | null;
     recoveredRepository: RepositoryCreationRepository | null;
-    requiresEmptyRemote: boolean;
     canRecreateAfterConfirmedAbsence: boolean;
     outcome: Extract<
         CreateProjectPublicationOutcome,
@@ -146,7 +145,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
             ownerLogin: null,
             repository: null,
             recoveredRepository: null,
-            requiresEmptyRemote: false,
             canRecreateAfterConfirmedAbsence: true,
             outcome: null,
             inFlight: null,
@@ -321,7 +319,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
                     projectPath: attempt.project.path,
                     canonicalUrl: creation.repository.cloneUrl,
                     requiresGitLfsUpload: attempt.requiresGitLfsUpload,
-                    requiresEmptyRemote: attempt.requiresEmptyRemote,
                     credential: creation.gitCredential,
                     signal: AbortSignal.timeout(30 * 60 * 1_000),
                 });
@@ -470,7 +467,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
         }
         attempt.repository = result.recovery.repository;
         attempt.recoveredRepository = null;
-        attempt.requiresEmptyRemote = true;
         logPublicationEvent(attempt, 'recovery-repository-confirmed');
         return this.pushConfirmedRepository(attempt);
     }
@@ -500,7 +496,6 @@ export class ProjectPublicationService implements OnModuleDestroy {
                     projectPath: attempt.project.path,
                     canonicalUrl: repository.cloneUrl,
                     requiresGitLfsUpload: attempt.requiresGitLfsUpload,
-                    requiresEmptyRemote: attempt.requiresEmptyRemote,
                     credential,
                     signal: AbortSignal.timeout(30 * 60 * 1_000),
                 }),

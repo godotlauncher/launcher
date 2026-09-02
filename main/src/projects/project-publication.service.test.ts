@@ -171,21 +171,18 @@ describe('ProjectPublicationService', () => {
             1,
             expect.objectContaining({
                 requiresGitLfsUpload: true,
-                requiresEmptyRemote: false,
             }),
         );
         expect(gitPush.pushMain).toHaveBeenNthCalledWith(
             2,
             expect.objectContaining({
                 requiresGitLfsUpload: true,
-                requiresEmptyRemote: false,
             }),
         );
         expect(gitPush.pushMain).toHaveBeenNthCalledWith(
             3,
             expect.objectContaining({
                 requiresGitLfsUpload: true,
-                requiresEmptyRemote: false,
             }),
         );
         await expect(service.retry(failed.attemptId)).resolves.toBeNull();
@@ -306,7 +303,7 @@ describe('ProjectPublicationService', () => {
         });
         expect(withRepositoryCreationAccess).toHaveBeenCalledTimes(2);
         expect(gitPush.pushMain).toHaveBeenCalledWith(
-            expect.objectContaining({ requiresEmptyRemote: false }),
+            expect.objectContaining({ requiresGitLfsUpload: false }),
         );
     });
 
@@ -563,7 +560,6 @@ describe('ProjectPublicationService', () => {
         expect(recoverRepositoryCreation).toHaveBeenCalledTimes(2);
         expect(gitPush.pushMain).toHaveBeenCalledWith(
             expect.objectContaining({
-                requiresEmptyRemote: true,
                 requiresGitLfsUpload: true,
             }),
         );

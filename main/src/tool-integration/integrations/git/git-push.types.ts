@@ -12,7 +12,6 @@ export type GitPushRequest = {
     projectPath: string;
     canonicalUrl: string;
     requiresGitLfsUpload: boolean;
-    requiresEmptyRemote: boolean;
     credential: {
         username: string;
         password: string;
