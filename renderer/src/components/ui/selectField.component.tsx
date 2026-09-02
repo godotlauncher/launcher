@@ -21,6 +21,7 @@ export type SelectFieldProps = {
     options: SelectFieldOption[];
     error?: string;
     compact?: boolean;
+    regularText?: boolean;
     disabled?: boolean;
     testId?: string;
     showSelectedCheck?: boolean;
@@ -80,6 +81,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     options,
     error,
     compact = false,
+    regularText = false,
     disabled = false,
     testId,
     showSelectedCheck = false,
@@ -285,9 +287,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 aria-expanded={isOpen}
                 aria-controls={popoverId}
                 className={clsx(
-                    'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left focus:outline-none focus-visible:border-primary focus-visible:outline-none',
+                    'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left',
                     {
                         'select-sm': compact,
+                        'text-sm': regularText,
                         'select-error': Boolean(error),
                     },
                 )}
@@ -302,7 +305,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 role="listbox"
                 aria-labelledby={id}
                 onKeyDown={handleListKeyDown}
-                className="dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-box border border-base-300 bg-[var(--select-field-background)] shadow-sm"
+                className={clsx(
+                    'dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-box border border-base-300 bg-[var(--select-field-background)] shadow-sm',
+                    regularText && 'text-sm',
+                )}
                 style={popoverStyle}
             >
                 <ul className="menu w-full p-1">
@@ -358,6 +364,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
             help={help}
             error={error}
             compact={compact}
+            regularText={regularText}
         >
             {control}
         </FormField>

@@ -12,6 +12,7 @@ import type {
     AppBridge,
     AppUpdateMessage,
     CodeEditorIntegrationSettings,
+    CreateProjectResult,
     GitIdentity,
     GitIdentitySettings,
     GitLfsTrackingPolicyDescriptor,
@@ -23,6 +24,7 @@ import type {
     EditorInstallsBridge,
     InstalledRelease,
     LaunchProjectResult,
+    ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectGitIdentityResult,
     ProjectsBridge,
@@ -662,6 +664,158 @@ export async function stubProjectLaunchResult(
 }
 
 /**
+ * Stubs the GitHub owner routes available to Create Project publishing.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic renderer-safe owner target result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectPublicationTargets(
+    electronApp: ElectronApplication,
+    result: ListCreateProjectPublicationTargetsResult,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedResult: ListCreateProjectPublicationTargetsResult,
+        ) => {
+            const channel = 'projects.listCreateProjectPublicationTargets';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs the cautious repository-name availability result used by Create Project.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic renderer-safe availability result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectRepositoryNameAvailability(
+    electronApp: ElectronApplication,
+    result: ProjectsResult<'checkCreateProjectRepositoryNameAvailability'>,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedResult: ProjectsResult<'checkCreateProjectRepositoryNameAvailability'>,
+        ) => {
+            const channel =
+                'projects.checkCreateProjectRepositoryNameAvailability';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs the repository inspection used before Create Project begins.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic repository inspection result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectRepositoryInspection(
+    electronApp: ElectronApplication,
+    result: ProjectsResult<'inspectCreateProjectRepository'>,
+): Promise<void> {
+    await electronApp.evaluate(
+        (
+            { ipcMain },
+            injectedResult: ProjectsResult<'inspectCreateProjectRepository'>,
+        ) => {
+            const channel = 'projects.inspectCreateProjectRepository';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs one complete Create Project result without touching the filesystem.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param result - Deterministic renderer-safe creation result.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubCreateProjectResult(
+    electronApp: ElectronApplication,
+    result: CreateProjectResult,
+): Promise<void> {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResult: CreateProjectResult) => {
+            const channel = 'projects.createProject';
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResult,
+            }));
+        },
+        result,
+    );
+}
+
+/**
+ * Stubs sequential process-local Create Project publication retry results.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param results - Deterministic renderer-safe retry results in call order.
+ * @returns A promise that ends when the handler is ready.
+ */
+export async function stubRetryCreateProjectPublicationResults(
+    electronApp: ElectronApplication,
+    results: CreateProjectResult[],
+): Promise<void> {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedResults: CreateProjectResult[]) => {
+            const channel = 'projects.retryCreateProjectPublication';
+            let index = 0;
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => ({
+                success: true,
+                data: injectedResults[
+                    Math.min(index++, injectedResults.length - 1)
+                ],
+            }));
+        },
+        results,
+    );
+}
+
+/**
+ * Stubs discarding a process-local Create Project publication attempt.
+ *
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @returns A promise that ends when the discard handler is ready.
+ */
+export async function stubDiscardCreateProjectPublication(
+    electronApp: ElectronApplication,
+): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const channel = 'projects.discardCreateProjectPublication';
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, async () => ({
+            success: true,
+            data: undefined,
+        }));
+    });
+}
+
+/**
  * Stubs the effective Git identity shown in Project Settings.
  *
  * @param electronApp - The Electron app whose handler should be replaced.
@@ -878,6 +1032,37 @@ export async function prepareAppWithStubbedData(
     });
     await focusElectronApp(electronApp);
     await setScreenshotViewport(page);
+}
+
+/**
+ * Sets the running Electron app language through the user-facing selector.
+ *
+ * @param page - Electron page whose language should change.
+ * @param languageName - Stable native language name shown in the selector.
+ * @param returnToProjects - Whether to restore the Projects route afterwards.
+ * @returns A promise that ends when the selected language is active.
+ */
+export async function setAppLanguage(
+    page: ElectronPage,
+    languageName: string,
+    returnToProjects = true,
+): Promise<void> {
+    await page.getByTestId('btnSettings').click();
+    await page.getByTestId('tabAppearance').click();
+    const languageSelector = page.getByTestId('selectLanguage');
+    await expect(languageSelector).toBeVisible();
+
+    if (!(await languageSelector.innerText()).includes(languageName)) {
+        await languageSelector.click();
+        await page
+            .getByRole('option', { name: languageName, exact: true })
+            .click();
+        await expect(languageSelector).toContainText(languageName);
+    }
+
+    if (returnToProjects) {
+        await page.getByTestId('btnProjects').click();
+    }
 }
 
 /**

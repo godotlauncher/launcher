@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { Check } from 'lucide-react';
 import type React from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export type ActionMenuAnchorRect = Pick<
     DOMRect,
@@ -150,6 +150,7 @@ function calculatePosition(
     };
 }
 
+/** Renders and positions a modal action menu against its trigger. */
 export const ActionMenu: React.FC<ActionMenuProps> = ({
     open,
     anchorRect,
@@ -187,8 +188,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         };
     }, [open]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!open || !anchorRect || typeof window === 'undefined') {
+            setPosition(null);
             return;
         }
 

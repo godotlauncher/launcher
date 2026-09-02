@@ -8,6 +8,7 @@
         "nameplaceholder": "Proje Adı",
         "downloading": "İndiriliyor...",
         "nameRequired": "Proje adı gerekli",
+        "nameExists": "Bu ada sahip bir proje zaten var",
         "overwritePath": "Proje yolunun üzerine yaz",
         "selectFolderDialogTitle": "Proje klasörünü seç",
         "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç",
@@ -19,6 +20,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobil",
         "compatible": "Uyumlu",
+        "forwardPlusHelp": "Gelişmiş 3D grafiklere sahip masaüstü oyunları için en iyisi.",
+        "mobileHelp": "Mobil oyunlar ve daha basit sahneler için en iyisi.",
+        "compatibleHelp": "Web, eski cihazlar ve geniş uyumluluk için en iyisi.",
         "forwardPlusFeatures": {
             "desktop": "Yalnızca masaüstü platformları destekler.",
             "advanced3d": "Gelişmiş 3D grafikler mevcut.",
@@ -41,6 +45,78 @@
             "fastest": "Basit sahnelerin en hızlı işlenmesi."
         }
     },
+    "publishToGitHub": {
+        "label": "GitHub'da yayımla",
+        "repositoryTitle": "Özel GitHub deposu",
+        "description": "Yerel oluşturmanın ardından özel bir depo oluşturur ve projeyi gönderir.",
+        "loadingOwners": "Bağlı GitHub sahipleri denetleniyor...",
+        "owner": "Sahip",
+        "ownerHelp": "Deponun sahibi olacak GitHub hesabını veya kuruluşunu seçin.",
+        "ownerPlaceholder": "Bir sahip seçin",
+        "ownerViaAccount": "{{owner}} (@{{account}} üzerinden)",
+        "repositoryName": "Depo adı",
+        "repositoryNameHelp": "Yalnızca harf, rakam, nokta, kısa çizgi ve alt çizgi.",
+        "repositoryNameInvalid": "1-100 harf, rakam, nokta, kısa çizgi veya alt çizgi girin.",
+        "availabilityChecking": "Ad kontrol ediliyor...",
+        "availabilityAvailable": "Ad kullanılabilir görünüyor",
+        "availabilityUnavailable": "Ad zaten kullanılıyor",
+        "availabilityUnknown": "Bu ad kontrol edilemedi",
+        "openConnections": "Bağlantıları aç",
+        "leaveTitle": "Proje oluşturmadan çıkılsın mı?",
+        "leaveMessage": "Bağlantılar açıldığında kaydedilmemiş proje bilgileri temizlenecek.",
+        "successTitle": "GitHub'da yayımlandı",
+        "successMessage": "{{owner}}/{{name}} özel depo olarak oluşturuldu ve proje gönderildi.",
+        "recoveryTitle": "Yerel proje güvende",
+        "recoveryDialogTitle": "GitHub'da yayımlanamadı",
+        "recoverySafe": "Projeniz yerel olarak oluşturuldu ve güvende.",
+        "retry": "Yayımlamayı yeniden dene",
+        "checkAndRetry": "Kontrol et ve yeniden dene",
+        "useRepository": "Bu depoyu kullan",
+        "recoveryRepositoryFound": "GitHub'da tam olarak bu boş depo var. Launcher'ın kullanmasını onaylayın.",
+        "retryFailed": "Yayımlama yeniden denenemedi. Yerel proje güvende.",
+        "continueLocally": "Yerel olarak devam et",
+        "openGitHub": "GitHub'ı aç",
+        "localTitle": "Proje yerelde tutuldu",
+        "localMessage": "Proje bu bilgisayarda ve Launcher kitaplığında kalır.",
+        "requiresInitialCommit": "Yayımlama, ilk commit'e sahip yeni bir Git deposu gerektirir.",
+        "publicationFailed": "Proje yerel olarak oluşturuldu ancak GitHub yayımlaması tamamlanmadı.",
+        "attemptExpired": "Bu yayımlama denemesi sona erdi. Yerel proje güvende.",
+        "targetFailure": {
+            "connection-required": "Proje yayımlamadan önce GitHub'ı bağlayın.",
+            "permission-update-required": "GitHub bağlantısının depo oluşturma iznine ihtiyacı var.",
+            "secure-storage-unavailable": "Güvenli kimlik bilgisi depolama kullanılamıyor.",
+            "provider-unavailable": "GitHub sahipleri yüklenemedi. Bağlantıyı kontrol edip yeniden deneyin."
+        },
+        "failure": {
+            "connection-required": "GitHub bağlantısı artık kullanılamıyor.",
+            "permission-update-required": "GitHub bağlantısının güncel depo izinlerine ihtiyacı var.",
+            "secure-storage-unavailable": "Güvenli kimlik bilgisi depolama kullanılamaz oldu.",
+            "target-unavailable": "Seçilen GitHub sahibi artık kullanılamıyor.",
+            "invalid-repository-name": "Depo adı geçerli değil.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub bu adı kullanamadı. Ad zaten var olabilir veya kuruluş ilkesi tarafından engellenmiş olabilir.",
+            "rate-limited": "GitHub istekleri geçici olarak sınırlıyor. Daha sonra yeniden deneyin.",
+            "network-unavailable": "Yayımlama sırasında ağ bağlantısı başarısız oldu.",
+            "remote-creation-uncertain": "Launcher, GitHub'ın depoyu oluşturup oluşturmadığını doğrulayamadı. Bağlantıyı yeniden kurup kontrol edin.",
+            "recovered-repository-not-empty": "GitHub'da bu depo var ancak boş değil. Launcher bu depoda yayımlama yapmayacak.",
+            "remote-created-origin-failed": "Özel depo oluşturuldu ancak Launcher yerel projeye bağlayamadı.",
+            "remote-created-push-failed": "Özel depo oluşturuldu ancak proje gönderilemedi.",
+            "remote-created-verification-failed": "Proje gönderilmiş olabilir ancak Launcher doğrulayamadı.",
+            "local-repository-changed": "Yerel Git deposu değiştiği için Launcher yeniden denemeyi durdurdu.",
+            "provider-unavailable": "GitHub isteği tamamlayamadı."
+        }
+    },
+    "existingRepository": {
+        "confirmationTitle": "Bu proje başka bir Git deposunun içinde olacak",
+        "warningMessage": "Seçtiğiniz klasör {{root}} konumundaki Git deposunun içindedir.",
+        "gitSkipped": "Launcher ayrı bir Git deposu veya ilk commit oluşturmayacak.",
+        "gitLfsSkipped": "Git LFS ayarlanmayacak.",
+        "githubSkipped": "Proje GitHub'da yayımlanmayacak.",
+        "question": "Devam etmek istiyor musunuz?",
+        "completionTitle": "Proje oluşturuldu",
+        "completionLead": "Projeniz bu bilgisayarda hazır.",
+        "completionMessage": "Bu proje {{root}} konumundaki mevcut Git deposunun içindedir.",
+        "done": "Bitti"
+    },
     "otherSettings": {
         "title": "Diğer Ayarlar",
         "codeEditor": {
@@ -50,11 +126,12 @@
             "notFound": "Bulunamadı"
         },
         "initGit": "Git Deposu Başlat",
+        "unavailableLabel": "Kullanılamıyor",
         "gitNotInstalled": "Git bu bilgisayarda yüklü değil",
         "gitLfs": {
             "label": "Git LFS kullan",
             "description": "Godot belgelerindeki dosya kalıplarını başlangıç noktası olarak yapılandır.",
-            "unavailable": "Kullanmak için Ayarlar > Araçlar bölümünde Git LFS'yi yükleyip etkinleştirin.",
+            "unavailable": "Git LFS bu bilgisayarda yüklü değil",
             "patternsTitle": "İzlenen dosya türleri",
             "groups": {
                 "models": "3D modeller",
@@ -97,7 +174,9 @@
     "buttons": {
         "editNow": "Şimdi düzenle",
         "create": "Proje Oluştur",
-        "creating": "Proje oluşturuluyor..."
+        "createAndPublish": "Oluştur ve yayımla",
+        "creating": "Proje oluşturuluyor...",
+        "publishing": "Proje oluşturuluyor ve GitHub'da yayımlanıyor..."
     },
     "errors": {
         "invalidEditorVersion": "Geçersiz editör sürümü: {{version}}",
@@ -109,6 +188,7 @@
         "failedGitBranch": "Git dalı main olarak yeniden adlandırılamadı",
         "invalidGitIdentity": "Git adı ve e-posta adresi gerekli",
         "failedGitIdentity": "Git kimliği kaydedilemedi",
+        "parentRepositoryContextChanged": "Seçilen konumdaki Git deposu değişti. Konumu gözden geçirip yeniden deneyin.",
         "failedGitCommit": "İlk Git commit'i oluşturulamadı",
         "gitLfsRequiresGit": "Git LFS yeni bir Git deposu gerektirir",
         "gitLfsExistingRepository": "Proje mevcut bir Git deposunun içinde olduğu için Git LFS yapılandırılamıyor",

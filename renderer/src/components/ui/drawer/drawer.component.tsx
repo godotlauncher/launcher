@@ -31,11 +31,13 @@ type DrawerProps = {
     closeOnEscape?: boolean;
     trapFocus?: boolean;
     ariaLabel?: string;
+    testId?: string;
     children?: ReactNode;
     className?: string;
     panelClassName?: string;
     backdropClassName?: string;
     width?: number | string;
+    initialFocusRef?: React.RefObject<HTMLElement | null>;
 };
 
 type DrawerSlotProps = {
@@ -359,11 +361,13 @@ const DrawerRoot: React.FC<DrawerProps> = ({
     closeOnEscape = true,
     trapFocus = true,
     ariaLabel,
+    testId,
     children,
     className,
     panelClassName,
     backdropClassName,
     width,
+    initialFocusRef,
 }) => {
     const titleId = useId();
     const panelRef = useRef<HTMLElement | null>(null);
@@ -442,14 +446,23 @@ const DrawerRoot: React.FC<DrawerProps> = ({
 
         const animationFrameId = window.requestAnimationFrame(() => {
             if (panelRef.current) {
-                focusFirstDrawerElement(panelRef.current);
+                const initialFocusTarget = initialFocusRef?.current;
+                if (
+                    initialFocusTarget?.isConnected &&
+                    panelRef.current.contains(initialFocusTarget) &&
+                    !initialFocusTarget.matches(':disabled')
+                ) {
+                    focusDrawerElement(initialFocusTarget);
+                } else {
+                    focusFirstDrawerElement(panelRef.current);
+                }
             }
         });
 
         return () => {
             window.cancelAnimationFrame(animationFrameId);
         };
-    }, [open, shouldRender]);
+    }, [initialFocusRef, open, shouldRender]);
 
     useEffect(() => {
         if (!open || typeof window === 'undefined') {
@@ -524,6 +537,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
             />
             <section
                 ref={panelRef}
+                data-testid={testId}
                 tabIndex={-1}
                 role="dialog"
                 aria-modal="true"

@@ -1,24 +1,35 @@
 import { _electron, expect, test } from '@playwright/test';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {
+    createFixtureHome,
+    setAppLanguage,
+} from './documentationScreenshots/runtime';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
 let mainPage: Awaited<ReturnType<typeof electronApp.firstWindow>>;
+let fixtureHome: string;
 
 test.beforeEach(async () => {
+    fixtureHome = await createFixtureHome();
     electronApp = await _electron.launch({
-        args: ['.'],
+        args: [
+            '.',
+            `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`,
+        ],
+        env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
-    await mainPage.getByTestId('btnSettings').click();
+    await setAppLanguage(mainPage, 'English', false);
     const settingsView = await mainPage.getByTestId('settingsTitle');
     await expect(settingsView).toHaveCount(1);
     await expect(settingsView).toBeVisible();
-    await mainPage.getByTestId('tabAppearance').click();
 });
 
 test.afterEach(async () => {
-    await electronApp.close();
+    await electronApp?.close();
+    await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
 test('Can set theme light', async () => {
@@ -84,3 +95,39 @@ test('Can open the Connections presentation from its shortcut', async () => {
         }),
     ).toBeEnabled();
 });
+
+/**
+ * Creates an isolated environment for one Electron E2E app.
+ *
+ * @param homeDir - Fixture home used for launcher state.
+ * @returns Environment variables for the isolated app.
+ */
+function createIsolatedLaunchEnvironment(
+    homeDir: string,
+): Record<string, string> {
+    const overrideHomeScript = path.resolve(
+        process.cwd(),
+        'e2e',
+        'support',
+        'overrideHome.cjs',
+    );
+    const existingNodeOptions = process.env.NODE_OPTIONS?.trim();
+    const requireOverrideOption = `--require "${overrideHomeScript}"`;
+    const launchEnvironment: Record<string, string> = {
+        ...Object.fromEntries(
+            Object.entries(process.env).filter(
+                (entry): entry is [string, string] =>
+                    typeof entry[1] === 'string',
+            ),
+        ),
+        APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
+        LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
+        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
+        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        NODE_OPTIONS: existingNodeOptions
+            ? `${existingNodeOptions} ${requireOverrideOption}`
+            : requireOverrideOption,
+    };
+    delete launchEnvironment.ELECTRON_RUN_AS_NODE;
+    return launchEnvironment;
+}

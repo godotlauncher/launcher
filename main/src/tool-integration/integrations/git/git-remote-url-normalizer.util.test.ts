@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeGitRemoteUrl } from './git-remote-url-normalizer.util.js';
+import {
+    normalizeGitRemoteUrl,
+    toGitHubRepositoryWebUrl,
+} from './git-remote-url-normalizer.util.js';
 
 describe('normalizeGitRemoteUrl', () => {
     it.each([
@@ -29,5 +32,37 @@ describe('normalizeGitRemoteUrl', () => {
         'https://github.com/',
     ])('rejects unsupported or credential-bearing remotes', (value) => {
         expect(normalizeGitRemoteUrl(value)).toBeNull();
+    });
+});
+
+describe('toGitHubRepositoryWebUrl', () => {
+    it.each([
+        [
+            'https://GitHub.com/Owner/Repository.git',
+            'https://github.com/Owner/Repository',
+        ],
+        [
+            'git@github.com:Owner/Repository.git',
+            'https://github.com/Owner/Repository',
+        ],
+        [
+            'ssh://git@github.com/Owner/Repository.git',
+            'https://github.com/Owner/Repository',
+        ],
+    ])('derives standard GitHub repository pages', (value, expected) => {
+        expect(toGitHubRepositoryWebUrl(value)).toBe(expected);
+    });
+
+    it.each([
+        'https://token@github.com/owner/repository.git',
+        'https://github.example.com/owner/repository.git',
+        'https://github.com/owner/nested/repository.git',
+        'https://github.com/owner/repository.git?token=secret',
+        'git@example.com:owner/repository.git',
+        'ssh://other@github.com/owner/repository.git',
+        'ssh://git@github.com:2222/owner/repository.git',
+        'git@github.com:owner/repository%2fgit',
+    ])('rejects unsafe or unsupported GitHub remotes', (value) => {
+        expect(toGitHubRepositoryWebUrl(value)).toBeNull();
     });
 });

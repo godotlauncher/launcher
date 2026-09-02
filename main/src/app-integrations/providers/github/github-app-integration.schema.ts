@@ -70,6 +70,7 @@ export const GitHubInstallationPageSchema = z.object({
                         );
                     }),
                 permissions: z.object({
+                    administration: z.enum(['read', 'write']).optional(),
                     contents: z.enum(['read', 'write']).optional(),
                 }),
                 suspended_at: z.iso.datetime().nullable(),
@@ -140,6 +141,61 @@ export const GitHubRepositorySchema = z
 export const GitHubRepositoryPageSchema = z.object({
     repositories: z.array(GitHubRepositorySchema).max(50),
 });
+
+export const GitHubCreatedRepositorySchema = z
+    .object({
+        id: z.number().int().safe().positive(),
+        owner: z.object({
+            login: z
+                .string()
+                .regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/u),
+        }),
+        name: GitHubRepositoryNameSchema,
+        full_name: z.string().min(3).max(511),
+        private: z.literal(true),
+        clone_url: z.url().max(2048),
+        html_url: z.url().max(2048),
+    })
+    .superRefine((repository, context) => {
+        if (
+            repository.full_name !==
+            `${repository.owner.login}/${repository.name}`
+        ) {
+            context.addIssue({
+                code: 'custom',
+                message: 'Repository full name does not match its owner',
+            });
+        }
+        const expectedPath = `/${repository.owner.login}/${repository.name}`;
+        const cloneUrl = new URL(repository.clone_url);
+        const webUrl = new URL(repository.html_url);
+        if (
+            cloneUrl.origin !== 'https://github.com' ||
+            cloneUrl.username !== '' ||
+            cloneUrl.password !== '' ||
+            cloneUrl.pathname !== `${expectedPath}.git` ||
+            cloneUrl.search !== '' ||
+            cloneUrl.hash !== ''
+        ) {
+            context.addIssue({
+                code: 'custom',
+                message: 'Created repository clone URL is invalid',
+            });
+        }
+        if (
+            webUrl.origin !== 'https://github.com' ||
+            webUrl.username !== '' ||
+            webUrl.password !== '' ||
+            webUrl.pathname !== expectedPath ||
+            webUrl.search !== '' ||
+            webUrl.hash !== ''
+        ) {
+            context.addIssue({
+                code: 'custom',
+                message: 'Created repository web URL is invalid',
+            });
+        }
+    });
 
 export const GitHubStoredCredentialSchema = GitHubTokenBundleSchema.extend({
     version: z.literal(1),

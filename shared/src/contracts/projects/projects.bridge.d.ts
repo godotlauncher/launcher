@@ -5,16 +5,23 @@ import type {
     AddProjectToListResult,
     CancelRemoteProjectImportResult,
     ChangeProjectEditorResult,
+    CheckCreateProjectRepositoryNameAvailabilityResult,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
+    CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
+    GitRepositoryInspection,
     InitialiseRemoteProjectSubmodulesResult,
     InitializeProjectGitResult,
     LaunchProjectOptions,
     LaunchProjectResult,
     ListConnectedRepositoriesResult,
+    ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
+    ProjectGitHubLink,
     ProjectGitIdentityResult,
+    ProjectPublicationRecoveryAction,
     PublicGitSourceInspectionResult,
     RemoteProjectImportRequest,
     RemoteProjectImportResult,
@@ -70,6 +77,25 @@ export type ProjectsBridge = {
     /** Gets every stored project. */
     getProjectsDetails(): Promise<ProjectDetails[]>;
 
+    /** Refreshes safe GitHub links for the current stored projects. */
+    refreshProjectGitHubLinks(): Promise<readonly ProjectGitHubLink[]>;
+
+    /** Lists current GitHub owners eligible for Create Project publishing. */
+    listCreateProjectPublicationTargets(
+        providerId: string,
+    ): Promise<ListCreateProjectPublicationTargetsResult>;
+
+    /** Checks whether one owner route visibly contains the requested repository name. */
+    checkCreateProjectRepositoryNameAvailability(
+        publication: CreateProjectPublicationOptions,
+    ): Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
+
+    /** Inspects the final planned Create Project path for an enclosing repository. */
+    inspectCreateProjectRepository(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ): Promise<GitRepositoryInspection>;
+
     /** Creates and registers a project. */
     createProject(
         name: string,
@@ -79,7 +105,19 @@ export type ProjectsBridge = {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ): Promise<CreateProjectResult>;
+
+    /** Retries one process-local publication attempt for its exact project. */
+    retryCreateProjectPublication(
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
+    ): Promise<CreateProjectResult>;
+
+    /** Discards one process-local publication attempt without changing either repository. */
+    discardCreateProjectPublication(attemptId: string): Promise<void>;
 
     /** Removes a project from Launcher without deleting its directory. */
     removeProject(project: ProjectDetails): Promise<ProjectDetails[]>;

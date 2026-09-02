@@ -15,6 +15,7 @@
         "pinProject": "Pin Project",
         "unpinProject": "Unpin Project",
         "openProjectFolder": "Open Project Folder",
+        "openInGitHub": "Open in GitHub",
         "launchEditor": "Edit in Godot",
         "projectSettings": "Project Settings",
         "openEditorSettingsFolder": "Open Editor Settings Folder",

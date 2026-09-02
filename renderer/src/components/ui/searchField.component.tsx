@@ -13,6 +13,7 @@ type SearchFieldProps = {
     inputClassName?: string;
     focusOnMount?: boolean;
     disabled?: boolean;
+    compact?: boolean;
     'data-testid'?: string;
 };
 
@@ -32,6 +33,7 @@ export const SearchField: React.FC<SearchFieldProps> = ({
     inputClassName,
     focusOnMount = false,
     disabled = false,
+    compact = false,
     'data-testid': dataTestId,
 }) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -51,6 +53,7 @@ export const SearchField: React.FC<SearchFieldProps> = ({
                 placeholder={placeholder}
                 className={clsx(
                     'input input-bordered w-full pr-8',
+                    compact && 'input-sm text-sm',
                     inputClassName,
                 )}
                 onChange={(event) => onChange(event.target.value)}
@@ -63,10 +66,10 @@ export const SearchField: React.FC<SearchFieldProps> = ({
                     type="button"
                     tabIndex={-1}
                     onClick={() => onChange('')}
-                    className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center"
+                    className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center text-base-content/50"
                     aria-label={clearLabel}
                 >
-                    <CircleX size={18} aria-hidden="true" />
+                    <CircleX size={compact ? 14 : 18} aria-hidden="true" />
                 </button>
             )}
         </div>

@@ -8,6 +8,7 @@
         "nameplaceholder": "Nome do projeto",
         "downloading": "Baixando...",
         "nameRequired": "O nome do projeto é obrigatório",
+        "nameExists": "Já existe um projeto com este nome",
         "overwritePath": "Sobrescrever caminho do projeto",
         "selectFolderDialogTitle": "Selecionar pasta do projeto",
         "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto",
@@ -19,6 +20,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Móvel",
         "compatible": "Compatível",
+        "forwardPlusHelp": "Ideal para jogos de computador com gráficos 3D avançados.",
+        "mobileHelp": "Ideal para jogos móveis e cenas mais simples.",
+        "compatibleHelp": "Ideal para web, dispositivos antigos e ampla compatibilidade.",
         "forwardPlusFeatures": {
             "desktop": "Suporta apenas plataformas desktop.",
             "advanced3d": "Disponibiliza gráficos 3D avançados.",
@@ -41,6 +45,78 @@
             "fastest": "Renderização mais rápida de cenas simples."
         }
     },
+    "publishToGitHub": {
+        "label": "Publicar no GitHub",
+        "repositoryTitle": "Repositório privado do GitHub",
+        "description": "Cria um repositório privado e envia este projeto após a criação local.",
+        "loadingOwners": "Verificando proprietários conectados do GitHub...",
+        "owner": "Proprietário",
+        "ownerHelp": "Escolha a conta ou organização do GitHub que será dona do repositório.",
+        "ownerPlaceholder": "Escolha um proprietário",
+        "ownerViaAccount": "{{owner}} (via @{{account}})",
+        "repositoryName": "Nome do repositório",
+        "repositoryNameHelp": "Apenas letras, números, pontos, hífens e sublinhados.",
+        "repositoryNameInvalid": "Digite de 1 a 100 letras, números, pontos, hífens ou sublinhados.",
+        "availabilityChecking": "Verificando o nome...",
+        "availabilityAvailable": "O nome parece disponível",
+        "availabilityUnavailable": "O nome já está em uso",
+        "availabilityUnknown": "Não foi possível verificar este nome",
+        "openConnections": "Abrir Conexões",
+        "leaveTitle": "Sair de Criar projeto?",
+        "leaveMessage": "Os dados não salvos do projeto serão apagados ao abrir Conexões.",
+        "successTitle": "Publicado no GitHub",
+        "successMessage": "{{owner}}/{{name}} foi criado como repositório privado e o projeto foi enviado.",
+        "recoveryTitle": "O projeto local está seguro",
+        "recoveryDialogTitle": "Não foi possível publicar no GitHub",
+        "recoverySafe": "Seu projeto foi criado localmente e está seguro.",
+        "retry": "Tentar publicar novamente",
+        "checkAndRetry": "Verificar e tentar novamente",
+        "useRepository": "Usar este repositório",
+        "recoveryRepositoryFound": "O GitHub contém exatamente este repositório vazio. Confirme que deseja que o Launcher o use.",
+        "retryFailed": "Não foi possível tentar novamente. O projeto local continua seguro.",
+        "continueLocally": "Continuar localmente",
+        "openGitHub": "Abrir GitHub",
+        "localTitle": "Projeto mantido localmente",
+        "localMessage": "O projeto permanece neste computador e na biblioteca do Launcher.",
+        "requiresInitialCommit": "A publicação requer um novo repositório Git com um commit inicial.",
+        "publicationFailed": "O projeto foi criado localmente, mas a publicação no GitHub não terminou.",
+        "attemptExpired": "Esta tentativa de publicação expirou. O projeto local continua seguro.",
+        "targetFailure": {
+            "connection-required": "Conecte o GitHub antes de publicar um projeto.",
+            "permission-update-required": "A conexão do GitHub precisa de permissão para criar repositórios.",
+            "secure-storage-unavailable": "O armazenamento seguro de credenciais não está disponível.",
+            "provider-unavailable": "Não foi possível carregar proprietários do GitHub. Verifique a conexão e tente novamente."
+        },
+        "failure": {
+            "connection-required": "A conexão do GitHub não está mais disponível.",
+            "permission-update-required": "A conexão do GitHub precisa de permissões atualizadas.",
+            "secure-storage-unavailable": "O armazenamento seguro de credenciais não está mais disponível.",
+            "target-unavailable": "O proprietário do GitHub selecionado não está mais disponível.",
+            "invalid-repository-name": "O nome do repositório não é válido.",
+            "repository-name-unavailable-or-policy-rejected": "O GitHub não pôde usar esse nome. Ele pode já existir ou estar bloqueado por uma regra da organização.",
+            "rate-limited": "O GitHub está limitando solicitações temporariamente. Tente mais tarde.",
+            "network-unavailable": "A conexão de rede falhou durante a publicação.",
+            "remote-creation-uncertain": "O Launcher não confirmou se o GitHub criou o repositório. Restabeleça a conexão e verifique novamente.",
+            "recovered-repository-not-empty": "O GitHub contém este repositório, mas ele não está vazio. O Launcher não publicará nele.",
+            "remote-created-origin-failed": "O repositório privado foi criado, mas o Launcher não conseguiu vinculá-lo ao projeto local.",
+            "remote-created-push-failed": "O repositório privado foi criado, mas o projeto não pôde ser enviado.",
+            "remote-created-verification-failed": "O projeto pode ter sido enviado, mas o Launcher não conseguiu verificar.",
+            "local-repository-changed": "O repositório Git local mudou, então o Launcher interrompeu a nova tentativa.",
+            "provider-unavailable": "O GitHub não conseguiu concluir a solicitação."
+        }
+    },
+    "existingRepository": {
+        "confirmationTitle": "Este projeto ficará dentro de outro repositório Git",
+        "warningMessage": "A pasta selecionada está dentro do repositório Git em {{root}}.",
+        "gitSkipped": "O Launcher não criará um repositório Git separado nem um commit inicial.",
+        "gitLfsSkipped": "O Git LFS não será configurado.",
+        "githubSkipped": "O projeto não será publicado no GitHub.",
+        "question": "Deseja continuar?",
+        "completionTitle": "Projeto criado",
+        "completionLead": "Seu projeto está pronto neste computador.",
+        "completionMessage": "Este projeto está dentro do repositório Git existente em {{root}}.",
+        "done": "Concluído"
+    },
     "otherSettings": {
         "title": "Outras configurações",
         "codeEditor": {
@@ -50,11 +126,12 @@
             "notFound": "Não encontrado"
         },
         "initGit": "Inicializar repositório Git",
+        "unavailableLabel": "Indisponível",
         "gitNotInstalled": "O Git não está instalado neste computador",
         "gitLfs": {
             "label": "Usar Git LFS",
             "description": "Configure como ponto de partida os padrões de arquivos da documentação do Godot.",
-            "unavailable": "Instale e habilite o Git LFS em Configurações > Ferramentas para usá-lo.",
+            "unavailable": "O Git LFS não está instalado neste computador",
             "patternsTitle": "Tipos de arquivos rastreados",
             "groups": {
                 "models": "Modelos 3D",
@@ -97,7 +174,9 @@
     "buttons": {
         "editNow": "Editar agora",
         "create": "Criar projeto",
-        "creating": "Criando projeto..."
+        "createAndPublish": "Criar e publicar",
+        "creating": "Criando projeto...",
+        "publishing": "Criando o projeto e publicando no GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "Versão do editor inválida: {{version}}",
@@ -109,6 +188,7 @@
         "failedGitBranch": "Falha ao renomear o branch Git para main",
         "invalidGitIdentity": "O nome e o e-mail do Git são obrigatórios",
         "failedGitIdentity": "Falha ao salvar a identidade do Git",
+        "parentRepositoryContextChanged": "O repositório Git no local selecionado foi alterado. Revise o local e tente novamente.",
         "failedGitCommit": "Falha ao criar o commit inicial do Git",
         "gitLfsRequiresGit": "O Git LFS requer um novo repositório Git",
         "gitLfsExistingRepository": "O Git LFS não pode ser configurado porque o projeto está dentro de um repositório Git existente",

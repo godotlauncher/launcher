@@ -15,6 +15,7 @@
         "pinProject": "Закрепить проект",
         "unpinProject": "Открепить проект",
         "openProjectFolder": "Открыть папку проекта",
+        "openInGitHub": "Открыть на GitHub",
         "launchEditor": "Редактировать в Godot",
         "projectSettings": "Настройки проекта",
         "openEditorSettingsFolder": "Открыть папку настроек редактора",

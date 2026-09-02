@@ -100,7 +100,7 @@ describe('GitService', () => {
                 'config',
                 '--local',
                 '--no-includes',
-                '--get',
+                '--get-all',
                 'remote.origin.url',
             ],
             cwd: '/projects/demo',
@@ -127,6 +127,34 @@ describe('GitService', () => {
             service.getNormalizedRemoteOrigin('/projects/demo'),
         ).resolves.toBeNull();
         expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('derives a GitHub page without returning the raw SSH remote', async () => {
+        execute.mockResolvedValueOnce(
+            success('git@github.com:Owner/Repository.git\n'),
+        );
+
+        await expect(
+            service.getRemoteOriginDetails('/projects/demo'),
+        ).resolves.toEqual({
+            normalizedOrigin: null,
+            githubWebUrl: 'https://github.com/Owner/Repository',
+        });
+    });
+
+    it('rejects duplicate origin values', async () => {
+        execute.mockResolvedValueOnce(
+            success(
+                'https://github.com/Owner/First.git\nhttps://github.com/Owner/Second.git\n',
+            ),
+        );
+
+        await expect(
+            service.getRemoteOriginDetails('/projects/demo'),
+        ).resolves.toEqual({
+            normalizedOrigin: null,
+            githubWebUrl: null,
+        });
     });
 
     it('reads and normalizes the complete global user identity', async () => {

@@ -8,6 +8,7 @@
         "nameplaceholder": "Project Name",
         "downloading": "Downloading...",
         "nameRequired": "Project name is required",
+        "nameExists": "A project with this name already exists",
         "overwritePath": "Overwrite Project Path",
         "selectFolderDialogTitle": "Select Project Folder",
         "selectFolderTooltip": "Open a dialog to select the project folder",
@@ -19,6 +20,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobile",
         "compatible": "Compatible",
+        "forwardPlusHelp": "Best for desktop games with advanced 3D graphics.",
+        "mobileHelp": "Best for mobile games and simpler scenes.",
+        "compatibleHelp": "Best for web, older devices, and broad compatibility.",
         "forwardPlusFeatures": {
             "desktop": "Supports desktop platforms only.",
             "advanced3d": "Advanced 3D graphics available.",
@@ -41,6 +45,78 @@
             "fastest": "Fastest rendering of simple scenes."
         }
     },
+    "publishToGitHub": {
+        "label": "Publish to GitHub",
+        "repositoryTitle": "Private GitHub repository",
+        "description": "Create a private repository and push main.",
+        "loadingOwners": "Checking connected GitHub owners...",
+        "owner": "Owner",
+        "ownerHelp": "Choose the GitHub account or organisation that will own the repository.",
+        "ownerPlaceholder": "Choose an owner",
+        "ownerViaAccount": "{{owner}} (via @{{account}})",
+        "repositoryName": "Repository name",
+        "repositoryNameHelp": "Letters, numbers, dots, hyphens, and underscores only.",
+        "repositoryNameInvalid": "Enter 1-100 letters, numbers, dots, hyphens, or underscores.",
+        "availabilityChecking": "Checking name...",
+        "availabilityAvailable": "Name looks available",
+        "availabilityUnavailable": "Name already in use",
+        "availabilityUnknown": "Could not check this name",
+        "openConnections": "Open Connections",
+        "leaveTitle": "Leave Create Project?",
+        "leaveMessage": "Your unsaved project details will be cleared when you open Connections.",
+        "successTitle": "Published to GitHub",
+        "successMessage": "{{owner}}/{{name}} was created as a private repository and the project was pushed.",
+        "recoveryTitle": "The local project is safe",
+        "recoveryDialogTitle": "Could not publish to GitHub",
+        "recoverySafe": "Your project was created locally and is safe.",
+        "retry": "Retry publishing",
+        "checkAndRetry": "Check and retry",
+        "useRepository": "Use this repository",
+        "recoveryRepositoryFound": "GitHub contains this exact empty repository. Confirm that you want Launcher to use it.",
+        "retryFailed": "Could not retry publishing. The local project is still safe.",
+        "continueLocally": "Continue locally",
+        "openGitHub": "Open on GitHub",
+        "localTitle": "Project kept locally",
+        "localMessage": "The project remains on this computer and in your Launcher library.",
+        "requiresInitialCommit": "Publishing requires a new Git repository with an initial commit.",
+        "publicationFailed": "The project was created locally, but GitHub publishing did not finish.",
+        "attemptExpired": "This publishing attempt has expired. The local project is still safe.",
+        "targetFailure": {
+            "connection-required": "Connect GitHub before publishing a project.",
+            "permission-update-required": "Your GitHub connection needs permission to create repositories.",
+            "secure-storage-unavailable": "Secure credential storage is unavailable on this computer.",
+            "provider-unavailable": "GitHub owners could not be loaded. Check your connection and try again."
+        },
+        "failure": {
+            "connection-required": "The GitHub connection is no longer available.",
+            "permission-update-required": "The GitHub connection needs updated repository permissions.",
+            "secure-storage-unavailable": "Secure credential storage became unavailable.",
+            "target-unavailable": "The selected GitHub owner is no longer available.",
+            "invalid-repository-name": "The repository name is not valid.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub could not use that repository name. It may already exist or be blocked by an organisation policy.",
+            "rate-limited": "GitHub is temporarily limiting requests. Try again later.",
+            "network-unavailable": "The network connection failed while publishing.",
+            "remote-creation-uncertain": "Launcher could not confirm whether GitHub created the repository. Restore the connection, then check and retry.",
+            "recovered-repository-not-empty": "GitHub contains this repository, but it is not empty. Launcher will not publish to it.",
+            "remote-created-origin-failed": "The private repository was created, but Launcher could not attach it to the local project.",
+            "remote-created-push-failed": "The private repository was created, but the project could not be pushed.",
+            "remote-created-verification-failed": "The project may have been pushed, but Launcher could not verify it.",
+            "local-repository-changed": "The local Git repository changed, so Launcher stopped before retrying.",
+            "provider-unavailable": "GitHub could not complete the request."
+        }
+    },
+    "existingRepository": {
+        "confirmationTitle": "This project will be inside another Git repository",
+        "warningMessage": "The folder you selected is inside the Git repository at {{root}}.",
+        "gitSkipped": "Launcher will not create a separate Git repository or initial commit.",
+        "gitLfsSkipped": "Git LFS will not be set up.",
+        "githubSkipped": "The project will not be published to GitHub.",
+        "question": "Do you want to continue?",
+        "completionTitle": "Project created",
+        "completionLead": "Your project is ready on this computer.",
+        "completionMessage": "This project is inside the existing Git repository at {{root}}.",
+        "done": "Done"
+    },
     "otherSettings": {
         "title": "Other Settings",
         "codeEditor": {
@@ -50,11 +126,12 @@
             "notFound": "Not found"
         },
         "initGit": "Initialize Git Repository",
+        "unavailableLabel": "Unavailable",
         "gitNotInstalled": "Git is not installed on this computer",
         "gitLfs": {
             "label": "Use Git LFS",
             "description": "Configure the file patterns from the Godot documentation as a starting point.",
-            "unavailable": "Install and enable Git LFS in Settings > Tools to use it.",
+            "unavailable": "Git LFS is not installed on this computer",
             "patternsTitle": "Tracked file types",
             "groups": {
                 "models": "3D models",
@@ -97,7 +174,9 @@
     "buttons": {
         "editNow": "Edit now",
         "create": "Create Project",
-        "creating": "Creating project..."
+        "createAndPublish": "Create and publish to GitHub",
+        "creating": "Creating project...",
+        "publishing": "Creating project and publishing to GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "Invalid editor version: {{version}}",
@@ -109,6 +188,7 @@
         "failedGitBranch": "Failed to rename the Git branch to main",
         "invalidGitIdentity": "Git name and email are required",
         "failedGitIdentity": "Failed to save the Git identity",
+        "parentRepositoryContextChanged": "The Git repository at the selected project location changed. Review the location and try again.",
         "failedGitCommit": "Failed to create the initial Git commit",
         "gitLfsRequiresGit": "Git LFS requires a new Git repository",
         "gitLfsExistingRepository": "Git LFS cannot be configured because the project is inside an existing Git repository",

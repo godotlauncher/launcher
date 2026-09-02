@@ -10,7 +10,9 @@ import { isInstalledRuntime } from '../../../runtimeMode.js';
 import { resolveWindowsGitAskPassExecutable } from './git-askpass-executable.util.js';
 import {
     createGitCredentialResponse,
-    getGitCredentialRequestLength,
+    type GitCredentialTarget,
+    getGitCredentialRequestLengthForVersion,
+    getGitCredentialRequestLimit,
     parseGitCredentialRequest,
 } from './git-credential-protocol.util.js';
 
@@ -19,6 +21,10 @@ const CREDENTIAL_SOCKET_TIMEOUT_MS = 5_000;
 export type GitCredentialSession = {
     environment: NodeJS.ProcessEnv;
     close: () => Promise<void>;
+};
+
+export type GitBoundCredentialSession = GitCredentialSession & {
+    helper: string;
 };
 
 type GitCredential = {
@@ -47,10 +53,12 @@ export class GitCredentialSessionService {
     async open(credential: GitCredential): Promise<GitCredentialSession> {
         validateCredential(credential);
         const sessionRef = randomBytes(32).toString('base64url');
-        const launcher = await createAskPassLauncher();
+        const launcher = await createCredentialLauncher(
+            'git-credential-askpass.js',
+        );
         let server: GitCredentialServer | undefined;
         try {
-            server = await listenForCredential(sessionRef, credential);
+            server = await listenForCredential(sessionRef, credential, null);
             const address = server.server.address();
             if (!address || typeof address === 'string') {
                 throw new Error('Credential service address is unavailable');
@@ -64,12 +72,51 @@ export class GitCredentialSessionService {
     }
 
     /**
+     * Opens one destination-bound Git credential-helper session.
+     *
+     * @param credential - Provider-formatted one-operation Git credential.
+     * @param canonicalUrl - Exact token-free HTTPS repository URL.
+     * @returns Structured helper configuration and idempotent cleanup callback.
+     */
+    async openBound(
+        credential: GitCredential,
+        canonicalUrl: string,
+    ): Promise<GitBoundCredentialSession> {
+        validateCredential(credential);
+        const target = createCredentialTarget(canonicalUrl);
+        const sessionRef = randomBytes(32).toString('base64url');
+        const launcher = await createCredentialLauncher(
+            'git-credential-helper.js',
+        );
+        let server: GitCredentialServer | undefined;
+        try {
+            server = await listenForCredential(sessionRef, credential, target);
+            const address = server.server.address();
+            if (!address || typeof address === 'string') {
+                throw new Error('Credential service address is unavailable');
+            }
+            return createBoundSession(
+                launcher,
+                server,
+                sessionRef,
+                address.port,
+            );
+        } catch (error) {
+            await closeServer(server);
+            await launcher.close();
+            throw error;
+        }
+    }
+
+    /**
      * Creates a rejecting askpass environment for an anonymous clone.
      *
      * @returns Askpass environment with no credential session.
      */
     async openRejecting(): Promise<GitCredentialSession> {
-        const launcher = await createAskPassLauncher();
+        const launcher = await createCredentialLauncher(
+            'git-credential-askpass.js',
+        );
         return {
             environment: {
                 GIT_ASKPASS: launcher.executablePath,
@@ -80,11 +127,18 @@ export class GitCredentialSessionService {
     }
 }
 
-/** Creates the platform-specific askpass launcher. */
-async function createAskPassLauncher(): Promise<GitAskPassHandle> {
+/**
+ * Creates the platform-specific launcher for one compiled credential client.
+ *
+ * @param helperFileName - Compiled Node client filename used on POSIX.
+ * @returns Attempt-owned launcher handle.
+ */
+async function createCredentialLauncher(
+    helperFileName: string,
+): Promise<GitAskPassHandle> {
     return process.platform === 'win32'
         ? createWindowsAskPassHandle()
-        : createPosixAskPassLauncher();
+        : createPosixCredentialLauncher(helperFileName);
 }
 
 /** Resolves the verified Windows executable without creating temporary files. */
@@ -105,14 +159,21 @@ async function createWindowsAskPassHandle(): Promise<GitAskPassHandle> {
     };
 }
 
-/** Creates an attempt-owned POSIX launcher containing no credential material. */
-async function createPosixAskPassLauncher(): Promise<GitAskPassHandle> {
+/**
+ * Creates an attempt-owned POSIX launcher containing no credential material.
+ *
+ * @param helperFileName - Compiled Node client filename.
+ * @returns Attempt-owned executable launcher.
+ */
+async function createPosixCredentialLauncher(
+    helperFileName: string,
+): Promise<GitAskPassHandle> {
     const directory = await fs.mkdtemp(
         path.join(os.tmpdir(), 'godot-launcher-git-askpass-'),
     );
     const executablePath = path.join(directory, 'askpass.sh');
     const helperPath = fileURLToPath(
-        new URL('./git-credential-askpass.js', import.meta.url),
+        new URL(`./${helperFileName}`, import.meta.url),
     );
     try {
         await fs.writeFile(
@@ -188,11 +249,13 @@ function validateCredential(credential: GitCredential): void {
  *
  * @param sessionRef - Opaque one-operation session reference.
  * @param credential - Provider-formatted credential kept in memory.
+ * @param expectedTarget - Exact helper destination, or null for askpass.
  * @returns Listening loopback server and its tracked sockets.
  */
 function listenForCredential(
     sessionRef: string,
     credential: GitCredential,
+    expectedTarget: GitCredentialTarget | null,
 ): Promise<GitCredentialServer> {
     return new Promise((resolve, reject) => {
         const sockets = new Set<Socket>();
@@ -212,20 +275,30 @@ function listenForCredential(
             socket.on('data', (chunk: Buffer) => {
                 chunks.push(chunk);
                 length += chunk.length;
-                if (length > getGitCredentialRequestLength()) {
+                if (length > getGitCredentialRequestLimit()) {
                     socket.destroy();
                     return;
                 }
-                if (length < getGitCredentialRequestLength()) {
+                if (length < 5) {
+                    return;
+                }
+                const frame = Buffer.concat(chunks, length);
+                const expectedLength = getGitCredentialRequestLengthForVersion(
+                    frame[4] ?? -1,
+                );
+                if (!expectedLength || length > expectedLength) {
+                    socket.destroy();
+                    return;
+                }
+                if (length < expectedLength) {
                     return;
                 }
                 socket.removeAllListeners('data');
-                const request = parseGitCredentialRequest(
-                    Buffer.concat(chunks, length),
-                );
+                const request = parseGitCredentialRequest(frame);
                 const accepted =
                     request !== null &&
-                    safeEqual(sessionRef, request.sessionRef);
+                    safeEqual(sessionRef, request.sessionRef) &&
+                    targetsMatch(expectedTarget, request.target);
                 const response = createGitCredentialResponse(
                     accepted
                         ? request.kind === 'username'
@@ -243,6 +316,34 @@ function listenForCredential(
             resolve({ server, sockets });
         });
     });
+}
+
+/**
+ * Creates a destination-bound session without an askpass fallback.
+ *
+ * @param launcher - Platform-specific credential-helper launcher.
+ * @param server - Attempt-owned loopback credential server.
+ * @param sessionRef - Opaque one-operation session reference.
+ * @param port - Ephemeral loopback server port.
+ * @returns Bound helper configuration and idempotent cleanup callback.
+ */
+function createBoundSession(
+    launcher: GitAskPassHandle,
+    server: GitCredentialServer,
+    sessionRef: string,
+    port: number,
+): GitBoundCredentialSession {
+    const session = createSession(launcher, server, sessionRef, port);
+    const {
+        GIT_ASKPASS: _askPass,
+        GIT_ASKPASS_REQUIRE: _require,
+        ...environment
+    } = session.environment;
+    return {
+        environment,
+        helper: formatCredentialHelper(launcher.executablePath),
+        close: session.close,
+    };
 }
 
 /**
@@ -293,6 +394,73 @@ function safeEqual(expected: string, supplied: string): boolean {
         expectedBytes.length === suppliedBytes.length &&
         timingSafeEqual(expectedBytes, suppliedBytes)
     );
+}
+
+/**
+ * Derives the exact Git credential context from a canonical repository URL.
+ *
+ * @param canonicalUrl - Exact token-free HTTPS repository URL.
+ * @returns Structured target supplied by Git to the trusted helper.
+ */
+function createCredentialTarget(canonicalUrl: string): GitCredentialTarget {
+    let url: URL;
+    try {
+        url = new URL(canonicalUrl);
+    } catch {
+        throw new Error('Git credential target is invalid');
+    }
+    if (
+        url.protocol !== 'https:' ||
+        url.username !== '' ||
+        url.password !== '' ||
+        url.port !== '' ||
+        url.search !== '' ||
+        url.hash !== '' ||
+        !url.pathname.startsWith('/') ||
+        !url.pathname.endsWith('.git')
+    ) {
+        throw new Error('Git credential target is invalid');
+    }
+    return {
+        protocol: 'https',
+        host: url.hostname,
+        path: url.pathname.slice(1),
+    };
+}
+
+/**
+ * Compares an actual helper destination with the session's exact target.
+ *
+ * @param expected - Destination bound when the session was opened.
+ * @param actual - Structured destination supplied by Git.
+ * @returns Whether both sessions use the same target mode and destination.
+ */
+function targetsMatch(
+    expected: GitCredentialTarget | null,
+    actual: GitCredentialTarget | null,
+): boolean {
+    if (!expected || !actual) {
+        return expected === actual;
+    }
+    return (
+        expected.protocol === actual.protocol &&
+        expected.host === actual.host &&
+        expected.path === actual.path
+    );
+}
+
+/**
+ * Formats one trusted absolute helper path as a Git shell helper command.
+ *
+ * @param executablePath - Attempt-owned helper launcher path.
+ * @returns Git credential.helper configuration value.
+ */
+function formatCredentialHelper(executablePath: string): string {
+    const shellPath =
+        process.platform === 'win32'
+            ? executablePath.replaceAll('\\', '/')
+            : executablePath;
+    return `!exec ${quotePosix(shellPath)}`;
 }
 
 /**

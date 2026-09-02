@@ -64,6 +64,7 @@
         "windowedMode": "Этот проект открыт в оконном режиме",
         "codeEditorProject": "Используется {{editor}}",
         "gitProject": "Проект использует Git для контроля версий",
+        "githubProject": "Проект находится на GitHub",
         "invalidReasons": {
             "missingProjectFile": "Файл проекта не найден. Проверьте расположение проекта.",
             "missingEditor": "Редактор не найден. Проверьте расположение редактора."

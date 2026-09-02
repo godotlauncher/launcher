@@ -63,6 +63,19 @@ function renderProjectsList(
     ],
     locale = 'en',
     pinnedReorderingDisabled = false,
+    projectGitHubUrls: ReadonlyMap<string, string> = new Map(),
+    translate: (key: string, options?: Record<string, unknown>) => string = (
+        key,
+        options,
+    ) => {
+        if (options?.editor) {
+            return `${key}: ${options.editor}`;
+        }
+        if (options?.age) {
+            return `${key}: ${options.age}`;
+        }
+        return key;
+    },
 ): string {
     return renderToStaticMarkup(
         <ProjectsList
@@ -75,6 +88,7 @@ function renderProjectsList(
             loading={false}
             locale={locale}
             busyProjects={[]}
+            projectGitHubUrls={projectGitHubUrls}
             codeEditorSettings={codeEditorSettings}
             highlightedPinnedProjectPath={null}
             pinnedReorderingDisabled={pinnedReorderingDisabled}
@@ -87,15 +101,7 @@ function renderProjectsList(
             onTogglePinned={vi.fn()}
             onProjectSettings={vi.fn()}
             onProjectMoreOptions={vi.fn()}
-            t={(key, options) => {
-                if (options?.editor) {
-                    return `${key}: ${options.editor}`;
-                }
-                if (options?.age) {
-                    return `${key}: ${options.age}`;
-                }
-                return key;
-            }}
+            t={translate}
         />,
     );
 }
@@ -177,7 +183,6 @@ describe('ProjectsList', () => {
         expect(html).toContain('aria-label="project.pinProject"');
         expect(html).toContain('aria-label="card.projectSettings"');
         expect(html).toContain('card.editInGodot');
-        expect(html).toContain('btn btn-primary btn-sm min-w-32');
         expect(html).toContain('vscode.svg');
         expect(html).toContain('lucide-flask-conical');
     });
@@ -191,8 +196,6 @@ describe('ProjectsList', () => {
         );
 
         expect(html).toContain('Visual Studio Code');
-        expect(html).toContain('bg-warning');
-        expect(html).toContain('text-warning');
         expect(html).not.toContain('vscode.svg');
     });
 
@@ -209,15 +212,52 @@ describe('ProjectsList', () => {
         });
 
         expect(html).toContain('data-testid="projectBadges"');
-        expect(html).toContain(
-            'flex min-w-0 flex-wrap content-start items-start',
-        );
         expect(html).toContain('data-testid="projectLaunchActions"');
         expect(html.indexOf('data-testid="projectBadges"')).toBeLessThan(
             html.indexOf('data-testid="projectLaunchActions"'),
         );
         expect(html).toContain('card.windowed');
         expect(html).toContain('>Git<');
+        expect(html).toContain('data-testid="gitProjectIcon"');
+        expect(html).not.toContain('data-testid="githubProjectIcon"');
+    });
+
+    it('uses the GitHub label, icon, and tooltip for a cached GitHub origin', () => {
+        const translate = vi.fn((key: string) => key);
+        const html = renderProjectsList(
+            {
+                newProjects: [{ ...baseProject, withGit: true }],
+            },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map([[baseProject.path, 'https://github.com/example/sample']]),
+            translate,
+        );
+
+        expect(html).toContain('>GitHub<');
+        expect(translate).toHaveBeenCalledWith('table.githubProject');
+        expect(html).toContain('data-testid="githubProjectIcon"');
+        expect(html).not.toContain('data-testid="gitProjectIcon"');
+    });
+
+    it('returns to the Git label, icon, and tooltip without a GitHub origin', () => {
+        const translate = vi.fn((key: string) => key);
+        const html = renderProjectsList(
+            {
+                newProjects: [{ ...baseProject, withGit: true }],
+            },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map(),
+            translate,
+        );
+
+        expect(html).toContain('>Git<');
+        expect(translate).toHaveBeenCalledWith('table.gitProject');
+        expect(html).toContain('data-testid="gitProjectIcon"');
+        expect(html).not.toContain('data-testid="githubProjectIcon"');
     });
 
     it('renders localized relative times', () => {

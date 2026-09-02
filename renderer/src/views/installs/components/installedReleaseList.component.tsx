@@ -266,7 +266,7 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                 type="button"
                 data-testid="btnReleaseMoreOptions"
                 onClick={(event) => onOpenReleaseMoreOptions(event, release)}
-                className="relative flex size-10 shrink-0 select-none items-center justify-center rounded-lg outline-none hover:bg-base-content/20"
+                className="btn btn-ghost btn-square relative size-10 min-h-10 shrink-0 rounded-lg hover:bg-base-content/20"
             >
                 <EllipsisVertical size={20} aria-hidden="true" />
             </button>

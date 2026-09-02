@@ -21,6 +21,7 @@ type CreateProjectGitIdentityDialogProps = {
     saveChoice: CreateProjectGitIdentitySaveChoice;
     saving: boolean;
     saveError: string | null;
+    allowSkip?: boolean;
     t: Translate;
     onNameChange: (name: string) => void;
     onEmailChange: (email: string) => void;
@@ -55,6 +56,7 @@ export const CreateProjectGitIdentityDialog: React.FC<
     saveChoice,
     saving,
     saveError,
+    allowSkip = true,
     t,
     onNameChange,
     onEmailChange,
@@ -78,13 +80,15 @@ export const CreateProjectGitIdentityDialog: React.FC<
                 returnFocusRef={returnFocusRef}
                 footer={
                     <>
-                        <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={onSkip}
-                        >
-                            {t('gitIdentity.skipCommit')}
-                        </button>
+                        {allowSkip && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={onSkip}
+                            >
+                                {t('gitIdentity.skipCommit')}
+                            </button>
+                        )}
                         <button
                             type="button"
                             className="btn btn-primary"
@@ -116,7 +120,7 @@ export const CreateProjectGitIdentityDialog: React.FC<
             footer={
                 presetPage ? (
                     <>
-                        {!globalIdentityComplete && (
+                        {!globalIdentityComplete && allowSkip && (
                             <button
                                 type="button"
                                 className="btn btn-ghost"

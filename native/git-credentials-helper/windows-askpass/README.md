@@ -1,11 +1,16 @@
-# Windows Git askpass helper
+# Windows Git credential client
 
-This directory builds the small Windows executable used by Git to request one
-credential field from Godot Launcher's attempt-owned loopback service. It does
-not store credentials, open a user interface, or make non-loopback connections.
+This directory builds the small Windows executable used by Git as an askpass
+client and as a destination-bound credential helper for automated publication.
+It does not store credentials, open a user interface, or make non-loopback
+connections.
 
 The private protocol uses a fixed 49-byte request containing `GLAP`, protocol
 version 1, the requested credential kind, and the 43-byte session reference.
+Destination-bound helper requests use a fixed version 2 frame that also carries
+the bounded Git credential protocol, host, and repository path. The loopback
+server releases a publication credential only when all three fields exactly
+match the confirmed repository URL.
 The response contains an eight-byte versioned header, a bounded two-byte body
 length, and the credential bytes.
 

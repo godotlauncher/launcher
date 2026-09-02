@@ -1,6 +1,9 @@
-import type { AppIntegrationAccessTarget } from './app-integration.types.js';
+import type {
+    AppIntegrationAccessTarget,
+    AppIntegrationAccessTargetCapability,
+} from './app-integration.types.js';
 
-export type AppIntegrationCapabilityKind = 'repository-browsing';
+export type AppIntegrationCapabilityKind = AppIntegrationAccessTargetCapability;
 
 export type AppIntegrationCapabilityMetadata = {
     providerId: string;
@@ -53,6 +56,69 @@ export type RepositorySelection = {
     };
 };
 
+export type RepositoryCreationRepository = {
+    id: string;
+    owner: string;
+    name: string;
+    cloneUrl: string;
+    webUrl: string;
+};
+
+export type RepositoryCreationRequest = {
+    credential: string;
+    accessTarget: AppIntegrationAccessTarget;
+    repositoryName: string;
+    signal: AbortSignal;
+};
+
+export type RepositoryNameAvailability = 'available' | 'unavailable';
+
+export type RepositoryPushCredentialRequest = {
+    credential: string;
+    accessTarget: AppIntegrationAccessTarget;
+};
+
+export type RepositoryCreation = {
+    repository: RepositoryCreationRepository;
+    gitCredential: {
+        username: string;
+        password: string;
+    };
+};
+
+export type RepositoryCreationRecovery =
+    | { status: 'absent' }
+    | {
+          status: 'present';
+          repository: RepositoryCreationRepository;
+      };
+
+export type RepositoryCreationFailureReason =
+    | 'invalid-request'
+    | 'no-usable-connection'
+    | 'secure-storage-unavailable'
+    | 'permission-update-required'
+    | 'target-unavailable'
+    | 'invalid-repository-name'
+    | 'repository-name-unavailable-or-policy-rejected'
+    | 'rate-limited'
+    | 'network-unavailable'
+    | 'remote-creation-uncertain'
+    | 'remote-creation-response-invalid'
+    | 'provider-unavailable';
+
+export class RepositoryCreationError extends Error {
+    /**
+     * Creates a safe repository-creation failure.
+     *
+     * @param reason - Stable main-process failure classification.
+     */
+    constructor(readonly reason: RepositoryCreationFailureReason) {
+        super(`Repository creation failed: ${reason}`);
+        this.name = 'RepositoryCreationError';
+    }
+}
+
 export class RepositoryBrowsingError extends Error {
     /**
      * Creates a safe repository-browsing failure.
@@ -81,10 +147,40 @@ export interface RepositoryBrowsingCapability {
     ): Promise<RepositorySelection>;
 }
 
-export type AppIntegrationCapability = RepositoryBrowsingCapability;
+export interface RepositoryCreationCapability {
+    readonly metadata: AppIntegrationCapabilityMetadata & {
+        kind: 'repository-creation';
+    };
+
+    /** Creates one empty private repository through an approved access target. */
+    createRepository(
+        request: RepositoryCreationRequest,
+    ): Promise<RepositoryCreation>;
+
+    /** Checks whether the requested name is visible on one approved owner route. */
+    checkRepositoryNameAvailability(
+        request: RepositoryCreationRequest,
+    ): Promise<RepositoryNameAvailability>;
+
+    /** Resolves the exact repository after an ambiguous creation response. */
+    recoverRepositoryCreation(
+        request: RepositoryCreationRequest,
+    ): Promise<RepositoryCreationRecovery>;
+
+    /** Formats a fresh credential for a retry against a confirmed repository. */
+    getGitCredential(request: RepositoryPushCredentialRequest): {
+        username: string;
+        password: string;
+    };
+}
+
+export type AppIntegrationCapability =
+    | RepositoryBrowsingCapability
+    | RepositoryCreationCapability;
 
 export type AppIntegrationCredentialRoute = {
     connectionId: string;
+    accountLogin: string;
     accessTarget: AppIntegrationAccessTarget;
     credential: string;
 };

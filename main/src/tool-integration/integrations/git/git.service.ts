@@ -15,7 +15,15 @@ import type {
     ToolExecutionResult,
     ToolExecutionSession,
 } from '../../tool-integration.types.js';
-import { normalizeGitRemoteUrl } from './git-remote-url-normalizer.util.js';
+import {
+    normalizeGitRemoteUrl,
+    toGitHubRepositoryWebUrl,
+} from './git-remote-url-normalizer.util.js';
+
+export type GitRemoteOriginDetails = {
+    normalizedOrigin: string | null;
+    githubWebUrl: string | null;
+};
 
 const GIT_INSPECTION_TIMEOUT_MS = 5000;
 const GIT_INSPECTION_ENV = { LC_ALL: 'C', LANG: 'C' } as const;
@@ -170,12 +178,28 @@ export class GitService {
     async getNormalizedRemoteOrigin(
         projectPath: string,
     ): Promise<string | null> {
+        return (await this.getRemoteOriginDetails(projectPath))
+            .normalizedOrigin;
+    }
+
+    /**
+     * Reads one local origin and derives only safe renderer-independent forms.
+     *
+     * Raw remote values are never logged or returned. Duplicate origins are
+     * treated as unsupported rather than selecting one implicitly.
+     *
+     * @param projectPath - Stored project working directory.
+     * @returns Safe normalized origin and optional GitHub page.
+     */
+    async getRemoteOriginDetails(
+        projectPath: string,
+    ): Promise<GitRemoteOriginDetails> {
         const result = await this.run(
             [
                 'config',
                 '--local',
                 '--no-includes',
-                '--get',
+                '--get-all',
                 'remote.origin.url',
             ],
             projectPath,
@@ -186,9 +210,18 @@ export class GitService {
             },
         );
         if (!result.success) {
-            return null;
+            return { normalizedOrigin: null, githubWebUrl: null };
         }
-        return normalizeGitRemoteUrl(this.removeLineTerminator(result.stdout));
+        const values = result.stdout
+            .split(/\r?\n/u)
+            .filter((value) => value.length > 0);
+        if (values.length !== 1) {
+            return { normalizedOrigin: null, githubWebUrl: null };
+        }
+        return {
+            normalizedOrigin: normalizeGitRemoteUrl(values[0]),
+            githubWebUrl: toGitHubRepositoryWebUrl(values[0]),
+        };
     }
 
     /**

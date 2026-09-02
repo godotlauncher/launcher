@@ -53,6 +53,7 @@ type ProjectsViewProps = {
 type ProjectFoldersMenuState = {
     project: ProjectDetails;
     anchorRect: ActionMenuAnchorRect;
+    githubUrl: string | null;
 };
 
 /**
@@ -122,6 +123,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     } = useRelease();
     const {
         projects,
+        projectGitHubUrls,
         codeEditorSettings,
         setProjectEditor,
         setProjectWindowed,
@@ -145,7 +147,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         refreshProjects,
         loading,
     } = useProjects();
-    const { setCurrentView } = useAppNavigation();
+    const { openExternalLink, setCurrentView } = useAppNavigation();
     const {
         projectActionsMenu,
         setProjectActionsMenu,
@@ -433,6 +435,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         <div className="divider m-0"></div>
                         <ProjectsList
                             sections={projectSections}
+                            projectGitHubUrls={projectGitHubUrls}
                             loading={loading}
                             locale={
                                 i18n.resolvedLanguage ?? i18n.language ?? 'en'
@@ -470,6 +473,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 setProjectActionsMenu(null);
                                 setProjectFoldersMenu({
                                     project,
+                                    githubUrl:
+                                        projectGitHubUrls.get(project.path) ??
+                                        null,
                                     anchorRect: getActionMenuAnchorRect(
                                         event.currentTarget,
                                     ),
@@ -489,6 +495,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             <ProjectFoldersMenu
                 project={projectFoldersMenu?.project ?? null}
                 anchorRect={projectFoldersMenu?.anchorRect ?? null}
+                githubUrl={projectFoldersMenu?.githubUrl ?? null}
                 t={t}
                 onClose={() => setProjectFoldersMenu(null)}
                 onOpenProjectFolder={(project) =>
@@ -496,6 +503,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 }
                 onOpenEditorSettingsFolder={(project) =>
                     runProjectAction(() => openProjectEditorFolder(project))
+                }
+                onOpenGitHub={(url) =>
+                    runProjectAction(() => openExternalLink(url))
                 }
             />
             <AddProjectSourceMenu

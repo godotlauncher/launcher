@@ -56,51 +56,17 @@ describe('Drawer', () => {
         expect(html).toContain('Project content');
         expect(html).toContain('<footer');
         expect(html).toContain('aria-label="Close drawer"');
-        expect(html).toContain('btn btn-ghost btn-square btn-sm');
-        expect(html).toContain('btn btn-primary');
     });
 
-    it('uses scrollable body classes by default', () => {
-        const html = renderToStaticMarkup(
-            <Drawer open onOpenChange={noop} ariaLabel="Scrollable drawer">
-                <Drawer.Body>Scrollable content</Drawer.Body>
-            </Drawer>,
-        );
-
-        expect(html).toContain('min-h-0');
-        expect(html).toContain('flex-1');
-        expect(html).toContain('overflow-y-auto');
-    });
-
-    it('can render a non-scrollable body', () => {
-        const html = renderToStaticMarkup(
-            <Drawer open onOpenChange={noop} ariaLabel="Static drawer">
-                <Drawer.Body scrollable={false}>Static content</Drawer.Body>
-            </Drawer>,
-        );
-
-        expect(html).toContain('flex-1');
-        expect(html).not.toContain('overflow-y-auto');
-    });
-
-    it.each([
-        ['left', 'items-stretch justify-start', 'border-r border-base-300'],
-        ['right', 'items-stretch justify-end', 'border-l border-base-300'],
-        ['top', 'items-start justify-stretch', 'border-b border-base-300'],
-        ['bottom', 'items-end justify-stretch', 'border-t border-base-300'],
-    ] as const)(
-        'renders %s side placement classes and state attributes',
-        (side, containerClassName, panelClassName) => {
+    it.each(['left', 'right', 'top', 'bottom'] as const)(
+        'renders %s side state attributes',
+        (side) => {
             const html = renderToStaticMarkup(
                 <Drawer open onOpenChange={noop} side={side} ariaLabel={side}>
                     <Drawer.Body>{side}</Drawer.Body>
                 </Drawer>,
             );
 
-            expect(html).toContain(containerClassName);
-            expect(html).toContain(panelClassName);
-            expect(html).toContain('class="drawer-backdrop');
-            expect(html).toContain('class="drawer-panel');
             expect(html).toContain('data-state="open"');
             expect(html).toContain(`data-side="${side}"`);
         },

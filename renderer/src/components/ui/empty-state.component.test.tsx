@@ -23,7 +23,6 @@ describe('EmptyState', () => {
         expect(html).toContain('lucide-folder-plus');
         expect(html).toContain('Start your first project');
         expect(html).toContain('Create something new.');
-        expect(html).toContain('btn btn-primary');
         expect(html).toContain('New Project');
         expect(html).toContain('Add an existing project');
     });

@@ -29,7 +29,10 @@ vi.mock('../hooks/useAlerts', () => ({
 }));
 
 vi.mock('../hooks/useAppNavigation', () => ({
-    useAppNavigation: () => ({ setCurrentView: vi.fn() }),
+    useAppNavigation: () => ({
+        setCurrentView: vi.fn(),
+        openExternalLink: vi.fn(),
+    }),
 }));
 
 vi.mock('../hooks/usePreferences', () => ({
@@ -59,6 +62,7 @@ vi.mock('../hooks/useRelease', () => ({
 vi.mock('../hooks/useProjects', () => ({
     useProjects: () => ({
         projects: projectState.projects,
+        projectGitHubUrls: new Map(),
         codeEditorSettings: [],
         setProjectEditor: vi.fn(),
         setProjectWindowed: vi.fn(),

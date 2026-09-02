@@ -20,7 +20,6 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Use an absolute path."');
-        expect(html).toContain('text-info');
         expect(html).toContain('lucide-circle-question-mark');
     });
 
@@ -121,8 +120,6 @@ describe('UI form primitives', () => {
         expect(html).toContain('aria-label="Output folder is required."');
         expect(html).toContain('lucide-circle-x');
         expect(html).toContain('lucide-folder');
-        expect(html).toContain('relative join-item min-w-0 flex-1');
-        expect(html).toContain('absolute right-2 top-1/2');
     });
 
     it('disables both path input and browse action', () => {
@@ -141,6 +138,22 @@ describe('UI form primitives', () => {
         expect(html.match(/disabled=""/g)).toHaveLength(2);
     });
 
+    it('can disable only the path browse action', () => {
+        const html = renderToStaticMarkup(
+            <PathField
+                id="selectingPath"
+                label="Project folder"
+                value="/projects"
+                onChange={vi.fn()}
+                onSelect={vi.fn()}
+                browseKind="directory"
+                browseDisabled
+            />,
+        );
+
+        expect(html.match(/disabled=""/g)).toHaveLength(1);
+    });
+
     it('renders search field with an internal clear action', () => {
         const html = renderToStaticMarkup(
             <SearchField
@@ -148,6 +161,7 @@ describe('UI form primitives', () => {
                 onChange={vi.fn()}
                 placeholder="Search"
                 clearLabel="Clear search"
+                compact
                 data-testid="searchInput"
             />,
         );

@@ -8,6 +8,7 @@
         "nameplaceholder": "プロジェクト名",
         "downloading": "ダウンロード中...",
         "nameRequired": "プロジェクト名が必要です",
+        "nameExists": "この名前のプロジェクトは既に存在します",
         "overwritePath": "プロジェクトパスを上書き",
         "selectFolderDialogTitle": "プロジェクトフォルダを選択",
         "selectFolderTooltip": "プロジェクトフォルダを選択するダイアログを開く",
@@ -19,6 +20,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "モバイル",
         "compatible": "互換",
+        "forwardPlusHelp": "高度な3Dグラフィックスを使うデスクトップゲームに最適です。",
+        "mobileHelp": "モバイルゲームやシンプルなシーンに最適です。",
+        "compatibleHelp": "Web、古いデバイス、幅広い互換性に最適です。",
         "forwardPlusFeatures": {
             "desktop": "デスクトッププラットフォームのみをサポート。",
             "advanced3d": "高度な3Dグラフィックスが利用可能。",
@@ -41,6 +45,78 @@
             "fastest": "シンプルなシーンの最速レンダリング。"
         }
     },
+    "publishToGitHub": {
+        "label": "GitHub に公開",
+        "repositoryTitle": "プライベート GitHub リポジトリ",
+        "description": "ローカルで作成した後、プライベートリポジトリを作成してプロジェクトをプッシュします。",
+        "loadingOwners": "接続済みの GitHub 所有者を確認しています...",
+        "owner": "所有者",
+        "ownerHelp": "リポジトリを所有する GitHub アカウントまたは組織を選択します。",
+        "ownerPlaceholder": "所有者を選択",
+        "ownerViaAccount": "{{owner}}（@{{account}} 経由）",
+        "repositoryName": "リポジトリ名",
+        "repositoryNameHelp": "英数字、ピリオド、ハイフン、アンダースコアのみ使用できます。",
+        "repositoryNameInvalid": "1～100文字の英数字、ピリオド、ハイフン、アンダースコアを入力してください。",
+        "availabilityChecking": "名前を確認しています...",
+        "availabilityAvailable": "この名前は使用できそうです",
+        "availabilityUnavailable": "この名前は既に使用されています",
+        "availabilityUnknown": "この名前を確認できませんでした",
+        "openConnections": "接続を開く",
+        "leaveTitle": "プロジェクト作成を終了しますか？",
+        "leaveMessage": "接続を開くと、保存されていないプロジェクト情報は消去されます。",
+        "successTitle": "GitHub に公開しました",
+        "successMessage": "{{owner}}/{{name}} をプライベートリポジトリとして作成し、プロジェクトをプッシュしました。",
+        "recoveryTitle": "ローカルプロジェクトは安全です",
+        "recoveryDialogTitle": "GitHub に公開できませんでした",
+        "recoverySafe": "プロジェクトはローカルに作成され、安全に保存されています。",
+        "retry": "公開を再試行",
+        "checkAndRetry": "確認して再試行",
+        "useRepository": "このリポジトリを使用",
+        "recoveryRepositoryFound": "GitHub に該当する空のリポジトリがあります。Launcher で使用することを確認してください。",
+        "retryFailed": "公開を再試行できませんでした。ローカルプロジェクトは安全です。",
+        "continueLocally": "ローカルで続行",
+        "openGitHub": "GitHub を開く",
+        "localTitle": "プロジェクトをローカルに保持しました",
+        "localMessage": "プロジェクトはこのコンピューターと Launcher ライブラリに残ります。",
+        "requiresInitialCommit": "公開には、最初のコミットを持つ新しい Git リポジトリが必要です。",
+        "publicationFailed": "プロジェクトはローカルに作成されましたが、GitHub への公開は完了しませんでした。",
+        "attemptExpired": "この公開操作は期限切れです。ローカルプロジェクトは安全です。",
+        "targetFailure": {
+            "connection-required": "公開する前に GitHub に接続してください。",
+            "permission-update-required": "GitHub 接続にリポジトリ作成権限が必要です。",
+            "secure-storage-unavailable": "安全な認証情報ストレージを利用できません。",
+            "provider-unavailable": "GitHub 所有者を読み込めませんでした。接続を確認して再試行してください。"
+        },
+        "failure": {
+            "connection-required": "GitHub 接続を利用できなくなりました。",
+            "permission-update-required": "GitHub 接続のリポジトリ権限を更新する必要があります。",
+            "secure-storage-unavailable": "安全な認証情報ストレージを利用できなくなりました。",
+            "target-unavailable": "選択した GitHub 所有者を利用できなくなりました。",
+            "invalid-repository-name": "リポジトリ名が無効です。",
+            "repository-name-unavailable-or-policy-rejected": "GitHub でこの名前を使用できません。既に存在するか、組織のポリシーで禁止されている可能性があります。",
+            "rate-limited": "GitHub が一時的にリクエストを制限しています。後でもう一度お試しください。",
+            "network-unavailable": "公開中にネットワーク接続が失敗しました。",
+            "remote-creation-uncertain": "GitHub がリポジトリを作成したか確認できませんでした。接続を復元してから確認し、再試行してください。",
+            "recovered-repository-not-empty": "GitHub にこのリポジトリがありますが、空ではありません。Launcher はこのリポジトリに公開しません。",
+            "remote-created-origin-failed": "プライベートリポジトリは作成されましたが、ローカルプロジェクトに接続できませんでした。",
+            "remote-created-push-failed": "プライベートリポジトリは作成されましたが、プロジェクトをプッシュできませんでした。",
+            "remote-created-verification-failed": "プロジェクトはプッシュされた可能性がありますが、確認できませんでした。",
+            "local-repository-changed": "ローカル Git リポジトリが変更されたため、再試行を停止しました。",
+            "provider-unavailable": "GitHub がリクエストを完了できませんでした。"
+        }
+    },
+    "existingRepository": {
+        "confirmationTitle": "このプロジェクトは別の Git リポジトリ内に作成されます",
+        "warningMessage": "選択したフォルダーは {{root}} の Git リポジトリ内にあります。",
+        "gitSkipped": "Launcher は別の Git リポジトリや最初のコミットを作成しません。",
+        "gitLfsSkipped": "Git LFS は設定されません。",
+        "githubSkipped": "プロジェクトは GitHub に公開されません。",
+        "question": "続行しますか？",
+        "completionTitle": "プロジェクトを作成しました",
+        "completionLead": "このコンピューターでプロジェクトを使用できます。",
+        "completionMessage": "このプロジェクトは {{root}} の既存の Git リポジトリ内にあります。",
+        "done": "完了"
+    },
     "otherSettings": {
         "title": "その他の設定",
         "codeEditor": {
@@ -50,11 +126,12 @@
             "notFound": "見つかりません"
         },
         "initGit": "Gitリポジトリを初期化",
+        "unavailableLabel": "利用できません",
         "gitNotInstalled": "Gitがこのコンピュータにインストールされていません",
         "gitLfs": {
             "label": "Git LFSを使用",
             "description": "Godotドキュメントのファイルパターンを出発点として設定します。",
-            "unavailable": "使用するには、設定 > ツールでGit LFSをインストールして有効にしてください。",
+            "unavailable": "Git LFSがこのコンピュータにインストールされていません",
             "patternsTitle": "追跡するファイル形式",
             "groups": {
                 "models": "3Dモデル",
@@ -97,7 +174,9 @@
     "buttons": {
         "editNow": "今すぐ編集",
         "create": "プロジェクトを作成",
-        "creating": "プロジェクトを作成中..."
+        "createAndPublish": "作成して公開",
+        "creating": "プロジェクトを作成中...",
+        "publishing": "プロジェクトを作成して GitHub に公開しています..."
     },
     "errors": {
         "invalidEditorVersion": "無効なエディタバージョン：{{version}}",
@@ -109,6 +188,7 @@
         "failedGitBranch": "Gitブランチをmainに変更できませんでした",
         "invalidGitIdentity": "Gitの名前とメールアドレスが必要です",
         "failedGitIdentity": "Git IDを保存できませんでした",
+        "parentRepositoryContextChanged": "選択した場所の Git リポジトリが変更されました。場所を確認して、もう一度お試しください。",
         "failedGitCommit": "最初のGitコミットを作成できませんでした",
         "gitLfsRequiresGit": "Git LFSには新しいGitリポジトリが必要です",
         "gitLfsExistingRepository": "プロジェクトが既存のGitリポジトリ内にあるため、Git LFSを設定できません",

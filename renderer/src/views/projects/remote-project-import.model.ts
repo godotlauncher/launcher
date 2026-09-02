@@ -313,10 +313,10 @@ export function appendRemoteRepositories(
  */
 export function getRemoteRepositoryRowClassName(selected: boolean): string {
     const base =
-        'flex w-full items-center rounded-box border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50';
+        'btn h-auto min-h-0 w-full justify-start rounded-box px-3 py-2 text-left text-sm font-normal shadow-none focus-visible:outline-none';
     return selected
-        ? `${base} border-primary bg-primary/20 text-base-content ring-1 ring-primary`
-        : `${base} border-base-300 bg-base-200 hover:border-primary/60 hover:bg-base-300`;
+        ? `${base} btn-soft btn-primary hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:border-primary focus-visible:bg-primary/10 focus-visible:text-primary`
+        : `${base} btn-ghost`;
 }
 
 /**

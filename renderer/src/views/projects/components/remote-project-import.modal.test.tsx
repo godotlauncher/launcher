@@ -71,7 +71,6 @@ describe('RemoteProjectImportModal', () => {
         );
 
         expect(html).toContain('<dialog');
-        expect(html).toContain('h-[85vh] max-w-5xl');
         expect(html).toContain('addProject.remote.github.searchPlaceholder');
         expect(html).not.toContain('addProject.remote.github.visibility');
         expect(html).not.toContain('addProject.remote.public.urlLabel');

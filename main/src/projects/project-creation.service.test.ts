@@ -2,6 +2,7 @@ import path from 'node:path';
 import type {
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     InstalledRelease,
     RendererType,
 } from '@shared/contracts';
@@ -130,6 +131,7 @@ const projectsStore = {
  * @param codeEditorService - Code editor integration service.
  * @param overwriteProjectPath - Optional target project path.
  * @param gitOptions - Optional Git initialization settings.
+ * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
  * @returns The project creation result.
  */
 function createProject(
@@ -141,6 +143,7 @@ function createProject(
     codeEditorService: CodeEditorIntegrationService,
     overwriteProjectPath?: string,
     gitOptions?: CreateProjectGitOptions,
+    parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
 ) {
     return new ProjectCreationService(
         codeEditorService,
@@ -155,6 +158,7 @@ function createProject(
         withGit,
         overwriteProjectPath,
         gitOptions,
+        parentRepositoryConsent,
     );
 }
 
@@ -243,6 +247,45 @@ describe('createProject', () => {
             recoveredConfigFiles: [],
         });
     });
+
+    it.each([
+        ['default path', undefined, path.resolve('/projects/My-Game')],
+        [
+            'selected path',
+            path.resolve('/custom/placeholder'),
+            path.resolve('/custom/My-Game'),
+        ],
+    ])(
+        'inspects the final sanitised %s before creation',
+        async (_label, overwriteProjectPath, expectedPath) => {
+            const inspection = {
+                status: 'inside-work-tree' as const,
+                root: path.dirname(expectedPath),
+                isProjectRoot: false,
+                kind: 'standard' as const,
+            };
+            gitServiceMocks.inspectRepository.mockResolvedValueOnce(inspection);
+            const service = new ProjectCreationService(
+                codeEditorIntegrationService,
+                gitService,
+                gitLfsService,
+                projectsStore,
+            );
+
+            await expect(
+                service.inspectCreateProjectRepository(
+                    '  My Game  ',
+                    overwriteProjectPath,
+                ),
+            ).resolves.toEqual(inspection);
+
+            expect(gitServiceMocks.inspectRepository).toHaveBeenCalledWith(
+                expectedPath,
+            );
+            expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        },
+    );
 
     it('writes project launcher config after creating a project', async () => {
         const result = await createProject(
@@ -389,9 +432,9 @@ describe('createProject', () => {
             gitServiceMocks.renameBranch.mock.invocationCallOrder[0];
         const commitCallOrder =
             gitServiceMocks.addAndCommit.mock.invocationCallOrder[0];
-        expect(initCallOrder).toBeLessThan(copyCallOrders[0]);
-        expect(initCallOrder).toBeLessThan(copyCallOrders[1]);
-        expect(launcherConfigCallOrder).toBeLessThan(initCallOrder);
+        expect(launcherConfigCallOrder).toBeLessThan(copyCallOrders[0]);
+        expect(copyCallOrders[0]).toBeLessThan(copyCallOrders[1]);
+        expect(copyCallOrders[1]).toBeLessThan(initCallOrder);
         expect(initCallOrder).toBeLessThan(renameCallOrder);
         expect(renameCallOrder).toBeLessThan(commitCallOrder);
     });
@@ -443,6 +486,12 @@ describe('createProject', () => {
             'godot-recommended-v1',
         );
         expect(
+            fsMocks.promises.copyFile.mock.invocationCallOrder[1],
+        ).toBeLessThan(
+            gitLfsServiceMocks.configureProjectRepository.mock
+                .invocationCallOrder[0],
+        );
+        expect(
             gitLfsServiceMocks.configureProjectRepository.mock
                 .invocationCallOrder[0],
         ).toBeLessThan(
@@ -472,6 +521,16 @@ describe('createProject', () => {
         );
 
         expect(result.success).toBe(true);
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            1,
+            path.resolve('/assets/project_resources/default_gitignore'),
+            path.resolve('/projects/LFS-Skip-Commit/.gitignore'),
+        );
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            2,
+            path.resolve('/assets/project_resources/default-gitattributes'),
+            path.resolve('/projects/LFS-Skip-Commit/.gitattributes'),
+        );
         expect(
             gitLfsServiceMocks.configureProjectRepository,
         ).toHaveBeenCalledOnce();
@@ -512,17 +571,19 @@ describe('createProject', () => {
             expect(result.error).toBe(error);
             expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
             expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
             expect(gitServiceMocks.init).not.toHaveBeenCalled();
         },
     );
 
-    it('refuses an enclosing repository before project or Git mutation', async () => {
-        gitServiceMocks.inspectRepository.mockResolvedValueOnce({
+    it('requires confirmation for an enclosing repository before project or Git mutation', async () => {
+        const repository = {
             status: 'inside-work-tree',
-            root: '/projects',
+            root: path.resolve('/projects'),
             isProjectRoot: false,
-            kind: 'standard',
-        });
+            kind: 'standard' as const,
+        } as const;
+        gitServiceMocks.inspectRepository.mockResolvedValueOnce(repository);
 
         const result = await createProject(
             'Nested LFS',
@@ -538,15 +599,56 @@ describe('createProject', () => {
             },
         );
 
-        expect(result.error).toBe(
-            'createProject:errors.gitLfsExistingRepository',
-        );
+        expect(result).toEqual({
+            success: false,
+            parentRepositoryConfirmation: repository,
+        });
         expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
         expect(
             gitLfsServiceMocks.configureProjectRepository,
         ).not.toHaveBeenCalled();
     });
+
+    it.each([
+        ['missing', { status: 'not-a-repository' as const }],
+        [
+            'changed',
+            {
+                status: 'inside-work-tree' as const,
+                root: path.resolve('/projects/Other-Parent'),
+                isProjectRoot: false,
+                kind: 'standard' as const,
+            },
+        ],
+        ['unverifiable', { status: 'inspection-failed' as const }],
+    ])(
+        'rejects %s parent repository consent before writing files',
+        async (_state, inspection) => {
+            gitServiceMocks.inspectRepository.mockResolvedValueOnce(inspection);
+
+            const result = await createProject(
+                'Stale Consent',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                codeEditorIntegrationService,
+                undefined,
+                undefined,
+                { root: path.resolve('/projects/Parent') },
+            );
+
+            expect(result).toEqual({
+                success: false,
+                error: 'createProject:errors.parentRepositoryContextChanged',
+            });
+            expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+            expect(fsMocks.promises.mkdir).not.toHaveBeenCalled();
+            expect(gitServiceMocks.init).not.toHaveBeenCalled();
+        },
+    );
 
     it.each(['install', 'track', 'verify'] as const)(
         'rolls back and stops after Git LFS %s failure',
@@ -574,6 +676,14 @@ describe('createProject', () => {
                 stage,
                 recovery: 'completed',
             });
+            expect(fsMocks.promises.copyFile).toHaveBeenCalledWith(
+                path.resolve('/assets/project_resources/default_gitignore'),
+                path.resolve('/projects/Failed-LFS/.gitignore'),
+            );
+            expect(fsMocks.promises.copyFile).toHaveBeenCalledWith(
+                path.resolve('/assets/project_resources/default-gitattributes'),
+                path.resolve('/projects/Failed-LFS/.gitattributes'),
+            );
             expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
             expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
             expect(
@@ -677,6 +787,14 @@ describe('createProject', () => {
             recursive: true,
             force: true,
         });
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.resolve(projectPath, '.gitignore'),
+            { recursive: true, force: true },
+        );
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.resolve(projectPath, '.gitattributes'),
+            { recursive: true, force: true },
+        );
         for (const [target] of fsMocks.promises.rm.mock.calls) {
             expect(path.dirname(target)).toBe(projectPath);
         }
@@ -811,6 +929,7 @@ describe('createProject', () => {
             if (mock === gitServiceMocks.init) {
                 gitServiceMocks.inspectRepository
                     .mockResolvedValueOnce({ status: 'not-a-repository' })
+                    .mockResolvedValueOnce({ status: 'not-a-repository' })
                     .mockResolvedValueOnce({ status: 'not-a-repository' });
             }
 
@@ -866,7 +985,7 @@ describe('createProject', () => {
         expect(fsMocks.promises.rm).toHaveBeenCalled();
     });
 
-    it('does not add Git metadata when Git is disabled', async () => {
+    it('checks repository context without performing Git setup when Git is disabled', async () => {
         const result = await createProject(
             'No Git Project',
             release,
@@ -877,13 +996,23 @@ describe('createProject', () => {
         );
 
         expect(result.success).toBe(true);
-        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            1,
+            path.resolve('/assets/project_resources/default_gitignore'),
+            path.resolve('/projects/No-Git-Project/.gitignore'),
+        );
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            2,
+            path.resolve('/assets/project_resources/default-gitattributes'),
+            path.resolve('/projects/No-Git-Project/.gitattributes'),
+        );
         expect(gitServiceMocks.exists).not.toHaveBeenCalled();
+        expect(gitServiceMocks.inspectRepository).toHaveBeenCalledOnce();
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
     });
 
-    it('does not add Git metadata when Git is unavailable', async () => {
+    it('creates default Git files when requested Git is unavailable', async () => {
         gitServiceMocks.exists.mockResolvedValueOnce(false);
 
         const result = await createProject(
@@ -897,7 +1026,16 @@ describe('createProject', () => {
 
         expect(result.success).toBe(true);
         expect(result.projectDetails?.withGit).toBe(false);
-        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            1,
+            path.resolve('/assets/project_resources/default_gitignore'),
+            path.resolve('/projects/Unavailable-Git-Project/.gitignore'),
+        );
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            2,
+            path.resolve('/assets/project_resources/default-gitattributes'),
+            path.resolve('/projects/Unavailable-Git-Project/.gitattributes'),
+        );
         expect(gitServiceMocks.exists).toHaveBeenCalledOnce();
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
@@ -920,6 +1058,11 @@ describe('createProject', () => {
             true,
             codeEditorIntegrationService,
             projectPath,
+            {
+                initialCommit: 'create',
+                gitLfs: { trackingPolicy: 'godot-recommended-v1' },
+            },
+            { root: path.resolve('/projects/Parent') },
         );
 
         expect(result.success).toBe(true);
@@ -930,11 +1073,23 @@ describe('createProject', () => {
             isProjectRoot: false,
             kind: 'standard',
         });
-        expect(fsMocks.promises.copyFile).not.toHaveBeenCalled();
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            1,
+            path.resolve('/assets/project_resources/default_gitignore'),
+            path.resolve(projectPath, '.gitignore'),
+        );
+        expect(fsMocks.promises.copyFile).toHaveBeenNthCalledWith(
+            2,
+            path.resolve('/assets/project_resources/default-gitattributes'),
+            path.resolve(projectPath, '.gitattributes'),
+        );
         expect(gitServiceMocks.init).not.toHaveBeenCalled();
         expect(gitServiceMocks.renameBranch).not.toHaveBeenCalled();
         expect(gitServiceMocks.setIdentity).not.toHaveBeenCalled();
         expect(gitServiceMocks.addAndCommit).not.toHaveBeenCalled();
+        expect(
+            gitLfsServiceMocks.configureProjectRepository,
+        ).not.toHaveBeenCalled();
     });
 
     it.each(['disabled', 'unavailable'])(

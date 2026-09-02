@@ -199,6 +199,7 @@ export const InstallEditorDrawer: React.FC<InstallEditorDrawerProps> = ({
             onOpenChange={onOpenChange}
             side="right"
             width={700}
+            testId="installEditorDrawer"
             ariaLabel={t('title')}
         >
             <Drawer.Header>

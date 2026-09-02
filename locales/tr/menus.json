@@ -15,6 +15,7 @@
         "pinProject": "Projeyi sabitle",
         "unpinProject": "Projenin sabitlemesini kaldır",
         "openProjectFolder": "Proje Klasörünü Aç",
+        "openInGitHub": "GitHub'da Aç",
         "launchEditor": "Godot'ta düzenle",
         "projectSettings": "Proje ayarları",
         "openEditorSettingsFolder": "Editör Ayarları Klasörünü Aç",

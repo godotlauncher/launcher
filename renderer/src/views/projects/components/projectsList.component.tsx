@@ -27,9 +27,12 @@ import {
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import gitIconColor from '../../../assets/icons/git_icon_color.svg';
+import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black.svg';
+import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
+import { useTheme } from '../../../hooks/useTheme';
 import { formatRelativeTime } from '../../../i18n/relativeTime';
 import {
     getInvalidProjectTableKey,
@@ -40,6 +43,7 @@ type ProjectSectionKey = 'new' | 'pinned' | 'recents';
 
 type ProjectsListProps = {
     sections: ProjectSections;
+    projectGitHubUrls: ReadonlyMap<string, string>;
     loading: boolean;
     locale: string;
     busyProjects: string[];
@@ -74,6 +78,7 @@ type ProjectListItemProps = Omit<
     | 'onReorderPinnedProjects'
 > & {
     project: ProjectDetails;
+    githubIconSrc: string;
     sectionKey: ProjectSectionKey;
     highlighted: boolean;
     pinnedItemRef?: (element: HTMLLIElement | null) => void;
@@ -81,6 +86,7 @@ type ProjectListItemProps = Omit<
     reorderStateClassName?: string;
 };
 
+/** Renders one project row with its cached repository-provider badge. */
 const ProjectListItem: React.FC<ProjectListItemProps> = ({
     project,
     sectionKey,
@@ -91,6 +97,8 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     locale,
     busyProjects,
     codeEditorSettings,
+    projectGitHubUrls,
+    githubIconSrc,
     isInstalledRelease,
     isProjectEditorDownloading,
     onLaunchProject,
@@ -128,12 +136,13 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     const launchDisabled =
         !project.valid || !releaseInstalled || editorDownloading;
     const versionLabel = `${project.version}${project.release.mono ? ' (.NET)' : ''}`;
+    const isGitHubProject = projectGitHubUrls.has(project.path);
 
     return (
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`relative overflow-hidden rounded-xl border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors motion-reduce:transition-none hover:border-base-content/20 hover:bg-base-200/55 focus-visible:outline-2 focus-visible:outline-primary ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
+            className={`relative overflow-hidden rounded-lg border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors motion-reduce:transition-none hover:border-base-content/20 hover:bg-base-200/55 ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
             data-project-path={project.path}
             data-project-section={sectionKey}
         >
@@ -142,14 +151,14 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                 aria-hidden="true"
             />
             {busyProjects.includes(project.path) && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/55">
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/55">
                     <div className="loading loading-bars" />
                 </div>
             )}
 
             <div className="flex min-w-0 flex-col gap-4 pl-2">
                 <div className="grid min-w-0 grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-base-content/8">
+                    <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-base-content/8">
                         {project.icon_path ? (
                             <img
                                 src={project.icon_path}
@@ -268,7 +277,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                       })
                                     : t('table.invalidReasons.missingEditor')
                             }
-                            tone={releaseInstalled ? 'primary' : 'warning'}
+                            tone={releaseInstalled ? 'default' : 'warning'}
                         >
                             <span
                                 className={`badge badge-outline h-7 gap-1.5 px-2 text-xs ${releaseInstalled ? 'border-base-content/25' : 'border-warning/60 text-warning'}`}
@@ -297,7 +306,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                 tone={
                                     codeEditorUnavailable
                                         ? 'warning'
-                                        : 'primary'
+                                        : 'default'
                                 }
                             >
                                 <span
@@ -324,16 +333,31 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                         {project.withGit && (
                             <Tooltip
                                 placement="top"
-                                tip={t('table.gitProject')}
-                                tone="primary"
+                                tip={t(
+                                    isGitHubProject
+                                        ? 'table.githubProject'
+                                        : 'table.gitProject',
+                                )}
+                                tone="default"
                             >
                                 <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
-                                    <img
-                                        src={gitIconColor}
-                                        className="h-3.5 w-3.5"
-                                        alt=""
-                                    />
-                                    Git
+                                    {isGitHubProject ? (
+                                        <img
+                                            src={githubIconSrc}
+                                            className="h-3.5 w-3.5"
+                                            alt=""
+                                            aria-hidden="true"
+                                            data-testid="githubProjectIcon"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={gitIconColor}
+                                            className="h-3.5 w-3.5"
+                                            alt=""
+                                            data-testid="gitProjectIcon"
+                                        />
+                                    )}
+                                    {isGitHubProject ? 'GitHub' : 'Git'}
                                 </span>
                             </Tooltip>
                         )}
@@ -342,7 +366,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                             <Tooltip
                                 placement="top"
                                 tip={t('table.windowedMode')}
-                                tone="primary"
+                                tone="default"
                             >
                                 <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
                                     <PanelTop size={13} />
@@ -361,7 +385,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                             data-testid="btnEditProjectInGodot"
                             disabled={launchDisabled}
                             onClick={() => onLaunchProject(project)}
-                            className="btn btn-primary btn-sm min-w-32 gap-2"
+                            className="btn btn-primary btn-sm min-w-32 gap-2 rounded-md"
                         >
                             <Play size={16} />
                             {t('card.editInGodot')}
@@ -449,6 +473,7 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
     );
 };
 
+/** Renders the grouped project list and its reorderable pinned section. */
 export const ProjectsList: React.FC<ProjectsListProps> = ({
     sections,
     loading,
@@ -458,6 +483,12 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     onReorderPinnedProjects,
     ...itemProps
 }) => {
+    const { theme, systemTheme } = useTheme();
+    const effectiveTheme = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
+    const githubIconSrc =
+        effectiveTheme === 'dark'
+            ? githubInvertocatWhite
+            : githubInvertocatBlack;
     const pinnedItemRefs = useRef(new Map<string, HTMLLIElement>());
     const [isPersistingPinnedOrder, setIsPersistingPinnedOrder] =
         useState(false);
@@ -648,6 +679,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                                     <SortablePinnedProjectItem
                                         key={`${section.key}_${project.path}`}
                                         {...itemProps}
+                                        githubIconSrc={githubIconSrc}
                                         project={project}
                                         index={index}
                                         reorderingDisabled={
@@ -680,6 +712,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                                 <ProjectListItem
                                     key={`${section.key}_${project.path}`}
                                     {...itemProps}
+                                    githubIconSrc={githubIconSrc}
                                     project={project}
                                     sectionKey={section.key}
                                     highlighted={

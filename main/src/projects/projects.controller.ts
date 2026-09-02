@@ -6,10 +6,13 @@ import type {
     AddProjectOptions,
     CodeEditorId,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
+    CreateProjectPublicationOptions,
     GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
     ProjectDetails,
+    ProjectPublicationRecoveryAction,
     ProjectsBridge,
     RemoteProjectImportRequest,
     RenameProjectOptions,
@@ -113,6 +116,53 @@ export class ProjectsController implements ProjectsBridge {
         return this.projects.getProjectsDetails();
     }
 
+    /** Refreshes safe GitHub links for the current stored projects. */
+    @ProjectsHandler('refreshProjectGitHubLinks')
+    refreshProjectGitHubLinks() {
+        return this.projects.refreshProjectGitHubLinks();
+    }
+
+    /**
+     * Lists current owner routes eligible for Create Project publishing.
+     *
+     * @param providerId - Registered repository provider ID.
+     */
+    @ProjectsHandler('listCreateProjectPublicationTargets')
+    listCreateProjectPublicationTargets(providerId: string) {
+        return this.projects.listCreateProjectPublicationTargets(providerId);
+    }
+
+    /**
+     * Checks whether one selected owner visibly contains a repository name.
+     *
+     * @param publication - Renderer-safe owner route and repository name.
+     */
+    @ProjectsHandler('checkCreateProjectRepositoryNameAvailability')
+    checkCreateProjectRepositoryNameAvailability(
+        publication: CreateProjectPublicationOptions,
+    ) {
+        return this.projects.checkCreateProjectRepositoryNameAvailability(
+            publication,
+        );
+    }
+
+    /**
+     * Inspects the final planned Create Project path for an enclosing repository.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     */
+    @ProjectsHandler('inspectCreateProjectRepository')
+    inspectCreateProjectRepository(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) {
+        return this.projects.inspectCreateProjectRepository(
+            projectName,
+            overwriteProjectPath,
+        );
+    }
+
     /**
      * Creates and registers a project.
      *
@@ -123,6 +173,8 @@ export class ProjectsController implements ProjectsBridge {
      * @param withGit - Whether Git setup is requested.
      * @param overwriteProjectPath - Optional existing target to replace.
      * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
+     * @param publication - Optional private repository publication request.
+     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      */
     @ProjectsHandler('createProject')
     createProject(
@@ -133,6 +185,8 @@ export class ProjectsController implements ProjectsBridge {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ) {
         return this.projects.createProject(
             name,
@@ -142,7 +196,39 @@ export class ProjectsController implements ProjectsBridge {
             withGit,
             overwriteProjectPath,
             gitOptions,
+            publication,
+            parentRepositoryConsent,
         );
+    }
+
+    /**
+     * Retries one process-local publication attempt for its exact project.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @param publication - Optional edited selection before remote creation.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
+     */
+    @ProjectsHandler('retryCreateProjectPublication')
+    retryCreateProjectPublication(
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
+    ) {
+        return this.projects.retryCreateProjectPublication(
+            attemptId,
+            publication,
+            recoveryAction,
+        );
+    }
+
+    /**
+     * Discards one process-local publication attempt without changing repositories.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     */
+    @ProjectsHandler('discardCreateProjectPublication')
+    discardCreateProjectPublication(attemptId: string) {
+        return this.projects.discardCreateProjectPublication(attemptId);
     }
 
     /**

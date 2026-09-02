@@ -1,6 +1,7 @@
 import type {
     AddProjectOptions,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
     GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
@@ -34,6 +35,9 @@ describe('ProjectsController', () => {
         const gitOptions = {
             initialCommit: 'skip',
         } satisfies CreateProjectGitOptions;
+        const parentRepositoryConsent = {
+            root: '/projects/parent',
+        } satisfies CreateProjectParentRepositoryConsent;
         const identity = {
             name: 'Project User',
             email: 'project@example.com',
@@ -58,6 +62,10 @@ describe('ProjectsController', () => {
         await controller.inspectPublicGitSource('https://example.com/game.git');
         await controller.listConnectedRepositories('github', 'cursor');
         await controller.getProjectsDetails();
+        await controller.inspectCreateProjectRepository(
+            'Game',
+            '/projects/game',
+        );
         await controller.createProject(
             'Game',
             release,
@@ -66,6 +74,8 @@ describe('ProjectsController', () => {
             true,
             '/projects/game',
             gitOptions,
+            undefined,
+            parentRepositoryConsent,
         );
         await controller.removeProject(project);
         await controller.renameProject(project, renameOptions);
@@ -109,6 +119,10 @@ describe('ProjectsController', () => {
             'cursor',
         );
         expect(service.getProjectsDetails).toHaveBeenCalledOnce();
+        expect(service.inspectCreateProjectRepository).toHaveBeenCalledWith(
+            'Game',
+            '/projects/game',
+        );
         expect(service.createProject).toHaveBeenCalledWith(
             'Game',
             release,
@@ -117,6 +131,8 @@ describe('ProjectsController', () => {
             true,
             '/projects/game',
             gitOptions,
+            undefined,
+            parentRepositoryConsent,
         );
         expect(service.removeProject).toHaveBeenCalledWith(project);
         expect(service.renameProject).toHaveBeenCalledWith(
@@ -196,6 +212,9 @@ function createServiceMock(): ProjectsService {
             reason: 'session-expired',
         })),
         getProjectsDetails: vi.fn(async () => []),
+        inspectCreateProjectRepository: vi.fn(async () => ({
+            status: 'not-a-repository',
+        })),
         createProject: vi.fn(async () => ({ success: true })),
         removeProject: vi.fn(async () => []),
         renameProject: vi.fn(async () => ({ success: true })),

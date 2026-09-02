@@ -93,7 +93,10 @@ async function withDocumentationApp(
     // This env var makes Electron behave like plain Node and breaks Playwright's Electron launch.
     delete launchEnv.ELECTRON_RUN_AS_NODE;
     const electronApp = await _electron.launch({
-        args: ['.'],
+        args: [
+            '.',
+            `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`,
+        ],
         env: launchEnv,
     });
 
@@ -117,12 +120,11 @@ async function primeDocumentationApp(
     await ensureMainNavigationReady(mainPage, electronApp);
     await mainPage.getByTestId('btnSettings').click();
     await mainPage.getByTestId('tabAppearance').click();
-    const languageSelector = mainPage.locator('select').filter({
-        has: mainPage.locator('option[value="en"]'),
-    });
+    const languageSelector = mainPage.getByTestId('selectLanguage');
     await expect(languageSelector).toBeVisible();
-    await languageSelector.selectOption('en');
-    await expect(languageSelector).toHaveValue('en');
+    await languageSelector.click();
+    await mainPage.getByRole('option', { name: 'English' }).click();
+    await expect(languageSelector).toContainText('English');
     await expect(mainPage.getByTestId('btnProjects')).toContainText(
         'Projects',
     );

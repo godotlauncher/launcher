@@ -1,14 +1,16 @@
-import { Folder, FolderPlus } from 'lucide-react';
+import { FlaskConical } from 'lucide-react';
 import type React from 'react';
 import {
     SelectField,
     type SelectFieldOption,
 } from '../../../../components/ui/selectField.component';
+import { TextField } from '../../../../components/ui/textField.component';
 import { Tooltip } from '../../../../components/ui/tooltip.component';
 import {
     type CreateProjectReleaseRow,
     getCreateProjectReleaseKey,
 } from '../createProject.model';
+import { CreateProjectPathField } from './create-project-path-field.component';
 
 type Translate = (
     key: string,
@@ -22,6 +24,7 @@ type CreateProjectProjectSectionProps = {
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     installedReleaseCount: number;
     projectName: string;
+    projectNameError?: string;
     derivedProjectPath: string;
     overwriteProjectPath: boolean;
     overwriteBasePath: string;
@@ -29,7 +32,6 @@ type CreateProjectProjectSectionProps = {
     overwritePathSuffixDisplay: string;
     showUseDefaultPathAction: boolean;
     showFolderCreateIcon: boolean;
-    overwriteBasePathMissing: boolean;
     isOverwritePathEmpty: boolean;
     onProjectNameChange: (value: string) => void;
     onReleaseChange: (releaseKey: string) => void;
@@ -48,6 +50,7 @@ export const CreateProjectProjectSection: React.FC<
     inputNameRef,
     installedReleaseCount,
     projectName,
+    projectNameError,
     derivedProjectPath,
     overwriteProjectPath,
     overwriteBasePath,
@@ -55,7 +58,6 @@ export const CreateProjectProjectSection: React.FC<
     overwritePathSuffixDisplay,
     showUseDefaultPathAction,
     showFolderCreateIcon,
-    overwriteBasePathMissing,
     isOverwritePathEmpty,
     onProjectNameChange,
     onReleaseChange,
@@ -113,14 +115,24 @@ export const CreateProjectProjectSection: React.FC<
         <div className="flex flex-col gap-2">
             <div className="flex flex-row gap-2 items-center">
                 <h2 className="text-md">{t('project.title')}</h2>
-                {selectedRelease?.mono && (
-                    <p className="badge badge-outline text-base-content/50">
-                        {t('project.dotNetBadge')}
-                    </p>
-                )}
+
                 {selectedRelease?.prerelease && (
-                    <p className="badge badge-outline text-base-content/50">
-                        {t('project.prereleaseBadge')}
+                    <Tooltip
+                        placement="top"
+                        tip={t('project.prereleaseBadge')}
+                        tone="secondary"
+                        role="img"
+                        ariaLabel={t('project.prereleaseBadge')}
+                    >
+                        <span className="inline-flex size-5 shrink-0 items-center justify-center text-secondary">
+                            <FlaskConical size={13} aria-hidden="true" />
+                        </span>
+                    </Tooltip>
+                )}
+
+                {selectedRelease?.mono && (
+                    <p className="badge badge-outline badge-xs text-base-content/50">
+                        {t('project.dotNetBadge')}
                     </p>
                 )}
             </div>
@@ -131,17 +143,20 @@ export const CreateProjectProjectSection: React.FC<
             )}
             <div className="flex flex-col gap-3">
                 <div className="flex flex-row gap-3">
-                    <input
-                        ref={inputNameRef}
-                        data-testid="inputProjectName"
-                        className="input input-bordered w-full"
-                        type="text"
-                        placeholder={t('project.nameplaceholder')}
-                        value={projectName}
-                        onChange={(event) =>
-                            onProjectNameChange(event.target.value)
-                        }
-                    />
+                    <div className="min-w-0 flex-1">
+                        <TextField
+                            inputRef={inputNameRef}
+                            id="inputProjectName"
+                            testId="inputProjectName"
+                            ariaLabel={t('project.title')}
+                            placeholder={t('project.nameplaceholder')}
+                            value={projectName}
+                            onChange={onProjectNameChange}
+                            error={projectNameError}
+                            compact
+                            regularText
+                        />
+                    </div>
                     <div className="w-1/3">
                         <SelectField
                             id="selectCreateProjectGodotEditor"
@@ -153,75 +168,36 @@ export const CreateProjectProjectSection: React.FC<
                             onChange={onReleaseChange}
                             options={releaseOptions}
                             showSelectedCheck
+                            compact
+                            regularText
                         />
                     </div>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <label className="input z-10 min-w-0 flex-1">
-                        <input
-                            data-testid="inputProjectPath"
-                            className="input input-bordered w-full active:outline-0 outline-0"
-                            type="text"
-                            value={
-                                overwriteProjectPath
-                                    ? overwriteBasePath
-                                    : derivedProjectPath
+                    <div className="z-10 min-w-0 flex-1">
+                        <CreateProjectPathField
+                            t={t}
+                            overwriteProjectPath={overwriteProjectPath}
+                            overwriteBasePath={overwriteBasePath}
+                            overwriteDisplayPath={overwriteDisplayPath}
+                            overwritePathSuffixDisplay={
+                                overwritePathSuffixDisplay
                             }
-                            title={
-                                overwriteProjectPath
-                                    ? overwriteDisplayPath
-                                    : derivedProjectPath
+                            derivedProjectPath={derivedProjectPath}
+                            showUseDefaultPathAction={showUseDefaultPathAction}
+                            showFolderCreateIcon={showFolderCreateIcon}
+                            onOverwriteBasePathChange={
+                                onOverwriteBasePathChange
                             }
-                            onChange={(event) =>
-                                onOverwriteBasePathChange(event.target.value)
-                            }
-                            disabled={!overwriteProjectPath}
+                            onUseDefaultPath={onUseDefaultPath}
+                            onSelectProjectFolder={onSelectProjectFolder}
                         />
-                        {overwriteProjectPath && (
-                            <span
-                                data-testid="overwriteProjectPathSuffix"
-                                className="max-w-45 whitespace-nowrap text-base-content/50 select-none "
-                            >
-                                {overwritePathSuffixDisplay}
-                            </span>
-                        )}
-                        {showUseDefaultPathAction && (
-                            <button
-                                type="button"
-                                data-testid="btnUseDefaultProjectPath"
-                                className="btn btn-ghost btn-xs h-6 min-h-6 px-2 text-xs"
-                                onClick={onUseDefaultPath}
-                            >
-                                {t('project.useDefaultPath')}
-                            </button>
-                        )}
-                        {overwriteProjectPath && (
-                            <Tooltip
-                                tip={t('project.selectFolderTooltip')}
-                                placement="top"
-                            >
-                                <button
-                                    type="button"
-                                    data-testid="btnSelectProjectFolder"
-                                    className="flex items-center"
-                                    data-path-missing={overwriteBasePathMissing}
-                                    disabled={!overwriteProjectPath}
-                                    onClick={onSelectProjectFolder}
-                                >
-                                    {showFolderCreateIcon ? (
-                                        <FolderPlus className="w-5 h-5 stroke-primary" />
-                                    ) : (
-                                        <Folder className="w-5 h-5 fill-base-content hover:fill-primary hover:stroke-primary" />
-                                    )}
-                                </button>
-                            </Tooltip>
-                        )}
-                    </label>
+                    </div>
                     <label className="flex items-center gap-2 sm:min-w-48">
                         <input
                             type="checkbox"
                             data-testid="checkboxOverwriteProjectPath"
-                            className="checkbox"
+                            className="checkbox checkbox-sm rounded-sm"
                             checked={overwriteProjectPath}
                             onChange={(event) =>
                                 onOverwriteProjectPathChange(

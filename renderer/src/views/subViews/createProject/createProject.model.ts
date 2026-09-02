@@ -2,10 +2,13 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
+    CreateProjectPublicationOptions,
+    CreateProjectPublicationTarget,
     GitIdentity,
     GitIdentityScope,
     GitLfsTrackingPolicy,
     InstalledRelease,
+    ProjectDetails,
     ProjectGitIdentityPreset,
     ReleaseInstallProgressStage,
     RendererType,
@@ -19,6 +22,97 @@ import {
 import { sortReleases } from '../../../releaseStoring.utils';
 
 export const OVERWRITE_PATH_CHECK_DEBOUNCE_MS = 200;
+export const PROJECT_NAME_CHECK_DEBOUNCE_MS = 500;
+export const REPOSITORY_NAME_CHECK_DEBOUNCE_MS = 900;
+
+export const GITHUB_REPOSITORY_NAME_PATTERN = /^[A-Za-z0-9._-]{1,100}$/;
+
+/**
+ * Checks whether the entered project name is unused in the Launcher library.
+ *
+ * @param projects - Projects currently registered with Launcher.
+ * @param projectName - Project name entered in the Create Project drawer.
+ * @returns Whether the trimmed name is non-empty and unused.
+ */
+export function isCreateProjectNameAvailable(
+    projects: Pick<ProjectDetails, 'name'>[],
+    projectName: string,
+): boolean {
+    const normalisedName = projectName.trim().toLowerCase();
+    return (
+        normalisedName.length > 0 &&
+        !projects.some(
+            (project) => project.name.trim().toLowerCase() === normalisedName,
+        )
+    );
+}
+
+/**
+ * Suggests a GitHub-safe repository name from the project name.
+ *
+ * @param projectName - Current display name for the project.
+ * @returns A trimmed repository name using GitHub's conservative safe subset.
+ */
+export function getSuggestedGitHubRepositoryName(projectName: string): string {
+    return projectName
+        .trim()
+        .replace(/[^A-Za-z0-9._-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 100);
+}
+
+/**
+ * Checks the conservative repository-name syntax used by the publishing flow.
+ *
+ * @param repositoryName - Repository name entered by the user.
+ * @returns Whether the name can be sent to the provider.
+ */
+export function isGitHubRepositoryNameValid(repositoryName: string): boolean {
+    return GITHUB_REPOSITORY_NAME_PATTERN.test(repositoryName);
+}
+
+/**
+ * Builds a stable renderer value for one exact publication target.
+ *
+ * @param target - Provider target selected by the user.
+ * @returns A value safe for the owner selector.
+ */
+export function getPublicationTargetValue(
+    target: CreateProjectPublicationTarget,
+): string {
+    return JSON.stringify([target.connectionId, target.accessTargetId]);
+}
+
+/**
+ * Converts one selected target and repository name to a publication request.
+ *
+ * @param target - Exact connected owner target.
+ * @param repositoryName - Validated repository name.
+ * @returns Provider-neutral publication options.
+ */
+export function toCreateProjectPublicationOptions(
+    target: CreateProjectPublicationTarget,
+    repositoryName: string,
+): CreateProjectPublicationOptions {
+    return {
+        providerId: target.providerId,
+        connectionId: target.connectionId,
+        accessTargetId: target.accessTargetId,
+        repositoryName,
+    };
+}
+
+/**
+ * Decides whether publishing success needs an in-app acknowledgement.
+ *
+ * @param editNow - Whether the new project launches immediately.
+ * @returns Whether the publication success alert should be shown.
+ */
+export function shouldShowCreateProjectPublishedAlert(
+    editNow: boolean,
+): boolean {
+    return !editNow;
+}
 
 export type PathSeparator = '\\' | '/';
 

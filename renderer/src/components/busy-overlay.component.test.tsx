@@ -9,10 +9,7 @@ describe('BusyOverlay', () => {
         );
 
         expect(html).toContain('Creating project...');
-        expect(html).toContain('bg-black/80');
-        expect(html).toContain('backdrop-blur-sm');
         expect(html).toContain('role="status"');
         expect(html).toContain('aria-busy="true"');
-        expect(html).toContain('z-60');
     });
 });

@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     InstalledRelease,
+    ProjectDetails,
 } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
@@ -10,6 +11,10 @@ import {
     getCreateProjectReleaseKey,
     getDefaultRendererForReleaseVersion,
     getProjectPathSuffixDisplay,
+    getPublicationTargetValue,
+    getSuggestedGitHubRepositoryName,
+    isCreateProjectNameAvailable,
+    isGitHubRepositoryNameValid,
     isGitIdentityComplete,
     isToolIntegrationAvailable,
     joinBasePathWithProjectSegment,
@@ -18,6 +23,8 @@ import {
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
     resolveCreateProjectReleaseIndex,
+    shouldShowCreateProjectPublishedAlert,
+    toCreateProjectPublicationOptions,
 } from './createProject.model';
 
 const installedRelease = (
@@ -62,6 +69,59 @@ const codeEditorSettings = (
 });
 
 describe('create project model helpers', () => {
+    it('checks trimmed, case-insensitive project names against the Launcher project library', () => {
+        const projects = [
+            { name: 'Existing Project' },
+            { name: 'Other Project' },
+        ] as ProjectDetails[];
+
+        expect(
+            isCreateProjectNameAvailable(projects, ' Existing Project '),
+        ).toBe(false);
+        expect(isCreateProjectNameAvailable(projects, 'existing project')).toBe(
+            false,
+        );
+        expect(isCreateProjectNameAvailable(projects, 'New Project')).toBe(
+            true,
+        );
+        expect(isCreateProjectNameAvailable(projects, '   ')).toBe(false);
+    });
+
+    it('suggests and validates conservative GitHub repository names', () => {
+        expect(getSuggestedGitHubRepositoryName('  My Café Game!  ')).toBe(
+            'My-Caf-Game',
+        );
+        expect(isGitHubRepositoryNameValid('My-Game_1.0')).toBe(true);
+        expect(isGitHubRepositoryNameValid('My Game')).toBe(false);
+        expect(isGitHubRepositoryNameValid('')).toBe(false);
+    });
+
+    it('preserves the exact opaque publishing route', () => {
+        const target = {
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'target-id',
+            ownerLogin: 'godotlauncher',
+            ownerType: 'organization' as const,
+            accountLogin: 'octocat',
+        };
+
+        expect(getPublicationTargetValue(target)).toBe(
+            '["connection-id","target-id"]',
+        );
+        expect(toCreateProjectPublicationOptions(target, 'my-game')).toEqual({
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'target-id',
+            repositoryName: 'my-game',
+        });
+    });
+
+    it('skips the published alert when the new project opens immediately', () => {
+        expect(shouldShowCreateProjectPublishedAlert(true)).toBe(false);
+        expect(shouldShowCreateProjectPublishedAlert(false)).toBe(true);
+    });
+
     it.each([
         ['Example Project', 'Example-Project'],
         ['Example: Project', 'Example--Project'],

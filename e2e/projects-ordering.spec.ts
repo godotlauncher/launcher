@@ -11,6 +11,7 @@ import type { ProjectDetails } from '@shared/contracts';
 import {
     createFixtureHome,
     prepareAppWithStubbedData,
+    setAppLanguage,
 } from './documentationScreenshots/runtime';
 import { SAMPLE_PROJECTS } from './documentationScreenshots/sampleData';
 import { getMainWindow } from './splashscreen/getMainWindow';
@@ -26,6 +27,7 @@ test.beforeAll(async () => {
         env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
+    await setAppLanguage(mainPage, 'English');
 });
 
 test.afterAll(async () => {

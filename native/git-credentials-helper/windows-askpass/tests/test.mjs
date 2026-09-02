@@ -32,7 +32,14 @@ const password = 'dummy-token-for-native-askpass-test';
 const sessionRef = 'A'.repeat(43);
 const protocolMagic = Buffer.from('GLAP', 'ascii');
 const protocolVersion = 1;
+const boundRequestVersion = 2;
 const requestLength = 49;
+const boundRequestLength = 2364;
+const credentialTarget = {
+    protocol: 'https',
+    host: 'github.com',
+    path: 'godotlauncher/my-game.git',
+};
 const temporaryDirectory = await mkdtemp(
     path.join(os.tmpdir(), 'godot-launcher-askpass-test-'),
 );
@@ -49,9 +56,72 @@ try {
         'godot-launcher-git-askpass.exe',
     );
     await copyFileWithParents(helperPath, spacedHelper);
+    await testCredentialHelper(spacedHelper);
     await testGitCredentialFill(spacedHelper);
 } finally {
     await rm(temporaryDirectory, { recursive: true, force: true });
+}
+
+/**
+ * Covers structured helper success, rejection, and non-persisting operations.
+ *
+ * @param {string} executable Path to the helper executable.
+ */
+async function testCredentialHelper(executable) {
+    await withCredentialServer(
+        { expectedTarget: credentialTarget },
+        async ({ port, requests }) => {
+            const result = await run(executable, ['get'], {
+                environment: credentialEnvironment(port),
+                input: credentialInput(credentialTarget),
+            });
+            assert.deepEqual(result, {
+                code: 0,
+                stdout: `username=${username}\npassword=${password}\n\n`,
+                stderr: '',
+            });
+            assert.deepEqual(
+                requests.map(({ kind, target }) => ({ kind, target })),
+                [
+                    { kind: 'username', target: credentialTarget },
+                    { kind: 'password', target: credentialTarget },
+                ],
+            );
+        },
+    );
+
+    for (const target of [
+        { ...credentialTarget, protocol: 'http' },
+        { ...credentialTarget, host: 'attacker.example' },
+        { ...credentialTarget, path: 'attacker/my-game.git' },
+    ]) {
+        await withCredentialServer(
+            { expectedTarget: credentialTarget },
+            async ({ port }) => {
+                assertFailure(
+                    await run(executable, ['get'], {
+                        environment: credentialEnvironment(port),
+                        input: credentialInput(target),
+                    }),
+                );
+            },
+        );
+    }
+
+    for (const operation of ['store', 'erase']) {
+        assert.deepEqual(
+            await run(executable, [operation], {
+                environment: credentialEnvironment(1),
+                input: `${credentialInput(credentialTarget)}username=${username}\npassword=${password}\n`,
+            }),
+            { code: 0, stdout: '', stderr: '' },
+        );
+    }
+    assertFailure(
+        await run(executable, ['unsupported'], {
+            environment: credentialEnvironment(1),
+        }),
+    );
 }
 
 /**
@@ -354,9 +424,15 @@ async function testFailures(executable) {
     });
 }
 
-/** Proves that Git invokes the helper from a Unicode path without persistence. */
+/**
+ * Proves that Git invokes the helper from a Unicode path without persistence.
+ *
+ * @param {string} executable Path to the helper executable.
+ */
 async function testGitCredentialFill(executable) {
-    await withCredentialServer({}, async ({ port }) => {
+    await withCredentialServer(
+        { expectedTarget: credentialTarget },
+        async ({ port }) => {
         const globalConfig = path.join(temporaryDirectory, 'global.gitconfig');
         const systemConfig = path.join(temporaryDirectory, 'system.gitconfig');
         await Promise.all([
@@ -365,8 +441,6 @@ async function testGitCredentialFill(executable) {
         ]);
         const environment = {
             ...credentialEnvironment(port),
-            GIT_ASKPASS: executable,
-            GIT_ASKPASS_REQUIRE: 'force',
             GIT_CONFIG_GLOBAL: globalConfig,
             GIT_CONFIG_NOSYSTEM: '1',
             GIT_CONFIG_SYSTEM: systemConfig,
@@ -379,23 +453,29 @@ async function testGitCredentialFill(executable) {
                 '-c',
                 'credential.helper=',
                 '-c',
+                `credential.helper=${formatCredentialHelper(executable)}`,
+                '-c',
+                'credential.useHttpPath=true',
+                '-c',
                 'credential.interactive=true',
                 'credential',
                 'fill',
             ],
             {
                 environment,
-                input: 'protocol=https\nhost=example.invalid\n\n',
+                input: 'url=https://github.com/godotlauncher/my-game.git\n\n',
             },
         );
         assert.equal(result.code, 0);
         assert.equal(result.stderr, '');
-        assert.match(result.stdout, /^protocol=https\nhost=example\.invalid\n/u);
+        assert.match(result.stdout, /^protocol=https\nhost=github\.com\n/u);
+        assert.match(result.stdout, /path=godotlauncher\/my-game\.git\n/u);
         assert.match(result.stdout, /username=x-access-token\n/u);
         assert.match(result.stdout, /password=dummy-token-for-native-askpass-test\n/u);
         assert.equal((await readFile(globalConfig, 'utf8')).includes(password), false);
         assert.equal((await readFile(systemConfig, 'utf8')).includes(password), false);
-    });
+        },
+    );
 }
 
 /** Runs a child process with an isolated environment overlay. */
@@ -422,7 +502,12 @@ function run(command, argumentsList, { environment = {}, input = '' } = {}) {
     });
 }
 
-/** Starts one loopback server with configurable protocol failures. */
+/**
+ * Starts one loopback server with configurable protocol failures.
+ *
+ * @param {object} options Server response and destination options.
+ * @param {Function} callback Test callback receiving the server port and requests.
+ */
 async function withCredentialServer(options, callback) {
     const requests = [];
     const sockets = new Set();
@@ -434,27 +519,55 @@ async function withCredentialServer(options, callback) {
         socket.on('data', (chunk) => {
             chunks.push(chunk);
             receivedLength += chunk.length;
-            if (receivedLength < requestLength) {
+            if (receivedLength < 5) {
+                return;
+            }
+            const partial = Buffer.concat(chunks);
+            const expectedLength =
+                partial[4] === boundRequestVersion
+                    ? boundRequestLength
+                    : requestLength;
+            if (receivedLength < expectedLength) {
                 return;
             }
             socket.removeAllListeners('data');
-            const frame = Buffer.concat(chunks);
-            if (frame.length !== requestLength) {
+            const frame = partial;
+            if (frame.length !== expectedLength) {
                 socket.destroy();
                 return;
             }
+            const target =
+                frame[4] === boundRequestVersion
+                    ? {
+                          protocol: frame
+                              .subarray(50, 50 + frame[49])
+                              .toString('utf8'),
+                          host: frame
+                              .subarray(59, 59 + frame[58])
+                              .toString('utf8'),
+                          path: frame
+                              .subarray(316, 316 + frame.readUInt16BE(314))
+                              .toString('utf8'),
+                      }
+                    : null;
             const request = {
                 magic: frame.subarray(0, 4).toString('ascii'),
                 version: frame[4],
                 kind: frame[5] === 1 ? 'username' : 'password',
-                sessionRef: frame.subarray(6).toString('ascii'),
+                sessionRef: frame.subarray(6, 49).toString('ascii'),
+                target,
             };
             requests.push(request);
+            const expectedVersion = options.expectedTarget
+                ? boundRequestVersion
+                : protocolVersion;
             const accepted =
                 request.magic === 'GLAP' &&
-                request.version === protocolVersion &&
+                request.version === expectedVersion &&
                 request.sessionRef === (options.expectedRef ?? sessionRef) &&
-                (frame[5] === 1 || frame[5] === 2);
+                (frame[5] === 1 || frame[5] === 2) &&
+                JSON.stringify(request.target) ===
+                    JSON.stringify(options.expectedTarget ?? null);
             const credential =
                 request.kind === 'username'
                     ? (options.username ?? username)
@@ -495,6 +608,27 @@ async function withCredentialServer(options, callback) {
         }
         await new Promise((resolve) => server.close(resolve));
     }
+}
+
+/**
+ * Formats one trusted executable as a Git shell credential helper.
+ *
+ * @param {string} executable Absolute helper executable path.
+ * @returns {string} Git credential.helper configuration value.
+ */
+function formatCredentialHelper(executable) {
+    const shellPath = executable.replaceAll('\\', '/');
+    return `!exec '${shellPath.replaceAll("'", "'\\''")}'`;
+}
+
+/**
+ * Formats one structured credential-helper input.
+ *
+ * @param {{protocol: string, host: string, path: string}} target Target fields.
+ * @returns {string} Complete helper standard input.
+ */
+function credentialInput(target) {
+    return `protocol=${target.protocol}\nhost=${target.host}\npath=${target.path}\n\n`;
 }
 
 /** Returns an environment containing only opaque session routing values. */

@@ -49,40 +49,34 @@ export const CreateProjectToolOptionsSection: React.FC<
     codeEditorId,
     onCodeEditorIdChange,
 }) => (
-    <div>
-        <div className="flex flex-col gap-2">
-            <h2 className="text-md flex items-center gap-4">
-                {t('otherSettings.title')}{' '}
-                {loadingCodeEditors && (
-                    <span className="loading loading-dots loading-xs"></span>
-                )}
-            </h2>
-
-            <div
-                className={clsx('flex flex-col gap-4 py-2', {
-                    invisible: loadingCodeEditors,
-                })}
-            >
-                <SelectField
-                    id="selectCreateProjectCodeEditor"
-                    testId="selectCreateProjectCodeEditor"
-                    label={t('otherSettings.codeEditor.label')}
-                    disabled={loadingCodeEditors || codeEditorLoadFailed}
-                    showSelectedCheck
-                    value={codeEditorId ?? ''}
-                    onChange={(value) =>
-                        onCodeEditorIdChange(
-                            value === '' ? null : (value as CodeEditorId),
-                        )
-                    }
-                    options={getCodeEditorOptions(t, codeEditorSettings)}
-                />
-                {codeEditorLoadFailed && (
-                    <p className="text-sm text-error" role="alert">
-                        {t('projects:editProject.codeEditor.loadFailed')}
-                    </p>
-                )}
-            </div>
-        </div>
+    <div
+        className={clsx('flex flex-col gap-4', {
+            invisible: loadingCodeEditors,
+        })}
+    >
+        <SelectField
+            id="selectCreateProjectCodeEditor"
+            testId="selectCreateProjectCodeEditor"
+            label={t('otherSettings.codeEditor.label')}
+            disabled={loadingCodeEditors || codeEditorLoadFailed}
+            showSelectedCheck
+            value={codeEditorId ?? ''}
+            onChange={(value) =>
+                onCodeEditorIdChange(
+                    value === '' ? null : (value as CodeEditorId),
+                )
+            }
+            options={getCodeEditorOptions(t, codeEditorSettings)}
+            compact
+            regularText
+        />
+        {codeEditorLoadFailed && (
+            <p className="text-sm text-error" role="alert">
+                {t('projects:editProject.codeEditor.loadFailed')}
+            </p>
+        )}
+        {loadingCodeEditors && (
+            <span className="loading loading-dots loading-xs"></span>
+        )}
     </div>
 );

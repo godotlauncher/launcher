@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GitHubApiClient } from './github-api.client.js';
+import {
+    GitHubApiClient,
+    GitHubRepositoryCreationResponseError,
+} from './github-api.client.js';
+import { GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES } from './github-app-integration.constants.js';
 
 describe('GitHubApiClient', () => {
     afterEach(() => vi.unstubAllGlobals());
@@ -55,6 +59,7 @@ describe('GitHubApiClient', () => {
         ).resolves.toEqual([
             {
                 providerTargetId: '123456',
+                capabilities: ['repository-browsing'],
                 login: 'godotlauncher',
                 type: 'organization',
                 manageUrl:
@@ -62,6 +67,7 @@ describe('GitHubApiClient', () => {
             },
             {
                 providerTargetId: '654321',
+                capabilities: ['repository-browsing'],
                 login: 'octocat',
                 type: 'user',
                 manageUrl: 'https://github.com/settings/installations/654321',
@@ -75,6 +81,210 @@ describe('GitHubApiClient', () => {
             headers: expect.objectContaining({
                 Authorization: 'Bearer access-token',
             }),
+        });
+    });
+
+    it('marks installations with approved write permissions for creation', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () =>
+                Response.json({
+                    installations: [
+                        {
+                            id: 123456,
+                            account: {
+                                login: 'godotlauncher',
+                                type: 'Organization',
+                            },
+                            html_url:
+                                'https://github.com/organizations/godotlauncher/settings/installations/123456',
+                            permissions: {
+                                contents: 'write',
+                                administration: 'write',
+                            },
+                            suspended_at: null,
+                        },
+                    ],
+                }),
+            ),
+        );
+
+        await expect(
+            new GitHubApiClient().getInstallations(
+                'access-token',
+                new AbortController().signal,
+            ),
+        ).resolves.toEqual([
+            expect.objectContaining({
+                capabilities: ['repository-browsing', 'repository-creation'],
+            }),
+        ]);
+    });
+
+    it('creates only an empty private organisation repository', async () => {
+        const fetchMock = vi.fn(async () =>
+            Response.json({
+                id: 42,
+                owner: { login: 'godotlauncher' },
+                name: 'my-game',
+                full_name: 'godotlauncher/my-game',
+                private: true,
+                clone_url: 'https://github.com/godotlauncher/my-game.git',
+                html_url: 'https://github.com/godotlauncher/my-game',
+            }),
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(
+            new GitHubApiClient().createPrivateRepository(
+                'access-token',
+                'godotlauncher',
+                'organization',
+                'my-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toMatchObject({ id: 42, private: true });
+        expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+            'https://api.github.com/orgs/godotlauncher/repos',
+        );
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+            method: 'POST',
+            redirect: 'manual',
+            body: JSON.stringify({
+                name: 'my-game',
+                private: true,
+                auto_init: false,
+            }),
+        });
+    });
+
+    it.each([
+        ['missing body', () => new Response(null, { status: 201 })],
+        ['malformed JSON', () => new Response('{', { status: 201 })],
+        [
+            'an oversized body',
+            () =>
+                new Response('{}', {
+                    status: 201,
+                    headers: {
+                        'content-length': String(
+                            GITHUB_REPOSITORY_CREATION_RESPONSE_MAX_BYTES + 1,
+                        ),
+                    },
+                }),
+        ],
+        [
+            'invalid repository schema',
+            () => Response.json({ id: 42 }, { status: 201 }),
+        ],
+        [
+            'unexpected repository identity',
+            () =>
+                Response.json(
+                    {
+                        id: 42,
+                        owner: { login: 'different-owner' },
+                        name: 'my-game',
+                        full_name: 'different-owner/my-game',
+                        private: true,
+                        clone_url:
+                            'https://github.com/different-owner/my-game.git',
+                        html_url: 'https://github.com/different-owner/my-game',
+                    },
+                    { status: 201 },
+                ),
+        ],
+    ] as const)(
+        'treats a successful creation response with %s as uncertain',
+        async (_description, createResponse) => {
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async () => createResponse()),
+            );
+
+            await expect(
+                new GitHubApiClient().createPrivateRepository(
+                    'access-token',
+                    'godotlauncher',
+                    'organization',
+                    'my-game',
+                    new AbortController().signal,
+                ),
+            ).rejects.toBeInstanceOf(GitHubRepositoryCreationResponseError);
+        },
+    );
+
+    it('checks an exact repository name without following redirects', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, { status: 404 }))
+            .mockResolvedValueOnce(Response.json({ id: 42 }));
+        vi.stubGlobal('fetch', fetchMock);
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.checkRepositoryNameAvailability(
+                'access-token',
+                'godotlauncher',
+                'new-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toBe('available');
+        await expect(
+            client.checkRepositoryNameAvailability(
+                'access-token',
+                'godotlauncher',
+                'existing-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toBe('unavailable');
+
+        expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+            'https://api.github.com/repos/godotlauncher/new-game',
+        );
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+            redirect: 'manual',
+        });
+    });
+
+    it('recovers only an exact private repository without following redirects', async () => {
+        const recovered = {
+            id: 42,
+            owner: { login: 'godotlauncher' },
+            name: 'my-game',
+            full_name: 'godotlauncher/my-game',
+            private: true,
+            clone_url: 'https://github.com/godotlauncher/my-game.git',
+            html_url: 'https://github.com/godotlauncher/my-game',
+        };
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, { status: 404 }))
+            .mockResolvedValueOnce(Response.json(recovered));
+        vi.stubGlobal('fetch', fetchMock);
+        const client = new GitHubApiClient();
+
+        await expect(
+            client.recoverPrivateRepository(
+                'access-token',
+                'godotlauncher',
+                'missing-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toBeNull();
+        await expect(
+            client.recoverPrivateRepository(
+                'access-token',
+                'godotlauncher',
+                'my-game',
+                new AbortController().signal,
+            ),
+        ).resolves.toEqual(recovered);
+        expect(String(fetchMock.mock.calls[1]?.[0])).toBe(
+            'https://api.github.com/repos/godotlauncher/my-game',
+        );
+        expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({
+            redirect: 'manual',
         });
     });
 

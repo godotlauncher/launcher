@@ -89,6 +89,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                     value={searchValue}
                     onChange={onSearchChange}
                     focusOnMount
+                    compact
                     data-testid="inputProjectSearch"
                 />
             </div>

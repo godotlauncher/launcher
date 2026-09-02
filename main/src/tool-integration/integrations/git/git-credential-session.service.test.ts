@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import net from 'node:net';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+    createBoundGitCredentialRequest,
     createGitCredentialRequest,
     parseGitCredentialResponse,
 } from './git-credential-protocol.util.js';
@@ -84,6 +85,95 @@ describe('GitCredentialSessionService', () => {
         await session.close();
     });
 
+    it('binds a structured helper session to one exact destination', async () => {
+        const service = new GitCredentialSessionService();
+        const session = await service.openBound(
+            { username: 'x-access-token', password: 'secret-token' },
+            'https://github.com/godotlauncher/my-game.git',
+        );
+
+        expect(session.environment.GIT_ASKPASS).toBeUndefined();
+        expect(session.environment.GIT_ASKPASS_REQUIRE).toBeUndefined();
+        expect(session.helper).toMatch(/^!exec /u);
+        expect(JSON.stringify(session.environment)).not.toContain(
+            'secret-token',
+        );
+        await expect(
+            requestBoundCredential(session.environment, 'password', {
+                protocol: 'https',
+                host: 'github.com',
+                path: 'godotlauncher/my-game.git',
+            }),
+        ).resolves.toBe('secret-token');
+        await session.close();
+    });
+
+    it.each([
+        {
+            protocol: 'http',
+            host: 'github.com',
+            path: 'godotlauncher/my-game.git',
+        },
+        {
+            protocol: 'https',
+            host: 'attacker.example',
+            path: 'godotlauncher/my-game.git',
+        },
+        {
+            protocol: 'https',
+            host: 'github.com',
+            path: 'attacker/my-game.git',
+        },
+    ])('rejects a bound request for another destination', async (target) => {
+        const service = new GitCredentialSessionService();
+        const session = await service.openBound(
+            { username: 'user', password: 'secret' },
+            'https://github.com/godotlauncher/my-game.git',
+        );
+
+        await expect(
+            requestBoundCredential(session.environment, 'password', target),
+        ).rejects.toThrow('Git credential response is invalid');
+        await session.close();
+    });
+
+    it('rejects an unbound request sent to a bound session', async () => {
+        const service = new GitCredentialSessionService();
+        const session = await service.openBound(
+            { username: 'user', password: 'secret' },
+            'https://github.com/godotlauncher/my-game.git',
+        );
+
+        await expect(
+            requestCredential(session.environment, 'password'),
+        ).rejects.toThrow('Git credential response is invalid');
+        await session.close();
+    });
+
+    it('rejects a bound request with the wrong session reference', async () => {
+        const service = new GitCredentialSessionService();
+        const session = await service.openBound(
+            { username: 'user', password: 'secret' },
+            'https://github.com/godotlauncher/my-game.git',
+        );
+
+        await expect(
+            requestBoundCredential(
+                {
+                    ...session.environment,
+                    GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION: 'B'.repeat(43),
+                },
+                'password',
+                {
+                    protocol: 'https',
+                    host: 'github.com',
+                    path: 'godotlauncher/my-game.git',
+                },
+            ),
+        ).rejects.toThrow('Git credential response is invalid');
+        await session.close();
+    });
+
     it('rejects invalid credentials before opening resources', async () => {
         const service = new GitCredentialSessionService();
 
@@ -93,6 +183,12 @@ describe('GitCredentialSessionService', () => {
         await expect(
             service.open({ username: 'user', password: '€'.repeat(2_731) }),
         ).rejects.toThrow('Git credential is invalid');
+        await expect(
+            service.openBound(
+                { username: 'user', password: 'secret' },
+                'http://github.com/owner/repository.git',
+            ),
+        ).rejects.toThrow('Git credential target is invalid');
     });
 
     it('accepts a valid request delivered in separate TCP chunks', async () => {
@@ -140,6 +236,25 @@ describe('GitCredentialSessionService', () => {
                 isPackaged: true,
             }),
         );
+        await session.close();
+    });
+
+    it('quotes the verified Windows executable as a bound helper', async () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
+        mocks.resolveWindowsExecutable.mockResolvedValueOnce(
+            'C:\\Program Files\\Godot Launcher\\godot-launcher-git-askpass.exe',
+        );
+        const service = new GitCredentialSessionService();
+
+        const session = await service.openBound(
+            { username: 'user', password: 'secret' },
+            'https://github.com/godotlauncher/my-game.git',
+        );
+
+        expect(session.helper).toBe(
+            "!exec 'C:/Program Files/Godot Launcher/godot-launcher-git-askpass.exe'",
+        );
+        expect(session.environment.GIT_ASKPASS).toBeUndefined();
         await session.close();
     });
 
@@ -201,6 +316,47 @@ function requestCredential(
                 }
                 socket.end(request);
             },
+        );
+        socket.on('data', (chunk: Buffer) => chunks.push(chunk));
+        socket.once('end', () => {
+            try {
+                resolve(parseGitCredentialResponse(Buffer.concat(chunks)));
+            } catch (error) {
+                reject(error);
+            }
+        });
+        socket.once('error', reject);
+    });
+}
+
+/**
+ * Requests one field for an exact structured destination.
+ *
+ * @param environment - Opaque bound credential session environment.
+ * @param kind - Credential field requested by the test client.
+ * @param target - Structured destination supplied by Git.
+ * @returns The credential returned by the test server.
+ */
+function requestBoundCredential(
+    environment: NodeJS.ProcessEnv,
+    kind: 'username' | 'password',
+    target: { protocol: string; host: string; path: string },
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        const socket = net.createConnection(
+            {
+                host: '127.0.0.1',
+                port: Number(environment.GODOT_LAUNCHER_GIT_CREDENTIAL_PORT),
+            },
+            () =>
+                socket.end(
+                    createBoundGitCredentialRequest(
+                        environment.GODOT_LAUNCHER_GIT_CREDENTIAL_SESSION ?? '',
+                        kind,
+                        target,
+                    ),
+                ),
         );
         socket.on('data', (chunk: Buffer) => chunks.push(chunk));
         socket.once('end', () => {

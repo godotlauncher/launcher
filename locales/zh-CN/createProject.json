@@ -8,6 +8,7 @@
         "nameplaceholder": "项目名称",
         "downloading": "正在下载...",
         "nameRequired": "项目名称为必填项",
+        "nameExists": "已存在同名项目",
         "overwritePath": "覆盖项目路径",
         "selectFolderDialogTitle": "选择项目文件夹",
         "selectFolderTooltip": "打开对话框以选择项目文件夹",
@@ -19,6 +20,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "移动",
         "compatible": "兼容",
+        "forwardPlusHelp": "最适合使用高级 3D 图形的桌面游戏。",
+        "mobileHelp": "最适合移动游戏和较简单的场景。",
+        "compatibleHelp": "最适合 Web、旧设备和广泛兼容性。",
         "forwardPlusFeatures": {
             "desktop": "仅支持桌面平台。",
             "advanced3d": "支持高级 3D 图形。",
@@ -41,6 +45,78 @@
             "fastest": "对简单场景渲染最快。"
         }
     },
+    "publishToGitHub": {
+        "label": "发布到 GitHub",
+        "repositoryTitle": "私有 GitHub 仓库",
+        "description": "在本地创建项目后，创建私有仓库并推送项目。",
+        "loadingOwners": "正在检查已连接的 GitHub 所有者...",
+        "owner": "所有者",
+        "ownerHelp": "选择拥有该仓库的 GitHub 帐户或组织。",
+        "ownerPlaceholder": "选择所有者",
+        "ownerViaAccount": "{{owner}}（通过 @{{account}}）",
+        "repositoryName": "仓库名称",
+        "repositoryNameHelp": "仅可使用字母、数字、点、连字符和下划线。",
+        "repositoryNameInvalid": "请输入 1-100 个字母、数字、点、连字符或下划线。",
+        "availabilityChecking": "正在检查名称...",
+        "availabilityAvailable": "该名称似乎可用",
+        "availabilityUnavailable": "该名称已被使用",
+        "availabilityUnknown": "无法检查该名称",
+        "openConnections": "打开连接",
+        "leaveTitle": "离开创建项目？",
+        "leaveMessage": "打开连接时，未保存的项目信息将被清除。",
+        "successTitle": "已发布到 GitHub",
+        "successMessage": "已将 {{owner}}/{{name}} 创建为私有仓库并推送项目。",
+        "recoveryTitle": "本地项目是安全的",
+        "recoveryDialogTitle": "无法发布到 GitHub",
+        "recoverySafe": "你的项目已在本地创建并安全保存。",
+        "retry": "重试发布",
+        "checkAndRetry": "检查并重试",
+        "useRepository": "使用此仓库",
+        "recoveryRepositoryFound": "GitHub 中存在这个完全匹配的空仓库。请确认要让 Launcher 使用它。",
+        "retryFailed": "无法重试发布。本地项目仍然安全。",
+        "continueLocally": "继续使用本地项目",
+        "openGitHub": "打开 GitHub",
+        "localTitle": "项目已保留在本地",
+        "localMessage": "项目仍保留在此计算机和 Launcher 库中。",
+        "requiresInitialCommit": "发布需要一个包含初始提交的新 Git 仓库。",
+        "publicationFailed": "项目已在本地创建，但 GitHub 发布未完成。",
+        "attemptExpired": "此发布尝试已过期。本地项目仍然安全。",
+        "targetFailure": {
+            "connection-required": "发布项目前请先连接 GitHub。",
+            "permission-update-required": "GitHub 连接需要创建仓库的权限。",
+            "secure-storage-unavailable": "此计算机无法使用安全凭据存储。",
+            "provider-unavailable": "无法加载 GitHub 所有者。请检查连接并重试。"
+        },
+        "failure": {
+            "connection-required": "GitHub 连接已不可用。",
+            "permission-update-required": "GitHub 连接需要更新仓库权限。",
+            "secure-storage-unavailable": "安全凭据存储已不可用。",
+            "target-unavailable": "所选 GitHub 所有者已不可用。",
+            "invalid-repository-name": "仓库名称无效。",
+            "repository-name-unavailable-or-policy-rejected": "GitHub 无法使用该名称。名称可能已存在或被组织策略禁止。",
+            "rate-limited": "GitHub 暂时限制请求。请稍后重试。",
+            "network-unavailable": "发布时网络连接失败。",
+            "remote-creation-uncertain": "Launcher 无法确认 GitHub 是否已创建仓库。请恢复网络连接，然后检查并重试。",
+            "recovered-repository-not-empty": "GitHub 中存在此仓库，但它不是空仓库。Launcher 不会向其中发布项目。",
+            "remote-created-origin-failed": "私有仓库已创建，但 Launcher 无法将其连接到本地项目。",
+            "remote-created-push-failed": "私有仓库已创建，但无法推送项目。",
+            "remote-created-verification-failed": "项目可能已推送，但 Launcher 无法验证。",
+            "local-repository-changed": "本地 Git 仓库已更改，因此 Launcher 停止了重试。",
+            "provider-unavailable": "GitHub 无法完成请求。"
+        }
+    },
+    "existingRepository": {
+        "confirmationTitle": "此项目将位于另一个 Git 仓库中",
+        "warningMessage": "你选择的文件夹位于 {{root}} 的 Git 仓库中。",
+        "gitSkipped": "Launcher 不会创建单独的 Git 仓库或初始提交。",
+        "gitLfsSkipped": "不会设置 Git LFS。",
+        "githubSkipped": "不会将项目发布到 GitHub。",
+        "question": "是否继续？",
+        "completionTitle": "项目已创建",
+        "completionLead": "你的项目已在此计算机上准备就绪。",
+        "completionMessage": "此项目位于 {{root}} 的现有 Git 仓库中。",
+        "done": "完成"
+    },
     "otherSettings": {
         "title": "其他设置",
         "codeEditor": {
@@ -50,11 +126,12 @@
             "notFound": "未找到"
         },
         "initGit": "初始化 Git 仓库",
+        "unavailableLabel": "不可用",
         "gitNotInstalled": "此电脑未安装 Git",
         "gitLfs": {
             "label": "使用 Git LFS",
             "description": "将 Godot 文档中的文件模式配置为起点。",
-            "unavailable": "请在设置 > 工具中安装并启用 Git LFS 后使用。",
+            "unavailable": "此电脑未安装 Git LFS",
             "patternsTitle": "跟踪的文件类型",
             "groups": {
                 "models": "3D 模型",
@@ -97,7 +174,9 @@
     "buttons": {
         "editNow": "立即编辑",
         "create": "创建项目",
-        "creating": "正在创建项目..."
+        "createAndPublish": "创建并发布",
+        "creating": "正在创建项目...",
+        "publishing": "正在创建项目并发布到 GitHub..."
     },
     "errors": {
         "invalidEditorVersion": "无效的编辑器版本：{{version}}",
@@ -109,6 +188,7 @@
         "failedGitBranch": "无法将 Git 分支重命名为 main",
         "invalidGitIdentity": "Git 姓名和电子邮件为必填项",
         "failedGitIdentity": "无法保存 Git 身份信息",
+        "parentRepositoryContextChanged": "所选位置中的 Git 仓库已更改。请检查该位置，然后重试。",
         "failedGitCommit": "无法创建初始 Git 提交",
         "gitLfsRequiresGit": "Git LFS 需要一个新的 Git 仓库",
         "gitLfsExistingRepository": "项目位于现有 Git 仓库中，因此无法配置 Git LFS",

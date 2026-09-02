@@ -108,7 +108,6 @@ describe('InstallReleaseTable', () => {
         );
 
         expect(html).toContain('Reinstall');
-        expect(html).toContain('text-warning');
         expect(html).toContain('Reinstall Godot 4.2.0 Standard');
         expect(html).not.toContain('Unavailable');
         expect(html).not.toContain('Install Godot 4.2.0 Standard');

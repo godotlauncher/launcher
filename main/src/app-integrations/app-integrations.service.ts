@@ -407,6 +407,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
                         if (accessTarget.availability === 'available') {
                             routes.push({
                                 connectionId: record.id,
+                                accountLogin: record.accountLogin,
                                 accessTarget,
                                 credential,
                             });
@@ -763,6 +764,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
                               login: target.login,
                               type: target.type,
                               manageUrl: target.manageUrl,
+                              capabilities: target.capabilities,
                           },
                   )
                 : [
@@ -777,6 +779,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
                                   login: target.login,
                                   type: target.type,
                                   manageUrl: target.manageUrl,
+                                  capabilities: target.capabilities,
                               },
                       ) ?? []),
                       ...connected.accessTargets.filter(
@@ -1142,6 +1145,7 @@ export class AppIntegrationsService implements OnModuleDestroy {
                 login: target.login,
                 type: target.type,
                 availability: target.availability,
+                capabilities: target.capabilities,
             })),
         };
     }

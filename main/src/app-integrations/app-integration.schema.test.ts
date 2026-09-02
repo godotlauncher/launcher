@@ -22,7 +22,7 @@ describe('normalizeAppIntegrationStore', () => {
         });
 
         expect(normalized).toMatchObject({
-            schemaVersion: 2,
+            schemaVersion: 3,
             connections: {
                 [CONNECTION_ID]: {
                     id: CONNECTION_ID,
@@ -99,7 +99,12 @@ describe('normalizeAppIntegrationStore', () => {
 
         expect(normalized.connections[CONNECTION_ID]).toMatchObject({
             requiresReauthorisation: false,
-            accessTargets: [{ availability: 'available' }],
+            accessTargets: [
+                {
+                    availability: 'available',
+                    capabilities: ['repository-browsing'],
+                },
+            ],
         });
     });
 });

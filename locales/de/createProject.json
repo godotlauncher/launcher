@@ -8,6 +8,7 @@
         "nameplaceholder": "Projektname",
         "downloading": "Wird heruntergeladen...",
         "nameRequired": "Projektname ist erforderlich",
+        "nameExists": "Ein Projekt mit diesem Namen ist bereits vorhanden",
         "overwritePath": "Überschreibe Projektpfad",
         "selectFolderDialogTitle": "Projektordner auswählen",
         "selectFolderTooltip": "Öffne einen Dialog zum Auswählen des Projektordners",
@@ -19,6 +20,9 @@
         "forwardPlus": "Forward Plus",
         "mobile": "Mobil",
         "compatible": "Kompatibel",
+        "forwardPlusHelp": "Am besten für Desktop-Spiele mit anspruchsvoller 3D-Grafik.",
+        "mobileHelp": "Am besten für Mobilspiele und einfachere Szenen.",
+        "compatibleHelp": "Am besten für Web, ältere Geräte und breite Kompatibilität.",
         "forwardPlusFeatures": {
             "desktop": "Unterstützt nur Desktop-Plattformen.",
             "advanced3d": "Erweiterte 3D-Grafik verfügbar.",
@@ -41,6 +45,78 @@
             "fastest": "Schnellstes Rendern einfacher Szenen."
         }
     },
+    "publishToGitHub": {
+        "label": "Auf GitHub veröffentlichen",
+        "repositoryTitle": "Private GitHub-Repository",
+        "description": "Erstellt ein privates Repository und überträgt dieses Projekt nach der lokalen Erstellung.",
+        "loadingOwners": "Verbundene GitHub-Inhaber werden geprüft...",
+        "owner": "Inhaber",
+        "ownerHelp": "Wählen Sie das GitHub-Konto oder die Organisation, dem bzw. der das Repository gehören soll.",
+        "ownerPlaceholder": "Inhaber auswählen",
+        "ownerViaAccount": "{{owner}} (über @{{account}})",
+        "repositoryName": "Repository-Name",
+        "repositoryNameHelp": "Nur Buchstaben, Zahlen, Punkte, Bindestriche und Unterstriche.",
+        "repositoryNameInvalid": "Geben Sie 1-100 Buchstaben, Zahlen, Punkte, Bindestriche oder Unterstriche ein.",
+        "availabilityChecking": "Name wird geprüft...",
+        "availabilityAvailable": "Name scheint verfügbar",
+        "availabilityUnavailable": "Name wird bereits verwendet",
+        "availabilityUnknown": "Dieser Name konnte nicht geprüft werden",
+        "openConnections": "Verbindungen öffnen",
+        "leaveTitle": "Projekterstellung verlassen?",
+        "leaveMessage": "Ihre nicht gespeicherten Projektdaten werden beim Öffnen der Verbindungen gelöscht.",
+        "successTitle": "Auf GitHub veröffentlicht",
+        "successMessage": "{{owner}}/{{name}} wurde als privates Repository erstellt und das Projekt wurde übertragen.",
+        "recoveryTitle": "Das lokale Projekt ist sicher",
+        "recoveryDialogTitle": "Veröffentlichung auf GitHub fehlgeschlagen",
+        "recoverySafe": "Ihr Projekt wurde lokal erstellt und ist sicher.",
+        "retry": "Veröffentlichung erneut versuchen",
+        "checkAndRetry": "Prüfen und erneut versuchen",
+        "useRepository": "Dieses Repository verwenden",
+        "recoveryRepositoryFound": "GitHub enthält dieses exakte leere Repository. Bestätigen Sie, dass Launcher es verwenden soll.",
+        "retryFailed": "Die Veröffentlichung konnte nicht wiederholt werden. Das lokale Projekt ist weiterhin sicher.",
+        "continueLocally": "Lokal fortfahren",
+        "openGitHub": "GitHub öffnen",
+        "localTitle": "Projekt lokal behalten",
+        "localMessage": "Das Projekt bleibt auf diesem Computer und in Ihrer Launcher-Bibliothek.",
+        "requiresInitialCommit": "Die Veröffentlichung erfordert ein neues Git-Repository mit einem ersten Commit.",
+        "publicationFailed": "Das Projekt wurde lokal erstellt, aber die GitHub-Veröffentlichung wurde nicht abgeschlossen.",
+        "attemptExpired": "Dieser Veröffentlichungsversuch ist abgelaufen. Das lokale Projekt ist weiterhin sicher.",
+        "targetFailure": {
+            "connection-required": "Verbinden Sie GitHub, bevor Sie ein Projekt veröffentlichen.",
+            "permission-update-required": "Ihre GitHub-Verbindung benötigt die Berechtigung zum Erstellen von Repositories.",
+            "secure-storage-unavailable": "Der sichere Anmeldedatenspeicher ist auf diesem Computer nicht verfügbar.",
+            "provider-unavailable": "GitHub-Inhaber konnten nicht geladen werden. Prüfen Sie die Verbindung und versuchen Sie es erneut."
+        },
+        "failure": {
+            "connection-required": "Die GitHub-Verbindung ist nicht mehr verfügbar.",
+            "permission-update-required": "Die GitHub-Verbindung benötigt aktualisierte Repository-Berechtigungen.",
+            "secure-storage-unavailable": "Der sichere Anmeldedatenspeicher ist nicht mehr verfügbar.",
+            "target-unavailable": "Der ausgewählte GitHub-Inhaber ist nicht mehr verfügbar.",
+            "invalid-repository-name": "Der Repository-Name ist ungültig.",
+            "repository-name-unavailable-or-policy-rejected": "GitHub konnte diesen Repository-Namen nicht verwenden. Er ist möglicherweise bereits vergeben oder durch eine Organisationsrichtlinie gesperrt.",
+            "rate-limited": "GitHub begrenzt Anfragen vorübergehend. Versuchen Sie es später erneut.",
+            "network-unavailable": "Die Netzwerkverbindung ist während der Veröffentlichung fehlgeschlagen.",
+            "remote-creation-uncertain": "Launcher konnte nicht bestätigen, ob GitHub das Repository erstellt hat. Stellen Sie die Verbindung wieder her und prüfen Sie es erneut.",
+            "recovered-repository-not-empty": "GitHub enthält dieses Repository, aber es ist nicht leer. Launcher veröffentlicht nicht darin.",
+            "remote-created-origin-failed": "Das private Repository wurde erstellt, konnte aber nicht mit dem lokalen Projekt verbunden werden.",
+            "remote-created-push-failed": "Das private Repository wurde erstellt, aber das Projekt konnte nicht übertragen werden.",
+            "remote-created-verification-failed": "Das Projekt wurde möglicherweise übertragen, aber Launcher konnte dies nicht bestätigen.",
+            "local-repository-changed": "Das lokale Git-Repository hat sich geändert. Launcher hat den erneuten Versuch beendet.",
+            "provider-unavailable": "GitHub konnte die Anfrage nicht abschließen."
+        }
+    },
+    "existingRepository": {
+        "confirmationTitle": "Dieses Projekt wird sich in einem anderen Git-Repository befinden",
+        "warningMessage": "Der ausgewählte Ordner befindet sich im Git-Repository unter {{root}}.",
+        "gitSkipped": "Launcher erstellt kein separates Git-Repository und keinen ersten Commit.",
+        "gitLfsSkipped": "Git LFS wird nicht eingerichtet.",
+        "githubSkipped": "Das Projekt wird nicht auf GitHub veröffentlicht.",
+        "question": "Möchten Sie fortfahren?",
+        "completionTitle": "Projekt erstellt",
+        "completionLead": "Ihr Projekt ist auf diesem Computer bereit.",
+        "completionMessage": "Dieses Projekt befindet sich im vorhandenen Git-Repository unter {{root}}.",
+        "done": "Fertig"
+    },
     "otherSettings": {
         "title": "Weitere Einstellungen",
         "codeEditor": {
@@ -50,11 +126,12 @@
             "notFound": "Nicht gefunden"
         },
         "initGit": "Git-Repository initialisieren",
+        "unavailableLabel": "Nicht verfügbar",
         "gitNotInstalled": "Git ist auf diesem Computer nicht installiert",
         "gitLfs": {
             "label": "Git LFS verwenden",
             "description": "Die Dateimuster aus der Godot-Dokumentation als Ausgangspunkt konfigurieren.",
-            "unavailable": "Installiere und aktiviere Git LFS unter Einstellungen > Werkzeuge, um es zu verwenden.",
+            "unavailable": "Git LFS ist auf diesem Computer nicht installiert",
             "patternsTitle": "Verfolgte Dateitypen",
             "groups": {
                 "models": "3D-Modelle",
@@ -97,7 +174,9 @@
     "buttons": {
         "editNow": "Jetzt bearbeiten",
         "create": "Projekt erstellen",
-        "creating": "Projekt wird erstellt..."
+        "createAndPublish": "Erstellen und veröffentlichen",
+        "creating": "Projekt wird erstellt...",
+        "publishing": "Projekt wird erstellt und auf GitHub veröffentlicht..."
     },
     "errors": {
         "invalidEditorVersion": "Ungültige Editor-Version: {{version}}",
@@ -109,6 +188,7 @@
         "failedGitBranch": "Der Git-Branch konnte nicht in main umbenannt werden",
         "invalidGitIdentity": "Git-Name und E-Mail-Adresse sind erforderlich",
         "failedGitIdentity": "Die Git-Identität konnte nicht gespeichert werden",
+        "parentRepositoryContextChanged": "Das Git-Repository am ausgewählten Projektpfad hat sich geändert. Prüfen Sie den Speicherort und versuchen Sie es erneut.",
         "failedGitCommit": "Der erste Git-Commit konnte nicht erstellt werden",
         "gitLfsRequiresGit": "Git LFS erfordert ein neues Git-Repository",
         "gitLfsExistingRepository": "Git LFS kann nicht konfiguriert werden, da sich das Projekt in einem vorhandenen Git-Repository befindet",

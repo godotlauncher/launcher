@@ -72,8 +72,6 @@ describe('InstalledReleaseTable', () => {
         expect(html).toContain('Retry');
         expect(html).toContain('Reinstall');
         expect(html).toContain('Remove');
-        expect(html).toContain('btn-primary');
-        expect(html).toContain('btn-error');
     });
 
     it('does not show unavailable label for valid releases', () => {

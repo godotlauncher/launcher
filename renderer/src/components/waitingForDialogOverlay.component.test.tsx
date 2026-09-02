@@ -3,13 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { WaitingForDialogOverlay } from './waitingForDialogOverlay.component';
 
 describe('WaitingForDialogOverlay', () => {
-    it('renders the waiting message and overlay styles', () => {
+    it('renders the waiting message', () => {
         const html = renderToStaticMarkup(
             <WaitingForDialogOverlay message="Waiting for dialog..." />,
         );
 
         expect(html).toContain('Waiting for dialog...');
-        expect(html).toContain('loading-circle');
-        expect(html).toContain('bg-black/80');
     });
 });

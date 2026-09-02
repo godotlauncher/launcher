@@ -15,6 +15,7 @@
         "pinProject": "プロジェクトをピン留め",
         "unpinProject": "ピン留めを解除",
         "openProjectFolder": "プロジェクトフォルダを開く",
+        "openInGitHub": "GitHub で開く",
         "launchEditor": "Godotで編集",
         "projectSettings": "プロジェクト設定",
         "openEditorSettingsFolder": "エディタ設定フォルダを開く",

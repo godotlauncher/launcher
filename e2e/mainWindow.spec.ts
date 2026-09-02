@@ -5,6 +5,7 @@ import type { ReleaseInstallProgress } from '@shared/contracts';
 import {
     createFixtureHome,
     prepareAppWithStubbedData,
+    setAppLanguage,
 } from './documentationScreenshots/runtime.js';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
@@ -21,6 +22,7 @@ test.beforeAll(async () => {
         env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
+    await setAppLanguage(mainPage, 'English');
     await prepareAppWithStubbedData(mainPage, electronApp);
 });
 
@@ -79,9 +81,7 @@ test('Can navigate the main window', async () => {
 
     await test.step('Opens the install editor drawer', async () => {
         await mainPage.getByTestId('btnInstallEditor').click();
-        const drawer = mainPage.getByRole('dialog', {
-            name: 'Install Godot Editor',
-        });
+        const drawer = mainPage.getByTestId('installEditorDrawer');
 
         await expect(drawer).toBeVisible();
         await expect(drawer.getByTestId('tabInstallsLatest')).toHaveAttribute(

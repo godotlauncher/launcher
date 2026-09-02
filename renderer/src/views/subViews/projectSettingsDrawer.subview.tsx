@@ -1018,7 +1018,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                                                         </span>
                                                     </dt>
                                                     <dd className="mt-1 min-w-0">
-                                                        <span className="truncate">
+                                                        <span className="block break-all select-text">
                                                             {value.value ||
                                                                 t(
                                                                     'editProject.sourceControl.identityMissing',

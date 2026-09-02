@@ -290,6 +290,8 @@ function createProjectsService(
             importRemoteProject: vi.fn(),
             cancelRemoteProjectImport: vi.fn(),
         } as unknown as import('./project-remote-import.service.js').ProjectRemoteImportService,
+        {} as import('./project-publication.service.js').ProjectPublicationService,
+        {} as import('./project-repository-origin-index.service.js').ProjectRepositoryOriginIndexService,
     );
 }
 

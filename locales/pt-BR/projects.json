@@ -64,6 +64,7 @@
         "windowedMode": "Este projeto é aberto no modo janela",
         "codeEditorProject": "Usando {{editor}}",
         "gitProject": "O projeto usa Git para controle de versão",
+        "githubProject": "O projeto está no GitHub",
         "invalidReasons": {
             "missingProjectFile": "Arquivo do projeto não encontrado. Verifique o local do projeto.",
             "missingEditor": "Editor não encontrado. Verifique o local do editor."

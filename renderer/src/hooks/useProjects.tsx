@@ -2,16 +2,22 @@ import type {
     AddProjectOptions,
     AddProjectToListResult,
     ChangeProjectEditorResult,
+    CheckCreateProjectRepositoryNameAvailabilityResult,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
+    CreateProjectParentRepositoryConsent,
+    CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
+    GitRepositoryInspection,
     InitializeProjectGitResult,
     InstalledRelease,
     LaunchProjectResult,
+    ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
     ProjectGitIdentityResult,
+    ProjectPublicationRecoveryAction,
     ReleaseSummary,
     RenameProjectOptions,
     RenameProjectResult,
@@ -25,6 +31,7 @@ import {
     type PropsWithChildren,
     useContext,
     useEffect,
+    useRef,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +54,7 @@ export type ProjectEditorRepairRequest = {
 
 interface ProjectsContext {
     projects: ProjectDetails[];
+    projectGitHubUrls: ReadonlyMap<string, string>;
     codeEditorSettings: CodeEditorIntegrationSettings[];
     loading: boolean;
     rescanCodeEditorIntegration: (
@@ -112,7 +120,23 @@ interface ProjectsContext {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ) => Promise<CreateProjectResult>;
+    listCreateProjectPublicationTargets: () => Promise<ListCreateProjectPublicationTargetsResult>;
+    checkCreateProjectRepositoryNameAvailability: (
+        publication: CreateProjectPublicationOptions,
+    ) => Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
+    inspectCreateProjectRepository: (
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) => Promise<GitRepositoryInspection>;
+    retryCreateProjectPublication: (
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
+    ) => Promise<CreateProjectResult>;
+    discardCreateProjectPublication: (attemptId: string) => Promise<void>;
 }
 
 export const projectsContext = createContext<ProjectsContext>(
@@ -135,11 +159,35 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     const { addAlert, addCustomConfirm } = useAlerts();
     const { installRelease } = useRelease();
     const [projects, setProjects] = useState<ProjectDetails[]>([]);
+    const [projectGitHubUrls, setProjectGitHubUrls] = useState<
+        ReadonlyMap<string, string>
+    >(new Map());
+    const githubLinksRequestRef = useRef(0);
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
     >([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    /** Refreshes the process-local project-to-GitHub URL cache. */
+    const refreshProjectGitHubLinks = async (): Promise<void> => {
+        const requestId = ++githubLinksRequestRef.current;
+        try {
+            const links = await projectsBridge.refreshProjectGitHubLinks();
+            if (githubLinksRequestRef.current === requestId) {
+                setProjectGitHubUrls(
+                    new Map(
+                        links.map(({ projectPath, url }) => [projectPath, url]),
+                    ),
+                );
+            }
+        } catch {
+            if (githubLinksRequestRef.current === requestId) {
+                setProjectGitHubUrls(new Map());
+            }
+        }
+    };
+
+    /** Refreshes stored projects, editor integrations, and cached GitHub links. */
     const getProjects = async () => {
         setLoading(true);
         const [projects, integrations] = await Promise.all([
@@ -151,6 +199,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         setProjects(projects);
         setCodeEditorSettings(integrations);
         setLoading(false);
+        void refreshProjectGitHubLinks();
     };
 
     const rescanCodeEditorIntegration = async (integrationId: CodeEditorId) => {
@@ -180,6 +229,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
      * @param withGit - Whether to initialize Git when it is available.
      * @param overwriteProjectPath - Optional target project path.
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
+     * @param publication - Optional private GitHub repository publication request.
+     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      * @returns The project creation result.
      */
     const createProject = async (
@@ -190,6 +241,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         withGit: boolean,
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
+        publication?: CreateProjectPublicationOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
     ) => {
         const result = await projectsBridge.createProject(
             projectName,
@@ -199,14 +252,77 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             withGit,
             overwriteProjectPath,
             gitOptions,
+            publication,
+            parentRepositoryConsent,
         );
 
-        if (result.success) {
+        if (result.projectDetails) {
             await refreshProjects();
         }
 
         return result;
     };
+
+    /** Lists GitHub owners eligible for Create Project publishing. */
+    const listCreateProjectPublicationTargets = () =>
+        projectsBridge.listCreateProjectPublicationTargets('github');
+
+    /** Checks a Create Project repository name through its selected owner route. */
+    const checkCreateProjectRepositoryNameAvailability = (
+        publication: CreateProjectPublicationOptions,
+    ) =>
+        projectsBridge.checkCreateProjectRepositoryNameAvailability(
+            publication,
+        );
+
+    /**
+     * Inspects the final planned Create Project path for an enclosing repository.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     * @returns The repository inspection for the final sanitised project path.
+     */
+    const inspectCreateProjectRepository = (
+        projectName: string,
+        overwriteProjectPath?: string,
+    ) =>
+        projectsBridge.inspectCreateProjectRepository(
+            projectName,
+            overwriteProjectPath,
+        );
+
+    /**
+     * Retries a process-local Create Project publication attempt.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @param publication - Optional edited selection before remote creation.
+     * @param recoveryAction - Exact uncertain-recovery action shown by main.
+     * @returns The latest project creation and publication result.
+     */
+    const retryCreateProjectPublication = async (
+        attemptId: string,
+        publication?: CreateProjectPublicationOptions,
+        recoveryAction?: ProjectPublicationRecoveryAction,
+    ) => {
+        const result = await projectsBridge.retryCreateProjectPublication(
+            attemptId,
+            publication,
+            recoveryAction,
+        );
+        if (result.publication?.status === 'published') {
+            void refreshProjectGitHubLinks();
+        }
+        return result;
+    };
+
+    /**
+     * Forgets a process-local publication attempt without changing repositories.
+     *
+     * @param attemptId - Opaque failed publication attempt ID.
+     * @returns A promise that resolves after the attempt is forgotten.
+     */
+    const discardCreateProjectPublication = (attemptId: string) =>
+        projectsBridge.discardCreateProjectPublication(attemptId);
 
     const addProject = async (
         projectPath: string,
@@ -501,7 +617,10 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: getProjects would refresh infinitely
     useEffect(() => {
-        const off = subscribeAppEvent('projects-updated', setProjects);
+        const off = subscribeAppEvent('projects-updated', (updatedProjects) => {
+            setProjects(updatedProjects);
+            void refreshProjectGitHubLinks();
+        });
         const offCodeEditorIntegrations = subscribeAppEvent(
             'code-editor-integrations-updated',
             setCodeEditorSettings,
@@ -525,6 +644,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         <projectsContext.Provider
             value={{
                 projects,
+                projectGitHubUrls,
                 codeEditorSettings,
                 loading,
                 rescanCodeEditorIntegration,
@@ -550,6 +670,11 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 refreshProjects,
                 checkProjectValid,
                 createProject,
+                listCreateProjectPublicationTargets,
+                checkCreateProjectRepositoryNameAvailability,
+                inspectCreateProjectRepository,
+                retryCreateProjectPublication,
+                discardCreateProjectPublication,
             }}
         >
             {children}

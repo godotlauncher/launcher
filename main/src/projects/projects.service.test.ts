@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     getProjectGitIdentity: vi.fn(),
     getProjectGodotName: vi.fn(),
     getProjectsDetails: vi.fn(),
+    inspectCreateProjectRepository: vi.fn(),
     importProjectEditorSettings: vi.fn(),
     initializeProjectGit: vi.fn(),
     launchProject: vi.fn(),
@@ -110,7 +111,10 @@ describe('ProjectsService', () => {
         inspectRepository: vi.fn(),
         setIdentity: vi.fn(),
     };
-    const projectCreation = { createProject: mocks.createProject };
+    const projectCreation = {
+        createProject: mocks.createProject,
+        inspectCreateProjectRepository: mocks.inspectCreateProjectRepository,
+    };
     const trayAvailability = { id: 'tray' };
     const store = {
         list: vi.fn(),
@@ -131,10 +135,19 @@ describe('ProjectsService', () => {
         setRemoteProjectGitIdentity: vi.fn(),
         initialiseRemoteProjectSubmodules: vi.fn(),
     };
+    const projectPublication = {
+        publish: vi.fn(),
+        retry: vi.fn(),
+    };
+    const projectOrigins = {
+        refreshGitHubLinks: vi.fn(),
+    };
     let service: ProjectsService;
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.addProject.mockResolvedValue({ success: false });
+        mocks.createProject.mockResolvedValue({ success: true });
         store.list.mockResolvedValue([]);
         store.remove.mockResolvedValue([]);
         mocks.checkProjectHealth.mockImplementation(async (project) => project);
@@ -152,6 +165,80 @@ describe('ProjectsService', () => {
             store as never,
             remoteSources as never,
             remoteImport as never,
+            projectPublication as never,
+            projectOrigins as never,
+        );
+    });
+
+    it('refreshes safe project GitHub links through the origin index', async () => {
+        projectOrigins.refreshGitHubLinks.mockResolvedValueOnce([
+            {
+                projectPath: '/projects/game',
+                url: 'https://github.com/team/game',
+            },
+        ]);
+
+        await expect(service.refreshProjectGitHubLinks()).resolves.toEqual([
+            {
+                projectPath: '/projects/game',
+                url: 'https://github.com/team/game',
+            },
+        ]);
+    });
+
+    it('publishes the updated project list after adding a project', async () => {
+        const projects = [{ path: '/projects/game' }] as ProjectDetails[];
+        mocks.addProject.mockResolvedValueOnce({
+            success: true,
+            projects,
+            newProject: projects[0],
+        });
+
+        await expect(
+            service.addProject('/projects/game/project.godot'),
+        ).resolves.toMatchObject({ success: true, projects });
+
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            { id: 'web-contents' },
+            projects,
+        );
+    });
+
+    it('does not publish a project-list update after an add failure', async () => {
+        mocks.addProject.mockResolvedValueOnce({
+            success: false,
+            error: 'invalid project',
+        });
+
+        await expect(
+            service.addProject('/projects/game/project.godot'),
+        ).resolves.toEqual({
+            success: false,
+            error: 'invalid project',
+        });
+
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+    });
+
+    it('delegates Create Project repository inspection', async () => {
+        const inspection = {
+            status: 'inside-work-tree' as const,
+            root: '/projects/parent',
+            isProjectRoot: false,
+            kind: 'standard' as const,
+        };
+        mocks.inspectCreateProjectRepository.mockResolvedValueOnce(inspection);
+
+        await expect(
+            service.inspectCreateProjectRepository(
+                'Game',
+                '/projects/parent/game',
+            ),
+        ).resolves.toEqual(inspection);
+        expect(mocks.inspectCreateProjectRepository).toHaveBeenCalledWith(
+            'Game',
+            '/projects/parent/game',
         );
     });
 
@@ -166,6 +253,7 @@ describe('ProjectsService', () => {
             true,
             '/projects/game',
             { initialCommit: 'skip' },
+            undefined,
         );
         await service.addProject('/projects/game');
         await service.importRemoteProject({
@@ -190,6 +278,7 @@ describe('ProjectsService', () => {
             true,
             '/projects/game',
             { initialCommit: 'skip' },
+            undefined,
         );
         expect(mocks.addProject).toHaveBeenCalledWith(
             '/projects/game',
@@ -210,6 +299,143 @@ describe('ProjectsService', () => {
         expect(
             remoteImport.initialiseRemoteProjectSubmodules,
         ).toHaveBeenCalledWith('job-id');
+    });
+
+    it.each([
+        ['configured Git LFS', { status: 'configured' }, true],
+        ['no configured Git LFS', { status: 'not-requested' }, false],
+    ] as const)(
+        'derives the publication LFS requirement from %s',
+        async (_name, gitLfsSetup, requiresGitLfsUpload) => {
+            const release = { version: '4.5-stable' } as InstalledRelease;
+            const project = { path: '/projects/game' } as ProjectDetails;
+            const publication = {
+                providerId: 'github',
+                connectionId: 'connection-id',
+                accessTargetId: 'access-target-id',
+                repositoryName: 'game',
+            };
+            mocks.createProject.mockResolvedValueOnce({
+                success: true,
+                projectDetails: project,
+                gitSetup: {
+                    status: 'initialized',
+                    root: project.path,
+                    isProjectRoot: true,
+                    kind: 'standard',
+                },
+                gitLfsSetup,
+            });
+            projectPublication.publish.mockResolvedValueOnce({
+                status: 'published',
+                repository: {
+                    owner: 'godotlauncher',
+                    name: 'game',
+                    webUrl: 'https://github.com/godotlauncher/game',
+                },
+            });
+
+            await service.createProject(
+                'Game',
+                release,
+                'FORWARD_PLUS',
+                null,
+                true,
+                undefined,
+                { initialCommit: 'create' },
+                publication,
+            );
+
+            expect(projectPublication.publish).toHaveBeenCalledWith(
+                project,
+                publication,
+                requiresGitLfsUpload,
+                true,
+            );
+        },
+    );
+
+    it('never publishes a project created inside an enclosing repository', async () => {
+        const release = { version: '4.5-stable' } as InstalledRelease;
+        const project = { path: '/projects/parent/game' } as ProjectDetails;
+        const publication = {
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'access-target-id',
+            repositoryName: 'game',
+        };
+        mocks.createProject.mockResolvedValueOnce({
+            success: true,
+            projectDetails: project,
+            gitSetup: {
+                status: 'existing-repository',
+                root: '/projects/parent',
+                isProjectRoot: false,
+                kind: 'standard',
+            },
+        });
+        const result = await service.createProject(
+            'Game',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            undefined,
+            { initialCommit: 'create' },
+            publication,
+            { root: '/projects/parent' },
+        );
+
+        expect(mocks.createProject).toHaveBeenCalledWith(
+            'Game',
+            release,
+            'FORWARD_PLUS',
+            null,
+            true,
+            undefined,
+            { initialCommit: 'create' },
+            { root: '/projects/parent' },
+        );
+        expect(projectPublication.publish).not.toHaveBeenCalled();
+        expect(result).toEqual({
+            success: true,
+            projectDetails: project,
+            gitSetup: {
+                status: 'existing-repository',
+                root: '/projects/parent',
+                isProjectRoot: false,
+                kind: 'standard',
+            },
+            publication: { status: 'not-requested' },
+        });
+    });
+
+    it('forwards the exact publication recovery action', async () => {
+        const project = { path: '/projects/game' } as ProjectDetails;
+        projectPublication.retry.mockResolvedValueOnce({
+            projectDetails: project,
+            publication: {
+                status: 'failed',
+                attemptId: 'attempt-id',
+                stage: 'remote-create',
+                reason: 'remote-creation-uncertain',
+                recoveryAction: 'confirm-recovered-repository',
+                canRetry: true,
+                canEdit: false,
+            },
+        });
+
+        await service.retryCreateProjectPublication(
+            'attempt-id',
+            undefined,
+            'confirm-recovered-repository',
+        );
+
+        expect(projectPublication.retry).toHaveBeenCalledWith(
+            'attempt-id',
+            undefined,
+            'confirm-recovered-repository',
+        );
     });
 
     it('preserves stateless workflow arguments', async () => {

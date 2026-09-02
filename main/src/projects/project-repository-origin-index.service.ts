@@ -1,4 +1,5 @@
 import { Injectable } from '@mariodebono/di';
+import type { ProjectGitHubLink } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from '../tool-integration/integrations/git/git.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -6,16 +7,17 @@ import { ProjectsStore } from './projects.store.js';
 
 const ORIGIN_READ_CONCURRENCY = 4;
 
-type CachedOrigins = {
+type CachedOriginIndex = {
     version: string;
     origins: ReadonlySet<string>;
+    githubLinks: readonly ProjectGitHubLink[];
 };
 
 /** Builds a bounded, process-local index of stored project Git origins. */
 @Injectable()
 export class ProjectRepositoryOriginIndexService {
-    private cached: CachedOrigins | null = null;
-    private readonly inFlight = new Map<string, Promise<ReadonlySet<string>>>();
+    private cached: CachedOriginIndex | null = null;
+    private readonly inFlight = new Map<string, Promise<CachedOriginIndex>>();
     private latestRequestedVersion: string | null = null;
 
     /**
@@ -40,10 +42,33 @@ export class ProjectRepositoryOriginIndexService {
      */
     async getOrigins(): Promise<ReadonlySet<string>> {
         const snapshot = await this.projects.snapshot();
-        this.latestRequestedVersion = snapshot.version;
+        return (await this.getIndex(snapshot, false)).origins;
+    }
 
-        if (this.cached?.version === snapshot.version) {
-            return this.cached.origins;
+    /**
+     * Rebuilds and returns safe GitHub links for the current project snapshot.
+     *
+     * @returns Project paths paired with validated public GitHub URLs.
+     */
+    async refreshGitHubLinks(): Promise<readonly ProjectGitHubLink[]> {
+        const snapshot = await this.projects.snapshot();
+        return (await this.getIndex(snapshot, true)).githubLinks;
+    }
+
+    /**
+     * Gets or rebuilds the bounded origin index for one store snapshot.
+     *
+     * @param snapshot - Current stored-project snapshot.
+     * @param force - Whether to bypass a completed cache entry.
+     * @returns Cached safe origins and GitHub links.
+     */
+    private async getIndex(
+        snapshot: Awaited<ReturnType<ProjectsStore['snapshot']>>,
+        force: boolean,
+    ): Promise<CachedOriginIndex> {
+        this.latestRequestedVersion = snapshot.version;
+        if (!force && this.cached?.version === snapshot.version) {
+            return this.cached;
         }
 
         const currentBuild = this.inFlight.get(snapshot.version);
@@ -51,14 +76,15 @@ export class ProjectRepositoryOriginIndexService {
             return currentBuild;
         }
 
-        const build = this.buildOrigins([
+        const build = this.buildIndex([
             ...new Set(snapshot.projects.map((project) => project.path)),
         ])
-            .then((origins) => {
+            .then((index) => {
+                const cached = { version: snapshot.version, ...index };
                 if (this.latestRequestedVersion === snapshot.version) {
-                    this.cached = { version: snapshot.version, origins };
+                    this.cached = cached;
                 }
-                return origins;
+                return cached;
             })
             .finally(() => {
                 if (this.inFlight.get(snapshot.version) === build) {
@@ -75,10 +101,11 @@ export class ProjectRepositoryOriginIndexService {
      * @param projectPaths - Unique stored project paths to inspect.
      * @returns Every successfully normalised origin.
      */
-    private async buildOrigins(
+    private async buildIndex(
         projectPaths: readonly string[],
-    ): Promise<ReadonlySet<string>> {
+    ): Promise<Omit<CachedOriginIndex, 'version'>> {
         const origins = new Set<string>();
+        const githubLinks = new Map<string, string>();
         let nextIndex = 0;
 
         /** Reads successive project origins until the shared queue is empty. */
@@ -86,11 +113,14 @@ export class ProjectRepositoryOriginIndexService {
             while (nextIndex < projectPaths.length) {
                 const projectPath = projectPaths[nextIndex];
                 nextIndex += 1;
-                const origin = await this.git
-                    .getNormalizedRemoteOrigin(projectPath)
+                const details = await this.git
+                    .getRemoteOriginDetails(projectPath)
                     .catch(() => null);
-                if (origin) {
-                    origins.add(origin);
+                if (details?.normalizedOrigin) {
+                    origins.add(details.normalizedOrigin);
+                }
+                if (details?.githubWebUrl) {
+                    githubLinks.set(projectPath, details.githubWebUrl);
                 }
             }
         };
@@ -106,6 +136,12 @@ export class ProjectRepositoryOriginIndexService {
                 () => readNext(),
             ),
         );
-        return origins;
+        return {
+            origins,
+            githubLinks: [...githubLinks].map(([projectPath, url]) => ({
+                projectPath,
+                url,
+            })),
+        };
     }
 }

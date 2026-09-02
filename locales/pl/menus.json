@@ -15,6 +15,7 @@
         "pinProject": "Przypnij projekt",
         "unpinProject": "Odepnij projekt",
         "openProjectFolder": "Otwórz folder projektu",
+        "openInGitHub": "Otwórz na GitHubie",
         "launchEditor": "Edytuj w Godot",
         "projectSettings": "Ustawienia projektu",
         "openEditorSettingsFolder": "Otwórz folder ustawień edytora",
