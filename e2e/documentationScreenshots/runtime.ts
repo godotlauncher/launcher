@@ -1363,6 +1363,13 @@ export async function captureScreenshot(
         await page.mouse.move(0, 0);
     }
 
+    await page.evaluate(() => {
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLElement) {
+            activeElement.blur();
+        }
+    });
+
     await page.screenshot({
         path: pngPath,
         fullPage,

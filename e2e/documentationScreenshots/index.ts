@@ -14,7 +14,7 @@ export const SCREENSHOT_GROUPS = [
     },
     {
         name: 'projects',
-        timeout: 180000,
+        timeout: 300000,
         screenshots: PROJECT_SCREENSHOTS,
     },
     {
