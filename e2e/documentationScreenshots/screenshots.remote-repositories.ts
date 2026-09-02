@@ -4,7 +4,11 @@ import type {
     RemoteDiscoveredProject,
     RemoteProjectImportResult,
 } from '@shared/contracts';
-import { applyTheme, prepareAppWithStubbedData } from './runtime';
+import {
+    applyTheme,
+    prepareAppWithStubbedData,
+    stubGlobalGitIdentity,
+} from './runtime';
 import {
     DEFAULT_TOOL_INTEGRATIONS,
     SAMPLE_PROJECTS,
@@ -539,6 +543,10 @@ async function openRemoteSource(
     await closeDrawer(page);
     await stubAppIntegrations(electronApp, DISCONNECTED_GITHUB);
     await stubRemoteRepositoryImport(electronApp, result, pendingProgress);
+    await stubGlobalGitIdentity(electronApp, {
+        name: 'Launcher Docs',
+        email: 'launcher-docs@example.invalid',
+    });
     await prepareAppWithStubbedData(page, electronApp, {
         toolIntegrations: DEFAULT_TOOL_INTEGRATIONS,
     });

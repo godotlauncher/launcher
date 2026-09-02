@@ -973,9 +973,9 @@ export const PROJECT_SCREENSHOTS: ScreenshotConfig[] = [
                             '4d542f86-89c7-4a7c-89cf-835ce17022af',
                         accessTargetId:
                             'de178a20-320a-471f-8c8c-94061ac13de1',
-                        ownerLogin: 'mariodebono',
+                        ownerLogin: 'pixel-forge',
                         ownerType: 'user',
-                        accountLogin: 'mariodebono',
+                        accountLogin: 'pixel-forge',
                     },
                 ],
             });
