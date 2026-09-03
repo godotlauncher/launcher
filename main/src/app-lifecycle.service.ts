@@ -144,23 +144,22 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         }
 
         const prefs = await getUserPreferences();
-        setAutoStart(prefs.auto_start, prefs.start_in_tray);
-        setupAutoUpdate(
-            mainWindow,
-            prefs.auto_check_updates,
-            60 * 60 * 1000,
-            false,
-            false,
-            prefs.receive_beta_updates,
-            async () => {
-                const latestPrefs = await getUserPreferences();
-                return {
-                    skippedVersion: latestPrefs.skipped_app_update_version,
-                };
-            },
-        );
-
-        if (!this.config.docsScreenshots) {
+        if (!this.config.e2eFixtures) {
+            setAutoStart(prefs.auto_start, prefs.start_in_tray);
+            setupAutoUpdate(
+                mainWindow,
+                prefs.auto_check_updates,
+                60 * 60 * 1000,
+                false,
+                false,
+                prefs.receive_beta_updates,
+                async () => {
+                    const latestPrefs = await getUserPreferences();
+                    return {
+                        skippedVersion: latestPrefs.skipped_app_update_version,
+                    };
+                },
+            );
             this.disposeFocusRevalidation = setupFocusRevalidation(
                 mainWindow,
                 () =>

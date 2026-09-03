@@ -315,7 +315,7 @@ export async function checkAndUpdateProjectHealth(
 export async function checkProjectHealth(
     project: ProjectDetails,
 ): Promise<ProjectDetails> {
-    if (getCurrentAppConfig().docsScreenshots) {
+    if (getCurrentAppConfig().e2eFixtures) {
         return project;
     }
 
@@ -361,7 +361,7 @@ export async function checkProjectValid(
     options: ProjectValidationOptions = {},
     gitInspector?: GitRepositoryInspector,
 ): Promise<ProjectDetails> {
-    if (getCurrentAppConfig().docsScreenshots) {
+    if (getCurrentAppConfig().e2eFixtures) {
         return project;
     }
 

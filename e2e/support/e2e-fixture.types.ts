@@ -1,6 +1,5 @@
 import type { ElectronApplication } from '@playwright/test';
 import type {
-    AppUpdateMessage,
     CodeEditorIntegrationSettings,
     GitLfsTrackingPolicyDescriptor,
     InstalledRelease,
@@ -22,36 +21,13 @@ export type ThemeConfig = {
     colorScheme: 'dark' | 'light';
 };
 
-export type OnboardingScreenshotPlatform = 'win32' | 'darwin' | 'linux';
+export type OnboardingFixturePlatform = 'win32' | 'darwin' | 'linux';
 
-export type OnboardingScreenshotStep =
+export type OnboardingFixtureStep =
     | 'welcome'
     | 'appearance'
     | 'setup'
     | 'preferences';
-
-export type ScreenshotConfig = {
-    fileBase: string;
-    description: string;
-    viewportHeight?: number;
-    fullPage?: boolean;
-    preservePointer?: boolean;
-    navigate: (
-        page: ElectronPage,
-        electronApp: ElectronApplication,
-        theme: ThemeConfig,
-    ) => Promise<void>;
-    cleanup?: (
-        page: ElectronPage,
-        electronApp: ElectronApplication,
-        theme: ThemeConfig,
-    ) => Promise<void>;
-};
-
-export type UpdateScreenshotState = {
-    preferences?: Partial<UserPreferences>;
-    updateMessage?: AppUpdateMessage;
-};
 
 export type StubbedAppDataOptions = {
     preferences?: UserPreferences;

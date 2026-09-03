@@ -128,7 +128,7 @@ describe('AppLifecycleService', () => {
         getAll: vi.fn(() => ({
             isDev: false,
             startHidden: false,
-            docsScreenshots: false,
+            e2eFixtures: false,
         })),
     };
     const electronAppService = {
@@ -211,7 +211,7 @@ describe('AppLifecycleService', () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: false,
-            docsScreenshots: false,
+            e2eFixtures: false,
         });
         mocks.getUserPreferences.mockResolvedValue({ ...defaultPreferences });
         projectsService.checkAllProjectsValid.mockResolvedValue([]);
@@ -284,6 +284,8 @@ describe('AppLifecycleService', () => {
 
         await initializeLifecycle(service);
 
+        expect(mocks.setAutoStart).toHaveBeenCalledWith(false, false);
+        expect(mocks.setupAutoUpdate).toHaveBeenCalledOnce();
         expect(mocks.setupFocusRevalidation).toHaveBeenCalledWith(
             mainWindow,
             expect.any(Function),
@@ -323,11 +325,11 @@ describe('AppLifecycleService', () => {
         expect(mocks.createMenu).not.toHaveBeenCalled();
     });
 
-    it('does not install focus revalidation for documentation screenshots', async () => {
+    it('does not install focus revalidation for E2E fixtures', async () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: false,
-            docsScreenshots: true,
+            e2eFixtures: true,
         });
         const service = createService();
 
@@ -336,11 +338,25 @@ describe('AppLifecycleService', () => {
         expect(mocks.setupFocusRevalidation).not.toHaveBeenCalled();
     });
 
+    it('does not change login items or start updates for E2E fixtures', async () => {
+        configService.getAll.mockReturnValue({
+            isDev: false,
+            startHidden: false,
+            e2eFixtures: true,
+        });
+        const service = createService();
+
+        await initializeLifecycle(service);
+
+        expect(mocks.setAutoStart).not.toHaveBeenCalled();
+        expect(mocks.setupAutoUpdate).not.toHaveBeenCalled();
+    });
+
     it('keeps a hidden launch hidden after the renderer is ready', async () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: true,
-            docsScreenshots: false,
+            e2eFixtures: false,
         });
         const service = createService();
 
@@ -355,7 +371,7 @@ describe('AppLifecycleService', () => {
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: true,
-            docsScreenshots: false,
+            e2eFixtures: false,
         });
         trayAvailabilityService.isAvailable.mockResolvedValue(false);
         const service = createService();

@@ -37,7 +37,7 @@ vi.mock('electron', () => ({
                         disableSandbox: false,
                         disableDevMenu: false,
                         startHidden: false,
-                        docsScreenshots: false,
+                        e2eFixtures: false,
                         paths: {
                             dataDir: '/data',
                             configDir: '/config',

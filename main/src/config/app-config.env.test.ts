@@ -7,9 +7,13 @@ describe('parseProcessEnv', () => {
             parseProcessEnv({
                 GODOT_LAUNCHER_DISABLE_SANDBOX: '1',
                 GODOT_LAUNCHER_NO_DEV_MENU: 'true',
-                GODOT_LAUNCHER_DOCS_SCREENSHOTS: '0',
+                GODOT_LAUNCHER_E2E_FIXTURES: '0',
                 GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER: 'true',
             }).GODOT_LAUNCHER_DISABLE_SANDBOX,
+        ).toBe(true);
+        expect(
+            parseProcessEnv({ GODOT_LAUNCHER_E2E_FIXTURES: '1' })
+                .GODOT_LAUNCHER_E2E_FIXTURES,
         ).toBe(true);
         expect(
             parseProcessEnv({

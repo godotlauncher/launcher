@@ -65,14 +65,13 @@
         "dist:linux": "npm run build:sources && electron-builder --config electron-builder-config.ts --linux --publish never",
         "dist:win": "npm run build:native:git-askpass:windows && npm run test:native:git-askpass && npm run dist:win:prepared",
         "dist:win:prepared": "npm run build:sources && electron-builder --config electron-builder-config.ts --win --publish never",
-        "test:e2e": "npm run transpile:electron && playwright test --grep-invert @screenshots",
+        "test:e2e": "npm run transpile:electron && playwright test",
         "test:unit": "vitest main/src renderer/src",
         "app:dir": "npm run build:sources && electron-builder --dir --config electron-builder-config.ts --publish never",
         "app:dist": "npm run build:sources && electron-builder --config electron-builder-config.ts --publish never",
         "postinstall": "electron-builder install-app-deps",
         "changelog": "auto-changelog",
-        "changelog:unreleased": "auto-changelog --unreleased",
-        "doc:screenshots": "npm run transpile:electron && playwright test e2e/documentationScreenshot.spec.ts"
+        "changelog:unreleased": "auto-changelog --unreleased"
     },
     "auto-changelog": {
         "tagPattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
@@ -131,7 +130,6 @@
         "npm-run-all": "^4.1.5",
         "postcss": "^8.5.26",
         "rimraf": "^6.1.3",
-        "sharp": "^0.35.3",
         "tailwindcss": "^4.3.3",
         "tsc-alias": "^1.9.1",
         "typescript": "^6.0.3",

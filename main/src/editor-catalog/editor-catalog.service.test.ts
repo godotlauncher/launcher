@@ -1,11 +1,17 @@
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import type {
     EditorCatalogProviderId,
     EditorCatalogRelease,
 } from '@shared/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { seedLauncherData } from '../../../e2e/support/e2e-fixture-runtime.js';
+import { AtomicJsonFileAdapter } from '../json-store/atomic-json-file.adapter.js';
+import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
 import { createEmptyEditorCatalog } from './editor-catalog.schema.js';
 import { EditorCatalogService } from './editor-catalog.service.js';
-import type { EditorCatalogStore } from './editor-catalog.store.js';
+import { EditorCatalogStore } from './editor-catalog.store.js';
 import type {
     EditorCatalogFile,
     FetchedEditorCatalogProvider,
@@ -43,6 +49,61 @@ describe('EditorCatalogService', () => {
         await expect(
             service.getReleaseById('official-stable:4.5-stable'),
         ).resolves.toMatchObject({ version: '4.5-stable' });
+    });
+
+    it('never fetches providers while E2E fixtures are active', async () => {
+        const catalog = createEmptyEditorCatalog();
+        const { service, githubAdapter } = createService(catalog, true);
+
+        await service.getCatalog();
+        await service.refreshCatalog();
+
+        expect(githubAdapter.fetchProvider).not.toHaveBeenCalled();
+    });
+
+    it('reads the seeded E2E catalogue from disk without fetching', async () => {
+        const homeDirectory = await fs.mkdtemp(
+            path.join(os.tmpdir(), 'launcher-editor-catalog-fixture-'),
+        );
+
+        try {
+            await seedLauncherData(homeDirectory);
+            const store = new EditorCatalogStore(
+                new JsonStoreCoordinatorService(new AtomicJsonFileAdapter()),
+                {
+                    directory: path.join(homeDirectory, '.gd-launcher'),
+                    fileName: 'editor-catalog.json',
+                },
+            );
+            const githubAdapter = {
+                fetchProvider: vi.fn(),
+            };
+            const configService = {
+                get: vi.fn(() => true),
+            };
+            const service = new EditorCatalogService(
+                store,
+                githubAdapter as unknown as GithubEditorCatalogAdapter,
+                configService as never,
+            );
+
+            const catalog = await service.getCatalog();
+            const refreshedCatalog = await service.refreshCatalog();
+
+            expect(catalog.releases).toContainEqual(
+                expect.objectContaining({
+                    id: 'official-stable:4.7.1-stable',
+                }),
+            );
+            expect(refreshedCatalog.releases).toContainEqual(
+                expect.objectContaining({
+                    id: 'official-stable:4.7.1-stable',
+                }),
+            );
+            expect(githubAdapter.fetchProvider).not.toHaveBeenCalled();
+        } finally {
+            await fs.rm(homeDirectory, { recursive: true, force: true });
+        }
     });
 
     it('fully refreshes a fresh legacy cache without integrity metadata', async () => {
@@ -225,7 +286,14 @@ describe('EditorCatalogService', () => {
     });
 });
 
-function createService(initialCatalog: EditorCatalogFile) {
+/**
+ * Creates the catalogue service with in-memory collaborators.
+ *
+ * @param initialCatalog - Initial persisted catalogue state.
+ * @param e2eFixtures - Whether development fixture isolation is active.
+ * @returns The service and its inspectable collaborators.
+ */
+function createService(initialCatalog: EditorCatalogFile, e2eFixtures = false) {
     let catalog = structuredClone(initialCatalog);
     const store = {
         read: vi.fn(async () => structuredClone(catalog)),
@@ -256,11 +324,15 @@ function createService(initialCatalog: EditorCatalogFile) {
             ],
         })),
     };
+    const configService = {
+        get: vi.fn(() => e2eFixtures),
+    };
 
     return {
         service: new EditorCatalogService(
             store as unknown as EditorCatalogStore,
             githubAdapter as unknown as GithubEditorCatalogAdapter,
+            configService as never,
         ),
         store,
         githubAdapter,

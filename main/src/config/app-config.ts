@@ -89,7 +89,8 @@ export function configuration(
             (envConfig.GODOT_LAUNCHER_NO_DEV_MENU ?? false) ||
             (cliConfig.disableDevMenu ?? false),
         startHidden: cliConfig.startHidden ?? false,
-        docsScreenshots: envConfig.GODOT_LAUNCHER_DOCS_SCREENSHOTS ?? false,
+        // Fixture behaviour is only available to unpackaged development runs.
+        e2eFixtures: isDev && (envConfig.GODOT_LAUNCHER_E2E_FIXTURES ?? false),
         useLocalGitHubBroker:
             isDev &&
             (envConfig.GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER ?? false),

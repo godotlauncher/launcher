@@ -17,7 +17,7 @@ describe('configuration', () => {
                 '--hidden',
             ),
             env: {
-                GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
+                GODOT_LAUNCHER_E2E_FIXTURES: '1',
             },
             isPackaged: false,
             appPath: '/workspace/launcher',
@@ -33,7 +33,7 @@ describe('configuration', () => {
                 disableSandbox: true,
                 disableDevMenu: true,
                 startHidden: true,
-                docsScreenshots: true,
+                e2eFixtures: true,
                 useLocalGitHubBroker: false,
             }),
         );
@@ -55,6 +55,24 @@ describe('configuration', () => {
 
         expect(development.useLocalGitHubBroker).toBe(true);
         expect(packaged.useLocalGitHubBroker).toBe(false);
+    });
+
+    it('ignores E2E fixtures in a packaged runtime', () => {
+        const development = configuration({
+            args: argv(),
+            env: { GODOT_LAUNCHER_E2E_FIXTURES: '1' },
+            isPackaged: false,
+            appPath: '/workspace/launcher',
+        });
+        const packaged = configuration({
+            args: argv(),
+            env: { GODOT_LAUNCHER_E2E_FIXTURES: '1' },
+            isPackaged: true,
+            appPath: '/opt/launcher/app.asar',
+        });
+
+        expect(development.e2eFixtures).toBe(true);
+        expect(packaged.e2eFixtures).toBe(false);
     });
 
     it('keeps cli true when env explicitly parses false', () => {

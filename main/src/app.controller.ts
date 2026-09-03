@@ -181,9 +181,7 @@ export class AppController implements AppBridge {
 
     @AppHandler('getPlatform')
     async getPlatform(): Promise<string> {
-        return getCurrentAppConfig().docsScreenshots
-            ? 'win32'
-            : process.platform;
+        return getCurrentAppConfig().e2eFixtures ? 'win32' : process.platform;
     }
 
     @AppHandler('getTrayAvailability')

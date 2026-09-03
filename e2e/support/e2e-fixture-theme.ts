@@ -1,6 +1,11 @@
-import type { ThemeConfig } from './types';
+export type E2eFixtureTheme = {
+    name: 'dark' | 'light';
+    description: string;
+    toggleTestId: 'themeDark' | 'themeLight' | 'themeAuto';
+    colorScheme: 'dark' | 'light';
+};
 
-export const THEMES: ThemeConfig[] = [
+export const THEMES: E2eFixtureTheme[] = [
     {
         name: 'dark',
         description: 'dark mode',

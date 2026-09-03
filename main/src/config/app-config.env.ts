@@ -19,7 +19,7 @@ const BooleanFromEnvSchema = z.preprocess((value) => {
 export const AppEnvConfigSchema = z.object({
     GODOT_LAUNCHER_DISABLE_SANDBOX: BooleanFromEnvSchema,
     GODOT_LAUNCHER_NO_DEV_MENU: BooleanFromEnvSchema,
-    GODOT_LAUNCHER_DOCS_SCREENSHOTS: BooleanFromEnvSchema,
+    GODOT_LAUNCHER_E2E_FIXTURES: BooleanFromEnvSchema,
     GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER: BooleanFromEnvSchema,
 });
 

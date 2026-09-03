@@ -19,9 +19,9 @@ import {
     stubCreateProjectResult,
     stubGlobalGitIdentity,
     stubRetryCreateProjectPublicationResults,
-} from './documentationScreenshots/runtime';
-import { SAMPLE_PROJECTS } from './documentationScreenshots/sampleData';
-import { THEMES } from './documentationScreenshots/themes';
+} from './support/e2e-fixture-runtime';
+import { SAMPLE_PROJECTS } from './support/e2e-fixture-data';
+import { THEMES } from './support/e2e-fixture-theme';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: ElectronApplication;
@@ -609,8 +609,8 @@ function createIsolatedLaunchEnvironment(
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
-        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
-        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        GODOT_LAUNCHER_E2E_FIXTURES: '1',
+        GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
         NODE_OPTIONS: existingNodeOptions
             ? `${existingNodeOptions} ${requireOverrideOption}`
             : requireOverrideOption,

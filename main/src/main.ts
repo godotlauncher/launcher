@@ -99,7 +99,7 @@ async function bootstrap(): Promise<void> {
         },
     });
 
-    if (!appConfig.startHidden && !appConfig.docsScreenshots) {
+    if (!appConfig.startHidden && !appConfig.e2eFixtures) {
         showSplashscreen();
     }
 
