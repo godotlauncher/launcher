@@ -13,14 +13,14 @@ import {
     setAppLanguage,
     stubCodeEditorIntegrationSettings,
     stubGlobalGitIdentity,
-} from './documentationScreenshots/runtime';
+} from './support/e2e-fixture-runtime';
 import {
     SAMPLE_PROJECT_PROTOTYPE,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODE_SETTINGS_DISABLED,
     SAMPLE_VSCODE_SETTINGS_NOT_FOUND,
     SAMPLE_VSCODE_SETTINGS_OVERRIDDEN,
-} from './documentationScreenshots/sampleData';
+} from './support/e2e-fixture-data';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: ElectronApplication;
@@ -935,8 +935,8 @@ function createIsolatedLaunchEnvironment(homeDir: string) {
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
-        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
-        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        GODOT_LAUNCHER_E2E_FIXTURES: '1',
+        GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
         NODE_OPTIONS: existingNodeOptions
             ? `${existingNodeOptions} ${requireOverrideOption}`
             : requireOverrideOption,

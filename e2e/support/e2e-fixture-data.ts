@@ -1,3 +1,4 @@
+// Shared deterministic data for ordinary Electron E2E fixtures.
 import type {
     CodeEditorIntegrationSettings,
     GitLfsTrackingPolicyDescriptor,
@@ -272,6 +273,12 @@ export const SAMPLE_PREFS: UserPreferences = {
     language: 'system',
 };
 
+/**
+ * Creates user preferences by applying fixture overrides to the defaults.
+ *
+ * @param overrides - Preference values to replace in the fixture defaults.
+ * @returns Complete user preferences for an E2E fixture.
+ */
 export function createPreferences(
     overrides: Partial<UserPreferences> = {},
 ): UserPreferences {

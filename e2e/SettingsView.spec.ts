@@ -4,7 +4,7 @@ import path from 'node:path';
 import {
     createFixtureHome,
     setAppLanguage,
-} from './documentationScreenshots/runtime';
+} from './support/e2e-fixture-runtime';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: Awaited<ReturnType<typeof _electron.launch>>;
@@ -122,8 +122,8 @@ function createIsolatedLaunchEnvironment(
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
-        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
-        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        GODOT_LAUNCHER_E2E_FIXTURES: '1',
+        GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
         NODE_OPTIONS: existingNodeOptions
             ? `${existingNodeOptions} ${requireOverrideOption}`
             : requireOverrideOption,

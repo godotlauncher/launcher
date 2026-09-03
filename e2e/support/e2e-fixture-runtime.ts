@@ -1,22 +1,17 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
     type ElectronApplication,
     expect,
-    type TestInfo,
 } from '@playwright/test';
 import type {
-    AddProjectOptions,
     AppBridge,
-    AppUpdateMessage,
     CodeEditorIntegrationSettings,
     CreateProjectResult,
     GitIdentity,
     GitIdentitySettings,
     GitLfsTrackingPolicyDescriptor,
-    InitializeProjectGitResult,
     EditorCatalogArchitecture,
     EditorCatalogPlatform,
     EditorCatalogRelease,
@@ -26,55 +21,34 @@ import type {
     LaunchProjectResult,
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
-    ProjectGitIdentityResult,
     ProjectsBridge,
-    ReleaseInstallProgress,
     ReleaseSummary,
     ToolIntegrationSummary,
     UserPreferences,
 } from '@shared/contracts';
-import sharp from 'sharp';
 import {
     createPreferences,
     DEFAULT_TOOL_INTEGRATIONS,
     SAMPLE_AVAILABLE_PRERELEASES,
     SAMPLE_AVAILABLE_RELEASES,
-    SAMPLE_CUSTOM_RELEASE,
-    SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
     SAMPLE_GIT_LFS_TRACKING_POLICY,
     SAMPLE_PREFS,
     SAMPLE_PRERELEASE_CACHE_FILE,
-    SAMPLE_PROJECT_ICON_PATH,
     SAMPLE_PROJECTS,
     SAMPLE_RELEASES_CACHE_FILE,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
-} from './sampleData';
+} from './e2e-fixture-data';
 import type {
     ElectronPage,
-    OnboardingScreenshotPlatform,
-    OnboardingScreenshotStep,
+    OnboardingFixturePlatform,
+    OnboardingFixtureStep,
     StubbedAppDataOptions,
     ThemeConfig,
-    UpdateScreenshotState,
-} from './types';
+} from './e2e-fixture.types';
 
-const SCREENSHOT_MIN_WIDTH = 1024;
-const SCREENSHOT_MIN_HEIGHT = 600;
-
-// Canonical screenshot source for the whole workspace lives outside this
-// repo, in the sibling screenshots project, regardless of cwd.
-const workspaceRoot = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    '..',
-    '..',
-    '..',
-);
-const canonicalScreensDir = path.join(
-    workspaceRoot,
-    'screenshots',
-    'screens',
-);
+const E2E_FIXTURE_MIN_WIDTH = 1024;
+const E2E_FIXTURE_MIN_HEIGHT = 600;
 
 type AppMethod = Extract<keyof AppBridge, string>;
 type AppResult<Method extends AppMethod> = Awaited<
@@ -93,13 +67,13 @@ type IpcSuccess<Data> = {
     data: Data;
 };
 
-const screenshotEditorPlatform: EditorCatalogPlatform =
+const fixtureEditorPlatform: EditorCatalogPlatform =
     process.platform === 'win32' ||
     process.platform === 'darwin' ||
     process.platform === 'linux'
         ? process.platform
         : 'linux';
-const screenshotEditorArchitecture: EditorCatalogArchitecture =
+const fixtureEditorArchitecture: EditorCatalogArchitecture =
     process.arch === 'x64' ||
     process.arch === 'arm64' ||
     process.arch === 'ia32' ||
@@ -108,52 +82,114 @@ const screenshotEditorArchitecture: EditorCatalogArchitecture =
         : 'x64';
 
 /**
- * Creates catalog data from the release fixtures used by screenshots.
+ * Creates catalog data from the release fixtures used by E2E tests.
  *
  * @param availableReleases - Releases from the stable provider.
  * @param availablePrereleases - Releases from the prerelease provider.
  * @param refreshError - An optional mocked provider refresh error.
  * @returns Catalog data for the dedicated editor catalog bridge.
  */
-function createScreenshotEditorCatalog(
+function createFixtureEditorCatalog(
     availableReleases: ReleaseSummary[],
     availablePrereleases: ReleaseSummary[],
     refreshError?: string,
 ): EditorCatalogResult {
-    const now = Date.now();
+    const catalog = createFixtureEditorCatalogFile(
+        availableReleases,
+        availablePrereleases,
+    );
 
     return {
-        releases: [
-            ...availableReleases.map((release, releaseIndex) =>
-                createScreenshotEditorCatalogRelease(
-                    release,
-                    releaseIndex,
-                    'official-stable',
-                    false,
-                ),
-            ),
-            ...availablePrereleases.map((release, releaseIndex) =>
-                createScreenshotEditorCatalogRelease(
-                    release,
-                    releaseIndex,
-                    'official-prerelease',
-                    true,
-                ),
-            ),
-        ],
+        releases: Object.values(catalog.providers).flatMap(
+            (provider) => provider.releases,
+        ),
         providers: [
             {
                 id: 'official-stable',
-                lastFetchedAt: now,
+                lastFetchedAt:
+                    catalog.providers['official-stable'].lastFetchedAt,
                 isStale: false,
                 ...(refreshError ? { refreshError } : {}),
             },
             {
                 id: 'official-prerelease',
-                lastFetchedAt: now,
+                lastFetchedAt:
+                    catalog.providers['official-prerelease'].lastFetchedAt,
                 isStale: false,
             },
         ],
+    };
+}
+
+type FixtureEditorCatalogFile = {
+    schemaVersion: 1;
+    providers: Record<
+        'official-stable' | 'official-prerelease',
+        {
+            integrityMetadataRefreshed: true;
+            lastFetchedAt: number;
+            lastPublishedAt: string | null;
+            releases: EditorCatalogRelease[];
+        }
+    >;
+};
+
+/**
+ * Creates a fresh on-disk editor catalogue from deterministic release fixtures.
+ *
+ * @param availableReleases - Stable releases for the catalogue.
+ * @param availablePrereleases - Prereleases for the catalogue.
+ * @returns A valid editor catalogue cache file.
+ */
+function createFixtureEditorCatalogFile(
+    availableReleases: ReleaseSummary[],
+    availablePrereleases: ReleaseSummary[],
+): FixtureEditorCatalogFile {
+    const lastFetchedAt = Date.now();
+    /**
+     * Maps one fixture provider into its persisted catalogue state.
+     *
+     * @param releases - Releases supplied by the provider fixture.
+     * @param providerId - Identifier of the persisted provider.
+     * @param providerPrerelease - Whether the provider serves prereleases.
+     * @returns A fresh persisted provider state.
+     */
+    const createProvider = (
+        releases: ReleaseSummary[],
+        providerId: 'official-stable' | 'official-prerelease',
+        providerPrerelease: boolean,
+    ) => {
+        const mappedReleases = releases.map((release, releaseIndex) =>
+            createFixtureEditorCatalogRelease(
+                release,
+                releaseIndex,
+                providerId,
+                providerPrerelease,
+            ),
+        );
+
+        return {
+            integrityMetadataRefreshed: true as const,
+            lastFetchedAt,
+            lastPublishedAt: mappedReleases[0]?.publishedAt ?? null,
+            releases: mappedReleases,
+        };
+    };
+
+    return {
+        schemaVersion: 1,
+        providers: {
+            'official-stable': createProvider(
+                availableReleases,
+                'official-stable',
+                false,
+            ),
+            'official-prerelease': createProvider(
+                availablePrereleases,
+                'official-prerelease',
+                true,
+            ),
+        },
     };
 }
 
@@ -166,7 +202,7 @@ function createScreenshotEditorCatalog(
  * @param providerPrerelease - Whether the provider contains prereleases.
  * @returns A release for the dedicated editor catalog bridge.
  */
-function createScreenshotEditorCatalogRelease(
+function createFixtureEditorCatalogRelease(
     release: ReleaseSummary,
     releaseIndex: number,
     providerId: EditorCatalogRelease['providerId'],
@@ -202,8 +238,8 @@ function createScreenshotEditorCatalogRelease(
                     id: `${releaseIndex}:${flavor}:${assetIndex}`,
                     name: asset.name,
                     downloadUrl: asset.download_url,
-                    platform: screenshotEditorPlatform,
-                    architecture: screenshotEditorArchitecture,
+                    platform: fixtureEditorPlatform,
+                    architecture: fixtureEditorArchitecture,
                 }));
 
             return assets.length > 0
@@ -219,12 +255,25 @@ function createScreenshotEditorCatalogRelease(
     };
 }
 
-export async function writeJson(file: string, data: unknown) {
+/**
+ * Writes JSON fixture data, creating its parent directory when required.
+ *
+ * @param file - Destination file path.
+ * @param data - Value to serialise as JSON.
+ * @returns A promise that resolves after the file is written.
+ */
+export async function writeJson(file: string, data: unknown): Promise<void> {
     await fs.mkdir(path.dirname(file), { recursive: true });
     await fs.writeFile(file, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-export async function seedLauncherData(homeDir: string) {
+/**
+ * Seeds an isolated home directory with deterministic Launcher data.
+ *
+ * @param homeDir - Isolated home directory to populate.
+ * @returns A promise that resolves after all fixture files are written.
+ */
+export async function seedLauncherData(homeDir: string): Promise<void> {
     const configDir = path.join(homeDir, '.gd-launcher');
     await fs.mkdir(configDir, { recursive: true });
     await writeJson(path.join(configDir, 'projects.json'), SAMPLE_PROJECTS);
@@ -240,116 +289,40 @@ export async function seedLauncherData(homeDir: string) {
         path.join(configDir, 'prereleases.json'),
         SAMPLE_PRERELEASE_CACHE_FILE,
     );
+    await writeJson(
+        path.join(configDir, 'editor-catalog.json'),
+        createFixtureEditorCatalogFile(
+            SAMPLE_AVAILABLE_RELEASES,
+            SAMPLE_AVAILABLE_PRERELEASES,
+        ),
+    );
     await writeJson(path.join(configDir, 'prefs.json'), SAMPLE_PREFS);
 }
 
-export async function createFixtureHome() {
+/**
+ * Creates and seeds an isolated home directory for an Electron E2E run.
+ *
+ * @returns The path to the seeded temporary home directory.
+ */
+export async function createFixtureHome(): Promise<string> {
     const tempHome = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'gd-launcher-docs-'),
+        path.join(os.tmpdir(), 'gd-launcher-e2e-'),
     );
     await seedLauncherData(tempHome);
     return tempHome;
 }
 
-export async function showProjectsDropOverlay(page: ElectronPage) {
-    await page.evaluate(() => {
-        const title = document.querySelector('[data-testid="projectsTitle"]');
-        const container =
-            title?.closest(
-                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
-            ) ??
-            document.querySelector(
-                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
-            );
-        if (!container) return;
-
-        const dataTransfer = new DataTransfer();
-        const dragEnter = new DragEvent('dragenter', {
-            dataTransfer,
-            bubbles: true,
-            cancelable: true,
-        });
-        container.dispatchEvent(dragEnter);
-    });
-}
-
-export async function hideProjectsDropOverlay(page: ElectronPage) {
-    await page.evaluate(() => {
-        const title = document.querySelector('[data-testid="projectsTitle"]');
-        const container =
-            title?.closest(
-                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
-            ) ??
-            document.querySelector(
-                'div.flex.flex-col.h-full.w-full.overflow-auto.p-1',
-            );
-        if (!container) return;
-
-        const dataTransfer = new DataTransfer();
-        const dragLeave = new DragEvent('dragleave', {
-            dataTransfer,
-            bubbles: true,
-            cancelable: true,
-        });
-        container.dispatchEvent(dragLeave);
-    });
-}
-
-function getManifestFileName(supported: boolean) {
-    return supported
-        ? 'godotlauncher-editor-manifest.json'
-        : 'godot-editor-manifest.json';
-}
-
-export async function showInstallsManifestDropOverlay(
+/**
+ * Applies a selected application theme through the visible settings controls.
+ *
+ * @param page - Electron page containing the Launcher UI.
+ * @param theme - Theme configuration to apply.
+ * @returns A promise that resolves after returning to Projects.
+ */
+export async function applyTheme(
     page: ElectronPage,
-    supported: boolean,
-) {
-    await page.evaluate((fileName) => {
-        const title = document.querySelector('[data-testid="installsTitle"]');
-        const container =
-            title?.closest('section') ??
-            document.querySelector('section[aria-label]');
-        if (!container) return;
-
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(
-            new File(['{}'], fileName, { type: 'application/json' }),
-        );
-        const dragEnter = new DragEvent('dragenter', {
-            dataTransfer,
-            bubbles: true,
-            cancelable: true,
-        });
-        container.dispatchEvent(dragEnter);
-    }, getManifestFileName(supported));
-}
-
-export async function hideInstallsManifestDropOverlay(
-    page: ElectronPage,
-    supported: boolean,
-) {
-    await page.evaluate((fileName) => {
-        const title = document.querySelector('[data-testid="installsTitle"]');
-        const container =
-            title?.closest('section') ??
-            document.querySelector('section[aria-label]');
-        if (!container) return;
-
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(
-            new File(['{}'], fileName, { type: 'application/json' }),
-        );
-        const dragLeave = new DragEvent('dragleave', {
-            dataTransfer,
-            bubbles: true,
-            cancelable: true,
-        });
-        container.dispatchEvent(dragLeave);
-    }, getManifestFileName(supported));
-}
-
-export async function applyTheme(page: ElectronPage, theme: ThemeConfig) {
+    theme: ThemeConfig,
+): Promise<void> {
     await page.emulateMedia({ colorScheme: theme.colorScheme });
     await expect(page.getByTestId('btnSettings')).toBeVisible({
         timeout: 15000,
@@ -366,9 +339,15 @@ export async function applyTheme(page: ElectronPage, theme: ThemeConfig) {
 
 const shimmedElectronApps = new WeakSet<ElectronApplication>();
 
+/**
+ * Installs the decorator-name shim required by main-process fixture handlers.
+ *
+ * @param electronApp - Electron application receiving the shim.
+ * @returns A promise that resolves after the shim is installed.
+ */
 async function ensureMainProcessNameHelperShim(
     electronApp: ElectronApplication,
-) {
+): Promise<void> {
     if (shimmedElectronApps.has(electronApp)) {
         return;
     }
@@ -383,7 +362,7 @@ async function ensureMainProcessNameHelperShim(
 }
 
 /**
- * Stubs launcher data requests for one screenshot state.
+ * Stubs launcher data requests for one E2E fixture state.
  *
  * @param electronApp - The Electron app to update.
  * @param preferences - The preferences returned to the renderer.
@@ -404,7 +383,7 @@ export async function stubAppData(
     catalogRefreshError?: string,
 ) {
     await ensureMainProcessNameHelperShim(electronApp);
-    const editorCatalog = createScreenshotEditorCatalog(
+    const editorCatalog = createFixtureEditorCatalog(
         availableReleases,
         availablePrereleases,
         catalogRefreshError,
@@ -583,16 +562,16 @@ export async function stubAppData(
 
             for (const win of BrowserWindow.getAllWindows()) {
                 const webContents = win.webContents as any;
-                webContents.__docsProjects = normalizedProjects;
-                webContents.__docsInstalledReleases =
+                webContents.__e2eFixtureProjects = normalizedProjects;
+                webContents.__e2eFixtureInstalledReleases =
                     normalizedInstalledReleases;
 
-                if (webContents.__docsPatchedSend) {
+                if (webContents.__e2eFixturePatchedSend) {
                     continue;
                 }
 
                 const originalSend = webContents.send.bind(webContents);
-                webContents.__docsPatchedSend = true;
+                webContents.__e2eFixturePatchedSend = true;
                 webContents.send = (
                     channel: string,
                     payload: unknown,
@@ -601,14 +580,14 @@ export async function stubAppData(
                     if (channel === 'projects-updated') {
                         return originalSend(
                             channel,
-                            webContents.__docsProjects ?? payload,
+                            webContents.__e2eFixtureProjects ?? payload,
                             ...args,
                         );
                     }
                     if (channel === 'releases-updated') {
                         return originalSend(
                             channel,
-                            webContents.__docsInstalledReleases ?? payload,
+                            webContents.__e2eFixtureInstalledReleases ?? payload,
                             ...args,
                         );
                     }
@@ -627,6 +606,13 @@ export async function stubAppData(
     );
 }
 
+/**
+ * Replaces code-editor integration settings returned through the bridge.
+ *
+ * @param electronApp - Electron application whose handler is replaced.
+ * @param settings - Integration settings returned to the renderer.
+ * @returns A promise that resolves after the handler is ready.
+ */
 export async function stubCodeEditorIntegrationSettings(
     electronApp: ElectronApplication,
     settings: CodeEditorIntegrationSettings[],
@@ -646,6 +632,13 @@ export async function stubCodeEditorIntegrationSettings(
         settings,
     );
 }
+/**
+ * Replaces the Project launch result returned through the bridge.
+ *
+ * @param electronApp - Electron application whose handler is replaced.
+ * @param result - Launch result returned to the renderer.
+ * @returns A promise that resolves after the handler is ready.
+ */
 export async function stubProjectLaunchResult(
     electronApp: ElectronApplication,
     result: LaunchProjectResult,
@@ -797,54 +790,11 @@ export async function stubRetryCreateProjectPublicationResults(
 }
 
 /**
- * Stubs discarding a process-local Create Project publication attempt.
- *
- * @param electronApp - Electron app whose bridge handler should be replaced.
- * @returns A promise that ends when the discard handler is ready.
- */
-export async function stubDiscardCreateProjectPublication(
-    electronApp: ElectronApplication,
-): Promise<void> {
-    await electronApp.evaluate(({ ipcMain }) => {
-        const channel = 'projects.discardCreateProjectPublication';
-        ipcMain.removeHandler(channel);
-        ipcMain.handle(channel, async () => ({
-            success: true,
-            data: undefined,
-        }));
-    });
-}
-
-/**
- * Stubs the effective Git identity shown in Project Settings.
- *
- * @param electronApp - The Electron app whose handler should be replaced.
- * @param result - Effective project identity result returned to the renderer.
- * @returns A promise that ends when the handler is ready.
- */
-export async function stubProjectGitIdentity(
-    electronApp: ElectronApplication,
-    result: ProjectGitIdentityResult,
-) {
-    await electronApp.evaluate(
-        ({ ipcMain }, injectedResult: ProjectGitIdentityResult) => {
-            const channel = 'projects.getProjectGitIdentity';
-            ipcMain.removeHandler(channel);
-            ipcMain.handle(channel, async () => ({
-                success: true,
-                data: injectedResult,
-            }));
-        },
-        result,
-    );
-}
-
-/**
  * Stubs the global Git identity returned to Create Project.
  *
- * @param electronApp - The Electron app whose handler should be replaced.
- * @param identity - Global Git identity values returned to the renderer.
- * @returns A promise that ends when the handler is ready.
+ * @param electronApp - Electron app whose bridge handler should be replaced.
+ * @param identity - Git identity returned to the renderer.
+ * @returns A promise that resolves after the handlers are ready.
  */
 export async function stubGlobalGitIdentity(
     electronApp: ElectronApplication,
@@ -857,138 +807,12 @@ export async function stubGlobalGitIdentity(
 }
 
 /**
- * Stubs the Git identity settings returned to Settings and Create Project.
+ * Prepares the application with deterministic fixture handlers and data.
  *
- * @param electronApp - The Electron app whose handlers should be replaced.
- * @param settings - Combined global identity and Launcher preset values.
- * @returns A promise that ends when both compatibility handlers are ready.
- */
-export async function stubGitIdentitySettings(
-    electronApp: ElectronApplication,
-    settings: GitIdentitySettings,
-) {
-    await electronApp.evaluate(
-        ({ ipcMain }, injectedSettings: GitIdentitySettings) => {
-            const globalChannel = 'git.getGlobalIdentity';
-            ipcMain.removeHandler(globalChannel);
-            ipcMain.handle(globalChannel, async () => ({
-                success: true,
-                data: injectedSettings.globalIdentity,
-            }));
-
-            const settingsChannel = 'git.getIdentitySettings';
-            ipcMain.removeHandler(settingsChannel);
-            ipcMain.handle(settingsChannel, async () => ({
-                success: true,
-                data: injectedSettings,
-            }));
-        },
-        settings,
-    );
-}
-
-export async function stubProjectGitInitializationFailure(
-    electronApp: ElectronApplication,
-    error: string,
-) {
-    await electronApp.evaluate(({ ipcMain }, message: string) => {
-        const channel = 'projects.initializeProjectGit';
-        ipcMain.removeHandler(channel);
-        ipcMain.handle(channel, async () => ({
-            success: false,
-            error: {
-                type: 'Error',
-                message,
-            },
-        }));
-    }, error);
-}
-
-/**
- * Stubs a successful project Git initialization result.
- *
- * @param electronApp - The Electron app whose handler should be replaced.
- * @param result - Structured Git initialization result returned to the renderer.
- * @returns A promise that ends when the handler is ready.
- */
-export async function stubProjectGitInitializationResult(
-    electronApp: ElectronApplication,
-    result: InitializeProjectGitResult,
-) {
-    await electronApp.evaluate(
-        ({ ipcMain }, injectedResult: InitializeProjectGitResult) => {
-            const channel = 'projects.initializeProjectGit';
-            ipcMain.removeHandler(channel);
-            ipcMain.handle(channel, async () => ({
-                success: true,
-                data: injectedResult,
-            }));
-        },
-        result,
-    );
-}
-
-export async function stubCodeEditorIntegrationRescan(
-    electronApp: ElectronApplication,
-    settings: CodeEditorIntegrationSettings,
-    pending = false,
-) {
-    await electronApp.evaluate(
-        (
-            { ipcMain },
-            injected: {
-                settings: CodeEditorIntegrationSettings;
-                pending: boolean;
-            },
-        ) => {
-            const state = globalThis as typeof globalThis & {
-                __docsCodeEditorRescanRelease?: () => void;
-            };
-            state.__docsCodeEditorRescanRelease = undefined;
-
-            const channel = 'codeEditorIntegration.rescanIntegration';
-            ipcMain.removeHandler(channel);
-            ipcMain.handle(channel, async () => {
-                if (injected.pending) {
-                    await new Promise<void>((resolve) => {
-                        state.__docsCodeEditorRescanRelease = resolve;
-                    });
-                }
-
-                return {
-                    success: true,
-                    data: injected.settings,
-                };
-            });
-        },
-        { settings, pending },
-    );
-}
-
-export async function releasePendingCodeEditorIntegrationRescan(
-    electronApp: ElectronApplication,
-) {
-    await electronApp.evaluate(() => {
-        const state = globalThis as typeof globalThis & {
-            __docsCodeEditorRescanRelease?: () => void;
-        };
-        const release = state.__docsCodeEditorRescanRelease;
-        if (!release) {
-            throw new Error('No pending code editor rescan was found.');
-        }
-
-        state.__docsCodeEditorRescanRelease = undefined;
-        release();
-    });
-}
-
-/**
- * Prepares the screenshot app with mocked launcher data.
- *
- * @param page - The Electron page to reload.
- * @param electronApp - The Electron app that owns the mocked handlers.
- * @param options - Optional data overrides for the screenshot state.
- * @returns A promise that ends when the mocked page is ready.
+ * @param page - Electron page to reload after fixture handlers are installed.
+ * @param electronApp - Electron application whose handlers are replaced.
+ * @param options - Optional fixture data overrides.
+ * @returns A promise that resolves after the fixture app is ready.
  */
 export async function prepareAppWithStubbedData(
     page: ElectronPage,
@@ -1026,12 +850,12 @@ export async function prepareAppWithStubbedData(
             options.gitLfsTrackingPolicy ?? SAMPLE_GIT_LFS_TRACKING_POLICY,
         ),
     );
-    await reloadScreenshotPage(page);
+    await reloadE2eFixturePage(page);
     await expect(page.getByTestId('btnProjects')).toBeVisible({
         timeout: 15000,
     });
     await focusElectronApp(electronApp);
-    await setScreenshotViewport(page);
+    await setE2eFixtureViewport(page);
 }
 
 /**
@@ -1107,8 +931,8 @@ async function retryCollectedElectronPromise(
     }
 }
 
-const ONBOARDING_SCREENSHOT_PATHS: Record<
-    OnboardingScreenshotPlatform,
+const ONBOARDING_FIXTURE_PATHS: Record<
+    OnboardingFixturePlatform,
     { projectsLocation: string; editorLocation: string }
 > = {
     win32: {
@@ -1125,14 +949,24 @@ const ONBOARDING_SCREENSHOT_PATHS: Record<
     },
 };
 
-export async function prepareOnboardingScreenshot(
+/**
+ * Prepares the onboarding flow with deterministic fixture data and platform state.
+ *
+ * @param page - Electron page containing the Launcher UI.
+ * @param electronApp - Electron application whose handlers are replaced.
+ * @param platform - Platform reported to the onboarding flow.
+ * @param step - Onboarding step restored before the reload.
+ * @param trayAvailable - Whether the fixture reports a system tray.
+ * @returns A promise that resolves when the requested onboarding step is visible.
+ */
+export async function prepareOnboardingFixture(
     page: ElectronPage,
     electronApp: ElectronApplication,
-    platform: OnboardingScreenshotPlatform,
-    step: OnboardingScreenshotStep,
+    platform: OnboardingFixturePlatform,
+    step: OnboardingFixtureStep,
     trayAvailable = true,
 ) {
-    const locations = ONBOARDING_SCREENSHOT_PATHS[platform];
+    const locations = ONBOARDING_FIXTURE_PATHS[platform];
     const preferences = createPreferences({
         first_run: true,
         projects_location: locations.projectsLocation,
@@ -1159,7 +993,7 @@ export async function prepareOnboardingScreenshot(
         (
             { ipcMain },
             injected: {
-                platform: OnboardingScreenshotPlatform;
+                platform: OnboardingFixturePlatform;
                 locations: {
                     projectsLocation: string;
                     editorLocation: string;
@@ -1193,7 +1027,7 @@ export async function prepareOnboardingScreenshot(
             onboardingStep,
         );
     }, step);
-    await reloadScreenshotPage(page);
+    await reloadE2eFixturePage(page);
     await expect(page.getByTestId('onboarding-step-heading')).toBeVisible({
         timeout: 15000,
     });
@@ -1203,7 +1037,13 @@ export async function prepareOnboardingScreenshot(
     });
 }
 
-export async function reloadScreenshotPage(page: ElectronPage) {
+/**
+ * Reloads an Electron page, retrying the transient Chromium collection error.
+ *
+ * @param page - Electron page to reload.
+ * @returns A promise that resolves once the page has loaded.
+ */
+export async function reloadE2eFixturePage(page: ElectronPage): Promise<void> {
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -1224,58 +1064,13 @@ export async function reloadScreenshotPage(page: ElectronPage) {
     throw lastError;
 }
 
-export async function navigateToUpdatesTab(page: ElectronPage) {
-    await page.getByTestId('btnSettings').click();
-    await page.getByTestId('tabUpdates').click();
-    await page.waitForTimeout(600);
-}
-
-export async function emitAppUpdate(
-    electronApp: ElectronApplication,
-    updateMessage: AppUpdateMessage,
-) {
-    await electronApp.evaluate(
-        ({ BrowserWindow }, message: AppUpdateMessage) => {
-            for (const win of BrowserWindow.getAllWindows()) {
-                win.webContents.send('app-updates', message);
-            }
-        },
-        updateMessage,
-    );
-}
-
-export async function prepareUpdatesScreenshot(
-    page: ElectronPage,
-    electronApp: ElectronApplication,
-    theme: ThemeConfig,
-    state: UpdateScreenshotState = {},
-) {
-    await prepareAppWithStubbedData(page, electronApp, {
-        preferences: createPreferences(state.preferences),
-    });
-    await applyTheme(page, theme);
-    await navigateToUpdatesTab(page);
-
-    if (state.updateMessage) {
-        await emitAppUpdate(electronApp, state.updateMessage);
-        await page.waitForTimeout(300);
-    }
-}
-
-export async function prepareAppUpdateBannerScreenshot(
-    page: ElectronPage,
-    electronApp: ElectronApplication,
-    theme: ThemeConfig,
-    updateMessage: AppUpdateMessage,
-) {
-    await prepareAppWithStubbedData(page, electronApp);
-    await applyTheme(page, theme);
-    await page.getByTestId('btnProjects').click();
-    await page.waitForTimeout(600);
-    await emitAppUpdate(electronApp, updateMessage);
-    await page.waitForTimeout(300);
-}
-
+/**
+ * Ensures that the primary navigation is available after fixture setup.
+ *
+ * @param page - Electron page containing the Launcher UI.
+ * @param electronApp - Electron application whose handlers are replaced.
+ * @returns A promise that resolves once navigation is visible.
+ */
 export async function ensureMainNavigationReady(
     page: ElectronPage,
     electronApp: ElectronApplication,
@@ -1320,417 +1115,30 @@ export async function ensureMainNavigationReady(
     }
 }
 
-export function getInstallsView(page: ElectronPage) {
-    return page
-        .locator('section')
-        .filter({ has: page.getByTestId('installsTitle') });
-}
-
-export async function setScreenshotViewport(
+/**
+ * Applies the minimum supported Launcher viewport for deterministic E2E flows.
+ *
+ * @param page - Electron page to resize.
+ * @param height - Requested viewport height.
+ * @returns A promise that resolves after the viewport is updated.
+ */
+async function setE2eFixtureViewport(
     page: ElectronPage,
-    height = SCREENSHOT_MIN_HEIGHT,
-) {
+    height = E2E_FIXTURE_MIN_HEIGHT,
+): Promise<void> {
     await page.setViewportSize({
-        width: SCREENSHOT_MIN_WIDTH,
-        height: Math.max(SCREENSHOT_MIN_HEIGHT, height),
+        width: E2E_FIXTURE_MIN_WIDTH,
+        height: Math.max(E2E_FIXTURE_MIN_HEIGHT, height),
     });
 }
 
 /**
- * Captures one canonical documentation screenshot and converts it to WebP.
+ * Replaces tool-integration bridge handlers with deterministic fixture data.
  *
- * @param page - Electron page containing the prepared screenshot state.
- * @param testInfo - Playwright test metadata used to attach the output.
- * @param baseName - Filename without its extension.
- * @param description - Description shown for the Playwright attachment.
- * @param fullPage - Whether to capture all scrollable content or only the viewport.
- * @param preservePointer - Whether the prepared pointer-hover state should remain visible.
+ * @param electronApp - Electron application whose handlers are replaced.
+ * @param integrations - Integration summaries returned to the renderer.
+ * @returns A promise that resolves after the handlers are ready.
  */
-export async function captureScreenshot(
-    page: ElectronPage,
-    testInfo: TestInfo,
-    baseName: string,
-    description: string,
-    fullPage = true,
-    preservePointer = false,
-) {
-    const outputDir = canonicalScreensDir;
-    const pngPath = path.join(outputDir, `${baseName}.png`);
-    const webpPath = path.join(outputDir, `${baseName}.webp`);
-    await fs.mkdir(outputDir, { recursive: true });
-
-    if (!preservePointer) {
-        await page.mouse.move(0, 0);
-    }
-
-    await page.evaluate(() => {
-        const activeElement = document.activeElement;
-        if (activeElement instanceof HTMLElement) {
-            activeElement.blur();
-        }
-    });
-
-    await page.screenshot({
-        path: pngPath,
-        fullPage,
-    });
-
-    await sharp(pngPath).webp({ lossless: true }).toFile(webpPath);
-    await fs.rm(pngPath, { force: true });
-
-    await testInfo.attach(description, {
-        path: webpPath,
-        contentType: 'image/webp',
-    });
-}
-
-export async function openProjectActionsMenu(
-    page: ElectronPage,
-    projectName: string,
-) {
-    const projectRow = page
-        .locator('[data-project-path]')
-        .filter({ has: page.getByText(projectName, { exact: true }) })
-        .first();
-    await projectRow
-        .locator('[data-testid="btnProjectMoreOptions"]:visible')
-        .click();
-    await expect(page.getByRole('dialog').first()).toBeVisible({
-        timeout: 10000,
-    });
-}
-
-export async function openFirstReleaseActionsMenu(page: ElectronPage) {
-    await page
-        .locator('[data-testid="btnReleaseMoreOptions"]:visible')
-        .first()
-        .click();
-    await expect(page.getByRole('dialog').first()).toBeVisible({
-        timeout: 10000,
-    });
-}
-
-export async function closeActionMenu(page: ElectronPage) {
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(200);
-}
-
-export async function dismissVisibleAlert(page: ElectronPage) {
-    const alertOkButton = page.getByTestId('btnAlertOk');
-    if (await alertOkButton.isVisible().catch(() => false)) {
-        await alertOkButton.click({ force: true });
-        await page.waitForTimeout(200);
-    }
-}
-
-export async function publishReleaseInstallProgress(
-    electronApp: ElectronApplication,
-    progressEvents: ReleaseInstallProgress[],
-) {
-    await electronApp.evaluate(
-        (
-            { BrowserWindow },
-            injectedProgressEvents: ReleaseInstallProgress[],
-        ) => {
-            for (const win of BrowserWindow.getAllWindows()) {
-                for (const progress of injectedProgressEvents) {
-                    win.webContents.send('release-install-progress', progress);
-                }
-            }
-        },
-        progressEvents,
-    );
-}
-
-export async function stubInstallReleaseFailure(
-    electronApp: ElectronApplication,
-    error: string,
-) {
-    await electronApp.evaluate(({ ipcMain }, message: string) => {
-        const editorInstallsChannel = <Method extends EditorInstallsMethod>(
-            method: Method,
-        ) => `editorInstalls.${method}` as `editorInstalls.${Method}`;
-        const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
-            success: true,
-            data,
-        });
-
-        const channel = editorInstallsChannel('installEditor');
-        ipcMain.removeHandler(channel);
-        ipcMain.handle(channel, async (_, release: ReleaseSummary) =>
-            ipcSuccess<EditorInstallsResult<'installEditor'>>({
-                success: false,
-                error: message,
-                version: release.version,
-            }),
-        );
-    }, error);
-}
-
-export async function stubAddProjectEditorResolution(
-    electronApp: ElectronApplication,
-) {
-    await electronApp.evaluate(
-        (
-            { ipcMain },
-            {
-                fallbackRelease,
-                projectPath,
-                projectIconPath,
-            }: {
-                fallbackRelease: InstalledRelease;
-                projectPath: string;
-                projectIconPath: string;
-            },
-        ) => {
-            const appChannel = <Method extends AppMethod>(method: Method) =>
-                `app.${method}` as `app.${Method}`;
-            const projectsChannel = <Method extends ProjectsMethod>(
-                method: Method,
-            ) => `projects.${method}` as `projects.${Method}`;
-            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
-                success: true,
-                data,
-            });
-
-            const openFileDialogChannel = appChannel('openFileDialog');
-            ipcMain.removeHandler(openFileDialogChannel);
-            ipcMain.handle(openFileDialogChannel, async () =>
-                ipcSuccess<AppResult<'openFileDialog'>>({
-                    canceled: false,
-                    filePaths: [projectPath],
-                    bookmarks: [],
-                }),
-            );
-
-            const addProjectChannel = projectsChannel('addProject');
-            ipcMain.removeHandler(addProjectChannel);
-            ipcMain.handle(addProjectChannel, async (_, path: string, options?: AddProjectOptions) => {
-                if (options?.resolution === 'add_missing') {
-                    const projectDirectory = path.replace(
-                        /\/project\.godot$/i,
-                        '',
-                    );
-                    const newProject: ProjectDetails = {
-                        name: 'Imported Missing Editor Game',
-                        path: projectDirectory,
-                        icon_path: projectIconPath,
-                        version: '4.6.3-stable',
-                        version_number: 4.6,
-                        renderer: 'FORWARD_PLUS',
-                        editor_settings_path: `${projectDirectory}/.godot`,
-                        editor_settings_file: `${projectDirectory}/.godot/editor_settings-4.6.tres`,
-                        last_opened: null,
-                        open_windowed: false,
-                        release: {
-                            ...fallbackRelease,
-                            version: '4.6.3-stable',
-                            version_number: 4.6,
-                            valid: false,
-                        },
-                        launch_path:
-                            '/Users/docs/Godot/Editors/Godot_4.6.3/Godot.app/Contents/MacOS/Godot',
-                        config_version: 5,
-                        codeEditorId: null,
-                        withGit: true,
-                        valid: false,
-                        invalid_reason: 'missing_editor',
-                    };
-
-                    return ipcSuccess<ProjectsResult<'addProject'>>({
-                        success: true,
-                        projects: [newProject],
-                        newProject,
-                    });
-                }
-
-                return ipcSuccess<ProjectsResult<'addProject'>>({
-                    success: false,
-                    editorResolution: {
-                        requested: {
-                            kind: 'exact',
-                            channel: 'official',
-                            flavor: 'gdscript',
-                            base_version: '4.6',
-                            version: '4.6.3-stable',
-                        },
-                        fallback: fallbackRelease,
-                        downloadable: {
-                            match: 'exact',
-                            version: '4.6.3-stable',
-                            flavor: 'gdscript',
-                            prerelease: false,
-                        },
-                    },
-                });
-            });
-        },
-        {
-            fallbackRelease: SAMPLE_EDITOR_RESOLUTION_FALLBACK_RELEASE,
-            projectPath:
-                '/Users/docs/Godot/Projects/imported-missing-editor/project.godot',
-            projectIconPath: SAMPLE_PROJECT_ICON_PATH,
-        },
-    );
-}
-
-export async function stubAddProjectRecoveredCodeEditorConfig(
-    electronApp: ElectronApplication,
-) {
-    await electronApp.evaluate(
-        (
-            { ipcMain, BrowserWindow },
-            {
-                projectPath,
-                projectIconPath,
-            }: { projectPath: string; projectIconPath: string },
-        ) => {
-            const appChannel = <Method extends AppMethod>(method: Method) =>
-                `app.${method}` as `app.${Method}`;
-            const projectsChannel = <Method extends ProjectsMethod>(
-                method: Method,
-            ) => `projects.${method}` as `projects.${Method}`;
-            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
-                success: true,
-                data,
-            });
-
-            const openFileDialogChannel = appChannel('openFileDialog');
-            ipcMain.removeHandler(openFileDialogChannel);
-            ipcMain.handle(openFileDialogChannel, async () =>
-                ipcSuccess<AppResult<'openFileDialog'>>({
-                    canceled: false,
-                    filePaths: [projectPath],
-                    bookmarks: [],
-                }),
-            );
-
-            const addProjectChannel = projectsChannel('addProject');
-            ipcMain.removeHandler(addProjectChannel);
-            ipcMain.handle(addProjectChannel, async () => {
-                const projectDirectory = projectPath.replace(
-                    /\/project\.godot$/i,
-                    '',
-                );
-                const newProject: ProjectDetails = {
-                    name: 'Recovered VS Code Config',
-                    path: projectDirectory,
-                    icon_path: projectIconPath,
-                    version: '4.4.1-stable',
-                    version_number: 4.4,
-                    renderer: 'FORWARD_PLUS',
-                    editor_settings_path: `${projectDirectory}/.godot`,
-                    editor_settings_file: `${projectDirectory}/.godot/editor_settings-4.4.tres`,
-                    last_opened: null,
-                    open_windowed: false,
-                    release: {
-                        version: '4.4.1-stable',
-                        version_number: 4.4,
-                        install_path: '/Applications/Godot_4.4.1',
-                        editor_path:
-                            '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
-                        platform: 'darwin',
-                        arch: 'universal',
-                        mono: false,
-                        prerelease: false,
-                        config_version: 5,
-                        published_at: '2025-03-26T09:19:36Z',
-                        valid: true,
-                    },
-                    launch_path:
-                        '/Applications/Godot_4.4.1/Godot.app/Contents/MacOS/Godot',
-                    config_version: 5,
-                    codeEditorId: 'vscode',
-                    withGit: true,
-                    valid: true,
-                };
-                const projects = [newProject];
-
-                for (const win of BrowserWindow.getAllWindows()) {
-                    const webContents = win.webContents as any;
-                    webContents.__docsProjects = projects;
-                    win.webContents.send('projects-updated', projects);
-                }
-
-                return ipcSuccess<ProjectsResult<'addProject'>>({
-                    success: true,
-                    projects,
-                    newProject,
-                    recoveredCodeEditorConfigFiles: [
-                        '.vscode/settings.json.1712345678901.bad',
-                        '.vscode/extensions.json.1712345678902.bad',
-                    ],
-                });
-            });
-        },
-        {
-            projectPath:
-                '/Users/docs/Godot/Projects/recovered-vscode-config/project.godot',
-            projectIconPath: SAMPLE_PROJECT_ICON_PATH,
-        },
-    );
-}
-
-export async function stubCustomEditorDuplicateRegistration(
-    electronApp: ElectronApplication,
-) {
-    await electronApp.evaluate(
-        ({ ipcMain }, duplicateRelease: InstalledRelease) => {
-            const appChannel = <Method extends AppMethod>(method: Method) =>
-                `app.${method}` as `app.${Method}`;
-            const editorInstallsChannel = <Method extends EditorInstallsMethod>(
-                method: Method,
-            ) => `editorInstalls.${method}` as `editorInstalls.${Method}`;
-            const ipcSuccess = <Data>(data: Data): IpcSuccess<Data> => ({
-                success: true,
-                data,
-            });
-
-            const openFileDialogChannel = appChannel('openFileDialog');
-            ipcMain.removeHandler(openFileDialogChannel);
-            ipcMain.handle(openFileDialogChannel, async () =>
-                ipcSuccess<AppResult<'openFileDialog'>>({
-                    canceled: false,
-                    filePaths: [
-                        '/Users/docs/Godot/Editors/StudioCustom47/godotlauncher-editor-manifest.json',
-                    ],
-                    bookmarks: [],
-                }),
-            );
-
-            const registerChannel =
-                editorInstallsChannel('registerCustomEditor');
-            ipcMain.removeHandler(registerChannel);
-            ipcMain.handle(
-                registerChannel,
-                async (
-                    _,
-                    _manifestPath: string,
-                    options?: { replaceExisting?: boolean },
-                ) => {
-                    if (options?.replaceExisting) {
-                        return ipcSuccess<
-                            EditorInstallsResult<'registerCustomEditor'>
-                        >({
-                            success: true,
-                            release: duplicateRelease,
-                            releases: [duplicateRelease],
-                        });
-                    }
-
-                    return ipcSuccess<
-                        EditorInstallsResult<'registerCustomEditor'>
-                    >({
-                        success: false,
-                        duplicate: duplicateRelease,
-                    });
-                },
-            );
-        },
-        SAMPLE_CUSTOM_RELEASE,
-    );
-}
-
 export async function stubToolIntegrations(
     electronApp: ElectronApplication,
     integrations: ToolIntegrationSummary[],
@@ -1773,6 +1181,7 @@ export async function stubToolIntegrations(
  *
  * @param electronApp - Electron app whose bridge handler should be replaced.
  * @param policy - Deterministic tracking policy returned to the renderer.
+ * @returns A promise that resolves after the handler is ready.
  */
 export async function stubGitLfsTrackingPolicy(
     electronApp: ElectronApplication,
@@ -1790,5 +1199,35 @@ export async function stubGitLfsTrackingPolicy(
             }));
         },
         policy,
+    );
+}
+/**
+ * Replaces the global and configured Git identity bridge handlers.
+ *
+ * @param electronApp - Electron application whose handlers are replaced.
+ * @param settings - Combined global identity and Launcher preset values.
+ * @returns A promise that resolves after both handlers are ready.
+ */
+export async function stubGitIdentitySettings(
+    electronApp: ElectronApplication,
+    settings: GitIdentitySettings,
+) {
+    await electronApp.evaluate(
+        ({ ipcMain }, injectedSettings: GitIdentitySettings) => {
+            const globalChannel = 'git.getGlobalIdentity';
+            ipcMain.removeHandler(globalChannel);
+            ipcMain.handle(globalChannel, async () => ({
+                success: true,
+                data: injectedSettings.globalIdentity,
+            }));
+
+            const settingsChannel = 'git.getIdentitySettings';
+            ipcMain.removeHandler(settingsChannel);
+            ipcMain.handle(settingsChannel, async () => ({
+                success: true,
+                data: injectedSettings,
+            }));
+        },
+        settings,
     );
 }

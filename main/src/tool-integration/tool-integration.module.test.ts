@@ -184,7 +184,7 @@ function createConfig(): AppConfig {
         disableSandbox: false,
         disableDevMenu: false,
         startHidden: false,
-        docsScreenshots: false,
+        e2eFixtures: false,
         paths: {
             dataDir: '/data',
             configDir: '/config',

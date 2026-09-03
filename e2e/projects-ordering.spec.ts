@@ -12,8 +12,8 @@ import {
     createFixtureHome,
     prepareAppWithStubbedData,
     setAppLanguage,
-} from './documentationScreenshots/runtime';
-import { SAMPLE_PROJECTS } from './documentationScreenshots/sampleData';
+} from './support/e2e-fixture-runtime';
+import { SAMPLE_PROJECTS } from './support/e2e-fixture-data';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: ElectronApplication;
@@ -222,8 +222,8 @@ function createIsolatedLaunchEnvironment(homeDir: string) {
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
-        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
-        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        GODOT_LAUNCHER_E2E_FIXTURES: '1',
+        GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
         NODE_OPTIONS: existingNodeOptions
             ? `${existingNodeOptions} ${requireOverrideOption}`
             : requireOverrideOption,

@@ -4,8 +4,8 @@ const os = require('node:os');
 const path = require('node:path');
 const { syncBuiltinESMExports } = require('node:module');
 
-const shouldOverride = process.env.GODOT_LAUNCHER_DOCS_SCREENSHOTS === '1';
-const overrideHomeDir = process.env.GODOT_LAUNCHER_DOCS_HOME_DIR;
+const shouldOverride = process.env.GODOT_LAUNCHER_E2E_FIXTURES === '1';
+const overrideHomeDir = process.env.GODOT_LAUNCHER_E2E_HOME_DIR;
 
 if (
     shouldOverride &&

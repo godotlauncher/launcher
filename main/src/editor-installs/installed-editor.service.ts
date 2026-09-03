@@ -213,7 +213,7 @@ export class InstalledEditorService {
     ): Promise<InstalledRelease[]> {
         return Promise.all(
             releases.map(async (release) => {
-                const valid = this.configService.get('docsScreenshots')
+                const valid = this.configService.get('e2eFixtures')
                     ? true
                     : await this.pathExistsForValidation(release.editor_path);
                 if (!valid) {

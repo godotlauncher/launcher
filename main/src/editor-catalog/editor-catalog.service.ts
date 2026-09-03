@@ -1,4 +1,6 @@
 import { Injectable } from '@mariodebono/di';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ConfigService } from '@mariodebono/di-config';
 import type {
     EditorCatalogProviderId,
     EditorCatalogProviderStatus,
@@ -8,6 +10,7 @@ import type {
     GetEditorCatalogOptions,
 } from '@shared/contracts';
 import logger from 'electron-log';
+import type { AppConfig } from '../config/index.js';
 import {
     EDITOR_CATALOG_CACHE_TTL_MS,
     EDITOR_CATALOG_PROVIDER_IDS,
@@ -35,10 +38,12 @@ export class EditorCatalogService {
      *
      * @param store - The store used for cached catalog data.
      * @param githubAdapter - The adapter used to read GitHub releases.
+     * @param configService - Runtime application configuration.
      */
     constructor(
         private readonly store: EditorCatalogStore,
         private readonly githubAdapter: GithubEditorCatalogAdapter,
+        private readonly configService: ConfigService<AppConfig>,
     ) {}
 
     /**
@@ -51,6 +56,9 @@ export class EditorCatalogService {
         options: GetEditorCatalogOptions = {},
     ): Promise<EditorCatalogResult> {
         const catalog = await this.store.read();
+        if (this.configService.get('e2eFixtures')) {
+            return this.createResult(catalog, options.query);
+        }
         const staleProviders = EDITOR_CATALOG_PROVIDER_IDS.filter(
             (providerId) => this.isStale(catalog, providerId),
         );
@@ -79,7 +87,12 @@ export class EditorCatalogService {
      * @param query - Optional filters for the returned releases.
      * @returns The refreshed releases and provider status.
      */
-    refreshCatalog(query?: EditorCatalogQuery): Promise<EditorCatalogResult> {
+    async refreshCatalog(
+        query?: EditorCatalogQuery,
+    ): Promise<EditorCatalogResult> {
+        if (this.configService.get('e2eFixtures')) {
+            return this.createResult(await this.store.read(), query);
+        }
         return this.refresh([...EDITOR_CATALOG_PROVIDER_IDS], query);
     }
 

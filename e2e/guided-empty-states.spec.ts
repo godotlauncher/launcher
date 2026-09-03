@@ -16,11 +16,11 @@ import type {
 import {
     createFixtureHome,
     prepareAppWithStubbedData,
-    prepareOnboardingScreenshot,
-    reloadScreenshotPage,
+    prepareOnboardingFixture,
+    reloadE2eFixturePage,
     setAppLanguage,
     stubAppData,
-} from './documentationScreenshots/runtime.ts';
+} from './support/e2e-fixture-runtime.ts';
 import {
     createPreferences,
     SAMPLE_AVAILABLE_PRERELEASES,
@@ -29,7 +29,7 @@ import {
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
     TOOL_INTEGRATIONS_NO_GIT,
-} from './documentationScreenshots/sampleData.ts';
+} from './support/e2e-fixture-data.ts';
 import { getMainWindow } from './splashscreen/getMainWindow.ts';
 
 let electronApp: ElectronApplication;
@@ -1119,7 +1119,7 @@ test('Remote registration continues after one editor download fails', async () =
 });
 
 test('Onboarding without an editor finishes inside the install drawer', async () => {
-    await prepareOnboardingScreenshot(
+    await prepareOnboardingFixture(
         mainPage,
         electronApp,
         'linux',
@@ -1138,7 +1138,7 @@ test('Onboarding without an editor finishes inside the install drawer', async ()
         SAMPLE_AVAILABLE_RELEASES,
         SAMPLE_AVAILABLE_PRERELEASES,
     );
-    await reloadScreenshotPage(mainPage);
+    await reloadE2eFixturePage(mainPage);
 
     const finishButton = mainPage.getByRole('button', {
         name: 'Finish and install an editor',
@@ -2160,8 +2160,8 @@ function createIsolatedLaunchEnvironment(
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
-        GODOT_LAUNCHER_DOCS_SCREENSHOTS: '1',
-        GODOT_LAUNCHER_DOCS_HOME_DIR: homeDir,
+        GODOT_LAUNCHER_E2E_FIXTURES: '1',
+        GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
         NODE_OPTIONS: existingNodeOptions
             ? `${existingNodeOptions} ${requireOverrideOption}`
             : requireOverrideOption,
