@@ -20,6 +20,7 @@ export type GitHubConnectionFlowProps = {
     onCancel: () => void;
     connectionId?: string;
     description?: string;
+    showAccessManagement?: boolean;
     renderLayout?: (
         content: React.ReactNode,
         footer: React.ReactNode,
@@ -38,6 +39,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
     connectionId,
     renderLayout,
     description,
+    showAccessManagement = false,
 }) => {
     const { t } = useTranslation(['settings', 'common']);
     const {
@@ -47,6 +49,8 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         cancel,
         reconnect,
         listIntegrations,
+        manageAccess,
+        refresh,
     } = useAppIntegrations();
     const [state, setState] = useState<GitHubConnectionFlowState>('intro');
     const [integration, setIntegration] =
@@ -64,6 +68,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
     const [initialLoadFailed, setInitialLoadFailed] = useState(false);
     const [initialLoadVersion, setInitialLoadVersion] = useState(0);
     const [busy, setBusy] = useState(false);
+    const [accessFailure, setAccessFailure] = useState(false);
     const sessionGuardRef = useRef(new GitHubConnectionFlowSessionGuard());
     const mountedRef = useRef(true);
     const connectionSessionOpenRef = useRef(false);
@@ -115,6 +120,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                     setState('error');
                     return;
                 }
+                setIntegration(github ?? null);
                 if (connectionId) return;
                 const reconnectable = (github?.connections ?? []).filter(
                     (connection) => connection.state !== 'connected',
@@ -272,6 +278,49 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         onCancelRef.current();
     }, [cancelOwnedSession]);
 
+    /**
+     * Runs an existing account-access action without starting an auth session.
+     * @param action - Browser access management or refreshed account permissions.
+     * @param complete - Whether success returns to repository selection.
+     */
+    const runAccessAction = async (
+        action: () => Promise<AppIntegrationActionResult>,
+        complete = false,
+    ): Promise<void> => {
+        if (operationBusyRef.current) return;
+        operationBusyRef.current = true;
+        setBusy(true);
+        setAccessFailure(false);
+        const version = sessionGuardRef.current.begin();
+        try {
+            const result = await action();
+            if (
+                !mountedRef.current ||
+                !sessionGuardRef.current.isCurrent(version)
+            )
+                return;
+            if (!result.ok) {
+                setAccessFailure(true);
+            } else if (complete) {
+                onConnectedRef.current();
+            }
+        } catch {
+            if (
+                mountedRef.current &&
+                sessionGuardRef.current.isCurrent(version)
+            )
+                setAccessFailure(true);
+        } finally {
+            if (
+                mountedRef.current &&
+                sessionGuardRef.current.isCurrent(version)
+            ) {
+                operationBusyRef.current = false;
+                setBusy(false);
+            }
+        }
+    };
+
     const footer = (
         <>
             <button
@@ -284,15 +333,36 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
             {state === 'intro' && (
                 <button
                     type="button"
-                    className="btn btn-primary"
-                    disabled={loadingInitialState}
+                    className={
+                        showAccessManagement
+                            ? 'btn btn-neutral'
+                            : 'btn btn-primary'
+                    }
+                    disabled={loadingInitialState || busy}
                     onClick={handleStart}
                 >
                     {t(
                         selectedReconnectId
                             ? 'connections.flow.reconnect'
-                            : 'connections.flow.continueInBrowser',
+                            : showAccessManagement
+                              ? 'connections.flow.addAccount'
+                              : 'connections.flow.continueInBrowser',
                     )}
+                </button>
+            )}
+            {state === 'intro' && showAccessManagement && (
+                <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={loadingInitialState || busy}
+                    onClick={() =>
+                        void runAccessAction(() => refresh('github'), true)
+                    }
+                >
+                    {busy && (
+                        <span className="loading loading-spinner loading-xs" />
+                    )}
+                    {t('connections.flow.refreshRepositories')}
                 </button>
             )}
             {state === 'choosing' &&
@@ -323,11 +393,59 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
             {state === 'intro' && (
                 <>
-                    <p>{description ?? t('connections.flow.description')}</p>
+                    <p>
+                        {showAccessManagement
+                            ? t('connections.flow.accessDescription')
+                            : (description ??
+                              t('connections.flow.description'))}
+                    </p>
+                    {accessFailure && (
+                        <p className="text-sm text-error" role="alert">
+                            {t('connections.errors.generic')}
+                        </p>
+                    )}
                     {loadingInitialState && (
                         <div className="flex items-center gap-2" role="status">
                             <span className="loading loading-spinner loading-sm" />
                             <span>{t('connections.loading')}</span>
+                        </div>
+                    )}
+                    {showAccessManagement && integration && (
+                        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto pr-[16px] [scrollbar-gutter:stable]">
+                            {integration.connections.flatMap((connection) =>
+                                connection.accessTargets.map((target) => (
+                                    <div
+                                        key={`${connection.id}:${target.id}`}
+                                        className="flex shrink-0 items-center justify-between gap-3 rounded-box border border-base-300 p-3"
+                                    >
+                                        <span className="min-w-0 truncate">
+                                            {target.login}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline btn-sm"
+                                            disabled={
+                                                busy ||
+                                                target.availability ===
+                                                    'unavailable'
+                                            }
+                                            onClick={() =>
+                                                void runAccessAction(() =>
+                                                    manageAccess(
+                                                        'github',
+                                                        connection.id,
+                                                        target.id,
+                                                    ),
+                                                )
+                                            }
+                                        >
+                                            {t(
+                                                'connections.actions.manageAccess',
+                                            )}
+                                        </button>
+                                    </div>
+                                )),
+                            )}
                         </div>
                     )}
                     {!connectionId && reconnectChoices.length > 0 && (

@@ -47,7 +47,11 @@
         "noneSelected": "Scegli un editor",
         "loading": "Caricamento versioni...",
         "noMatches": "Nessuna versione corrispondente",
-        "installFailed": "Impossibile installare l'editor. Il progetto non è stato creato."
+        "installFailed": "Impossibile installare l'editor. Il progetto non è stato creato.",
+        "loadFailed": "Impossibile caricare le release. Riprova.",
+        "refreshFailed": "Impossibile aggiornare le release. Vengono mostrate le release già caricate.",
+        "retry": "Riprova",
+        "retrying": "Nuovo tentativo..."
     },
     "renderer": {
         "title": "Renderer",

@@ -47,7 +47,11 @@
         "noneSelected": "Elige un editor",
         "loading": "Cargando versiones...",
         "noMatches": "No hay versiones coincidentes",
-        "installFailed": "No se pudo instalar el editor. El proyecto no se ha creado."
+        "installFailed": "No se pudo instalar el editor. El proyecto no se ha creado.",
+        "loadFailed": "No se han podido cargar las versiones. Inténtalo de nuevo.",
+        "refreshFailed": "No se han podido actualizar las versiones. Se muestran las versiones cargadas anteriormente.",
+        "retry": "Reintentar",
+        "retrying": "Reintentando..."
     },
     "renderer": {
         "title": "Motor de renderizado",

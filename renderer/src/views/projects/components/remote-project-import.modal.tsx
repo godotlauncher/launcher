@@ -122,6 +122,7 @@ export const RemoteProjectImportModal: React.FC<
         saveGlobalIdentity,
         saveProjectIdentityPreset,
     } = useGit();
+    const [connectionFromPicker, setConnectionFromPicker] = useState(false);
     const [step, setStep] = useState<RemoteProjectImportStep>('source');
     const [publicUrl, setPublicUrl] = useState('');
     const [canonicalPublicUrl, setCanonicalPublicUrl] = useState('');
@@ -213,7 +214,11 @@ export const RemoteProjectImportModal: React.FC<
     const open = source !== null;
     const remoteTitle =
         step === 'connection'
-            ? t('settings:connections.flow.title')
+            ? t(
+                  connectionFromPicker
+                      ? 'settings:connections.drawer.title'
+                      : 'settings:connections.flow.title',
+              )
             : source === 'github'
               ? t('addProject.remote.github.title')
               : t('addProject.remote.public.title');
@@ -277,12 +282,12 @@ export const RemoteProjectImportModal: React.FC<
 
     /** Returns to a usable repository picker, or closes an unstarted import. */
     const cancelConnection = useCallback(() => {
-        if (repositories.length > 0 && !repositoryError) {
+        if (connectionFromPicker) {
             setStep('source');
         } else {
             close();
         }
-    }, [close, repositories.length, repositoryError]);
+    }, [close, connectionFromPicker]);
 
     const loadRepositories = useCallback(
         async (cursor?: string, append = false) => {
@@ -308,6 +313,7 @@ export const RemoteProjectImportModal: React.FC<
                         setRepositoryCursor(null);
                         setSelectedRepository(null);
                         if (result.reason === 'no-usable-connection') {
+                            setConnectionFromPicker(false);
                             setStep('connection');
                         }
                     }
@@ -357,6 +363,7 @@ export const RemoteProjectImportModal: React.FC<
         repositoryRequestRef.current += 1;
         if (!open) return;
         setStep('source');
+        setConnectionFromPicker(false);
         setPublicUrl('');
         setCanonicalPublicUrl('');
         setPublicError(null);
@@ -923,6 +930,7 @@ export const RemoteProjectImportModal: React.FC<
                 onRetry={() => void loadRepositories()}
                 onLoadMore={(cursor) => void loadRepositories(cursor, true)}
                 onOpenConnections={() => {
+                    setConnectionFromPicker(true);
                     setStep('connection');
                 }}
             />
@@ -1356,6 +1364,7 @@ export const RemoteProjectImportModal: React.FC<
                     void loadRepositories();
                 }}
                 onCancel={cancelConnection}
+                showAccessManagement={connectionFromPicker}
                 description={t('settings:connections.flow.importDescription')}
                 renderLayout={(content, actions) =>
                     renderDialog(

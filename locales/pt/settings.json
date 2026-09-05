@@ -238,7 +238,9 @@
             "reconnect": "Voltar a ligar o GitHub",
             "description": "Liga o GitHub para continuares. O teu trabalho atual será mantido.",
             "continueInBrowser": "Continuar no navegador",
-            "waiting": "Conclui a ligação no navegador e volta aqui."
+            "waiting": "Conclui a ligação no navegador e volta aqui.",
+            "refreshRepositories": "Atualizar repositórios",
+            "accessDescription": "Gira o acesso aos repositórios no GitHub ou adicione outra conta e, em seguida, atualize a lista de repositórios."
         },
         "github": {
             "description": "Liga o GitHub para disponibilizares os teus repositórios no Godot Launcher.",

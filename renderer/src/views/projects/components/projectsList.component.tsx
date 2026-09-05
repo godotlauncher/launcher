@@ -10,8 +10,10 @@ import { isSortable, useSortable } from '@dnd-kit/react/sortable';
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ReleaseSummary,
 } from '@shared/contracts';
 import {
+    Download,
     EllipsisVertical,
     FlaskConical,
     FolderOpen,
@@ -54,6 +56,13 @@ type ProjectsListProps = {
     onReorderPinnedProjects: (orderedProjectPaths: string[]) => Promise<void>;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading: (project: ProjectDetails) => boolean;
+    getDownloadableProjectEditor: (
+        project: ProjectDetails,
+    ) => ReleaseSummary | undefined;
+    onInstallRequiredProjectEditor: (
+        project: ProjectDetails,
+        release: ReleaseSummary,
+    ) => void;
     onLaunchProject: (project: ProjectDetails) => void;
     onProjectFoldersOptions: (
         event: React.MouseEvent,
@@ -101,6 +110,8 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     githubIconSrc,
     isInstalledRelease,
     isProjectEditorDownloading,
+    getDownloadableProjectEditor,
+    onInstallRequiredProjectEditor,
     onLaunchProject,
     onProjectFoldersOptions,
     onTogglePinned,
@@ -113,6 +124,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         project.release.version,
         project.release.mono,
     );
+    const downloadableProjectEditor = getDownloadableProjectEditor(project);
     const selectedCodeEditor = project.codeEditorId
         ? codeEditorSettings.find(
               (settings) => settings.integration.id === project.codeEditorId,
@@ -196,6 +208,32 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
 
                     <div className="flex shrink-0 items-center gap-2 self-start">
                         {reorderHandle}
+                        {downloadableProjectEditor && !releaseInstalled && (
+                            <Tooltip
+                                placement="top"
+                                tip={t('card.installRequiredEditor')}
+                            >
+                                <button
+                                    type="button"
+                                    data-testid="btnInstallRequiredProjectEditor"
+                                    disabled={editorDownloading}
+                                    className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-warning/60 bg-base-100/20 text-warning"
+                                    aria-label={t('card.installRequiredEditor')}
+                                    onClick={() =>
+                                        onInstallRequiredProjectEditor(
+                                            project,
+                                            downloadableProjectEditor,
+                                        )
+                                    }
+                                >
+                                    {editorDownloading ? (
+                                        <span className="loading loading-spinner loading-xs" />
+                                    ) : (
+                                        <Download size={15} />
+                                    )}
+                                </button>
+                            </Tooltip>
+                        )}
                         <Tooltip
                             placement="top"
                             tip={t(

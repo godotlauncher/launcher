@@ -47,7 +47,11 @@
         "noneSelected": "选择编辑器",
         "loading": "正在加载版本...",
         "noMatches": "没有匹配的版本",
-        "installFailed": "无法安装编辑器。项目尚未创建。"
+        "installFailed": "无法安装编辑器。项目尚未创建。",
+        "loadFailed": "无法加载版本。请重试。",
+        "refreshFailed": "无法刷新版本。正在显示之前加载的版本。",
+        "retry": "重试",
+        "retrying": "正在重试..."
     },
     "renderer": {
         "title": "渲染器",

@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ReleaseSummary,
 } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -56,6 +57,31 @@ const availableVSCodeSettings: CodeEditorIntegrationSettings = {
     resolvedGodotExecPath: '/applications/code',
 };
 
+const downloadableRelease: ReleaseSummary = {
+    version: '4.3-stable',
+    version_number: 4.3,
+    name: '4.3-stable',
+    published_at: null,
+    draft: false,
+    prerelease: false,
+    assets: [
+        {
+            name: '4.3-standard',
+            download_url: 'https://example.com/4.3-standard.zip',
+            platform_tags: ['darwin', 'arm64'],
+            mono: false,
+        },
+    ],
+};
+
+type RenderOptions = {
+    isInstalledRelease?: (version: string, mono: boolean) => boolean;
+    isProjectEditorDownloading?: (project: ProjectDetails) => boolean;
+    getDownloadableProjectEditor?: (
+        project: ProjectDetails,
+    ) => ReleaseSummary | undefined;
+};
+
 function renderProjectsList(
     sections: Partial<ProjectSections>,
     codeEditorSettings: CodeEditorIntegrationSettings[] = [
@@ -76,6 +102,7 @@ function renderProjectsList(
         }
         return key;
     },
+    options: RenderOptions = {},
 ): string {
     return renderToStaticMarkup(
         <ProjectsList
@@ -94,8 +121,14 @@ function renderProjectsList(
             pinnedReorderingDisabled={pinnedReorderingDisabled}
             onPinnedHighlightComplete={vi.fn()}
             onReorderPinnedProjects={vi.fn()}
-            isInstalledRelease={vi.fn(() => true)}
-            isProjectEditorDownloading={vi.fn(() => false)}
+            isInstalledRelease={options.isInstalledRelease ?? vi.fn(() => true)}
+            isProjectEditorDownloading={
+                options.isProjectEditorDownloading ?? vi.fn(() => false)
+            }
+            getDownloadableProjectEditor={
+                options.getDownloadableProjectEditor ?? vi.fn(() => undefined)
+            }
+            onInstallRequiredProjectEditor={vi.fn()}
             onLaunchProject={vi.fn()}
             onProjectFoldersOptions={vi.fn()}
             onTogglePinned={vi.fn()}
@@ -197,6 +230,80 @@ describe('ProjectsList', () => {
 
         expect(html).toContain('Visual Studio Code');
         expect(html).not.toContain('vscode.svg');
+    });
+
+    it('offers an exact missing official editor download with its accessible label', () => {
+        const missingProject: ProjectDetails = {
+            ...baseProject,
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: {
+                ...baseProject.release,
+                valid: false,
+                source: 'official',
+            },
+        };
+
+        const html = renderProjectsList(
+            { newProjects: [missingProject] },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map(),
+            (key) =>
+                key === 'card.installRequiredEditor'
+                    ? 'Install required editor'
+                    : key,
+            {
+                isInstalledRelease: vi.fn(() => false),
+                getDownloadableProjectEditor: vi.fn(() => downloadableRelease),
+            },
+        );
+
+        expect(html).toContain('data-testid="btnInstallRequiredProjectEditor"');
+        expect(html).toContain('aria-label="Install required editor"');
+        expect(html).toContain('lucide-download');
+        expect(html).toContain('lucide-triangle-alert');
+        expect(html).toContain('card.editInGodot');
+    });
+
+    it('disables the editor download action while that editor downloads', () => {
+        const missingProject: ProjectDetails = {
+            ...baseProject,
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: {
+                ...baseProject.release,
+                valid: false,
+                source: 'official',
+            },
+        };
+        const sharedMissingProject = {
+            ...missingProject,
+            name: 'Second Missing Editor Project',
+            path: '/projects/second-missing-editor',
+        };
+
+        const html = renderProjectsList(
+            { newProjects: [missingProject, sharedMissingProject] },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map(),
+            undefined,
+            {
+                isInstalledRelease: vi.fn(() => false),
+                isProjectEditorDownloading: vi.fn(() => true),
+                getDownloadableProjectEditor: vi.fn(() => downloadableRelease),
+            },
+        );
+
+        expect(
+            html.match(
+                /data-testid="btnInstallRequiredProjectEditor" disabled=""/g,
+            ),
+        ).toHaveLength(2);
+        expect(html).toContain('loading-spinner');
     });
 
     it('keeps wrapping badges separate from the fixed launch actions', () => {

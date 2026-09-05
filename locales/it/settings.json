@@ -238,7 +238,9 @@
             "reconnect": "Riconnetti GitHub",
             "description": "Connetti GitHub per continuare. Il lavoro attuale verrà conservato.",
             "continueInBrowser": "Continua nel browser",
-            "waiting": "Completa la connessione nel browser, poi torna qui."
+            "waiting": "Completa la connessione nel browser, poi torna qui.",
+            "refreshRepositories": "Aggiorna repository",
+            "accessDescription": "Gestisci l’accesso ai repository su GitHub o aggiungi un altro account, quindi aggiorna l’elenco dei repository."
         },
         "github": {
             "description": "Connetti GitHub per rendere disponibili i tuoi repository in Godot Launcher.",

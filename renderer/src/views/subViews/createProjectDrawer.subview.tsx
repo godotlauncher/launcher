@@ -156,12 +156,16 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                                         releases.releaseInstallProgress
                                     }
                                     loading={releases.loading}
+                                    catalogueError={releases.hasError}
                                     selection={form.editorSelection}
                                     onSelectionChange={
                                         form.changeEditorSelection
                                     }
                                     onCancelInstall={(jobId) =>
                                         void releases.cancelInstall(jobId)
+                                    }
+                                    onRetryCatalogue={
+                                        releases.refreshAvailableReleases
                                     }
                                 />
                             }

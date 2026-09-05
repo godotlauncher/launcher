@@ -13,7 +13,8 @@
                 "heading": "Proġett eżistenti",
                 "description": "Il-Launcher isib il-verżjoni ta' Godot\nli jeħtieġ kull proġett.",
                 "fromComputer": "Minn dan il-kompjuter",
-                "fromGitHub": "Minn GitHub"
+                "fromGitHub": "Minn GitHub",
+                "gitRequired": "Git huwa meħtieġ biex timporta minn GitHub"
             }
         },
         "addExistingProject": "Żid proġett eżistenti",
@@ -66,7 +67,8 @@
         "windowed": "F'tieqa",
         "opened": "Infetaħ {{age}}",
         "notOpened": "Għadu ma nfetaħx",
-        "editInGodot": "Editja f'Godot"
+        "editInGodot": "Editja f'Godot",
+        "installRequiredEditor": "Installa l-editur meħtieġ"
     },
     "table": {
         "moreOptions": "Aktar għażliet għal {{project}}",
@@ -162,7 +164,10 @@
                     "connectionRequired": "Qabbad jew erġa' qabbad GitHub qabel ma timporta repożitorju.",
                     "temporarilyUnavailable": "GitHub mhux disponibbli temporanjament. Erġa' pprova aktar tard.",
                     "sessionExpired": "Is-sessjoni tar-repożitorju skadiet. Erġa' tagħbija l-lista."
-                }
+                },
+                "noRepositories": "M’hemm l-ebda repożitorju disponibbli permezz tal-kontijiet konnessi tiegħek.",
+                "missingRepository": "Ma ssibx ir-repożitorju tiegħek?",
+                "manageConnections": "Immaniġġja l-kontijiet u l-aċċess"
             },
             "destination": {
                 "description": "Agħżel fejn se jiġi kklonat ir-repożitorju.",

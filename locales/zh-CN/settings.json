@@ -238,7 +238,9 @@
             "reconnect": "重新连接 GitHub",
             "description": "连接 GitHub 以继续。当前工作将会保留。",
             "continueInBrowser": "在浏览器中继续",
-            "waiting": "在浏览器中完成连接，然后返回此处。"
+            "waiting": "在浏览器中完成连接，然后返回此处。",
+            "refreshRepositories": "刷新仓库",
+            "accessDescription": "在 GitHub 上管理仓库访问权限，或添加其他账户，然后刷新仓库列表。"
         },
         "github": {
             "description": "连接 GitHub，让 Godot Launcher 可以使用你的仓库。",

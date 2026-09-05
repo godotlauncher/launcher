@@ -47,7 +47,11 @@
         "noneSelected": "Wybierz edytor",
         "loading": "Ładowanie wydań...",
         "noMatches": "Brak pasujących wydań",
-        "installFailed": "Nie udało się zainstalować edytora. Projekt nie został utworzony."
+        "installFailed": "Nie udało się zainstalować edytora. Projekt nie został utworzony.",
+        "loadFailed": "Nie udało się załadować wydań. Spróbuj ponownie.",
+        "refreshFailed": "Nie udało się odświeżyć wydań. Wyświetlane są wcześniej załadowane wydania.",
+        "retry": "Spróbuj ponownie",
+        "retrying": "Ponawianie próby..."
     },
     "renderer": {
         "title": "Renderer",

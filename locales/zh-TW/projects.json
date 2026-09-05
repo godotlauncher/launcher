@@ -13,7 +13,8 @@
                 "heading": "現有專案",
                 "description": "Launcher 會找到每個專案\n需要的 Godot 版本。",
                 "fromComputer": "從這部電腦",
-                "fromGitHub": "從 GitHub"
+                "fromGitHub": "從 GitHub",
+                "gitRequired": "從 GitHub 匯入需要 Git"
             }
         },
         "addExistingProject": "新增現有專案",
@@ -66,7 +67,8 @@
         "windowed": "視窗模式",
         "opened": "開啟於 {{age}}",
         "notOpened": "尚未開啟",
-        "editInGodot": "在 Godot 中編輯"
+        "editInGodot": "在 Godot 中編輯",
+        "installRequiredEditor": "安裝必要的編輯器"
     },
     "table": {
         "moreOptions": "{{project}} 的更多選項",
@@ -162,7 +164,10 @@
                     "connectionRequired": "在匯入儲存庫之前連接或重新連接 GitHub。",
                     "temporarilyUnavailable": "GitHub 暫時無法使用。稍後再試。",
                     "sessionExpired": "儲存庫會話已過期。再次載入列表。"
-                }
+                },
+                "noRepositories": "透過已連線的帳戶沒有可用的儲存庫。",
+                "missingRepository": "找不到您的儲存庫？",
+                "manageConnections": "管理帳戶和存取權限"
             },
             "destination": {
                 "description": "選擇將克隆儲存庫的位置。",

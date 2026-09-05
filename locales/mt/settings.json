@@ -238,7 +238,9 @@
             "reconnect": "Erġa' qabbad GitHub",
             "description": "Qabbad GitHub biex tkompli. Ix-xogħol attwali tiegħek se jinżamm.",
             "continueInBrowser": "Kompli fil-browser",
-            "waiting": "Imla l-konnessjoni fil-browser, imbagħad erġa' lura hawn."
+            "waiting": "Imla l-konnessjoni fil-browser, imbagħad erġa' lura hawn.",
+            "refreshRepositories": "Aġġorna r-repożitorji",
+            "accessDescription": "Immaniġġja l-aċċess għar-repożitorji fuq GitHub jew żid kont ieħor, imbagħad aġġorna l-lista tar-repożitorji."
         },
         "github": {
             "description": "Qabbad GitHub biex ir-repożitorji tiegħek ikunu disponibbli f'Godot Launcher.",

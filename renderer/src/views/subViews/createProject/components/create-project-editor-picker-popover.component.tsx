@@ -33,12 +33,16 @@ type CreateProjectEditorPickerPopoverProps = {
     catalogueVariants: CreateProjectCatalogueVariant[];
     releaseInstallProgress: ReleaseInstallProgress[];
     loading: boolean;
+    catalogueError: string | undefined;
+    hasCachedCatalogueReleases: boolean;
+    retryingCatalogue: boolean;
     selection: CreateProjectEditorSelection | null;
     onTabChange: (tab: CreateProjectEditorPickerTab) => void;
     onChannelChange: (channel: CreateProjectEditorPickerChannel) => void;
     onSearchChange: (search: string) => void;
     onSelectionChange: (selection: CreateProjectEditorSelection) => void;
     onCancelInstall: (jobId: string) => void;
+    onRetryCatalogue: () => Promise<void>;
     onKeyDown: React.KeyboardEventHandler<HTMLDivElement>;
     registerInstalledOption: (
         key: string,
@@ -68,12 +72,16 @@ export const CreateProjectEditorPickerPopover: React.FC<
     catalogueVariants,
     releaseInstallProgress,
     loading,
+    catalogueError,
+    hasCachedCatalogueReleases,
+    retryingCatalogue,
     selection,
     onTabChange,
     onChannelChange,
     onSearchChange,
     onSelectionChange,
     onCancelInstall,
+    onRetryCatalogue,
     onKeyDown,
     registerInstalledOption,
 }) => {
@@ -228,24 +236,52 @@ export const CreateProjectEditorPickerPopover: React.FC<
                             </div>
                         </div>
 
+                        {(catalogueError || retryingCatalogue) && (
+                            <div
+                                className="alert alert-warning alert-soft text-sm"
+                                data-testid="createProjectEditorCatalogueError"
+                                role="alert"
+                            >
+                                <span>
+                                    {hasCachedCatalogueReleases
+                                        ? t('editorPicker.refreshFailed')
+                                        : t('editorPicker.loadFailed')}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm"
+                                    data-testid="btnRetryCreateProjectEditorCatalogue"
+                                    disabled={retryingCatalogue}
+                                    onClick={() => void onRetryCatalogue()}
+                                >
+                                    {retryingCatalogue
+                                        ? t('editorPicker.retrying')
+                                        : t('editorPicker.retry')}
+                                </button>
+                            </div>
+                        )}
+
                         <div
                             role="listbox"
                             aria-labelledby={labelledBy}
                             data-testid="createProjectEditorCatalogueList"
                             className="max-h-80 space-y-1 overflow-y-auto overscroll-contain"
                         >
-                            {loading && catalogueVariants.length === 0 ? (
+                            {loading &&
+                            catalogueVariants.length === 0 &&
+                            !catalogueError ? (
                                 <p
                                     className="py-4 text-center text-sm text-base-content/60"
                                     role="status"
                                 >
                                     {t('editorPicker.loading')}
                                 </p>
-                            ) : catalogueVariants.length === 0 ? (
+                            ) : catalogueVariants.length === 0 &&
+                              !catalogueError ? (
                                 <p className="py-4 text-center text-sm text-base-content/60">
                                     {t('editorPicker.noMatches')}
                                 </p>
-                            ) : (
+                            ) : catalogueVariants.length > 0 ? (
                                 catalogueGroups.map((group) => (
                                     <fieldset
                                         key={group.key}
@@ -320,7 +356,7 @@ export const CreateProjectEditorPickerPopover: React.FC<
                                         })}
                                     </fieldset>
                                 ))
-                            )}
+                            ) : null}
                         </div>
                     </div>
                 )}

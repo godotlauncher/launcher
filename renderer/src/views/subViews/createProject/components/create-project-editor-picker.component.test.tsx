@@ -29,6 +29,11 @@ vi.mock('react-i18next', () => ({
                 'editorPicker.noneSelected': 'Choose an editor',
                 'editorPicker.loading': 'Loading releases...',
                 'editorPicker.noMatches': 'No matching releases',
+                'editorPicker.loadFailed': "Couldn't load releases. Try again.",
+                'editorPicker.refreshFailed':
+                    "Couldn't refresh releases. Showing previously loaded releases.",
+                'editorPicker.retry': 'Retry',
+                'editorPicker.retrying': 'Retrying...',
                 'project.dotNetBadge': '.NET',
                 'project.prereleaseBadge': 'Pre-release',
                 'progress.queuedPosition': `Queued #${options?.position}`,
@@ -52,6 +57,7 @@ describe('CreateProjectEditorPicker', () => {
                 availablePrereleases={[]}
                 releaseInstallProgress={[]}
                 loading={false}
+                catalogueError={undefined}
                 selection={{
                     source: 'installed',
                     key: getCreateProjectReleaseKey(release),
@@ -59,6 +65,7 @@ describe('CreateProjectEditorPicker', () => {
                 }}
                 onSelectionChange={vi.fn()}
                 onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
             />,
         );
 
@@ -91,6 +98,7 @@ describe('CreateProjectEditorPicker', () => {
                 availablePrereleases={[]}
                 releaseInstallProgress={[]}
                 loading={false}
+                catalogueError={undefined}
                 selection={{
                     source: 'installed',
                     key: getCreateProjectReleaseKey(release),
@@ -98,6 +106,7 @@ describe('CreateProjectEditorPicker', () => {
                 }}
                 onSelectionChange={vi.fn()}
                 onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
             />,
         );
 
@@ -118,9 +127,11 @@ describe('CreateProjectEditorPicker', () => {
                 availablePrereleases={[]}
                 releaseInstallProgress={[]}
                 loading={false}
+                catalogueError={undefined}
                 selection={null}
                 onSelectionChange={vi.fn()}
                 onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
             />,
         );
 
@@ -163,12 +174,16 @@ describe('CreateProjectEditorPicker', () => {
                     )}
                     releaseInstallProgress={[]}
                     loading={false}
+                    catalogueError={undefined}
+                    hasCachedCatalogueReleases
+                    retryingCatalogue={false}
                     selection={null}
                     onTabChange={vi.fn()}
                     onChannelChange={vi.fn()}
                     onSearchChange={vi.fn()}
                     onSelectionChange={vi.fn()}
                     onCancelInstall={vi.fn()}
+                    onRetryCatalogue={vi.fn()}
                     onKeyDown={vi.fn()}
                     registerInstalledOption={vi.fn()}
                 />,
@@ -188,6 +203,128 @@ describe('CreateProjectEditorPicker', () => {
             );
         },
     );
+
+    it('shows a retry action instead of no matches when the catalogue failed without cached releases', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectEditorPickerPopover
+                id="picker"
+                labelledBy="editor"
+                popoverRef={{ current: null }}
+                style={{}}
+                open
+                tab="catalogue"
+                channel="stable"
+                search=""
+                installedRows={[]}
+                installedReleases={[]}
+                catalogueVariants={[]}
+                releaseInstallProgress={[]}
+                loading={false}
+                catalogueError="Network unavailable"
+                hasCachedCatalogueReleases={false}
+                retryingCatalogue={false}
+                selection={null}
+                onTabChange={vi.fn()}
+                onChannelChange={vi.fn()}
+                onSearchChange={vi.fn()}
+                onSelectionChange={vi.fn()}
+                onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
+                onKeyDown={vi.fn()}
+                registerInstalledOption={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain(
+            'data-testid="createProjectEditorCatalogueError"',
+        );
+        expect(html).toContain('Couldn&#x27;t load releases. Try again.');
+        expect(html).toContain(
+            'data-testid="btnRetryCreateProjectEditorCatalogue"',
+        );
+        expect(html).toContain('>Retry<');
+        expect(html).not.toContain('No matching releases');
+    });
+
+    it('keeps cached releases visible when a catalogue refresh fails', () => {
+        const release = catalogueRelease('4.8-stable');
+        const html = renderToStaticMarkup(
+            <CreateProjectEditorPickerPopover
+                id="picker"
+                labelledBy="editor"
+                popoverRef={{ current: null }}
+                style={{}}
+                open
+                tab="catalogue"
+                channel="stable"
+                search=""
+                installedRows={[]}
+                installedReleases={[]}
+                catalogueVariants={getCreateProjectCatalogueVariants(
+                    [release],
+                    '',
+                )}
+                releaseInstallProgress={[]}
+                loading={false}
+                catalogueError="Network unavailable"
+                hasCachedCatalogueReleases
+                retryingCatalogue={false}
+                selection={null}
+                onTabChange={vi.fn()}
+                onChannelChange={vi.fn()}
+                onSearchChange={vi.fn()}
+                onSelectionChange={vi.fn()}
+                onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
+                onKeyDown={vi.fn()}
+                registerInstalledOption={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain(
+            'Couldn&#x27;t refresh releases. Showing previously loaded releases.',
+        );
+        expect(html).toContain(
+            `createProjectCatalogueEditor_catalogue:${release.version}:std`,
+        );
+    });
+
+    it('disables catalogue retry while a retry is in progress', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectEditorPickerPopover
+                id="picker"
+                labelledBy="editor"
+                popoverRef={{ current: null }}
+                style={{}}
+                open
+                tab="catalogue"
+                channel="stable"
+                search=""
+                installedRows={[]}
+                installedReleases={[]}
+                catalogueVariants={[]}
+                releaseInstallProgress={[]}
+                loading={false}
+                catalogueError="Network unavailable"
+                hasCachedCatalogueReleases={false}
+                retryingCatalogue
+                selection={null}
+                onTabChange={vi.fn()}
+                onChannelChange={vi.fn()}
+                onSearchChange={vi.fn()}
+                onSelectionChange={vi.fn()}
+                onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
+                onKeyDown={vi.fn()}
+                registerInstalledOption={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain(
+            'data-testid="btnRetryCreateProjectEditorCatalogue" disabled=""',
+        );
+        expect(html).toContain('>Retrying...<');
+    });
 
     it('shows queue progress and the existing cancellation action', () => {
         const release = catalogueRelease('4.8-stable');
@@ -210,6 +347,7 @@ describe('CreateProjectEditorPicker', () => {
                     },
                 ]}
                 loading={false}
+                catalogueError={undefined}
                 selection={{
                     source: 'catalogue',
                     key: `catalogue:${release.version}:std`,
@@ -218,6 +356,7 @@ describe('CreateProjectEditorPicker', () => {
                 }}
                 onSelectionChange={vi.fn()}
                 onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
             />,
         );
 

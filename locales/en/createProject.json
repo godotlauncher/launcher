@@ -47,6 +47,10 @@
         "noneSelected": "Choose an editor",
         "loading": "Loading releases...",
         "noMatches": "No matching releases",
+        "loadFailed": "Couldn't load releases. Try again.",
+        "refreshFailed": "Couldn't refresh releases. Showing previously loaded releases.",
+        "retry": "Retry",
+        "retrying": "Retrying...",
         "installFailed": "The editor could not be installed. Your project has not been created."
     },
     "renderer": {

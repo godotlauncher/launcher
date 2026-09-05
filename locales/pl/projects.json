@@ -13,7 +13,8 @@
                 "heading": "Istniejący projekt",
                 "description": "Launcher znajduje wersję Godot\npotrzebną dla każdego projektu.",
                 "fromComputer": "Z tego komputera",
-                "fromGitHub": "Z GitHub"
+                "fromGitHub": "Z GitHub",
+                "gitRequired": "Git jest wymagany, aby importować z GitHub"
             }
         },
         "addExistingProject": "Dodaj istniejący projekt",
@@ -66,7 +67,8 @@
         "windowed": "W oknie",
         "opened": "Otwarto {{age}}",
         "notOpened": "Jeszcze nie otwarto",
-        "editInGodot": "Edytuj w Godot"
+        "editInGodot": "Edytuj w Godot",
+        "installRequiredEditor": "Zainstaluj wymagany edytor"
     },
     "table": {
         "moreOptions": "Więcej opcji dla {{project}}",
@@ -162,7 +164,10 @@
                     "connectionRequired": "Połącz lub ponownie podłącz GitHub przed zaimportowaniem repozytorium.",
                     "temporarilyUnavailable": "GitHub jest chwilowo niedostępny. Spróbuj ponownie później.",
                     "sessionExpired": "Sesja repozytorium wygasła. Załaduj listę ponownie."
-                }
+                },
+                "noRepositories": "Brak repozytoriów dostępnych za pośrednictwem połączonych kont.",
+                "missingRepository": "Nie widzisz swojego repozytorium?",
+                "manageConnections": "Zarządzaj kontami i dostępem"
             },
             "destination": {
                 "description": "Wybierz miejsce, w którym repozytorium zostanie sklonowane.",

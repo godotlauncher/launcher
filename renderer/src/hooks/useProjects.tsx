@@ -68,7 +68,9 @@ interface ProjectsContext {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
-    queueProjectEditorRepairs: (requests: ProjectEditorRepairRequest[]) => void;
+    queueProjectEditorRepairs: (
+        requests: ProjectEditorRepairRequest[],
+    ) => Promise<void>;
     setProjectWindowed: (
         project: ProjectDetails,
         openWindowed: boolean,
@@ -397,16 +399,17 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     /**
-     * Submits editor repairs without making the active project flow wait.
+     * Runs editor repairs for independent project editor requests.
      *
      * @param requests - Editor installs and their associated projects.
+     * @returns A promise that ends after all editor repairs finish.
      */
-    const queueProjectEditorRepairs = (
+    const queueProjectEditorRepairs = async (
         requests: ProjectEditorRepairRequest[],
-    ): void => {
-        for (const request of requests) {
-            void runProjectEditorRepair(request);
-        }
+    ): Promise<void> => {
+        await Promise.all(
+            requests.map((request) => runProjectEditorRepair(request)),
+        );
     };
 
     const updateProjectState = (updatedProject: ProjectDetails) => {

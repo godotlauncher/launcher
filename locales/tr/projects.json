@@ -13,7 +13,8 @@
                 "heading": "Mevcut proje",
                 "description": "Launcher, her projenin ihtiyaç duyduğu\nGodot sürümünü bulur.",
                 "fromComputer": "Bu bilgisayardan",
-                "fromGitHub": "GitHub'dan"
+                "fromGitHub": "GitHub'dan",
+                "gitRequired": "GitHub’dan içe aktarmak için Git gereklidir"
             }
         },
         "addExistingProject": "Mevcut bir proje ekle",
@@ -66,7 +67,8 @@
         "windowed": "Pencereli",
         "opened": "{{age}} açıldı",
         "notOpened": "Henüz açılmadı",
-        "editInGodot": "Godot'ta düzenle"
+        "editInGodot": "Godot'ta düzenle",
+        "installRequiredEditor": "Gerekli düzenleyiciyi kur"
     },
     "table": {
         "moreOptions": "{{project}} için diğer seçenekler",
@@ -162,7 +164,10 @@
                     "connectionRequired": "Bir depoyu içe aktarmadan önce GitHub'ı bağlayın veya yeniden bağlayın.",
                     "temporarilyUnavailable": "GitHub geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
                     "sessionExpired": "Depo oturumunun süresi doldu. Listeyi tekrar yükleyin."
-                }
+                },
+                "noRepositories": "Bağlı hesaplarınız üzerinden kullanılabilen depo yok.",
+                "missingRepository": "Deponuzu göremiyor musunuz?",
+                "manageConnections": "Hesapları ve erişimi yönetin"
             },
             "destination": {
                 "description": "Deponun nereye kopyalanacağını seçin.",

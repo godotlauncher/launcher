@@ -47,7 +47,11 @@
         "noneSelected": "選擇編輯器",
         "loading": "正在載入版本...",
         "noMatches": "沒有相符的版本",
-        "installFailed": "無法安裝編輯器。專案尚未建立。"
+        "installFailed": "無法安裝編輯器。專案尚未建立。",
+        "loadFailed": "無法載入版本。請再試一次。",
+        "refreshFailed": "無法重新整理版本。正在顯示先前載入的版本。",
+        "retry": "重試",
+        "retrying": "正在重試..."
     },
     "renderer": {
         "title": "渲染器",

@@ -13,7 +13,8 @@
                 "heading": "Existing project",
                 "description": "Launcher finds the Godot\nversion each project needs.",
                 "fromComputer": "From this computer",
-                "fromGitHub": "From GitHub"
+                "fromGitHub": "From GitHub",
+                "gitRequired": "Git is required to import from GitHub"
             }
         },
         "addExistingProject": "Add an existing project",
@@ -66,7 +67,8 @@
         "windowed": "Windowed",
         "opened": "Opened {{age}}",
         "notOpened": "Not opened yet",
-        "editInGodot": "Edit in Godot"
+        "editInGodot": "Edit in Godot",
+        "installRequiredEditor": "Install required editor"
     },
     "table": {
         "moreOptions": "More options for {{project}}",
@@ -150,6 +152,9 @@
                 "searchPlaceholder": "Search repositories",
                 "loadedSearchOnly": "Search covers loaded repositories only. Load more to search additional results.",
                 "empty": "No matching repositories are loaded.",
+                "noRepositories": "No repositories are available through your connected accounts.",
+                "missingRepository": "Don't see your repository?",
+                "manageConnections": "Manage accounts and access",
                 "loadMore": "Load more",
                 "alreadyAdded": "Already added",
                 "openConnections": "Connect GitHub",

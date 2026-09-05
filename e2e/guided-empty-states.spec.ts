@@ -214,7 +214,11 @@ test('Projects welcome keeps local import available when Git is unavailable', as
     await mainPage.getByTestId('btnProjects').click();
 
     await expect(mainPage.getByTestId('btnWelcomeAddFromComputer')).toBeVisible();
-    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toHaveCount(0);
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toBeDisabled();
+    await expect(mainPage.getByText('Git is required to import from GitHub', { exact: true })).toBeVisible();
+    const reviewDirectory = path.resolve('.internal-docs/shared-github-connection');
+    await fs.mkdir(reviewDirectory, { recursive: true });
+    await mainPage.screenshot({ path: path.join(reviewDirectory, 'welcome-git-unavailable.png') });
 });
 
 test('Native import offers the newest stable patch for an inferred Godot branch', async () => {
@@ -749,6 +753,29 @@ test('GitHub import connects in the existing modal and refreshes repositories', 
     await expect(
         modal.getByRole('button', { name: 'team/games' }),
     ).toBeVisible();
+    const search = modal.getByTestId('inputGitHubRepositorySearch');
+    await search.fill('games');
+    await modal.getByRole('button', { name: 'team/games' }).click();
+    await expect(modal.getByText("Don't see your repository?", { exact: true })).toBeVisible();
+    await modal.getByRole('button', { name: 'Manage accounts and access' }).click();
+    await expect(modal.getByRole('button', { name: 'Manage repository access', exact: true })).toBeVisible();
+    await expect(modal).toHaveAccessibleName('GitHub connections');
+    await expect(modal.getByRole('button', { name: 'Refresh repositories' })).toBeEnabled();
+    const reviewDirectory = path.resolve('.internal-docs/shared-github-connection');
+    await fs.mkdir(reviewDirectory, { recursive: true });
+    await mainPage.screenshot({ path: path.join(reviewDirectory, 'repository-access-light.png') });
+    await modal.getByRole('button', { name: 'Manage repository access', exact: true }).click();
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(search).toHaveValue('games');
+    await expect(modal.getByRole('button', { name: 'team/games' })).toHaveAttribute('aria-pressed', 'true');
+    await modal.getByRole('button', { name: 'Manage accounts and access' }).click();
+    await modal.getByRole('button', { name: 'Refresh repositories' }).click();
+    await expect(search).toHaveValue('games');
+    await expect(modal.getByRole('button', { name: 'team/games' })).toHaveAttribute('aria-pressed', 'true');
+    await search.fill('not-present');
+    await expect(modal.getByText('No matching repositories are loaded.')).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Manage accounts and access' })).toBeEnabled();
+
 });
 
 test('Enter selects an unselected GitHub repository choice and continues', async () => {
@@ -1286,6 +1313,12 @@ async function stubGitHubImportConnection(): Promise<void> {
             connectionOptions: [],
         });
 
+        ipcMain.removeHandler('appIntegrations.listIntegrations');
+        ipcMain.handle('appIntegrations.listIntegrations', () => ({ success: true, data: state.__guidedGitHubImportConnected ? [integration()] : [] }));
+        ipcMain.removeHandler('appIntegrations.manageAccess');
+        ipcMain.handle('appIntegrations.manageAccess', () => ({ success: true, data: { ok: true, integration: integration() } }));
+        ipcMain.removeHandler('appIntegrations.refresh');
+        ipcMain.handle('appIntegrations.refresh', () => ({ success: true, data: { ok: true, integration: integration() } }));
         ipcMain.removeHandler('projects.listConnectedRepositories');
         ipcMain.handle('projects.listConnectedRepositories', async () => ({
             success: true,

@@ -238,7 +238,9 @@
             "reconnect": "重新連接 GitHub",
             "description": "連接 GitHub 以繼續。你目前的工作將會保留。",
             "continueInBrowser": "在瀏覽器中繼續",
-            "waiting": "在瀏覽器中完成連線，然後返回此處。"
+            "waiting": "在瀏覽器中完成連線，然後返回此處。",
+            "refreshRepositories": "重新整理儲存庫",
+            "accessDescription": "在 GitHub 上管理儲存庫存取權限，或新增其他帳戶，然後重新整理儲存庫清單。"
         },
         "github": {
             "description": "連接 GitHub，讓 Godot Launcher 可以使用你的儲存庫。",

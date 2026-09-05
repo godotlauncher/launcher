@@ -2,8 +2,9 @@ import type {
     CodeEditorId,
     InstalledRelease,
     ProjectDetails,
+    ReleaseSummary,
 } from '@shared/contracts';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     type ActionMenuAnchorRect,
@@ -30,6 +31,7 @@ import {
 import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
 import { useProjectActions } from './projects/hooks/useProjectActions';
 import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
+import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
 import {
     getInvalidProjectMessageKey,
     getProjectSections,
@@ -95,6 +97,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         useState<GitAvailability>('loading');
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
+    const [projectEditorInstallTargets, setProjectEditorInstallTargets] =
+        useState<string[]>([]);
+    const projectEditorInstallTargetRef = useRef(new Set<string>());
     const [highlightedPinnedProjectPath, setHighlightedPinnedProjectPath] =
         useState<string | null>(null);
     const clearPinnedHighlight = useCallback(
@@ -225,11 +230,72 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
      * @returns Whether its editor is currently downloading.
      */
     const isProjectEditorDownloading = (project: ProjectDetails): boolean =>
+        projectEditorInstallTargets.includes(
+            `${project.release.version}:${project.release.mono}`,
+        ) ||
+        projectEditorInstallTargetRef.current.has(
+            `${project.release.version}:${project.release.mono}`,
+        ) ||
         downloadingReleases.some(
             (release) =>
                 release.version === project.release.version &&
                 release.mono === project.release.mono,
         );
+
+    /**
+     * Starts one exact official editor install and repairs every project
+     * currently waiting for that editor.
+     *
+     * @param project - Project whose missing editor the user chose to install.
+     * @param release - Exact catalogue release to install.
+     */
+    const onInstallRequiredProjectEditor = async (
+        project: ProjectDetails,
+        release: ReleaseSummary,
+    ): Promise<void> => {
+        const target = `${project.release.version}:${project.release.mono}`;
+        if (
+            projectEditorInstallTargetRef.current.has(target) ||
+            downloadingReleases.some(
+                (downloadingRelease) =>
+                    downloadingRelease.version === project.release.version &&
+                    downloadingRelease.mono === project.release.mono,
+            )
+        ) {
+            return;
+        }
+
+        projectEditorInstallTargetRef.current.add(target);
+        setProjectEditorInstallTargets((current) => [...current, target]);
+        try {
+            await queueProjectEditorRepairs([
+                {
+                    release,
+                    mono: project.release.mono,
+                    projects: projects.filter(
+                        (candidate) =>
+                            candidate.invalid_reason === 'missing_editor' &&
+                            candidate.release.source !== 'custom' &&
+                            candidate.release.version ===
+                                project.release.version &&
+                            candidate.release.mono === project.release.mono,
+                    ),
+                },
+            ]);
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                error instanceof Error
+                    ? error.message
+                    : t('messages.addProjectError'),
+            );
+        } finally {
+            projectEditorInstallTargetRef.current.delete(target);
+            setProjectEditorInstallTargets((current) =>
+                current.filter((candidate) => candidate !== target),
+            );
+        }
+    };
 
     const onSetProjectEditorFromSettings = async (
         project: ProjectDetails,
@@ -395,6 +461,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             isInstalledRelease={isInstalledRelease}
                             isProjectEditorDownloading={
                                 isProjectEditorDownloading
+                            }
+                            getDownloadableProjectEditor={(project) =>
+                                findDownloadableMissingProjectEditor(
+                                    project,
+                                    availableReleases,
+                                    availablePrereleases,
+                                )
+                            }
+                            onInstallRequiredProjectEditor={(
+                                project,
+                                release,
+                            ) =>
+                                void onInstallRequiredProjectEditor(
+                                    project,
+                                    release,
+                                )
                             }
                             onLaunchProject={(project) =>
                                 void onLaunchProject(project)

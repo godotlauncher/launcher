@@ -238,7 +238,9 @@
             "reconnect": "GitHub に再接続",
             "description": "続行するには GitHub に接続してください。現在の作業は保持されます。",
             "continueInBrowser": "ブラウザーで続行",
-            "waiting": "ブラウザーで接続を完了してから、ここに戻ってください。"
+            "waiting": "ブラウザーで接続を完了してから、ここに戻ってください。",
+            "refreshRepositories": "リポジトリを更新",
+            "accessDescription": "GitHub でリポジトリへのアクセスを管理するか、別のアカウントを追加してから、リポジトリ一覧を更新してください。"
         },
         "github": {
             "description": "GitHub を接続して、リポジトリを Godot Launcher で利用できるようにします。",

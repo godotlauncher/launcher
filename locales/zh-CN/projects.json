@@ -13,7 +13,8 @@
                 "heading": "现有项目",
                 "description": "Launcher 会找到每个项目\n所需的 Godot 版本。",
                 "fromComputer": "从此电脑",
-                "fromGitHub": "从 GitHub"
+                "fromGitHub": "从 GitHub",
+                "gitRequired": "从 GitHub 导入需要 Git"
             }
         },
         "addExistingProject": "添加现有项目",
@@ -66,7 +67,8 @@
         "windowed": "窗口模式",
         "opened": "打开于 {{age}}",
         "notOpened": "尚未打开",
-        "editInGodot": "在 Godot 中编辑"
+        "editInGodot": "在 Godot 中编辑",
+        "installRequiredEditor": "安装所需的编辑器"
     },
     "table": {
         "moreOptions": "{{project}} 的更多选项",
@@ -162,7 +164,10 @@
                     "connectionRequired": "在导入存储库之前连接或重新连接 GitHub。",
                     "temporarilyUnavailable": "GitHub 暂时不可用。稍后再试。",
                     "sessionExpired": "存储库会话已过期。再次加载列表。"
-                }
+                },
+                "noRepositories": "通过已连接的账户没有可用的仓库。",
+                "missingRepository": "找不到您的仓库？",
+                "manageConnections": "管理账户和访问权限"
             },
             "destination": {
                 "description": "选择将克隆存储库的位置。",

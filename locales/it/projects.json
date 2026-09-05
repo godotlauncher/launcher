@@ -13,7 +13,8 @@
                 "heading": "Progetto esistente",
                 "description": "Launcher trova la versione di Godot\ndi cui ogni progetto ha bisogno.",
                 "fromComputer": "Da questo computer",
-                "fromGitHub": "Da GitHub"
+                "fromGitHub": "Da GitHub",
+                "gitRequired": "Git è necessario per importare da GitHub"
             }
         },
         "addExistingProject": "Aggiungi un progetto esistente",
@@ -66,7 +67,8 @@
         "windowed": "In finestra",
         "opened": "Aperto {{age}}",
         "notOpened": "Non ancora aperto",
-        "editInGodot": "Modifica in Godot"
+        "editInGodot": "Modifica in Godot",
+        "installRequiredEditor": "Installa l’editor richiesto"
     },
     "table": {
         "moreOptions": "Altre opzioni per {{project}}",
@@ -162,7 +164,10 @@
                     "connectionRequired": "Connetti o riconnetti GitHub prima di importare un repository.",
                     "temporarilyUnavailable": "GitHub è temporaneamente non disponibile. Riprova più tardi.",
                     "sessionExpired": "La sessione del repository è scaduta. Carica nuovamente l'elenco."
-                }
+                },
+                "noRepositories": "Non ci sono repository disponibili tramite gli account collegati.",
+                "missingRepository": "Non trovi il tuo repository?",
+                "manageConnections": "Gestisci account e accesso"
             },
             "destination": {
                 "description": "Scegli dove verrà clonato il repository.",

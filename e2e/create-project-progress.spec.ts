@@ -68,7 +68,7 @@ test('keeps welcome actions in place when GitHub import becomes available', asyn
     const heading = mainPage.getByRole('heading', { name: 'Add or create a project' });
     const createButton = mainPage.getByTestId('btnWelcomeCreateProject');
     await expect(createButton).toBeVisible();
-    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toHaveCount(0);
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toBeDisabled();
     const headingBox = await heading.boundingBox();
     const createBox = await createButton.boundingBox();
 

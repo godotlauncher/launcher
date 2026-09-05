@@ -32,9 +32,11 @@ type CreateProjectEditorPickerProps = {
     availablePrereleases: ReleaseSummary[];
     releaseInstallProgress: ReleaseInstallProgress[];
     loading: boolean;
+    catalogueError: string | undefined;
     selection: CreateProjectEditorSelection | null;
     onSelectionChange: (selection: CreateProjectEditorSelection) => void;
     onCancelInstall: (jobId: string) => void;
+    onRetryCatalogue: () => Promise<void>;
 };
 
 /**
@@ -52,9 +54,11 @@ export const CreateProjectEditorPicker: React.FC<
     availablePrereleases,
     releaseInstallProgress,
     loading,
+    catalogueError,
     selection,
     onSelectionChange,
     onCancelInstall,
+    onRetryCatalogue,
 }) => {
     const { t } = useTranslation(['createProject', 'installEditor']);
     const reactId = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -73,6 +77,7 @@ export const CreateProjectEditorPicker: React.FC<
         useState<CreateProjectEditorPickerChannel>('stable');
     const [search, setSearch] = useState('');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [isRetryingCatalogue, setIsRetryingCatalogue] = useState(false);
     const [popoverPosition, setPopoverPosition] = useState({
         left: 16,
         top: 16,
@@ -102,6 +107,9 @@ export const CreateProjectEditorPicker: React.FC<
             ),
         [availablePrereleases, availableReleases, channel, search],
     );
+    const hasCachedCatalogueReleases =
+        (channel === 'stable' ? availableReleases : availablePrereleases)
+            .length > 0;
     const installedRows = useMemo(
         () => buildCreateProjectReleaseRows(installedReleases, []),
         [installedReleases],
@@ -255,6 +263,16 @@ export const CreateProjectEditorPicker: React.FC<
         closePopover(true);
     };
 
+    /** Retries the catalogue request while preserving the current form state. */
+    const handleRetryCatalogue = useCallback(async () => {
+        setIsRetryingCatalogue(true);
+        try {
+            await onRetryCatalogue();
+        } finally {
+            setIsRetryingCatalogue(false);
+        }
+    }, [onRetryCatalogue]);
+
     const registerInstalledOption = useCallback(
         (key: string, element: HTMLButtonElement | null) => {
             if (element) {
@@ -322,12 +340,16 @@ export const CreateProjectEditorPicker: React.FC<
                 catalogueVariants={catalogueVariants}
                 releaseInstallProgress={releaseInstallProgress}
                 loading={loading}
+                catalogueError={catalogueError}
+                hasCachedCatalogueReleases={hasCachedCatalogueReleases}
+                retryingCatalogue={isRetryingCatalogue}
                 selection={selection}
                 onTabChange={setTab}
                 onChannelChange={setChannel}
                 onSearchChange={setSearch}
                 onSelectionChange={handleSelectionChange}
                 onCancelInstall={onCancelInstall}
+                onRetryCatalogue={handleRetryCatalogue}
                 onKeyDown={handlePopoverKeyDown}
                 registerInstalledOption={registerInstalledOption}
             />

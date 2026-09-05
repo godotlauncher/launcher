@@ -1,5 +1,6 @@
 import type {
     AddProjectEditorResolution,
+    ProjectDetails,
     ReleaseSummary,
 } from '@shared/contracts';
 
@@ -103,4 +104,32 @@ export function findDownloadableProjectEditor(
                 hasEditorFlavor(release, downloadable.flavor),
         )
         .sort(compareStableReleases)[0];
+}
+
+/**
+ * Finds the exact official editor requested by a project already stored with
+ * a missing editor.
+ *
+ * @param project - Project whose editor is missing.
+ * @param availableReleases - Available stable releases.
+ * @param availablePrereleases - Available prereleases.
+ * @returns The matching official catalogue release, when it can be installed.
+ */
+export function findDownloadableMissingProjectEditor(
+    project: ProjectDetails,
+    availableReleases: ReleaseSummary[],
+    availablePrereleases: ReleaseSummary[],
+): ReleaseSummary | undefined {
+    if (
+        project.invalid_reason !== 'missing_editor' ||
+        project.release.source === 'custom'
+    ) {
+        return undefined;
+    }
+
+    return [...availableReleases, ...availablePrereleases].find(
+        (release) =>
+            release.version === project.release.version &&
+            release.assets.some((asset) => asset.mono === project.release.mono),
+    );
 }

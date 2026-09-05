@@ -238,7 +238,9 @@
             "reconnect": "GitHub'ı yeniden bağla",
             "description": "Devam etmek için GitHub'ı bağlayın. Mevcut çalışmanız korunacak.",
             "continueInBrowser": "Tarayıcıda devam et",
-            "waiting": "Bağlantıyı tarayıcınızda tamamlayıp buraya dönün."
+            "waiting": "Bağlantıyı tarayıcınızda tamamlayıp buraya dönün.",
+            "refreshRepositories": "Depoları yenile",
+            "accessDescription": "GitHub üzerindeki depo erişimini yönetin veya başka bir hesap ekleyin, ardından depo listesini yenileyin."
         },
         "github": {
             "description": "Depolarınızı Godot Launcher'da kullanabilmek için GitHub'ı bağlayın.",

@@ -47,7 +47,11 @@
         "noneSelected": "Bir düzenleyici seçin",
         "loading": "Sürümler yükleniyor...",
         "noMatches": "Eşleşen sürüm yok",
-        "installFailed": "Düzenleyici kurulamadı. Projeniz oluşturulmadı."
+        "installFailed": "Düzenleyici kurulamadı. Projeniz oluşturulmadı.",
+        "loadFailed": "Sürümler yüklenemedi. Tekrar deneyin.",
+        "refreshFailed": "Sürümler yenilenemedi. Daha önce yüklenen sürümler gösteriliyor.",
+        "retry": "Tekrar dene",
+        "retrying": "Tekrar deneniyor..."
     },
     "renderer": {
         "title": "İşleyici",

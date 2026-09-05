@@ -47,7 +47,11 @@
         "noneSelected": "Choisir un éditeur",
         "loading": "Chargement des versions...",
         "noMatches": "Aucune version correspondante",
-        "installFailed": "L’éditeur n’a pas pu être installé. Votre projet n’a pas été créé."
+        "installFailed": "L’éditeur n’a pas pu être installé. Votre projet n’a pas été créé.",
+        "loadFailed": "Impossible de charger les versions. Réessayez.",
+        "refreshFailed": "Impossible d’actualiser les versions. Les versions déjà chargées sont affichées.",
+        "retry": "Réessayer",
+        "retrying": "Nouvelle tentative..."
     },
     "renderer": {
         "title": "Moteur de rendu",

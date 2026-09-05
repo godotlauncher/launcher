@@ -1,5 +1,6 @@
 import { FolderOpen, FolderPlus } from 'lucide-react';
 import type React from 'react';
+import { useId } from 'react';
 import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 
 type Translate = (key: string) => string;
@@ -63,6 +64,9 @@ export const ProjectsWelcome: React.FC<ProjectsWelcomeProps> = ({
                 onAction={onAddFromComputer}
                 secondaryAction={{
                     available: gitAvailable,
+                    unavailableReason: t(
+                        'emptyState.welcome.existingProject.gitRequired',
+                    ),
                     label: t('emptyState.welcome.existingProject.fromGitHub'),
                     testId: 'btnWelcomeAddFromGitHub',
                     onAction: onAddFromGitHub,
@@ -81,6 +85,7 @@ type WelcomeChoiceProps = {
     onAction: () => void;
     secondaryAction?: {
         available: boolean;
+        unavailableReason: string;
         label: string;
         testId: string;
         onAction: () => void;
@@ -101,54 +106,63 @@ const WelcomeChoice: React.FC<WelcomeChoiceProps> = ({
     actionTestId,
     onAction,
     secondaryAction,
-}) => (
-    <div className="flex flex-col items-center px-6 py-10 text-center md:px-14">
-        <div
-            className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15"
-            aria-hidden="true"
-        >
-            <Icon className="size-8" strokeWidth={1.75} />
-        </div>
-        <h3 className="mt-8 text-2xl font-semibold text-base-content">
-            {heading}
-        </h3>
-        <p className="mt-3 max-w-xs whitespace-pre-line text-base text-base-content/65">
-            {description}
-        </p>
-        <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
-            <button
-                type="button"
-                className="btn btn-primary w-full"
-                data-testid={actionTestId}
-                onClick={onAction}
+}) => {
+    const reasonId = useId();
+    return (
+        <div className="flex flex-col items-center px-6 py-10 text-center md:px-14">
+            <div
+                className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15"
+                aria-hidden="true"
             >
-                {actionLabel}
-            </button>
-            {secondaryAction &&
-                (secondaryAction.available ? (
-                    <button
-                        type="button"
-                        className="btn btn-neutral w-full"
-                        data-testid={secondaryAction.testId}
-                        onClick={secondaryAction.onAction}
-                    >
-                        <img
-                            src={githubInvertocatWhite}
-                            alt=""
-                            className="size-5"
-                            aria-hidden="true"
-                        />
-                        {secondaryAction.label}
-                    </button>
-                ) : (
-                    <div
-                        className="btn btn-neutral invisible w-full"
-                        aria-hidden="true"
-                    >
-                        <span className="size-5 shrink-0" />
-                        {secondaryAction.label}
-                    </div>
-                ))}
+                <Icon className="size-8" strokeWidth={1.75} />
+            </div>
+            <h3 className="mt-8 text-2xl font-semibold text-base-content">
+                {heading}
+            </h3>
+            <p className="mt-3 max-w-xs whitespace-pre-line text-base text-base-content/65">
+                {description}
+            </p>
+            <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
+                <button
+                    type="button"
+                    className="btn btn-primary w-full"
+                    data-testid={actionTestId}
+                    onClick={onAction}
+                >
+                    {actionLabel}
+                </button>
+                {secondaryAction && (
+                    <>
+                        <button
+                            type="button"
+                            className="btn btn-neutral w-full"
+                            data-testid={secondaryAction.testId}
+                            disabled={!secondaryAction.available}
+                            aria-describedby={
+                                !secondaryAction.available
+                                    ? reasonId
+                                    : undefined
+                            }
+                            onClick={secondaryAction.onAction}
+                        >
+                            <img
+                                src={githubInvertocatWhite}
+                                alt=""
+                                className="size-5"
+                                aria-hidden="true"
+                            />
+                            {secondaryAction.label}
+                        </button>
+                        <p
+                            id={reasonId}
+                            className={`text-sm text-base-content/60 ${secondaryAction.available ? 'invisible' : ''}`}
+                            aria-hidden={secondaryAction.available}
+                        >
+                            {secondaryAction.unavailableReason}
+                        </p>
+                    </>
+                )}
+            </div>
         </div>
-    </div>
-);
+    );
+};

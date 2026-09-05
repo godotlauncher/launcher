@@ -47,7 +47,11 @@
         "noneSelected": "Agħżel editur",
         "loading": "Qed jitgħabbew ir-rilaxxi...",
         "noMatches": "L-ebda rilaxx li jaqbel",
-        "installFailed": "L-editur ma setax jiġi installat. Il-proġett tiegħek ma nħoloqx."
+        "installFailed": "L-editur ma setax jiġi installat. Il-proġett tiegħek ma nħoloqx.",
+        "loadFailed": "Ma setgħux jitgħabbew ir-rilaxxi. Erġa’ pprova.",
+        "refreshFailed": "Ma setgħux jiġu aġġornati r-rilaxxi. Qed jintwerew ir-rilaxxi mgħobbija qabel.",
+        "retry": "Erġa’ pprova",
+        "retrying": "Qed jerġa’ jipprova..."
     },
     "renderer": {
         "title": "Renderer",

@@ -13,7 +13,8 @@
                 "heading": "既存のプロジェクト",
                 "description": "Launcherは各プロジェクトに必要な\nGodotのバージョンを見つけます。",
                 "fromComputer": "このコンピューターから",
-                "fromGitHub": "GitHubから"
+                "fromGitHub": "GitHubから",
+                "gitRequired": "GitHub からインポートするには Git が必要です"
             }
         },
         "addExistingProject": "既存のプロジェクトを追加",
@@ -66,7 +67,8 @@
         "windowed": "ウィンドウ表示",
         "opened": "{{age}}に開きました",
         "notOpened": "まだ開いていません",
-        "editInGodot": "Godot で編集"
+        "editInGodot": "Godot で編集",
+        "installRequiredEditor": "必要なエディターをインストール"
     },
     "table": {
         "moreOptions": "{{project}} のその他のオプション",
@@ -162,7 +164,10 @@
                     "connectionRequired": "リポジトリをインポートする前に、GitHub に接続または再接続します。",
                     "temporarilyUnavailable": "GitHub が一時的に利用できなくなりました。後でもう一度試してください。",
                     "sessionExpired": "リポジトリ セッションの有効期限が切れました。リストを再度ロードします。"
-                }
+                },
+                "noRepositories": "接続したアカウントから利用できるリポジトリはありません。",
+                "missingRepository": "リポジトリが見つかりませんか？",
+                "manageConnections": "アカウントとアクセスを管理"
             },
             "destination": {
                 "description": "リポジトリのクローンを作成する場所を選択します。",
