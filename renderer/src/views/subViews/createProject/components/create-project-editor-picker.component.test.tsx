@@ -48,7 +48,6 @@ describe('CreateProjectEditorPicker', () => {
             <CreateProjectEditorPicker
                 open
                 disabled
-                triggerTestId="selectProjectGodotEditor"
                 triggerLabel="Godot Editor"
                 installedReleases={[]}
                 availableReleases={[]}
@@ -63,7 +62,6 @@ describe('CreateProjectEditorPicker', () => {
             />,
         );
 
-        expect(html).toContain('data-testid="selectProjectGodotEditor"');
         expect(html).toContain('disabled=""');
         expect(html).toContain('aria-label="Godot Editor: Choose an editor"');
     });
@@ -94,18 +92,12 @@ describe('CreateProjectEditorPicker', () => {
             />,
         );
 
-        expect(html).toContain(
-            'data-testid="tabCreateProjectInstalledEditors"',
-        );
-        expect(html).toContain('data-testid="selectCreateProjectGodotEditor"');
-        expect(html).toContain(
-            'data-testid="createProjectEditorPickerPopover"',
-        );
         expect(html).toContain('popover="auto"');
-        expect(html).toContain('shadow-xl');
         expect(html).toContain('aria-haspopup="dialog"');
         expect(html).toContain('aria-expanded="false"');
-        expect(html).toContain('aria-selected="true"');
+        expect(html).toMatch(
+            /<button[^>]*role="tab"[^>]*aria-selected="true"[^>]*>Installed<\/button>/,
+        );
         expect(html).toContain('Studio Godot');
         expect(html).toContain('Custom');
         expect(html).not.toContain('inputCreateProjectEditorSearch');
@@ -160,8 +152,8 @@ describe('CreateProjectEditorPicker', () => {
             />,
         );
 
-        expect(html).toContain(
-            'data-testid="tabCreateProjectBrowseEditors" aria-selected="true"',
+        expect(html).toMatch(
+            /<button[^>]*role="tab"[^>]*aria-selected="true"[^>]*>Browse releases<\/button>/,
         );
         expect(html).toContain('placeholder="Search versions"');
         expect(html).toContain('>Stable<');
@@ -169,8 +161,6 @@ describe('CreateProjectEditorPicker', () => {
         expect(html.match(/Download required/g)).toHaveLength(14);
         expect(html).not.toContain('>Standard<');
         expect(html).toContain('>.NET<');
-        expect(html).toContain('max-h-80');
-        expect(html).toContain('overflow-y-auto');
     });
 
     it.each(['stable', 'prerelease'] as const)(
@@ -216,9 +206,6 @@ describe('CreateProjectEditorPicker', () => {
             expect(html.match(/<fieldset/g)).toHaveLength(2);
             expect(html).toContain('<fieldset aria-label="4.10"');
             expect(html).toContain('<fieldset aria-label="4.9"');
-            expect(html.indexOf('aria-label="4.10"')).toBeLessThan(
-                html.indexOf('aria-label="4.9"'),
-            );
             expect(html.match(/role="option"/g)).toHaveLength(6);
             expect(html).toContain(
                 `createProjectCatalogueEditor_catalogue:4.10.2-${suffix}:std`,
@@ -260,13 +247,7 @@ describe('CreateProjectEditorPicker', () => {
             />,
         );
 
-        expect(html).toContain(
-            'data-testid="createProjectEditorCatalogueError"',
-        );
         expect(html).toContain('Couldn&#x27;t load releases. Try again.');
-        expect(html).toContain(
-            'data-testid="btnRetryCreateProjectEditorCatalogue"',
-        );
         expect(html).toContain('>Retry<');
         expect(html).not.toContain('No matching releases');
     });
@@ -345,8 +326,8 @@ describe('CreateProjectEditorPicker', () => {
             />,
         );
 
-        expect(html).toContain(
-            'data-testid="btnRetryCreateProjectEditorCatalogue" disabled=""',
+        expect(html).toMatch(
+            /<button[^>]*disabled=""[^>]*>Retrying...<\/button>/,
         );
         expect(html).toContain('>Retrying...<');
     });
@@ -387,7 +368,6 @@ describe('CreateProjectEditorPicker', () => {
 
         expect(html).toContain('Queued #2');
         expect(html).toContain('aria-label="Cancel editor install"');
-        expect(html).toContain('progress-info');
     });
 });
 

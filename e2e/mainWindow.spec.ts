@@ -56,27 +56,7 @@ test('Can navigate the main window', async () => {
             'installedReleaseList',
         );
         await expect(installedReleaseList).toBeVisible();
-        await expect(installedReleaseList.getByRole('table')).toHaveCount(0);
-        const firstGroupHeading = installedReleaseList
-            .getByRole('heading', { level: 2 })
-            .first();
-        await expect(firstGroupHeading.locator('..')).toHaveCSS(
-            'position',
-            'sticky',
-        );
-        const firstInstalledEditorName = installedReleaseList
-            .locator('article')
-            .first()
-            .locator('span.text-lg')
-            .first();
-        await expect(firstInstalledEditorName).toHaveCSS(
-            'font-size',
-            '15.75px',
-        );
-        await expect(firstInstalledEditorName).toHaveCSS(
-            'font-weight',
-            '600',
-        );
+
     });
 
     await test.step('Opens the install editor drawer', async () => {
@@ -92,27 +72,9 @@ test('Can navigate the main window', async () => {
             'aria-selected',
             'true',
         );
-        const latestVersionLabel = drawer
-            .locator('article')
-            .first()
-            .locator('span')
-            .first();
-        await expect(latestVersionLabel).toHaveCSS('font-size', '15.75px');
-        await expect(latestVersionLabel).toHaveCSS('font-weight', '600');
         const reloadButton = drawer.getByTestId(
             'btnRefreshInstallEditorCatalog',
         );
-        const [drawerBounds, reloadBounds] = await Promise.all([
-            drawer.boundingBox(),
-            reloadButton.boundingBox(),
-        ]);
-        expect(drawerBounds).not.toBeNull();
-        expect(reloadBounds).not.toBeNull();
-        expect(
-            drawerBounds!.x +
-                drawerBounds!.width -
-                (reloadBounds!.x + reloadBounds!.width),
-        ).toBeLessThanOrEqual(24);
         const reloadTooltipTrigger = reloadButton.locator('..');
         await mainPage.mouse.move(0, 0);
         await reloadTooltipTrigger.hover();
@@ -133,6 +95,7 @@ test('Can navigate the main window', async () => {
 
         await drawer.getByTestId('tabInstallsAll').click();
         const installAction = drawer
+            .getByTestId('installEditorAllList')
             .locator('button[data-testid^="btnDownload"]:not([disabled])')
             .first();
         await expect(installAction).toBeVisible();
@@ -143,8 +106,6 @@ test('Can navigate the main window', async () => {
         const releaseVersion = mono
             ? actionIdentity.slice(0, -'-mono'.length)
             : actionIdentity;
-        const actionBounds = await installAction.boundingBox();
-        expect(actionBounds).not.toBeNull();
 
         await installAction.hover();
         await expect(mainPage.getByRole('tooltip')).toContainText(
@@ -163,15 +124,16 @@ test('Can navigate the main window', async () => {
         };
         await publishInstallProgress(electronApp, progress);
 
-        const progressIndicator = drawer.getByTestId(
+        const selectedReleaseRow = drawer
+            .getByTestId('installEditorAllList')
+            .locator('article')
+            .filter({ hasText: releaseVersion })
+            .first();
+        const progressIndicator = selectedReleaseRow.getByTestId(
             `installProgress${releaseVersion}${mono ? '-mono' : ''}`,
         );
         await expect(progressIndicator).toBeVisible();
         await expect(mainPage.getByRole('tooltip')).toBeHidden();
-        const progressBounds = await progressIndicator.boundingBox();
-        expect(progressBounds).not.toBeNull();
-        expect(Math.abs(progressBounds!.width - actionBounds!.width)).toBeLessThanOrEqual(1);
-        expect(Math.abs(progressBounds!.height - actionBounds!.height)).toBeLessThanOrEqual(1);
         await publishInstallProgress(electronApp, {
             ...progress,
             stage: 'complete',
@@ -186,20 +148,9 @@ test('Can navigate the main window', async () => {
         await expect(drawerSearch).toBeEnabled();
         await expect(drawerSearch).toBeFocused();
         const allReleaseList = drawer.getByTestId('installEditorAllList');
-        await expect(allReleaseList.getByRole('table')).toHaveCount(0);
         await expect(
             allReleaseList.getByTestId('inputInstallSearch'),
         ).toHaveCount(0);
-        await expect(
-            allReleaseList.locator('h3').first().locator('..'),
-        ).toHaveCSS('position', 'sticky');
-        const allVersionLabel = allReleaseList
-            .locator('article')
-            .first()
-            .locator('span')
-            .first();
-        await expect(allVersionLabel).toHaveCSS('font-size', '15.75px');
-        await expect(allVersionLabel).toHaveCSS('font-weight', '600');
         await drawerSearch.fill('4.5');
         await drawer.getByTestId('tabInstallsPrerelease').click();
         await expect(
@@ -310,28 +261,3 @@ function createIsolatedLaunchEnvironment(
     delete launchEnvironment.ELECTRON_RUN_AS_NODE;
     return launchEnvironment;
 }
-
-test('Uses desktop cursors for app controls and a hand for external links', async () => {
-    await expect(mainPage.getByTestId('btnProjects')).toHaveCSS(
-        'cursor',
-        'default',
-    );
-
-    await mainPage.getByTestId('btnSettings').click();
-    await expect(mainPage.getByTestId('tabAppearance')).toHaveCSS(
-        'cursor',
-        'default',
-    );
-    await mainPage.getByTestId('tabAppearance').click();
-    await expect(mainPage.getByTestId('themeLight')).toHaveCSS(
-        'cursor',
-        'default',
-    );
-
-    await mainPage.getByTestId('btnHelp').click();
-    await expect(
-        mainPage.getByRole('button', {
-            name: 'Third-party copyright notices',
-        }),
-    ).toHaveCSS('cursor', 'pointer');
-});

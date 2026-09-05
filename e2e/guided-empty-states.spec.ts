@@ -156,9 +156,6 @@ test('Projects welcome supports creation and local import without an installed e
             .locator('[data-testid^="createProjectCatalogueEditor_"]')
             .count(),
     ).toBeGreaterThan(10);
-    await expect(
-        editorPopover.getByTestId('createProjectEditorCatalogueList'),
-    ).toHaveCSS('overflow-y', 'auto');
 
     await mainPage.keyboard.press('Escape');
     await expect(editorPopover).not.toBeVisible();

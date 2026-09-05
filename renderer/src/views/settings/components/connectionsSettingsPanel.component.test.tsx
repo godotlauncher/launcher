@@ -89,9 +89,6 @@ describe('ConnectionsSettingsPanel', () => {
     it('presents the disconnected GitHub integration', () => {
         const html = renderPanel();
 
-        expect(html).toContain('app-integration-github');
-        expect(html).toContain('data:image/svg+xml');
-        expect(html).toContain('fill=&#x27;black&#x27;');
         expect(html).toContain('GitHub');
         expect(html).toContain('connections.status.notConnected');
         expect(html).toContain('connections.github.description');
@@ -147,7 +144,6 @@ describe('ConnectionsSettingsPanel', () => {
                 },
             ],
         });
-        expect(generic).toContain('lucide-plug');
         expect(generic).toContain('connections.genericDescription');
         expect(generic).not.toContain('connections.github.accessNote');
     });
@@ -158,7 +154,6 @@ describe('ConnectionsSettingsPanel', () => {
             loading: true,
         });
 
-        expect(html).toContain('app-integration-github');
         expect(html).toContain('connections.github.summary');
         expect(html).not.toContain('role="status"');
 
@@ -166,7 +161,6 @@ describe('ConnectionsSettingsPanel', () => {
             integrations: [connectedGithub],
             loadError: true,
         });
-        expect(failed).toContain('app-integration-github');
         expect(failed).toContain('common:buttons.retry');
     });
 

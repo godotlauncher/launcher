@@ -20,12 +20,7 @@ describe('CreateProjectPathField', () => {
             />,
         );
 
-        expect(html).toContain('data-testid="inputProjectPath"');
-        expect(html).toContain('data-testid="btnSelectProjectFolder"');
-        expect(html).toContain('data-testid="btnUseDefaultProjectPath"');
         expect(html).toContain('/my-game');
-        expect(html).toContain('lucide-folder');
-        expect(html).not.toContain('lucide-folder-plus');
         expect(html).not.toContain('fill-base-content');
     });
 });

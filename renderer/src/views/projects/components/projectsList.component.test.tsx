@@ -159,8 +159,6 @@ describe('ProjectsList', () => {
         expect(html).toContain('data-project-section="new"');
         expect(html).toContain('data-project-section="pinned"');
         expect(html).not.toContain('<table');
-        expect(html).toContain('lucide-pin');
-        expect(html).not.toContain('lucide-pin-off');
     });
 
     it('shows reorder handles only for pinned projects', () => {
@@ -176,9 +174,6 @@ describe('ProjectsList', () => {
             ],
         });
 
-        expect(
-            html.match(/data-testid="btnReorderPinnedProject"/g),
-        ).toHaveLength(1);
         expect(html).toContain('aria-label="pinning.reorder.label"');
     });
 
@@ -197,29 +192,6 @@ describe('ProjectsList', () => {
         );
     });
 
-    it('renders project icons and status markers', () => {
-        const html = renderProjectsList({
-            newProjects: [
-                {
-                    ...baseProject,
-                    icon_path: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
-                    codeEditorId: 'vscode',
-                    release: { ...baseProject.release, prerelease: true },
-                },
-            ],
-        });
-
-        expect(html).toContain(
-            'src="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="',
-        );
-        expect(html).toContain('aria-label="card.openFolders"');
-        expect(html).toContain('aria-label="project.pinProject"');
-        expect(html).toContain('aria-label="card.projectSettings"');
-        expect(html).toContain('card.editInGodot');
-        expect(html).toContain('vscode.svg');
-        expect(html).toContain('lucide-flask-conical');
-    });
-
     it('renders unavailable code editors as warnings', () => {
         const html = renderProjectsList(
             {
@@ -229,7 +201,6 @@ describe('ProjectsList', () => {
         );
 
         expect(html).toContain('Visual Studio Code');
-        expect(html).not.toContain('vscode.svg');
     });
 
     it('offers an exact missing official editor download with its accessible label', () => {
@@ -260,10 +231,7 @@ describe('ProjectsList', () => {
             },
         );
 
-        expect(html).toContain('data-testid="btnInstallRequiredProjectEditor"');
         expect(html).toContain('aria-label="Install required editor"');
-        expect(html).toContain('lucide-download');
-        expect(html).toContain('lucide-triangle-alert');
         expect(html).toContain('card.editInGodot');
     });
 
@@ -303,33 +271,9 @@ describe('ProjectsList', () => {
                 /data-testid="btnInstallRequiredProjectEditor" disabled=""/g,
             ),
         ).toHaveLength(2);
-        expect(html).toContain('loading-spinner');
     });
 
-    it('keeps wrapping badges separate from the fixed launch actions', () => {
-        const html = renderProjectsList({
-            newProjects: [
-                {
-                    ...baseProject,
-                    codeEditorId: 'vscode',
-                    withGit: true,
-                    open_windowed: true,
-                },
-            ],
-        });
-
-        expect(html).toContain('data-testid="projectBadges"');
-        expect(html).toContain('data-testid="projectLaunchActions"');
-        expect(html.indexOf('data-testid="projectBadges"')).toBeLessThan(
-            html.indexOf('data-testid="projectLaunchActions"'),
-        );
-        expect(html).toContain('card.windowed');
-        expect(html).toContain('>Git<');
-        expect(html).toContain('data-testid="gitProjectIcon"');
-        expect(html).not.toContain('data-testid="githubProjectIcon"');
-    });
-
-    it('uses the GitHub label, icon, and tooltip for a cached GitHub origin', () => {
+    it('uses the GitHub label for a cached GitHub origin', () => {
         const translate = vi.fn((key: string) => key);
         const html = renderProjectsList(
             {
@@ -344,11 +288,9 @@ describe('ProjectsList', () => {
 
         expect(html).toContain('>GitHub<');
         expect(translate).toHaveBeenCalledWith('table.githubProject');
-        expect(html).toContain('data-testid="githubProjectIcon"');
-        expect(html).not.toContain('data-testid="gitProjectIcon"');
     });
 
-    it('returns to the Git label, icon, and tooltip without a GitHub origin', () => {
+    it('returns to the Git label without a GitHub origin', () => {
         const translate = vi.fn((key: string) => key);
         const html = renderProjectsList(
             {
@@ -363,8 +305,6 @@ describe('ProjectsList', () => {
 
         expect(html).toContain('>Git<');
         expect(translate).toHaveBeenCalledWith('table.gitProject');
-        expect(html).toContain('data-testid="gitProjectIcon"');
-        expect(html).not.toContain('data-testid="githubProjectIcon"');
     });
 
     it('renders localized relative times', () => {

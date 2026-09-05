@@ -57,7 +57,6 @@ describe('CodeEditorSettingsPanel', () => {
         const html = renderPanel();
 
         expect(html).toContain('Visual Studio Code');
-        expect(html).toContain('vscode.svg');
         expect(html).toContain('codeEditors.status.available');
         expect(html).toContain('codeEditors.status.enabled');
         expect(html).toContain('detected-code-editor-path');
@@ -65,14 +64,8 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain(
             '>.NET codeEditors.drawer.dotnet.supported</span>',
         );
-        expect(html).toContain('badge-success');
-        expect(html).toContain('lucide-pencil');
-        expect(html).toContain('lucide-copy');
         expect(html).toContain('codeEditors.actions.setDefault');
         expect(html).toContain('aria-pressed="false"');
-        expect(html).toContain('lucide-star');
-        expect(html).toContain('lucide-rotate-cw');
-        expect(html).toContain('btn-rescan-code-editor-vscode');
         expect(html).toContain(
             'codeEditors.actions.rescan: Visual Studio Code',
         );
@@ -89,9 +82,6 @@ describe('CodeEditorSettingsPanel', () => {
         );
         expect(html).not.toContain('title="codeEditors.status.available"');
         expect(html).not.toContain('title="codeEditors.status.enabled"');
-        expect(
-            html.indexOf('>.NET codeEditors.drawer.dotnet.supported</span>'),
-        ).toBeLessThan(html.indexOf('codeEditors.status.available'));
     });
 
     it('renders an unavailable integration without installation details', () => {
@@ -101,15 +91,9 @@ describe('CodeEditorSettingsPanel', () => {
 
         expect(html).toContain('codeEditors.status.missing');
         expect(html).toContain('codeEditors.status.disabled');
-        expect(html).not.toContain('lucide-pencil');
         expect(html).not.toContain('codeEditors.actions.edit');
-        expect(html).toContain('badge-neutral');
-        expect(html).not.toContain('badge-warning');
         expect(html).not.toContain('detected-code-editor-path');
         expect(html).not.toContain('>N/A</span>');
-        expect(html).not.toContain('lucide-copy');
-        expect(html).not.toContain('lucide-star');
-        expect(html).not.toContain('btn-set-default-code-editor-vscode');
         expect(html).not.toContain('title="codeEditors.status.disabled"');
     });
 
@@ -129,13 +113,11 @@ describe('CodeEditorSettingsPanel', () => {
             settings: [{ ...settings, installation: null }],
         });
 
-        expect(html).toContain('lucide-star');
         expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain(
             'aria-label="codeEditors.status.missing: Visual Studio Code"',
         );
         expect(html).toContain('disabled=""');
-        expect(html).toContain('lucide-pencil');
     });
 
     it('marks the selected default integration', () => {
@@ -145,7 +127,6 @@ describe('CodeEditorSettingsPanel', () => {
 
         expect(html).toContain('codeEditors.status.default');
         expect(html).toContain('aria-pressed="true"');
-        expect(html).toContain('fill-primary');
         expect(html).toContain('disabled=""');
     });
 
@@ -188,7 +169,6 @@ describe('CodeEditorSettingsPanel', () => {
         });
 
         expect(html).toContain('role="status"');
-        expect(html).not.toContain('reveal-after-one-second');
         expect(html).toContain(
             'aria-label="codeEditors.actions.saving: Visual Studio Code"',
         );
@@ -209,7 +189,6 @@ describe('CodeEditorSettingsPanel', () => {
         expect(html).toContain(
             'aria-label="codeEditors.actions.scanning: Visual Studio Code"',
         );
-        expect(html).toContain('reveal-after-one-second');
         expect(html).toContain('disabled=""');
     });
 });

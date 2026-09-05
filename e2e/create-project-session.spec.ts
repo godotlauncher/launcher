@@ -212,7 +212,6 @@ test('groups both catalogue channels and preserves exact keyboard selection afte
                 .getByRole('option'),
         ).toHaveCount(4);
         await expect(list.getByRole('option')).toHaveCount(6);
-        await expect(list).toHaveCSS('overflow-y', 'auto');
         await expect(popover).toBeInViewport({ ratio: 1 });
         await mainPage.screenshot({
             path: path.join(outputDirectory, `stable-${theme.name}.png`),

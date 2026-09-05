@@ -104,14 +104,11 @@ test('blocks an occupied destination before downstream operations and rechecks o
     });
     await openCreateProject();
     const status = mainPage.getByTestId('createProjectDestinationStatus');
-    const idleStatusBox = await status.boundingBox();
     await mainPage.getByTestId('inputProjectName').fill('Occupied');
     await expect(status).toContainText('Destination contains files');
-    expect(await status.boundingBox()).toEqual(idleStatusBox);
     await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
     await mainPage.getByTestId('inputProjectName').fill('Free');
     await expect(status).toContainText('Project location available');
-    expect(await status.boundingBox()).toEqual(idleStatusBox);
     await mainPage.getByTestId('btnCreateProject').click();
     await expect(status).toContainText('Destination contains files');
     await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();

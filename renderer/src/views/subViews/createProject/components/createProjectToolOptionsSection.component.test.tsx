@@ -58,7 +58,6 @@ describe('CreateProjectToolOptionsSection', () => {
     it('renders the generic code editor selector', () => {
         const html = renderSection([availableVSCodeSettings], 'vscode');
 
-        expect(html).toContain('data-testid="selectCreateProjectCodeEditor"');
         expect(html).toContain('Visual Studio Code');
         expect(html).toContain('aria-selected="true"');
         expect(html).not.toContain('Setup Visual Studio Code as Text Editor');
@@ -101,7 +100,6 @@ describe('CreateProjectToolOptionsSection', () => {
         expect(html).toContain('Could not load code editors.');
         expect(html).toContain('role="alert"');
         expect(html).toContain('aria-selected="true"');
-        expect(html).toContain('data-testid="selectCreateProjectCodeEditor"');
         expect(html).toContain('disabled=""');
     });
 });

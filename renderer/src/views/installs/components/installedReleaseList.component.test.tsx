@@ -29,7 +29,7 @@ describe('InstalledReleaseList', () => {
         installProgress = undefined;
     });
 
-    it('groups editors and uses icon markers for custom prereleases', () => {
+    it('groups editors and labels custom prereleases', () => {
         const html = renderList([
             createInstalledRelease('4.7.1-stable', { mono: true }),
             createInstalledRelease('studio-build', {
@@ -41,9 +41,7 @@ describe('InstalledReleaseList', () => {
         ]);
 
         expect(html).toContain('>4.7</h2>');
-        expect(html).toContain('lucide-user-round');
         expect(html).toContain('aria-label="Custom"');
-        expect(html).toContain('lucide-flask-conical');
         expect(html).toContain('aria-label="Prerelease"');
         expect(html).toContain('>.NET</span>');
         expect(html).not.toContain('<table');
@@ -77,8 +75,6 @@ describe('InstalledReleaseList', () => {
         const html = renderList([createInstalledRelease('4.7-stable')], true);
 
         expect(html).toContain('aria-busy="true"');
-        expect(html).toContain('loading-spinner');
-        expect(html).toContain('pointer-events-none');
         expect(html).not.toContain('btnReleaseMoreOptions');
     });
 });

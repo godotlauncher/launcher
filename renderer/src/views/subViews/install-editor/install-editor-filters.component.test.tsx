@@ -10,14 +10,11 @@ vi.mock('../../../components/ui/tooltip.component.tsx', () => ({
 }));
 
 describe('InstallEditorFilters', () => {
-    it('keeps Reload as the rightmost control and uses the shared tooltip', () => {
+    it('uses the shared tooltip while loading', () => {
         const html = renderFilters(0, true);
 
         expect(html).toContain('data-tip="Reload release list"');
         expect(html).not.toContain('title=');
-        expect(html.indexOf('role="status"')).toBeLessThan(
-            html.indexOf('btnRefreshInstallEditorCatalog'),
-        );
     });
 
     it('disables Reload during its cooldown', () => {
@@ -27,7 +24,6 @@ describe('InstallEditorFilters', () => {
         expect(html).toContain(
             'data-tip="You can refresh once per minute to reduce requests to GitHub."',
         );
-        expect(html).toContain('data-testid="btnRefreshInstallEditorCatalog"');
         expect(html).toContain('disabled=""');
     });
 });

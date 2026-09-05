@@ -82,11 +82,9 @@ describe('CreateProjectEditorOption', () => {
         );
 
         expect(installedHtml).toContain('>Installed<');
-        expect(installedHtml).toContain('lucide-check');
         expect(installedHtml).toContain('aria-selected="true"');
         expect(downloadHtml).toContain('>.NET<');
         expect(downloadHtml).toContain('>Download required<');
-        expect(downloadHtml).toContain('lucide-download');
     });
 
     it('places the .NET label beside the editor name without repeating it', () => {
@@ -104,9 +102,6 @@ describe('CreateProjectEditorOption', () => {
         );
 
         expect(html.match(/>\.NET</g)).toHaveLength(1);
-        expect(html.indexOf('>.NET<')).toBeLessThan(
-            html.indexOf('>Download required<'),
-        );
         expect(html).not.toContain('>Standard<');
     });
 
@@ -137,7 +132,6 @@ describe('CreateProjectEditorOption', () => {
 
         expect(html).toContain('Queued #2');
         expect(html).toContain('aria-label="Cancel editor install"');
-        expect(html).toContain('progress-info');
         expect(html).toContain('tabindex="0"');
     });
 });

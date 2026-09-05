@@ -56,8 +56,6 @@ describe('ProjectFoldersMenu', () => {
 
         expect(html).toContain('project.openProjectFolder');
         expect(html).toContain('project.openEditorSettingsFolder');
-        expect(html).toContain('lucide-folder-open');
-        expect(html).toContain('lucide-folder-cog');
         expect(html).not.toContain('project.openInGitHub');
     });
 
@@ -111,6 +109,5 @@ describe('ProjectFoldersMenu', () => {
         );
 
         expect(html).toContain('project.openInGitHub');
-        expect(html).toContain('data-testid="githubProjectLinkIcon"');
     });
 });

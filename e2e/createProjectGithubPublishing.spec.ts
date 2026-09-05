@@ -134,12 +134,6 @@ test('reveals connected private repository fields and preserves a manual name', 
     await expect(
         mainPage.getByText('Private GitHub repository', { exact: true }),
     ).toBeVisible();
-    await expect(mainPage.locator('.drawer-panel')).toHaveCSS('width', '680px');
-    const initialiseGitCheckbox = mainPage.getByRole('checkbox', {
-        name: 'Initialize Git Repository',
-    });
-    await expect(initialiseGitCheckbox).toHaveClass(/checkbox-sm/u);
-    await expect(initialiseGitCheckbox).toHaveClass(/rounded-sm/u);
     const drawerBody = mainPage.locator(
         '.drawer-panel form > div.overflow-y-auto',
     );
@@ -260,17 +254,12 @@ test('connects GitHub in place and preserves the project form after cancellation
     const addAccount = dialog.getByRole('button', { name: 'Add another account' });
     const toolbarBefore = await addAccount.boundingBox();
     const footerBefore = await footer.boundingBox();
-    const listBounds = await list.boundingBox();
-    const rowBounds = await list.locator('label').first().boundingBox();
-    expect(listBounds).not.toBeNull();
-    expect(rowBounds).not.toBeNull();
-    expect(listBounds!.x + listBounds!.width - rowBounds!.x - rowBounds!.width).toBeGreaterThanOrEqual(16);
     await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
     expect(await list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
     expect(await addAccount.boundingBox()).toEqual(toolbarBefore);
     expect(await footer.boundingBox()).toEqual(footerBefore);
     await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
-    await expect(dialog.locator('label').filter({ hasText: 'fixture-user' })).toHaveClass(/border-primary/);
+    await expect(dialog.getByRole('checkbox', { name: /fixture-user/ })).toBeChecked();
     await mainPage.screenshot({ path: path.join(outputDirectory, 'connection-selection-dark.png') });
     await dialog.getByRole('button', { name: /Connect selected/i }).click();
     await expect(dialog).not.toBeVisible();

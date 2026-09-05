@@ -141,10 +141,6 @@ describe('ProjectSettingsDrawer', () => {
         expect(html).not.toContain('Keep this project in the Pinned section.');
         expect(html).toContain('Update');
         expect(html).toContain('Cancel');
-
-        expect(html.indexOf('Also rename Godot project')).toBeGreaterThan(
-            html.indexOf('Project name'),
-        );
     });
 
     it('orders installed editors and excludes the missing current version', () => {

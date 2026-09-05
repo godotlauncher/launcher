@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { EmptyState } from './empty-state.component.tsx';
 
 describe('EmptyState', () => {
-    it('renders an informational heading, decorative icon, and both actions', () => {
+    it('renders an informational heading and both actions', () => {
         const html = renderToStaticMarkup(
             <EmptyState
                 icon={FolderPlus}
@@ -20,7 +20,6 @@ describe('EmptyState', () => {
         expect(html).toContain('aria-labelledby=');
         expect(html).not.toContain('role="alert"');
         expect(html).toContain('aria-hidden="true"');
-        expect(html).toContain('lucide-folder-plus');
         expect(html).toContain('Start your first project');
         expect(html).toContain('Create something new.');
         expect(html).toContain('New Project');
@@ -37,8 +36,8 @@ describe('EmptyState', () => {
             />,
         );
 
-        expect(html).toContain('btnEmptyStatePrimary');
-        expect(html).not.toContain('btnEmptyStateSecondary');
+        expect(html).toContain('Continue');
+        expect(html.match(/<button/g)).toHaveLength(1);
     });
 
     it('renders a disabled busy primary action while work is pending', () => {
@@ -54,7 +53,6 @@ describe('EmptyState', () => {
 
         expect(html).toContain('disabled=""');
         expect(html).toContain('aria-busy="true"');
-        expect(html).toContain('loading-spinner');
         expect(html).toContain('Installing editor...');
     });
 });

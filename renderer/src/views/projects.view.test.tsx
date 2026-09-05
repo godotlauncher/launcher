@@ -189,11 +189,10 @@ describe('ProjectsView', () => {
         expect(html).toContain('Existing project');
         expect(html).toContain('Create project');
         expect(html).toContain('From this computer');
-        expect(html).not.toContain('data-testid="projectsTitle"');
         expect(html).not.toContain('/Users/test/GodotProjects');
-        expect(html).not.toContain('inputProjectSearch');
-        expect(html).not.toContain('btnProjectAdd');
-        expect(html).not.toContain('btnProjectCreate');
+        expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('>Add<');
+        expect(html).not.toContain('>New Project<');
         expect(html).not.toContain('No projects found');
     });
 
@@ -202,7 +201,7 @@ describe('ProjectsView', () => {
 
         const html = renderToStaticMarkup(<ProjectsView />);
 
-        expect(html).toContain('data-testid="projectsTitle"');
+        expect(html).toContain('>Projects<');
         expect(html).toContain('/Users/test/GodotProjects');
     });
 
@@ -213,9 +212,9 @@ describe('ProjectsView', () => {
 
         expect(html).toContain('Add or create a project');
         expect(html).toContain('Create project');
-        expect(html).not.toContain('inputProjectSearch');
-        expect(html).not.toContain('btnProjectAdd');
-        expect(html).not.toContain('btnProjectCreate');
+        expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('>Add<');
+        expect(html).not.toContain('>New Project<');
     });
 
     it('keeps the welcome experience available with an invalid editor', () => {
@@ -236,7 +235,7 @@ describe('ProjectsView', () => {
 
         expect(html).toContain('Add or create a project');
         expect(html).toContain('Create project');
-        expect(html).not.toContain('inputProjectSearch');
-        expect(html).not.toContain('btnProjectCreate');
+        expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('>New Project<');
     });
 });

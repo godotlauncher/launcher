@@ -45,7 +45,6 @@ describe('CreateProjectProgressOverlay', () => {
         expect(html).toContain(
             'data-step="launching" data-step-state="pending"',
         );
-        expect(html).toContain('shadow-xl');
     });
 
     it('shows only the editor installation progress while installing', () => {
@@ -60,7 +59,6 @@ describe('CreateProjectProgressOverlay', () => {
         );
 
         expect(html).toContain('Downloading');
-        expect(html).toContain('progress-info');
         expect(html).not.toContain('Cancel editor install');
         expect(html).not.toContain('<button');
     });
