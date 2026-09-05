@@ -19,6 +19,7 @@ import {
 import { MIGRATE_CODE_EDITOR_PREFERENCES_ID } from './migrations/code-editor-preferences.migration.js';
 import { MIGRATE_CODE_EDITOR_PROJECTS_ID } from './migrations/code-editor-projects.migration.js';
 import { REMOVE_LEGACY_INSTALLED_TOOLS_PREFERENCE_ID } from './migrations/remove-legacy-installed-tools-preference.migration.js';
+import { REMOVE_LEGACY_VSCODE_FLAG_ID } from './migrations/remove-legacy-vscode-flag.migration.js';
 import { REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID } from './migrations/remove-windows-symlink-notice-preference.migration.js';
 
 const operationMocks = vi.hoisted(() => ({
@@ -121,6 +122,7 @@ describe('AppMigrationsModule', () => {
             'projects',
             'remove-installed-tools',
             'remove-symlink-notice',
+            'projects',
         ]);
         expect(readCompletedIds(statePath)).toEqual([
             CLEAR_RELEASE_CACHE_MIGRATION_ID,
@@ -128,6 +130,7 @@ describe('AppMigrationsModule', () => {
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
             REMOVE_LEGACY_INSTALLED_TOOLS_PREFERENCE_ID,
             REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
+            REMOVE_LEGACY_VSCODE_FLAG_ID,
         ]);
         expect(readMigrationState(statePath)).toMatchObject({
             lastSeenVersion: '1.12.0',
@@ -152,6 +155,10 @@ describe('AppMigrationsModule', () => {
                     id: REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
                     launcherVersion: '1.12.0',
                 },
+                {
+                    id: REMOVE_LEGACY_VSCODE_FLAG_ID,
+                    launcherVersion: '1.12.0',
+                },
             ],
         });
         for (const migration of readMigrationState(statePath).completed) {
@@ -172,7 +179,9 @@ describe('AppMigrationsModule', () => {
         expect(
             operationMocks.migrateCodeEditorPreferences,
         ).toHaveBeenCalledOnce();
-        expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledOnce();
+        expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledTimes(
+            2,
+        );
         expect(operationMocks.writePreferences).toHaveBeenCalledTimes(2);
         expect(readMigrationState(statePath)).toEqual({
             lastSeenVersion: '1.12.0',
@@ -198,6 +207,11 @@ describe('AppMigrationsModule', () => {
                     executedAt: expect.any(String),
                     launcherVersion: '1.12.0',
                 },
+                {
+                    id: REMOVE_LEGACY_VSCODE_FLAG_ID,
+                    executedAt: expect.any(String),
+                    launcherVersion: '1.12.0',
+                },
             ],
         });
     });
@@ -214,6 +228,7 @@ describe('AppMigrationsModule', () => {
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
             REMOVE_LEGACY_INSTALLED_TOOLS_PREFERENCE_ID,
             REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
+            REMOVE_LEGACY_VSCODE_FLAG_ID,
         ]);
 
         await bootstrapMigrations(statePath);
@@ -221,12 +236,15 @@ describe('AppMigrationsModule', () => {
         expect(
             operationMocks.migrateCodeEditorPreferences,
         ).toHaveBeenCalledTimes(2);
-        expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledOnce();
+        expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledTimes(
+            2,
+        );
         expect(readCompletedIds(statePath)).toEqual([
             CLEAR_RELEASE_CACHE_MIGRATION_ID,
             MIGRATE_CODE_EDITOR_PROJECTS_ID,
             REMOVE_LEGACY_INSTALLED_TOOLS_PREFERENCE_ID,
             REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
+            REMOVE_LEGACY_VSCODE_FLAG_ID,
             MIGRATE_CODE_EDITOR_PREFERENCES_ID,
         ]);
     });
@@ -238,6 +256,30 @@ describe('AppMigrationsModule', () => {
         await expect(new ClearReleaseCacheMigration().execute()).rejects.toBe(
             error,
         );
+    });
+
+    it('cleans profiles whose original code editor migration already completed', async () => {
+        writeMigrationState(statePath, {
+            lastSeenVersion: '1.11.1',
+            completed: [
+                CLEAR_RELEASE_CACHE_MIGRATION_ID,
+                MIGRATE_CODE_EDITOR_PREFERENCES_ID,
+                MIGRATE_CODE_EDITOR_PROJECTS_ID,
+                REMOVE_LEGACY_INSTALLED_TOOLS_PREFERENCE_ID,
+                REMOVE_WINDOWS_SYMLINK_NOTICE_PREFERENCE_ID,
+            ],
+        });
+
+        await bootstrapMigrations(statePath);
+        await bootstrapMigrations(statePath);
+
+        expect(operationMocks.migrateCodeEditorProjects).toHaveBeenCalledOnce();
+        expect(readCompletedIds(statePath)).toContain(
+            REMOVE_LEGACY_VSCODE_FLAG_ID,
+        );
+        expect(
+            operationMocks.migrateCodeEditorPreferences,
+        ).not.toHaveBeenCalled();
     });
 });
 
