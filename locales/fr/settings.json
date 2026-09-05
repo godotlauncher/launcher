@@ -231,6 +231,15 @@
         "loading": "Chargement des connexions...",
         "loadError": "Impossible de charger les connexions.",
         "genericDescription": "Connectez ce service pour l'utiliser dans Godot Launcher.",
+        "flow": {
+            "importDescription": "Connectez GitHub pour parcourir et importer vos dépôts.",
+            "addAccount": "Ajouter un autre compte",
+            "title": "Connecter GitHub",
+            "reconnect": "Reconnecter GitHub",
+            "description": "Connectez GitHub pour continuer. Votre travail actuel sera conservé.",
+            "continueInBrowser": "Continuer dans le navigateur",
+            "waiting": "Terminez la connexion dans votre navigateur, puis revenez ici."
+        },
         "github": {
             "description": "Connectez GitHub pour rendre vos dépôts disponibles dans Godot Launcher.",
             "accessNote": "Vous gardez le contrôle des dépôts auxquels l'application GitHub peut accéder.",

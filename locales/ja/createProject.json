@@ -95,7 +95,7 @@
         "availabilityAvailable": "この名前は使用できそうです",
         "availabilityUnavailable": "この名前は既に使用されています",
         "availabilityUnknown": "この名前を確認できませんでした",
-        "openConnections": "接続を開く",
+        "openConnections": "GitHub に接続",
         "leaveTitle": "プロジェクト作成を終了しますか？",
         "leaveMessage": "接続を開くと、保存されていないプロジェクト情報は消去されます。",
         "successTitle": "GitHub に公開しました",

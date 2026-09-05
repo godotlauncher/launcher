@@ -13,6 +13,7 @@ type DialogProps = {
     footer?: ReactNode;
     testId?: string;
     panelClassName?: string;
+    bodyClassName?: string;
     initialFocusRef?: RefObject<HTMLElement | null>;
     returnFocusRef?: RefObject<HTMLElement | null>;
     onRequestClose?: () => void;
@@ -31,6 +32,7 @@ export const Dialog: React.FC<DialogProps> = ({
     footer,
     testId,
     panelClassName = '',
+    bodyClassName = 'overflow-auto',
     initialFocusRef,
     returnFocusRef,
     onRequestClose,
@@ -99,7 +101,7 @@ export const Dialog: React.FC<DialogProps> = ({
                 <section
                     className={`bg-base-100 border border-base-300 rounded-lg shadow-2xl w-full max-h-[85vh] flex flex-col overflow-hidden ${widthClassName} ${panelClassName}`}
                 >
-                    <header className="flex items-center gap-3 px-5 py-4 border-b border-base-300 bg-base-200/60">
+                    <header className="flex shrink-0 items-center gap-3 px-5 py-4 border-b border-base-300 bg-base-200/60">
                         {icon && (
                             <div className="w-6 h-6 flex items-center justify-center">
                                 {icon}
@@ -114,11 +116,13 @@ export const Dialog: React.FC<DialogProps> = ({
                             {title}
                         </h1>
                     </header>
-                    <div className="min-h-0 flex-1 px-5 py-4 overflow-auto leading-6 text-base-content/80">
+                    <div
+                        className={`min-h-0 flex-1 px-5 py-4 leading-6 text-base-content/80 ${bodyClassName}`}
+                    >
                         {children}
                     </div>
                     {footer && (
-                        <footer className="px-5 py-4 border-t border-base-300 bg-base-200/40 flex flex-wrap justify-end gap-2">
+                        <footer className="shrink-0 px-5 py-4 border-t border-base-300 bg-base-200/40 flex flex-wrap justify-end gap-2">
                             {footer}
                         </footer>
                     )}

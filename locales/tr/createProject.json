@@ -95,7 +95,7 @@
         "availabilityAvailable": "Ad kullanılabilir görünüyor",
         "availabilityUnavailable": "Ad zaten kullanılıyor",
         "availabilityUnknown": "Bu ad kontrol edilemedi",
-        "openConnections": "Bağlantıları aç",
+        "openConnections": "GitHub'ı bağla",
         "leaveTitle": "Proje oluşturmadan çıkılsın mı?",
         "leaveMessage": "Bağlantılar açıldığında kaydedilmemiş proje bilgileri temizlenecek.",
         "successTitle": "GitHub'da yayımlandı",

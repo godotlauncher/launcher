@@ -152,7 +152,7 @@
                 "empty": "沒有載入匹配的存儲庫。",
                 "loadMore": "加載更多",
                 "alreadyAdded": "已新增",
-                "openConnections": "開啟連接",
+                "openConnections": "連接 GitHub",
                 "visibility": {
                     "public": "公有",
                     "private": "私人",

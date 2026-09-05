@@ -47,6 +47,7 @@ export function useCreateProjectPublication(
     const [repositoryNameAvailability, setRepositoryNameAvailability] =
         useState<RepositoryNameAvailabilityState>('idle');
     const repositoryNameCheckRequestRef = useRef(0);
+    const publicationTargetsRequestRef = useRef(0);
     const {
         listCreateProjectPublicationTargets,
         checkCreateProjectRepositoryNameAvailability,
@@ -94,7 +95,10 @@ export function useCreateProjectPublication(
                 });
         }, REPOSITORY_NAME_CHECK_DEBOUNCE_MS);
 
-        return () => window.clearTimeout(timeoutId);
+        return () => {
+            window.clearTimeout(timeoutId);
+            repositoryNameCheckRequestRef.current += 1;
+        };
     }, [
         checkCreateProjectRepositoryNameAvailability,
         open,
@@ -107,10 +111,12 @@ export function useCreateProjectPublication(
 
     /** Loads fresh connected GitHub owners when publishing is enabled. */
     const loadPublicationTargets = async (): Promise<void> => {
+        const requestId = ++publicationTargetsRequestRef.current;
         setPublicationTargetsLoading(true);
         setPublicationTargetFailure(null);
         try {
             const result = await listCreateProjectPublicationTargets();
+            if (requestId !== publicationTargetsRequestRef.current) return;
             if (!result.success) {
                 setPublicationTargets([]);
                 setSelectedPublicationTarget('');
@@ -119,19 +125,37 @@ export function useCreateProjectPublication(
             }
 
             setPublicationTargets(result.targets);
-            setSelectedPublicationTarget(
-                result.targets.length === 1
+            setSelectedPublicationTarget((current) => {
+                if (
+                    result.targets.some(
+                        (target) =>
+                            getPublicationTargetValue(target) === current,
+                    )
+                ) {
+                    return current;
+                }
+                return result.targets.length === 1
                     ? getPublicationTargetValue(result.targets[0])
-                    : '',
-            );
+                    : '';
+            });
         } catch {
+            if (requestId !== publicationTargetsRequestRef.current) return;
             setPublicationTargets([]);
             setSelectedPublicationTarget('');
             setPublicationTargetFailure('provider-unavailable');
         } finally {
-            setPublicationTargetsLoading(false);
+            if (requestId === publicationTargetsRequestRef.current) {
+                setPublicationTargetsLoading(false);
+            }
         }
     };
+
+    useEffect(() => {
+        if (!open) publicationTargetsRequestRef.current += 1;
+        return () => {
+            publicationTargetsRequestRef.current += 1;
+        };
+    }, [open]);
 
     /**
      * Enables or clears optional GitHub publication fields.
@@ -146,6 +170,8 @@ export function useCreateProjectPublication(
             return;
         }
 
+        publicationTargetsRequestRef.current += 1;
+        setPublicationTargetsLoading(false);
         setPublicationTargets([]);
         setPublicationTargetFailure(null);
         setSelectedPublicationTarget('');
@@ -163,6 +189,8 @@ export function useCreateProjectPublication(
 
     useEffect(() => {
         if (!withGit) {
+            publicationTargetsRequestRef.current += 1;
+            setPublicationTargetsLoading(false);
             setPublishToGitHub(false);
             setPublicationTargets([]);
             setPublicationTargetFailure(null);
@@ -172,6 +200,7 @@ export function useCreateProjectPublication(
 
     /** Restores publication fields to their unopened form defaults. */
     const reset = () => {
+        publicationTargetsRequestRef.current += 1;
         setPublishToGitHub(false);
         setPublicationTargets([]);
         setPublicationTargetsLoading(false);
@@ -204,6 +233,7 @@ export function useCreateProjectPublication(
         setRepositoryNameAvailability,
         handlePublishToGitHubChange,
         changeRepositoryName,
+        loadPublicationTargets,
         reset,
     };
 }

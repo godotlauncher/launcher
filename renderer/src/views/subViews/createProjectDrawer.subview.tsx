@@ -1,6 +1,7 @@
 import type { PublishedGitHubRepository } from '@shared/contracts';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { GitHubConnectionDialog } from '../../components/github-connection/github-connection-dialog.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../../hooks/useAlerts';
@@ -38,6 +39,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
         'common',
         'installEditor',
     ]);
+    const connectionButtonRef = useRef<HTMLButtonElement>(null);
     const createButtonRef = useRef<HTMLButtonElement>(null);
     const inputNameRef = useRef<HTMLInputElement>(null);
     const { addAlert } = useAlerts();
@@ -283,6 +285,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                                 onRepositoryNameChange={
                                     publication.changeRepositoryName
                                 }
+                                connectionButtonRef={connectionButtonRef}
                                 onOpenConnections={
                                     workflow.handleOpenConnections
                                 }
@@ -343,6 +346,13 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                         void workflow.handleContinueLocally()
                     }
                     onOpenGitHub={workflow.handleOpenPublicationRepository}
+                />
+            )}
+            {open && workflow.connectionOpen && (
+                <GitHubConnectionDialog
+                    onConnected={workflow.handleConnected}
+                    onCancel={workflow.handleCancelConnection}
+                    returnFocusRef={connectionButtonRef}
                 />
             )}
             {workflow.existingRepositoryDialog && (

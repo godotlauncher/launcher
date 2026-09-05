@@ -111,6 +111,8 @@ export function RemoteProjectRepositorySource({
     onLoadMore,
     onOpenConnections,
 }: RemoteProjectRepositorySourceProps) {
+    const connectionRequired = error === 'no-usable-connection';
+
     return (
         <div className="flex h-full min-h-0 flex-col gap-4">
             <p>{t('addProject.remote.github.description')}</p>
@@ -118,6 +120,23 @@ export function RemoteProjectRepositorySource({
                 <div className="flex items-center gap-2" role="status">
                     <span className="loading loading-spinner loading-sm" />
                     {t('addProject.remote.github.loading')}
+                </div>
+            ) : connectionRequired ? (
+                <div className="flex flex-col gap-3">
+                    <p>
+                        {t(
+                            'addProject.remote.github.errors.connectionRequired',
+                        )}
+                    </p>
+                    <div>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={onOpenConnections}
+                        >
+                            {t('addProject.remote.github.openConnections')}
+                        </button>
+                    </div>
                 </div>
             ) : error ? (
                 <div className="flex flex-col gap-3">

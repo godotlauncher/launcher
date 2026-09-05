@@ -24,6 +24,7 @@ type CreateProjectGitHubPublishingSectionProps = {
     onTargetChange: (value: string) => void;
     onRepositoryNameChange: (name: string) => void;
     onOpenConnections: () => void;
+    connectionButtonRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
 /**
@@ -48,6 +49,7 @@ export const CreateProjectGitHubPublishingSection: React.FC<
     onTargetChange,
     onRepositoryNameChange,
     onOpenConnections,
+    connectionButtonRef,
 }) => {
     const connectionProblem = targetFailure !== null;
 
@@ -69,6 +71,7 @@ export const CreateProjectGitHubPublishingSection: React.FC<
                             )}
                         </span>
                         <button
+                            ref={connectionButtonRef}
                             type="button"
                             className="btn btn-sm"
                             onClick={onOpenConnections}

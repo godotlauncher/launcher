@@ -3,9 +3,8 @@ import type {
     InstalledRelease,
     ProjectDetails,
 } from '@shared/contracts';
-import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
@@ -142,7 +141,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         refreshProjects,
         loading,
     } = useProjects();
-    const { openExternalLink, setCurrentView } = useAppNavigation();
+    const { openExternalLink } = useAppNavigation();
     const {
         projectActionsMenu,
         setProjectActionsMenu,
@@ -302,9 +301,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     };
 
     const projectSections = getProjectSections(projects, textSearch);
-    const validInstalledReleaseCount = installedReleases.filter(
-        (release) => release.valid !== false,
-    ).length;
     const viewState = getProjectsViewState({
         projectCount: projects.length,
         textSearch,
@@ -354,28 +350,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     />
                 )}
 
-                {viewState === 'list' &&
-                    projects.length > 0 &&
-                    validInstalledReleaseCount < 1 && (
-                        <div className="text-warning flex gap-2">
-                            <TriangleAlert className="stroke-warning" />
-                            <Trans
-                                ns="projects"
-                                i18nKey="messages.noReleasesCta"
-                                components={{
-                                    Link: (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setCurrentView('installs')
-                                            }
-                                            className="underline"
-                                        />
-                                    ),
-                                }}
-                            />
-                        </div>
-                    )}
                 {viewState === 'empty' && (
                     <ProjectsWelcome
                         gitAvailable={gitAvailability === 'available'}

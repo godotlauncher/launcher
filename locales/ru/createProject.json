@@ -95,7 +95,7 @@
         "availabilityAvailable": "Имя, похоже, доступно",
         "availabilityUnavailable": "Имя уже используется",
         "availabilityUnknown": "Не удалось проверить это имя",
-        "openConnections": "Открыть подключения",
+        "openConnections": "Подключить GitHub",
         "leaveTitle": "Покинуть создание проекта?",
         "leaveMessage": "Несохранённые данные проекта будут удалены при открытии подключений.",
         "successTitle": "Опубликовано на GitHub",

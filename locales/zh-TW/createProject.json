@@ -95,7 +95,7 @@
         "availabilityAvailable": "此名稱似乎可用",
         "availabilityUnavailable": "此名稱已被使用",
         "availabilityUnknown": "無法檢查此名稱",
-        "openConnections": "開啟連線",
+        "openConnections": "連接 GitHub",
         "leaveTitle": "離開建立專案？",
         "leaveMessage": "開啟連線時，未儲存的專案資料將被清除。",
         "successTitle": "已發佈到 GitHub",

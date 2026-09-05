@@ -12,6 +12,7 @@ import logger from 'electron-log';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { GitHubConnectionDialog } from '../components/github-connection/github-connection-dialog.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppIntegrations } from '../hooks/useAppIntegrations';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
@@ -72,11 +73,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const { listIntegrations, rescanIntegration } = useToolIntegrations();
     const {
         listIntegrations: listAppIntegrations,
-        connect: connectAppIntegration,
-        finishConnections: finishAppIntegrationConnections,
-        installConnection: installAppIntegrationConnection,
-        cancel: cancelAppIntegration,
-        reconnect: reconnectAppIntegration,
         refresh: refreshAppIntegration,
         manageAccess: manageAppIntegrationAccess,
         disconnect: disconnectAppIntegration,
@@ -90,11 +86,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const [appIntegrationsLoading, setAppIntegrationsLoading] = useState(false);
     const [appIntegrationsLoadError, setAppIntegrationsLoadError] =
         useState(false);
-    const [appIntegrationActionErrors, setAppIntegrationActionErrors] =
-        useState<Partial<Record<string, AppIntegrationActionFailureReason>>>(
-            {},
-        );
-    const appIntegrationActionVersions = useRef<Record<string, number>>({});
+    const [appIntegrationManagementErrors, setAppIntegrationManagementErrors] =
+        useState<
+            Partial<
+                Record<string, AppIntegrationActionFailureReason | undefined>
+            >
+        >({});
+    const [githubConnectionDialog, setGithubConnectionDialog] = useState<{
+        connectionId?: string;
+    } | null>(null);
 
     const [codeEditorSettings, setCodeEditorSettings] = useState<
         CodeEditorIntegrationSettings[]
@@ -132,16 +132,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         try {
             const listed = await listAppIntegrations();
-            setAppIntegrations((current) =>
-                listed.map((integration) => {
-                    const active = current.find(
-                        (candidate) => candidate.id === integration.id,
-                    );
-                    return active?.state === 'connecting'
-                        ? active
-                        : integration;
-                }),
-            );
+            setAppIntegrations(listed);
         } catch {
             logger.error('Failed to load app integrations');
             setAppIntegrationsLoadError(true);
@@ -165,83 +156,41 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     );
 
     /**
-     * Runs one bridge action while ignoring stale responses from earlier actions.
+     * Runs one Settings management action and refreshes its renderer-safe state.
      *
      * @param integrationId - Registered integration ID.
      * @param action - Bridge action to run.
-     * @param connectionStage - Browser stage to present while the action runs.
-     * @param supersede - Whether this action invalidates an earlier response.
      * @returns Whether the action completed successfully.
      */
     const runAppIntegrationAction = useCallback(
         async (
             integrationId: string,
             action: (id: string) => Promise<AppIntegrationActionResult>,
-            connectionStage: 'authorising' | 'installing' | null = null,
-            supersede = true,
         ): Promise<boolean> => {
-            const currentVersion =
-                appIntegrationActionVersions.current[integrationId] ?? 0;
-            const version = supersede ? currentVersion + 1 : currentVersion;
-            if (
-                supersede ||
-                appIntegrationActionVersions.current[integrationId] ===
-                    undefined
-            ) {
-                appIntegrationActionVersions.current[integrationId] = version;
-            }
-            setAppIntegrationActionErrors((current) => ({
+            setAppIntegrationManagementErrors((current) => ({
                 ...current,
                 [integrationId]: undefined,
             }));
-            if (connectionStage) {
-                setAppIntegrations((current) =>
-                    current.map((integration) =>
-                        integration.id === integrationId
-                            ? {
-                                  ...integration,
-                                  state: 'connecting',
-                                  connectionStage,
-                              }
-                            : integration,
-                    ),
-                );
-            }
-
             try {
                 const result = await action(integrationId);
-                if (
-                    appIntegrationActionVersions.current[integrationId] !==
-                    version
-                ) {
-                    return false;
-                }
-                if (result.integration.state === 'selection-required') {
-                    setActiveTab('connections');
-                }
                 replaceAppIntegration(result.integration);
                 if (!result.ok) {
-                    setAppIntegrationActionErrors((current) => ({
+                    setAppIntegrationManagementErrors((current) => ({
                         ...current,
                         [integrationId]: result.reason,
                     }));
                 }
                 return result.ok;
             } catch {
-                if (
-                    appIntegrationActionVersions.current[integrationId] ===
-                    version
-                ) {
-                    setAppIntegrationActionErrors((current) => ({
-                        ...current,
-                        [integrationId]: 'unknown',
-                    }));
-                    void syncAppIntegrations();
-                }
+                setAppIntegrationManagementErrors((current) => ({
+                    ...current,
+                    [integrationId]: 'unknown',
+                }));
+                void syncAppIntegrations();
                 return false;
             }
         },
-        [replaceAppIntegration, setActiveTab, syncAppIntegrations],
+        [replaceAppIntegration, syncAppIntegrations],
     );
 
     /** Confirms and removes one local integration connection. */
@@ -349,30 +298,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             if (integration?.connectionStage) {
                 return;
             }
-            void runAppIntegrationAction(
-                integrationId,
-                refreshAppIntegration,
-                null,
-                false,
-            );
+            void runAppIntegrationAction(integrationId, refreshAppIntegration);
         },
         [refreshAppIntegration, runAppIntegrationAction],
     );
 
-    useEffect(() => {
-        const handleFocus = () => {
-            const pending = appIntegrationsRef.current.some(
-                (integration) =>
-                    integration.connectionStage === 'choosing' ||
-                    integration.connectionStage === 'installing',
-            );
-            if (pending) {
-                setActiveTab('connections');
-            }
-        };
-        window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
-    }, [setActiveTab]);
+    /** Opens the shared GitHub connection dialog for a new or existing account. */
+    const openGitHubConnection = useCallback((connectionId?: string) => {
+        setGithubConnectionDialog(
+            connectionId === undefined ? {} : { connectionId },
+        );
+    }, []);
+
+    /** Closes the GitHub dialog and refreshes the Settings connection summaries. */
+    const closeGitHubConnection = useCallback(() => {
+        setGithubConnectionDialog(null);
+        void syncAppIntegrations();
+    }, [syncAppIntegrations]);
 
     useEffect(() => {
         if (activeTab !== 'connections') {
@@ -381,6 +323,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         void syncAppIntegrations();
         const handleFocus = () => {
+            if (githubConnectionDialog) return;
             for (const integration of appIntegrationsRef.current) {
                 if (
                     integration.connections.length > 0 &&
@@ -392,7 +335,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         };
         window.addEventListener('focus', handleFocus);
         return () => window.removeEventListener('focus', handleFocus);
-    }, [activeTab, refreshAppIntegrationState, syncAppIntegrations]);
+    }, [
+        activeTab,
+        githubConnectionDialog,
+        refreshAppIntegrationState,
+        syncAppIntegrations,
+    ]);
 
     const quickCheckTools = useCallback(async () => {
         return await listIntegrations();
@@ -827,50 +775,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             integrations={appIntegrations}
                             loading={appIntegrationsLoading}
                             loadError={appIntegrationsLoadError}
-                            actionErrors={appIntegrationActionErrors}
+                            actionErrors={appIntegrationManagementErrors}
                             onRetry={() => void syncAppIntegrations()}
-                            onConnect={(integrationId) =>
-                                void runAppIntegrationAction(
-                                    integrationId,
-                                    connectAppIntegration,
-                                    'authorising',
-                                )
+                            connectionDialogOpen={
+                                githubConnectionDialog !== null
                             }
-                            onCancel={(integrationId) =>
-                                void runAppIntegrationAction(
-                                    integrationId,
-                                    cancelAppIntegration,
-                                    null,
-                                    false,
-                                )
-                            }
-                            onFinishConnections={(integrationId, optionIds) =>
-                                runAppIntegrationAction(integrationId, () =>
-                                    finishAppIntegrationConnections(
-                                        integrationId,
-                                        optionIds,
-                                    ),
-                                )
-                            }
-                            onInstallConnection={(integrationId) =>
-                                void runAppIntegrationAction(
-                                    integrationId,
-                                    installAppIntegrationConnection,
-                                    'installing',
-                                )
-                            }
+                            onOpenConnection={openGitHubConnection}
                             onRefresh={refreshAppIntegrationState}
-                            onReconnect={(integrationId, connectionId) =>
-                                void runAppIntegrationAction(
-                                    integrationId,
-                                    () =>
-                                        reconnectAppIntegration(
-                                            integrationId,
-                                            connectionId,
-                                        ),
-                                    'authorising',
-                                )
-                            }
                             onManageAccess={(
                                 integrationId,
                                 connectionId,
@@ -884,8 +795,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                                             connectionId,
                                             accessTargetId,
                                         ),
-                                    null,
-                                    false,
                                 )
                             }
                             onDisconnect={confirmAppIntegrationDisconnect}
@@ -929,6 +838,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 onRescan={rescanToolById}
             />
+            {githubConnectionDialog && (
+                <GitHubConnectionDialog
+                    connectionId={githubConnectionDialog.connectionId}
+                    onConnected={closeGitHubConnection}
+                    onCancel={closeGitHubConnection}
+                />
+            )}
         </div>
     );
 };

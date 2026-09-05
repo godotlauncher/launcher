@@ -231,6 +231,15 @@
         "loading": "A carregar ligações...",
         "loadError": "Não foi possível carregar as ligações.",
         "genericDescription": "Liga este serviço para o utilizares no Godot Launcher.",
+        "flow": {
+            "importDescription": "Ligue o GitHub para explorar e importar os seus repositórios.",
+            "addAccount": "Adicionar outra conta",
+            "title": "Ligar o GitHub",
+            "reconnect": "Voltar a ligar o GitHub",
+            "description": "Liga o GitHub para continuares. O teu trabalho atual será mantido.",
+            "continueInBrowser": "Continuar no navegador",
+            "waiting": "Conclui a ligação no navegador e volta aqui."
+        },
         "github": {
             "description": "Liga o GitHub para disponibilizares os teus repositórios no Godot Launcher.",
             "accessNote": "Tu controlas os repositórios a que a aplicação GitHub pode aceder.",

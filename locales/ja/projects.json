@@ -152,7 +152,7 @@
                 "empty": "一致するリポジトリがロードされていません。",
                 "loadMore": "さらにロードする",
                 "alreadyAdded": "すでに追加されています",
-                "openConnections": "オープンコネクション",
+                "openConnections": "GitHub に接続",
                 "visibility": {
                     "public": "公共",
                     "private": "プライベート",

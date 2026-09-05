@@ -17,9 +17,9 @@ import {
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 import { appBridge, projectsBridge, subscribeAppEvent } from '../../../bridge';
 import { Dialog } from '../../../components/dialog.component';
+import { GitHubConnectionFlow } from '../../../components/github-connection/github-connection-flow.component';
 import { useGit } from '../../../hooks/git.hook';
 import { usePreferences } from '../../../hooks/usePreferences';
 import {
@@ -27,7 +27,6 @@ import {
     useProjects,
 } from '../../../hooks/useProjects';
 import { useRelease } from '../../../hooks/useRelease';
-import { appRoutePaths } from '../../../routes';
 import { getProjectPathSuffixDisplay } from '../../subViews/createProject/createProject.model';
 import { useRemoteProjectGitIdentity } from '../hooks/remote-project-git-identity.hook';
 import {
@@ -114,7 +113,6 @@ export const RemoteProjectImportModal: React.FC<
         'installEditor',
         'createProject',
     ]);
-    const navigate = useNavigate();
     const { preferences, platform } = usePreferences();
     const { addProject, codeEditorSettings, projects } = useProjects();
     const { availableReleases, availablePrereleases } = useRelease();
@@ -188,10 +186,13 @@ export const RemoteProjectImportModal: React.FC<
         total: 0,
     });
     const importPendingRef = useRef(false);
+    const repositorySessionRef = useRef(0);
+    const repositoryRequestRef = useRef(0);
     const activeJobIdRef = useRef<string | null>(null);
     const clonePreservedRef = useRef(false);
     const submoduleActivityIdRef = useRef(0);
     const publicUrlInputRef = useRef<HTMLInputElement>(null);
+    const githubConnectionFlowRef = useRef<HTMLDivElement>(null);
     const gitIdentityPrimaryActionRef = useRef<HTMLButtonElement>(null);
     const remoteProjectPathInputRef = useRef<HTMLInputElement>(null);
     const initialiseSubmodulesButtonRef = useRef<HTMLButtonElement>(null);
@@ -211,9 +212,11 @@ export const RemoteProjectImportModal: React.FC<
 
     const open = source !== null;
     const remoteTitle =
-        source === 'github'
-            ? t('addProject.remote.github.title')
-            : t('addProject.remote.public.title');
+        step === 'connection'
+            ? t('settings:connections.flow.title')
+            : source === 'github'
+              ? t('addProject.remote.github.title')
+              : t('addProject.remote.public.title');
     const defaultParentDirectory = preferences?.projects_location ?? '';
     const destinationDisplay = getRemoteProjectDestinationDisplay(
         parentDirectory,
@@ -261,6 +264,8 @@ export const RemoteProjectImportModal: React.FC<
             void projectsBridge.resolveRemoteProjectClone(cloneJobId, 'keep');
             setCloneRecoveryAvailable(false);
         }
+        repositorySessionRef.current += 1;
+        repositoryRequestRef.current += 1;
         onOpenChange(false);
     }, [
         cloneJobId,
@@ -270,8 +275,22 @@ export const RemoteProjectImportModal: React.FC<
         step,
     ]);
 
+    /** Returns to a usable repository picker, or closes an unstarted import. */
+    const cancelConnection = useCallback(() => {
+        if (repositories.length > 0 && !repositoryError) {
+            setStep('source');
+        } else {
+            close();
+        }
+    }, [close, repositories.length, repositoryError]);
+
     const loadRepositories = useCallback(
         async (cursor?: string, append = false) => {
+            const session = repositorySessionRef.current;
+            const request = ++repositoryRequestRef.current;
+            const isActiveRequest = () =>
+                repositorySessionRef.current === session &&
+                repositoryRequestRef.current === request;
             append
                 ? setLoadingMoreRepositories(true)
                 : setLoadingRepositories(true);
@@ -281,11 +300,16 @@ export const RemoteProjectImportModal: React.FC<
                     githubProviderId,
                     cursor,
                 );
+                if (!isActiveRequest()) return;
                 if (!result.ok) {
                     setRepositoryError(result.reason);
                     if (!append) {
                         setRepositories([]);
                         setRepositoryCursor(null);
+                        setSelectedRepository(null);
+                        if (result.reason === 'no-usable-connection') {
+                            setStep('connection');
+                        }
                     }
                 } else {
                     setRepositories((current) =>
@@ -296,24 +320,41 @@ export const RemoteProjectImportModal: React.FC<
                               )
                             : result.page.repositories,
                     );
+                    if (!append) {
+                        setSelectedRepository((current) => {
+                            if (!current) return null;
+                            const next = result.page.repositories.find(
+                                (repository) =>
+                                    repository.repositoryRef ===
+                                    current.repositoryRef,
+                            );
+                            return next && !next.alreadyImported ? next : null;
+                        });
+                    }
                     setRepositoryCursor(result.page.nextCursor);
                 }
             } catch {
+                if (!isActiveRequest()) return;
                 setRepositoryError('provider-unavailable');
                 if (!append) {
                     setRepositories([]);
                     setRepositoryCursor(null);
+                    setSelectedRepository(null);
                 }
             } finally {
-                append
-                    ? setLoadingMoreRepositories(false)
-                    : setLoadingRepositories(false);
+                if (isActiveRequest()) {
+                    append
+                        ? setLoadingMoreRepositories(false)
+                        : setLoadingRepositories(false);
+                }
             }
         },
         [],
     );
 
     useEffect(() => {
+        repositorySessionRef.current += 1;
+        repositoryRequestRef.current += 1;
         if (!open) return;
         setStep('source');
         setPublicUrl('');
@@ -323,6 +364,8 @@ export const RemoteProjectImportModal: React.FC<
         setRepositories([]);
         setRepositoryCursor(null);
         setRepositoryError(null);
+        setLoadingRepositories(false);
+        setLoadingMoreRepositories(false);
         setRepositorySearch('');
         setSelectedRepository(null);
         setParentDirectory(defaultParentDirectory);
@@ -401,7 +444,13 @@ export const RemoteProjectImportModal: React.FC<
 
     useEffect(() => {
         if (!open) return;
-        if (step === 'git-identity') {
+        if (step === 'connection') {
+            githubConnectionFlowRef.current
+                ?.querySelector<HTMLButtonElement>(
+                    '.btn-primary:not(:disabled)',
+                )
+                ?.focus();
+        } else if (step === 'git-identity') {
             gitIdentityPrimaryActionRef.current?.focus();
         } else if (step === 'submodules') {
             initialiseSubmodulesButtonRef.current?.focus();
@@ -853,6 +902,9 @@ export const RemoteProjectImportModal: React.FC<
                 </button>
             </>
         );
+    } else if (step === 'connection') {
+        body = null;
+        footer = null;
     } else if (step === 'source') {
         body = (
             <RemoteProjectRepositorySource
@@ -871,8 +923,7 @@ export const RemoteProjectImportModal: React.FC<
                 onRetry={() => void loadRepositories()}
                 onLoadMore={(cursor) => void loadRepositories(cursor, true)}
                 onOpenConnections={() => {
-                    onOpenChange(false);
-                    navigate(appRoutePaths.settingsTab('connections'));
+                    setStep('connection');
                 }}
             />
         );
@@ -1250,13 +1301,29 @@ export const RemoteProjectImportModal: React.FC<
         );
     }
 
-    return (
+    /**
+     * Keeps each phase's actions in the import dialog footer.
+     * @param content - Current phase content.
+     * @param actions - Current phase footer actions.
+     */
+    const renderDialog = (
+        content: React.ReactNode,
+        actions: React.ReactNode,
+    ) => (
         <Dialog
             icon={sourceIcon}
             testId="remoteProjectImportDialog"
             title={remoteTitle}
-            footer={footer}
+            footer={actions}
+            onRequestClose={
+                step === 'connection' ? cancelConnection : undefined
+            }
             panelClassName="h-[85vh] max-w-5xl"
+            bodyClassName={
+                step === 'connection'
+                    ? 'flex flex-col overflow-hidden'
+                    : undefined
+            }
             initialFocusRef={
                 source === 'public-git-url' ? publicUrlInputRef : undefined
             }
@@ -1276,7 +1343,33 @@ export const RemoteProjectImportModal: React.FC<
                     </span>
                 </div>
             )}
-            {body}
+            {content}
         </Dialog>
     );
+
+    if (step === 'connection') {
+        return (
+            <GitHubConnectionFlow
+                onConnected={() => {
+                    setRepositoryError(null);
+                    setStep('source');
+                    void loadRepositories();
+                }}
+                onCancel={cancelConnection}
+                description={t('settings:connections.flow.importDescription')}
+                renderLayout={(content, actions) =>
+                    renderDialog(
+                        <div
+                            ref={githubConnectionFlowRef}
+                            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+                        >
+                            {content}
+                        </div>,
+                        actions,
+                    )
+                }
+            />
+        );
+    }
+    return renderDialog(body, footer);
 };

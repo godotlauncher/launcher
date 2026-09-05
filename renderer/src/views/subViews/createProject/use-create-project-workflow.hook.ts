@@ -5,11 +5,9 @@ import type {
 } from '@shared/contracts';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 import { useAlerts } from '../../../hooks/useAlerts';
 import { useAppNavigation } from '../../../hooks/useAppNavigation';
 import { useProjects } from '../../../hooks/useProjects';
-import { appRoutePaths } from '../../../routes';
 import type {
     CreateProjectProgressPhase,
     CreateProjectSubmission,
@@ -48,9 +46,9 @@ export function useCreateProjectWorkflow(
     showPublishedAlert: (repository: PublishedGitHubRepository) => void,
 ) {
     const { t } = useTranslation(['createProject', 'common']);
-    const { addAlert, addCustomConfirm } = useAlerts();
+    const { addAlert } = useAlerts();
     const { openExternalLink } = useAppNavigation();
-    const navigate = useNavigate();
+    const [connectionOpen, setConnectionOpen] = useState(false);
     const {
         projects,
         createProject,
@@ -412,29 +410,18 @@ export function useCreateProjectWorkflow(
         }
     };
 
-    /** Warns that leaving the drawer clears its unsaved form values. */
-    const handleOpenConnections = () => {
-        addCustomConfirm(
-            t('publishToGitHub.leaveTitle'),
-            t('publishToGitHub.leaveMessage'),
-            [
-                {
-                    typeClass: 'btn-primary',
-                    text: t('publishToGitHub.openConnections'),
-                    onClick: () => {
-                        onOpenChange(false);
-                        navigate(appRoutePaths.settingsTab('connections'));
-                        return true;
-                    },
-                },
-                {
-                    isCancel: true,
-                    typeClass: 'btn-neutral',
-                    text: t('common:buttons.cancel'),
-                },
-            ],
-        );
+    /** Opens GitHub setup without resetting the current project form. */
+    const handleOpenConnections = () => setConnectionOpen(true);
+
+    /** Returns to the preserved form and reloads the available GitHub owners. */
+    const handleConnected = () => {
+        setConnectionOpen(false);
+        void publication.loadPublicationTargets();
     };
+
+    /** Dismisses GitHub setup while retaining the current form values. */
+    const handleCancelConnection = () => setConnectionOpen(false);
+
     /**
      * Validates and inspects the final project path before identity or creation.
      *
@@ -551,6 +538,7 @@ export function useCreateProjectWorkflow(
     // Keep all domain resets together and read the current actions only on opening.
     const resetSessionRef = useRef(() => {});
     resetSessionRef.current = () => {
+        setConnectionOpen(false);
         form.reset();
         integrations.reset();
         publication.reset();
@@ -569,6 +557,7 @@ export function useCreateProjectWorkflow(
     }, [open]);
 
     const closeDisabled =
+        connectionOpen ||
         destinationCheck.checkingNow ||
         creating ||
         checkingGitIdentity ||
@@ -580,6 +569,7 @@ export function useCreateProjectWorkflow(
         existingRepositoryDialog !== null;
 
     const createDisabled =
+        connectionOpen ||
         destinationCheck.status !== 'available' ||
         integrations.loadingTools ||
         integrations.loadingGitLfsPolicy ||
@@ -609,6 +599,7 @@ export function useCreateProjectWorkflow(
             checkingGitIdentity ||
             checkingProjectRepository,
         trapFocus:
+            !connectionOpen &&
             gitIdentityDialogPage === null &&
             publicationFailure === null &&
             existingRepositoryDialog === null,
@@ -617,6 +608,9 @@ export function useCreateProjectWorkflow(
         handleContinueLocally,
         handleOpenPublicationRepository,
         handleOpenConnections,
+        connectionOpen,
+        handleConnected,
+        handleCancelConnection,
         handleCancelExistingRepository,
         handleContinueExistingRepository,
         handleExistingRepositoryDone,

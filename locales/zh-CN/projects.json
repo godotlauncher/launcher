@@ -152,7 +152,7 @@
                 "empty": "没有加载匹配的存储库。",
                 "loadMore": "加载更多",
                 "alreadyAdded": "已添加",
-                "openConnections": "打开连接",
+                "openConnections": "连接 GitHub",
                 "visibility": {
                     "public": "公共",
                     "private": "私人",

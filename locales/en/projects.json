@@ -152,7 +152,7 @@
                 "empty": "No matching repositories are loaded.",
                 "loadMore": "Load more",
                 "alreadyAdded": "Already added",
-                "openConnections": "Open Connections",
+                "openConnections": "Connect GitHub",
                 "visibility": {
                     "public": "Public",
                     "private": "Private",

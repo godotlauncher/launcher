@@ -152,7 +152,7 @@
                 "empty": "Nenhum repositório correspondente foi carregado.",
                 "loadMore": "Carregar mais",
                 "alreadyAdded": "Já adicionado",
-                "openConnections": "Conexões abertas",
+                "openConnections": "Ligar o GitHub",
                 "visibility": {
                     "public": "Público",
                     "private": "Privado",

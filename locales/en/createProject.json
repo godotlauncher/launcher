@@ -95,7 +95,7 @@
         "availabilityAvailable": "Name looks available",
         "availabilityUnavailable": "Name already in use",
         "availabilityUnknown": "Could not check this name",
-        "openConnections": "Open Connections",
+        "openConnections": "Connect GitHub",
         "leaveTitle": "Leave Create Project?",
         "leaveMessage": "Your unsaved project details will be cleared when you open Connections.",
         "successTitle": "Published to GitHub",

@@ -152,7 +152,7 @@
                 "empty": "Aucun référentiel correspondant n'est chargé.",
                 "loadMore": "Charger plus",
                 "alreadyAdded": "Déjà ajouté",
-                "openConnections": "Connexions ouvertes",
+                "openConnections": "Connecter GitHub",
                 "visibility": {
                     "public": "Publique",
                     "private": "Privé",

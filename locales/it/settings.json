@@ -231,6 +231,15 @@
         "loading": "Caricamento connessioni...",
         "loadError": "Impossibile caricare le connessioni.",
         "genericDescription": "Connetti questo servizio per usarlo in Godot Launcher.",
+        "flow": {
+            "importDescription": "Collega GitHub per esplorare e importare i tuoi repository.",
+            "addAccount": "Aggiungi un altro account",
+            "title": "Connetti GitHub",
+            "reconnect": "Riconnetti GitHub",
+            "description": "Connetti GitHub per continuare. Il lavoro attuale verrà conservato.",
+            "continueInBrowser": "Continua nel browser",
+            "waiting": "Completa la connessione nel browser, poi torna qui."
+        },
         "github": {
             "description": "Connetti GitHub per rendere disponibili i tuoi repository in Godot Launcher.",
             "accessNote": "Mantieni il controllo sui repository a cui può accedere l'app GitHub.",

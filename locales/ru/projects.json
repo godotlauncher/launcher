@@ -152,7 +152,7 @@
                 "empty": "Соответствующие репозитории не загружены.",
                 "loadMore": "Загрузить больше",
                 "alreadyAdded": "Уже добавлено",
-                "openConnections": "Открытые соединения",
+                "openConnections": "Подключить GitHub",
                 "visibility": {
                     "public": "Общественный",
                     "private": "Частный",

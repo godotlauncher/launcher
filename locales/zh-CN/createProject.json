@@ -95,7 +95,7 @@
         "availabilityAvailable": "该名称似乎可用",
         "availabilityUnavailable": "该名称已被使用",
         "availabilityUnknown": "无法检查该名称",
-        "openConnections": "打开连接",
+        "openConnections": "连接 GitHub",
         "leaveTitle": "离开创建项目？",
         "leaveMessage": "打开连接时，未保存的项目信息将被清除。",
         "successTitle": "已发布到 GitHub",

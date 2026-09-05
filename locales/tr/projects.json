@@ -152,7 +152,7 @@
                 "empty": "Eşleşen kod deposu yüklenmedi.",
                 "loadMore": "Daha fazlasını yükle",
                 "alreadyAdded": "Zaten eklendi",
-                "openConnections": "Bağlantıları Aç",
+                "openConnections": "GitHub'ı bağla",
                 "visibility": {
                     "public": "halka açık",
                     "private": "Özel",

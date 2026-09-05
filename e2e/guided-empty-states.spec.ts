@@ -708,6 +708,49 @@ test('GitHub repository keyboard selection keeps Search inert and Space selectio
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
 });
 
+test('GitHub import connects in the existing modal and refreshes repositories', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubGitHubImportConnection();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+
+    const modal = mainPage.getByTestId('remoteProjectImportDialog');
+    await expect(modal).toHaveAccessibleName('Connect GitHub');
+    await expect(
+        modal.getByText(
+            'Connect GitHub to browse and import your repositories.',
+        ),
+    ).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(modal).not.toBeVisible();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+    await expect(modal).toHaveAccessibleName('Connect GitHub');
+    await mainPage.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+    await modal.locator('footer').getByRole('button', { name: 'Continue in browser' }).click();
+    const list = modal.getByTestId('github-connection-options');
+    await expect(list).toBeVisible();
+    const footer = modal.locator('footer');
+    const toolbar = modal.getByRole('button', { name: 'Add another account' });
+    const footerBefore = await footer.boundingBox();
+    const toolbarBefore = await toolbar.boundingBox();
+    await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    expect(await list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    expect(await footer.boundingBox()).toEqual(footerBefore);
+    expect(await toolbar.boundingBox()).toEqual(toolbarBefore);
+    await modal.getByRole('checkbox', { name: 'Select all', exact: true }).check();
+    await footer.getByRole('button', { name: /Connect selected/ }).click();
+    await expect(modal).toHaveAccessibleName('Import from GitHub');
+    await expect(
+        modal.getByRole('button', { name: 'team/games' }),
+    ).toBeVisible();
+});
+
 test('Enter selects an unselected GitHub repository choice and continues', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
@@ -1207,6 +1250,88 @@ async function stubOpenFileDialog(): Promise<void> {
                 data: { canceled: true, filePaths: [] },
             };
         });
+    });
+}
+
+/** Stubs a GitHub connection that makes one repository available on completion. */
+async function stubGitHubImportConnection(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedGitHubImportConnected?: boolean;
+        };
+        state.__guidedGitHubImportConnected = false;
+
+        const integration = () => ({
+            id: 'github',
+            displayName: 'GitHub',
+            state: 'connected' as const,
+            connectionStage: null,
+            connections: [
+                {
+                    id: 'connection-id',
+                    accountLogin: 'docs',
+                    accountDisplayName: 'Documentation User',
+                    state: 'connected' as const,
+                    accessTargets: [
+                        {
+                            id: 'target-id',
+                            login: 'docs',
+                            type: 'user' as const,
+                            availability: 'available' as const,
+                            capabilities: ['repository-browsing' as const],
+                        },
+                    ],
+                },
+            ],
+            connectionOptions: [],
+        });
+
+        ipcMain.removeHandler('projects.listConnectedRepositories');
+        ipcMain.handle('projects.listConnectedRepositories', async () => ({
+            success: true,
+            data: state.__guidedGitHubImportConnected
+                ? {
+                      ok: true,
+                      page: {
+                          repositories: [
+                              {
+                                  repositoryRef: 'repository-ref',
+                                  providerId: 'github',
+                                  owner: 'team',
+                                  name: 'games',
+                                  visibility: 'private',
+                                  alreadyImported: false,
+                              },
+                          ],
+                          nextCursor: null,
+                      },
+                  }
+                : { ok: false, reason: 'no-usable-connection' },
+        }));
+        ipcMain.removeHandler('appIntegrations.connect');
+        ipcMain.handle('appIntegrations.connect', async () => ({
+            success: true,
+            data: { ok: true, integration: {
+                ...integration(), state: 'selection-required', connectionStage: 'choosing',
+                connections: [],
+                connectionOptions: Array.from({ length: 20 }, (_, index) => ({
+                    id: `account-${index}`, login: `account-${index}`, type: 'organization',
+                })),
+            } },
+        }));
+        ipcMain.removeHandler('appIntegrations.finishConnections');
+        ipcMain.handle('appIntegrations.finishConnections', async () => {
+            state.__guidedGitHubImportConnected = true;
+            return {
+                success: true,
+                data: { ok: true, integration: integration() },
+            };
+        });
+        ipcMain.removeHandler('appIntegrations.cancel');
+        ipcMain.handle('appIntegrations.cancel', async () => ({
+            success: true,
+            data: { ok: true, integration: integration() },
+        }));
     });
 }
 

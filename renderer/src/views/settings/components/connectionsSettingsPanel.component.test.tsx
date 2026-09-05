@@ -76,12 +76,8 @@ function renderPanel(
             loadError={false}
             actionErrors={{}}
             onRetry={vi.fn()}
-            onConnect={vi.fn()}
-            onFinishConnections={vi.fn(async () => true)}
-            onInstallConnection={vi.fn()}
-            onCancel={vi.fn()}
+            onOpenConnection={vi.fn()}
             onRefresh={vi.fn()}
-            onReconnect={vi.fn()}
             onManageAccess={vi.fn()}
             onDisconnect={vi.fn()}
             {...overrides}
@@ -112,12 +108,12 @@ describe('ConnectionsSettingsPanel', () => {
         expect(html).not.toContain('The Octocat (@octocat)');
     });
 
-    it('presents connecting and secure-storage failures', () => {
+    it('presents connecting and secure-storage status', () => {
         const connecting = renderPanel({
             integrations: [{ ...github, state: 'connecting' }],
         });
         expect(connecting).toContain('connections.status.connecting');
-        expect(connecting).toContain('connections.actions.cancel');
+        expect(connecting).not.toContain('connections.actions.cancel');
 
         const unavailable = renderPanel({
             integrations: [{ ...github, state: 'secure-storage-unavailable' }],
@@ -181,11 +177,7 @@ describe('ConnectionsSettingsPanel', () => {
                 integration={connectedGithub}
                 t={translate}
                 onOpenChange={vi.fn()}
-                onConnect={vi.fn()}
-                onFinishConnections={vi.fn(async () => true)}
-                onInstallConnection={vi.fn()}
-                onCancel={vi.fn()}
-                onReconnect={vi.fn()}
+                onOpenConnection={vi.fn()}
                 onManageAccess={vi.fn()}
                 onDisconnect={vi.fn()}
             />,
@@ -203,70 +195,5 @@ describe('ConnectionsSettingsPanel', () => {
         expect(html).toContain('connections.actions.reconnect');
         expect(html).toContain('connections.actions.disconnect');
         expect(html).not.toContain('connections.actions.addInstallation');
-    });
-
-    it('offers existing installations and an explicit install action', () => {
-        const choosing: AppIntegrationSummary = {
-            ...github,
-            state: 'selection-required',
-            connectionStage: 'choosing',
-            connectionOptions: [
-                {
-                    id: 'option-id',
-                    login: 'godotlauncher',
-                    type: 'organization',
-                },
-            ],
-        };
-        const html = renderToStaticMarkup(
-            <GitHubConnectionsDrawer
-                open
-                integration={choosing}
-                t={translate}
-                onOpenChange={vi.fn()}
-                onConnect={vi.fn()}
-                onFinishConnections={vi.fn(async () => true)}
-                onInstallConnection={vi.fn()}
-                onCancel={vi.fn()}
-                onReconnect={vi.fn()}
-                onManageAccess={vi.fn()}
-                onDisconnect={vi.fn()}
-            />,
-        );
-
-        expect(html).toContain('connections.drawer.chooseConnection');
-        expect(html).toContain('godotlauncher');
-        expect(html).toContain('connections.actions.selectAll');
-        expect(html).toContain('connections.actions.selectInstallation');
-        expect(html).toContain('connections.actions.connectSelected');
-        expect(html).toContain('type="checkbox"');
-        expect(html).toContain('connections.actions.installAnother');
-    });
-
-    it('keeps the drawer open while GitHub installation is pending', () => {
-        const installing: AppIntegrationSummary = {
-            ...github,
-            state: 'connecting',
-            connectionStage: 'installing',
-        };
-        const html = renderToStaticMarkup(
-            <GitHubConnectionsDrawer
-                open
-                integration={installing}
-                t={translate}
-                onOpenChange={vi.fn()}
-                onConnect={vi.fn()}
-                onFinishConnections={vi.fn(async () => true)}
-                onInstallConnection={vi.fn()}
-                onCancel={vi.fn()}
-                onReconnect={vi.fn()}
-                onManageAccess={vi.fn()}
-                onDisconnect={vi.fn()}
-            />,
-        );
-
-        expect(html).toContain('role="dialog"');
-        expect(html).toContain('connections.drawer.finishSetup');
-        expect(html).toContain('connections.drawer.finishSetupDescription');
     });
 });

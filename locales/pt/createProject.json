@@ -95,7 +95,7 @@
         "availabilityAvailable": "O nome parece disponível",
         "availabilityUnavailable": "O nome já está a ser utilizado",
         "availabilityUnknown": "Não foi possível verificar este nome",
-        "openConnections": "Abrir Ligações",
+        "openConnections": "Ligar o GitHub",
         "leaveTitle": "Sair de Criar projeto?",
         "leaveMessage": "Os dados de projeto não guardados serão apagados ao abrir Ligações.",
         "successTitle": "Publicado no GitHub",
