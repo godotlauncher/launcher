@@ -7,6 +7,7 @@ import {
     type Page,
     test,
 } from '@playwright/test';
+import type { ReleaseSummary } from '@shared/contracts';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import { SAMPLE_PREFS } from './support/e2e-fixture-data';
 import {
@@ -157,6 +158,157 @@ test('cancels a preset identity prompt without creating and retains the captured
             },
         });
 });
+
+test('groups both catalogue channels and preserves exact keyboard selection after filtering', async () => {
+    test.setTimeout(60000);
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        projects: [],
+        installedReleases: [],
+        availableReleases: [
+            groupedCatalogueRelease('4.9.1-stable'),
+            groupedCatalogueRelease('4.10.2-stable'),
+            groupedCatalogueRelease('4.10-stable'),
+        ],
+        availablePrereleases: [
+            groupedCatalogueRelease('4.10-rc1', true),
+            groupedCatalogueRelease('4.11-dev2', true),
+        ],
+    });
+    await electronApp.evaluate(({ BrowserWindow }) => {
+        BrowserWindow.getAllWindows()
+            .find((window) => !window.isDestroyed())
+            ?.setSize(1024, 600);
+    });
+    await mainPage.setViewportSize({ width: 1024, height: 600 });
+    const outputDirectory = path.resolve(
+        process.cwd(),
+        '.internal-docs',
+        'create-project-catalogue-groups',
+    );
+    await fs.mkdir(outputDirectory, { recursive: true });
+
+    for (const theme of THEMES) {
+        await applyTheme(mainPage, theme);
+        await openCreateProject();
+        const trigger = mainPage.getByTestId('selectCreateProjectGodotEditor');
+        await trigger.click();
+        const popover = mainPage.getByTestId(
+            'createProjectEditorPickerPopover',
+        );
+        const list = popover.getByTestId('createProjectEditorCatalogueList');
+        const search = popover.getByTestId('inputCreateProjectEditorSearch');
+        await expect(search).toBeFocused();
+        await expect(list.getByRole('group')).toHaveCount(2);
+        expect(
+            await list
+                .getByRole('group')
+                .evaluateAll((groups) =>
+                    groups.map((group) => group.getAttribute('aria-label')),
+                ),
+        ).toEqual(['4.10', '4.9']);
+        await expect(
+            list
+                .getByRole('group', { name: '4.10', exact: true })
+                .getByRole('option'),
+        ).toHaveCount(4);
+        await expect(list.getByRole('option')).toHaveCount(6);
+        await expect(list).toHaveCSS('overflow-y', 'auto');
+        await expect(popover).toBeInViewport({ ratio: 1 });
+        await mainPage.screenshot({
+            path: path.join(outputDirectory, `stable-${theme.name}.png`),
+        });
+
+        await search.fill('4.9.1');
+        await expect(list.getByRole('group')).toHaveCount(1);
+        await expect(
+            list
+                .getByRole('group', { name: '4.9', exact: true })
+                .getByRole('option'),
+        ).toHaveCount(2);
+        await search.fill('no matching version');
+        await expect(list.getByRole('group')).toHaveCount(0);
+        await expect(list).toContainText('No matching releases');
+        await search.fill('');
+        const dotnet = list.getByTestId(
+            'createProjectCatalogueEditor_catalogue:4.10.2-stable:mono',
+        );
+        await dotnet.focus();
+        await dotnet.press('Enter');
+        await expect(popover).not.toBeVisible();
+        await expect(trigger).toBeFocused();
+        await expect(trigger).toHaveText(
+            'Godot 4.10.2-stable (4.10.2-stable) - .NET',
+        );
+
+        await trigger.click();
+        await popover.getByTestId('tabCreateProjectPrereleaseEditors').click();
+        await expect(list.getByRole('group')).toHaveCount(2);
+        expect(
+            await list
+                .getByRole('group')
+                .evaluateAll((groups) =>
+                    groups.map((group) => group.getAttribute('aria-label')),
+                ),
+        ).toEqual(['4.11', '4.10']);
+        await expect(list.getByRole('option')).toHaveCount(4);
+        await expect(popover).toBeInViewport({ ratio: 1 });
+        await mainPage.screenshot({
+            path: path.join(outputDirectory, `prerelease-${theme.name}.png`),
+        });
+        await search.fill('4.10-rc1');
+        await expect(list.getByRole('group')).toHaveCount(1);
+        await expect(
+            list
+                .getByRole('group', { name: '4.10', exact: true })
+                .getByRole('option'),
+        ).toHaveCount(2);
+        await search.fill('');
+        await popover.getByTestId('tabCreateProjectStableEditors').click();
+        await expect(dotnet).toHaveAttribute('aria-selected', 'true');
+        await popover.getByTestId('tabCreateProjectPrereleaseEditors').click();
+        const prerelease = list.getByTestId(
+            'createProjectCatalogueEditor_catalogue:4.11-dev2:std',
+        );
+        await prerelease.focus();
+        await prerelease.press('Space');
+        await expect(popover).not.toBeVisible();
+        await expect(trigger).toBeFocused();
+        await expect(trigger).toHaveText(
+            'Godot 4.11-dev2 (4.11-dev2) - Standard',
+        );
+        await mainPage.getByTestId('btnCloseCreateProject').click();
+        await expect(
+            mainPage.getByRole('dialog', { name: 'New Project' }),
+        ).not.toBeVisible();
+    }
+});
+
+/**
+ * Creates exact Standard and .NET catalogue variants without downloading assets.
+ * @param version - Full catalogue version string.
+ * @param prerelease - Whether the release belongs to the pre-release channel.
+ * @returns A deterministic release with both selectable variants.
+ */
+function groupedCatalogueRelease(
+    version: string,
+    prerelease = false,
+): ReleaseSummary {
+    return {
+        version,
+        name: `Godot ${version}`,
+        tag: version,
+        version_number: Number.parseFloat(version),
+        published_at: '2026-09-01T00:00:00.000Z',
+        prerelease,
+        draft: false,
+        assets: [false, true].map((mono) => ({
+            name: mono ? 'godot-mono.zip' : 'godot.zip',
+            download_url: 'https://example.invalid/godot.zip',
+            platform_tags: ['linux', 'x64'],
+            mono,
+        })),
+    };
+}
 
 test('contains the creation form at the minimum viewport in both themes', async () => {
     await electronApp.evaluate(({ BrowserWindow }) => {

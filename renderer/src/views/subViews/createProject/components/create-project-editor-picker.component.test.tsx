@@ -1,8 +1,12 @@
 import type { InstalledRelease, ReleaseSummary } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { getCreateProjectReleaseKey } from '../createProject.model';
+import {
+    getCreateProjectCatalogueVariants,
+    getCreateProjectReleaseKey,
+} from '../createProject.model';
 import { CreateProjectEditorPicker } from './create-project-editor-picker.component';
+import { CreateProjectEditorPickerPopover } from './create-project-editor-picker-popover.component';
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
@@ -73,6 +77,7 @@ describe('CreateProjectEditorPicker', () => {
         expect(html).toContain('Studio Godot');
         expect(html).toContain('Custom');
         expect(html).not.toContain('inputCreateProjectEditorSearch');
+        expect(html).not.toContain('<fieldset');
     });
 
     it('does not repeat a version when an editor has no display name', () => {
@@ -131,6 +136,58 @@ describe('CreateProjectEditorPicker', () => {
         expect(html).toContain('max-h-80');
         expect(html).toContain('overflow-y-auto');
     });
+
+    it.each(['stable', 'prerelease'] as const)(
+        'labels major.minor groups in the %s list without changing exact variants',
+        (channel) => {
+            const suffix = channel === 'stable' ? 'stable' : 'beta1';
+            const releases = ['4.9.1', '4.10.2', '4.10'].map((version) => ({
+                ...catalogueRelease(`${version}-${suffix}`),
+                prerelease: channel === 'prerelease',
+            }));
+            const html = renderToStaticMarkup(
+                <CreateProjectEditorPickerPopover
+                    id="picker"
+                    labelledBy="editor"
+                    popoverRef={{ current: null }}
+                    style={{}}
+                    open
+                    tab="catalogue"
+                    channel={channel}
+                    search=""
+                    installedRows={[]}
+                    installedReleases={[]}
+                    catalogueVariants={getCreateProjectCatalogueVariants(
+                        releases,
+                        '',
+                    )}
+                    releaseInstallProgress={[]}
+                    loading={false}
+                    selection={null}
+                    onTabChange={vi.fn()}
+                    onChannelChange={vi.fn()}
+                    onSearchChange={vi.fn()}
+                    onSelectionChange={vi.fn()}
+                    onCancelInstall={vi.fn()}
+                    onKeyDown={vi.fn()}
+                    registerInstalledOption={vi.fn()}
+                />,
+            );
+            expect(html.match(/<fieldset/g)).toHaveLength(2);
+            expect(html).toContain('<fieldset aria-label="4.10"');
+            expect(html).toContain('<fieldset aria-label="4.9"');
+            expect(html.indexOf('aria-label="4.10"')).toBeLessThan(
+                html.indexOf('aria-label="4.9"'),
+            );
+            expect(html.match(/role="option"/g)).toHaveLength(6);
+            expect(html).toContain(
+                `createProjectCatalogueEditor_catalogue:4.10.2-${suffix}:std`,
+            );
+            expect(html).toContain(
+                `createProjectCatalogueEditor_catalogue:4.10.2-${suffix}:mono`,
+            );
+        },
+    );
 
     it('shows queue progress and the existing cancellation action', () => {
         const release = catalogueRelease('4.8-stable');

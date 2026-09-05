@@ -4,8 +4,10 @@ import type {
 } from '@shared/contracts';
 import clsx from 'clsx';
 import type React from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SearchField } from '../../../../components/ui/searchField.component';
+import { groupCreateProjectCatalogueVariants } from '../create-project-catalogue-groups.util';
 import type {
     CreateProjectCatalogueVariant,
     CreateProjectEditorSelection,
@@ -76,6 +78,10 @@ export const CreateProjectEditorPickerPopover: React.FC<
     registerInstalledOption,
 }) => {
     const { t } = useTranslation(['createProject', 'installEditor']);
+    const catalogueGroups = useMemo(
+        () => groupCreateProjectCatalogueVariants(catalogueVariants),
+        [catalogueVariants],
+    );
     const labels = {
         standard: t('editorPicker.standard'),
         dotNet: t('project.dotNetBadge'),
@@ -240,53 +246,80 @@ export const CreateProjectEditorPickerPopover: React.FC<
                                     {t('editorPicker.noMatches')}
                                 </p>
                             ) : (
-                                catalogueVariants.map((variant) => {
-                                    const installedRelease =
-                                        installedReleases.find(
-                                            (candidate) =>
-                                                candidate.version ===
-                                                    variant.release.version &&
-                                                candidate.mono ===
-                                                    variant.mono &&
-                                                candidate.valid !== false &&
-                                                Boolean(candidate.editor_path),
-                                        );
-                                    const progress =
-                                        releaseInstallProgress.find(
-                                            (candidate) =>
-                                                candidate.version ===
-                                                    variant.release.version &&
-                                                candidate.mono === variant.mono,
-                                        );
+                                catalogueGroups.map((group) => (
+                                    <fieldset
+                                        key={group.key}
+                                        aria-label={group.key}
+                                        data-testid={`createProjectEditorCatalogueGroup_${group.key}`}
+                                        className="min-w-0 space-y-1 border-0 p-0"
+                                    >
+                                        <div
+                                            aria-hidden="true"
+                                            className="px-2 pt-2 pb-1 text-xs font-semibold text-base-content/60"
+                                        >
+                                            {group.key}
+                                        </div>
+                                        {group.variants.map((variant) => {
+                                            const installedRelease =
+                                                installedReleases.find(
+                                                    (candidate) =>
+                                                        candidate.version ===
+                                                            variant.release
+                                                                .version &&
+                                                        candidate.mono ===
+                                                            variant.mono &&
+                                                        candidate.valid !==
+                                                            false &&
+                                                        Boolean(
+                                                            candidate.editor_path,
+                                                        ),
+                                                );
+                                            const progress =
+                                                releaseInstallProgress.find(
+                                                    (candidate) =>
+                                                        candidate.version ===
+                                                            variant.release
+                                                                .version &&
+                                                        candidate.mono ===
+                                                            variant.mono,
+                                                );
 
-                                    return (
-                                        <CreateProjectEditorOption
-                                            key={variant.key}
-                                            kind="catalogue"
-                                            release={variant.release}
-                                            mono={variant.mono}
-                                            optionKey={variant.key}
-                                            selected={
-                                                selection?.source ===
-                                                    'catalogue' &&
-                                                selection.key === variant.key
-                                            }
-                                            installedRelease={installedRelease}
-                                            progress={progress}
-                                            labels={labels}
-                                            onSelect={() =>
-                                                onSelectionChange({
-                                                    source: 'catalogue',
-                                                    key: variant.key,
-                                                    release: variant.release,
-                                                    mono: variant.mono,
-                                                    installedRelease,
-                                                })
-                                            }
-                                            onCancelInstall={onCancelInstall}
-                                        />
-                                    );
-                                })
+                                            return (
+                                                <CreateProjectEditorOption
+                                                    key={variant.key}
+                                                    kind="catalogue"
+                                                    release={variant.release}
+                                                    mono={variant.mono}
+                                                    optionKey={variant.key}
+                                                    selected={
+                                                        selection?.source ===
+                                                            'catalogue' &&
+                                                        selection.key ===
+                                                            variant.key
+                                                    }
+                                                    installedRelease={
+                                                        installedRelease
+                                                    }
+                                                    progress={progress}
+                                                    labels={labels}
+                                                    onSelect={() =>
+                                                        onSelectionChange({
+                                                            source: 'catalogue',
+                                                            key: variant.key,
+                                                            release:
+                                                                variant.release,
+                                                            mono: variant.mono,
+                                                            installedRelease,
+                                                        })
+                                                    }
+                                                    onCancelInstall={
+                                                        onCancelInstall
+                                                    }
+                                                />
+                                            );
+                                        })}
+                                    </fieldset>
+                                ))
                             )}
                         </div>
                     </div>
