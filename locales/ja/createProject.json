@@ -44,6 +44,8 @@
         "unavailable": "利用不可",
         "downloadRequired": "ダウンロードが必要",
         "noInstalled": "インストール済みのエディターはありません",
+        "notInstalled": "未インストール",
+        "noInstalledDescription": "リリースを参照してインストールするエディターを選択してください。",
         "noneSelected": "エディターを選択",
         "loading": "リリースを読み込み中...",
         "noMatches": "一致するリリースはありません",

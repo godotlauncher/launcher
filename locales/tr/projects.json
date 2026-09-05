@@ -413,6 +413,8 @@
             "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
         },
         "actions": {
+            "installAndSave": "Yükle ve kaydet",
+            "installingEditor": "Editör yükleniyor...",
             "update": "Güncelle",
             "updating": "Güncelleniyor..."
         },

@@ -44,6 +44,8 @@
         "unavailable": "Mhux disponibbli",
         "downloadRequired": "Jeħtieġ tniżżil",
         "noInstalled": "L-ebda editur installat",
+        "notInstalled": "Mhux installat",
+        "noInstalledDescription": "Fittex ir-rilaxxi biex tagħżel editur x'tinstalla.",
         "noneSelected": "Agħżel editur",
         "loading": "Qed jitgħabbew ir-rilaxxi...",
         "noMatches": "L-ebda rilaxx li jaqbel",

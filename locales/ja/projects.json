@@ -413,6 +413,8 @@
             "unavailable": "project.godot が利用できません。Launcher の名前のみ変更できます。"
         },
         "actions": {
+            "installAndSave": "インストールして保存",
+            "installingEditor": "エディターをインストール中...",
             "update": "更新",
             "updating": "更新中..."
         },

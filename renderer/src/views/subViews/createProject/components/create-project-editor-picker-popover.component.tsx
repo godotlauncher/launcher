@@ -111,13 +111,13 @@ export const CreateProjectEditorPickerPopover: React.FC<
             aria-labelledby={labelledBy}
             data-testid="createProjectEditorPickerPopover"
             onKeyDown={onKeyDown}
-            className="fixed inset-auto m-0 w-[min(34rem,calc(100vw-2rem))] rounded-box border border-base-300 bg-base-100 p-3 shadow-xl backdrop:bg-transparent"
+            className="fixed inset-auto m-0 w-[min(34rem,calc(100vw-2rem))] h-[min(28rem,calc(100vh-2rem))] overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 shadow-xl backdrop:bg-transparent"
             style={style}
         >
-            <div className="flex min-h-0 flex-col gap-3">
+            <div className="flex h-full min-h-0 flex-col gap-3">
                 <div
                     role="tablist"
-                    className="tabs tabs-box tabs-sm self-start"
+                    className="tabs tabs-box tabs-sm shrink-0 self-start"
                 >
                     <button
                         type="button"
@@ -146,51 +146,67 @@ export const CreateProjectEditorPickerPopover: React.FC<
                 </div>
 
                 {tab === 'installed' ? (
-                    <div
-                        role="listbox"
-                        aria-labelledby={labelledBy}
-                        className="max-h-80 space-y-1 overflow-y-auto overscroll-contain"
-                    >
+                    <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain">
                         {installedRows.length === 0 ? (
-                            <p className="py-4 text-center text-sm text-base-content/60">
-                                {t('editorPicker.noInstalled')}
-                            </p>
+                            <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+                                <p className="font-medium">
+                                    {t('editorPicker.noInstalled')}
+                                </p>
+                                <p className="max-w-xs text-sm text-base-content/60">
+                                    {t('editorPicker.noInstalledDescription')}
+                                </p>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-neutral"
+                                    onClick={() => onTabChange('catalogue')}
+                                >
+                                    {t('editorPicker.browse')}
+                                </button>
+                            </div>
                         ) : (
-                            installedRows.map((release) => {
-                                const key = getCreateProjectReleaseKey(release);
+                            <div
+                                role="listbox"
+                                aria-labelledby={labelledBy}
+                                className="space-y-1"
+                            >
+                                {installedRows.map((release) => {
+                                    const key =
+                                        getCreateProjectReleaseKey(release);
 
-                                return (
-                                    <CreateProjectEditorOption
-                                        key={key}
-                                        kind="installed"
-                                        release={release}
-                                        optionKey={key}
-                                        selected={
-                                            selection?.source === 'installed' &&
-                                            selection.key === key
-                                        }
-                                        labels={labels}
-                                        buttonRef={(element) =>
-                                            registerInstalledOption(
-                                                key,
-                                                element,
-                                            )
-                                        }
-                                        onSelect={() =>
-                                            onSelectionChange({
-                                                source: 'installed',
-                                                key,
-                                                release,
-                                            })
-                                        }
-                                    />
-                                );
-                            })
+                                    return (
+                                        <CreateProjectEditorOption
+                                            key={key}
+                                            kind="installed"
+                                            release={release}
+                                            optionKey={key}
+                                            selected={
+                                                selection?.source ===
+                                                    'installed' &&
+                                                selection.key === key
+                                            }
+                                            labels={labels}
+                                            buttonRef={(element) =>
+                                                registerInstalledOption(
+                                                    key,
+                                                    element,
+                                                )
+                                            }
+                                            onSelect={() =>
+                                                onSelectionChange({
+                                                    source: 'installed',
+                                                    key,
+                                                    release,
+                                                })
+                                            }
+                                        />
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
                 ) : (
-                    <div className="flex min-h-0 flex-col gap-3">
-                        <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex min-h-0 flex-1 flex-col gap-3">
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
                             <SearchField
                                 id="inputCreateProjectEditorSearch"
                                 data-testid="inputCreateProjectEditorSearch"
@@ -238,7 +254,7 @@ export const CreateProjectEditorPickerPopover: React.FC<
 
                         {(catalogueError || retryingCatalogue) && (
                             <div
-                                className="alert alert-warning alert-soft text-sm"
+                                className="alert alert-warning alert-soft shrink-0 text-sm"
                                 data-testid="createProjectEditorCatalogueError"
                                 role="alert"
                             >
@@ -265,7 +281,7 @@ export const CreateProjectEditorPickerPopover: React.FC<
                             role="listbox"
                             aria-labelledby={labelledBy}
                             data-testid="createProjectEditorCatalogueList"
-                            className="max-h-80 space-y-1 overflow-y-auto overscroll-contain"
+                            className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain"
                         >
                             {loading &&
                             catalogueVariants.length === 0 &&

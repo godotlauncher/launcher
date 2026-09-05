@@ -62,6 +62,19 @@ vi.mock('react-i18next', () => {
     };
 });
 
+vi.mock('../../hooks/useRelease', () => ({
+    useRelease: () => ({
+        availableReleases: [],
+        availablePrereleases: [],
+        releaseInstallProgress: [],
+        loading: false,
+        hasError: undefined,
+        refreshAvailableReleases: vi.fn(),
+        cancelInstall: vi.fn(),
+        installRelease: vi.fn(),
+    }),
+}));
+
 const project: ProjectDetails = {
     name: 'Demo',
     path: '/projects/demo',
@@ -134,7 +147,7 @@ describe('ProjectSettingsDrawer', () => {
         );
     });
 
-    it('orders Godot editor options with the highest version first', () => {
+    it('orders installed editors and excludes the missing current version', () => {
         const unavailableProject = {
             ...project,
             release: { ...project.release, valid: false },
@@ -172,9 +185,7 @@ describe('ProjectSettingsDrawer', () => {
         expect(optionsHtml.indexOf('4.10-stable')).toBeLessThan(
             optionsHtml.indexOf('4.3-stable'),
         );
-        expect(optionsHtml.indexOf('4.3-stable')).toBeLessThan(
-            optionsHtml.indexOf('4.2'),
-        );
+        expect(optionsHtml).not.toContain('4.2');
     });
 
     it('validates rename names', () => {

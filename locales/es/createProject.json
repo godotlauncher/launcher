@@ -44,6 +44,8 @@
         "unavailable": "No disponible",
         "downloadRequired": "Descarga necesaria",
         "noInstalled": "No hay editores instalados",
+        "notInstalled": "No instalado",
+        "noInstalledDescription": "Explora las versiones para elegir un editor para instalar.",
         "noneSelected": "Elige un editor",
         "loading": "Cargando versiones...",
         "noMatches": "No hay versiones coincidentes",

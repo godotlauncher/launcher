@@ -413,6 +413,8 @@
             "unavailable": "project.godot não está disponível. Apenas o nome no launcher pode ser alterado."
         },
         "actions": {
+            "installAndSave": "Instalar e guardar",
+            "installingEditor": "A instalar o editor...",
             "update": "Atualizar",
             "updating": "A atualizar..."
         },

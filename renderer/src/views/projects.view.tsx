@@ -542,7 +542,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onRemoveProject={handleRemoveProject}
             />
             <ProjectSettingsDrawer
-                project={editProjectFor}
+                project={
+                    projects.find(
+                        (candidate) => candidate.path === editProjectFor?.path,
+                    ) ?? editProjectFor
+                }
                 open={Boolean(editProjectFor)}
                 onOpenChange={(open) => {
                     if (!open) {

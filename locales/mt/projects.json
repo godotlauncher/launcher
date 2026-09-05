@@ -413,6 +413,8 @@
             "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem fil-launcher."
         },
         "actions": {
+            "installAndSave": "Installa u ssejvja",
+            "installingEditor": "Qed jiġi installat l-editur...",
             "update": "Aġġorna",
             "updating": "Qed jiġi aġġornat..."
         },

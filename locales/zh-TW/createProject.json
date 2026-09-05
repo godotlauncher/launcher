@@ -44,6 +44,8 @@
         "unavailable": "無法使用",
         "downloadRequired": "需要下載",
         "noInstalled": "沒有已安裝的編輯器",
+        "notInstalled": "未安裝",
+        "noInstalledDescription": "瀏覽版本以選擇要安裝的編輯器。",
         "noneSelected": "選擇編輯器",
         "loading": "正在載入版本...",
         "noMatches": "沒有相符的版本",

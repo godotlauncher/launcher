@@ -413,6 +413,8 @@
             "unavailable": "project.godot недоступен. Можно изменить только имя в лаунчере."
         },
         "actions": {
+            "installAndSave": "Установить и сохранить",
+            "installingEditor": "Установка редактора...",
             "update": "Обновить",
             "updating": "Обновление..."
         },

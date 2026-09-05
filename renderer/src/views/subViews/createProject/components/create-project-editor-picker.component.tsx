@@ -8,6 +8,7 @@ import {
     useCallback,
     useEffect,
     useId,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -27,6 +28,9 @@ import {
 
 type CreateProjectEditorPickerProps = {
     open: boolean;
+    disabled?: boolean;
+    triggerTestId?: string;
+    triggerLabel?: string;
     installedReleases: InstalledRelease[];
     availableReleases: ReleaseSummary[];
     availablePrereleases: ReleaseSummary[];
@@ -49,6 +53,9 @@ export const CreateProjectEditorPicker: React.FC<
     CreateProjectEditorPickerProps
 > = ({
     open,
+    disabled = false,
+    triggerTestId = 'selectCreateProjectGodotEditor',
+    triggerLabel,
     installedReleases,
     availableReleases,
     availablePrereleases,
@@ -111,7 +118,14 @@ export const CreateProjectEditorPicker: React.FC<
         (channel === 'stable' ? availableReleases : availablePrereleases)
             .length > 0;
     const installedRows = useMemo(
-        () => buildCreateProjectReleaseRows(installedReleases, []),
+        () =>
+            buildCreateProjectReleaseRows(
+                installedReleases.filter(
+                    (release) =>
+                        release.valid !== false && Boolean(release.editor_path),
+                ),
+                [],
+            ),
         [installedReleases],
     );
     const firstInstalledRelease = installedRows.find(
@@ -130,6 +144,7 @@ export const CreateProjectEditorPicker: React.FC<
         }
     }, []);
 
+    /** Measures the open panel and anchors it within the viewport. */
     const positionPopover = useCallback(() => {
         const trigger = triggerRef.current;
         const popover = popoverRef.current;
@@ -157,6 +172,7 @@ export const CreateProjectEditorPicker: React.FC<
         setPopoverPosition({ left, top });
     }, []);
 
+    /** Opens the panel for positioning before its first visible paint. */
     const openPopover = useCallback(() => {
         if (!hasInstalledEditors) {
             setTab('catalogue');
@@ -164,8 +180,7 @@ export const CreateProjectEditorPicker: React.FC<
 
         popoverRef.current?.showPopover?.();
         setIsPopoverOpen(true);
-        window.requestAnimationFrame(positionPopover);
-    }, [hasInstalledEditors, positionPopover]);
+    }, [hasInstalledEditors]);
 
     useEffect(() => {
         const popover = popoverRef.current;
@@ -188,11 +203,12 @@ export const CreateProjectEditorPicker: React.FC<
         return () => popover.removeEventListener('toggle', handleToggle);
     }, []);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!isPopoverOpen) {
             return;
         }
 
+        positionPopover();
         const handleViewportChange = () => positionPopover();
         window.addEventListener('resize', handleViewportChange);
         window.addEventListener('scroll', handleViewportChange, true);
@@ -202,7 +218,6 @@ export const CreateProjectEditorPicker: React.FC<
         }
 
         const animationFrameId = window.requestAnimationFrame(() => {
-            positionPopover();
             if (tab === 'catalogue') {
                 popoverRef.current
                     ?.querySelector<HTMLInputElement>(
@@ -284,14 +299,20 @@ export const CreateProjectEditorPicker: React.FC<
         [],
     );
 
-    const selectedLabel = selection
+    const selectionLabel = selection
         ? getSelectionLabel(
               selection,
               t('editorPicker.standard'),
               t('project.dotNetBadge'),
           )
         : t('editorPicker.noneSelected');
+    const selectedLabel =
+        selection?.source === 'installed' &&
+        (selection.release.valid === false || !selection.release.editor_path)
+            ? `${selectionLabel} - ${t('editorPicker.notInstalled')}`
+            : selectionLabel;
     const popoverStyle = {
+        visibility: isPopoverOpen ? 'visible' : 'hidden',
         left: popoverPosition.left,
         top: popoverPosition.top,
     } as React.CSSProperties;
@@ -302,9 +323,9 @@ export const CreateProjectEditorPicker: React.FC<
                 ref={triggerRef}
                 id={triggerId}
                 type="button"
-                data-testid="selectCreateProjectGodotEditor"
-                disabled={!open}
-                aria-label={`${t('editorPicker.title')}: ${selectedLabel}`}
+                data-testid={triggerTestId}
+                disabled={!open || disabled}
+                aria-label={`${triggerLabel ?? t('editorPicker.title')}: ${selectedLabel}`}
                 aria-haspopup="dialog"
                 aria-expanded={isPopoverOpen}
                 aria-controls={popoverId}

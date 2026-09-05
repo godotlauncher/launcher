@@ -413,6 +413,8 @@
             "unavailable": "project.godot 不可用。只能更改启动器中的名称。"
         },
         "actions": {
+            "installAndSave": "安装并保存",
+            "installingEditor": "正在安装编辑器...",
             "update": "更新",
             "updating": "正在更新..."
         },

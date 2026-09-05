@@ -43,6 +43,31 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('CreateProjectEditorPicker', () => {
+    it('accepts a contextual trigger identity and disabled state', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectEditorPicker
+                open
+                disabled
+                triggerTestId="selectProjectGodotEditor"
+                triggerLabel="Godot Editor"
+                installedReleases={[]}
+                availableReleases={[]}
+                availablePrereleases={[]}
+                releaseInstallProgress={[]}
+                loading={false}
+                catalogueError={undefined}
+                selection={null}
+                onSelectionChange={vi.fn()}
+                onCancelInstall={vi.fn()}
+                onRetryCatalogue={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('data-testid="selectProjectGodotEditor"');
+        expect(html).toContain('disabled=""');
+        expect(html).toContain('aria-label="Godot Editor: Choose an editor"');
+    });
+
     it('defaults to installed editors and retains custom editor labels', () => {
         const release = installedRelease('studio-godot', {
             name: 'Studio Godot',

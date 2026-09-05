@@ -44,6 +44,8 @@
         "unavailable": "Kullanılamıyor",
         "downloadRequired": "İndirme gerekli",
         "noInstalled": "Kurulu düzenleyici yok",
+        "notInstalled": "Yüklü değil",
+        "noInstalledDescription": "Yüklenecek bir düzenleyici seçmek için sürümlere göz atın.",
         "noneSelected": "Bir düzenleyici seçin",
         "loading": "Sürümler yükleniyor...",
         "noMatches": "Eşleşen sürüm yok",
