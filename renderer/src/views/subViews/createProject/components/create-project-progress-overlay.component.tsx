@@ -4,12 +4,9 @@ import { Check, Circle, LoaderCircle, Minus } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { ReleaseInstallProgressIndicator } from '../../../../components/releaseInstallProgress.component';
+import type { CreateProjectProgressPhase } from '../create-project-workflow.types';
 
-export type CreateProjectProgressPhase =
-    | 'installing'
-    | 'creating'
-    | 'launching'
-    | 'complete';
+export type { CreateProjectProgressPhase } from '../create-project-workflow.types';
 
 export type CreateProjectProgressStepId =
     | 'installing'

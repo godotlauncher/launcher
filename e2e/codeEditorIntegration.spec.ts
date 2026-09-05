@@ -307,6 +307,10 @@ test('Create Project submits both an integration and explicit None', async () =>
         )
         .toEqual([projectName]);
 
+    const alert = mainPage.getByRole('dialog', { name: 'Error' });
+    await expect(alert).toContainText('Captured Create Project request.');
+    await alert.getByTestId('btnAlertOk').click();
+
     await trigger.click();
     await mainPage
         .getByRole('option', { name: 'None', exact: true })
@@ -328,6 +332,8 @@ test('Create Project submits both an integration and explicit None', async () =>
             ),
         )
         .toEqual([projectName, projectName]);
+    await expect(alert).toBeVisible();
+    await alert.getByTestId('btnAlertOk').click();
 });
 
 test('Project Settings preserves an unavailable selection and can save explicit None', async () => {

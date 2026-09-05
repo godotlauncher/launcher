@@ -6,7 +6,6 @@ import type {
     ProjectDetails,
     RendererType,
 } from '@shared/contracts';
-import type { ExistingRepositoryConsequences } from './components/create-project-existing-repository-dialog.component';
 import type { CreateProjectEditorSelection } from './createProject.model';
 
 export type FailedPublication = Extract<
@@ -46,3 +45,17 @@ export type ExistingRepositoryDialogState =
           project: ProjectDetails;
           submission: CreateProjectSubmission;
       };
+
+export type ExistingRepositoryConsequences = {
+    git: boolean;
+    gitLfs: boolean;
+    github: boolean;
+};
+
+export type GitIdentityDialogPage = 'warning' | 'preset' | 'identity';
+
+export type CreateProjectProgressPhase =
+    | 'installing'
+    | 'creating'
+    | 'launching'
+    | 'complete';
