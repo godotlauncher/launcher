@@ -1,5 +1,14 @@
 {
     "title": "Nuovo progetto",
+    "workflow": {
+        "title": "Configurazione del progetto",
+        "installingEditor": "Installa editor",
+        "creatingProject": "Crea progetto",
+        "launchingEditor": "Avvia editor",
+        "skipped": "Ignorato",
+        "failed": "Non è stato possibile creare il progetto. Controlla il modulo e riprova.",
+        "launchFailed": "Il progetto è stato creato, ma non è stato possibile avviare l'editor."
+    },
     "project": {
         "title": "Progetto",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "Download in corso...",
         "nameRequired": "Il nome del progetto è obbligatorio",
         "nameExists": "Esiste già un progetto con questo nome",
-        "overwritePath": "Sovrascrivi percorso progetto",
+        "overwritePath": "Posizione del progetto",
         "selectFolderDialogTitle": "Seleziona cartella progetto",
         "selectFolderTooltip": "Apri una finestra di dialogo per selezionare la cartella del progetto",
-        "useDefaultPath": "Usa percorso predefinito",
-        "overwritePathRequired": "Il percorso è obbligatorio quando è attiva l'opzione di sovrascrittura del percorso del progetto."
+        "useDefaultPath": "Usa posizione predefinita",
+        "overwritePathRequired": "La posizione del progetto è obbligatoria."
+    },
+    "editorPicker": {
+        "title": "Editor Godot",
+        "installed": "Installati",
+        "browse": "Sfoglia versioni",
+        "search": "Cerca versioni",
+        "clearSearch": "Cancella ricerca versioni",
+        "channel": "Canale di rilascio",
+        "stable": "Stabili",
+        "prereleases": "Pre-release",
+        "standard": "Standard",
+        "custom": "Personalizzato",
+        "selected": "Selezionato",
+        "unavailable": "Non disponibile",
+        "downloadRequired": "Download necessario",
+        "noInstalled": "Nessun editor installato",
+        "noneSelected": "Scegli un editor",
+        "loading": "Caricamento versioni...",
+        "noMatches": "Nessuna versione corrispondente",
+        "installFailed": "Impossibile installare l'editor. Il progetto non è stato creato."
     },
     "renderer": {
         "title": "Renderer",
@@ -175,6 +204,8 @@
         "editNow": "Modifica ora",
         "create": "Crea progetto",
         "createAndPublish": "Crea e pubblica",
+        "installAndCreate": "Installa e crea progetto",
+        "installCreateAndPublish": "Installa, crea e pubblica",
         "creating": "Creazione del progetto...",
         "publishing": "Creazione del progetto e pubblicazione su GitHub..."
     },

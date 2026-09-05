@@ -1,6 +1,21 @@
 {
     "title": "プロジェクト",
     "emptyState": {
+        "welcome": {
+            "heading": "プロジェクトを追加または作成",
+            "description": "既存の作業をLauncherに追加するか、新しい作業を始めましょう。",
+            "newProject": {
+                "heading": "新しいプロジェクト",
+                "description": "Godotのバージョンを選択します。\n必要に応じてLauncherがダウンロードします。",
+                "action": "プロジェクトを作成"
+            },
+            "existingProject": {
+                "heading": "既存のプロジェクト",
+                "description": "Launcherは各プロジェクトに必要な\nGodotのバージョンを見つけます。",
+                "fromComputer": "このコンピューターから",
+                "fromGitHub": "GitHubから"
+            }
+        },
         "addExistingProject": "既存のプロジェクトを追加",
         "withoutEditor": {
             "heading": "Godot をインストールしてプロジェクトを開始",

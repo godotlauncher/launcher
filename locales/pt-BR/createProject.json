@@ -1,5 +1,14 @@
 {
     "title": "Novo projeto",
+    "workflow": {
+        "title": "Configurando seu projeto",
+        "installingEditor": "Instalar editor",
+        "creatingProject": "Criar projeto",
+        "launchingEditor": "Iniciar editor",
+        "skipped": "Ignorado",
+        "failed": "Não foi possível criar o projeto. Revise o formulário e tente novamente.",
+        "launchFailed": "O projeto foi criado, mas não foi possível iniciar o editor."
+    },
     "project": {
         "title": "Projeto",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "Baixando...",
         "nameRequired": "O nome do projeto é obrigatório",
         "nameExists": "Já existe um projeto com este nome",
-        "overwritePath": "Sobrescrever caminho do projeto",
+        "overwritePath": "Local do projeto",
         "selectFolderDialogTitle": "Selecionar pasta do projeto",
         "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto",
-        "useDefaultPath": "Usar caminho padrão",
-        "overwritePathRequired": "O caminho é obrigatório quando a opção de sobrescrever o caminho do projeto está ativada."
+        "useDefaultPath": "Usar local padrão",
+        "overwritePathRequired": "O local do projeto é obrigatório."
+    },
+    "editorPicker": {
+        "title": "Editor Godot",
+        "installed": "Instalados",
+        "browse": "Explorar versões",
+        "search": "Pesquisar versões",
+        "clearSearch": "Limpar pesquisa de versões",
+        "channel": "Canal de lançamento",
+        "stable": "Estáveis",
+        "prereleases": "Pré-lançamentos",
+        "standard": "Padrão",
+        "custom": "Personalizado",
+        "selected": "Selecionado",
+        "unavailable": "Indisponível",
+        "downloadRequired": "Download necessário",
+        "noInstalled": "Nenhum editor instalado",
+        "noneSelected": "Escolha um editor",
+        "loading": "Carregando lançamentos...",
+        "noMatches": "Nenhum lançamento correspondente",
+        "installFailed": "Não foi possível instalar o editor. O projeto não foi criado."
     },
     "renderer": {
         "title": "Renderizador",
@@ -175,6 +204,8 @@
         "editNow": "Editar agora",
         "create": "Criar projeto",
         "createAndPublish": "Criar e publicar",
+        "installAndCreate": "Instalar e criar projeto",
+        "installCreateAndPublish": "Instalar, criar e publicar",
         "creating": "Criando projeto...",
         "publishing": "Criando o projeto e publicando no GitHub..."
     },

@@ -1,6 +1,21 @@
 {
     "title": "Проекты",
     "emptyState": {
+        "welcome": {
+            "heading": "Добавьте или создайте проект",
+            "description": "Добавьте существующую работу в Launcher или начните что-то новое.",
+            "newProject": {
+                "heading": "Новый проект",
+                "description": "Выберите версию Godot.\nLauncher загрузит её при необходимости.",
+                "action": "Создать проект"
+            },
+            "existingProject": {
+                "heading": "Существующий проект",
+                "description": "Launcher найдёт версию Godot,\nкоторая нужна каждому проекту.",
+                "fromComputer": "С этого компьютера",
+                "fromGitHub": "С GitHub"
+            }
+        },
         "addExistingProject": "Добавить существующий проект",
         "withoutEditor": {
             "heading": "Установите Godot, чтобы начать проект",

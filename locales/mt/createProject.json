@@ -1,5 +1,14 @@
 {
     "title": "Proġett Ġdid",
+    "workflow": {
+        "title": "Qed jitwaqqaf il-proġett tiegħek",
+        "installingEditor": "Installa l-editur",
+        "creatingProject": "Oħloq il-proġett",
+        "launchingEditor": "Niedi l-editur",
+        "skipped": "Inqabeż",
+        "failed": "Il-proġett ma setax jinħoloq. Irrevedi l-formola u erġa' pprova.",
+        "launchFailed": "Il-proġett inħoloq, iżda l-editur ma setax jitnieda."
+    },
     "project": {
         "title": "Proġett",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "Qed jinżel...",
         "nameRequired": "Isem tal-proġett huwa meħtieġ",
         "nameExists": "Diġà jeżisti proġett b'dan l-isem",
-        "overwritePath": "Ikteb fuq il-mogħdija tal-proġett",
+        "overwritePath": "Il-post tal-proġett",
         "selectFolderDialogTitle": "Agħżel il-folder tal-proġett",
         "selectFolderTooltip": "Iftaħ djalogu biex tagħżel il-folder tal-proġett",
-        "useDefaultPath": "Uża l-mogħdija awtomatika",
-        "overwritePathRequired": "Il-mogħdija hija meħtieġa meta tkun attivata l-għażla li tissostitwixxi l-mogħdija tal-proġett."
+        "useDefaultPath": "Uża l-post awtomatiku",
+        "overwritePathRequired": "Il-post tal-proġett huwa meħtieġ."
+    },
+    "editorPicker": {
+        "title": "Editur Godot",
+        "installed": "Installati",
+        "browse": "Fittex rilaxxi",
+        "search": "Fittex verżjonijiet",
+        "clearSearch": "Neħħi t-tfittxija tal-verżjonijiet",
+        "channel": "Kanal tar-rilaxx",
+        "stable": "Stabbli",
+        "prereleases": "Qabel ir-rilaxx",
+        "standard": "Standard",
+        "custom": "Personalizzat",
+        "selected": "Magħżul",
+        "unavailable": "Mhux disponibbli",
+        "downloadRequired": "Jeħtieġ tniżżil",
+        "noInstalled": "L-ebda editur installat",
+        "noneSelected": "Agħżel editur",
+        "loading": "Qed jitgħabbew ir-rilaxxi...",
+        "noMatches": "L-ebda rilaxx li jaqbel",
+        "installFailed": "L-editur ma setax jiġi installat. Il-proġett tiegħek ma nħoloqx."
     },
     "renderer": {
         "title": "Renderer",
@@ -175,6 +204,8 @@
         "editNow": "Editja issa",
         "create": "Oħloq Proġett",
         "createAndPublish": "Oħloq u ppubblika",
+        "installAndCreate": "Installa u oħloq il-proġett",
+        "installCreateAndPublish": "Installa, oħloq u ppubblika",
         "creating": "Qed jinħoloq il-proġett...",
         "publishing": "Qed jinħoloq il-proġett u jiġi ppubblikat fuq GitHub..."
     },

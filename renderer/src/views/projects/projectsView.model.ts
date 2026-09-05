@@ -6,40 +6,27 @@ export type ProjectSections = {
     recentProjects: ProjectDetails[];
 };
 
-export type ProjectsViewState =
-    | 'loading'
-    | 'empty-without-editor'
-    | 'empty-installing-editor'
-    | 'empty-with-editor'
-    | 'list';
+export type ProjectsViewState = 'loading' | 'empty' | 'list';
 
 type GetProjectsViewStateOptions = {
     projectCount: number;
-    installedReleaseCount: number;
-    downloadingReleaseCount: number;
     textSearch: string;
     projectsLoading: boolean;
-    releasesLoading: boolean;
-    releasesInitialized: boolean;
 };
 
 /**
  * Selects the projects content while keeping filtered and loading states
- * separate from the first-project experience.
+ * separate from the editor-independent first-project experience.
  *
- * @param options - Project, editor, search, and loading state.
+ * @param options - Project, search, and loading state.
  * @returns The projects content state to render.
  */
 export function getProjectsViewState({
     projectCount,
-    installedReleaseCount,
-    downloadingReleaseCount,
     textSearch,
     projectsLoading,
-    releasesLoading,
-    releasesInitialized,
 }: GetProjectsViewStateOptions): ProjectsViewState {
-    if (projectsLoading || (releasesLoading && !releasesInitialized)) {
+    if (projectsLoading) {
         return 'loading';
     }
 
@@ -47,13 +34,7 @@ export function getProjectsViewState({
         return 'list';
     }
 
-    if (installedReleaseCount > 0) {
-        return 'empty-with-editor';
-    }
-
-    return downloadingReleaseCount > 0
-        ? 'empty-installing-editor'
-        : 'empty-without-editor';
+    return 'empty';
 }
 
 export function getInvalidProjectTableKey(project: ProjectDetails): string {

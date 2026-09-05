@@ -1,5 +1,14 @@
 {
     "title": "新建项目",
+    "workflow": {
+        "title": "正在设置项目",
+        "installingEditor": "安装编辑器",
+        "creatingProject": "创建项目",
+        "launchingEditor": "启动编辑器",
+        "skipped": "已跳过",
+        "failed": "无法创建项目。请检查表单后重试。",
+        "launchFailed": "项目已创建，但无法启动编辑器。"
+    },
     "project": {
         "title": "项目",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "正在下载...",
         "nameRequired": "项目名称为必填项",
         "nameExists": "已存在同名项目",
-        "overwritePath": "覆盖项目路径",
+        "overwritePath": "项目位置",
         "selectFolderDialogTitle": "选择项目文件夹",
         "selectFolderTooltip": "打开对话框以选择项目文件夹",
-        "useDefaultPath": "使用默认路径",
-        "overwritePathRequired": "启用覆盖项目路径时，必须填写路径。"
+        "useDefaultPath": "使用默认位置",
+        "overwritePathRequired": "项目位置为必填项。"
+    },
+    "editorPicker": {
+        "title": "Godot 编辑器",
+        "installed": "已安装",
+        "browse": "浏览版本",
+        "search": "搜索版本",
+        "clearSearch": "清除版本搜索",
+        "channel": "发布频道",
+        "stable": "稳定版",
+        "prereleases": "预发布版",
+        "standard": "标准版",
+        "custom": "自定义",
+        "selected": "已选择",
+        "unavailable": "不可用",
+        "downloadRequired": "需要下载",
+        "noInstalled": "没有已安装的编辑器",
+        "noneSelected": "选择编辑器",
+        "loading": "正在加载版本...",
+        "noMatches": "没有匹配的版本",
+        "installFailed": "无法安装编辑器。项目尚未创建。"
     },
     "renderer": {
         "title": "渲染器",
@@ -175,6 +204,8 @@
         "editNow": "立即编辑",
         "create": "创建项目",
         "createAndPublish": "创建并发布",
+        "installAndCreate": "安装并创建项目",
+        "installCreateAndPublish": "安装、创建并发布",
         "creating": "正在创建项目...",
         "publishing": "正在创建项目并发布到 GitHub..."
     },

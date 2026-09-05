@@ -2,13 +2,9 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
-    CreateProjectPublicationOptions,
-    CreateProjectPublicationOutcome,
     CreateProjectPublicationTarget,
     GitIdentityScope,
-    GitLfsTrackingPolicy,
     GitLfsTrackingPolicyDescriptor,
-    InstalledRelease,
     ProjectDetails,
     ProjectGitIdentityPreset,
     PublishedGitHubRepository,
@@ -19,7 +15,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appBridge } from '../../bridge.ts';
-import { BusyOverlay } from '../../components/busy-overlay.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
 import { useGit } from '../../hooks/git.hook';
@@ -33,6 +28,7 @@ import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
 import { useToolIntegrations } from '../../hooks/useToolIntegrations';
 import { appRoutePaths } from '../../routes';
+import { CreateProjectEditorPicker } from './createProject/components/create-project-editor-picker.component';
 import {
     CreateProjectExistingRepositoryDialog,
     type ExistingRepositoryConsequences,
@@ -43,16 +39,28 @@ import {
 } from './createProject/components/create-project-git-identity-dialog.component';
 import { CreateProjectGitHubPublishingRecoveryDialog } from './createProject/components/create-project-github-publishing-recovery-dialog.component';
 import { CreateProjectGitHubPublishingSection } from './createProject/components/create-project-github-publishing-section.component';
+import {
+    CreateProjectProgressOverlay,
+    type CreateProjectProgressPhase,
+} from './createProject/components/create-project-progress-overlay.component';
 import { CreateProjectSourceControlSection } from './createProject/components/create-project-source-control-section.component';
 import { CreateProjectActions } from './createProject/components/createProjectActions.component';
 import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
 import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
 import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
 import type { RepositoryNameAvailabilityState } from './createProject/components/repository-creation-fields.component';
+import type {
+    CreateProjectDrawerProps,
+    CreateProjectSubmission,
+    ExistingRepositoryDialogState,
+    FailedPublication,
+} from './createProject/create-project-workflow.types';
 import {
     addCreateProjectGitLfsOptions,
     buildCreateProjectReleaseRows,
+    type CreateProjectEditorSelection,
     type CreateProjectGitIdentitySaveChoice,
+    getCreateProjectCatalogueVariants,
     getCreateProjectDirectorySegment,
     getCreateProjectReleaseKey,
     getDefaultRendererForReleaseVersion,
@@ -67,52 +75,14 @@ import {
     normalizeBasePathForJoin,
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
     PROJECT_NAME_CHECK_DEBOUNCE_MS,
+    prepareCreateProjectRelease,
     REPOSITORY_NAME_CHECK_DEBOUNCE_MS,
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
-    resolveCreateProjectReleaseIndex,
     shouldShowCreateProjectPublishedAlert,
     toCreateProjectPublicationOptions,
 } from './createProject/createProject.model';
-
-type FailedPublication = Extract<
-    CreateProjectPublicationOutcome,
-    { status: 'failed' }
->;
-
-type CreateProjectSubmission = {
-    projectName: string;
-    release: InstalledRelease;
-    renderer: RendererType[5];
-    codeEditorId: CodeEditorId | null;
-    withGit: boolean;
-    withGitLfs: boolean;
-    gitLfsTrackingPolicy?: GitLfsTrackingPolicy;
-    overwriteProjectPath?: string;
-    publication?: CreateProjectPublicationOptions;
-    editNow: boolean;
-};
-
-type ExistingRepositoryDialogState =
-    | {
-          mode: 'confirmation';
-          root: string;
-          consequences: ExistingRepositoryConsequences;
-          submission: CreateProjectSubmission;
-      }
-    | {
-          mode: 'completion';
-          root: string;
-          consequences: ExistingRepositoryConsequences;
-          project: ProjectDetails;
-          submission: CreateProjectSubmission;
-      };
-
-type SubViewProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-};
 
 /**
  * Renders the Create Project workflow.
@@ -120,7 +90,7 @@ type SubViewProps = {
  * @param props - Drawer visibility and change callback.
  * @returns The Create Project drawer.
  */
-export const CreateProjectDrawer: React.FC<SubViewProps> = ({
+export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
     open,
     onOpenChange,
 }) => {
@@ -132,7 +102,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     ]);
     const createButtonRef = useRef<HTMLButtonElement>(null);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
-    const [releaseKey, setReleaseKey] = useState<string | null>(null);
+    const [editorSelection, setEditorSelection] =
+        useState<CreateProjectEditorSelection | null>(null);
     const [projectName, setProjectName] = useState<string>('');
     const [projectNameAvailability, setProjectNameAvailability] = useState<
         'idle' | 'checking' | 'available' | 'unavailable'
@@ -145,14 +116,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const [editNow, setEditNow] = useState<boolean>(true);
     const [error, setError] = useState<string | undefined>();
     const [creating, setCreating] = useState<boolean>(false);
+    const [progressPhase, setProgressPhase] =
+        useState<CreateProjectProgressPhase | null>(null);
     const [checkingGitIdentity, setCheckingGitIdentity] =
         useState<boolean>(false);
     const [checkingProjectRepository, setCheckingProjectRepository] =
         useState<boolean>(false);
-    const [
-        creatingInsideExistingRepository,
-        setCreatingInsideExistingRepository,
-    ] = useState<boolean>(false);
     const [existingRepositoryDialog, setExistingRepositoryDialog] =
         useState<ExistingRepositoryDialogState | null>(null);
     const [gitIdentityDialogPage, setGitIdentityDialogPage] =
@@ -178,8 +147,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     });
     const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
     const [tools, setTools] = useState<ToolIntegrationSummary[]>([]);
-    const [overwriteProjectPath, setOverwriteProjectPath] =
-        useState<boolean>(false);
     const [withGit, setWithGit] = useState<boolean>(true);
     const [withGitLfs, setWithGitLfs] = useState<boolean>(false);
     const [gitLfsPolicy, setGitLfsPolicy] =
@@ -224,7 +191,15 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     const defaultOverwriteBasePathRef = useRef('');
     const pendingSubmissionRef = useRef<CreateProjectSubmission | null>(null);
 
-    const { installedReleases, downloadingReleases } = useRelease();
+    const {
+        installedReleases,
+        availableReleases,
+        availablePrereleases,
+        releaseInstallProgress,
+        loading: loadingReleases,
+        installRelease,
+        cancelInstall,
+    } = useRelease();
     const { addAlert, addCustomConfirm } = useAlerts();
     const {
         projects,
@@ -250,6 +225,20 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         () => getCreateProjectDirectorySegment(projectName),
         [projectName],
     );
+    const selectedEditorInstalled =
+        editorSelection?.source === 'installed' ||
+        Boolean(
+            editorSelection?.source === 'catalogue' &&
+                editorSelection.installedRelease,
+        );
+    const selectedEditorInstallProgress =
+        editorSelection?.source === 'catalogue'
+            ? releaseInstallProgress.find(
+                  (progress) =>
+                      progress.version === editorSelection.release.version &&
+                      progress.mono === editorSelection.mono,
+              )
+            : undefined;
 
     useEffect(() => {
         projectNameCheckRequestRef.current += 1;
@@ -327,47 +316,45 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         selectedPublicationTarget,
     ]);
 
-    const allReleases = useMemo(
-        () =>
-            buildCreateProjectReleaseRows(
-                installedReleases,
-                downloadingReleases,
-            ),
-        [installedReleases, downloadingReleases],
-    );
-    const validInstalledReleaseCount = useMemo(
-        () =>
-            installedReleases.filter((release) => release.valid !== false)
-                .length,
-        [installedReleases],
-    );
-    const selectedReleaseIndex = resolveCreateProjectReleaseIndex(
-        allReleases,
-        releaseKey,
-    );
-    const selectedRelease = allReleases[selectedReleaseIndex];
-
     useEffect(() => {
-        if (!selectedRelease) {
+        if (!open || editorSelection) {
             return;
         }
 
-        const resolvedReleaseKey = getCreateProjectReleaseKey(selectedRelease);
-        if (resolvedReleaseKey !== releaseKey) {
-            setReleaseKey(resolvedReleaseKey);
+        const installedRelease = buildCreateProjectReleaseRows(
+            installedReleases,
+            [],
+        ).find(
+            (release) =>
+                release.valid !== false && Boolean(release.editor_path),
+        );
+        if (installedRelease) {
+            setEditorSelection({
+                source: 'installed',
+                key: getCreateProjectReleaseKey(installedRelease),
+                release: installedRelease,
+            });
+            return;
         }
-    }, [releaseKey, selectedRelease]);
 
-    const derivedProjectPath = useMemo(() => {
-        const basePath = preferences?.projects_location || '';
-        const segment = projectName
-            ? projectDirectorySegment
-            : '<project-name>';
-        if (platform === 'win32') {
-            return `${basePath}\\${segment}`;
+        const catalogueVariant =
+            getCreateProjectCatalogueVariants(availableReleases, '')[0] ??
+            getCreateProjectCatalogueVariants(availablePrereleases, '')[0];
+        if (catalogueVariant) {
+            setEditorSelection({
+                source: 'catalogue',
+                key: catalogueVariant.key,
+                release: catalogueVariant.release,
+                mono: catalogueVariant.mono,
+            });
         }
-        return `${basePath}/${segment}`;
-    }, [preferences, platform, projectDirectorySegment, projectName]);
+    }, [
+        availablePrereleases,
+        availableReleases,
+        editorSelection,
+        installedReleases,
+        open,
+    ]);
 
     const projectSegmentDisplay = useMemo(
         () => (projectName ? projectDirectorySegment : '<project-name>'),
@@ -405,17 +392,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     );
 
     const showFolderCreateIcon =
-        overwriteProjectPath &&
-        !checkingOverwriteBasePath &&
-        overwriteBasePathMissing;
-    const isOverwritePathEmpty =
-        overwriteProjectPath && overwriteBasePath.trim().length === 0;
+        !checkingOverwriteBasePath && overwriteBasePathMissing;
+    const isOverwritePathEmpty = overwriteBasePath.trim().length === 0;
     const isOverwritePathChangedFromDefault =
-        overwriteProjectPath &&
         normalizeBasePathForJoin(overwriteBasePath, pathSeparator) !==
-            normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator);
+        normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator);
     const showUseDefaultPathAction =
-        overwriteProjectPath &&
         normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator)
             .length > 0 &&
         (isOverwritePathEmpty || isOverwritePathChangedFromDefault);
@@ -464,13 +446,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             return;
         }
 
-        if (!overwriteProjectPath) {
-            overwritePathCheckRequestRef.current += 1;
-            setCheckingOverwriteBasePath(false);
-            setOverwriteBasePathMissing(false);
-            return;
-        }
-
         const pathToCheck = overwriteBasePath.trim();
         if (pathToCheck.length === 0) {
             overwritePathCheckRequestRef.current += 1;
@@ -509,7 +484,24 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         return () => {
             window.clearTimeout(timeoutId);
         };
-    }, [open, overwriteBasePath, overwriteProjectPath, pathExists]);
+    }, [open, overwriteBasePath, pathExists]);
+
+    /** Clears the blocking workflow and returns to the preserved form. */
+    const finishCreateProjectProgress = () => {
+        setCreating(false);
+        setProgressPhase(null);
+    };
+
+    /**
+     * Reports a workflow failure in the application alert dialog.
+     *
+     * @param message - User-facing failure detail.
+     */
+    const showCreateProjectError = (message: string) => {
+        finishCreateProjectProgress();
+        setError(undefined);
+        addAlert(t('common:error'), message);
+    };
 
     /**
      * Creates the selected project with an optional Git setup choice.
@@ -527,38 +519,98 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             consequences: ExistingRepositoryConsequences;
         },
     ) => {
+        const requiresEditorInstall =
+            submission.editorSelection.source === 'catalogue' &&
+            !submission.editorSelection.installedRelease;
         setCreating(true);
+        setProgressPhase(requiresEditorInstall ? 'installing' : 'creating');
+
+        let preparedRelease: Awaited<
+            ReturnType<typeof prepareCreateProjectRelease>
+        >;
+        try {
+            preparedRelease = await prepareCreateProjectRelease(
+                submission.editorSelection,
+                installRelease,
+            );
+        } catch (installError) {
+            showCreateProjectError(
+                installError instanceof Error
+                    ? installError.message
+                    : t('editorPicker.installFailed'),
+            );
+            return;
+        }
+
+        if (!preparedRelease.success || !preparedRelease.release) {
+            showCreateProjectError(
+                preparedRelease.error ?? t('editorPicker.installFailed'),
+            );
+            return;
+        }
+
+        setProgressPhase('creating');
+
+        const preparedSubmission: CreateProjectSubmission =
+            submission.editorSelection.source === 'catalogue'
+                ? {
+                      ...submission,
+                      editorSelection: {
+                          ...submission.editorSelection,
+                          installedRelease: preparedRelease.release,
+                      },
+                  }
+                : submission;
+        pendingSubmissionRef.current = preparedSubmission;
+        setEditorSelection((currentSelection) =>
+            currentSelection?.source === 'catalogue' &&
+            currentSelection.key === preparedSubmission.editorSelection.key
+                ? preparedSubmission.editorSelection
+                : currentSelection,
+        );
+
         const consequences = existingRepository?.consequences ?? {
             git: submission.withGit,
             gitLfs: submission.withGitLfs,
             github: Boolean(submission.publication),
         };
-        const result = await createProject(
-            submission.projectName,
-            submission.release,
-            submission.renderer,
-            submission.codeEditorId,
-            submission.withGit,
-            submission.overwriteProjectPath,
-            existingRepository
-                ? undefined
-                : addCreateProjectGitLfsOptions(
-                      gitOptions,
-                      submission.gitLfsTrackingPolicy,
-                  ),
-            existingRepository ? undefined : submission.publication,
-            existingRepository ? { root: existingRepository.root } : undefined,
-        );
-
-        setCreating(false);
+        let result: Awaited<ReturnType<typeof createProject>>;
+        try {
+            result = await createProject(
+                submission.projectName,
+                preparedRelease.release,
+                submission.renderer,
+                submission.codeEditorId,
+                submission.withGit,
+                submission.overwriteProjectPath,
+                existingRepository
+                    ? undefined
+                    : addCreateProjectGitLfsOptions(
+                          gitOptions,
+                          submission.gitLfsTrackingPolicy,
+                      ),
+                existingRepository ? undefined : submission.publication,
+                existingRepository
+                    ? { root: existingRepository.root }
+                    : undefined,
+            );
+        } catch (creationError) {
+            showCreateProjectError(
+                creationError instanceof Error
+                    ? creationError.message
+                    : t('workflow.failed'),
+            );
+            return;
+        }
 
         if (result.parentRepositoryConfirmation) {
+            finishCreateProjectProgress();
             setError(undefined);
             setExistingRepositoryDialog({
                 mode: 'confirmation',
                 root: result.parentRepositoryConfirmation.root,
                 consequences,
-                submission,
+                submission: preparedSubmission,
             });
             return;
         }
@@ -570,23 +622,39 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     ? result.gitSetup.root
                     : existingRepository?.root;
             if (repositoryRoot) {
+                finishCreateProjectProgress();
                 setExistingRepositoryDialog({
                     mode: 'completion',
                     root: repositoryRoot,
                     consequences,
                     project: result.projectDetails,
-                    submission,
+                    submission: preparedSubmission,
                 });
                 return;
             }
             pendingSubmissionRef.current = null;
-            onOpenChange(false);
-            if (submission.editNow) {
-                launchProject(result.projectDetails);
+            if (preparedSubmission.editNow) {
+                setProgressPhase('launching');
+                try {
+                    await launchProject(result.projectDetails);
+                } catch (launchError) {
+                    showCreateProjectError(
+                        launchError instanceof Error
+                            ? launchError.message
+                            : t('workflow.launchFailed'),
+                    );
+                    return;
+                }
+            } else {
+                setProgressPhase('complete');
             }
+            finishCreateProjectProgress();
+            onOpenChange(false);
             if (
                 result.publication?.status === 'published' &&
-                shouldShowCreateProjectPublishedAlert(submission.editNow)
+                shouldShowCreateProjectPublishedAlert(
+                    preparedSubmission.editNow,
+                )
             ) {
                 showPublishedAlert(result.publication.repository);
             }
@@ -600,6 +668,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                 result.gitSetup?.status === 'existing-repository' &&
                 !result.gitSetup.isProjectRoot
             ) {
+                finishCreateProjectProgress();
                 setPublicationProject(null);
                 setPublicationFailure(null);
                 setError(undefined);
@@ -608,10 +677,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                     root: result.gitSetup.root,
                     consequences,
                     project: result.projectDetails,
-                    submission,
+                    submission: preparedSubmission,
                 });
                 return;
             }
+            finishCreateProjectProgress();
             setPublicationProject(result.projectDetails);
             setPublicationFailure(result.publication);
             if (
@@ -623,7 +693,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             setError(undefined);
         } else {
             pendingSubmissionRef.current = null;
-            setError(result.error);
+            showCreateProjectError(result.error ?? t('workflow.failed'));
         }
     };
 
@@ -887,20 +957,18 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
             (target) =>
                 getPublicationTargetValue(target) === selectedPublicationTarget,
         );
-        if (!selectedRelease) {
+        if (!editorSelection) {
             return;
         }
         const submission: CreateProjectSubmission = {
             projectName,
-            release: selectedRelease,
+            editorSelection,
             renderer,
             codeEditorId,
             withGit,
             withGitLfs,
             gitLfsTrackingPolicy: withGitLfs ? gitLfsPolicy?.id : undefined,
-            overwriteProjectPath: overwriteProjectPath
-                ? overwriteSubmitPath
-                : undefined,
+            overwriteProjectPath: overwriteSubmitPath,
             publication:
                 publishToGitHub && publicationTarget
                     ? toCreateProjectPublicationOptions(
@@ -960,12 +1028,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         }
         const context = existingRepositoryDialog;
         setExistingRepositoryDialog(null);
-        setCreatingInsideExistingRepository(true);
-        try {
-            await createSelectedProject(context.submission, undefined, context);
-        } finally {
-            setCreatingInsideExistingRepository(false);
-        }
+        await createSelectedProject(context.submission, undefined, context);
     };
 
     /** Finishes local completion and honours the Edit now choice. */
@@ -1086,24 +1149,15 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
     };
 
     /**
-     * Selects a Godot editor without depending on its current sorted index.
+     * Selects an exact installed or catalogue editor and updates its renderer default.
      *
-     * @param nextReleaseKey - Stable version and variant identity to select.
+     * @param selection - Stable editor selection from the inline picker.
      */
-    const changeRelease = (nextReleaseKey: string) => {
-        const release = allReleases.find(
-            (candidate) =>
-                getCreateProjectReleaseKey(candidate) === nextReleaseKey,
-        );
-
-        if (!release) {
-            return;
-        }
-
-        setReleaseKey(nextReleaseKey);
+    const changeEditorSelection = (selection: CreateProjectEditorSelection) => {
+        setEditorSelection(selection);
 
         const defaultRenderer = getDefaultRendererForReleaseVersion(
-            release.version,
+            selection.release.version,
         );
 
         if (defaultRenderer) {
@@ -1247,11 +1301,11 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
 
     useEffect(() => {
         if (!open) {
+            setEditorSelection(null);
             return;
         }
 
         setRenderer('FORWARD_PLUS');
-        setReleaseKey(null);
         setProjectName('');
         setProjectNameAvailability('idle');
         setOverwriteBasePath(defaultOverwriteBasePathRef.current);
@@ -1260,9 +1314,9 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setEditNow(true);
         setError(undefined);
         setCreating(false);
+        setProgressPhase(null);
         setCheckingGitIdentity(false);
         setCheckingProjectRepository(false);
-        setCreatingInsideExistingRepository(false);
         setExistingRepositoryDialog(null);
         setGitIdentityDialogPage(null);
         setGitIdentityName('');
@@ -1276,7 +1330,6 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         setPreflightGlobalIdentity({ name: '', email: '' });
         setSelectingFolder(false);
         setTools([]);
-        setOverwriteProjectPath(false);
         setWithGit(true);
         setWithGitLfs(false);
         setGitLfsPolicy(null);
@@ -1341,14 +1394,20 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                         message={t('projects:messages.waitingForDialog')}
                     />
                 )}
-                {creating && !publicationFailure && (
-                    <BusyOverlay
+                {progressPhase && !publicationFailure && (
+                    <CreateProjectProgressOverlay
                         className="z-60"
-                        message={t(
-                            publishToGitHub && !creatingInsideExistingRepository
-                                ? 'buttons.publishing'
-                                : 'buttons.creating',
-                        )}
+                        phase={progressPhase}
+                        editorInstalled={selectedEditorInstalled}
+                        editNow={editNow}
+                        installProgress={selectedEditorInstallProgress}
+                        labels={{
+                            title: t('workflow.title'),
+                            installingEditor: t('workflow.installingEditor'),
+                            creatingProject: t('workflow.creatingProject'),
+                            launchingEditor: t('workflow.launchingEditor'),
+                            skipped: t('workflow.skipped'),
+                        }}
                     />
                 )}
                 <Drawer.Header>
@@ -1370,24 +1429,30 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                         )}
                         <CreateProjectProjectSection
                             t={t}
-                            releases={allReleases}
-                            releaseKey={
-                                selectedRelease
-                                    ? getCreateProjectReleaseKey(
-                                          selectedRelease,
-                                      )
-                                    : ''
-                            }
                             inputNameRef={inputNameRef}
-                            installedReleaseCount={validInstalledReleaseCount}
+                            editorPicker={
+                                <CreateProjectEditorPicker
+                                    open={open}
+                                    installedReleases={installedReleases}
+                                    availableReleases={availableReleases}
+                                    availablePrereleases={availablePrereleases}
+                                    releaseInstallProgress={
+                                        releaseInstallProgress
+                                    }
+                                    loading={loadingReleases}
+                                    selection={editorSelection}
+                                    onSelectionChange={changeEditorSelection}
+                                    onCancelInstall={(jobId) =>
+                                        void cancelInstall(jobId)
+                                    }
+                                />
+                            }
                             projectName={projectName}
                             projectNameError={
                                 projectNameAvailability === 'unavailable'
                                     ? t('project.nameExists')
                                     : undefined
                             }
-                            derivedProjectPath={derivedProjectPath}
-                            overwriteProjectPath={overwriteProjectPath}
                             overwriteBasePath={overwriteBasePath}
                             overwriteDisplayPath={overwriteDisplayPath}
                             overwritePathSuffixDisplay={
@@ -1397,16 +1462,12 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             showFolderCreateIcon={showFolderCreateIcon}
                             isOverwritePathEmpty={isOverwritePathEmpty}
                             onProjectNameChange={setProjectName}
-                            onReleaseChange={changeRelease}
                             onOverwriteBasePathChange={setOverwriteBasePath}
                             onUseDefaultPath={() =>
                                 setOverwriteBasePath(defaultOverwriteBasePath)
                             }
                             onSelectProjectFolder={() =>
                                 void handleSelectProjectFolder()
-                            }
-                            onOverwriteProjectPathChange={
-                                setOverwriteProjectPath
                             }
                         />
                         <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
@@ -1415,8 +1476,8 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                                     t={t}
                                     renderer={renderer}
                                     versionNumber={
-                                        allReleases[selectedReleaseIndex]
-                                            ?.version_number || 0
+                                        editorSelection?.release
+                                            .version_number || 0
                                     }
                                     onRendererChange={setRenderer}
                                 />
@@ -1488,8 +1549,7 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             createDisabled={
                                 loadingTools ||
                                 loadingGitLfsPolicy ||
-                                validInstalledReleaseCount < 1 ||
-                                selectedReleaseIndex < 0 ||
+                                editorSelection === null ||
                                 projectNameAvailability === 'checking' ||
                                 projectNameAvailability === 'unavailable' ||
                                 isOverwritePathEmpty ||
@@ -1509,9 +1569,14 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
                             editNowLabel={t('buttons.editNow')}
                             cancelLabel={t('common:buttons.cancel')}
                             createLabel={t(
-                                publishToGitHub
-                                    ? 'buttons.createAndPublish'
-                                    : 'buttons.create',
+                                editorSelection?.source === 'catalogue' &&
+                                    !editorSelection.installedRelease
+                                    ? publishToGitHub
+                                        ? 'buttons.installCreateAndPublish'
+                                        : 'buttons.installAndCreate'
+                                    : publishToGitHub
+                                      ? 'buttons.createAndPublish'
+                                      : 'buttons.create',
                             )}
                             onEditNowChange={setEditNow}
                             onCancel={() => onOpenChange(false)}

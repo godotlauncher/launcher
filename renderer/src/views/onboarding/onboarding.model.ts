@@ -1,5 +1,4 @@
 import type {
-    InstalledRelease,
     OnboardingRecommendedLocations,
     UserPreferences,
 } from '@shared/contracts';
@@ -39,17 +38,12 @@ export function getPreviousOnboardingStep(
 }
 
 /**
- * Selects the route shown after onboarding based on editor availability.
+ * Selects the Projects welcome route shown after onboarding.
  *
- * @param installedReleases - Editors currently registered with the launcher.
- * @returns The projects route or the install-editor drawer route.
+ * @returns The Projects route.
  */
-export function getOnboardingDestinationPath(
-    installedReleases: InstalledRelease[],
-): typeof appRoutePaths.installEditor | typeof appRoutePaths.projects {
-    return installedReleases.length === 0
-        ? appRoutePaths.installEditor
-        : appRoutePaths.projects;
+export function getOnboardingDestinationPath(): typeof appRoutePaths.projects {
+    return appRoutePaths.projects;
 }
 
 export function isAbsoluteOnboardingPath(

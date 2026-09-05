@@ -2,11 +2,14 @@ import type {
     CodeEditorIntegrationSettings,
     InstalledRelease,
     ProjectDetails,
+    ReleaseSummary,
 } from '@shared/contracts';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
     addCreateProjectGitLfsOptions,
     buildCreateProjectReleaseRows,
+    getCreateProjectCatalogueReleaseKey,
+    getCreateProjectCatalogueVariants,
     getCreateProjectDirectorySegment,
     getCreateProjectReleaseKey,
     getDefaultRendererForReleaseVersion,
@@ -19,6 +22,7 @@ import {
     isToolIntegrationAvailable,
     joinBasePathWithProjectSegment,
     normalizeBasePathForJoin,
+    prepareCreateProjectRelease,
     resolveCreateProjectCodeEditorId,
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
@@ -42,6 +46,34 @@ const installedRelease = (
     config_version: 5,
     published_at: null,
     valid: true,
+    ...overrides,
+});
+
+const catalogueRelease = (
+    version: string,
+    overrides: Partial<ReleaseSummary> = {},
+): ReleaseSummary => ({
+    version,
+    version_number: Number.parseFloat(version),
+    name: `Godot ${version}`,
+    published_at: '2026-01-01T00:00:00.000Z',
+    draft: false,
+    prerelease: false,
+    tag: version,
+    assets: [
+        {
+            name: `${version}-standard.zip`,
+            download_url: 'https://example.com/standard.zip',
+            platform_tags: ['linux', 'x64'],
+            mono: false,
+        },
+        {
+            name: `${version}-dotnet.zip`,
+            download_url: 'https://example.com/dotnet.zip',
+            platform_tags: ['linux', 'x64'],
+            mono: true,
+        },
+    ],
     ...overrides,
 });
 
@@ -268,6 +300,150 @@ describe('create project model helpers', () => {
         expect(resolveCreateProjectReleaseIndex(updatedRows, selectedKey)).toBe(
             1,
         );
+    });
+
+    it('returns all filtered exact release variants newest-first', () => {
+        const releases = Array.from({ length: 7 }, (_, index) =>
+            catalogueRelease(`4.${index + 1}-stable`),
+        );
+
+        const variants = getCreateProjectCatalogueVariants(releases, 'Godot 4');
+
+        expect(variants).toHaveLength(14);
+        expect(variants[0]).toMatchObject({
+            key: 'catalogue:4.7-stable:std',
+            mono: false,
+        });
+        expect(variants[1]).toMatchObject({
+            key: 'catalogue:4.7-stable:mono',
+            mono: true,
+        });
+        expect(variants[variants.length - 1]).toMatchObject({
+            key: 'catalogue:4.1-stable:mono',
+            mono: true,
+        });
+    });
+
+    it('deduplicates exact variants returned by multiple catalogue providers', () => {
+        const stable = catalogueRelease('4.7.1-stable');
+
+        expect(
+            getCreateProjectCatalogueVariants([stable, { ...stable }], ''),
+        ).toEqual([
+            expect.objectContaining({
+                key: 'catalogue:4.7.1-stable:std',
+                mono: false,
+            }),
+            expect.objectContaining({
+                key: 'catalogue:4.7.1-stable:mono',
+                mono: true,
+            }),
+        ]);
+    });
+
+    it('keeps only catalogue variants backed by an exact flavour asset', () => {
+        const release = catalogueRelease('4.8-stable', {
+            assets: [
+                {
+                    name: 'standard.zip',
+                    download_url: 'https://example.com/standard.zip',
+                    platform_tags: ['linux', 'x64'],
+                    mono: false,
+                },
+            ],
+        });
+
+        expect(getCreateProjectCatalogueVariants([release], '')).toEqual([
+            {
+                key: getCreateProjectCatalogueReleaseKey(release, false),
+                release,
+                mono: false,
+            },
+        ]);
+    });
+
+    it('uses installed selections without starting an install', async () => {
+        const release = installedRelease('4.7-stable');
+        const install = vi.fn();
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'installed',
+                key: getCreateProjectReleaseKey(release),
+                release,
+            },
+            install,
+        );
+
+        expect(result).toMatchObject({ success: true, release });
+        expect(install).not.toHaveBeenCalled();
+    });
+
+    it('installs the exact catalogue variant before project creation can continue', async () => {
+        const release = catalogueRelease('4.8-beta1', { prerelease: true });
+        const installed = installedRelease('4.8-beta1', {
+            mono: true,
+            prerelease: true,
+        });
+        const install = vi.fn(async () => ({
+            success: true,
+            version: release.version,
+            release: installed,
+        }));
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'catalogue',
+                key: getCreateProjectCatalogueReleaseKey(release, true),
+                release,
+                mono: true,
+            },
+            install,
+        );
+
+        expect(install).toHaveBeenCalledWith(release, true, 'project');
+        expect(result.release).toBe(installed);
+    });
+
+    it('reuses a catalogue variant that is already installed', async () => {
+        const release = catalogueRelease('4.8-stable');
+        const installed = installedRelease('4.8-stable');
+        const install = vi.fn();
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'catalogue',
+                key: getCreateProjectCatalogueReleaseKey(release, false),
+                release,
+                mono: false,
+                installedRelease: installed,
+            },
+            install,
+        );
+
+        expect(result.release).toBe(installed);
+        expect(install).not.toHaveBeenCalled();
+    });
+
+    it('passes install cancellation through without an installed release', async () => {
+        const release = catalogueRelease('4.8-stable');
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'catalogue',
+                key: getCreateProjectCatalogueReleaseKey(release, false),
+                release,
+                mono: false,
+            },
+            vi.fn(async () => ({
+                success: false,
+                version: release.version,
+                cancelled: true as const,
+            })),
+        );
+
+        expect(result).toMatchObject({ success: false, cancelled: true });
+        expect(result.release).toBeUndefined();
     });
 
     it('derives renderer defaults and tool integration availability', () => {

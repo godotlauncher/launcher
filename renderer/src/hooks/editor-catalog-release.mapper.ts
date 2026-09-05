@@ -27,7 +27,7 @@ export function mapEditorCatalogRelease(
         name: release.name,
         published_at: release.publishedAt,
         draft: false,
-        prerelease: release.prerelease,
+        prerelease: release.versionParts.channel !== 'stable',
         assets: release.variants.flatMap((variant) =>
             variant.assets.map((asset) => ({
                 name: asset.name,

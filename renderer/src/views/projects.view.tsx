@@ -3,15 +3,13 @@ import type {
     InstalledRelease,
     ProjectDetails,
 } from '@shared/contracts';
-import { FolderPlus, HardDriveDownload, TriangleAlert } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
 } from '../components/ui/actionMenu.component';
-import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -19,10 +17,10 @@ import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
 import { useToolIntegrations } from '../hooks/useToolIntegrations';
-import { appRoutePaths } from '../routes.ts';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectFoldersMenu } from './projects/components/projectFoldersMenu.component';
+import { ProjectsWelcome } from './projects/components/projects-welcome.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
 import { ProjectsList } from './projects/components/projectsList.component';
@@ -72,7 +70,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         'menus',
         'dialogs',
     ]);
-    const navigate = useNavigate();
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -117,8 +114,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         downloadingReleases,
         installRelease,
         isInstalledRelease,
-        loading: releasesLoading,
-        initialized: releasesInitialized,
         checkAllReleasesValid,
     } = useRelease();
     const {
@@ -224,6 +219,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         handleAddProjectResult,
     });
 
+    /**
+     * Checks whether the editor configured for a project is downloading.
+     *
+     * @param project - The project whose editor state is checked.
+     * @returns Whether its editor is currently downloading.
+     */
     const isProjectEditorDownloading = (project: ProjectDetails): boolean =>
         downloadingReleases.some(
             (release) =>
@@ -306,17 +307,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     ).length;
     const viewState = getProjectsViewState({
         projectCount: projects.length,
-        installedReleaseCount: validInstalledReleaseCount,
-        downloadingReleaseCount: downloadingReleases.length,
         textSearch,
         projectsLoading: loading,
-        releasesLoading,
-        releasesInitialized,
     });
-    const showEmptyState =
-        viewState === 'empty-without-editor' ||
-        viewState === 'empty-installing-editor' ||
-        viewState === 'empty-with-editor';
+    const showEmptyState = viewState === 'empty';
 
     return (
         <>
@@ -343,21 +337,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onDrop={handleDrop}
             >
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
-                <ProjectsHeader
-                    title={t('title')}
-                    projectsLocation={preferences?.projects_location}
-                    searchPlaceholder={t('search.placeholder')}
-                    searchValue={textSearch}
-                    onSearchChange={setTextSearch}
-                    onAddProject={openAddProjectSourceMenu}
-                    onCreateProject={() => setCreateOpen(true)}
-                    createDisabled={validInstalledReleaseCount < 1}
-                    addLabel={t('buttons.add')}
-                    createLabel={t('buttons.newProject')}
-                    copyPathLabel={t('common:buttons.copyPath')}
-                    copiedLabel={t('common:success')}
-                    showControls={!showEmptyState}
-                />
+                {!showEmptyState && (
+                    <ProjectsHeader
+                        title={t('title')}
+                        projectsLocation={preferences?.projects_location}
+                        searchPlaceholder={t('search.placeholder')}
+                        searchValue={textSearch}
+                        onSearchChange={setTextSearch}
+                        onAddProject={openAddProjectSourceMenu}
+                        onCreateProject={() => setCreateOpen(true)}
+                        createDisabled={false}
+                        addLabel={t('buttons.add')}
+                        createLabel={t('buttons.newProject')}
+                        copyPathLabel={t('common:buttons.copyPath')}
+                        copiedLabel={t('common:success')}
+                    />
+                )}
 
                 {viewState === 'list' &&
                     projects.length > 0 &&
@@ -381,53 +376,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             />
                         </div>
                     )}
-                {viewState === 'empty-without-editor' && (
-                    <EmptyState
-                        icon={HardDriveDownload}
-                        heading={t('emptyState.withoutEditor.heading')}
-                        description={t('emptyState.withoutEditor.description')}
-                        primaryActionLabel={t(
-                            'emptyState.withoutEditor.installEditor',
-                        )}
-                        secondaryActionLabel={t(
-                            'emptyState.addExistingProject',
-                        )}
-                        onPrimaryAction={() =>
-                            navigate(appRoutePaths.installEditor)
+                {viewState === 'empty' && (
+                    <ProjectsWelcome
+                        gitAvailable={gitAvailability === 'available'}
+                        t={t}
+                        onCreateProject={() => setCreateOpen(true)}
+                        onAddFromComputer={() => void onAddProject()}
+                        onAddFromGitHub={() =>
+                            openRemoteProjectSource('github')
                         }
-                        onSecondaryAction={openAddProjectSourceMenu}
-                    />
-                )}
-                {viewState === 'empty-with-editor' && (
-                    <EmptyState
-                        icon={FolderPlus}
-                        heading={t('emptyState.withEditor.heading')}
-                        description={t('emptyState.withEditor.description')}
-                        primaryActionLabel={t(
-                            'emptyState.withEditor.newProject',
-                        )}
-                        secondaryActionLabel={t(
-                            'emptyState.addExistingProject',
-                        )}
-                        onPrimaryAction={() => setCreateOpen(true)}
-                        onSecondaryAction={openAddProjectSourceMenu}
-                    />
-                )}
-                {viewState === 'empty-installing-editor' && (
-                    <EmptyState
-                        icon={HardDriveDownload}
-                        heading={t('emptyState.withoutEditor.heading')}
-                        description={t(
-                            'emptyState.withoutEditor.installingDescription',
-                        )}
-                        primaryActionLabel={t(
-                            'emptyState.withoutEditor.installingEditor',
-                        )}
-                        primaryActionPending
-                        secondaryActionLabel={t(
-                            'emptyState.addExistingProject',
-                        )}
-                        onSecondaryAction={openAddProjectSourceMenu}
                     />
                 )}
                 {!showEmptyState && (

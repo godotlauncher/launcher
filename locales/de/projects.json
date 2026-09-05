@@ -1,6 +1,21 @@
 {
     "title": "Projekte",
     "emptyState": {
+        "welcome": {
+            "heading": "Projekt hinzufügen oder erstellen",
+            "description": "Bringe deine bestehende Arbeit in den Launcher oder beginne etwas Neues.",
+            "newProject": {
+                "heading": "Neues Projekt",
+                "description": "Wähle eine Godot-Version.\nLauncher lädt sie bei Bedarf herunter.",
+                "action": "Projekt erstellen"
+            },
+            "existingProject": {
+                "heading": "Bestehendes Projekt",
+                "description": "Launcher findet die Godot-Version,\ndie jedes Projekt benötigt.",
+                "fromComputer": "Von diesem Computer",
+                "fromGitHub": "Von GitHub"
+            }
+        },
         "addExistingProject": "Vorhandenes Projekt hinzufügen",
         "withoutEditor": {
             "heading": "Installiere Godot, um ein Projekt zu starten",

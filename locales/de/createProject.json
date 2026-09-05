@@ -1,5 +1,14 @@
 {
     "title": "Neues Projekt",
+    "workflow": {
+        "title": "Projekt wird eingerichtet",
+        "installingEditor": "Editor installieren",
+        "creatingProject": "Projekt erstellen",
+        "launchingEditor": "Editor starten",
+        "skipped": "Übersprungen",
+        "failed": "Das Projekt konnte nicht erstellt werden. Überprüfen Sie das Formular und versuchen Sie es erneut.",
+        "launchFailed": "Das Projekt wurde erstellt, aber der Editor konnte nicht gestartet werden."
+    },
     "project": {
         "title": "Projekt",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "Wird heruntergeladen...",
         "nameRequired": "Projektname ist erforderlich",
         "nameExists": "Ein Projekt mit diesem Namen ist bereits vorhanden",
-        "overwritePath": "Überschreibe Projektpfad",
+        "overwritePath": "Projektpfad",
         "selectFolderDialogTitle": "Projektordner auswählen",
         "selectFolderTooltip": "Öffne einen Dialog zum Auswählen des Projektordners",
         "useDefaultPath": "Standardpfad verwenden",
-        "overwritePathRequired": "Wenn „Projektpfad überschreiben“ aktiviert ist, muss ein Pfad angegeben werden."
+        "overwritePathRequired": "Der Projektpfad ist erforderlich."
+    },
+    "editorPicker": {
+        "title": "Godot-Editor",
+        "installed": "Installiert",
+        "browse": "Versionen durchsuchen",
+        "search": "Versionen suchen",
+        "clearSearch": "Versionssuche löschen",
+        "channel": "Veröffentlichungskanal",
+        "stable": "Stabil",
+        "prereleases": "Vorabversionen",
+        "standard": "Standard",
+        "custom": "Benutzerdefiniert",
+        "selected": "Ausgewählt",
+        "unavailable": "Nicht verfügbar",
+        "downloadRequired": "Download erforderlich",
+        "noInstalled": "Keine Editoren installiert",
+        "noneSelected": "Editor auswählen",
+        "loading": "Versionen werden geladen...",
+        "noMatches": "Keine passenden Versionen",
+        "installFailed": "Der Editor konnte nicht installiert werden. Ihr Projekt wurde nicht erstellt."
     },
     "renderer": {
         "title": "Renderer",
@@ -175,6 +204,8 @@
         "editNow": "Jetzt bearbeiten",
         "create": "Projekt erstellen",
         "createAndPublish": "Erstellen und veröffentlichen",
+        "installAndCreate": "Installieren und Projekt erstellen",
+        "installCreateAndPublish": "Installieren, erstellen und veröffentlichen",
         "creating": "Projekt wird erstellt...",
         "publishing": "Projekt wird erstellt und auf GitHub veröffentlicht..."
     },

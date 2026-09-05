@@ -40,9 +40,8 @@ describe('onboarding model', () => {
         expect(getPreviousOnboardingStep('welcome')).toBe('welcome');
     });
 
-    it('routes new users into the install drawer and existing users to projects', () => {
-        expect(getOnboardingDestinationPath([])).toBe('/installs/install');
-        expect(getOnboardingDestinationPath([{} as never])).toBe('/projects');
+    it('routes every completed onboarding flow to projects', () => {
+        expect(getOnboardingDestinationPath()).toBe('/projects');
     });
 
     it('validates absolute paths for Windows and Unix platforms', () => {

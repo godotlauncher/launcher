@@ -1,5 +1,14 @@
 {
     "title": "Nouveau projet",
+    "workflow": {
+        "title": "Configuration de votre projet",
+        "installingEditor": "Installer l'éditeur",
+        "creatingProject": "Créer le projet",
+        "launchingEditor": "Lancer l'éditeur",
+        "skipped": "Ignoré",
+        "failed": "Le projet n'a pas pu être créé. Vérifiez le formulaire et réessayez.",
+        "launchFailed": "Le projet a été créé, mais l'éditeur n'a pas pu être lancé."
+    },
     "project": {
         "title": "Projet",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "Téléchargement...",
         "nameRequired": "Le nom du projet est requis",
         "nameExists": "Un projet portant ce nom existe déjà",
-        "overwritePath": "Remplacer le chemin du projet",
+        "overwritePath": "Emplacement du projet",
         "selectFolderDialogTitle": "Sélectionner le dossier du projet",
         "selectFolderTooltip": "Ouvrir une boîte de dialogue pour sélectionner le dossier du projet",
-        "useDefaultPath": "Utiliser le chemin par défaut",
-        "overwritePathRequired": "Le chemin est obligatoire lorsque l’option de remplacement du chemin du projet est activée."
+        "useDefaultPath": "Utiliser l'emplacement par défaut",
+        "overwritePathRequired": "L'emplacement du projet est obligatoire."
+    },
+    "editorPicker": {
+        "title": "Éditeur Godot",
+        "installed": "Installés",
+        "browse": "Parcourir les versions",
+        "search": "Rechercher des versions",
+        "clearSearch": "Effacer la recherche",
+        "channel": "Canal de publication",
+        "stable": "Stables",
+        "prereleases": "Préversions",
+        "standard": "Standard",
+        "custom": "Personnalisé",
+        "selected": "Sélectionné",
+        "unavailable": "Indisponible",
+        "downloadRequired": "Téléchargement requis",
+        "noInstalled": "Aucun éditeur installé",
+        "noneSelected": "Choisir un éditeur",
+        "loading": "Chargement des versions...",
+        "noMatches": "Aucune version correspondante",
+        "installFailed": "L’éditeur n’a pas pu être installé. Votre projet n’a pas été créé."
     },
     "renderer": {
         "title": "Moteur de rendu",
@@ -175,6 +204,8 @@
         "editNow": "Modifier maintenant",
         "create": "Créer le projet",
         "createAndPublish": "Créer et publier",
+        "installAndCreate": "Installer et créer le projet",
+        "installCreateAndPublish": "Installer, créer et publier",
         "creating": "Création du projet...",
         "publishing": "Création du projet et publication sur GitHub..."
     },

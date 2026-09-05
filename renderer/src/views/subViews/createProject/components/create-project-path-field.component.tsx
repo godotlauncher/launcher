@@ -1,17 +1,14 @@
 import { Folder } from 'lucide-react';
 import type React from 'react';
 import { PathField } from '../../../../components/ui/pathField.component';
-import { TextField } from '../../../../components/ui/textField.component';
 
 type Translate = (key: string) => string;
 
 type CreateProjectPathFieldProps = {
     t: Translate;
-    overwriteProjectPath: boolean;
     overwriteBasePath: string;
     overwriteDisplayPath: string;
     overwritePathSuffixDisplay: string;
-    derivedProjectPath: string;
     showUseDefaultPathAction: boolean;
     showFolderCreateIcon: boolean;
     onOverwriteBasePathChange: (value: string) => void;
@@ -23,37 +20,19 @@ type CreateProjectPathFieldProps = {
  * Renders the compact Create Project path control and its guarded suffix.
  *
  * @param props - Derived path state and Create Project path actions.
- * @returns A read-only path or the directory browser field.
+ * @returns The editable directory browser field.
  */
 export const CreateProjectPathField: React.FC<CreateProjectPathFieldProps> = ({
     t,
-    overwriteProjectPath,
     overwriteBasePath,
     overwriteDisplayPath,
     overwritePathSuffixDisplay,
-    derivedProjectPath,
     showUseDefaultPathAction,
     showFolderCreateIcon,
     onOverwriteBasePathChange,
     onUseDefaultPath,
     onSelectProjectFolder,
 }) => {
-    if (!overwriteProjectPath) {
-        return (
-            <TextField
-                id="inputProjectPath"
-                testId="inputProjectPath"
-                ariaLabel={t('project.overwritePath')}
-                value={derivedProjectPath}
-                title={derivedProjectPath}
-                onChange={onOverwriteBasePathChange}
-                disabled
-                compact
-                regularText
-            />
-        );
-    }
-
     return (
         <PathField
             id="inputProjectPath"

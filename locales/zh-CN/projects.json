@@ -1,6 +1,21 @@
 {
     "title": "项目",
     "emptyState": {
+        "welcome": {
+            "heading": "添加或创建项目",
+            "description": "将现有工作添加到 Launcher，或开始新项目。",
+            "newProject": {
+                "heading": "新建项目",
+                "description": "选择 Godot 版本。\n如有需要，Launcher 会下载它。",
+                "action": "创建项目"
+            },
+            "existingProject": {
+                "heading": "现有项目",
+                "description": "Launcher 会找到每个项目\n所需的 Godot 版本。",
+                "fromComputer": "从此电脑",
+                "fromGitHub": "从 GitHub"
+            }
+        },
         "addExistingProject": "添加现有项目",
         "withoutEditor": {
             "heading": "安装 Godot 以开始项目",

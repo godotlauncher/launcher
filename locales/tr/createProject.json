@@ -1,5 +1,14 @@
 {
     "title": "Yeni Proje",
+    "workflow": {
+        "title": "Projeniz ayarlanıyor",
+        "installingEditor": "Düzenleyiciyi yükle",
+        "creatingProject": "Proje oluştur",
+        "launchingEditor": "Düzenleyiciyi başlat",
+        "skipped": "Atlandı",
+        "failed": "Proje oluşturulamadı. Formu gözden geçirip tekrar deneyin.",
+        "launchFailed": "Proje oluşturuldu ancak düzenleyici başlatılamadı."
+    },
     "project": {
         "title": "Proje",
         "dotNetBadge": ".NET",
@@ -9,11 +18,31 @@
         "downloading": "İndiriliyor...",
         "nameRequired": "Proje adı gerekli",
         "nameExists": "Bu ada sahip bir proje zaten var",
-        "overwritePath": "Proje yolunun üzerine yaz",
+        "overwritePath": "Proje konumu",
         "selectFolderDialogTitle": "Proje klasörünü seç",
         "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç",
-        "useDefaultPath": "Varsayılan yolu kullan",
-        "overwritePathRequired": "Proje yolu üzerine yazma etkinleştirildiğinde yol zorunludur."
+        "useDefaultPath": "Varsayılan konumu kullan",
+        "overwritePathRequired": "Proje konumu gereklidir."
+    },
+    "editorPicker": {
+        "title": "Godot düzenleyicisi",
+        "installed": "Kurulu",
+        "browse": "Sürümlere göz at",
+        "search": "Sürüm ara",
+        "clearSearch": "Sürüm aramasını temizle",
+        "channel": "Sürüm kanalı",
+        "stable": "Kararlı",
+        "prereleases": "Ön sürümler",
+        "standard": "Standart",
+        "custom": "Özel",
+        "selected": "Seçildi",
+        "unavailable": "Kullanılamıyor",
+        "downloadRequired": "İndirme gerekli",
+        "noInstalled": "Kurulu düzenleyici yok",
+        "noneSelected": "Bir düzenleyici seçin",
+        "loading": "Sürümler yükleniyor...",
+        "noMatches": "Eşleşen sürüm yok",
+        "installFailed": "Düzenleyici kurulamadı. Projeniz oluşturulmadı."
     },
     "renderer": {
         "title": "İşleyici",
@@ -175,6 +204,8 @@
         "editNow": "Şimdi düzenle",
         "create": "Proje Oluştur",
         "createAndPublish": "Oluştur ve yayımla",
+        "installAndCreate": "Kur ve proje oluştur",
+        "installCreateAndPublish": "Kur, oluştur ve yayımla",
         "creating": "Proje oluşturuluyor...",
         "publishing": "Proje oluşturuluyor ve GitHub'da yayımlanıyor..."
     },

@@ -44,6 +44,10 @@ describe('editor catalog release mapper', () => {
             releases: [
                 createRelease('official-stable', false),
                 createRelease('official-prerelease', true),
+                {
+                    ...createRelease('official-prerelease', false),
+                    prerelease: true,
+                },
             ],
             providers: [
                 {
@@ -60,7 +64,7 @@ describe('editor catalog release mapper', () => {
             ],
         });
 
-        expect(mapped.availableReleases).toHaveLength(1);
+        expect(mapped.availableReleases).toHaveLength(2);
         expect(mapped.availablePrereleases).toHaveLength(1);
         expect(mapped.refreshError).toBe('Builds are unavailable');
     });

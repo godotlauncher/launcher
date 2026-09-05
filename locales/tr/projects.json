@@ -1,6 +1,21 @@
 {
     "title": "Projeler",
     "emptyState": {
+        "welcome": {
+            "heading": "Bir proje ekleyin veya oluşturun",
+            "description": "Mevcut çalışmanızı Launcher'a getirin veya yeni bir şeye başlayın.",
+            "newProject": {
+                "heading": "Yeni proje",
+                "description": "Bir Godot sürümü seçin.\nGerekirse Launcher indirir.",
+                "action": "Proje oluştur"
+            },
+            "existingProject": {
+                "heading": "Mevcut proje",
+                "description": "Launcher, her projenin ihtiyaç duyduğu\nGodot sürümünü bulur.",
+                "fromComputer": "Bu bilgisayardan",
+                "fromGitHub": "GitHub'dan"
+            }
+        },
         "addExistingProject": "Mevcut bir proje ekle",
         "withoutEditor": {
             "heading": "Bir proje başlatmak için Godot'yu kurun",

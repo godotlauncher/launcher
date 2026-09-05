@@ -23,13 +23,13 @@ type AssetTarget = {
  * Converts one GitHub release into a catalog release.
  *
  * @param providerId - The provider that supplied the release.
- * @param providerPrerelease - Whether the provider contains prereleases.
+ * @param _providerPrerelease - Provider channel metadata retained for the adapter boundary.
  * @param release - The GitHub release to convert.
  * @returns A catalog release, or null when the release is unsupported.
  */
 export function mapGithubEditorRelease(
     providerId: EditorCatalogProviderId,
-    providerPrerelease: boolean,
+    _providerPrerelease: boolean,
     release: GithubEditorRelease,
 ): EditorCatalogRelease | null {
     if (release.draft || !release.tagName.trim()) {
@@ -80,7 +80,7 @@ export function mapGithubEditorRelease(
         baseVersion: `${versionParts.major}.${versionParts.minor}`,
         name: release.name?.trim() || release.tagName,
         publishedAt: normalizePublishedAt(release.publishedAt),
-        prerelease: providerPrerelease || release.prerelease,
+        prerelease: versionParts.channel !== 'stable',
         versionParts,
         variants,
     };

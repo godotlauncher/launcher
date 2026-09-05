@@ -1,6 +1,21 @@
 {
     "title": "專案",
     "emptyState": {
+        "welcome": {
+            "heading": "新增或建立專案",
+            "description": "將現有工作加入 Launcher，或開始新的專案。",
+            "newProject": {
+                "heading": "新專案",
+                "description": "選擇 Godot 版本。\n需要時 Launcher 會下載它。",
+                "action": "建立專案"
+            },
+            "existingProject": {
+                "heading": "現有專案",
+                "description": "Launcher 會找到每個專案\n需要的 Godot 版本。",
+                "fromComputer": "從這部電腦",
+                "fromGitHub": "從 GitHub"
+            }
+        },
         "addExistingProject": "新增現有專案",
         "withoutEditor": {
             "heading": "安裝 Godot 以開始專案",
