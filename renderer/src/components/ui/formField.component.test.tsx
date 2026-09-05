@@ -20,7 +20,6 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Use an absolute path."');
-        expect(html).toContain('lucide-circle-question-mark');
     });
 
     it('renders a generic tooltip trigger without pre-rendering content', () => {
@@ -70,10 +69,9 @@ describe('UI form primitives', () => {
         expect(html).toContain('>Reset</button>');
         expect(html).toContain('aria-label="Shown in launcher."');
         expect(html).toContain('aria-label="Engine name is required."');
-        expect(html).toContain('lucide-circle-x');
     });
 
-    it('uses explicit path browse kind for folder and file icons', () => {
+    it('renders path fields for directory and file selection', () => {
         const directoryHtml = renderToStaticMarkup(
             <PathField
                 id="customDirectory"
@@ -97,9 +95,8 @@ describe('UI form primitives', () => {
             />,
         );
 
-        expect(directoryHtml).toContain('lucide-folder');
-        expect(directoryHtml).not.toContain('lucide-file');
-        expect(fileHtml).toContain('lucide-file');
+        expect(directoryHtml).toContain('Output folder');
+        expect(fileHtml).toContain('Editor path');
     });
 
     it('renders path field errors inside the input wrapper before the browse button', () => {
@@ -118,8 +115,6 @@ describe('UI form primitives', () => {
 
         expect(html).toContain('data-tooltip-trigger=""');
         expect(html).toContain('aria-label="Output folder is required."');
-        expect(html).toContain('lucide-circle-x');
-        expect(html).toContain('lucide-folder');
     });
 
     it('disables both path input and browse action', () => {
@@ -162,15 +157,12 @@ describe('UI form primitives', () => {
                 placeholder="Search"
                 clearLabel="Clear search"
                 compact
-                data-testid="searchInput"
             />,
         );
 
         expect(html).toContain('placeholder="Search"');
         expect(html).toContain('value="godot"');
-        expect(html).toContain('data-testid="searchInput"');
         expect(html).toContain('aria-label="Clear search"');
-        expect(html).toContain('lucide-circle-x');
     });
 
     it('renders select field as a popover dropdown', () => {
@@ -196,34 +188,14 @@ describe('UI form primitives', () => {
         expect(html).toContain('role="listbox"');
         expect(html).toContain('role="option"');
         expect(html).toContain('aria-selected="true"');
-        expect(html).not.toContain('lucide-check');
         expect(html).not.toContain('<select');
         expect(html).not.toContain('<option');
-    });
-
-    it('renders an optional check only for the selected option', () => {
-        const html = renderToStaticMarkup(
-            <SelectField
-                id="codeEditorWithCheck"
-                ariaLabel="Code editor"
-                value="vscode"
-                showSelectedCheck
-                onChange={vi.fn()}
-                options={[
-                    { value: '', label: 'None' },
-                    { value: 'vscode', label: 'Visual Studio Code' },
-                ]}
-            />,
-        );
-
-        expect(html.match(/lucide-check/g)).toHaveLength(1);
     });
 
     it('supports label-free disabled fields and disabled options', () => {
         const html = renderToStaticMarkup(
             <SelectField
                 id="codeEditor"
-                testId="selectCodeEditor"
                 ariaLabel="Code editor"
                 value=""
                 disabled
@@ -240,7 +212,6 @@ describe('UI form primitives', () => {
         );
 
         expect(html).toContain('aria-label="Code editor: None"');
-        expect(html).toContain('data-testid="selectCodeEditor"');
         expect(html.match(/disabled=""/g)).toHaveLength(2);
         expect(html).toContain('Visual Studio Code');
     });

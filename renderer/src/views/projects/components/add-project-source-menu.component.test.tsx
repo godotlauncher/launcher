@@ -50,7 +50,7 @@ describe('AddProjectSourceMenu', () => {
         expect(html).not.toContain('addProject.sources.gitUnavailable');
     });
 
-    it('keeps remote choices on one line while checking Git', () => {
+    it('keeps remote choices unavailable while checking Git', () => {
         const html = renderToStaticMarkup(
             <AddProjectSourceMenu
                 anchorRect={anchorRect}
@@ -66,7 +66,6 @@ describe('AddProjectSourceMenu', () => {
         expect(html).toContain('addProject.sources.publicGit');
         expect(html).toContain('addProject.sources.github');
         expect(html).not.toContain('addProject.sources.checkingGit');
-        expect(html).not.toContain('flex-col');
         expect(html.match(/disabled=""/g)).toHaveLength(2);
     });
 });

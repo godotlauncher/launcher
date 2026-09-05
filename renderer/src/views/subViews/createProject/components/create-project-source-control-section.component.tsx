@@ -1,5 +1,6 @@
 import type { GitLfsTrackingPolicyDescriptor } from '@shared/contracts';
 import clsx from 'clsx';
+import { LockKeyhole } from 'lucide-react';
 import type React from 'react';
 import { CreateProjectGitLfsOption } from './create-project-git-lfs-option.component';
 import { CreateProjectUnavailableStatus } from './create-project-unavailable-status.component';
@@ -51,7 +52,7 @@ export const CreateProjectSourceControlSection: React.FC<
             )}
         </h2>
         <div
-            className={clsx('flex flex-col gap-4 py-2', {
+            className={clsx('grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2', {
                 invisible: loading,
             })}
         >
@@ -88,21 +89,28 @@ export const CreateProjectSourceControlSection: React.FC<
                         selected={withGitLfs}
                         onSelectedChange={onWithGitLfsChange}
                     />
-                    <label className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            className="checkbox checkbox-sm rounded-sm"
-                            checked={publishToGitHub}
-                            disabled={publishingLocked}
-                            onChange={(event) =>
-                                onPublishToGitHubChange(event.target.checked)
-                            }
-                        />
-                        <span>{t('publishToGitHub.label')}</span>
-                    </label>
-                    <p className="pl-7 text-sm text-base-content/70">
-                        {t('publishToGitHub.description')}
-                    </p>
+                    <div className="flex items-center justify-between gap-3 sm:col-span-2">
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                className="checkbox checkbox-sm rounded-sm"
+                                checked={publishToGitHub}
+                                disabled={publishingLocked}
+                                onChange={(event) =>
+                                    onPublishToGitHubChange(
+                                        event.target.checked,
+                                    )
+                                }
+                            />
+                            <span>{t('publishToGitHub.label')}</span>
+                        </label>
+                        {publishToGitHub && (
+                            <span className="flex items-center gap-1.5 text-sm text-base-content/60">
+                                <LockKeyhole size={14} aria-hidden="true" />
+                                {t('publishToGitHub.repositoryTitle')}
+                            </span>
+                        )}
+                    </div>
                 </>
             )}
         </div>

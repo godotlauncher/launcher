@@ -180,6 +180,9 @@ describe('createProject', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         fsMocks.existsSync.mockReturnValue(false);
+        fsMocks.promises.lstat.mockRejectedValue(
+            Object.assign(new Error('missing'), { code: 'ENOENT' }),
+        );
         fsMocks.promises.mkdir.mockResolvedValue(undefined);
         fsMocks.promises.writeFile.mockResolvedValue(undefined);
         fsMocks.promises.copyFile.mockResolvedValue(undefined);
@@ -286,6 +289,111 @@ describe('createProject', () => {
             expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
         },
     );
+
+    it('reports a missing destination as available', async () => {
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+        );
+
+        await expect(
+            service.inspectCreateProjectDestination('  My Game  '),
+        ).resolves.toEqual({ status: 'available' });
+        expect(fsMocks.promises.lstat).toHaveBeenCalledWith(
+            path.resolve('/projects/My-Game'),
+        );
+    });
+
+    it('reports an empty destination directory as available', async () => {
+        fsMocks.promises.lstat.mockResolvedValue({ isDirectory: () => true });
+        fsMocks.promises.readdir.mockResolvedValue([]);
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+        );
+
+        await expect(
+            service.inspectCreateProjectDestination('My Game'),
+        ).resolves.toEqual({ status: 'available' });
+    });
+
+    it('blocks a non-empty destination directory', async () => {
+        fsMocks.promises.lstat.mockResolvedValue({ isDirectory: () => true });
+        fsMocks.promises.readdir.mockResolvedValue(['project.godot']);
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+        );
+
+        await expect(
+            service.inspectCreateProjectDestination('My Game'),
+        ).resolves.toEqual({
+            status: 'blocked',
+            error: 'createProject:errors.folderNotEmpty',
+        });
+    });
+
+    it('blocks a file destination', async () => {
+        fsMocks.promises.lstat.mockResolvedValue({ isDirectory: () => false });
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+        );
+
+        await expect(
+            service.inspectCreateProjectDestination('My Game'),
+        ).resolves.toEqual({
+            status: 'blocked',
+            error: 'createProject:errors.pathNotDirectory',
+        });
+    });
+
+    it('blocks when destination inspection fails without exposing filesystem details', async () => {
+        fsMocks.promises.lstat.mockRejectedValue(
+            Object.assign(new Error('permission denied'), { code: 'EACCES' }),
+        );
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+        );
+
+        await expect(
+            service.inspectCreateProjectDestination('My Game'),
+        ).resolves.toEqual({
+            status: 'blocked',
+            error: 'createProject:destination.checkFailed',
+        });
+    });
+
+    it('blocks a dangling symbolic link destination', async () => {
+        fsMocks.promises.lstat.mockResolvedValue({
+            isDirectory: () => false,
+            isSymbolicLink: () => true,
+        });
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+        );
+
+        await expect(
+            service.inspectCreateProjectDestination('My Game'),
+        ).resolves.toEqual({
+            status: 'blocked',
+            error: 'createProject:errors.pathNotDirectory',
+        });
+    });
 
     it('writes project launcher config after creating a project', async () => {
         const result = await createProject(

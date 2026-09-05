@@ -35,7 +35,7 @@ describe('CreateProjectGitHubPublishingSection', () => {
 
         expect(html).toContain('publishToGitHub.owner');
         expect(html).toContain('publishToGitHub.repositoryName');
-        expect(html).toContain('publishToGitHub.repositoryTitle');
+        expect(html).not.toContain('publishToGitHub.repositoryTitle');
         expect(html).not.toContain('publishToGitHub.privateTitle');
         expect(html).not.toContain('Change connection');
     });

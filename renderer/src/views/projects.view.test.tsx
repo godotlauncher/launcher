@@ -138,20 +138,20 @@ vi.mock('react-i18next', () => {
         'projects:search.placeholder': 'Search',
         'projects:buttons.add': 'Add',
         'projects:buttons.newProject': 'New Project',
-        'projects:emptyState.addExistingProject': 'Add an existing project',
-        'projects:emptyState.withoutEditor.heading':
-            'Install Godot to start a project',
-        'projects:emptyState.withoutEditor.description':
-            'Godot Launcher needs an editor before it can create or run projects.',
-        'projects:emptyState.withoutEditor.installEditor': 'Install an editor',
-        'projects:emptyState.withoutEditor.installingDescription':
-            'Your editor is installing. You can create a project as soon as it is ready.',
-        'projects:emptyState.withoutEditor.installingEditor':
-            'Installing editor...',
-        'projects:emptyState.withEditor.heading': 'Start your first project',
-        'projects:emptyState.withEditor.description':
-            'Create something new, or add a project already on this computer.',
-        'projects:emptyState.withEditor.newProject': 'New Project',
+        'projects:emptyState.welcome.heading': 'Add or create a project',
+        'projects:emptyState.welcome.description':
+            'Bring your existing work into Launcher, or start something new.',
+        'projects:emptyState.welcome.newProject.heading': 'New project',
+        'projects:emptyState.welcome.newProject.description':
+            'Choose a Godot version.\nLauncher downloads it if needed.',
+        'projects:emptyState.welcome.newProject.action': 'Create project',
+        'projects:emptyState.welcome.existingProject.heading':
+            'Existing project',
+        'projects:emptyState.welcome.existingProject.description':
+            'Launcher finds the Godot\nversion each project needs.',
+        'projects:emptyState.welcome.existingProject.fromComputer':
+            'From this computer',
+        'projects:emptyState.welcome.existingProject.fromGitHub': 'From GitHub',
         'common:buttons.copyPath': 'Copy path',
         'common:success': 'Copied',
     };
@@ -181,56 +181,61 @@ describe('ProjectsView', () => {
         releaseState.initialized = true;
     });
 
-    it('guides users to install Godot when both collections are empty', () => {
+    it('shows the editor-independent welcome experience when projects are empty', () => {
         const html = renderToStaticMarkup(<ProjectsView />);
 
-        expect(html).toContain('lucide-hard-drive-download');
-        expect(html).toContain('Install Godot to start a project');
-        expect(html).toContain('Install an editor');
-        expect(html).toContain('Add an existing project');
-        expect(html).toContain('/Users/test/GodotProjects');
-        expect(html).not.toContain('inputProjectSearch');
-        expect(html).not.toContain('btnProjectAdd');
-        expect(html).not.toContain('btnProjectCreate');
+        expect(html).toContain('Add or create a project');
+        expect(html).toContain('New project');
+        expect(html).toContain('Existing project');
+        expect(html).toContain('Create project');
+        expect(html).toContain('From this computer');
+        expect(html).not.toContain('/Users/test/GodotProjects');
+        expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('>Add<');
+        expect(html).not.toContain('>New Project<');
         expect(html).not.toContain('No projects found');
     });
 
-    it('guides users to create a project when an editor is available', () => {
+    it('keeps the Projects header outside the empty welcome state', () => {
+        projectState.loading = true;
+
+        const html = renderToStaticMarkup(<ProjectsView />);
+
+        expect(html).toContain('>Projects<');
+        expect(html).toContain('/Users/test/GodotProjects');
+    });
+
+    it('keeps the welcome experience unchanged when an editor is available', () => {
         releaseState.installedReleases = [{} as InstalledRelease];
 
         const html = renderToStaticMarkup(<ProjectsView />);
 
-        expect(html).toContain('lucide-folder-plus');
-        expect(html).toContain('Start your first project');
-        expect(html).toContain('New Project');
-        expect(html).toContain('Add an existing project');
-        expect(html).not.toContain('inputProjectSearch');
-        expect(html).not.toContain('btnProjectAdd');
-        expect(html).not.toContain('btnProjectCreate');
+        expect(html).toContain('Add or create a project');
+        expect(html).toContain('Create project');
+        expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('>Add<');
+        expect(html).not.toContain('>New Project<');
     });
 
-    it('does not treat an invalid editor as available for project creation', () => {
+    it('keeps the welcome experience available with an invalid editor', () => {
         releaseState.installedReleases = [{ valid: false } as InstalledRelease];
 
         const html = renderToStaticMarkup(<ProjectsView />);
 
-        expect(html).toContain('Install Godot to start a project');
-        expect(html).not.toContain('Start your first project');
+        expect(html).toContain('Add or create a project');
+        expect(html).toContain('Create project');
     });
 
-    it('waits for an installing editor without exposing project list chrome', () => {
+    it('keeps the welcome experience available while an editor downloads', () => {
         releaseState.downloadingReleases = [
             { version: '4.7-stable', mono: false },
         ];
 
         const html = renderToStaticMarkup(<ProjectsView />);
 
-        expect(html).toContain('Your editor is installing.');
-        expect(html).toContain('Installing editor...');
-        expect(html).toContain('aria-busy="true"');
-        expect(html).toContain('disabled=""');
-        expect(html).toContain('Add an existing project');
-        expect(html).not.toContain('inputProjectSearch');
-        expect(html).not.toContain('btnProjectCreate');
+        expect(html).toContain('Add or create a project');
+        expect(html).toContain('Create project');
+        expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('>New Project<');
     });
 });

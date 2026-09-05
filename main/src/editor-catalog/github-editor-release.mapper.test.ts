@@ -89,6 +89,29 @@ describe('github editor release mapper', () => {
         });
         expect(parseEditorVersion('not-a-version')).toBeNull();
     });
+
+    it('classifies releases by their tag channel instead of the provider', () => {
+        const stableFromPrereleaseProvider = mapGithubEditorRelease(
+            'official-prerelease',
+            true,
+            {
+                ...createGithubRelease(),
+                prerelease: true,
+            },
+        );
+        const betaFromStableProvider = mapGithubEditorRelease(
+            'official-stable',
+            false,
+            {
+                ...createGithubRelease(),
+                tagName: '4.6-beta1',
+                prerelease: false,
+            },
+        );
+
+        expect(stableFromPrereleaseProvider?.prerelease).toBe(false);
+        expect(betaFromStableProvider?.prerelease).toBe(true);
+    });
 });
 
 function createGithubRelease(): GithubEditorRelease {

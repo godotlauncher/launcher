@@ -231,6 +231,17 @@
         "loading": "接続を読み込み中...",
         "loadError": "接続を読み込めませんでした。",
         "genericDescription": "このサービスを接続して Godot Launcher で使用します。",
+        "flow": {
+            "importDescription": "GitHub に接続してリポジトリを参照・インポートします。",
+            "addAccount": "別のアカウントを追加",
+            "title": "GitHub に接続",
+            "reconnect": "GitHub に再接続",
+            "description": "続行するには GitHub に接続してください。現在の作業は保持されます。",
+            "continueInBrowser": "ブラウザーで続行",
+            "waiting": "ブラウザーで接続を完了してから、ここに戻ってください。",
+            "refreshRepositories": "リポジトリを更新",
+            "accessDescription": "GitHub でリポジトリへのアクセスを管理するか、別のアカウントを追加してから、リポジトリ一覧を更新してください。"
+        },
         "github": {
             "description": "GitHub を接続して、リポジトリを Godot Launcher で利用できるようにします。",
             "accessNote": "GitHub App がアクセスできるリポジトリは自分で選択できます。",

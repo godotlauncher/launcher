@@ -24,15 +24,9 @@ type ConnectionsSettingsPanelProps = {
         Record<string, AppIntegrationActionFailureReason | undefined>
     >;
     onRetry: () => void;
-    onConnect: (integrationId: string) => void;
-    onFinishConnections: (
-        integrationId: string,
-        optionIds: string[],
-    ) => Promise<boolean>;
-    onInstallConnection: (integrationId: string) => void;
-    onCancel: (integrationId: string) => void;
+    onOpenConnection: (connectionId?: string) => void;
+    connectionDialogOpen?: boolean;
     onRefresh: (integrationId: string) => void;
-    onReconnect: (integrationId: string, connectionId: string) => void;
     onManageAccess: (
         integrationId: string,
         connectionId: string,
@@ -61,12 +55,9 @@ export const ConnectionsSettingsPanel: React.FC<
     loadError,
     actionErrors,
     onRetry,
-    onConnect,
-    onFinishConnections,
-    onInstallConnection,
-    onCancel,
+    onOpenConnection,
+    connectionDialogOpen = false,
     onRefresh,
-    onReconnect,
     onManageAccess,
     onDisconnect,
 }) => {
@@ -93,35 +84,6 @@ export const ConnectionsSettingsPanel: React.FC<
             onRefresh(managedIntegrationId);
         }
     }, [active, managedIntegrationId, onRefresh]);
-
-    useEffect(() => {
-        const pending = integrations.find(
-            (integration) =>
-                integration.connectionStage === 'choosing' ||
-                integration.connectionStage === 'installing',
-        );
-        if (active && pending) {
-            setManagedIntegrationId(pending.id);
-        }
-    }, [active, integrations]);
-
-    useEffect(() => {
-        if (!active) {
-            return;
-        }
-        const handleFocus = () => {
-            const pending = integrations.find(
-                (integration) =>
-                    integration.connectionStage === 'choosing' ||
-                    integration.connectionStage === 'installing',
-            );
-            if (pending) {
-                setManagedIntegrationId(pending.id);
-            }
-        };
-        window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
-    }, [active, integrations]);
 
     return (
         <SettingsPanelSection active={active}>
@@ -166,8 +128,7 @@ export const ConnectionsSettingsPanel: React.FC<
                             actionError={actionErrors[integration.id]}
                             effectiveTheme={effectiveTheme}
                             t={t}
-                            onConnect={onConnect}
-                            onCancel={onCancel}
+                            onOpenConnection={onOpenConnection}
                             onManageConnections={setManagedIntegrationId}
                         />
                     ))}
@@ -175,30 +136,16 @@ export const ConnectionsSettingsPanel: React.FC<
             )}
 
             <GitHubConnectionsDrawer
-                open={Boolean(
-                    managedIntegration &&
-                        (managedIntegration.connections.length > 0 ||
-                            managedIntegration.connectionStage === 'choosing' ||
-                            managedIntegration.connectionStage ===
-                                'installing'),
-                )}
+                open={Boolean(managedIntegration?.connections.length)}
                 integration={managedIntegration}
-                actionError={
-                    managedIntegration
-                        ? actionErrors[managedIntegration.id]
-                        : undefined
-                }
                 t={t}
                 onOpenChange={(open) => {
                     if (!open) {
                         setManagedIntegrationId(null);
                     }
                 }}
-                onConnect={onConnect}
-                onFinishConnections={onFinishConnections}
-                onInstallConnection={onInstallConnection}
-                onCancel={onCancel}
-                onReconnect={onReconnect}
+                onOpenConnection={onOpenConnection}
+                connectionDialogOpen={connectionDialogOpen}
                 onManageAccess={onManageAccess}
                 onDisconnect={onDisconnect}
             />
@@ -208,7 +155,7 @@ export const ConnectionsSettingsPanel: React.FC<
 
 type IntegrationCardProps = Pick<
     ConnectionsSettingsPanelProps,
-    't' | 'onConnect' | 'onCancel'
+    't' | 'onOpenConnection'
 > & {
     integration: AppIntegrationSummary;
     actionError?: AppIntegrationActionFailureReason;
@@ -227,8 +174,7 @@ const IntegrationCard: React.FC<IntegrationCardProps> = ({
     actionError,
     effectiveTheme,
     t,
-    onConnect,
-    onCancel,
+    onOpenConnection,
     onManageConnections,
 }) => {
     const github = integration.id === 'github';
@@ -237,7 +183,6 @@ const IntegrationCard: React.FC<IntegrationCardProps> = ({
         0,
     );
     const hasConnections = connectionCount > 0;
-    const choosing = integration.state === 'selection-required';
 
     return (
         <section
@@ -303,56 +248,33 @@ const IntegrationCard: React.FC<IntegrationCardProps> = ({
                     </div>
                 </div>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
-                    {choosing && (
+                    {!hasConnections && integration.state !== 'connecting' && (
                         <button
                             type="button"
                             className="btn btn-primary btn-sm"
-                            onClick={() => onManageConnections(integration.id)}
+                            disabled={
+                                integration.state ===
+                                'secure-storage-unavailable'
+                            }
+                            onClick={() => onOpenConnection()}
                         >
-                            {t('connections.status.selectionRequired')}
+                            {t('connections.actions.connect', {
+                                provider: integration.displayName,
+                            })}
                         </button>
                     )}
-                    {!hasConnections &&
-                        integration.state !== 'connecting' &&
-                        !choosing && (
-                            <button
-                                type="button"
-                                className="btn btn-primary btn-sm"
-                                disabled={
-                                    integration.state ===
-                                    'secure-storage-unavailable'
-                                }
-                                onClick={() => onConnect(integration.id)}
-                            >
-                                {t('connections.actions.connect', {
-                                    provider: integration.displayName,
-                                })}
-                            </button>
-                        )}
-                    {hasConnections &&
-                        integration.state !== 'connecting' &&
-                        !choosing && (
-                            <button
-                                type="button"
-                                className="btn btn-primary btn-sm"
-                                disabled={
-                                    integration.state ===
-                                    'secure-storage-unavailable'
-                                }
-                                onClick={() => onConnect(integration.id)}
-                            >
-                                <Plus size={15} aria-hidden="true" />
-                                {t('connections.actions.addConnection')}
-                            </button>
-                        )}
-                    {integration.state === 'connecting' && (
+                    {hasConnections && integration.state !== 'connecting' && (
                         <button
                             type="button"
-                            className="btn btn-sm btn-ghost"
-                            onClick={() => onCancel(integration.id)}
+                            className="btn btn-primary btn-sm"
+                            disabled={
+                                integration.state ===
+                                'secure-storage-unavailable'
+                            }
+                            onClick={() => onOpenConnection()}
                         >
-                            <span className="loading loading-spinner loading-xs" />
-                            {t('connections.actions.cancel')}
+                            <Plus size={15} aria-hidden="true" />
+                            {t('connections.actions.addConnection')}
                         </button>
                     )}
                     {hasConnections && github && (
@@ -377,17 +299,13 @@ const IntegrationCard: React.FC<IntegrationCardProps> = ({
 type GitHubConnectionsDrawerProps = Pick<
     ConnectionsSettingsPanelProps,
     | 't'
-    | 'onConnect'
-    | 'onFinishConnections'
-    | 'onInstallConnection'
-    | 'onCancel'
-    | 'onReconnect'
+    | 'onOpenConnection'
     | 'onManageAccess'
     | 'onDisconnect'
+    | 'connectionDialogOpen'
 > & {
     open: boolean;
     integration: AppIntegrationSummary | null;
-    actionError?: AppIntegrationActionFailureReason;
     onOpenChange: (open: boolean) => void;
 };
 
@@ -402,41 +320,24 @@ export const GitHubConnectionsDrawer: React.FC<
 > = ({
     open,
     integration,
-    actionError,
     t,
     onOpenChange,
-    onConnect,
-    onFinishConnections,
-    onInstallConnection,
-    onCancel,
-    onReconnect,
+    onOpenConnection,
+    connectionDialogOpen = false,
     onManageAccess,
     onDisconnect,
 }) => {
-    const connecting = integration?.state === 'connecting';
-    const choosing = integration?.state === 'selection-required';
-    const installing = integration?.connectionStage === 'installing';
     const storageUnavailable =
         integration?.state === 'secure-storage-unavailable';
-    const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
-    const [savingSelections, setSavingSelections] = useState(false);
-    const chooserKey = choosing
-        ? `${integration?.id}:${integration?.connectionOptions
-              .map((option) => option.id)
-              .join(':')}`
-        : null;
-
-    useEffect(() => {
-        if (chooserKey !== null) {
-            setSelectedOptionIds([]);
-        }
-    }, [chooserKey]);
 
     return (
         <Drawer
             open={open && Boolean(integration)}
             onOpenChange={onOpenChange}
             side="right"
+            trapFocus={!connectionDialogOpen}
+            closeOnEscape={!connectionDialogOpen}
+            closeOnBackdrop={!connectionDialogOpen}
             ariaLabel={t('connections.drawer.title')}
             width={560}
             panelClassName="max-w-[100vw]"
@@ -451,183 +352,20 @@ export const GitHubConnectionsDrawer: React.FC<
                 <Drawer.CloseButton />
             </Drawer.Header>
             <Drawer.Body className="flex flex-col gap-4">
-                {actionError && actionError !== 'cancelled' && (
-                    <p
-                        className="rounded-box bg-error/10 p-3 text-sm text-error"
-                        role="alert"
-                    >
-                        {t(errorTranslationKey(actionError))}
-                    </p>
-                )}
-
                 <div className="flex items-center justify-between gap-3">
                     <h3 className="font-semibold">
                         {t('connections.drawer.connections')}
                     </h3>
-                    {connecting || choosing ? (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-ghost"
-                            onClick={() =>
-                                integration && onCancel(integration.id)
-                            }
-                        >
-                            {connecting && (
-                                <span className="loading loading-spinner loading-xs" />
-                            )}
-                            {t('connections.actions.cancel')}
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline"
-                            disabled={storageUnavailable}
-                            onClick={() =>
-                                integration && onConnect(integration.id)
-                            }
-                        >
-                            <Plus size={15} aria-hidden="true" />
-                            {t('connections.actions.addConnection')}
-                        </button>
-                    )}
-                </div>
-
-                {choosing && integration && (
-                    <section className="rounded-box border border-primary/25 bg-primary/5 p-4">
-                        <h4 className="font-semibold">
-                            {t('connections.drawer.chooseConnection')}
-                        </h4>
-                        <p className="mt-1 text-sm text-base-content/65">
-                            {t(
-                                'connections.drawer.chooseConnectionDescription',
-                            )}
-                        </p>
-                        <div className="mt-4 flex flex-col gap-3">
-                            {integration.connectionOptions.length > 0 && (
-                                <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
-                                    <input
-                                        type="checkbox"
-                                        className="checkbox checkbox-sm"
-                                        checked={
-                                            selectedOptionIds.length ===
-                                            integration.connectionOptions.length
-                                        }
-                                        disabled={savingSelections}
-                                        onChange={(event) =>
-                                            setSelectedOptionIds(
-                                                event.target.checked
-                                                    ? integration.connectionOptions.map(
-                                                          (option) => option.id,
-                                                      )
-                                                    : [],
-                                            )
-                                        }
-                                    />
-                                    {t('connections.actions.selectAll')}
-                                </label>
-                            )}
-                            {integration.connectionOptions.map((option) => (
-                                <ConnectionTargetRow
-                                    key={option.id}
-                                    login={option.login}
-                                    type={option.type}
-                                    availability="available"
-                                    t={t}
-                                    action={
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox checkbox-sm"
-                                            aria-label={t(
-                                                'connections.actions.selectInstallation',
-                                                { connection: option.login },
-                                            )}
-                                            checked={selectedOptionIds.includes(
-                                                option.id,
-                                            )}
-                                            disabled={savingSelections}
-                                            onChange={(event) =>
-                                                setSelectedOptionIds(
-                                                    (current) =>
-                                                        event.target.checked
-                                                            ? [
-                                                                  ...current,
-                                                                  option.id,
-                                                              ]
-                                                            : current.filter(
-                                                                  (id) =>
-                                                                      id !==
-                                                                      option.id,
-                                                              ),
-                                                )
-                                            }
-                                        />
-                                    }
-                                />
-                            ))}
-                            {integration.connectionOptions.length > 0 && (
-                                <button
-                                    type="button"
-                                    className="btn btn-primary btn-sm self-start"
-                                    disabled={
-                                        selectedOptionIds.length === 0 ||
-                                        savingSelections
-                                    }
-                                    onClick={() => {
-                                        setSavingSelections(true);
-                                        void onFinishConnections(
-                                            integration.id,
-                                            selectedOptionIds,
-                                        ).finally(() =>
-                                            setSavingSelections(false),
-                                        );
-                                    }}
-                                >
-                                    {savingSelections && (
-                                        <span className="loading loading-spinner loading-xs" />
-                                    )}
-                                    {t('connections.actions.connectSelected', {
-                                        count: selectedOptionIds.length,
-                                    })}
-                                </button>
-                            )}
-                            <div className="border-base-300 border-t pt-3">
-                                <button
-                                    type="button"
-                                    className="btn btn-outline btn-sm self-start"
-                                    disabled={savingSelections}
-                                    onClick={() => {
-                                        setSelectedOptionIds([]);
-                                        onInstallConnection(integration.id);
-                                    }}
-                                >
-                                    <Plus size={15} aria-hidden="true" />
-                                    {t('connections.actions.installAnother')}
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {installing && (
-                    <section
-                        className="rounded-box border border-primary/25 bg-primary/5 p-4"
-                        role="status"
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline"
+                        disabled={storageUnavailable}
+                        onClick={() => onOpenConnection()}
                     >
-                        <div className="flex items-start gap-3">
-                            <span className="loading loading-spinner loading-sm mt-0.5" />
-                            <div>
-                                <h4 className="font-semibold">
-                                    {t('connections.drawer.finishSetup')}
-                                </h4>
-                                <p className="mt-1 text-sm text-base-content/65">
-                                    {t(
-                                        'connections.drawer.finishSetupDescription',
-                                    )}
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-                )}
+                        <Plus size={15} aria-hidden="true" />
+                        {t('connections.actions.addConnection')}
+                    </button>
+                </div>
 
                 {integration?.connections.map((connection) => (
                     <section
@@ -650,12 +388,9 @@ export const GitHubConnectionsDrawer: React.FC<
                                 <button
                                     type="button"
                                     className="btn btn-primary btn-xs"
-                                    disabled={connecting || storageUnavailable}
+                                    disabled={storageUnavailable}
                                     onClick={() =>
-                                        onReconnect(
-                                            integration.id,
-                                            connection.id,
-                                        )
+                                        onOpenConnection(connection.id)
                                     }
                                 >
                                     {t('connections.actions.reconnect')}
@@ -697,7 +432,6 @@ export const GitHubConnectionsDrawer: React.FC<
                                                 <button
                                                     type="button"
                                                     className="btn btn-xs btn-ghost text-error"
-                                                    disabled={connecting}
                                                     onClick={() =>
                                                         onDisconnect(
                                                             integration,
@@ -807,7 +541,7 @@ function statusTranslationKey(
 }
 
 /**
- * Maps safe failure classifications to concise user-facing messages.
+ * Maps safe management failures to concise user-facing messages.
  *
  * @param reason - Renderer-safe action failure reason.
  * @returns The translation key for the failure.

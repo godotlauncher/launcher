@@ -1,6 +1,22 @@
 {
     "title": "项目",
     "emptyState": {
+        "welcome": {
+            "heading": "添加或创建项目",
+            "description": "将现有工作添加到 Launcher，或开始新项目。",
+            "newProject": {
+                "heading": "新建项目",
+                "description": "选择 Godot 版本。\n如有需要，Launcher 会下载它。",
+                "action": "创建项目"
+            },
+            "existingProject": {
+                "heading": "现有项目",
+                "description": "Launcher 会找到每个项目\n所需的 Godot 版本。",
+                "fromComputer": "从此电脑",
+                "fromGitHub": "从 GitHub",
+                "gitRequired": "从 GitHub 导入需要 Git"
+            }
+        },
         "addExistingProject": "添加现有项目",
         "withoutEditor": {
             "heading": "安装 Godot 以开始项目",
@@ -51,7 +67,8 @@
         "windowed": "窗口模式",
         "opened": "打开于 {{age}}",
         "notOpened": "尚未打开",
-        "editInGodot": "在 Godot 中编辑"
+        "editInGodot": "在 Godot 中编辑",
+        "installRequiredEditor": "安装所需的编辑器"
     },
     "table": {
         "moreOptions": "{{project}} 的更多选项",
@@ -137,7 +154,7 @@
                 "empty": "没有加载匹配的存储库。",
                 "loadMore": "加载更多",
                 "alreadyAdded": "已添加",
-                "openConnections": "打开连接",
+                "openConnections": "连接 GitHub",
                 "visibility": {
                     "public": "公共",
                     "private": "私人",
@@ -147,7 +164,10 @@
                     "connectionRequired": "在导入存储库之前连接或重新连接 GitHub。",
                     "temporarilyUnavailable": "GitHub 暂时不可用。稍后再试。",
                     "sessionExpired": "存储库会话已过期。再次加载列表。"
-                }
+                },
+                "noRepositories": "通过已连接的账户没有可用的仓库。",
+                "missingRepository": "找不到您的仓库？",
+                "manageConnections": "管理账户和访问权限"
             },
             "destination": {
                 "description": "选择将克隆存储库的位置。",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot 不可用。只能更改启动器中的名称。"
         },
         "actions": {
+            "installAndSave": "安装并保存",
+            "installingEditor": "正在安装编辑器...",
             "update": "更新",
             "updating": "正在更新..."
         },

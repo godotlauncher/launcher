@@ -231,6 +231,17 @@
         "loading": "Wczytywanie połączeń...",
         "loadError": "Nie udało się wczytać połączeń.",
         "genericDescription": "Połącz tę usługę, aby używać jej w Godot Launcher.",
+        "flow": {
+            "importDescription": "Połącz GitHub, aby przeglądać i importować swoje repozytoria.",
+            "addAccount": "Dodaj kolejne konto",
+            "title": "Połącz GitHub",
+            "reconnect": "Połącz GitHub ponownie",
+            "description": "Połącz GitHub, aby kontynuować. Twoja bieżąca praca zostanie zachowana.",
+            "continueInBrowser": "Kontynuuj w przeglądarce",
+            "waiting": "Dokończ połączenie w przeglądarce, a następnie wróć tutaj.",
+            "refreshRepositories": "Odśwież repozytoria",
+            "accessDescription": "Zarządzaj dostępem do repozytoriów w GitHub lub dodaj inne konto, a następnie odśwież listę repozytoriów."
+        },
         "github": {
             "description": "Połącz GitHub, aby udostępnić swoje repozytoria w Godot Launcher.",
             "accessNote": "To Ty wybierasz repozytoria, do których aplikacja GitHub ma dostęp.",

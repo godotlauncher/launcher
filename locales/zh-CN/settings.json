@@ -231,6 +231,17 @@
         "loading": "正在加载连接...",
         "loadError": "无法加载连接。",
         "genericDescription": "连接此服务，以便在 Godot Launcher 中使用。",
+        "flow": {
+            "importDescription": "连接 GitHub 以浏览和导入你的仓库。",
+            "addAccount": "添加其他账户",
+            "title": "连接 GitHub",
+            "reconnect": "重新连接 GitHub",
+            "description": "连接 GitHub 以继续。当前工作将会保留。",
+            "continueInBrowser": "在浏览器中继续",
+            "waiting": "在浏览器中完成连接，然后返回此处。",
+            "refreshRepositories": "刷新仓库",
+            "accessDescription": "在 GitHub 上管理仓库访问权限，或添加其他账户，然后刷新仓库列表。"
+        },
         "github": {
             "description": "连接 GitHub，让 Godot Launcher 可以使用你的仓库。",
             "accessNote": "你可以决定 GitHub 应用有权访问哪些仓库。",

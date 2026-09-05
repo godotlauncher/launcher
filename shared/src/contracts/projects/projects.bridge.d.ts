@@ -6,6 +6,7 @@ import type {
     CancelRemoteProjectImportResult,
     ChangeProjectEditorResult,
     CheckCreateProjectRepositoryNameAvailabilityResult,
+    CreateProjectDestinationInspection,
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
@@ -89,6 +90,12 @@ export type ProjectsBridge = {
     checkCreateProjectRepositoryNameAvailability(
         publication: CreateProjectPublicationOptions,
     ): Promise<CheckCreateProjectRepositoryNameAvailabilityResult>;
+
+    /** Inspects whether the final planned Create Project directory can be used. */
+    inspectCreateProjectDestination(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ): Promise<CreateProjectDestinationInspection>;
 
     /** Inspects the final planned Create Project path for an enclosing repository. */
     inspectCreateProjectRepository(

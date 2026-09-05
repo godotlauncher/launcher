@@ -14,18 +14,21 @@ import { CircleCheck, GitBranch, PanelTop, Pin } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSelectableReleaseKey } from '../../components/selectInstalledRelease/selectInstalledRelease.model';
 import { CopyBadge } from '../../components/ui/copyBadge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
-import {
-    SelectField,
-    type SelectFieldOption,
-} from '../../components/ui/selectField.component';
 import { TextField } from '../../components/ui/textField.component';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
+import { useProjects } from '../../hooks/useProjects';
+import { useRelease } from '../../hooks/useRelease';
 import { useToolIntegrations } from '../../hooks/useToolIntegrations';
 import { sortReleases } from '../../releaseStoring.utils';
+import { CreateProjectEditorPicker } from './createProject/components/create-project-editor-picker.component';
+import {
+    type CreateProjectEditorSelection,
+    getCreateProjectReleaseKey,
+    prepareCreateProjectRelease,
+} from './createProject/createProject.model';
 import { ProjectCodeEditorSection } from './projectSettingsDrawer/components/projectCodeEditorSection.component';
 import {
     canRenameGodotProject,
@@ -80,19 +83,6 @@ type ProjectSettingsDrawerProps = {
     getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
 };
 
-type Translate = (key: string) => string;
-
-function getReleaseLabel(release: InstalledRelease, t: Translate): string {
-    const name = release.name ?? release.version;
-    const labels = [
-        release.mono ? t('installs:badges.dotNet') : null,
-        release.prerelease ? t('installs:badges.prerelease') : null,
-        release.source === 'custom' ? t('installs:badges.custom') : null,
-    ].filter(Boolean);
-
-    return labels.length > 0 ? `${name} (${labels.join(', ')})` : name;
-}
-
 export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     project,
     open,
@@ -117,11 +107,22 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const { addAlert, addCustomConfirm } = useAlerts();
     const { listIntegrationSettings } = useCodeEditorIntegrations();
     const { listIntegrations } = useToolIntegrations();
+    const {
+        availableReleases,
+        availablePrereleases,
+        releaseInstallProgress,
+        loading: releasesLoading,
+        hasError: catalogueError,
+        refreshAvailableReleases,
+        cancelInstall,
+        installRelease,
+    } = useRelease();
     const [activeTab, setActiveTab] = useState<ProjectSettingsTab>('project');
     const [initialName, setInitialName] = useState('');
     const [name, setName] = useState('');
     const [initialReleaseKey, setInitialReleaseKey] = useState('');
-    const [releaseKey, setReleaseKey] = useState('');
+    const [releaseSelection, setReleaseSelection] =
+        useState<CreateProjectEditorSelection | null>(null);
     const [initialWindowed, setInitialWindowed] = useState(false);
     const [windowed, setWindowed] = useState(false);
     const [withGit, setWithGit] = useState(false);
@@ -144,7 +145,12 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const [nameError, setNameError] = useState<string>();
     const [godotError, setGodotError] = useState<string>();
     const [formError, setFormError] = useState<string>();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSavingLocally, setIsSubmitting] = useState(false);
+    const { settingsSaves, startSettingsSave, clearSettingsSave } =
+        useProjects();
+    const settingsSave = project ? settingsSaves?.get(project.path) : undefined;
+    const savingInBackground = settingsSave?.status === 'pending';
+    const isSubmitting = isSavingLocally || savingInBackground;
     const [initialCodeEditorId, setInitialCodeEditorId] =
         useState<CodeEditorId | null>(null);
     const [codeEditorId, setCodeEditorId] = useState<CodeEditorId | null>(null);
@@ -155,10 +161,21 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const [loadingCodeEditors, setLoadingCodeEditors] = useState(false);
     const [codeEditorLoadFailed, setCodeEditorLoadFailed] = useState(false);
     const activeProjectPathRef = useRef<string | null>(null);
+    const codeEditorProjectPathRef = useRef<string | null>(null);
+    const sessionRef = useRef(0);
+    const submissionRef = useRef(false);
+
+    useEffect(() => {
+        return () => {
+            sessionRef.current += 1;
+        };
+    }, []);
 
     useEffect(() => {
         if (!open || !project) {
             activeProjectPathRef.current = null;
+            codeEditorProjectPathRef.current = null;
+            sessionRef.current += 1;
             return;
         }
 
@@ -168,14 +185,19 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             return;
         }
 
+        sessionRef.current += 1;
         let disposed = false;
-        const currentReleaseKey = getSelectableReleaseKey(project.release);
+        const currentReleaseKey = getCreateProjectReleaseKey(project.release);
 
         setActiveTab('project');
         setInitialName(project.name);
         setName(project.name);
         setInitialReleaseKey(currentReleaseKey);
-        setReleaseKey(currentReleaseKey);
+        setReleaseSelection({
+            source: 'installed',
+            key: currentReleaseKey,
+            release: project.release,
+        });
         setInitialWindowed(Boolean(project.open_windowed));
         setWindowed(Boolean(project.open_windowed));
         setWithGit(project.withGit);
@@ -189,6 +211,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setGodotError(undefined);
         setFormError(undefined);
         setIsSubmitting(false);
+        submissionRef.current = false;
         setLoadingGodotName(true);
 
         getProjectGodotName(project)
@@ -286,8 +309,15 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
 
     useEffect(() => {
         if (!open || !project) {
+            codeEditorProjectPathRef.current = null;
             return;
         }
+
+        if (codeEditorProjectPathRef.current === project.path) {
+            return;
+        }
+
+        codeEditorProjectPathRef.current = project.path;
 
         let disposed = false;
         const currentCodeEditorId = project.codeEditorId ?? null;
@@ -321,6 +351,59 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         };
     }, [listIntegrationSettings, open, project]);
 
+    const restoredSaveRef = useRef<typeof settingsSave>(undefined);
+    useEffect(() => {
+        if (!open || !project) {
+            restoredSaveRef.current = undefined;
+            return;
+        }
+        if (
+            !settingsSave ||
+            restoredSaveRef.current === settingsSave ||
+            loadingCodeEditors ||
+            loadingGodotName
+        )
+            return;
+        restoredSaveRef.current = settingsSave;
+        if (settingsSave.status === 'complete' && settingsSave.project) {
+            const saved = settingsSave.project;
+            setName(saved.name);
+            setInitialName(saved.name);
+            setReleaseSelection({
+                source: 'installed',
+                key: getCreateProjectReleaseKey(saved.release),
+                release: saved.release,
+            });
+            setInitialReleaseKey(getCreateProjectReleaseKey(saved.release));
+            setWindowed(Boolean(saved.open_windowed));
+            setInitialWindowed(Boolean(saved.open_windowed));
+            setCodeEditorId(saved.codeEditorId ?? null);
+            setInitialCodeEditorId(saved.codeEditorId ?? null);
+            setCodeEditorTouched(false);
+            setRenameGodotProject(false);
+            if (settingsSave.draft.renameGodotProject)
+                setGodotProjectName(saved.name);
+            setFormError(undefined);
+            clearSettingsSave(project.path);
+        } else {
+            const draft = settingsSave.draft;
+            setName(draft.name);
+            setReleaseSelection(draft.releaseSelection);
+            setWindowed(draft.windowed);
+            setCodeEditorId(draft.codeEditorId);
+            setCodeEditorTouched(draft.codeEditorTouched);
+            setRenameGodotProject(draft.renameGodotProject);
+            setFormError(settingsSave.error);
+        }
+    }, [
+        open,
+        project,
+        settingsSave,
+        loadingCodeEditors,
+        loadingGodotName,
+        clearSettingsSave,
+    ]);
+
     const selectableReleases = useMemo(() => {
         if (!project) {
             return [];
@@ -337,38 +420,27 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             .sort(sortReleases);
     }, [installedReleases, project]);
 
-    const releaseOptions = useMemo<SelectFieldOption[]>(() => {
-        const optionReleases = selectableReleases.map((release) => ({
-            release,
-            disabled: false,
-        }));
-
-        if (
-            project &&
-            !optionReleases.some(
-                ({ release }) =>
-                    getSelectableReleaseKey(release) ===
-                    getSelectableReleaseKey(project.release),
-            )
-        ) {
-            optionReleases.push({
-                release: project.release,
-                disabled: true,
-            });
+    const compatibleCatalogueReleases = useMemo(() => {
+        if (!project) {
+            return [];
         }
 
-        return optionReleases
-            .sort((first, second) =>
-                sortReleases(first.release, second.release),
-            )
-            .map(({ release, disabled }) => ({
-                value: getSelectableReleaseKey(release),
-                label: disabled
-                    ? `${getReleaseLabel(release, t)} (${t('editProject.godotEditor.unavailable')})`
-                    : getReleaseLabel(release, t),
-                disabled,
-            }));
-    }, [project, selectableReleases, t]);
+        const currentMajor = Math.trunc(project.release.version_number);
+        return availableReleases.filter(
+            (release) => Math.trunc(release.version_number) >= currentMajor,
+        );
+    }, [availableReleases, project]);
+
+    const compatibleCataloguePrereleases = useMemo(() => {
+        if (!project) {
+            return [];
+        }
+
+        const currentMajor = Math.trunc(project.release.version_number);
+        return availablePrereleases.filter(
+            (release) => Math.trunc(release.version_number) >= currentMajor,
+        );
+    }, [availablePrereleases, project]);
 
     const getValidationMessage = (
         validationError: ReturnType<typeof validateProjectRenameName>,
@@ -475,17 +547,108 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         }
     };
 
+    /**
+     * Submits catalogue installation and settings in the background, or saves an installed selection.
+     *
+     * @param event - The settings form submission event.
+     * @returns A promise that ends after the staged settings are saved or fail.
+     */
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        if (!project || !validateNameField()) {
+        if (submissionRef.current || savingInBackground) {
+            return;
+        }
+
+        if (!project || !releaseSelection || !validateNameField()) {
             setActiveTab('project');
             return;
         }
 
+        submissionRef.current = true;
+        const submissionSession = sessionRef.current;
         setIsSubmitting(true);
         setFormError(undefined);
         setGodotError(undefined);
+
+        if (
+            releaseSelection.source === 'catalogue' &&
+            !releaseSelection.installedRelease
+        ) {
+            startSettingsSave(
+                project.path,
+                {
+                    name,
+                    renameGodotProject,
+                    windowed,
+                    codeEditorId,
+                    codeEditorTouched,
+                    releaseSelection,
+                },
+                async () => {
+                    const installation = prepareCreateProjectRelease(
+                        releaseSelection,
+                        installRelease,
+                    );
+                    const result = await installation;
+                    if (!result.success || !result.release) {
+                        throw new Error(
+                            result.error ?? t('editProject.updateFailed'),
+                        );
+                    }
+                    let savedProject = project;
+                    if (
+                        hasProjectRenameChanges(
+                            initialName,
+                            godotProjectName,
+                            name,
+                            renameGodotProject,
+                        )
+                    ) {
+                        const renamed = await onRenameProject(savedProject, {
+                            name: name.trim(),
+                            renameGodotProject,
+                        });
+                        if (!renamed.success) {
+                            throw new Error(
+                                renamed.error ?? t('editProject.updateFailed'),
+                            );
+                        }
+                        savedProject = renamed.project ?? {
+                            ...savedProject,
+                            name: name.trim(),
+                        };
+                    }
+                    if (
+                        hasProjectCodeEditorChanges(
+                            initialCodeEditorId,
+                            codeEditorId,
+                            codeEditorTouched,
+                        )
+                    ) {
+                        savedProject = await onSetProjectCodeEditor(
+                            savedProject,
+                            codeEditorId,
+                        );
+                    }
+                    savedProject = await onSetProjectEditor(
+                        savedProject,
+                        result.release,
+                    );
+                    if (initialWindowed !== windowed) {
+                        savedProject = await onSetProjectWindowed(
+                            savedProject,
+                            windowed,
+                        );
+                    }
+                    return savedProject;
+                },
+            );
+            setIsSubmitting(false);
+            submissionRef.current = false;
+            onOpenChange(false);
+            return;
+        }
 
         try {
             let currentProject = project;
@@ -500,8 +663,60 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                 codeEditorId,
                 codeEditorTouched,
             );
-            const releaseChanged = initialReleaseKey !== releaseKey;
+            const selectedReleaseKey = getCreateProjectReleaseKey({
+                version: releaseSelection.release.version,
+                mono:
+                    releaseSelection.source === 'installed'
+                        ? releaseSelection.release.mono
+                        : releaseSelection.mono,
+            });
+            const releaseChanged =
+                initialReleaseKey !== selectedReleaseKey ||
+                (releaseSelection.source === 'catalogue' &&
+                    (project.release.valid === false ||
+                        !project.release.editor_path));
             const windowedChanged = initialWindowed !== windowed;
+            let selectedRelease: InstalledRelease | undefined;
+
+            if (releaseChanged) {
+                if (
+                    releaseSelection.source === 'installed' &&
+                    (releaseSelection.release.valid === false ||
+                        !releaseSelection.release.editor_path)
+                ) {
+                    setFormError(t('editProject.godotEditor.unavailable'));
+                    return;
+                }
+
+                const installResult = await prepareCreateProjectRelease(
+                    releaseSelection,
+                    installRelease,
+                );
+
+                if (submissionSession !== sessionRef.current) {
+                    return;
+                }
+
+                if (!installResult.success || !installResult.release) {
+                    setFormError(
+                        installResult.error ?? t('editProject.updateFailed'),
+                    );
+                    return;
+                }
+
+                selectedRelease = installResult.release;
+                if (releaseSelection.source === 'catalogue') {
+                    setReleaseSelection((currentSelection) =>
+                        currentSelection?.source === 'catalogue' &&
+                        currentSelection.key === releaseSelection.key
+                            ? {
+                                  ...currentSelection,
+                                  installedRelease: installResult.release,
+                              }
+                            : currentSelection,
+                    );
+                }
+            }
 
             if (renameChanged) {
                 const result = await onRenameProject(project, {
@@ -547,10 +762,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             }
 
             if (releaseChanged) {
-                const selectedRelease = selectableReleases.find(
-                    (release) =>
-                        getSelectableReleaseKey(release) === releaseKey,
-                );
                 if (!selectedRelease) {
                     throw new Error(t('editProject.godotEditor.unavailable'));
                 }
@@ -558,7 +769,9 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                     currentProject,
                     selectedRelease,
                 );
-                setInitialReleaseKey(releaseKey);
+                setInitialReleaseKey(
+                    getCreateProjectReleaseKey(selectedRelease),
+                );
             }
 
             if (windowedChanged) {
@@ -566,15 +779,21 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                 setInitialWindowed(windowed);
             }
 
+            clearSettingsSave(project.path);
             onOpenChange(false);
         } catch (error) {
-            setFormError(
-                error instanceof Error
-                    ? error.message
-                    : t('editProject.updateFailed'),
-            );
+            if (submissionSession === sessionRef.current) {
+                setFormError(
+                    error instanceof Error
+                        ? error.message
+                        : t('editProject.updateFailed'),
+                );
+            }
         } finally {
-            setIsSubmitting(false);
+            if (submissionSession === sessionRef.current) {
+                submissionRef.current = false;
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -596,7 +815,20 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
             codeEditorId,
             codeEditorTouched,
         );
-    const hasReleaseChanges = project && initialReleaseKey !== releaseKey;
+    const hasReleaseChanges =
+        project &&
+        releaseSelection !== null &&
+        (initialReleaseKey !==
+            getCreateProjectReleaseKey({
+                version: releaseSelection.release.version,
+                mono:
+                    releaseSelection.source === 'installed'
+                        ? releaseSelection.release.mono
+                        : releaseSelection.mono,
+            }) ||
+            (releaseSelection.source === 'catalogue' &&
+                (project.release.valid === false ||
+                    !project.release.editor_path)));
     const hasWindowedChanges = project && initialWindowed !== windowed;
     const hasChanges =
         hasRenameChanges ||
@@ -661,11 +893,18 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     return (
         <Drawer
             open={open && Boolean(project)}
-            onOpenChange={onOpenChange}
+            onOpenChange={(nextOpen) => {
+                if (!nextOpen && isSavingLocally) {
+                    return;
+                }
+                onOpenChange(nextOpen);
+            }}
             side="right"
             ariaLabel={drawerTitle}
             width={560}
             panelClassName="max-w-[100vw]"
+            closeOnBackdrop={!isSavingLocally}
+            closeOnEscape={!isSavingLocally}
         >
             <Drawer.Header>
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -687,7 +926,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                         />
                     )}
                 </div>
-                <Drawer.CloseButton />
+                <Drawer.CloseButton disabled={isSavingLocally} />
             </Drawer.Header>
             <form
                 className="flex min-h-0 flex-1 flex-col"
@@ -718,447 +957,514 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                 </div>
 
                 <Drawer.Body className="flex flex-col gap-4">
-                    {formError && (
-                        <div className="alert alert-error alert-soft">
-                            {formError}
-                        </div>
+                    {savingInBackground && (
+                        <p role="status">
+                            {t('editProject.actions.installingEditor')}
+                        </p>
                     )}
+                    <fieldset
+                        disabled={isSubmitting}
+                        className="flex min-w-0 flex-col gap-4"
+                    >
+                        {formError && (
+                            <div className="alert alert-error alert-soft">
+                                {formError}
+                            </div>
+                        )}
 
-                    {activeTab === 'project' && (
-                        <div className="flex flex-col gap-4">
-                            <TextField
-                                id="projectEditName"
-                                label={t('editProject.fields.name.label')}
-                                help={t('editProject.fields.name.help')}
-                                value={name}
-                                onChange={handleNameChange}
-                                onBlur={validateNameField}
-                                placeholder={t(
-                                    'editProject.fields.name.placeholder',
-                                )}
-                                error={nameError}
-                            />
-
-                            <label
-                                className={clsx(
-                                    'flex items-start gap-3 rounded-lg border p-3',
-                                    godotError
-                                        ? 'border-error bg-error/5'
-                                        : 'border-base-300 bg-base-200/40',
-                                    (!godotProjectAvailable ||
-                                        loadingGodotName ||
-                                        !godotRenameEnabled) &&
-                                        'opacity-70',
-                                )}
-                            >
-                                <input
-                                    type="checkbox"
-                                    className={clsx(
-                                        'checkbox checkbox-primary mt-0.5',
-                                        godotError && 'checkbox-error',
+                        {activeTab === 'project' && (
+                            <div className="flex flex-col gap-4">
+                                <TextField
+                                    id="projectEditName"
+                                    label={t('editProject.fields.name.label')}
+                                    help={t('editProject.fields.name.help')}
+                                    value={name}
+                                    onChange={handleNameChange}
+                                    onBlur={validateNameField}
+                                    placeholder={t(
+                                        'editProject.fields.name.placeholder',
                                     )}
-                                    checked={renameGodotProject}
-                                    disabled={
-                                        !godotProjectAvailable ||
-                                        loadingGodotName ||
-                                        !godotRenameEnabled
-                                    }
-                                    onChange={(event) => {
-                                        setRenameGodotProject(
-                                            event.currentTarget.checked,
-                                        );
-                                        setGodotError(undefined);
-                                        setFormError(undefined);
-                                    }}
+                                    error={nameError}
                                 />
-                                <span className="flex min-w-0 flex-col gap-1">
-                                    <span className="font-semibold">
-                                        {t('editProject.godot.renameLabel')}
-                                    </span>
-                                    <span className="text-sm text-base-content/70">
-                                        {loadingGodotName &&
-                                            t('editProject.godot.loading')}
-                                        {!loadingGodotName &&
-                                            godotProjectAvailable &&
-                                            t('editProject.godot.currentName', {
-                                                name: godotProjectName,
-                                            })}
-                                        {!loadingGodotName &&
-                                            !godotProjectAvailable &&
-                                            t('editProject.godot.unavailable')}
-                                    </span>
-                                    {godotError && (
-                                        <span className="text-sm text-error">
-                                            {godotError}
-                                        </span>
+
+                                <label
+                                    className={clsx(
+                                        'flex items-start gap-3 rounded-lg border p-3',
+                                        godotError
+                                            ? 'border-error bg-error/5'
+                                            : 'border-base-300 bg-base-200/40',
+                                        (!godotProjectAvailable ||
+                                            loadingGodotName ||
+                                            !godotRenameEnabled) &&
+                                            'opacity-70',
                                     )}
-                                </span>
-                            </label>
-
-                            <SelectField
-                                id="selectProjectGodotEditor"
-                                testId="selectProjectGodotEditor"
-                                label={t('editProject.godotEditor.title')}
-                                help={t('editProject.godotEditor.help')}
-                                value={releaseKey}
-                                onChange={(value) => {
-                                    setReleaseKey(value);
-                                    setFormError(undefined);
-                                }}
-                                options={releaseOptions}
-                                disabled={isSubmitting}
-                                showSelectedCheck
-                            />
-                        </div>
-                    )}
-
-                    {activeTab === 'sourceControl' && project && (
-                        <section className="flex flex-col gap-4">
-                            <div>
-                                <h2 className="text-lg font-bold">
-                                    {t('editProject.sourceControl.title')}
-                                </h2>
-                                <p className="text-sm text-base-content/70">
-                                    {t('editProject.sourceControl.help')}
-                                </p>
-                            </div>
-                            <div className="flex items-start justify-between gap-4 rounded-lg border border-base-300 bg-base-200/40 p-4">
-                                <div className="flex min-w-0 items-start gap-3">
-                                    <GitBranch className="h-5 w-5" />
-                                    <div className="flex min-w-0 flex-col gap-1">
-                                        <span className="font-semibold">
-                                            Git
-                                        </span>
-                                        <span className="text-sm text-base-content/65">
-                                            {t(
-                                                withGit
-                                                    ? gitUnavailable
-                                                        ? 'editProject.sourceControl.enabledUnavailable'
-                                                        : 'editProject.sourceControl.enabled'
-                                                    : 'editProject.sourceControl.notConfigured',
-                                            )}
-                                        </span>
-                                        {!withGit &&
-                                            !loadingGitAvailability &&
-                                            !gitAvailable && (
-                                                <span className="text-sm text-warning">
-                                                    {t(
-                                                        'createProject:otherSettings.gitNotInstalled',
-                                                    )}
-                                                </span>
-                                            )}
-                                    </div>
-                                </div>
-                                {gitUnavailable ? (
-                                    <span
-                                        className="badge badge-warning"
-                                        data-testid="projectGitUnavailable"
-                                    >
-                                        {t(
-                                            'editProject.sourceControl.identityUnavailable',
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className={clsx(
+                                            'checkbox checkbox-primary mt-0.5',
+                                            godotError && 'checkbox-error',
                                         )}
-                                    </span>
-                                ) : withGit ? (
-                                    <span
-                                        className="badge badge-success gap-1.5"
-                                        data-testid="projectGitActive"
-                                    >
-                                        <CircleCheck
-                                            className="h-4 w-4"
-                                            aria-hidden="true"
-                                        />
-                                        {t('editProject.sourceControl.active')}
-                                    </span>
-                                ) : loadingGitAvailability ? (
-                                    <span className="loading loading-spinner loading-sm" />
-                                ) : gitAvailable ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary btn-sm"
+                                        checked={renameGodotProject}
                                         disabled={
-                                            !project.valid || isInitializingGit
+                                            !godotProjectAvailable ||
+                                            loadingGodotName ||
+                                            !godotRenameEnabled
                                         }
-                                        onClick={() =>
-                                            void handleInitializeGit()
+                                        onChange={(event) => {
+                                            setRenameGodotProject(
+                                                event.currentTarget.checked,
+                                            );
+                                            setGodotError(undefined);
+                                            setFormError(undefined);
+                                        }}
+                                    />
+                                    <span className="flex min-w-0 flex-col gap-1">
+                                        <span className="font-semibold">
+                                            {t('editProject.godot.renameLabel')}
+                                        </span>
+                                        <span className="text-sm text-base-content/70">
+                                            {loadingGodotName &&
+                                                t('editProject.godot.loading')}
+                                            {!loadingGodotName &&
+                                                godotProjectAvailable &&
+                                                t(
+                                                    'editProject.godot.currentName',
+                                                    {
+                                                        name: godotProjectName,
+                                                    },
+                                                )}
+                                            {!loadingGodotName &&
+                                                !godotProjectAvailable &&
+                                                t(
+                                                    'editProject.godot.unavailable',
+                                                )}
+                                        </span>
+                                        {godotError && (
+                                            <span className="text-sm text-error">
+                                                {godotError}
+                                            </span>
+                                        )}
+                                    </span>
+                                </label>
+
+                                <div className="flex flex-col gap-2">
+                                    <div>
+                                        <h3 className="font-semibold">
+                                            {t('editProject.godotEditor.title')}
+                                        </h3>
+                                        <p className="text-sm text-base-content/70">
+                                            {t('editProject.godotEditor.help')}
+                                        </p>
+                                    </div>
+                                    <CreateProjectEditorPicker
+                                        open={open}
+                                        disabled={isSubmitting}
+                                        triggerTestId="selectProjectGodotEditor"
+                                        triggerLabel={t(
+                                            'editProject.godotEditor.title',
+                                        )}
+                                        installedReleases={selectableReleases}
+                                        availableReleases={
+                                            compatibleCatalogueReleases
                                         }
-                                    >
-                                        {isInitializingGit && (
-                                            <span className="loading loading-spinner loading-xs" />
-                                        )}
-                                        {t(
-                                            isInitializingGit
-                                                ? 'editProject.sourceControl.initializing'
-                                                : 'editProject.sourceControl.initialize',
-                                        )}
-                                    </button>
-                                ) : null}
-                            </div>
-                            {withGit && loadingGitIdentity && (
-                                <div className="flex justify-center py-4">
-                                    <span className="loading loading-spinner loading-sm" />
+                                        availablePrereleases={
+                                            compatibleCataloguePrereleases
+                                        }
+                                        releaseInstallProgress={
+                                            releaseInstallProgress
+                                        }
+                                        loading={releasesLoading}
+                                        catalogueError={catalogueError}
+                                        selection={releaseSelection}
+                                        onSelectionChange={(selection) => {
+                                            setReleaseSelection(selection);
+                                            setFormError(undefined);
+                                        }}
+                                        onCancelInstall={(jobId) =>
+                                            void cancelInstall(jobId)
+                                        }
+                                        onRetryCatalogue={
+                                            refreshAvailableReleases
+                                        }
+                                    />
                                 </div>
-                            )}
-                            {withGit && gitIdentity?.status === 'available' && (
-                                <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <h3 className="font-semibold">
+                            </div>
+                        )}
+
+                        {activeTab === 'sourceControl' && project && (
+                            <section className="flex flex-col gap-4">
+                                <div>
+                                    <h2 className="text-lg font-bold">
+                                        {t('editProject.sourceControl.title')}
+                                    </h2>
+                                    <p className="text-sm text-base-content/70">
+                                        {t('editProject.sourceControl.help')}
+                                    </p>
+                                </div>
+                                <div className="flex items-start justify-between gap-4 rounded-lg border border-base-300 bg-base-200/40 p-4">
+                                    <div className="flex min-w-0 items-start gap-3">
+                                        <GitBranch className="h-5 w-5" />
+                                        <div className="flex min-w-0 flex-col gap-1">
+                                            <span className="font-semibold">
+                                                Git
+                                            </span>
+                                            <span className="text-sm text-base-content/65">
                                                 {t(
-                                                    'editProject.sourceControl.identityTitle',
+                                                    withGit
+                                                        ? gitUnavailable
+                                                            ? 'editProject.sourceControl.enabledUnavailable'
+                                                            : 'editProject.sourceControl.enabled'
+                                                        : 'editProject.sourceControl.notConfigured',
                                                 )}
-                                            </h3>
-                                            <p className="text-sm text-base-content/65">
-                                                {t(
-                                                    'editProject.sourceControl.identityHelp',
+                                            </span>
+                                            {!withGit &&
+                                                !loadingGitAvailability &&
+                                                !gitAvailable && (
+                                                    <span className="text-sm text-warning">
+                                                        {t(
+                                                            'createProject:otherSettings.gitNotInstalled',
+                                                        )}
+                                                    </span>
                                                 )}
-                                            </p>
                                         </div>
-                                        {!editingGitIdentity &&
-                                            gitIdentity.canUpdate && (
+                                    </div>
+                                    {gitUnavailable ? (
+                                        <span
+                                            className="badge badge-warning"
+                                            data-testid="projectGitUnavailable"
+                                        >
+                                            {t(
+                                                'editProject.sourceControl.identityUnavailable',
+                                            )}
+                                        </span>
+                                    ) : withGit ? (
+                                        <span
+                                            className="badge badge-success gap-1.5"
+                                            data-testid="projectGitActive"
+                                        >
+                                            <CircleCheck
+                                                className="h-4 w-4"
+                                                aria-hidden="true"
+                                            />
+                                            {t(
+                                                'editProject.sourceControl.active',
+                                            )}
+                                        </span>
+                                    ) : loadingGitAvailability ? (
+                                        <span className="loading loading-spinner loading-sm" />
+                                    ) : gitAvailable ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary btn-sm"
+                                            disabled={
+                                                !project.valid ||
+                                                isInitializingGit
+                                            }
+                                            onClick={() =>
+                                                void handleInitializeGit()
+                                            }
+                                        >
+                                            {isInitializingGit && (
+                                                <span className="loading loading-spinner loading-xs" />
+                                            )}
+                                            {t(
+                                                isInitializingGit
+                                                    ? 'editProject.sourceControl.initializing'
+                                                    : 'editProject.sourceControl.initialize',
+                                            )}
+                                        </button>
+                                    ) : null}
+                                </div>
+                                {withGit && loadingGitIdentity && (
+                                    <div className="flex justify-center py-4">
+                                        <span className="loading loading-spinner loading-sm" />
+                                    </div>
+                                )}
+                                {withGit &&
+                                    gitIdentity?.status === 'available' && (
+                                        <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div>
+                                                    <h3 className="font-semibold">
+                                                        {t(
+                                                            'editProject.sourceControl.identityTitle',
+                                                        )}
+                                                    </h3>
+                                                    <p className="text-sm text-base-content/65">
+                                                        {t(
+                                                            'editProject.sourceControl.identityHelp',
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                {!editingGitIdentity &&
+                                                    gitIdentity.canUpdate && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline btn-sm"
+                                                            onClick={
+                                                                handleEditGitIdentity
+                                                            }
+                                                        >
+                                                            {t(
+                                                                'editProject.sourceControl.updateIdentity',
+                                                            )}
+                                                        </button>
+                                                    )}
+                                            </div>
+                                            {editingGitIdentity ? (
+                                                <div className="flex flex-col gap-3">
+                                                    <TextField
+                                                        id="projectGitIdentityName"
+                                                        label={t(
+                                                            'editProject.sourceControl.identityName',
+                                                        )}
+                                                        help={t(
+                                                            'editProject.sourceControl.identityNameHelp',
+                                                        )}
+                                                        value={gitIdentityName}
+                                                        onChange={
+                                                            setGitIdentityName
+                                                        }
+                                                        disabled={
+                                                            savingGitIdentity
+                                                        }
+                                                    />
+                                                    <TextField
+                                                        id="projectGitIdentityEmail"
+                                                        label={t(
+                                                            'editProject.sourceControl.identityEmail',
+                                                        )}
+                                                        help={t(
+                                                            'editProject.sourceControl.identityEmailHelp',
+                                                        )}
+                                                        value={gitIdentityEmail}
+                                                        onChange={
+                                                            setGitIdentityEmail
+                                                        }
+                                                        disabled={
+                                                            savingGitIdentity
+                                                        }
+                                                    />
+                                                    <div className="flex justify-end gap-2">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-ghost btn-sm"
+                                                            disabled={
+                                                                savingGitIdentity
+                                                            }
+                                                            onClick={() => {
+                                                                setEditingGitIdentity(
+                                                                    false,
+                                                                );
+                                                                setGitIdentityError(
+                                                                    undefined,
+                                                                );
+                                                            }}
+                                                        >
+                                                            {t(
+                                                                'common:buttons.cancel',
+                                                            )}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-primary btn-sm"
+                                                            disabled={
+                                                                savingGitIdentity
+                                                            }
+                                                            onClick={() =>
+                                                                void handleSaveGitIdentity()
+                                                            }
+                                                        >
+                                                            {savingGitIdentity && (
+                                                                <span className="loading loading-spinner loading-xs" />
+                                                            )}
+                                                            {t(
+                                                                'editProject.sourceControl.saveIdentity',
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <dl className="grid gap-3 sm:grid-cols-2">
+                                                    {(
+                                                        [
+                                                            [
+                                                                'identityName',
+                                                                gitIdentity.name,
+                                                            ],
+                                                            [
+                                                                'identityEmail',
+                                                                gitIdentity.email,
+                                                            ],
+                                                        ] as const
+                                                    ).map(([label, value]) => (
+                                                        <div
+                                                            key={label}
+                                                            className="min-w-0"
+                                                        >
+                                                            <dt className="flex items-center gap-2 text-xs font-semibold uppercase text-base-content/55">
+                                                                <span>
+                                                                    {t(
+                                                                        `editProject.sourceControl.${label}`,
+                                                                    )}
+                                                                </span>
+                                                                <span className="badge badge-ghost badge-sm capitalize">
+                                                                    {t(
+                                                                        `editProject.sourceControl.identitySource.${value.source}`,
+                                                                    )}
+                                                                </span>
+                                                            </dt>
+                                                            <dd className="mt-1 min-w-0">
+                                                                <span className="block break-all select-text">
+                                                                    {value.value ||
+                                                                        t(
+                                                                            'editProject.sourceControl.identityMissing',
+                                                                        )}
+                                                                </span>
+                                                            </dd>
+                                                        </div>
+                                                    ))}
+                                                </dl>
+                                            )}
+                                            {!gitIdentity.canUpdate && (
+                                                <p className="text-sm text-base-content/65">
+                                                    {t(
+                                                        gitIdentity.repository
+                                                            .kind ===
+                                                            'linked-worktree'
+                                                            ? 'editProject.sourceControl.linkedWorktreeReadOnly'
+                                                            : 'editProject.sourceControl.parentRepositoryReadOnly',
+                                                        {
+                                                            root: gitIdentity
+                                                                .repository
+                                                                .root,
+                                                        },
+                                                    )}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                {withGit &&
+                                    gitIdentity?.status ===
+                                        'git-unavailable' && (
+                                        <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div>
+                                                    <h3 className="font-semibold">
+                                                        {t(
+                                                            'editProject.sourceControl.identityTitle',
+                                                        )}
+                                                    </h3>
+                                                    <p className="text-sm text-base-content/65">
+                                                        {t(
+                                                            'editProject.sourceControl.identityUnavailableHelp',
+                                                        )}
+                                                    </p>
+                                                </div>
                                                 <button
                                                     type="button"
                                                     className="btn btn-outline btn-sm"
-                                                    onClick={
-                                                        handleEditGitIdentity
-                                                    }
+                                                    disabled
                                                 >
                                                     {t(
                                                         'editProject.sourceControl.updateIdentity',
                                                     )}
                                                 </button>
-                                            )}
-                                    </div>
-                                    {editingGitIdentity ? (
-                                        <div className="flex flex-col gap-3">
-                                            <TextField
-                                                id="projectGitIdentityName"
-                                                label={t(
-                                                    'editProject.sourceControl.identityName',
-                                                )}
-                                                help={t(
-                                                    'editProject.sourceControl.identityNameHelp',
-                                                )}
-                                                value={gitIdentityName}
-                                                onChange={setGitIdentityName}
-                                                disabled={savingGitIdentity}
-                                            />
-                                            <TextField
-                                                id="projectGitIdentityEmail"
-                                                label={t(
-                                                    'editProject.sourceControl.identityEmail',
-                                                )}
-                                                help={t(
-                                                    'editProject.sourceControl.identityEmailHelp',
-                                                )}
-                                                value={gitIdentityEmail}
-                                                onChange={setGitIdentityEmail}
-                                                disabled={savingGitIdentity}
-                                            />
-                                            <div className="flex justify-end gap-2">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-ghost btn-sm"
-                                                    disabled={savingGitIdentity}
-                                                    onClick={() => {
-                                                        setEditingGitIdentity(
-                                                            false,
-                                                        );
-                                                        setGitIdentityError(
-                                                            undefined,
-                                                        );
-                                                    }}
-                                                >
-                                                    {t('common:buttons.cancel')}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-primary btn-sm"
-                                                    disabled={savingGitIdentity}
-                                                    onClick={() =>
-                                                        void handleSaveGitIdentity()
-                                                    }
-                                                >
-                                                    {savingGitIdentity && (
-                                                        <span className="loading loading-spinner loading-xs" />
-                                                    )}
-                                                    {t(
-                                                        'editProject.sourceControl.saveIdentity',
-                                                    )}
-                                                </button>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <dl className="grid gap-3 sm:grid-cols-2">
-                                            {(
-                                                [
-                                                    [
-                                                        'identityName',
-                                                        gitIdentity.name,
-                                                    ],
-                                                    [
-                                                        'identityEmail',
-                                                        gitIdentity.email,
-                                                    ],
-                                                ] as const
-                                            ).map(([label, value]) => (
-                                                <div
-                                                    key={label}
-                                                    className="min-w-0"
-                                                >
-                                                    <dt className="flex items-center gap-2 text-xs font-semibold uppercase text-base-content/55">
-                                                        <span>
+                                            <dl className="grid gap-3 sm:grid-cols-2">
+                                                {[
+                                                    'identityName',
+                                                    'identityEmail',
+                                                ].map((label) => (
+                                                    <div
+                                                        key={label}
+                                                        className="min-w-0"
+                                                    >
+                                                        <dt className="text-xs font-semibold uppercase text-base-content/55">
                                                             {t(
                                                                 `editProject.sourceControl.${label}`,
                                                             )}
-                                                        </span>
-                                                        <span className="badge badge-ghost badge-sm capitalize">
+                                                        </dt>
+                                                        <dd className="mt-1 text-base-content/55">
                                                             {t(
-                                                                `editProject.sourceControl.identitySource.${value.source}`,
+                                                                'editProject.sourceControl.identityUnavailable',
                                                             )}
-                                                        </span>
-                                                    </dt>
-                                                    <dd className="mt-1 min-w-0">
-                                                        <span className="block break-all select-text">
-                                                            {value.value ||
-                                                                t(
-                                                                    'editProject.sourceControl.identityMissing',
-                                                                )}
-                                                        </span>
-                                                    </dd>
-                                                </div>
-                                            ))}
-                                        </dl>
-                                    )}
-                                    {!gitIdentity.canUpdate && (
-                                        <p className="text-sm text-base-content/65">
-                                            {t(
-                                                gitIdentity.repository.kind ===
-                                                    'linked-worktree'
-                                                    ? 'editProject.sourceControl.linkedWorktreeReadOnly'
-                                                    : 'editProject.sourceControl.parentRepositoryReadOnly',
-                                                {
-                                                    root: gitIdentity.repository
-                                                        .root,
-                                                },
-                                            )}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                            {withGit &&
-                                gitIdentity?.status === 'git-unavailable' && (
-                                    <div className="flex flex-col gap-4 rounded-lg border border-base-300 p-4">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div>
-                                                <h3 className="font-semibold">
-                                                    {t(
-                                                        'editProject.sourceControl.identityTitle',
-                                                    )}
-                                                </h3>
-                                                <p className="text-sm text-base-content/65">
-                                                    {t(
-                                                        'editProject.sourceControl.identityUnavailableHelp',
-                                                    )}
-                                                </p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline btn-sm"
-                                                disabled
-                                            >
-                                                {t(
-                                                    'editProject.sourceControl.updateIdentity',
-                                                )}
-                                            </button>
+                                                        </dd>
+                                                    </div>
+                                                ))}
+                                            </dl>
                                         </div>
-                                        <dl className="grid gap-3 sm:grid-cols-2">
-                                            {[
-                                                'identityName',
-                                                'identityEmail',
-                                            ].map((label) => (
-                                                <div
-                                                    key={label}
-                                                    className="min-w-0"
-                                                >
-                                                    <dt className="text-xs font-semibold uppercase text-base-content/55">
-                                                        {t(
-                                                            `editProject.sourceControl.${label}`,
-                                                        )}
-                                                    </dt>
-                                                    <dd className="mt-1 text-base-content/55">
-                                                        {t(
-                                                            'editProject.sourceControl.identityUnavailable',
-                                                        )}
-                                                    </dd>
-                                                </div>
-                                            ))}
-                                        </dl>
-                                    </div>
+                                    )}
+                                {gitIdentityError && (
+                                    <p className="text-sm text-error">
+                                        {gitIdentityError}
+                                    </p>
                                 )}
-                            {gitIdentityError && (
-                                <p className="text-sm text-error">
-                                    {gitIdentityError}
-                                </p>
-                            )}
-                        </section>
-                    )}
+                            </section>
+                        )}
 
-                    {activeTab === 'codeEditor' && (
-                        <ProjectCodeEditorSection
-                            t={t}
-                            codeEditorId={codeEditorId}
-                            settings={codeEditorSettings}
-                            loading={loadingCodeEditors}
-                            loadFailed={codeEditorLoadFailed}
-                            disabled={!project?.valid || isSubmitting}
-                            showResetConfig={showResetCodeEditorConfig}
-                            onChange={handleCodeEditorChange}
-                            onResetConfig={requestCodeEditorConfigReset}
-                        />
-                    )}
+                        {activeTab === 'codeEditor' && (
+                            <ProjectCodeEditorSection
+                                t={t}
+                                codeEditorId={codeEditorId}
+                                settings={codeEditorSettings}
+                                loading={loadingCodeEditors}
+                                loadFailed={codeEditorLoadFailed}
+                                disabled={!project?.valid || isSubmitting}
+                                showResetConfig={showResetCodeEditorConfig}
+                                onChange={handleCodeEditorChange}
+                                onResetConfig={requestCodeEditorConfigReset}
+                            />
+                        )}
 
-                    {activeTab === 'launch' && (
-                        <section className="flex flex-col gap-4">
-                            <div>
-                                <h2 className="text-lg font-bold">
-                                    {t('editProject.launch.title')}
-                                </h2>
-                                <p className="text-sm text-base-content/70">
-                                    {t('editProject.launch.help')}
-                                </p>
-                            </div>
-                            <label className="flex items-start gap-3 rounded-lg border border-base-300 bg-base-200/40 p-4">
-                                <input
-                                    type="checkbox"
-                                    className="checkbox checkbox-primary mt-0.5"
-                                    checked={windowed}
-                                    disabled={isSubmitting}
-                                    onChange={(event) => {
-                                        setWindowed(
-                                            event.currentTarget.checked,
-                                        );
-                                        setFormError(undefined);
-                                    }}
-                                />
-                                <PanelTop className="mt-0.5 h-5 w-5 shrink-0" />
-                                <span className="flex flex-col gap-1">
-                                    <span className="font-semibold">
-                                        {t('editProject.launch.windowed.label')}
+                        {activeTab === 'launch' && (
+                            <section className="flex flex-col gap-4">
+                                <div>
+                                    <h2 className="text-lg font-bold">
+                                        {t('editProject.launch.title')}
+                                    </h2>
+                                    <p className="text-sm text-base-content/70">
+                                        {t('editProject.launch.help')}
+                                    </p>
+                                </div>
+                                <label className="flex items-start gap-3 rounded-lg border border-base-300 bg-base-200/40 p-4">
+                                    <input
+                                        type="checkbox"
+                                        className="checkbox checkbox-primary mt-0.5"
+                                        checked={windowed}
+                                        disabled={isSubmitting}
+                                        onChange={(event) => {
+                                            setWindowed(
+                                                event.currentTarget.checked,
+                                            );
+                                            setFormError(undefined);
+                                        }}
+                                    />
+                                    <PanelTop className="mt-0.5 h-5 w-5 shrink-0" />
+                                    <span className="flex flex-col gap-1">
+                                        <span className="font-semibold">
+                                            {t(
+                                                'editProject.launch.windowed.label',
+                                            )}
+                                        </span>
+                                        <span className="text-sm text-base-content/70">
+                                            {t(
+                                                'editProject.launch.windowed.help',
+                                            )}
+                                        </span>
                                     </span>
-                                    <span className="text-sm text-base-content/70">
-                                        {t('editProject.launch.windowed.help')}
-                                    </span>
-                                </span>
-                            </label>
-                        </section>
-                    )}
+                                </label>
+                            </section>
+                        )}
+                    </fieldset>
                 </Drawer.Body>
                 <Drawer.Footer>
                     <button
                         type="button"
                         className="btn btn-ghost"
                         onClick={() => onOpenChange(false)}
-                        disabled={isSubmitting}
+                        disabled={isSavingLocally}
                     >
                         {t('common:buttons.cancel')}
                     </button>
@@ -1170,9 +1476,17 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                         {isSubmitting && (
                             <span className="loading loading-spinner loading-xs" />
                         )}
-                        {isSubmitting
-                            ? t('editProject.actions.updating')
-                            : t('editProject.actions.update')}
+                        {isSubmitting &&
+                        releaseSelection?.source === 'catalogue' &&
+                        !releaseSelection.installedRelease
+                            ? t('editProject.actions.installingEditor')
+                            : hasReleaseChanges &&
+                                releaseSelection?.source === 'catalogue' &&
+                                !releaseSelection.installedRelease
+                              ? t('editProject.actions.installAndSave')
+                              : isSubmitting
+                                ? t('editProject.actions.updating')
+                                : t('editProject.actions.update')}
                     </button>
                 </Drawer.Footer>
             </form>

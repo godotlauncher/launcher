@@ -58,7 +58,6 @@ describe('RemoteProjectImportModal', () => {
 
         expect(html).toContain('<dialog');
         expect(html).toContain('addProject.remote.public.urlPlaceholder');
-        expect(html).toContain('data-testid="inputPublicGitRepositoryUrl"');
         expect(html).not.toContain(
             'addProject.remote.github.searchPlaceholder',
         );

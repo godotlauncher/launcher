@@ -1,6 +1,22 @@
 {
     "title": "Proyectos",
     "emptyState": {
+        "welcome": {
+            "heading": "Añade o crea un proyecto",
+            "description": "Lleva tu trabajo existente a Launcher o empieza algo nuevo.",
+            "newProject": {
+                "heading": "Nuevo proyecto",
+                "description": "Elige una versión de Godot.\nLauncher la descarga si es necesario.",
+                "action": "Crear proyecto"
+            },
+            "existingProject": {
+                "heading": "Proyecto existente",
+                "description": "Launcher encuentra la versión de Godot\nque necesita cada proyecto.",
+                "fromComputer": "Desde este ordenador",
+                "fromGitHub": "Desde GitHub",
+                "gitRequired": "Se necesita Git para importar desde GitHub"
+            }
+        },
         "addExistingProject": "Añadir un proyecto existente",
         "withoutEditor": {
             "heading": "Instala Godot para iniciar un proyecto",
@@ -51,7 +67,8 @@
         "windowed": "En ventana",
         "opened": "Abierto {{age}}",
         "notOpened": "Aún no abierto",
-        "editInGodot": "Editar en Godot"
+        "editInGodot": "Editar en Godot",
+        "installRequiredEditor": "Instalar el editor necesario"
     },
     "table": {
         "moreOptions": "Más opciones para {{project}}",
@@ -137,7 +154,7 @@
                 "empty": "No hay repositorios cargados que coincidan.",
                 "loadMore": "Cargar más",
                 "alreadyAdded": "Ya añadido",
-                "openConnections": "Abrir Conexiones",
+                "openConnections": "Conectar GitHub",
                 "visibility": {
                     "public": "Público",
                     "private": "Privado",
@@ -147,7 +164,10 @@
                     "connectionRequired": "Conecta o vuelve a conectar GitHub antes de importar un repositorio.",
                     "temporarilyUnavailable": "GitHub no está disponible temporalmente. Inténtalo de nuevo más tarde.",
                     "sessionExpired": "La sesión del repositorio ha caducado. Vuelve a cargar la lista."
-                }
+                },
+                "noRepositories": "No hay repositorios disponibles a través de tus cuentas conectadas.",
+                "missingRepository": "¿No encuentras tu repositorio?",
+                "manageConnections": "Gestionar cuentas y acceso"
             },
             "destination": {
                 "description": "Elige dónde se clonará el repositorio.",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot no está disponible. Solo se puede cambiar el nombre del launcher."
         },
         "actions": {
+            "installAndSave": "Instalar y guardar",
+            "installingEditor": "Instalando el editor...",
             "update": "Actualizar",
             "updating": "Actualizando..."
         },

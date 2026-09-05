@@ -1,5 +1,19 @@
 {
     "title": "Novo projeto",
+    "workflow": {
+        "title": "A configurar o projeto",
+        "installingEditor": "Instalar editor",
+        "creatingProject": "Criar projeto",
+        "launchingEditor": "Iniciar editor",
+        "skipped": "Ignorado",
+        "failed": "Não foi possível criar o projeto. Reveja o formulário e tente novamente.",
+        "launchFailed": "O projeto foi criado, mas não foi possível iniciar o editor."
+    },
+    "destination": {
+        "checking": "A verificar a localização do projeto...",
+        "available": "Localização do projeto disponível",
+        "checkFailed": "Não foi possível verificar a localização do projeto. Verifique o caminho e tente novamente."
+    },
     "project": {
         "title": "Projeto",
         "dotNetBadge": ".NET",
@@ -9,11 +23,37 @@
         "downloading": "A transferir...",
         "nameRequired": "O nome do projeto é obrigatório",
         "nameExists": "Já existe um projeto com este nome",
-        "overwritePath": "Substituir caminho do projeto",
+        "overwritePath": "Local do projeto",
         "selectFolderDialogTitle": "Selecionar pasta do projeto",
         "selectFolderTooltip": "Abrir uma caixa de diálogo para selecionar a pasta do projeto",
-        "useDefaultPath": "Usar caminho predefinido",
-        "overwritePathRequired": "O caminho é obrigatório quando a opção de substituir o caminho do projeto está ativa."
+        "useDefaultPath": "Usar local predefinido",
+        "overwritePathRequired": "O local do projeto é obrigatório."
+    },
+    "editorPicker": {
+        "title": "Editor Godot",
+        "installed": "Instalados",
+        "browse": "Explorar versões",
+        "search": "Pesquisar versões",
+        "clearSearch": "Limpar pesquisa de versões",
+        "channel": "Canal de lançamento",
+        "stable": "Estáveis",
+        "prereleases": "Pré-lançamentos",
+        "standard": "Padrão",
+        "custom": "Personalizado",
+        "selected": "Selecionado",
+        "unavailable": "Indisponível",
+        "downloadRequired": "Transferência necessária",
+        "noInstalled": "Nenhum editor instalado",
+        "notInstalled": "Não instalado",
+        "noInstalledDescription": "Explore as versões para escolher um editor para instalar.",
+        "noneSelected": "Escolher um editor",
+        "loading": "A carregar lançamentos...",
+        "noMatches": "Nenhum lançamento correspondente",
+        "installFailed": "Não foi possível instalar o editor. O projeto não foi criado.",
+        "loadFailed": "Não foi possível carregar as versões. Tente novamente.",
+        "refreshFailed": "Não foi possível atualizar as versões. A mostrar as versões carregadas anteriormente.",
+        "retry": "Tentar novamente",
+        "retrying": "A tentar novamente..."
     },
     "renderer": {
         "title": "Motor de renderização",
@@ -61,7 +101,7 @@
         "availabilityAvailable": "O nome parece disponível",
         "availabilityUnavailable": "O nome já está a ser utilizado",
         "availabilityUnknown": "Não foi possível verificar este nome",
-        "openConnections": "Abrir Ligações",
+        "openConnections": "Ligar o GitHub",
         "leaveTitle": "Sair de Criar projeto?",
         "leaveMessage": "Os dados de projeto não guardados serão apagados ao abrir Ligações.",
         "successTitle": "Publicado no GitHub",
@@ -175,6 +215,8 @@
         "editNow": "Editar agora",
         "create": "Criar projeto",
         "createAndPublish": "Criar e publicar",
+        "installAndCreate": "Instalar e criar projeto",
+        "installCreateAndPublish": "Instalar, criar e publicar",
         "creating": "A criar projeto...",
         "publishing": "A criar o projeto e a publicar no GitHub..."
     },

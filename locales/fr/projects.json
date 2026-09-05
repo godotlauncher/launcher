@@ -1,6 +1,22 @@
 {
     "title": "Projets",
     "emptyState": {
+        "welcome": {
+            "heading": "Ajoutez ou créez un projet",
+            "description": "Importez votre travail existant dans Launcher ou commencez quelque chose de nouveau.",
+            "newProject": {
+                "heading": "Nouveau projet",
+                "description": "Choisissez une version de Godot.\nLauncher la télécharge si nécessaire.",
+                "action": "Créer un projet"
+            },
+            "existingProject": {
+                "heading": "Projet existant",
+                "description": "Launcher trouve la version de Godot\ndont chaque projet a besoin.",
+                "fromComputer": "Depuis cet ordinateur",
+                "fromGitHub": "Depuis GitHub",
+                "gitRequired": "Git est requis pour importer depuis GitHub"
+            }
+        },
         "addExistingProject": "Ajouter un projet existant",
         "withoutEditor": {
             "heading": "Installez Godot pour démarrer un projet",
@@ -51,7 +67,8 @@
         "windowed": "Fenêtre",
         "opened": "Ouvert {{age}}",
         "notOpened": "Pas encore ouvert",
-        "editInGodot": "Modifier dans Godot"
+        "editInGodot": "Modifier dans Godot",
+        "installRequiredEditor": "Installer l'éditeur requis"
     },
     "table": {
         "moreOptions": "Plus d'options pour {{project}}",
@@ -137,7 +154,7 @@
                 "empty": "Aucun référentiel correspondant n'est chargé.",
                 "loadMore": "Charger plus",
                 "alreadyAdded": "Déjà ajouté",
-                "openConnections": "Connexions ouvertes",
+                "openConnections": "Connecter GitHub",
                 "visibility": {
                     "public": "Publique",
                     "private": "Privé",
@@ -147,7 +164,10 @@
                     "connectionRequired": "Connectez ou reconnectez GitHub avant d'importer un référentiel.",
                     "temporarilyUnavailable": "GitHub est temporairement indisponible. Réessayez plus tard.",
                     "sessionExpired": "La session du référentiel a expiré. Chargez à nouveau la liste."
-                }
+                },
+                "noRepositories": "Aucun dépôt n’est disponible via vos comptes connectés.",
+                "missingRepository": "Votre dépôt est introuvable ?",
+                "manageConnections": "Gérer les comptes et les accès"
             },
             "destination": {
                 "description": "Choisissez où le référentiel sera cloné.",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot est indisponible. Seul le nom dans le launcher peut être modifié."
         },
         "actions": {
+            "installAndSave": "Installer et enregistrer",
+            "installingEditor": "Installation de l’éditeur...",
             "update": "Mettre à jour",
             "updating": "Mise à jour..."
         },

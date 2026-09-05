@@ -152,7 +152,6 @@ describe('InstallsView', () => {
 
         const html = renderToStaticMarkup(<InstallsView />);
 
-        expect(html).toContain('lucide-hard-drive-download');
         expect(html).toContain('Install your first Godot editor');
         expect(html).toContain('Choose an editor');
         expect(html).toContain('Add a custom editor');

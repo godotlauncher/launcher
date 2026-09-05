@@ -67,10 +67,10 @@ test('Git LFS help is keyboard accessible and depends on Git', async () => {
     await expect(tooltip).toContainText('*.fbx *.gltf *.glb');
     await mainPage.keyboard.press('Escape');
     await expect(tooltip).not.toBeVisible();
+    await expect(mainPage.getByTestId('btnCloseCreateProject')).not.toBeVisible();
 
-    await mainPage
-        .getByText('Initialize Git Repository', { exact: true })
-        .click();
+    await openCreateProject();
+    await git.uncheck();
     await expect(gitLfs).not.toBeVisible();
 });
 

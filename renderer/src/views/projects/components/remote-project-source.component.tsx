@@ -111,6 +111,8 @@ export function RemoteProjectRepositorySource({
     onLoadMore,
     onOpenConnections,
 }: RemoteProjectRepositorySourceProps) {
+    const connectionRequired = error === 'no-usable-connection';
+
     return (
         <div className="flex h-full min-h-0 flex-col gap-4">
             <p>{t('addProject.remote.github.description')}</p>
@@ -118,6 +120,23 @@ export function RemoteProjectRepositorySource({
                 <div className="flex items-center gap-2" role="status">
                     <span className="loading loading-spinner loading-sm" />
                     {t('addProject.remote.github.loading')}
+                </div>
+            ) : connectionRequired ? (
+                <div className="flex flex-col gap-3">
+                    <p>
+                        {t(
+                            'addProject.remote.github.errors.connectionRequired',
+                        )}
+                    </p>
+                    <div>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={onOpenConnections}
+                        >
+                            {t('addProject.remote.github.openConnections')}
+                        </button>
+                    </div>
                 </div>
             ) : error ? (
                 <div className="flex flex-col gap-3">
@@ -166,7 +185,13 @@ export function RemoteProjectRepositorySource({
                     )}
                     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2 overflow-auto">
                         {repositories.length === 0 ? (
-                            <p>{t('addProject.remote.github.empty')}</p>
+                            <p>
+                                {t(
+                                    search.trim()
+                                        ? 'addProject.remote.github.empty'
+                                        : 'addProject.remote.github.noRepositories',
+                                )}
+                            </p>
                         ) : (
                             repositories.map((repository) => (
                                 <button
@@ -224,6 +249,17 @@ export function RemoteProjectRepositorySource({
                     )}
                 </>
             )}
+            <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-base-300 pt-3 text-sm">
+                <span>{t('addProject.remote.github.missingRepository')}</span>
+                <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    disabled={loading || loadingMore}
+                    onClick={onOpenConnections}
+                >
+                    {t('addProject.remote.github.manageConnections')}
+                </button>
+            </div>
         </div>
     );
 }

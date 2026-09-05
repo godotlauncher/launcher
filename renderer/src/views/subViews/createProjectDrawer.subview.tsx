@@ -1,126 +1,35 @@
-import type {
-    CodeEditorId,
-    CodeEditorIntegrationSettings,
-    CreateProjectGitOptions,
-    CreateProjectPublicationOptions,
-    CreateProjectPublicationOutcome,
-    CreateProjectPublicationTarget,
-    GitIdentityScope,
-    GitLfsTrackingPolicy,
-    GitLfsTrackingPolicyDescriptor,
-    InstalledRelease,
-    ProjectDetails,
-    ProjectGitIdentityPreset,
-    PublishedGitHubRepository,
-    RendererType,
-    ToolIntegrationSummary,
-} from '@shared/contracts';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import type { PublishedGitHubRepository } from '@shared/contracts';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
-import { appBridge } from '../../bridge.ts';
-import { BusyOverlay } from '../../components/busy-overlay.component';
+import { GitHubConnectionDialog } from '../../components/github-connection/github-connection-dialog.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waitingForDialogOverlay.component';
-import { useGit } from '../../hooks/git.hook';
-import { useGitLfs } from '../../hooks/git-lfs.hook';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
-import { useCodeEditorIntegrations } from '../../hooks/useCodeEditorIntegrations';
-import { useFileSystem } from '../../hooks/useFileSystem';
-import { usePreferences } from '../../hooks/usePreferences';
-import { useProjects } from '../../hooks/useProjects';
-import { useRelease } from '../../hooks/useRelease';
-import { useToolIntegrations } from '../../hooks/useToolIntegrations';
-import { appRoutePaths } from '../../routes';
-import {
-    CreateProjectExistingRepositoryDialog,
-    type ExistingRepositoryConsequences,
-} from './createProject/components/create-project-existing-repository-dialog.component';
-import {
-    CreateProjectGitIdentityDialog,
-    type GitIdentityDialogPage,
-} from './createProject/components/create-project-git-identity-dialog.component';
+import { CreateProjectDestinationStatus } from './createProject/components/create-project-destination-status.component';
+import { CreateProjectEditorPicker } from './createProject/components/create-project-editor-picker.component';
+import { CreateProjectExistingRepositoryDialog } from './createProject/components/create-project-existing-repository-dialog.component';
+import { CreateProjectGitIdentityDialog } from './createProject/components/create-project-git-identity-dialog.component';
 import { CreateProjectGitHubPublishingRecoveryDialog } from './createProject/components/create-project-github-publishing-recovery-dialog.component';
 import { CreateProjectGitHubPublishingSection } from './createProject/components/create-project-github-publishing-section.component';
+import { CreateProjectProgressOverlay } from './createProject/components/create-project-progress-overlay.component';
 import { CreateProjectSourceControlSection } from './createProject/components/create-project-source-control-section.component';
 import { CreateProjectActions } from './createProject/components/createProjectActions.component';
 import { CreateProjectProjectSection } from './createProject/components/createProjectProjectSection.component';
 import { CreateProjectRendererSection } from './createProject/components/createProjectRendererSection.component';
 import { CreateProjectToolOptionsSection } from './createProject/components/createProjectToolOptionsSection.component';
-import type { RepositoryNameAvailabilityState } from './createProject/components/repository-creation-fields.component';
-import {
-    addCreateProjectGitLfsOptions,
-    buildCreateProjectReleaseRows,
-    type CreateProjectGitIdentitySaveChoice,
-    getCreateProjectDirectorySegment,
-    getCreateProjectReleaseKey,
-    getDefaultRendererForReleaseVersion,
-    getProjectPathSuffixDisplay,
-    getPublicationTargetValue,
-    getSuggestedGitHubRepositoryName,
-    isCreateProjectNameAvailable,
-    isGitHubRepositoryNameValid,
-    isGitIdentityComplete,
-    isToolIntegrationAvailable,
-    joinBasePathWithProjectSegment,
-    normalizeBasePathForJoin,
-    OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
-    PROJECT_NAME_CHECK_DEBOUNCE_MS,
-    REPOSITORY_NAME_CHECK_DEBOUNCE_MS,
-    resolveCreateProjectCodeEditorId,
-    resolveCreateProjectGitIdentityDecision,
-    resolveCreateProjectGitIdentitySave,
-    resolveCreateProjectReleaseIndex,
-    shouldShowCreateProjectPublishedAlert,
-    toCreateProjectPublicationOptions,
-} from './createProject/createProject.model';
 
-type FailedPublication = Extract<
-    CreateProjectPublicationOutcome,
-    { status: 'failed' }
->;
-
-type CreateProjectSubmission = {
-    projectName: string;
-    release: InstalledRelease;
-    renderer: RendererType[5];
-    codeEditorId: CodeEditorId | null;
-    withGit: boolean;
-    withGitLfs: boolean;
-    gitLfsTrackingPolicy?: GitLfsTrackingPolicy;
-    overwriteProjectPath?: string;
-    publication?: CreateProjectPublicationOptions;
-    editNow: boolean;
-};
-
-type ExistingRepositoryDialogState =
-    | {
-          mode: 'confirmation';
-          root: string;
-          consequences: ExistingRepositoryConsequences;
-          submission: CreateProjectSubmission;
-      }
-    | {
-          mode: 'completion';
-          root: string;
-          consequences: ExistingRepositoryConsequences;
-          project: ProjectDetails;
-          submission: CreateProjectSubmission;
-      };
-
-type SubViewProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-};
+import type { CreateProjectDrawerProps } from './createProject/create-project-workflow.types';
+import { useCreateProjectForm } from './createProject/use-create-project-form.hook';
+import { useCreateProjectIntegrations } from './createProject/use-create-project-integrations.hook';
+import { useCreateProjectWorkflow } from './createProject/use-create-project-workflow.hook';
 
 /**
- * Renders the Create Project workflow.
- *
+ * Renders the Create Project form and its coordinated workflow surfaces.
  * @param props - Drawer visibility and change callback.
  * @returns The Create Project drawer.
  */
-export const CreateProjectDrawer: React.FC<SubViewProps> = ({
+export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
     open,
     onOpenChange,
 }) => {
@@ -130,297 +39,18 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         'common',
         'installEditor',
     ]);
+    const connectionButtonRef = useRef<HTMLButtonElement>(null);
     const createButtonRef = useRef<HTMLButtonElement>(null);
-    const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
-    const [releaseKey, setReleaseKey] = useState<string | null>(null);
-    const [projectName, setProjectName] = useState<string>('');
-    const [projectNameAvailability, setProjectNameAvailability] = useState<
-        'idle' | 'checking' | 'available' | 'unavailable'
-    >('idle');
-    const [overwriteBasePath, setOverwriteBasePath] = useState<string>('');
-    const [overwriteBasePathMissing, setOverwriteBasePathMissing] =
-        useState<boolean>(false);
-    const [checkingOverwriteBasePath, setCheckingOverwriteBasePath] =
-        useState<boolean>(false);
-    const [editNow, setEditNow] = useState<boolean>(true);
-    const [error, setError] = useState<string | undefined>();
-    const [creating, setCreating] = useState<boolean>(false);
-    const [checkingGitIdentity, setCheckingGitIdentity] =
-        useState<boolean>(false);
-    const [checkingProjectRepository, setCheckingProjectRepository] =
-        useState<boolean>(false);
-    const [
-        creatingInsideExistingRepository,
-        setCreatingInsideExistingRepository,
-    ] = useState<boolean>(false);
-    const [existingRepositoryDialog, setExistingRepositoryDialog] =
-        useState<ExistingRepositoryDialogState | null>(null);
-    const [gitIdentityDialogPage, setGitIdentityDialogPage] =
-        useState<GitIdentityDialogPage | null>(null);
-    const [gitIdentityName, setGitIdentityName] = useState('');
-    const [gitIdentityEmail, setGitIdentityEmail] = useState('');
-    const [gitIdentityScope, setGitIdentityScope] =
-        useState<GitIdentityScope>('repository');
-    const [showGitIdentityValidation, setShowGitIdentityValidation] =
-        useState(false);
-    const [gitIdentitySaveChoice, setGitIdentitySaveChoice] =
-        useState<CreateProjectGitIdentitySaveChoice>('ask');
-    const [savingGitIdentityPreset, setSavingGitIdentityPreset] =
-        useState(false);
-    const [gitIdentitySaveError, setGitIdentitySaveError] = useState<
-        string | null
-    >(null);
-    const [suggestedGitIdentityPreset, setSuggestedGitIdentityPreset] =
-        useState<ProjectGitIdentityPreset | null>(null);
-    const [preflightGlobalIdentity, setPreflightGlobalIdentity] = useState({
-        name: '',
-        email: '',
-    });
-    const [selectingFolder, setSelectingFolder] = useState<boolean>(false);
-    const [tools, setTools] = useState<ToolIntegrationSummary[]>([]);
-    const [overwriteProjectPath, setOverwriteProjectPath] =
-        useState<boolean>(false);
-    const [withGit, setWithGit] = useState<boolean>(true);
-    const [withGitLfs, setWithGitLfs] = useState<boolean>(false);
-    const [gitLfsPolicy, setGitLfsPolicy] =
-        useState<GitLfsTrackingPolicyDescriptor | null>(null);
-    const [loadingGitLfsPolicy, setLoadingGitLfsPolicy] =
-        useState<boolean>(true);
-    const [codeEditorId, setCodeEditorId] = useState<CodeEditorId | null>(null);
-    const [loadingTools, setLoadingTools] = useState<boolean>(true);
-    const [codeEditorSettings, setCodeEditorSettings] = useState<
-        CodeEditorIntegrationSettings[]
-    >([]);
-    const [loadingCodeEditors, setLoadingCodeEditors] = useState<boolean>(true);
-    const [codeEditorLoadFailed, setCodeEditorLoadFailed] = useState(false);
-    const [publishToGitHub, setPublishToGitHub] = useState(false);
-    const [publicationTargets, setPublicationTargets] = useState<
-        CreateProjectPublicationTarget[]
-    >([]);
-    const [publicationTargetsLoading, setPublicationTargetsLoading] =
-        useState(false);
-    const [publicationTargetFailure, setPublicationTargetFailure] = useState<
-        | 'connection-required'
-        | 'permission-update-required'
-        | 'secure-storage-unavailable'
-        | 'provider-unavailable'
-        | null
-    >(null);
-    const [selectedPublicationTarget, setSelectedPublicationTarget] =
-        useState('');
-    const [repositoryName, setRepositoryName] = useState('');
-    const [repositoryNameEdited, setRepositoryNameEdited] = useState(false);
-    const [repositoryNameAvailability, setRepositoryNameAvailability] =
-        useState<RepositoryNameAvailabilityState>('idle');
-    const [publicationFailure, setPublicationFailure] =
-        useState<FailedPublication | null>(null);
-    const [publicationProject, setPublicationProject] =
-        useState<ProjectDetails | null>(null);
     const inputNameRef = useRef<HTMLInputElement>(null);
-    const projectNameCheckRequestRef = useRef<number>(0);
-    const overwritePathCheckRequestRef = useRef<number>(0);
-    const repositoryNameCheckRequestRef = useRef<number>(0);
-    const overwriteBasePathInitializedRef = useRef<boolean>(false);
-    const defaultOverwriteBasePathRef = useRef('');
-    const pendingSubmissionRef = useRef<CreateProjectSubmission | null>(null);
-
-    const { installedReleases, downloadingReleases } = useRelease();
-    const { addAlert, addCustomConfirm } = useAlerts();
-    const {
-        projects,
-        createProject,
-        launchProject,
-        listCreateProjectPublicationTargets,
-        checkCreateProjectRepositoryNameAvailability,
-        inspectCreateProjectRepository,
-        retryCreateProjectPublication,
-        discardCreateProjectPublication,
-    } = useProjects();
+    const { addAlert } = useAlerts();
     const { openExternalLink } = useAppNavigation();
-    const navigate = useNavigate();
-    const { pathExists } = useFileSystem();
-    const { getIdentitySettings, saveProjectIdentityPreset } = useGit();
-    const { getTrackingPolicy: getGitLfsTrackingPolicy } = useGitLfs();
-    const { listIntegrationSettings } = useCodeEditorIntegrations();
-    const { listIntegrations } = useToolIntegrations();
-    const { preferences, platform } = usePreferences();
-    const pathSeparator = platform === 'win32' ? '\\' : '/';
-    const defaultOverwriteBasePath = preferences?.projects_location ?? '';
-    const projectDirectorySegment = useMemo(
-        () => getCreateProjectDirectorySegment(projectName),
-        [projectName],
-    );
+    const form = useCreateProjectForm(open);
+    const integrations = useCreateProjectIntegrations(open);
 
-    useEffect(() => {
-        projectNameCheckRequestRef.current += 1;
-        const requestId = projectNameCheckRequestRef.current;
-        if (!open || projectName.trim().length === 0) {
-            setProjectNameAvailability('idle');
-            return;
-        }
-
-        setProjectNameAvailability('checking');
-        const timeoutId = window.setTimeout(() => {
-            if (projectNameCheckRequestRef.current !== requestId) {
-                return;
-            }
-            setProjectNameAvailability(
-                isCreateProjectNameAvailable(projects, projectName)
-                    ? 'available'
-                    : 'unavailable',
-            );
-        }, PROJECT_NAME_CHECK_DEBOUNCE_MS);
-
-        return () => window.clearTimeout(timeoutId);
-    }, [open, projectName, projects]);
-
-    useEffect(() => {
-        if (!repositoryNameEdited) {
-            setRepositoryName(getSuggestedGitHubRepositoryName(projectName));
-        }
-    }, [projectName, repositoryNameEdited]);
-
-    useEffect(() => {
-        repositoryNameCheckRequestRef.current += 1;
-        const requestId = repositoryNameCheckRequestRef.current;
-        const target = publicationTargets.find(
-            (candidate) =>
-                getPublicationTargetValue(candidate) ===
-                selectedPublicationTarget,
-        );
-        if (
-            !open ||
-            !publishToGitHub ||
-            !target ||
-            !isGitHubRepositoryNameValid(repositoryName) ||
-            (publicationFailure !== null && !publicationFailure.canEdit)
-        ) {
-            setRepositoryNameAvailability('idle');
-            return;
-        }
-
-        setRepositoryNameAvailability('checking');
-        const timeoutId = window.setTimeout(() => {
-            checkCreateProjectRepositoryNameAvailability(
-                toCreateProjectPublicationOptions(target, repositoryName),
-            )
-                .then((result) => {
-                    if (repositoryNameCheckRequestRef.current === requestId) {
-                        setRepositoryNameAvailability(result.status);
-                    }
-                })
-                .catch(() => {
-                    if (repositoryNameCheckRequestRef.current === requestId) {
-                        setRepositoryNameAvailability('unknown');
-                    }
-                });
-        }, REPOSITORY_NAME_CHECK_DEBOUNCE_MS);
-
-        return () => window.clearTimeout(timeoutId);
-    }, [
-        checkCreateProjectRepositoryNameAvailability,
-        open,
-        publicationFailure,
-        publicationTargets,
-        publishToGitHub,
-        repositoryName,
-        selectedPublicationTarget,
-    ]);
-
-    const allReleases = useMemo(
-        () =>
-            buildCreateProjectReleaseRows(
-                installedReleases,
-                downloadingReleases,
-            ),
-        [installedReleases, downloadingReleases],
-    );
-    const validInstalledReleaseCount = useMemo(
-        () =>
-            installedReleases.filter((release) => release.valid !== false)
-                .length,
-        [installedReleases],
-    );
-    const selectedReleaseIndex = resolveCreateProjectReleaseIndex(
-        allReleases,
-        releaseKey,
-    );
-    const selectedRelease = allReleases[selectedReleaseIndex];
-
-    useEffect(() => {
-        if (!selectedRelease) {
-            return;
-        }
-
-        const resolvedReleaseKey = getCreateProjectReleaseKey(selectedRelease);
-        if (resolvedReleaseKey !== releaseKey) {
-            setReleaseKey(resolvedReleaseKey);
-        }
-    }, [releaseKey, selectedRelease]);
-
-    const derivedProjectPath = useMemo(() => {
-        const basePath = preferences?.projects_location || '';
-        const segment = projectName
-            ? projectDirectorySegment
-            : '<project-name>';
-        if (platform === 'win32') {
-            return `${basePath}\\${segment}`;
-        }
-        return `${basePath}/${segment}`;
-    }, [preferences, platform, projectDirectorySegment, projectName]);
-
-    const projectSegmentDisplay = useMemo(
-        () => (projectName ? projectDirectorySegment : '<project-name>'),
-        [projectDirectorySegment, projectName],
-    );
-
-    const overwriteDisplayPath = useMemo(
-        () =>
-            joinBasePathWithProjectSegment(
-                overwriteBasePath,
-                projectSegmentDisplay,
-                pathSeparator,
-            ),
-        [overwriteBasePath, projectSegmentDisplay, pathSeparator],
-    );
-
-    const overwriteSubmitPath = useMemo(
-        () =>
-            joinBasePathWithProjectSegment(
-                overwriteBasePath,
-                projectDirectorySegment,
-                pathSeparator,
-            ),
-        [overwriteBasePath, pathSeparator, projectDirectorySegment],
-    );
-
-    const overwritePathSuffixDisplay = useMemo(
-        () =>
-            getProjectPathSuffixDisplay(
-                overwriteBasePath,
-                projectSegmentDisplay,
-                pathSeparator,
-            ),
-        [overwriteBasePath, projectSegmentDisplay, pathSeparator],
-    );
-
-    const showFolderCreateIcon =
-        overwriteProjectPath &&
-        !checkingOverwriteBasePath &&
-        overwriteBasePathMissing;
-    const isOverwritePathEmpty =
-        overwriteProjectPath && overwriteBasePath.trim().length === 0;
-    const isOverwritePathChangedFromDefault =
-        overwriteProjectPath &&
-        normalizeBasePathForJoin(overwriteBasePath, pathSeparator) !==
-            normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator);
-    const showUseDefaultPathAction =
-        overwriteProjectPath &&
-        normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator)
-            .length > 0 &&
-        (isOverwritePathEmpty || isOverwritePathChangedFromDefault);
-
-    /** Shows publication success with a safe external repository action. */
+    /**
+     * Shows publication success with a safe external repository action.
+     * @param repository - The successfully published repository.
+     */
     const showPublishedAlert = (repository: PublishedGitHubRepository) => {
         addAlert(
             t('publishToGitHub.successTitle'),
@@ -442,1169 +72,336 @@ export const CreateProjectDrawer: React.FC<SubViewProps> = ({
         );
     };
 
-    useEffect(() => {
-        defaultOverwriteBasePathRef.current =
-            preferences?.projects_location ?? '';
-
-        if (!open) {
-            return;
-        }
-
-        if (
-            !overwriteBasePathInitializedRef.current &&
-            preferences?.projects_location
-        ) {
-            setOverwriteBasePath(preferences.projects_location);
-            overwriteBasePathInitializedRef.current = true;
-        }
-    }, [open, preferences?.projects_location]);
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        if (!overwriteProjectPath) {
-            overwritePathCheckRequestRef.current += 1;
-            setCheckingOverwriteBasePath(false);
-            setOverwriteBasePathMissing(false);
-            return;
-        }
-
-        const pathToCheck = overwriteBasePath.trim();
-        if (pathToCheck.length === 0) {
-            overwritePathCheckRequestRef.current += 1;
-            setCheckingOverwriteBasePath(false);
-            setOverwriteBasePathMissing(true);
-            return;
-        }
-
-        const requestId = overwritePathCheckRequestRef.current + 1;
-        overwritePathCheckRequestRef.current = requestId;
-        setCheckingOverwriteBasePath(true);
-
-        const timeoutId = window.setTimeout(() => {
-            pathExists(pathToCheck)
-                .then((exists) => {
-                    if (overwritePathCheckRequestRef.current !== requestId) {
-                        return;
-                    }
-
-                    setOverwriteBasePathMissing(!exists);
-                })
-                .catch(() => {
-                    if (overwritePathCheckRequestRef.current !== requestId) {
-                        return;
-                    }
-
-                    setOverwriteBasePathMissing(true);
-                })
-                .finally(() => {
-                    if (overwritePathCheckRequestRef.current === requestId) {
-                        setCheckingOverwriteBasePath(false);
-                    }
-                });
-        }, OVERWRITE_PATH_CHECK_DEBOUNCE_MS);
-
-        return () => {
-            window.clearTimeout(timeoutId);
-        };
-    }, [open, overwriteBasePath, overwriteProjectPath, pathExists]);
-
-    /**
-     * Creates the selected project with an optional Git setup choice.
-     *
-     * @param submission - Immutable values captured for this Create submission.
-     * @param gitOptions - Optional initial commit and identity choice.
-     * @param existingRepository - Confirmed parent repository and skipped option summary.
-     * @returns A promise that resolves after creation handling completes.
-     */
-    const createSelectedProject = async (
-        submission: CreateProjectSubmission,
-        gitOptions?: CreateProjectGitOptions,
-        existingRepository?: {
-            root: string;
-            consequences: ExistingRepositoryConsequences;
-        },
-    ) => {
-        setCreating(true);
-        const consequences = existingRepository?.consequences ?? {
-            git: submission.withGit,
-            gitLfs: submission.withGitLfs,
-            github: Boolean(submission.publication),
-        };
-        const result = await createProject(
-            submission.projectName,
-            submission.release,
-            submission.renderer,
-            submission.codeEditorId,
-            submission.withGit,
-            submission.overwriteProjectPath,
-            existingRepository
-                ? undefined
-                : addCreateProjectGitLfsOptions(
-                      gitOptions,
-                      submission.gitLfsTrackingPolicy,
-                  ),
-            existingRepository ? undefined : submission.publication,
-            existingRepository ? { root: existingRepository.root } : undefined,
-        );
-
-        setCreating(false);
-
-        if (result.parentRepositoryConfirmation) {
-            setError(undefined);
-            setExistingRepositoryDialog({
-                mode: 'confirmation',
-                root: result.parentRepositoryConfirmation.root,
-                consequences,
-                submission,
-            });
-            return;
-        }
-
-        if (result.success && result.projectDetails) {
-            const repositoryRoot =
-                result.gitSetup?.status === 'existing-repository' &&
-                !result.gitSetup.isProjectRoot
-                    ? result.gitSetup.root
-                    : existingRepository?.root;
-            if (repositoryRoot) {
-                setExistingRepositoryDialog({
-                    mode: 'completion',
-                    root: repositoryRoot,
-                    consequences,
-                    project: result.projectDetails,
-                    submission,
-                });
-                return;
-            }
-            pendingSubmissionRef.current = null;
-            onOpenChange(false);
-            if (submission.editNow) {
-                launchProject(result.projectDetails);
-            }
-            if (
-                result.publication?.status === 'published' &&
-                shouldShowCreateProjectPublishedAlert(submission.editNow)
-            ) {
-                showPublishedAlert(result.publication.repository);
-            }
-        } else if (
-            result.projectDetails &&
-            result.publication?.status === 'failed'
-        ) {
-            if (
-                result.publication.reason ===
-                    'local-repository-not-standalone' &&
-                result.gitSetup?.status === 'existing-repository' &&
-                !result.gitSetup.isProjectRoot
-            ) {
-                setPublicationProject(null);
-                setPublicationFailure(null);
-                setError(undefined);
-                setExistingRepositoryDialog({
-                    mode: 'completion',
-                    root: result.gitSetup.root,
-                    consequences,
-                    project: result.projectDetails,
-                    submission,
-                });
-                return;
-            }
-            setPublicationProject(result.projectDetails);
-            setPublicationFailure(result.publication);
-            if (
-                result.publication.reason ===
-                'repository-name-unavailable-or-policy-rejected'
-            ) {
-                setRepositoryNameAvailability('unavailable');
-            }
-            setError(undefined);
-        } else {
-            pendingSubmissionRef.current = null;
-            setError(result.error);
-        }
-    };
-
-    /** Loads fresh connected GitHub owners when publishing is enabled. */
-    const loadPublicationTargets = async () => {
-        setPublicationTargetsLoading(true);
-        setPublicationTargetFailure(null);
-        try {
-            const result = await listCreateProjectPublicationTargets();
-            if (!result.success) {
-                setPublicationTargets([]);
-                setSelectedPublicationTarget('');
-                setPublicationTargetFailure(result.reason);
-                return;
-            }
-
-            setPublicationTargets(result.targets);
-            setSelectedPublicationTarget(
-                result.targets.length === 1
-                    ? getPublicationTargetValue(result.targets[0])
-                    : '',
-            );
-        } catch {
-            setPublicationTargets([]);
-            setSelectedPublicationTarget('');
-            setPublicationTargetFailure('provider-unavailable');
-        } finally {
-            setPublicationTargetsLoading(false);
-        }
-    };
-
-    /** Enables or clears the progressive GitHub publishing section. */
-    const handlePublishToGitHubChange = (enabled: boolean) => {
-        setPublishToGitHub(enabled);
-        setPublicationFailure(null);
-        setPublicationProject(null);
-        setRepositoryNameAvailability('idle');
-        if (enabled) {
-            void loadPublicationTargets();
-            return;
-        }
-
-        setPublicationTargets([]);
-        setPublicationTargetFailure(null);
-        setSelectedPublicationTarget('');
-    };
-
-    /** Retries the exact failed publication attempt without recreating local work. */
-    const handleRetryPublication = async () => {
-        if (!publicationFailure) return;
-
-        if (
-            publicationFailure.canEdit &&
-            ((repositoryNameAvailability !== 'available' &&
-                repositoryNameAvailability !== 'unknown') ||
-                !selectedPublicationTarget ||
-                !isGitHubRepositoryNameValid(repositoryName))
-        ) {
-            return;
-        }
-
-        const target = publicationTargets.find(
-            (candidate) =>
-                getPublicationTargetValue(candidate) ===
-                selectedPublicationTarget,
-        );
-        setCreating(true);
-        try {
-            const result = await retryCreateProjectPublication(
-                publicationFailure.attemptId,
-                publicationFailure.canEdit && target
-                    ? toCreateProjectPublicationOptions(target, repositoryName)
-                    : undefined,
-                publicationFailure.recoveryAction,
-            );
-            if (result.publication?.status === 'published') {
-                setPublicationFailure(null);
-                onOpenChange(false);
-                if (editNow && result.projectDetails) {
-                    void launchProject(result.projectDetails);
-                }
-                if (shouldShowCreateProjectPublishedAlert(editNow)) {
-                    showPublishedAlert(result.publication.repository);
-                }
-                return;
-            }
-            if (result.publication?.status === 'failed') {
-                setPublicationFailure(result.publication);
-                if (
-                    result.publication.reason ===
-                    'repository-name-unavailable-or-policy-rejected'
-                ) {
-                    setRepositoryNameAvailability('unavailable');
-                }
-                return;
-            }
-            if (result.publication?.status === 'not-requested') {
-                setPublicationFailure(null);
-                onOpenChange(false);
-                addAlert(
-                    t('publishToGitHub.recoveryTitle'),
-                    result.error ?? t('publishToGitHub.retryFailed'),
-                );
-            }
-        } catch {
-            setError(t('publishToGitHub.retryFailed'));
-        } finally {
-            setCreating(false);
-        }
-    };
-
-    /** Keeps the local project and forgets the failed remote attempt. */
-    const handleContinueLocally = async () => {
-        if (!publicationFailure) return;
-        await discardCreateProjectPublication(publicationFailure.attemptId);
-        setPublicationFailure(null);
-        onOpenChange(false);
-        if (editNow && publicationProject) {
-            void launchProject(publicationProject);
-        }
-        addAlert(
-            t('publishToGitHub.localTitle'),
-            t('publishToGitHub.localMessage'),
-        );
-    };
-
-    /** Opens the confirmed or intended GitHub repository in the system browser. */
-    const handleOpenPublicationRepository = () => {
-        const repository =
-            publicationFailure?.repository ??
-            publicationFailure?.intendedRepository;
-        if (repository) {
-            void openExternalLink(repository.webUrl);
-        }
-    };
-
-    /** Warns that leaving the drawer clears its unsaved form values. */
-    const handleOpenConnections = () => {
-        addCustomConfirm(
-            t('publishToGitHub.leaveTitle'),
-            t('publishToGitHub.leaveMessage'),
-            [
-                {
-                    typeClass: 'btn-primary',
-                    text: t('publishToGitHub.openConnections'),
-                    onClick: () => {
-                        onOpenChange(false);
-                        navigate(appRoutePaths.settingsTab('connections'));
-                        return true;
-                    },
-                },
-                {
-                    isCancel: true,
-                    typeClass: 'btn-neutral',
-                    text: t('common:buttons.cancel'),
-                },
-            ],
-        );
-    };
-
-    /**
-     * Continues the existing Git identity and project creation flow.
-     *
-     * @param submission - Immutable values captured for this Create submission.
-     * @returns A promise that resolves after identity or creation handling.
-     */
-    const continueCreateProject = async (
-        submission: CreateProjectSubmission,
-    ) => {
-        if (!submission.withGit || !gitAvailable) {
-            await createSelectedProject(submission);
-            return;
-        }
-
-        setCheckingGitIdentity(true);
-        let identitySettings = {
-            globalIdentity: { name: '', email: '' },
-            projectPreset: null as ProjectGitIdentityPreset | null,
-        };
-        try {
-            identitySettings = await getIdentitySettings();
-        } catch {
-            identitySettings = {
-                globalIdentity: { name: '', email: '' },
-                projectPreset: null,
-            };
-        } finally {
-            setCheckingGitIdentity(false);
-        }
-
-        const decision = resolveCreateProjectGitIdentityDecision(
-            identitySettings.globalIdentity,
-            identitySettings.projectPreset,
-        );
-        if (decision.action === 'use-global') {
-            await createSelectedProject(submission);
-            return;
-        }
-        if (decision.action === 'apply-preset') {
-            await createSelectedProject(submission, {
-                initialCommit: 'create',
-                identity: {
-                    name: decision.preset.name,
-                    email: decision.preset.email,
-                    scope: 'repository',
-                },
-            });
-            return;
-        }
-        if (decision.action === 'suggest-preset') {
-            setSuggestedGitIdentityPreset(decision.preset);
-            setPreflightGlobalIdentity(decision.globalIdentity);
-            setGitIdentityName(decision.preset.name);
-            setGitIdentityEmail(decision.preset.email);
-            setGitIdentityScope('repository');
-            setShowGitIdentityValidation(false);
-            setGitIdentitySaveError(null);
-            setGitIdentityDialogPage('preset');
-            return;
-        }
-
-        setSuggestedGitIdentityPreset(null);
-        setPreflightGlobalIdentity(decision.globalIdentity);
-        setGitIdentityName(decision.globalIdentity.name);
-        setGitIdentityEmail(decision.globalIdentity.email);
-        setGitIdentityScope('repository');
-        setGitIdentitySaveChoice('ask');
-        setShowGitIdentityValidation(false);
-        setGitIdentitySaveError(null);
-        setGitIdentityDialogPage('warning');
-    };
-
-    /**
-     * Validates and inspects the final project path before identity or creation.
-     *
-     * @returns A promise that resolves after preflight or creation handling.
-     */
-    const onCreateProject = async () => {
-        setError(undefined);
-
-        if (
-            publishToGitHub &&
-            (!selectedPublicationTarget ||
-                !isGitHubRepositoryNameValid(repositoryName) ||
-                (repositoryNameAvailability !== 'available' &&
-                    repositoryNameAvailability !== 'unknown'))
-        ) {
-            return;
-        }
-
-        if (projectName.trim() === '') {
-            setError(t('project.nameRequired'));
-            return;
-        }
-
-        if (!isCreateProjectNameAvailable(projects, projectName)) {
-            return;
-        }
-
-        const publicationTarget = publicationTargets.find(
-            (target) =>
-                getPublicationTargetValue(target) === selectedPublicationTarget,
-        );
-        if (!selectedRelease) {
-            return;
-        }
-        const submission: CreateProjectSubmission = {
-            projectName,
-            release: selectedRelease,
-            renderer,
-            codeEditorId,
-            withGit,
-            withGitLfs,
-            gitLfsTrackingPolicy: withGitLfs ? gitLfsPolicy?.id : undefined,
-            overwriteProjectPath: overwriteProjectPath
-                ? overwriteSubmitPath
-                : undefined,
-            publication:
-                publishToGitHub && publicationTarget
-                    ? toCreateProjectPublicationOptions(
-                          publicationTarget,
-                          repositoryName,
-                      )
-                    : undefined,
-            editNow,
-        };
-        pendingSubmissionRef.current = submission;
-
-        setCheckingProjectRepository(true);
-        try {
-            const inspection = await inspectCreateProjectRepository(
-                submission.projectName,
-                submission.overwriteProjectPath,
-            );
-            if (
-                inspection.status === 'inside-work-tree' &&
-                !inspection.isProjectRoot
-            ) {
-                setExistingRepositoryDialog({
-                    mode: 'confirmation',
-                    root: inspection.root,
-                    consequences: {
-                        git: submission.withGit,
-                        gitLfs: submission.withGitLfs,
-                        github: Boolean(submission.publication),
-                    },
-                    submission,
-                });
-                return;
-            }
-        } catch {
-            // Repository inspection is advisory. Main-process creation remains authoritative.
-        } finally {
-            setCheckingProjectRepository(false);
-        }
-
-        await continueCreateProject(submission);
-    };
-
-    /** Cancels the one-submission parent repository confirmation. */
-    const handleCancelExistingRepository = () => {
-        pendingSubmissionRef.current = null;
-        setExistingRepositoryDialog(null);
-    };
-
-    /**
-     * Creates the project once without separate repository, LFS, or publication work.
-     *
-     * @returns A promise that resolves after local project creation.
-     */
-    const handleContinueExistingRepository = async () => {
-        if (existingRepositoryDialog?.mode !== 'confirmation') {
-            return;
-        }
-        const context = existingRepositoryDialog;
-        setExistingRepositoryDialog(null);
-        setCreatingInsideExistingRepository(true);
-        try {
-            await createSelectedProject(context.submission, undefined, context);
-        } finally {
-            setCreatingInsideExistingRepository(false);
-        }
-    };
-
-    /** Finishes local completion and honours the Edit now choice. */
-    const handleExistingRepositoryDone = () => {
-        if (existingRepositoryDialog?.mode !== 'completion') {
-            return;
-        }
-        const { project, submission } = existingRepositoryDialog;
-        pendingSubmissionRef.current = null;
-        setExistingRepositoryDialog(null);
-        onOpenChange(false);
-        if (submission.editNow) {
-            void launchProject(project);
-        }
-    };
-
-    /** Initializes the project repository without staging or committing. */
-    const handleSkipInitialCommit = () => {
-        const submission = pendingSubmissionRef.current;
-        if (!submission) return;
-        setGitIdentityDialogPage(null);
-        void createSelectedProject(submission, { initialCommit: 'skip' });
-    };
-
-    /**
-     * Validates and submits the entered Git identity and selected default.
-     *
-     * @returns A promise that resolves after preset and project handling.
-     */
-    const handleSaveGitIdentity = async () => {
-        const identity = {
-            name: gitIdentityName.trim(),
-            email: gitIdentityEmail.trim(),
-        };
-        if (!isGitIdentityComplete(identity)) {
-            setShowGitIdentityValidation(true);
-            return;
-        }
-
-        let scope = gitIdentityScope;
-        if (!suggestedGitIdentityPreset) {
-            const resolution = resolveCreateProjectGitIdentitySave(
-                identity,
-                gitIdentitySaveChoice,
-                suggestedGitIdentityPreset,
-            );
-            if (!resolution) {
-                setGitIdentitySaveError(t('errors.failedGitIdentity'));
-                return;
-            }
-            scope = resolution.scope;
-
-            if (resolution.preset) {
-                setSavingGitIdentityPreset(true);
-                setGitIdentitySaveError(null);
-                try {
-                    const result = await saveProjectIdentityPreset(
-                        resolution.preset,
-                    );
-                    if (!result.success) {
-                        setGitIdentitySaveError(t('errors.failedGitIdentity'));
-                        return;
-                    }
-                } catch {
-                    setGitIdentitySaveError(t('errors.failedGitIdentity'));
-                    return;
-                } finally {
-                    setSavingGitIdentityPreset(false);
-                }
-            }
-        }
-
-        const submission = pendingSubmissionRef.current;
-        if (!submission) return;
-        setGitIdentityDialogPage(null);
-        await createSelectedProject(submission, {
-            initialCommit: 'create',
-            identity: { ...identity, scope },
-        });
-    };
-
-    /** Uses the complete global identity without writing repository settings. */
-    const handleUseGlobalGitIdentity = () => {
-        const submission = pendingSubmissionRef.current;
-        if (!submission) return;
-        setGitIdentityDialogPage(null);
-        void createSelectedProject(submission);
-    };
-
-    /** Closes Git identity without retaining a stale Create submission. */
-    const handleCloseGitIdentity = () => {
-        pendingSubmissionRef.current = null;
-        setGitIdentityDialogPage(null);
-    };
-
-    /** Opens the existing identity form with the partial global values. */
-    const handleUseDifferentGitIdentity = () => {
-        setGitIdentityName(preflightGlobalIdentity.name);
-        setGitIdentityEmail(preflightGlobalIdentity.email);
-        setGitIdentityScope('repository');
-        setGitIdentitySaveError(null);
-        setShowGitIdentityValidation(false);
-        setGitIdentityDialogPage('identity');
-    };
-
-    /** Returns to the warning or suggested preset that opened the form. */
-    const handleGitIdentityBack = () => {
-        setShowGitIdentityValidation(false);
-        setGitIdentitySaveError(null);
-        if (suggestedGitIdentityPreset) {
-            setGitIdentityName(suggestedGitIdentityPreset.name);
-            setGitIdentityEmail(suggestedGitIdentityPreset.email);
-            setGitIdentityScope('repository');
-            setGitIdentityDialogPage('preset');
-            return;
-        }
-        setGitIdentityDialogPage('warning');
-    };
-
-    /**
-     * Selects a Godot editor without depending on its current sorted index.
-     *
-     * @param nextReleaseKey - Stable version and variant identity to select.
-     */
-    const changeRelease = (nextReleaseKey: string) => {
-        const release = allReleases.find(
-            (candidate) =>
-                getCreateProjectReleaseKey(candidate) === nextReleaseKey,
-        );
-
-        if (!release) {
-            return;
-        }
-
-        setReleaseKey(nextReleaseKey);
-
-        const defaultRenderer = getDefaultRendererForReleaseVersion(
-            release.version,
-        );
-
-        if (defaultRenderer) {
-            setRenderer(defaultRenderer);
-        }
-    };
-
-    const gitAvailable = isToolIntegrationAvailable(tools, 'git');
-    const gitLfsAvailable =
-        isToolIntegrationAvailable(tools, 'git-lfs') && gitLfsPolicy !== null;
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        let active = true;
-        listIntegrations()
-            .then((integrations) => {
-                if (active) {
-                    setTools(integrations);
-                }
-            })
-            .catch(() => {
-                if (active) {
-                    setTools([]);
-                }
-            })
-            .finally(() => {
-                if (active) {
-                    setLoadingTools(false);
-                }
-            });
-
-        return () => {
-            active = false;
-        };
-    }, [listIntegrations, open]);
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        let active = true;
-
-        getGitLfsTrackingPolicy()
-            .then((policy) => {
-                if (active) {
-                    setGitLfsPolicy(policy);
-                }
-            })
-            .catch(() => {
-                if (active) {
-                    setGitLfsPolicy(null);
-                }
-            })
-            .finally(() => {
-                if (active) {
-                    setLoadingGitLfsPolicy(false);
-                }
-            });
-
-        return () => {
-            active = false;
-        };
-    }, [getGitLfsTrackingPolicy, open]);
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        let active = true;
-
-        listIntegrationSettings()
-            .then((settings) => {
-                if (active) {
-                    setCodeEditorSettings(settings);
-                }
-            })
-            .catch(() => {
-                if (active) {
-                    setCodeEditorSettings([]);
-                    setCodeEditorId(null);
-                    setCodeEditorLoadFailed(true);
-                }
-            })
-            .finally(() => {
-                if (active) {
-                    setLoadingCodeEditors(false);
-                }
-            });
-
-        return () => {
-            active = false;
-        };
-    }, [listIntegrationSettings, open]);
-
-    useEffect(() => {
-        if (loadingTools || loadingCodeEditors) return;
-
-        setWithGit(gitAvailable);
-        setCodeEditorId(resolveCreateProjectCodeEditorId(codeEditorSettings));
-    }, [codeEditorSettings, gitAvailable, loadingCodeEditors, loadingTools]);
-
-    useEffect(() => {
-        if (!withGit || !gitLfsAvailable) {
-            setWithGitLfs(false);
-        }
-        if (!withGit) {
-            setPublishToGitHub(false);
-            setPublicationTargets([]);
-            setPublicationTargetFailure(null);
-            setSelectedPublicationTarget('');
-        }
-    }, [gitLfsAvailable, withGit]);
-
-    const handleSelectProjectFolder = async () => {
-        setSelectingFolder(true);
-        try {
-            const browsePath =
-                overwriteBasePath || preferences?.projects_location || '';
-            const selectFolderResult = await appBridge.openDirectoryDialog(
-                browsePath,
-                t('project.selectFolderDialogTitle'),
-                [],
-            );
-
-            if (
-                selectFolderResult &&
-                !selectFolderResult.canceled &&
-                selectFolderResult.filePaths.length > 0
-            ) {
-                setOverwriteBasePath(selectFolderResult.filePaths[0]);
-            }
-        } finally {
-            setSelectingFolder(false);
-        }
-    };
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        setRenderer('FORWARD_PLUS');
-        setReleaseKey(null);
-        setProjectName('');
-        setProjectNameAvailability('idle');
-        setOverwriteBasePath(defaultOverwriteBasePathRef.current);
-        setOverwriteBasePathMissing(false);
-        setCheckingOverwriteBasePath(false);
-        setEditNow(true);
-        setError(undefined);
-        setCreating(false);
-        setCheckingGitIdentity(false);
-        setCheckingProjectRepository(false);
-        setCreatingInsideExistingRepository(false);
-        setExistingRepositoryDialog(null);
-        setGitIdentityDialogPage(null);
-        setGitIdentityName('');
-        setGitIdentityEmail('');
-        setGitIdentityScope('repository');
-        setGitIdentitySaveChoice('ask');
-        setShowGitIdentityValidation(false);
-        setSavingGitIdentityPreset(false);
-        setGitIdentitySaveError(null);
-        setSuggestedGitIdentityPreset(null);
-        setPreflightGlobalIdentity({ name: '', email: '' });
-        setSelectingFolder(false);
-        setTools([]);
-        setOverwriteProjectPath(false);
-        setWithGit(true);
-        setWithGitLfs(false);
-        setGitLfsPolicy(null);
-        setLoadingGitLfsPolicy(true);
-        setCodeEditorId(null);
-        setLoadingTools(true);
-        setCodeEditorSettings([]);
-        setLoadingCodeEditors(true);
-        setCodeEditorLoadFailed(false);
-        setPublishToGitHub(false);
-        setPublicationTargets([]);
-        setPublicationTargetsLoading(false);
-        setPublicationTargetFailure(null);
-        setSelectedPublicationTarget('');
-        setRepositoryName('');
-        setRepositoryNameEdited(false);
-        setRepositoryNameAvailability('idle');
-        setPublicationFailure(null);
-        setPublicationProject(null);
-        pendingSubmissionRef.current = null;
-        overwritePathCheckRequestRef.current += 1;
-        repositoryNameCheckRequestRef.current += 1;
-        overwriteBasePathInitializedRef.current = Boolean(
-            defaultOverwriteBasePathRef.current,
-        );
-    }, [open]);
-
-    const closeDisabled =
-        creating ||
-        checkingGitIdentity ||
-        checkingProjectRepository ||
-        savingGitIdentityPreset ||
-        selectingFolder ||
-        gitIdentityDialogPage !== null ||
-        publicationFailure !== null ||
-        existingRepositoryDialog !== null;
-
+    const workflow = useCreateProjectWorkflow(
+        open,
+        onOpenChange,
+        form,
+        integrations,
+        showPublishedAlert,
+    );
+    const { publication, identity } = workflow;
+    const releases = form.releaseApi;
     return (
         <>
             <Drawer
                 open={open}
                 onOpenChange={onOpenChange}
                 side="right"
-                closeOnBackdrop={!closeDisabled}
-                closeOnEscape={!closeDisabled}
-                trapFocus={
-                    gitIdentityDialogPage === null &&
-                    publicationFailure === null &&
-                    existingRepositoryDialog === null
-                }
+                closeOnBackdrop={!workflow.closeDisabled}
+                closeOnEscape={!workflow.closeDisabled}
+                trapFocus={workflow.trapFocus}
                 initialFocusRef={inputNameRef}
                 width="min(680px, 100vw)"
                 panelClassName={
-                    gitIdentityDialogPage
+                    identity.gitIdentityDialogPage
                         ? 'max-w-[100vw] border-l-0'
                         : 'max-w-[100vw]'
                 }
             >
-                {selectingFolder && (
+                {form.selectingFolder && (
                     <WaitingForDialogOverlay
                         className="z-60"
                         message={t('projects:messages.waitingForDialog')}
                     />
                 )}
-                {creating && !publicationFailure && (
-                    <BusyOverlay
+                {workflow.progressPhase && !workflow.publicationFailure && (
+                    <CreateProjectProgressOverlay
                         className="z-60"
-                        message={t(
-                            publishToGitHub && !creatingInsideExistingRepository
-                                ? 'buttons.publishing'
-                                : 'buttons.creating',
-                        )}
+                        phase={workflow.progressPhase}
+                        editorInstalled={form.selectedEditorInstalled}
+                        editNow={form.editNow}
+                        installProgress={form.selectedEditorInstallProgress}
+                        labels={{
+                            title: t('workflow.title'),
+                            installingEditor: t('workflow.installingEditor'),
+                            creatingProject: t('workflow.creatingProject'),
+                            launchingEditor: t('workflow.launchingEditor'),
+                            skipped: t('workflow.skipped'),
+                        }}
                     />
                 )}
                 <Drawer.Header>
                     <Drawer.Title>{t('title')}</Drawer.Title>
                     <Drawer.CloseButton
                         data-testid="btnCloseCreateProject"
-                        disabled={closeDisabled}
+                        disabled={workflow.closeDisabled}
                     />
                 </Drawer.Header>
                 <form className="flex min-h-0 flex-1 flex-col">
-                    <Drawer.Body className="flex flex-col gap-5 pt-2">
-                        {error && (
+                    <Drawer.Body className="flex flex-col gap-4 pt-2">
+                        {workflow.error && (
                             <div
                                 className="alert alert-error alert-soft"
                                 role="alert"
                             >
-                                {error}
+                                {workflow.error}
                             </div>
                         )}
                         <CreateProjectProjectSection
                             t={t}
-                            releases={allReleases}
-                            releaseKey={
-                                selectedRelease
-                                    ? getCreateProjectReleaseKey(
-                                          selectedRelease,
-                                      )
-                                    : ''
-                            }
                             inputNameRef={inputNameRef}
-                            installedReleaseCount={validInstalledReleaseCount}
-                            projectName={projectName}
+                            editorPicker={
+                                <CreateProjectEditorPicker
+                                    open={open}
+                                    installedReleases={
+                                        releases.installedReleases
+                                    }
+                                    availableReleases={
+                                        releases.availableReleases
+                                    }
+                                    availablePrereleases={
+                                        releases.availablePrereleases
+                                    }
+                                    releaseInstallProgress={
+                                        releases.releaseInstallProgress
+                                    }
+                                    loading={releases.loading}
+                                    catalogueError={releases.hasError}
+                                    selection={form.editorSelection}
+                                    onSelectionChange={
+                                        form.changeEditorSelection
+                                    }
+                                    onCancelInstall={(jobId) =>
+                                        void releases.cancelInstall(jobId)
+                                    }
+                                    onRetryCatalogue={
+                                        releases.refreshAvailableReleases
+                                    }
+                                />
+                            }
+                            projectName={form.projectName}
                             projectNameError={
-                                projectNameAvailability === 'unavailable'
+                                form.projectNameAvailability === 'unavailable'
                                     ? t('project.nameExists')
                                     : undefined
                             }
-                            derivedProjectPath={derivedProjectPath}
-                            overwriteProjectPath={overwriteProjectPath}
-                            overwriteBasePath={overwriteBasePath}
-                            overwriteDisplayPath={overwriteDisplayPath}
+                            overwriteBasePath={form.overwriteBasePath}
+                            overwriteDisplayPath={form.overwriteDisplayPath}
                             overwritePathSuffixDisplay={
-                                overwritePathSuffixDisplay
+                                form.overwritePathSuffixDisplay
                             }
-                            showUseDefaultPathAction={showUseDefaultPathAction}
-                            showFolderCreateIcon={showFolderCreateIcon}
-                            isOverwritePathEmpty={isOverwritePathEmpty}
-                            onProjectNameChange={setProjectName}
-                            onReleaseChange={changeRelease}
-                            onOverwriteBasePathChange={setOverwriteBasePath}
+                            showUseDefaultPathAction={
+                                form.showUseDefaultPathAction
+                            }
+                            showFolderCreateIcon={form.showFolderCreateIcon}
+                            isOverwritePathEmpty={form.isOverwritePathEmpty}
+                            onProjectNameChange={form.setProjectName}
+                            onOverwriteBasePathChange={
+                                form.setOverwriteBasePath
+                            }
                             onUseDefaultPath={() =>
-                                setOverwriteBasePath(defaultOverwriteBasePath)
+                                form.setOverwriteBasePath(
+                                    form.defaultOverwriteBasePath,
+                                )
                             }
                             onSelectProjectFolder={() =>
-                                void handleSelectProjectFolder()
+                                void form.handleSelectProjectFolder()
                             }
-                            onOverwriteProjectPathChange={
-                                setOverwriteProjectPath
+                            destinationStatus={
+                                <CreateProjectDestinationStatus
+                                    status={form.destinationCheck.status}
+                                    error={form.destinationCheck.error}
+                                    checkingLabel={t('destination.checking')}
+                                    availableLabel={t('destination.available')}
+                                />
                             }
                         />
                         <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                            <div className="flex flex-col gap-5">
-                                <CreateProjectRendererSection
-                                    t={t}
-                                    renderer={renderer}
-                                    versionNumber={
-                                        allReleases[selectedReleaseIndex]
-                                            ?.version_number || 0
-                                    }
-                                    onRendererChange={setRenderer}
-                                />
-                                <CreateProjectToolOptionsSection
-                                    t={t}
-                                    loadingCodeEditors={loadingCodeEditors}
-                                    codeEditorLoadFailed={codeEditorLoadFailed}
-                                    codeEditorSettings={codeEditorSettings}
-                                    codeEditorId={codeEditorId}
-                                    onCodeEditorIdChange={setCodeEditorId}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-5">
-                                <CreateProjectSourceControlSection
-                                    t={t}
-                                    loading={
-                                        loadingTools || loadingGitLfsPolicy
-                                    }
-                                    gitAvailable={gitAvailable}
-                                    gitLfsAvailable={gitLfsAvailable}
-                                    gitLfsPolicy={gitLfsPolicy}
-                                    withGit={withGit}
-                                    withGitLfs={withGitLfs}
-                                    publishToGitHub={publishToGitHub}
-                                    publishingLocked={
-                                        publicationFailure !== null
-                                    }
-                                    onWithGitChange={setWithGit}
-                                    onWithGitLfsChange={setWithGitLfs}
-                                    onPublishToGitHubChange={
-                                        handlePublishToGitHubChange
-                                    }
-                                />
-                            </div>
+                            <CreateProjectRendererSection
+                                t={t}
+                                renderer={form.renderer}
+                                versionNumber={
+                                    form.editorSelection?.release
+                                        .version_number || 0
+                                }
+                                onRendererChange={form.setRenderer}
+                            />
+                            <CreateProjectToolOptionsSection
+                                t={t}
+                                loadingCodeEditors={
+                                    integrations.loadingCodeEditors
+                                }
+                                codeEditorLoadFailed={
+                                    integrations.codeEditorLoadFailed
+                                }
+                                codeEditorSettings={
+                                    integrations.codeEditorSettings
+                                }
+                                codeEditorId={integrations.codeEditorId}
+                                onCodeEditorIdChange={
+                                    integrations.setCodeEditorId
+                                }
+                            />
                         </div>
-                        <CreateProjectGitHubPublishingSection
-                            t={t}
-                            enabled={publishToGitHub}
-                            loading={publicationTargetsLoading}
-                            targets={publicationTargets}
-                            targetFailure={publicationTargetFailure}
-                            selectedTargetValue={selectedPublicationTarget}
-                            repositoryName={repositoryName}
-                            availability={repositoryNameAvailability}
-                            repositoryNameError={
-                                publishToGitHub &&
-                                repositoryName.length > 0 &&
-                                !isGitHubRepositoryNameValid(repositoryName)
-                                    ? t('publishToGitHub.repositoryNameInvalid')
-                                    : undefined
-                            }
-                            disabled={!withGit || !gitAvailable}
-                            onTargetChange={setSelectedPublicationTarget}
-                            onRepositoryNameChange={(name) => {
-                                setRepositoryNameEdited(true);
-                                setRepositoryName(name);
-                            }}
-                            onOpenConnections={handleOpenConnections}
-                        />
+                        <div className="flex flex-col gap-3 border-t border-base-300 pt-3">
+                            <CreateProjectSourceControlSection
+                                t={t}
+                                loading={
+                                    integrations.loadingTools ||
+                                    integrations.loadingGitLfsPolicy
+                                }
+                                gitAvailable={integrations.gitAvailable}
+                                gitLfsAvailable={integrations.gitLfsAvailable}
+                                gitLfsPolicy={integrations.gitLfsPolicy}
+                                withGit={integrations.withGit}
+                                withGitLfs={integrations.withGitLfs}
+                                publishToGitHub={publication.publishToGitHub}
+                                publishingLocked={
+                                    workflow.publicationFailure !== null
+                                }
+                                onWithGitChange={integrations.setWithGit}
+                                onWithGitLfsChange={integrations.setWithGitLfs}
+                                onPublishToGitHubChange={
+                                    workflow.handlePublishToGitHubChange
+                                }
+                            />
+                            <CreateProjectGitHubPublishingSection
+                                t={t}
+                                enabled={publication.publishToGitHub}
+                                loading={publication.publicationTargetsLoading}
+                                targets={publication.publicationTargets}
+                                targetFailure={
+                                    publication.publicationTargetFailure
+                                }
+                                selectedTargetValue={
+                                    publication.selectedPublicationTarget
+                                }
+                                repositoryName={publication.repositoryName}
+                                availability={
+                                    publication.repositoryNameAvailability
+                                }
+                                repositoryNameError={
+                                    publication.publishToGitHub &&
+                                    publication.repositoryName.length > 0 &&
+                                    !publication.repositoryNameValid
+                                        ? t(
+                                              'publishToGitHub.repositoryNameInvalid',
+                                          )
+                                        : undefined
+                                }
+                                disabled={
+                                    !integrations.withGit ||
+                                    !integrations.gitAvailable
+                                }
+                                onTargetChange={
+                                    publication.setSelectedPublicationTarget
+                                }
+                                onRepositoryNameChange={
+                                    publication.changeRepositoryName
+                                }
+                                connectionButtonRef={connectionButtonRef}
+                                onOpenConnections={
+                                    workflow.handleOpenConnections
+                                }
+                            />
+                        </div>
                     </Drawer.Body>
                     <Drawer.Footer className="justify-between">
                         <CreateProjectActions
-                            editNow={editNow}
-                            creating={
-                                creating ||
-                                checkingGitIdentity ||
-                                checkingProjectRepository
-                            }
-                            createDisabled={
-                                loadingTools ||
-                                loadingGitLfsPolicy ||
-                                validInstalledReleaseCount < 1 ||
-                                selectedReleaseIndex < 0 ||
-                                projectNameAvailability === 'checking' ||
-                                projectNameAvailability === 'unavailable' ||
-                                isOverwritePathEmpty ||
-                                publicationFailure !== null ||
-                                (publishToGitHub &&
-                                    (publicationTargetsLoading ||
-                                        publicationTargetFailure !== null ||
-                                        !selectedPublicationTarget ||
-                                        !isGitHubRepositoryNameValid(
-                                            repositoryName,
-                                        ) ||
-                                        (repositoryNameAvailability !==
-                                            'available' &&
-                                            repositoryNameAvailability !==
-                                                'unknown')))
-                            }
+                            editNow={form.editNow}
+                            creating={workflow.submissionBusy}
+                            createDisabled={workflow.createDisabled}
                             editNowLabel={t('buttons.editNow')}
                             cancelLabel={t('common:buttons.cancel')}
                             createLabel={t(
-                                publishToGitHub
-                                    ? 'buttons.createAndPublish'
-                                    : 'buttons.create',
+                                form.editorSelection?.source === 'catalogue' &&
+                                    !form.editorSelection.installedRelease
+                                    ? publication.publishToGitHub
+                                        ? 'buttons.installCreateAndPublish'
+                                        : 'buttons.installAndCreate'
+                                    : publication.publishToGitHub
+                                      ? 'buttons.createAndPublish'
+                                      : 'buttons.create',
                             )}
-                            onEditNowChange={setEditNow}
+                            onEditNowChange={form.setEditNow}
                             onCancel={() => onOpenChange(false)}
-                            onCreateProject={() => void onCreateProject()}
+                            onCreateProject={() =>
+                                void workflow.onCreateProject()
+                            }
                             createButtonRef={createButtonRef}
                         />
                     </Drawer.Footer>
                 </form>
             </Drawer>
-            {publicationFailure && (
+            {workflow.publicationFailure && (
                 <CreateProjectGitHubPublishingRecoveryDialog
                     t={t}
-                    failure={publicationFailure}
-                    targets={publicationTargets}
-                    selectedTargetValue={selectedPublicationTarget}
-                    repositoryName={repositoryName}
-                    availability={repositoryNameAvailability}
+                    failure={workflow.publicationFailure}
+                    targets={publication.publicationTargets}
+                    selectedTargetValue={publication.selectedPublicationTarget}
+                    repositoryName={publication.repositoryName}
+                    availability={publication.repositoryNameAvailability}
                     repositoryNameError={
-                        repositoryName.length > 0 &&
-                        !isGitHubRepositoryNameValid(repositoryName)
+                        publication.repositoryName.length > 0 &&
+                        !publication.repositoryNameValid
                             ? t('publishToGitHub.repositoryNameInvalid')
                             : undefined
                     }
-                    busy={creating}
+                    busy={workflow.creating}
                     retryDisabled={
-                        publicationFailure.canEdit &&
-                        (!selectedPublicationTarget ||
-                            !isGitHubRepositoryNameValid(repositoryName) ||
-                            (repositoryNameAvailability !== 'available' &&
-                                repositoryNameAvailability !== 'unknown'))
+                        workflow.publicationFailure.canEdit &&
+                        !publication.publicationOptionsValid
                     }
                     returnFocusRef={createButtonRef}
-                    onTargetChange={setSelectedPublicationTarget}
-                    onRepositoryNameChange={(name) => {
-                        setRepositoryNameEdited(true);
-                        setRepositoryName(name);
-                    }}
-                    onRetry={() => void handleRetryPublication()}
-                    onContinueLocally={() => void handleContinueLocally()}
-                    onOpenGitHub={handleOpenPublicationRepository}
+                    onTargetChange={publication.setSelectedPublicationTarget}
+                    onRepositoryNameChange={publication.changeRepositoryName}
+                    onRetry={() => void workflow.handleRetryPublication()}
+                    onContinueLocally={() =>
+                        void workflow.handleContinueLocally()
+                    }
+                    onOpenGitHub={workflow.handleOpenPublicationRepository}
                 />
             )}
-            {existingRepositoryDialog && (
+            {open && workflow.connectionOpen && (
+                <GitHubConnectionDialog
+                    onConnected={workflow.handleConnected}
+                    onCancel={workflow.handleCancelConnection}
+                    returnFocusRef={connectionButtonRef}
+                />
+            )}
+            {workflow.existingRepositoryDialog && (
                 <CreateProjectExistingRepositoryDialog
-                    mode={existingRepositoryDialog.mode}
-                    root={existingRepositoryDialog.root}
-                    consequences={existingRepositoryDialog.consequences}
+                    mode={workflow.existingRepositoryDialog.mode}
+                    root={workflow.existingRepositoryDialog.root}
+                    consequences={
+                        workflow.existingRepositoryDialog.consequences
+                    }
                     t={t}
                     returnFocusRef={createButtonRef}
-                    onCancel={handleCancelExistingRepository}
-                    onContinue={() => void handleContinueExistingRepository()}
-                    onDone={handleExistingRepositoryDone}
+                    onCancel={workflow.handleCancelExistingRepository}
+                    onContinue={() =>
+                        void workflow.handleContinueExistingRepository()
+                    }
+                    onDone={workflow.handleExistingRepositoryDone}
                 />
             )}
-            {gitIdentityDialogPage && (
+            {identity.gitIdentityDialogPage && (
                 <CreateProjectGitIdentityDialog
-                    page={gitIdentityDialogPage}
-                    name={gitIdentityName}
-                    email={gitIdentityEmail}
-                    scope={gitIdentityScope}
-                    showValidation={showGitIdentityValidation}
-                    globalIdentityComplete={isGitIdentityComplete(
-                        preflightGlobalIdentity,
-                    )}
-                    showDefaultChoices={!suggestedGitIdentityPreset}
-                    saveChoice={gitIdentitySaveChoice}
-                    saving={savingGitIdentityPreset}
-                    saveError={gitIdentitySaveError}
-                    allowSkip={!pendingSubmissionRef.current?.publication}
+                    page={identity.gitIdentityDialogPage}
+                    name={identity.gitIdentityName}
+                    email={identity.gitIdentityEmail}
+                    scope={identity.gitIdentityScope}
+                    showValidation={identity.showGitIdentityValidation}
+                    globalIdentityComplete={identity.globalIdentityComplete}
+                    showDefaultChoices={!identity.suggestedGitIdentityPreset}
+                    saveChoice={identity.gitIdentitySaveChoice}
+                    saving={identity.savingGitIdentityPreset}
+                    saveError={identity.gitIdentitySaveError}
+                    allowSkip={identity.allowSkip}
                     t={t}
-                    onNameChange={(name) => {
-                        setGitIdentityName(name);
-                        setGitIdentitySaveError(null);
-                    }}
-                    onEmailChange={(email) => {
-                        setGitIdentityEmail(email);
-                        setGitIdentitySaveError(null);
-                    }}
-                    onScopeChange={(scope) => {
-                        setGitIdentityScope(scope);
-                        setGitIdentitySaveError(null);
-                    }}
-                    onSaveChoiceChange={(choice) => {
-                        setGitIdentitySaveChoice(choice);
-                        setGitIdentitySaveError(null);
-                    }}
-                    onSkip={handleSkipInitialCommit}
-                    onAddIdentity={() => setGitIdentityDialogPage('identity')}
-                    onUseGlobal={handleUseGlobalGitIdentity}
-                    onUseDifferentIdentity={handleUseDifferentGitIdentity}
-                    onBack={handleGitIdentityBack}
-                    onSave={() => void handleSaveGitIdentity()}
-                    onRequestClose={handleCloseGitIdentity}
+                    onNameChange={identity.changeName}
+                    onEmailChange={identity.changeEmail}
+                    onScopeChange={identity.changeScope}
+                    onSaveChoiceChange={identity.changeSaveChoice}
+                    onSkip={identity.handleSkipInitialCommit}
+                    onAddIdentity={identity.addIdentity}
+                    onUseGlobal={identity.handleUseGlobalGitIdentity}
+                    onUseDifferentIdentity={
+                        identity.handleUseDifferentGitIdentity
+                    }
+                    onBack={identity.handleGitIdentityBack}
+                    onSave={() => void identity.handleSaveGitIdentity()}
+                    onRequestClose={identity.handleCloseGitIdentity}
                     returnFocusRef={createButtonRef}
                 />
             )}

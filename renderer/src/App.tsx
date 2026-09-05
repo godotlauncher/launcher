@@ -137,38 +137,16 @@ function routeSegment(path: string): string {
 }
 
 function DefaultRoute() {
-    const { installedReleases } = useRelease();
-
-    return (
-        <Navigate
-            to={
-                installedReleases.length < 1
-                    ? appRoutePaths.installs
-                    : appRoutePaths.projects
-            }
-            replace
-        />
-    );
+    return <Navigate to={appRoutePaths.projects} replace />;
 }
 
 /**
- * Sends completed onboarding directly into the first useful workflow.
+ * Sends completed onboarding to the Projects welcome workflow.
  *
- * @returns A redirect to the install drawer or projects view.
+ * @returns A redirect to the projects view.
  */
 function CompletedOnboardingRoute() {
-    const { installedReleases } = useRelease();
-
-    return (
-        <Navigate
-            to={
-                installedReleases.length < 1
-                    ? appRoutePaths.installEditor
-                    : appRoutePaths.projects
-            }
-            replace
-        />
-    );
+    return <Navigate to={appRoutePaths.projects} replace />;
 }
 
 function DefaultSettingsRoute() {

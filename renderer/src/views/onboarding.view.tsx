@@ -11,10 +11,8 @@ import { useNavigate } from 'react-router';
 import { appBridge } from '../bridge';
 import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
 import { usePreferences } from '../hooks/usePreferences';
-import { useRelease } from '../hooks/useRelease';
 import { useTheme } from '../hooks/useTheme';
 import { useTrayAvailability } from '../hooks/useTrayAvailability';
-import { appRoutePaths } from '../routes.ts';
 import { AppearanceStep } from './onboarding/appearance-step.component';
 import {
     applyOnboardingRecommendedLocations,
@@ -60,7 +58,6 @@ export const OnboardingView: React.FC = () => {
         loadPreferences,
         setAutoStart,
     } = usePreferences();
-    const { installedReleases } = useRelease();
     const { theme, setTheme } = useTheme();
     const trayAvailability = useTrayAvailability(platform === 'linux');
     const { listIntegrationSettings, setDefaultIntegration } =
@@ -170,7 +167,7 @@ export const OnboardingView: React.FC = () => {
         return null;
     }
 
-    const destinationPath = getOnboardingDestinationPath(installedReleases);
+    const destinationPath = getOnboardingDestinationPath();
     const labels = {
         welcome: t('welcome:onboarding.steps.welcome'),
         appearance: t('welcome:onboarding.steps.appearance'),
@@ -302,9 +299,7 @@ export const OnboardingView: React.FC = () => {
             ? t('common:buttons.continue')
             : step === 'setup'
               ? t('common:buttons.continue')
-              : destinationPath === appRoutePaths.installEditor
-                ? t('welcome:onboarding.navigation.finishInstall')
-                : t('welcome:onboarding.navigation.finishProjects');
+              : t('welcome:onboarding.navigation.finishProjects');
 
     return (
         <div className="flex h-full min-h-0 w-full bg-base-100 text-base-content">

@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type {
     CodeEditorId,
+    CreateProjectDestinationInspection,
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
     CreateProjectResult,
@@ -54,6 +55,11 @@ type CreateProjectLocation = {
     projectPath: string;
 };
 
+type CreateProjectDestinationValidation = {
+    inspection: CreateProjectDestinationInspection;
+    projectRootExisted: boolean;
+};
+
 /**
  * Resolves the exact directory used by Create Project.
  *
@@ -80,6 +86,59 @@ function resolveCreateProjectLocation(
                   projectDirectoryName,
               )
             : path.resolve(defaultBasePath, projectDirectoryName),
+    };
+}
+
+/**
+ * Validates whether a Create Project destination can be used without changing it.
+ *
+ * @param projectPath - Exact final project directory to validate.
+ * @param projectName - Trimmed project display name used in localised errors.
+ * @returns The destination result and whether the project root existed for recovery.
+ */
+async function inspectCreateProjectDestination(
+    projectPath: string,
+    projectName: string,
+): Promise<CreateProjectDestinationValidation> {
+    let stat: fs.Stats;
+    try {
+        stat = await fs.promises.lstat(projectPath);
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            return {
+                inspection: { status: 'available' },
+                projectRootExisted: false,
+            };
+        }
+        throw error;
+    }
+
+    if (!stat.isDirectory()) {
+        return {
+            inspection: {
+                status: 'blocked',
+                error: t('createProject:errors.pathNotDirectory'),
+            },
+            projectRootExisted: true,
+        };
+    }
+
+    const entries = await fs.promises.readdir(projectPath);
+    if (entries.length > 0) {
+        return {
+            inspection: {
+                status: 'blocked',
+                error: t('createProject:errors.folderNotEmpty', {
+                    name: projectName,
+                }),
+            },
+            projectRootExisted: true,
+        };
+    }
+
+    return {
+        inspection: { status: 'available' },
+        projectRootExisted: true,
     };
 }
 
@@ -241,6 +300,38 @@ export class ProjectCreationService {
     }
 
     /**
+     * Inspects whether the exact planned Create Project directory can be used.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     * @returns Whether the final sanitised project path is available.
+     */
+    async inspectCreateProjectDestination(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ): Promise<CreateProjectDestinationInspection> {
+        try {
+            const { projects_location: projectDir } =
+                await getUserPreferences();
+            const location = resolveCreateProjectLocation(
+                projectName,
+                projectDir,
+                overwriteProjectPath,
+            );
+            const { inspection } = await inspectCreateProjectDestination(
+                location.projectPath,
+                location.projectName,
+            );
+            return inspection;
+        } catch {
+            return {
+                status: 'blocked',
+                error: t('createProject:destination.checkFailed'),
+            };
+        }
+    }
+
+    /**
      * Creates a project and configures its selected editor integrations.
      *
      * @param projectName - Display name for the new project.
@@ -326,30 +417,18 @@ export class ProjectCreationService {
         );
         projectName = location.projectName;
         const { projectDirectoryName, projectPath } = location;
-        const projectRootExisted = fs.existsSync(projectPath);
-
-        // If the target exists, allow it only when it's an empty directory.
-        if (projectRootExisted) {
-            const stat = await fs.promises.lstat(projectPath);
-
-            if (!stat.isDirectory()) {
-                return {
-                    success: false,
-                    error: t('createProject:errors.pathNotDirectory'),
-                };
-            }
-
-            const entries = await fs.promises.readdir(projectPath);
-            if (entries.length > 0) {
-                return {
-                    success: false,
-                    error: t('createProject:errors.folderNotEmpty', {
-                        name: projectName,
-                    }),
-                };
-            }
+        const destinationValidation = await inspectCreateProjectDestination(
+            projectPath,
+            projectName,
+        );
+        const { inspection: destinationInspection, projectRootExisted } =
+            destinationValidation;
+        if (destinationInspection.status === 'blocked') {
+            return {
+                success: false,
+                error: destinationInspection.error,
+            };
         }
-
         const repositoryInspection =
             await this.git.inspectRepository(projectPath);
         const enclosingRepository =

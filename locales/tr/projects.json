@@ -1,6 +1,22 @@
 {
     "title": "Projeler",
     "emptyState": {
+        "welcome": {
+            "heading": "Bir proje ekleyin veya oluşturun",
+            "description": "Mevcut çalışmanızı Launcher'a getirin veya yeni bir şeye başlayın.",
+            "newProject": {
+                "heading": "Yeni proje",
+                "description": "Bir Godot sürümü seçin.\nGerekirse Launcher indirir.",
+                "action": "Proje oluştur"
+            },
+            "existingProject": {
+                "heading": "Mevcut proje",
+                "description": "Launcher, her projenin ihtiyaç duyduğu\nGodot sürümünü bulur.",
+                "fromComputer": "Bu bilgisayardan",
+                "fromGitHub": "GitHub'dan",
+                "gitRequired": "GitHub’dan içe aktarmak için Git gereklidir"
+            }
+        },
         "addExistingProject": "Mevcut bir proje ekle",
         "withoutEditor": {
             "heading": "Bir proje başlatmak için Godot'yu kurun",
@@ -51,7 +67,8 @@
         "windowed": "Pencereli",
         "opened": "{{age}} açıldı",
         "notOpened": "Henüz açılmadı",
-        "editInGodot": "Godot'ta düzenle"
+        "editInGodot": "Godot'ta düzenle",
+        "installRequiredEditor": "Gerekli düzenleyiciyi kur"
     },
     "table": {
         "moreOptions": "{{project}} için diğer seçenekler",
@@ -137,7 +154,7 @@
                 "empty": "Eşleşen kod deposu yüklenmedi.",
                 "loadMore": "Daha fazlasını yükle",
                 "alreadyAdded": "Zaten eklendi",
-                "openConnections": "Bağlantıları Aç",
+                "openConnections": "GitHub'ı bağla",
                 "visibility": {
                     "public": "halka açık",
                     "private": "Özel",
@@ -147,7 +164,10 @@
                     "connectionRequired": "Bir depoyu içe aktarmadan önce GitHub'ı bağlayın veya yeniden bağlayın.",
                     "temporarilyUnavailable": "GitHub geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
                     "sessionExpired": "Depo oturumunun süresi doldu. Listeyi tekrar yükleyin."
-                }
+                },
+                "noRepositories": "Bağlı hesaplarınız üzerinden kullanılabilen depo yok.",
+                "missingRepository": "Deponuzu göremiyor musunuz?",
+                "manageConnections": "Hesapları ve erişimi yönetin"
             },
             "destination": {
                 "description": "Deponun nereye kopyalanacağını seçin.",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
         },
         "actions": {
+            "installAndSave": "Yükle ve kaydet",
+            "installingEditor": "Editör yükleniyor...",
             "update": "Güncelle",
             "updating": "Güncelleniyor..."
         },

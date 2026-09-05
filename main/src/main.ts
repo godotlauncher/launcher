@@ -78,7 +78,7 @@ async function bootstrap(): Promise<void> {
     const applicationPromise = createElectronApplication(AppModule, {
         appName: appConfig.appName,
         desktopName: 'org.godotlauncher.launcher.desktop',
-        instanceMode: 'single',
+        instanceMode: appConfig.e2eFixtures ? 'multi' : 'single',
         hideOnClose: true,
         logger: ['error', 'warn'],
         loggerOptions: {

@@ -1,9 +1,13 @@
 import type {
     AddProjectEditorResolution,
+    ProjectDetails,
     ReleaseSummary,
 } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
-import { findDownloadableProjectEditor } from './project-editor-resolution.model';
+import {
+    findDownloadableMissingProjectEditor,
+    findDownloadableProjectEditor,
+} from './project-editor-resolution.model';
 
 /**
  * Creates a release catalogue fixture with both standard editor variants.
@@ -34,6 +38,39 @@ function createRelease(version: string, prerelease = false): ReleaseSummary {
                 mono: true,
             },
         ],
+    };
+}
+
+function createMissingProject(version: string, mono = false): ProjectDetails {
+    return {
+        name: 'Missing Editor Project',
+        version,
+        version_number: Number.parseFloat(version),
+        renderer: 'FORWARD_PLUS',
+        path: '/projects/missing-editor',
+        editor_settings_path: '',
+        editor_settings_file: '',
+        last_opened: null,
+        release: {
+            version,
+            version_number: Number.parseFloat(version),
+            install_path: '',
+            editor_path: '',
+            platform: 'linux',
+            arch: 'x64',
+            mono,
+            prerelease: false,
+            config_version: 5,
+            published_at: null,
+            valid: false,
+            source: 'official',
+        },
+        launch_path: '',
+        config_version: 5,
+        codeEditorId: null,
+        withGit: false,
+        valid: false,
+        invalid_reason: 'missing_editor',
     };
 }
 
@@ -115,6 +152,44 @@ describe('project editor resolution model', () => {
 
         expect(
             findDownloadableProjectEditor(resolution, [standardOnly], []),
+        ).toBeUndefined();
+    });
+
+    it('finds the exact editor required by a stored missing project', () => {
+        const release = createRelease('4.4.3-stable');
+
+        expect(
+            findDownloadableMissingProjectEditor(
+                createMissingProject('4.4.3-stable', true),
+                [release],
+                [],
+            ),
+        ).toBe(release);
+    });
+
+    it('does not offer catalogue downloads for custom missing editors', () => {
+        const project = createMissingProject('4.4.3-stable');
+        project.release.source = 'custom';
+
+        expect(
+            findDownloadableMissingProjectEditor(
+                project,
+                [createRelease('4.4.3-stable')],
+                [],
+            ),
+        ).toBeUndefined();
+    });
+
+    it('does not offer an editor when the exact required flavour is unavailable', () => {
+        const release = createRelease('4.4.3-stable');
+        release.assets = release.assets.filter((asset) => !asset.mono);
+
+        expect(
+            findDownloadableMissingProjectEditor(
+                createMissingProject('4.4.3-stable', true),
+                [release],
+                [],
+            ),
         ).toBeUndefined();
     });
 });

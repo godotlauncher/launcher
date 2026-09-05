@@ -5,6 +5,7 @@ import {
 import type {
     AddProjectOptions,
     CodeEditorId,
+    CreateProjectDestinationInspection,
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
@@ -143,6 +144,24 @@ export class ProjectsController implements ProjectsBridge {
     ) {
         return this.projects.checkCreateProjectRepositoryNameAvailability(
             publication,
+        );
+    }
+
+    /**
+     * Inspects whether the final planned Create Project directory can be used.
+     *
+     * @param projectName - Display name for the new project.
+     * @param overwriteProjectPath - Optional path used to choose the project parent directory.
+     * @returns Whether the final sanitised project path is available.
+     */
+    @ProjectsHandler('inspectCreateProjectDestination')
+    inspectCreateProjectDestination(
+        projectName: string,
+        overwriteProjectPath?: string,
+    ): Promise<CreateProjectDestinationInspection> {
+        return this.projects.inspectCreateProjectDestination(
+            projectName,
+            overwriteProjectPath,
         );
     }
 

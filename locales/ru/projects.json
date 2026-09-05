@@ -1,6 +1,22 @@
 {
     "title": "Проекты",
     "emptyState": {
+        "welcome": {
+            "heading": "Добавьте или создайте проект",
+            "description": "Добавьте существующую работу в Launcher или начните что-то новое.",
+            "newProject": {
+                "heading": "Новый проект",
+                "description": "Выберите версию Godot.\nLauncher загрузит её при необходимости.",
+                "action": "Создать проект"
+            },
+            "existingProject": {
+                "heading": "Существующий проект",
+                "description": "Launcher найдёт версию Godot,\nкоторая нужна каждому проекту.",
+                "fromComputer": "С этого компьютера",
+                "fromGitHub": "С GitHub",
+                "gitRequired": "Для импорта из GitHub требуется Git"
+            }
+        },
         "addExistingProject": "Добавить существующий проект",
         "withoutEditor": {
             "heading": "Установите Godot, чтобы начать проект",
@@ -51,7 +67,8 @@
         "windowed": "В окне",
         "opened": "Открыт {{age}}",
         "notOpened": "Ещё не открывался",
-        "editInGodot": "Редактировать в Godot"
+        "editInGodot": "Редактировать в Godot",
+        "installRequiredEditor": "Установить необходимый редактор"
     },
     "table": {
         "moreOptions": "Дополнительные действия для {{project}}",
@@ -137,7 +154,7 @@
                 "empty": "Соответствующие репозитории не загружены.",
                 "loadMore": "Загрузить больше",
                 "alreadyAdded": "Уже добавлено",
-                "openConnections": "Открытые соединения",
+                "openConnections": "Подключить GitHub",
                 "visibility": {
                     "public": "Общественный",
                     "private": "Частный",
@@ -147,7 +164,10 @@
                     "connectionRequired": "Подключите или повторно подключите GitHub перед импортом репозитория.",
                     "temporarilyUnavailable": "GitHub временно недоступен. Повторите попытку позже.",
                     "sessionExpired": "Срок действия сеанса репозитория истек. Загрузите список еще раз."
-                }
+                },
+                "noRepositories": "Через подключённые аккаунты нет доступных репозиториев.",
+                "missingRepository": "Не видите свой репозиторий?",
+                "manageConnections": "Управление аккаунтами и доступом"
             },
             "destination": {
                 "description": "Выберите, куда будет клонирован репозиторий.",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot недоступен. Можно изменить только имя в лаунчере."
         },
         "actions": {
+            "installAndSave": "Установить и сохранить",
+            "installingEditor": "Установка редактора...",
             "update": "Обновить",
             "updating": "Обновление..."
         },

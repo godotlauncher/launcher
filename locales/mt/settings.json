@@ -231,6 +231,17 @@
         "loading": "Qed jitgħabbew il-konnessjonijiet...",
         "loadError": "Ma setgħux jitgħabbew il-konnessjonijiet.",
         "genericDescription": "Qabbad dan is-servizz biex tużah f'Godot Launcher.",
+        "flow": {
+            "importDescription": "Qabbad GitHub biex tfittex u timporta r-repożitorji tiegħek.",
+            "addAccount": "Żid kont ieħor",
+            "title": "Qabbad GitHub",
+            "reconnect": "Erġa' qabbad GitHub",
+            "description": "Qabbad GitHub biex tkompli. Ix-xogħol attwali tiegħek se jinżamm.",
+            "continueInBrowser": "Kompli fil-browser",
+            "waiting": "Imla l-konnessjoni fil-browser, imbagħad erġa' lura hawn.",
+            "refreshRepositories": "Aġġorna r-repożitorji",
+            "accessDescription": "Immaniġġja l-aċċess għar-repożitorji fuq GitHub jew żid kont ieħor, imbagħad aġġorna l-lista tar-repożitorji."
+        },
         "github": {
             "description": "Qabbad GitHub biex ir-repożitorji tiegħek ikunu disponibbli f'Godot Launcher.",
             "accessNote": "Int tagħżel liema repożitorji tista' taċċessa l-app GitHub.",

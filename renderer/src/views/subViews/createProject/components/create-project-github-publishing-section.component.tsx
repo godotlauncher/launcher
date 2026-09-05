@@ -24,6 +24,7 @@ type CreateProjectGitHubPublishingSectionProps = {
     onTargetChange: (value: string) => void;
     onRepositoryNameChange: (name: string) => void;
     onOpenConnections: () => void;
+    connectionButtonRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
 /**
@@ -48,16 +49,14 @@ export const CreateProjectGitHubPublishingSection: React.FC<
     onTargetChange,
     onRepositoryNameChange,
     onOpenConnections,
+    connectionButtonRef,
 }) => {
     const connectionProblem = targetFailure !== null;
 
     if (!enabled) return null;
 
     return (
-        <section className="border-t-2 border-primary bg-base-200/70 p-4">
-            <h2 className="mb-4 text-md font-medium">
-                {t('publishToGitHub.repositoryTitle')}
-            </h2>
+        <section>
             <div>
                 {loading ? (
                     <div className="flex items-center gap-2 text-sm text-base-content/70">
@@ -65,13 +64,14 @@ export const CreateProjectGitHubPublishingSection: React.FC<
                         {t('publishToGitHub.loadingOwners')}
                     </div>
                 ) : connectionProblem ? (
-                    <div className="alert alert-warning alert-soft flex-col items-start gap-3 sm:flex-row sm:items-center">
-                        <span className="flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                        <span className="text-base-content/70">
                             {t(
                                 `publishToGitHub.targetFailure.${targetFailure}`,
                             )}
                         </span>
                         <button
+                            ref={connectionButtonRef}
                             type="button"
                             className="btn btn-sm"
                             onClick={onOpenConnections}
@@ -81,6 +81,7 @@ export const CreateProjectGitHubPublishingSection: React.FC<
                     </div>
                 ) : (
                     <RepositoryCreationFields
+                        availabilityBelow
                         t={t}
                         ownerId="selectCreateProjectGitHubOwner"
                         repositoryNameId="createProjectGitHubRepositoryName"

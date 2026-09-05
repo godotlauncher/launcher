@@ -1,6 +1,22 @@
 {
     "title": "プロジェクト",
     "emptyState": {
+        "welcome": {
+            "heading": "プロジェクトを追加または作成",
+            "description": "既存の作業をLauncherに追加するか、新しい作業を始めましょう。",
+            "newProject": {
+                "heading": "新しいプロジェクト",
+                "description": "Godotのバージョンを選択します。\n必要に応じてLauncherがダウンロードします。",
+                "action": "プロジェクトを作成"
+            },
+            "existingProject": {
+                "heading": "既存のプロジェクト",
+                "description": "Launcherは各プロジェクトに必要な\nGodotのバージョンを見つけます。",
+                "fromComputer": "このコンピューターから",
+                "fromGitHub": "GitHubから",
+                "gitRequired": "GitHub からインポートするには Git が必要です"
+            }
+        },
         "addExistingProject": "既存のプロジェクトを追加",
         "withoutEditor": {
             "heading": "Godot をインストールしてプロジェクトを開始",
@@ -51,7 +67,8 @@
         "windowed": "ウィンドウ表示",
         "opened": "{{age}}に開きました",
         "notOpened": "まだ開いていません",
-        "editInGodot": "Godot で編集"
+        "editInGodot": "Godot で編集",
+        "installRequiredEditor": "必要なエディターをインストール"
     },
     "table": {
         "moreOptions": "{{project}} のその他のオプション",
@@ -137,7 +154,7 @@
                 "empty": "一致するリポジトリがロードされていません。",
                 "loadMore": "さらにロードする",
                 "alreadyAdded": "すでに追加されています",
-                "openConnections": "オープンコネクション",
+                "openConnections": "GitHub に接続",
                 "visibility": {
                     "public": "公共",
                     "private": "プライベート",
@@ -147,7 +164,10 @@
                     "connectionRequired": "リポジトリをインポートする前に、GitHub に接続または再接続します。",
                     "temporarilyUnavailable": "GitHub が一時的に利用できなくなりました。後でもう一度試してください。",
                     "sessionExpired": "リポジトリ セッションの有効期限が切れました。リストを再度ロードします。"
-                }
+                },
+                "noRepositories": "接続したアカウントから利用できるリポジトリはありません。",
+                "missingRepository": "リポジトリが見つかりませんか？",
+                "manageConnections": "アカウントとアクセスを管理"
             },
             "destination": {
                 "description": "リポジトリのクローンを作成する場所を選択します。",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot が利用できません。Launcher の名前のみ変更できます。"
         },
         "actions": {
+            "installAndSave": "インストールして保存",
+            "installingEditor": "エディターをインストール中...",
             "update": "更新",
             "updating": "更新中..."
         },

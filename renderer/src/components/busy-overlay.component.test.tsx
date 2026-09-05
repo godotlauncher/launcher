@@ -5,7 +5,7 @@ import { BusyOverlay } from './busy-overlay.component';
 describe('BusyOverlay', () => {
     it('renders a blocking accessible loading state', () => {
         const html = renderToStaticMarkup(
-            <BusyOverlay message="Creating project..." className="z-60" />,
+            <BusyOverlay message="Creating project..." />,
         );
 
         expect(html).toContain('Creating project...');

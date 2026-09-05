@@ -1,5 +1,19 @@
 {
     "title": "新專案",
+    "workflow": {
+        "title": "正在設定專案",
+        "installingEditor": "安裝編輯器",
+        "creatingProject": "建立專案",
+        "launchingEditor": "啟動編輯器",
+        "skipped": "已略過",
+        "failed": "無法建立專案。請檢查表單後再試一次。",
+        "launchFailed": "專案已建立，但無法啟動編輯器。"
+    },
+    "destination": {
+        "checking": "正在檢查專案位置...",
+        "available": "專案位置可用",
+        "checkFailed": "無法檢查專案位置。請檢查路徑後再試一次。"
+    },
     "project": {
         "title": "專案",
         "dotNetBadge": ".NET",
@@ -9,11 +23,37 @@
         "downloading": "下載中…",
         "nameRequired": "必須輸入專案名稱",
         "nameExists": "已有相同名稱的專案",
-        "overwritePath": "覆蓋專案路徑",
+        "overwritePath": "專案位置",
         "selectFolderDialogTitle": "選擇專案資料夾",
         "selectFolderTooltip": "開啟對話框以選擇專案資料夾",
-        "useDefaultPath": "使用預設路徑",
-        "overwritePathRequired": "啟用覆寫專案路徑時，必須填寫路徑。"
+        "useDefaultPath": "使用預設位置",
+        "overwritePathRequired": "專案位置為必填項目。"
+    },
+    "editorPicker": {
+        "title": "Godot 編輯器",
+        "installed": "已安裝",
+        "browse": "瀏覽版本",
+        "search": "搜尋版本",
+        "clearSearch": "清除版本搜尋",
+        "channel": "發佈頻道",
+        "stable": "穩定版",
+        "prereleases": "預先釋出版",
+        "standard": "標準版",
+        "custom": "自訂",
+        "selected": "已選取",
+        "unavailable": "無法使用",
+        "downloadRequired": "需要下載",
+        "noInstalled": "沒有已安裝的編輯器",
+        "notInstalled": "未安裝",
+        "noInstalledDescription": "瀏覽版本以選擇要安裝的編輯器。",
+        "noneSelected": "選擇編輯器",
+        "loading": "正在載入版本...",
+        "noMatches": "沒有相符的版本",
+        "installFailed": "無法安裝編輯器。專案尚未建立。",
+        "loadFailed": "無法載入版本。請再試一次。",
+        "refreshFailed": "無法重新整理版本。正在顯示先前載入的版本。",
+        "retry": "重試",
+        "retrying": "正在重試..."
     },
     "renderer": {
         "title": "渲染器",
@@ -61,7 +101,7 @@
         "availabilityAvailable": "此名稱似乎可用",
         "availabilityUnavailable": "此名稱已被使用",
         "availabilityUnknown": "無法檢查此名稱",
-        "openConnections": "開啟連線",
+        "openConnections": "連接 GitHub",
         "leaveTitle": "離開建立專案？",
         "leaveMessage": "開啟連線時，未儲存的專案資料將被清除。",
         "successTitle": "已發佈到 GitHub",
@@ -175,6 +215,8 @@
         "editNow": "立即編輯",
         "create": "建立專案",
         "createAndPublish": "建立並發佈",
+        "installAndCreate": "安裝並建立專案",
+        "installCreateAndPublish": "安裝、建立並發佈",
         "creating": "正在建立專案...",
         "publishing": "正在建立專案並發佈到 GitHub..."
     },

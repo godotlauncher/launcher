@@ -43,6 +43,10 @@ import {
     subscribeAppEvent,
 } from '../bridge.ts';
 import { appRoutePaths } from '../routes';
+import type {
+    ProjectSettingsDraft,
+    ProjectSettingsSave,
+} from './project-settings-save.types';
 import { useAlerts } from './useAlerts';
 import { useRelease } from './useRelease';
 
@@ -53,6 +57,13 @@ export type ProjectEditorRepairRequest = {
 };
 
 interface ProjectsContext {
+    settingsSaves: ReadonlyMap<string, ProjectSettingsSave>;
+    startSettingsSave: (
+        path: string,
+        draft: ProjectSettingsDraft,
+        save: () => Promise<ProjectDetails>,
+    ) => void;
+    clearSettingsSave: (path: string) => void;
     projects: ProjectDetails[];
     projectGitHubUrls: ReadonlyMap<string, string>;
     codeEditorSettings: CodeEditorIntegrationSettings[];
@@ -68,7 +79,9 @@ interface ProjectsContext {
         project: ProjectDetails,
         release: InstalledRelease,
     ) => Promise<ChangeProjectEditorResult>;
-    queueProjectEditorRepairs: (requests: ProjectEditorRepairRequest[]) => void;
+    queueProjectEditorRepairs: (
+        requests: ProjectEditorRepairRequest[],
+    ) => Promise<void>;
     setProjectWindowed: (
         project: ProjectDetails,
         openWindowed: boolean,
@@ -159,6 +172,70 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     const { addAlert, addCustomConfirm } = useAlerts();
     const { installRelease } = useRelease();
     const [projects, setProjects] = useState<ProjectDetails[]>([]);
+    const settingsSavesRef = useRef(new Map<string, ProjectSettingsSave>());
+    const [settingsSaves, setSettingsSaves] = useState<
+        ReadonlyMap<string, ProjectSettingsSave>
+    >(settingsSavesRef.current);
+
+    /**
+     * Publishes a settings save state independently of any drawer session.
+     * @param path - Project path identifying the save.
+     * @param state - Latest save state, or undefined to clear it.
+     */
+    const publishSettingsSave = (path: string, state?: ProjectSettingsSave) => {
+        const next = new Map(settingsSavesRef.current);
+        if (state) next.set(path, state);
+        else next.delete(path);
+        settingsSavesRef.current = next;
+        setSettingsSaves(next);
+    };
+
+    /**
+     * Clears a settled settings submission after the drawer consumes it.
+     * @param path - Project whose settled submission can be cleared.
+     */
+    const clearSettingsSave = (path: string) => {
+        if (settingsSavesRef.current.get(path)?.status !== 'pending') {
+            publishSettingsSave(path);
+        }
+    };
+
+    /**
+     * Runs one submitted settings save per project through navigation changes.
+     * @param path - Project path used to prevent conflicting submissions.
+     * @param draft - Submitted form values retained for recovery.
+     * @param save - Operation returning the saved project after installation.
+     */
+    const startSettingsSave = (
+        path: string,
+        draft: ProjectSettingsDraft,
+        save: () => Promise<ProjectDetails>,
+    ) => {
+        if (settingsSavesRef.current.get(path)?.status === 'pending') return;
+        publishSettingsSave(path, { status: 'pending', draft });
+        void (async () => {
+            try {
+                const project = await save();
+                publishSettingsSave(path, {
+                    status: 'complete',
+                    draft,
+                    project,
+                });
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : t('editProject.updateFailed');
+                publishSettingsSave(path, {
+                    status: 'failed',
+                    draft,
+                    error: message,
+                });
+                addAlert(t('editProject.updateFailed'), message);
+            }
+        })();
+    };
+
     const [projectGitHubUrls, setProjectGitHubUrls] = useState<
         ReadonlyMap<string, string>
     >(new Map());
@@ -397,16 +474,17 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     /**
-     * Submits editor repairs without making the active project flow wait.
+     * Runs editor repairs for independent project editor requests.
      *
      * @param requests - Editor installs and their associated projects.
+     * @returns A promise that ends after all editor repairs finish.
      */
-    const queueProjectEditorRepairs = (
+    const queueProjectEditorRepairs = async (
         requests: ProjectEditorRepairRequest[],
-    ): void => {
-        for (const request of requests) {
-            void runProjectEditorRepair(request);
-        }
+    ): Promise<void> => {
+        await Promise.all(
+            requests.map((request) => runProjectEditorRepair(request)),
+        );
     };
 
     const updateProjectState = (updatedProject: ProjectDetails) => {
@@ -644,6 +722,9 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         <projectsContext.Provider
             value={{
                 projects,
+                settingsSaves,
+                startSettingsSave,
+                clearSettingsSave,
                 projectGitHubUrls,
                 codeEditorSettings,
                 loading,

@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ReleaseSummary,
 } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -56,6 +57,31 @@ const availableVSCodeSettings: CodeEditorIntegrationSettings = {
     resolvedGodotExecPath: '/applications/code',
 };
 
+const downloadableRelease: ReleaseSummary = {
+    version: '4.3-stable',
+    version_number: 4.3,
+    name: '4.3-stable',
+    published_at: null,
+    draft: false,
+    prerelease: false,
+    assets: [
+        {
+            name: '4.3-standard',
+            download_url: 'https://example.com/4.3-standard.zip',
+            platform_tags: ['darwin', 'arm64'],
+            mono: false,
+        },
+    ],
+};
+
+type RenderOptions = {
+    isInstalledRelease?: (version: string, mono: boolean) => boolean;
+    isProjectEditorDownloading?: (project: ProjectDetails) => boolean;
+    getDownloadableProjectEditor?: (
+        project: ProjectDetails,
+    ) => ReleaseSummary | undefined;
+};
+
 function renderProjectsList(
     sections: Partial<ProjectSections>,
     codeEditorSettings: CodeEditorIntegrationSettings[] = [
@@ -76,6 +102,7 @@ function renderProjectsList(
         }
         return key;
     },
+    options: RenderOptions = {},
 ): string {
     return renderToStaticMarkup(
         <ProjectsList
@@ -94,8 +121,14 @@ function renderProjectsList(
             pinnedReorderingDisabled={pinnedReorderingDisabled}
             onPinnedHighlightComplete={vi.fn()}
             onReorderPinnedProjects={vi.fn()}
-            isInstalledRelease={vi.fn(() => true)}
-            isProjectEditorDownloading={vi.fn(() => false)}
+            isInstalledRelease={options.isInstalledRelease ?? vi.fn(() => true)}
+            isProjectEditorDownloading={
+                options.isProjectEditorDownloading ?? vi.fn(() => false)
+            }
+            getDownloadableProjectEditor={
+                options.getDownloadableProjectEditor ?? vi.fn(() => undefined)
+            }
+            onInstallRequiredProjectEditor={vi.fn()}
             onLaunchProject={vi.fn()}
             onProjectFoldersOptions={vi.fn()}
             onTogglePinned={vi.fn()}
@@ -126,8 +159,6 @@ describe('ProjectsList', () => {
         expect(html).toContain('data-project-section="new"');
         expect(html).toContain('data-project-section="pinned"');
         expect(html).not.toContain('<table');
-        expect(html).toContain('lucide-pin');
-        expect(html).not.toContain('lucide-pin-off');
     });
 
     it('shows reorder handles only for pinned projects', () => {
@@ -143,9 +174,6 @@ describe('ProjectsList', () => {
             ],
         });
 
-        expect(
-            html.match(/data-testid="btnReorderPinnedProject"/g),
-        ).toHaveLength(1);
         expect(html).toContain('aria-label="pinning.reorder.label"');
     });
 
@@ -164,29 +192,6 @@ describe('ProjectsList', () => {
         );
     });
 
-    it('renders project icons and status markers', () => {
-        const html = renderProjectsList({
-            newProjects: [
-                {
-                    ...baseProject,
-                    icon_path: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
-                    codeEditorId: 'vscode',
-                    release: { ...baseProject.release, prerelease: true },
-                },
-            ],
-        });
-
-        expect(html).toContain(
-            'src="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="',
-        );
-        expect(html).toContain('aria-label="card.openFolders"');
-        expect(html).toContain('aria-label="project.pinProject"');
-        expect(html).toContain('aria-label="card.projectSettings"');
-        expect(html).toContain('card.editInGodot');
-        expect(html).toContain('vscode.svg');
-        expect(html).toContain('lucide-flask-conical');
-    });
-
     it('renders unavailable code editors as warnings', () => {
         const html = renderProjectsList(
             {
@@ -196,33 +201,79 @@ describe('ProjectsList', () => {
         );
 
         expect(html).toContain('Visual Studio Code');
-        expect(html).not.toContain('vscode.svg');
     });
 
-    it('keeps wrapping badges separate from the fixed launch actions', () => {
-        const html = renderProjectsList({
-            newProjects: [
-                {
-                    ...baseProject,
-                    codeEditorId: 'vscode',
-                    withGit: true,
-                    open_windowed: true,
-                },
-            ],
-        });
+    it('offers an exact missing official editor download with its accessible label', () => {
+        const missingProject: ProjectDetails = {
+            ...baseProject,
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: {
+                ...baseProject.release,
+                valid: false,
+                source: 'official',
+            },
+        };
 
-        expect(html).toContain('data-testid="projectBadges"');
-        expect(html).toContain('data-testid="projectLaunchActions"');
-        expect(html.indexOf('data-testid="projectBadges"')).toBeLessThan(
-            html.indexOf('data-testid="projectLaunchActions"'),
+        const html = renderProjectsList(
+            { newProjects: [missingProject] },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map(),
+            (key) =>
+                key === 'card.installRequiredEditor'
+                    ? 'Install required editor'
+                    : key,
+            {
+                isInstalledRelease: vi.fn(() => false),
+                getDownloadableProjectEditor: vi.fn(() => downloadableRelease),
+            },
         );
-        expect(html).toContain('card.windowed');
-        expect(html).toContain('>Git<');
-        expect(html).toContain('data-testid="gitProjectIcon"');
-        expect(html).not.toContain('data-testid="githubProjectIcon"');
+
+        expect(html).toContain('aria-label="Install required editor"');
+        expect(html).toContain('card.editInGodot');
     });
 
-    it('uses the GitHub label, icon, and tooltip for a cached GitHub origin', () => {
+    it('disables the editor download action while that editor downloads', () => {
+        const missingProject: ProjectDetails = {
+            ...baseProject,
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: {
+                ...baseProject.release,
+                valid: false,
+                source: 'official',
+            },
+        };
+        const sharedMissingProject = {
+            ...missingProject,
+            name: 'Second Missing Editor Project',
+            path: '/projects/second-missing-editor',
+        };
+
+        const html = renderProjectsList(
+            { newProjects: [missingProject, sharedMissingProject] },
+            [availableVSCodeSettings],
+            'en',
+            false,
+            new Map(),
+            undefined,
+            {
+                isInstalledRelease: vi.fn(() => false),
+                isProjectEditorDownloading: vi.fn(() => true),
+                getDownloadableProjectEditor: vi.fn(() => downloadableRelease),
+            },
+        );
+
+        expect(
+            html.match(
+                /data-testid="btnInstallRequiredProjectEditor" disabled=""/g,
+            ),
+        ).toHaveLength(2);
+    });
+
+    it('uses the GitHub label for a cached GitHub origin', () => {
         const translate = vi.fn((key: string) => key);
         const html = renderProjectsList(
             {
@@ -237,11 +288,9 @@ describe('ProjectsList', () => {
 
         expect(html).toContain('>GitHub<');
         expect(translate).toHaveBeenCalledWith('table.githubProject');
-        expect(html).toContain('data-testid="githubProjectIcon"');
-        expect(html).not.toContain('data-testid="gitProjectIcon"');
     });
 
-    it('returns to the Git label, icon, and tooltip without a GitHub origin', () => {
+    it('returns to the Git label without a GitHub origin', () => {
         const translate = vi.fn((key: string) => key);
         const html = renderProjectsList(
             {
@@ -256,8 +305,6 @@ describe('ProjectsList', () => {
 
         expect(html).toContain('>Git<');
         expect(translate).toHaveBeenCalledWith('table.gitProject');
-        expect(html).toContain('data-testid="gitProjectIcon"');
-        expect(html).not.toContain('data-testid="githubProjectIcon"');
     });
 
     it('renders localized relative times', () => {

@@ -4,9 +4,10 @@ import type React from 'react';
 import type { RefObject } from 'react';
 import { Dialog } from '../../../../components/dialog.component';
 import { TextField } from '../../../../components/ui/textField.component';
+import type { GitIdentityDialogPage } from '../create-project-workflow.types';
 import type { CreateProjectGitIdentitySaveChoice } from '../createProject.model';
 
-export type GitIdentityDialogPage = 'warning' | 'preset' | 'identity';
+export type { GitIdentityDialogPage } from '../create-project-workflow.types';
 
 type Translate = (key: string) => string;
 

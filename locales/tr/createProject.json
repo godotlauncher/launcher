@@ -1,5 +1,19 @@
 {
     "title": "Yeni Proje",
+    "workflow": {
+        "title": "Projeniz ayarlanıyor",
+        "installingEditor": "Düzenleyiciyi yükle",
+        "creatingProject": "Proje oluştur",
+        "launchingEditor": "Düzenleyiciyi başlat",
+        "skipped": "Atlandı",
+        "failed": "Proje oluşturulamadı. Formu gözden geçirip tekrar deneyin.",
+        "launchFailed": "Proje oluşturuldu ancak düzenleyici başlatılamadı."
+    },
+    "destination": {
+        "checking": "Proje konumu kontrol ediliyor...",
+        "available": "Proje konumu kullanılabilir",
+        "checkFailed": "Proje konumu kontrol edilemedi. Yolu kontrol edip tekrar deneyin."
+    },
     "project": {
         "title": "Proje",
         "dotNetBadge": ".NET",
@@ -9,11 +23,37 @@
         "downloading": "İndiriliyor...",
         "nameRequired": "Proje adı gerekli",
         "nameExists": "Bu ada sahip bir proje zaten var",
-        "overwritePath": "Proje yolunun üzerine yaz",
+        "overwritePath": "Proje konumu",
         "selectFolderDialogTitle": "Proje klasörünü seç",
         "selectFolderTooltip": "Proje klasörünü seçmek için bir iletişim kutusu aç",
-        "useDefaultPath": "Varsayılan yolu kullan",
-        "overwritePathRequired": "Proje yolu üzerine yazma etkinleştirildiğinde yol zorunludur."
+        "useDefaultPath": "Varsayılan konumu kullan",
+        "overwritePathRequired": "Proje konumu gereklidir."
+    },
+    "editorPicker": {
+        "title": "Godot düzenleyicisi",
+        "installed": "Kurulu",
+        "browse": "Sürümlere göz at",
+        "search": "Sürüm ara",
+        "clearSearch": "Sürüm aramasını temizle",
+        "channel": "Sürüm kanalı",
+        "stable": "Kararlı",
+        "prereleases": "Ön sürümler",
+        "standard": "Standart",
+        "custom": "Özel",
+        "selected": "Seçildi",
+        "unavailable": "Kullanılamıyor",
+        "downloadRequired": "İndirme gerekli",
+        "noInstalled": "Kurulu düzenleyici yok",
+        "notInstalled": "Yüklü değil",
+        "noInstalledDescription": "Yüklenecek bir düzenleyici seçmek için sürümlere göz atın.",
+        "noneSelected": "Bir düzenleyici seçin",
+        "loading": "Sürümler yükleniyor...",
+        "noMatches": "Eşleşen sürüm yok",
+        "installFailed": "Düzenleyici kurulamadı. Projeniz oluşturulmadı.",
+        "loadFailed": "Sürümler yüklenemedi. Tekrar deneyin.",
+        "refreshFailed": "Sürümler yenilenemedi. Daha önce yüklenen sürümler gösteriliyor.",
+        "retry": "Tekrar dene",
+        "retrying": "Tekrar deneniyor..."
     },
     "renderer": {
         "title": "İşleyici",
@@ -61,7 +101,7 @@
         "availabilityAvailable": "Ad kullanılabilir görünüyor",
         "availabilityUnavailable": "Ad zaten kullanılıyor",
         "availabilityUnknown": "Bu ad kontrol edilemedi",
-        "openConnections": "Bağlantıları aç",
+        "openConnections": "GitHub'ı bağla",
         "leaveTitle": "Proje oluşturmadan çıkılsın mı?",
         "leaveMessage": "Bağlantılar açıldığında kaydedilmemiş proje bilgileri temizlenecek.",
         "successTitle": "GitHub'da yayımlandı",
@@ -175,6 +215,8 @@
         "editNow": "Şimdi düzenle",
         "create": "Proje Oluştur",
         "createAndPublish": "Oluştur ve yayımla",
+        "installAndCreate": "Kur ve proje oluştur",
+        "installCreateAndPublish": "Kur, oluştur ve yayımla",
         "creating": "Proje oluşturuluyor...",
         "publishing": "Proje oluşturuluyor ve GitHub'da yayımlanıyor..."
     },

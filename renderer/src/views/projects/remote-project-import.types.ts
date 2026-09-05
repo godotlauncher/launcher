@@ -9,6 +9,7 @@ export type RemoteProjectSource = 'public-git-url' | 'github';
 
 export type RemoteProjectImportStep =
     | 'source'
+    | 'connection'
     | 'destination'
     | 'importing'
     | 'import-failed'

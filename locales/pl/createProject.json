@@ -1,5 +1,19 @@
 {
     "title": "Nowy projekt",
+    "workflow": {
+        "title": "Konfigurowanie projektu",
+        "installingEditor": "Zainstaluj edytor",
+        "creatingProject": "Utwórz projekt",
+        "launchingEditor": "Uruchom edytor",
+        "skipped": "Pominięto",
+        "failed": "Nie udało się utworzyć projektu. Sprawdź formularz i spróbuj ponownie.",
+        "launchFailed": "Projekt został utworzony, ale nie udało się uruchomić edytora."
+    },
+    "destination": {
+        "checking": "Sprawdzanie lokalizacji projektu...",
+        "available": "Lokalizacja projektu jest dostępna",
+        "checkFailed": "Nie można sprawdzić lokalizacji projektu. Sprawdź ścieżkę i spróbuj ponownie."
+    },
     "project": {
         "title": "Projekt",
         "dotNetBadge": ".NET",
@@ -9,11 +23,37 @@
         "downloading": "Pobieranie...",
         "nameRequired": "Nazwa projektu jest wymagana",
         "nameExists": "Projekt o tej nazwie już istnieje",
-        "overwritePath": "Nadpisz ścieżkę projektu",
+        "overwritePath": "Lokalizacja projektu",
         "selectFolderDialogTitle": "Wybierz folder projektu",
         "selectFolderTooltip": "Otwórz okno dialogowe, aby wybrać folder projektu",
-        "useDefaultPath": "Użyj domyślnej ścieżki",
-        "overwritePathRequired": "Ścieżka jest wymagana, gdy włączone jest nadpisywanie ścieżki projektu."
+        "useDefaultPath": "Użyj domyślnej lokalizacji",
+        "overwritePathRequired": "Lokalizacja projektu jest wymagana."
+    },
+    "editorPicker": {
+        "title": "Edytor Godot",
+        "installed": "Zainstalowane",
+        "browse": "Przeglądaj wydania",
+        "search": "Szukaj wersji",
+        "clearSearch": "Wyczyść wyszukiwanie wersji",
+        "channel": "Kanał wydania",
+        "stable": "Stabilne",
+        "prereleases": "Wersje wstępne",
+        "standard": "Standardowa",
+        "custom": "Niestandardowa",
+        "selected": "Wybrano",
+        "unavailable": "Niedostępna",
+        "downloadRequired": "Wymagane pobranie",
+        "noInstalled": "Brak zainstalowanych edytorów",
+        "notInstalled": "Niezainstalowany",
+        "noInstalledDescription": "Przeglądaj wydania, aby wybrać edytor do zainstalowania.",
+        "noneSelected": "Wybierz edytor",
+        "loading": "Ładowanie wydań...",
+        "noMatches": "Brak pasujących wydań",
+        "installFailed": "Nie udało się zainstalować edytora. Projekt nie został utworzony.",
+        "loadFailed": "Nie udało się załadować wydań. Spróbuj ponownie.",
+        "refreshFailed": "Nie udało się odświeżyć wydań. Wyświetlane są wcześniej załadowane wydania.",
+        "retry": "Spróbuj ponownie",
+        "retrying": "Ponawianie próby..."
     },
     "renderer": {
         "title": "Renderer",
@@ -61,7 +101,7 @@
         "availabilityAvailable": "Nazwa wygląda na dostępną",
         "availabilityUnavailable": "Nazwa jest już używana",
         "availabilityUnknown": "Nie udało się sprawdzić tej nazwy",
-        "openConnections": "Otwórz Połączenia",
+        "openConnections": "Połącz GitHub",
         "leaveTitle": "Opuścić tworzenie projektu?",
         "leaveMessage": "Niezapisane dane projektu zostaną wyczyszczone po otwarciu Połączeń.",
         "successTitle": "Opublikowano w GitHub",
@@ -175,6 +215,8 @@
         "editNow": "Edytuj teraz",
         "create": "Utwórz projekt",
         "createAndPublish": "Utwórz i opublikuj",
+        "installAndCreate": "Zainstaluj i utwórz projekt",
+        "installCreateAndPublish": "Zainstaluj, utwórz i opublikuj",
         "creating": "Tworzenie projektu...",
         "publishing": "Tworzenie projektu i publikowanie w GitHub..."
     },

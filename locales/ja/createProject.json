@@ -1,5 +1,19 @@
 {
     "title": "新規プロジェクト",
+    "workflow": {
+        "title": "プロジェクトを設定中",
+        "installingEditor": "エディターをインストール",
+        "creatingProject": "プロジェクトを作成",
+        "launchingEditor": "エディターを起動",
+        "skipped": "スキップ",
+        "failed": "プロジェクトを作成できませんでした。フォームを確認して、もう一度お試しください。",
+        "launchFailed": "プロジェクトは作成されましたが、エディターを起動できませんでした。"
+    },
+    "destination": {
+        "checking": "プロジェクトの場所を確認しています...",
+        "available": "プロジェクトの場所を利用できます",
+        "checkFailed": "プロジェクトの場所を確認できませんでした。パスを確認してもう一度お試しください。"
+    },
     "project": {
         "title": "プロジェクト",
         "dotNetBadge": ".NET",
@@ -9,11 +23,37 @@
         "downloading": "ダウンロード中...",
         "nameRequired": "プロジェクト名が必要です",
         "nameExists": "この名前のプロジェクトは既に存在します",
-        "overwritePath": "プロジェクトパスを上書き",
+        "overwritePath": "プロジェクトの場所",
         "selectFolderDialogTitle": "プロジェクトフォルダを選択",
         "selectFolderTooltip": "プロジェクトフォルダを選択するダイアログを開く",
-        "useDefaultPath": "既定のパスを使用",
-        "overwritePathRequired": "プロジェクトパスの上書きを有効にする場合、パスの入力が必要です。"
+        "useDefaultPath": "既定の場所を使用",
+        "overwritePathRequired": "プロジェクトの場所を入力してください。"
+    },
+    "editorPicker": {
+        "title": "Godot エディター",
+        "installed": "インストール済み",
+        "browse": "リリースを参照",
+        "search": "バージョンを検索",
+        "clearSearch": "バージョン検索をクリア",
+        "channel": "リリースチャンネル",
+        "stable": "安定版",
+        "prereleases": "プレリリース",
+        "standard": "標準",
+        "custom": "カスタム",
+        "selected": "選択済み",
+        "unavailable": "利用不可",
+        "downloadRequired": "ダウンロードが必要",
+        "noInstalled": "インストール済みのエディターはありません",
+        "notInstalled": "未インストール",
+        "noInstalledDescription": "リリースを参照してインストールするエディターを選択してください。",
+        "noneSelected": "エディターを選択",
+        "loading": "リリースを読み込み中...",
+        "noMatches": "一致するリリースはありません",
+        "installFailed": "エディターをインストールできませんでした。プロジェクトは作成されていません。",
+        "loadFailed": "リリースを読み込めませんでした。もう一度お試しください。",
+        "refreshFailed": "リリースを更新できませんでした。以前に読み込んだリリースを表示しています。",
+        "retry": "再試行",
+        "retrying": "再試行中..."
     },
     "renderer": {
         "title": "レンダラー",
@@ -61,7 +101,7 @@
         "availabilityAvailable": "この名前は使用できそうです",
         "availabilityUnavailable": "この名前は既に使用されています",
         "availabilityUnknown": "この名前を確認できませんでした",
-        "openConnections": "接続を開く",
+        "openConnections": "GitHub に接続",
         "leaveTitle": "プロジェクト作成を終了しますか？",
         "leaveMessage": "接続を開くと、保存されていないプロジェクト情報は消去されます。",
         "successTitle": "GitHub に公開しました",
@@ -175,6 +215,8 @@
         "editNow": "今すぐ編集",
         "create": "プロジェクトを作成",
         "createAndPublish": "作成して公開",
+        "installAndCreate": "インストールしてプロジェクトを作成",
+        "installCreateAndPublish": "インストール、作成、公開",
         "creating": "プロジェクトを作成中...",
         "publishing": "プロジェクトを作成して GitHub に公開しています..."
     },

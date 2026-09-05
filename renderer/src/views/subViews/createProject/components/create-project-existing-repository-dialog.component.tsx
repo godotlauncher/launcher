@@ -1,14 +1,11 @@
 import { CircleCheck, TriangleAlert } from 'lucide-react';
 import { useRef } from 'react';
 import { Dialog } from '../../../../components/dialog.component';
+import type { ExistingRepositoryConsequences } from '../create-project-workflow.types';
 
 type Translate = (key: string, values?: Record<string, string>) => string;
 
-export type ExistingRepositoryConsequences = {
-    git: boolean;
-    gitLfs: boolean;
-    github: boolean;
-};
+export type { ExistingRepositoryConsequences } from '../create-project-workflow.types';
 
 type CreateProjectExistingRepositoryDialogProps = {
     mode: 'confirmation' | 'completion';

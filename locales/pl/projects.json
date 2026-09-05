@@ -1,6 +1,22 @@
 {
     "title": "Projekty",
     "emptyState": {
+        "welcome": {
+            "heading": "Dodaj lub utwórz projekt",
+            "description": "Przenieś istniejącą pracę do Launchera lub zacznij coś nowego.",
+            "newProject": {
+                "heading": "Nowy projekt",
+                "description": "Wybierz wersję Godot.\nLauncher pobierze ją, jeśli będzie potrzebna.",
+                "action": "Utwórz projekt"
+            },
+            "existingProject": {
+                "heading": "Istniejący projekt",
+                "description": "Launcher znajduje wersję Godot\npotrzebną dla każdego projektu.",
+                "fromComputer": "Z tego komputera",
+                "fromGitHub": "Z GitHub",
+                "gitRequired": "Git jest wymagany, aby importować z GitHub"
+            }
+        },
         "addExistingProject": "Dodaj istniejący projekt",
         "withoutEditor": {
             "heading": "Zainstaluj Godot, aby rozpocząć projekt",
@@ -51,7 +67,8 @@
         "windowed": "W oknie",
         "opened": "Otwarto {{age}}",
         "notOpened": "Jeszcze nie otwarto",
-        "editInGodot": "Edytuj w Godot"
+        "editInGodot": "Edytuj w Godot",
+        "installRequiredEditor": "Zainstaluj wymagany edytor"
     },
     "table": {
         "moreOptions": "Więcej opcji dla {{project}}",
@@ -137,7 +154,7 @@
                 "empty": "Nie załadowano żadnych pasujących repozytoriów.",
                 "loadMore": "Załaduj więcej",
                 "alreadyAdded": "Już dodano",
-                "openConnections": "Otwórz Połączenia",
+                "openConnections": "Połącz GitHub",
                 "visibility": {
                     "public": "Publiczne",
                     "private": "Prywatny",
@@ -147,7 +164,10 @@
                     "connectionRequired": "Połącz lub ponownie podłącz GitHub przed zaimportowaniem repozytorium.",
                     "temporarilyUnavailable": "GitHub jest chwilowo niedostępny. Spróbuj ponownie później.",
                     "sessionExpired": "Sesja repozytorium wygasła. Załaduj listę ponownie."
-                }
+                },
+                "noRepositories": "Brak repozytoriów dostępnych za pośrednictwem połączonych kont.",
+                "missingRepository": "Nie widzisz swojego repozytorium?",
+                "manageConnections": "Zarządzaj kontami i dostępem"
             },
             "destination": {
                 "description": "Wybierz miejsce, w którym repozytorium zostanie sklonowane.",
@@ -393,6 +413,8 @@
             "unavailable": "project.godot jest niedostępny. Można zmienić tylko nazwę w launcherze."
         },
         "actions": {
+            "installAndSave": "Zainstaluj i zapisz",
+            "installingEditor": "Instalowanie edytora...",
             "update": "Aktualizuj",
             "updating": "Aktualizowanie..."
         },

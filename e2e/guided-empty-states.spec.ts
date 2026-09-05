@@ -106,76 +106,27 @@ test('Installs empty actions open the editor drawer and both custom editor workf
     await expect.poll(readOpenFileDialogCallCount).toBe(1);
 });
 
-test('Projects empty actions preserve routes, Back behavior, and native import', async () => {
+test('Projects welcome supports creation and local import without an installed editor', async () => {
     await prepareEmptyApp([]);
     await stubOpenFileDialog();
     await mainPage.getByTestId('btnProjects').click();
 
-    await mainPage.getByTestId('btnEmptyStateSecondary').click();
-    await mainPage.getByTestId('btnAddProjectFromComputer').click();
+    const welcome = mainPage.getByTestId('projectsWelcome');
+    await expect(welcome).toBeVisible();
+    await expect(
+        welcome.getByRole('heading', { name: 'Add or create a project' }),
+    ).toBeVisible();
+    await expect(mainPage.getByTestId('projectsTitle')).toHaveCount(0);
+    await expect(mainPage.getByTestId('btnCopyProjectsLocation')).toHaveCount(
+        0,
+    );
+    await expect(mainPage.getByTestId('inputProjectSearch')).toHaveCount(0);
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toBeVisible();
+
+    await mainPage.getByTestId('btnWelcomeAddFromComputer').click();
     await expect.poll(readOpenFileDialogCallCount).toBe(1);
 
-    await mainPage.getByTestId('btnEmptyStatePrimary').click();
-    const installDrawer = mainPage.getByTestId('installEditorDrawer');
-    await expect(mainPage).toHaveURL(/#\/installs\/install$/);
-    await expect(installDrawer).toBeVisible();
-
-    await mainPage.goBack();
-    await expect(mainPage).toHaveURL(/#\/projects$/);
-    await expect(installDrawer).not.toBeVisible();
-    await expect(
-        mainPage.getByText('Install Godot to start a project'),
-    ).toBeVisible();
-
-    const installedRelease = SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM[0];
-    if (!installedRelease) {
-        throw new Error('The guided empty-state release fixture is missing');
-    }
-    await publishReleaseInstallProgress({
-        id: 'guided-empty-state-install',
-        version: installedRelease.version,
-        mono: installedRelease.mono,
-        prerelease: installedRelease.prerelease,
-        published_at: installedRelease.published_at,
-        stage: 'downloading',
-        percent: 55,
-        receivedBytes: 55 * 1024 * 1024,
-        totalBytes: 100 * 1024 * 1024,
-    });
-
-    const installingAction = mainPage.getByTestId('btnEmptyStatePrimary');
-    await expect(
-        mainPage.getByText(
-            'Your editor is installing. You can create a project as soon as it is ready.',
-        ),
-    ).toBeVisible();
-    await expect(installingAction).toHaveText(/Installing editor/);
-    await expect(installingAction).toBeDisabled();
-    await expect(installingAction).toHaveAttribute('aria-busy', 'true');
-    await expect(mainPage.getByTestId('inputProjectSearch')).toHaveCount(0);
-
-    await publishReleaseInstallProgress({
-        id: 'guided-empty-state-install',
-        version: installedRelease.version,
-        mono: installedRelease.mono,
-        prerelease: installedRelease.prerelease,
-        published_at: installedRelease.published_at,
-        stage: 'complete',
-        percent: 100,
-        release: installedRelease,
-    });
-    await expect(mainPage.getByText('Start your first project')).toBeVisible();
-    await expect(mainPage.getByTestId('btnEmptyStatePrimary')).toBeEnabled();
-    await expect(mainPage.getByTestId('inputProjectSearch')).toHaveCount(0);
-
-    await prepareEmptyApp(SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM);
-    await stubOpenFileDialog();
-    await mainPage.getByTestId('btnProjects').click();
-    await mainPage.getByTestId('btnEmptyStateSecondary').click();
-    await mainPage.getByTestId('btnAddProjectFromComputer').click();
-    await expect.poll(readOpenFileDialogCallCount).toBe(1);
-
-    const newProjectAction = mainPage.getByTestId('btnEmptyStatePrimary');
+    const newProjectAction = mainPage.getByTestId('btnWelcomeCreateProject');
     await newProjectAction.focus();
     await newProjectAction.click();
     const createDrawer = mainPage.getByRole('dialog', {
@@ -184,7 +135,45 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await expect(mainPage).toHaveURL(/#\/projects\/new$/);
     await expect(createDrawer).toBeVisible();
     await expect(createDrawer.locator(':focus')).toHaveCount(1);
+    await expect(
+        createDrawer.getByTestId('selectCreateProjectRenderer'),
+    ).toBeVisible();
+    await createDrawer
+        .getByTestId('selectCreateProjectGodotEditor')
+        .click();
+    const editorPopover = createDrawer.getByTestId(
+        'createProjectEditorPickerPopover',
+    );
+    await expect(editorPopover).toBeVisible();
+    await expect(
+        editorPopover.getByTestId('tabCreateProjectBrowseEditors'),
+    ).toHaveAttribute('aria-selected', 'true');
+    await expect(
+        editorPopover.getByTestId('inputCreateProjectEditorSearch'),
+    ).toBeFocused();
+    expect(
+        await editorPopover
+            .locator('[data-testid^="createProjectCatalogueEditor_"]')
+            .count(),
+    ).toBeGreaterThan(10);
 
+    await mainPage.keyboard.press('Escape');
+    await expect(editorPopover).not.toBeVisible();
+    await expect(createDrawer).toBeVisible();
+    await expect(
+        createDrawer.getByTestId('selectCreateProjectGodotEditor'),
+    ).toBeFocused();
+    await createDrawer
+        .getByTestId('selectCreateProjectGodotEditor')
+        .click();
+    await editorPopover
+        .locator('[data-testid^="createProjectCatalogueEditor_"]')
+        .first()
+        .click();
+    await expect(editorPopover).not.toBeVisible();
+    await expect(
+        createDrawer.getByTestId('createProjectEditorSelection'),
+    ).not.toHaveText('Choose an editor');
     await mainPage.keyboard.press('Escape');
     await expect(createDrawer).not.toBeVisible();
     await expect(mainPage).toHaveURL(/#\/projects$/);
@@ -197,6 +186,36 @@ test('Projects empty actions preserve routes, Back behavior, and native import',
     await createDrawer.getByTestId('btnCloseCreateProject').click();
     await expect(mainPage).toHaveURL(/#\/projects$/);
     await expect(createDrawer).not.toBeVisible();
+
+    await prepareEmptyApp(SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM);
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnWelcomeCreateProject').click();
+    await expect(
+        createDrawer.getByTestId('selectCreateProjectRenderer'),
+    ).toBeVisible();
+    await createDrawer
+        .getByTestId('selectCreateProjectGodotEditor')
+        .click();
+    await expect(
+        createDrawer.getByTestId('tabCreateProjectInstalledEditors'),
+    ).toHaveAttribute('aria-selected', 'true');
+    await createDrawer.getByTestId('btnCloseCreateProject').click();
+});
+
+test('Projects welcome keeps local import available when Git is unavailable', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        projects: [],
+        installedReleases: [],
+        toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
+    });
+    await mainPage.getByTestId('btnProjects').click();
+
+    await expect(mainPage.getByTestId('btnWelcomeAddFromComputer')).toBeVisible();
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toBeDisabled();
+    await expect(mainPage.getByText('Git is required to import from GitHub', { exact: true })).toBeVisible();
+    const reviewDirectory = path.resolve('.internal-docs/shared-github-connection');
+    await fs.mkdir(reviewDirectory, { recursive: true });
+    await mainPage.screenshot({ path: path.join(reviewDirectory, 'welcome-git-unavailable.png') });
 });
 
 test('Native import offers the newest stable patch for an inferred Godot branch', async () => {
@@ -690,6 +709,72 @@ test('GitHub repository keyboard selection keeps Search inert and Space selectio
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
 });
 
+test('GitHub import connects in the existing modal and refreshes repositories', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubRemoteProjectDiscovery();
+    await stubGitHubImportConnection();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+
+    const modal = mainPage.getByTestId('remoteProjectImportDialog');
+    await expect(modal).toHaveAccessibleName('Connect GitHub');
+    await expect(
+        modal.getByText(
+            'Connect GitHub to browse and import your repositories.',
+        ),
+    ).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(modal).not.toBeVisible();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+    await expect(modal).toHaveAccessibleName('Connect GitHub');
+    await mainPage.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
+    await mainPage.getByTestId('btnProjectAdd').click();
+    await mainPage.getByTestId('btnAddProjectGitHub').click();
+    await modal.locator('footer').getByRole('button', { name: 'Continue in browser' }).click();
+    const list = modal.getByTestId('github-connection-options');
+    await expect(list).toBeVisible();
+    const footer = modal.locator('footer');
+    const toolbar = modal.getByRole('button', { name: 'Add another account' });
+    const footerBefore = await footer.boundingBox();
+    const toolbarBefore = await toolbar.boundingBox();
+    await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    expect(await list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    expect(await footer.boundingBox()).toEqual(footerBefore);
+    expect(await toolbar.boundingBox()).toEqual(toolbarBefore);
+    await modal.getByRole('checkbox', { name: 'Select all', exact: true }).check();
+    await footer.getByRole('button', { name: /Connect selected/ }).click();
+    await expect(modal).toHaveAccessibleName('Import from GitHub');
+    await expect(
+        modal.getByRole('button', { name: 'team/games' }),
+    ).toBeVisible();
+    const search = modal.getByTestId('inputGitHubRepositorySearch');
+    await search.fill('games');
+    await modal.getByRole('button', { name: 'team/games' }).click();
+    await expect(modal.getByText("Don't see your repository?", { exact: true })).toBeVisible();
+    await modal.getByRole('button', { name: 'Manage accounts and access' }).click();
+    await expect(modal.getByRole('button', { name: 'Manage repository access', exact: true })).toBeVisible();
+    await expect(modal).toHaveAccessibleName('GitHub connections');
+    await expect(modal.getByRole('button', { name: 'Refresh repositories' })).toBeEnabled();
+    const reviewDirectory = path.resolve('.internal-docs/shared-github-connection');
+    await fs.mkdir(reviewDirectory, { recursive: true });
+    await mainPage.screenshot({ path: path.join(reviewDirectory, 'repository-access-light.png') });
+    await modal.getByRole('button', { name: 'Manage repository access', exact: true }).click();
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(search).toHaveValue('games');
+    await expect(modal.getByRole('button', { name: 'team/games' })).toHaveAttribute('aria-pressed', 'true');
+    await modal.getByRole('button', { name: 'Manage accounts and access' }).click();
+    await modal.getByRole('button', { name: 'Refresh repositories' }).click();
+    await expect(search).toHaveValue('games');
+    await expect(modal.getByRole('button', { name: 'team/games' })).toHaveAttribute('aria-pressed', 'true');
+    await search.fill('not-present');
+    await expect(modal.getByText('No matching repositories are loaded.')).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Manage accounts and access' })).toBeEnabled();
+
+});
+
 test('Enter selects an unselected GitHub repository choice and continues', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
@@ -1118,7 +1203,7 @@ test('Remote registration continues after one editor download fails', async () =
     await expect.poll(readRemoteEditorAssignments).toEqual(['4.3.2-stable']);
 });
 
-test('Onboarding without an editor finishes inside the install drawer', async () => {
+test('Onboarding without an editor finishes on the Projects welcome', async () => {
     await prepareOnboardingFixture(
         mainPage,
         electronApp,
@@ -1141,20 +1226,16 @@ test('Onboarding without an editor finishes inside the install drawer', async ()
     await reloadE2eFixturePage(mainPage);
 
     const finishButton = mainPage.getByRole('button', {
-        name: 'Finish and install an editor',
+        name: 'Finish and view projects',
     });
     await expect(finishButton).toBeVisible();
     await finishButton.click();
 
-    const installDrawer = mainPage.getByTestId('installEditorDrawer');
-    await expect(mainPage).toHaveURL(/#\/installs\/install$/);
-    await expect(installDrawer).toBeVisible();
-
-    await installDrawer.getByTestId('btnCloseInstallEditor').click();
-    await expect(mainPage).toHaveURL(/#\/installs$/);
-    await expect(installDrawer).not.toBeVisible();
+    await expect(mainPage).toHaveURL(/#\/projects$/);
+    await expect(mainPage.getByTestId('projectsWelcome')).toBeVisible();
+    await expect(mainPage.getByTestId('installEditorDrawer')).toHaveCount(0);
     await expect(
-        mainPage.getByText('Install your first Godot editor'),
+        mainPage.getByText('Add or create a project'),
     ).toBeVisible();
 });
 
@@ -1193,6 +1274,94 @@ async function stubOpenFileDialog(): Promise<void> {
                 data: { canceled: true, filePaths: [] },
             };
         });
+    });
+}
+
+/** Stubs a GitHub connection that makes one repository available on completion. */
+async function stubGitHubImportConnection(): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & {
+            __guidedGitHubImportConnected?: boolean;
+        };
+        state.__guidedGitHubImportConnected = false;
+
+        const integration = () => ({
+            id: 'github',
+            displayName: 'GitHub',
+            state: 'connected' as const,
+            connectionStage: null,
+            connections: [
+                {
+                    id: 'connection-id',
+                    accountLogin: 'docs',
+                    accountDisplayName: 'Documentation User',
+                    state: 'connected' as const,
+                    accessTargets: [
+                        {
+                            id: 'target-id',
+                            login: 'docs',
+                            type: 'user' as const,
+                            availability: 'available' as const,
+                            capabilities: ['repository-browsing' as const],
+                        },
+                    ],
+                },
+            ],
+            connectionOptions: [],
+        });
+
+        ipcMain.removeHandler('appIntegrations.listIntegrations');
+        ipcMain.handle('appIntegrations.listIntegrations', () => ({ success: true, data: state.__guidedGitHubImportConnected ? [integration()] : [] }));
+        ipcMain.removeHandler('appIntegrations.manageAccess');
+        ipcMain.handle('appIntegrations.manageAccess', () => ({ success: true, data: { ok: true, integration: integration() } }));
+        ipcMain.removeHandler('appIntegrations.refresh');
+        ipcMain.handle('appIntegrations.refresh', () => ({ success: true, data: { ok: true, integration: integration() } }));
+        ipcMain.removeHandler('projects.listConnectedRepositories');
+        ipcMain.handle('projects.listConnectedRepositories', async () => ({
+            success: true,
+            data: state.__guidedGitHubImportConnected
+                ? {
+                      ok: true,
+                      page: {
+                          repositories: [
+                              {
+                                  repositoryRef: 'repository-ref',
+                                  providerId: 'github',
+                                  owner: 'team',
+                                  name: 'games',
+                                  visibility: 'private',
+                                  alreadyImported: false,
+                              },
+                          ],
+                          nextCursor: null,
+                      },
+                  }
+                : { ok: false, reason: 'no-usable-connection' },
+        }));
+        ipcMain.removeHandler('appIntegrations.connect');
+        ipcMain.handle('appIntegrations.connect', async () => ({
+            success: true,
+            data: { ok: true, integration: {
+                ...integration(), state: 'selection-required', connectionStage: 'choosing',
+                connections: [],
+                connectionOptions: Array.from({ length: 20 }, (_, index) => ({
+                    id: `account-${index}`, login: `account-${index}`, type: 'organization',
+                })),
+            } },
+        }));
+        ipcMain.removeHandler('appIntegrations.finishConnections');
+        ipcMain.handle('appIntegrations.finishConnections', async () => {
+            state.__guidedGitHubImportConnected = true;
+            return {
+                success: true,
+                data: { ok: true, integration: integration() },
+            };
+        });
+        ipcMain.removeHandler('appIntegrations.cancel');
+        ipcMain.handle('appIntegrations.cancel', async () => ({
+            success: true,
+            data: { ok: true, integration: integration() },
+        }));
     });
 }
 

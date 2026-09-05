@@ -231,6 +231,17 @@
         "loading": "Loading connections...",
         "loadError": "Unable to load connections.",
         "genericDescription": "Connect this service to use it in Godot Launcher.",
+        "flow": {
+            "importDescription": "Connect GitHub to browse and import your repositories.",
+            "addAccount": "Add another account",
+            "title": "Connect GitHub",
+            "reconnect": "Reconnect GitHub",
+            "description": "Connect GitHub to continue. Your current work will be kept.",
+            "continueInBrowser": "Continue in browser",
+            "waiting": "Complete the connection in your browser, then return here.",
+            "refreshRepositories": "Refresh repositories",
+            "accessDescription": "Manage repository access on GitHub or add another account, then refresh the repository list."
+        },
         "github": {
             "description": "Connect GitHub to make your repositories available to Godot Launcher.",
             "accessNote": "You stay in control of which repositories the GitHub App can access.",

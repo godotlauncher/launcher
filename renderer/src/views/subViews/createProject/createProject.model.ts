@@ -8,9 +8,11 @@ import type {
     GitIdentityScope,
     GitLfsTrackingPolicy,
     InstalledRelease,
+    InstallReleaseResult,
     ProjectDetails,
     ProjectGitIdentityPreset,
     ReleaseInstallProgressStage,
+    ReleaseSummary,
     RendererType,
     ToolIntegrationSummary,
 } from '@shared/contracts';
@@ -129,6 +131,121 @@ export type CreateProjectReleaseRow = InstalledRelease & {
     installStage?: ReleaseInstallProgressStage;
     queuePosition?: number;
 };
+
+export type CreateProjectEditorSelection =
+    | {
+          source: 'installed';
+          key: string;
+          release: InstalledRelease;
+      }
+    | {
+          source: 'catalogue';
+          key: string;
+          release: ReleaseSummary;
+          mono: boolean;
+          installedRelease?: InstalledRelease;
+      };
+
+export type CreateProjectCatalogueVariant = {
+    key: string;
+    release: ReleaseSummary;
+    mono: boolean;
+};
+
+/**
+ * Builds the stable identity for one exact catalogue release variant.
+ *
+ * @param release - Catalogue release to identify.
+ * @param mono - Whether the selected variant is the .NET build.
+ * @returns A key that remains stable while filters change.
+ */
+export function getCreateProjectCatalogueReleaseKey(
+    release: Pick<ReleaseSummary, 'version'>,
+    mono: boolean,
+): string {
+    return `catalogue:${release.version}:${mono ? 'mono' : 'std'}`;
+}
+
+/**
+ * Builds the selectable catalogue variants for the editor picker.
+ *
+ * @param releases - Releases in the selected stable or prerelease channel.
+ * @param search - Optional version, name, or tag search.
+ * @returns Newest-first Standard and .NET variants that have an install asset.
+ */
+export function getCreateProjectCatalogueVariants(
+    releases: ReleaseSummary[],
+    search: string,
+): CreateProjectCatalogueVariant[] {
+    const normalizedSearch = search.trim().toLowerCase();
+    const variantKeys = new Set<string>();
+
+    return [...releases]
+        .sort(sortReleases)
+        .filter(
+            (release) =>
+                !normalizedSearch ||
+                [release.version, release.name, release.tag]
+                    .filter((value): value is string => Boolean(value))
+                    .some((value) =>
+                        value.toLowerCase().includes(normalizedSearch),
+                    ),
+        )
+        .flatMap((release) =>
+            ([false, true] as const)
+                .filter((mono) =>
+                    release.assets.some((asset) => asset.mono === mono),
+                )
+                .map((mono) => ({
+                    key: getCreateProjectCatalogueReleaseKey(release, mono),
+                    release,
+                    mono,
+                })),
+        )
+        .filter((variant) => {
+            if (variantKeys.has(variant.key)) {
+                return false;
+            }
+
+            variantKeys.add(variant.key);
+            return true;
+        });
+}
+
+/**
+ * Returns an installed release for project creation, installing a catalogue
+ * selection first when required.
+ *
+ * @param selection - Exact installed or catalogue editor choice.
+ * @param installRelease - Existing release-provider install operation.
+ * @returns The existing release or the completed install result.
+ */
+export async function prepareCreateProjectRelease(
+    selection: CreateProjectEditorSelection,
+    installRelease: (
+        release: ReleaseSummary,
+        mono: boolean,
+        origin: 'project',
+    ) => Promise<InstallReleaseResult>,
+): Promise<InstallReleaseResult> {
+    if (selection.source === 'installed') {
+        return {
+            success: true,
+            version: selection.release.version,
+            release: selection.release,
+        };
+    }
+
+    if (selection.installedRelease) {
+        return {
+            success: true,
+            version: selection.installedRelease.version,
+            release: selection.installedRelease,
+        };
+    }
+
+    return installRelease(selection.release, selection.mono, 'project');
+}
 
 /**
  * Builds the stable identity used by the Create Project editor selection.

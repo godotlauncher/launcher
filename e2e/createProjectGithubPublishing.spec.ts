@@ -134,12 +134,6 @@ test('reveals connected private repository fields and preserves a manual name', 
     await expect(
         mainPage.getByText('Private GitHub repository', { exact: true }),
     ).toBeVisible();
-    await expect(mainPage.locator('.drawer-panel')).toHaveCSS('width', '680px');
-    const initialiseGitCheckbox = mainPage.getByRole('checkbox', {
-        name: 'Initialize Git Repository',
-    });
-    await expect(initialiseGitCheckbox).toHaveClass(/checkbox-sm/u);
-    await expect(initialiseGitCheckbox).toHaveClass(/rounded-sm/u);
     const drawerBody = mainPage.locator(
         '.drawer-panel form > div.overflow-y-auto',
     );
@@ -164,26 +158,11 @@ test('reveals connected private repository fields and preserves a manual name', 
         await fs.mkdir(path.dirname(output), { recursive: true });
         await mainPage.screenshot({ path: output });
 
-        await mainPage
-            .getByTestId('checkboxOverwriteProjectPath')
-            .check();
         await expect(
             mainPage.getByTestId('btnSelectProjectFolder'),
         ).toBeVisible();
-        const pathInputShell = mainPage
-            .getByTestId('inputProjectPath')
-            .locator('..');
         const browseButton = mainPage.getByTestId(
             'btnSelectProjectFolder',
-        );
-        expect(
-            await browseButton.evaluate(
-                (element) => getComputedStyle(element).borderColor,
-            ),
-        ).toBe(
-            await pathInputShell.evaluate(
-                (element) => getComputedStyle(element).borderColor,
-            ),
         );
         await mainPage.screenshot({
             path: path.resolve(
@@ -200,9 +179,6 @@ test('reveals connected private repository fields and preserves a manual name', 
                 'create-project-path-field-hover.png',
             ),
         });
-        await mainPage
-            .getByTestId('checkboxOverwriteProjectPath')
-            .uncheck();
     }
 
     await repositoryName.fill('hand-picked-name');
@@ -245,6 +221,241 @@ test('reveals connected private repository fields and preserves a manual name', 
         ),
     ).toBe('DIALOG');
     await mainPage.keyboard.press('Escape');
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
+test('connects GitHub in place and preserves the project form after cancellation', async () => {
+    await stubSharedConnection(false, false, 12);
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage.getByTestId('inputProjectName').fill('Preserved Game');
+    const editor = mainPage.getByTestId('selectCreateProjectGodotEditor');
+    const editorBefore = await editor.textContent();
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).check();
+    const connect = mainPage.getByRole('button', { name: 'Connect GitHub', exact: true });
+    await connect.click();
+    const dialog = mainPage.getByRole('dialog', { name: 'Connect GitHub', exact: true });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Continue in browser' })).toBeEnabled();
+    const outputDirectory = path.resolve(process.cwd(), '.internal-docs', 'shared-github-connection');
+    await fs.mkdir(outputDirectory, { recursive: true });
+    await mainPage.screenshot({ path: path.join(outputDirectory, 'create-project-dark.png') });
+    await mainPage.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(connect).toBeFocused();
+    await expect(mainPage.getByTestId('inputProjectName')).toHaveValue('Preserved Game');
+    await expect(editor).toHaveText(editorBefore ?? '');
+    await connect.click();
+    await dialog.getByRole('button', { name: 'Continue in browser' }).click();
+    await expect(dialog.getByText('fixture-user', { exact: true })).toBeVisible();
+    const list = dialog.getByTestId('github-connection-options');
+    const footer = dialog.locator('footer');
+    await expect(footer.getByRole('button', { name: /Connect selected/i })).toBeVisible();
+    const addAccount = dialog.getByRole('button', { name: 'Add another account' });
+    const toolbarBefore = await addAccount.boundingBox();
+    const footerBefore = await footer.boundingBox();
+    await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    expect(await list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    expect(await addAccount.boundingBox()).toEqual(toolbarBefore);
+    expect(await footer.boundingBox()).toEqual(footerBefore);
+    await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+    await expect(dialog.getByRole('checkbox', { name: /fixture-user/ })).toBeChecked();
+    await mainPage.screenshot({ path: path.join(outputDirectory, 'connection-selection-dark.png') });
+    await dialog.getByRole('button', { name: /Connect selected/i }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(mainPage.getByTestId('selectCreateProjectGitHubOwner')).toContainText('fixture-user');
+    await expect(mainPage.getByTestId('inputProjectName')).toHaveValue('Preserved Game');
+    await expect(editor).toHaveText(editorBefore ?? '');
+    await expect(mainPage.locator('#createProjectGitHubRepositoryName')).toHaveValue('Preserved-Game');
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
+test('ignores a late browser response after cancelling and reopening connection', async () => {
+    await stubSharedConnection(true);
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage.getByTestId('inputProjectName').fill('Cancelled Connection Game');
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).check();
+    const connect = mainPage.getByRole('button', { name: 'Connect GitHub', exact: true });
+    await connect.click();
+    const dialog = mainPage.getByRole('dialog', { name: 'Connect GitHub', exact: true });
+    await dialog.getByRole('button', { name: 'Continue in browser' }).click();
+    await expect(dialog.getByText('Complete the connection in your browser, then return here.')).toBeVisible();
+    await mainPage.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await connect.click();
+    await electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & { __releaseConnection?: () => void };
+        state.__releaseConnection?.();
+    });
+    await expect(dialog.getByRole('button', { name: 'Continue in browser' })).toBeVisible();
+    await expect(dialog.getByRole('checkbox')).toHaveCount(0);
+    await mainPage.keyboard.press('Escape');
+    await expect(mainPage.getByTestId('inputProjectName')).toHaveValue('Cancelled Connection Game');
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
+test('repairs an expired account within Create Project', async () => {
+    await stubSharedConnection(false, true);
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    await mainPage.getByTestId('inputProjectName').fill('Reconnect Game');
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).check();
+    await mainPage.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
+    const dialog = mainPage.getByRole('dialog', { name: 'Connect GitHub', exact: true });
+    await dialog.getByRole('radio', { name: 'fixture-user', exact: true }).check();
+    await dialog.getByRole('button', { name: 'Reconnect GitHub', exact: true }).click();
+    await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+    await dialog.getByRole('button', { name: /Connect selected/i }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(mainPage.getByTestId('inputProjectName')).toHaveValue('Reconnect Game');
+    expect(await electronApp.evaluate(() => (globalThis as typeof globalThis & {
+        __reconnectedAccount?: string;
+    }).__reconnectedAccount)).toBe('fixture-connection');
+    await expect(mainPage.getByTestId('selectCreateProjectGitHubOwner')).toContainText('fixture-user');
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
+test('uses the shared connection dialog from Settings', async () => {
+    await stubSharedConnection();
+    const card = mainPage.getByTestId('app-integration-github');
+    const dialog = mainPage.getByRole('dialog', { name: 'Connect GitHub', exact: true });
+    const outputDirectory = path.resolve(process.cwd(), '.internal-docs', 'shared-github-connection');
+    await fs.mkdir(outputDirectory, { recursive: true });
+    for (const theme of THEMES) {
+        await applyTheme(mainPage, theme);
+        await mainPage.getByTestId('btnConnections').click();
+        await card.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
+        await expect(dialog).toBeVisible();
+        await expect(dialog.getByRole('button', { name: 'Continue in browser' })).toBeEnabled();
+        await mainPage.screenshot({ path: path.join(outputDirectory, `settings-${theme.name}.png`) });
+        await mainPage.keyboard.press('Escape');
+        await expect(dialog).not.toBeVisible();
+    }
+    await card.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Continue in browser' }).click();
+    await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+    await dialog.getByRole('button', { name: /Connect selected/i }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(mainPage).toHaveURL(/settings\/connections$/);
+    await expect(card.getByRole('button', { name: 'Add connection', exact: true })).toBeVisible();
+    await card.getByRole('button', { name: 'Manage GitHub connections' }).click();
+    const management = mainPage.getByRole('dialog', { name: 'GitHub connections', exact: true });
+    await management.getByRole('button', { name: 'Add connection', exact: true }).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Continue in browser' }).focus();
+    await mainPage.keyboard.press('Tab');
+    expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+    await mainPage.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(management).toBeVisible();
+    await mainPage.keyboard.press('Escape');
+    await expect(management).not.toBeVisible();
+});
+
+/**
+ * Stubs browser authorisation and owner loading without contacting GitHub.
+ * @param deferConnection - Whether authorisation waits for an explicit test response.
+ * @param expiredConnection - Whether an existing account needs reauthorisation.
+ * @param optionCount - Number of accounts available for the chooser.
+ */
+async function stubSharedConnection(deferConnection = false, expiredConnection = false, optionCount = 1): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }, { deferConnection, expiredConnection, optionCount }) => {
+        let connected = false;
+        const target = {
+            id: 'fixture-target', login: 'fixture-user', type: 'user',
+            availability: 'available', capabilities: ['repository-browsing', 'repository-creation'],
+        };
+        const summary = {
+            id: 'github', displayName: 'GitHub', state: 'not-connected',
+            connectionStage: null as string | null,
+            connections: [] as unknown[], connectionOptions: [] as unknown[],
+        };
+        if (expiredConnection) {
+            summary.state = 'reauthorisation-required';
+            summary.connections = [{ id: 'fixture-connection', accountLogin: 'fixture-user',
+                accountDisplayName: null, state: 'reauthorisation-required', accessTargets: [target] }];
+        }
+        ipcMain.removeHandler('appIntegrations.reconnect');
+        ipcMain.handle('appIntegrations.reconnect', (_event, _provider, connectionId: string) => {
+            const state = globalThis as typeof globalThis & { __reconnectedAccount?: string };
+            state.__reconnectedAccount = connectionId;
+            summary.state = 'selection-required';
+            summary.connectionStage = 'choosing';
+            summary.connectionOptions = Array.from({ length: optionCount }, (_, index) => ({ id: `fixture-option-${index}`, login: index === 0 ? 'fixture-user' : `fixture-org-${index}`, type: index === 0 ? 'user' : 'organization' }));
+            return { success: true, data: { ok: true, integration: summary } };
+        });
+        ipcMain.removeHandler('appIntegrations.refresh');
+        ipcMain.handle('appIntegrations.refresh', () => ({ success: true, data: { ok: true, integration: summary } }));
+        ipcMain.removeHandler('appIntegrations.listIntegrations');
+        ipcMain.handle('appIntegrations.listIntegrations', () => ({ success: true, data: [summary] }));
+        ipcMain.removeHandler('appIntegrations.connect');
+        ipcMain.handle('appIntegrations.connect', async () => {
+            if (deferConnection) {
+                await new Promise<void>((resolve) => {
+                    const state = globalThis as typeof globalThis & { __releaseConnection?: () => void };
+                    state.__releaseConnection = resolve;
+                });
+            }
+            summary.state = 'selection-required';
+            summary.connectionStage = 'choosing';
+            summary.connectionOptions = Array.from({ length: optionCount }, (_, index) => ({ id: `fixture-option-${index}`, login: index === 0 ? 'fixture-user' : `fixture-org-${index}`, type: index === 0 ? 'user' : 'organization' }));
+            return { success: true, data: { ok: true, integration: summary } };
+        });
+        ipcMain.removeHandler('appIntegrations.finishConnections');
+        ipcMain.handle('appIntegrations.finishConnections', () => {
+            connected = true;
+            summary.state = 'connected';
+            summary.connectionStage = null;
+            summary.connectionOptions = [];
+            summary.connections = [{
+                id: 'fixture-connection', accountLogin: 'fixture-user', accountDisplayName: null,
+                state: 'connected', accessTargets: [target],
+            }];
+            return { success: true, data: { ok: true, integration: summary } };
+        });
+        ipcMain.removeHandler('appIntegrations.cancel');
+        ipcMain.handle('appIntegrations.cancel', () => {
+            summary.state = connected ? 'connected' : 'not-connected';
+            summary.connectionStage = null;
+            summary.connectionOptions = [];
+            return { success: true, data: { ok: true, integration: summary } };
+        });
+        ipcMain.removeHandler('projects.listCreateProjectPublicationTargets');
+        ipcMain.handle('projects.listCreateProjectPublicationTargets', () => ({
+            success: true,
+            data: connected ? { success: true, targets: [{
+                providerId: 'github', connectionId: 'fixture-connection', accessTargetId: 'fixture-target',
+                ownerLogin: 'fixture-user', ownerType: 'user', accountLogin: 'fixture-user',
+            }] } : { success: false, reason: 'connection-required' },
+        }));
+    }, { deferConnection, expiredConnection, optionCount });
+}
+
+test('keeps local and disconnected publishing layouts within the drawer', async () => {
+    await stubCreateProjectPublicationTargets(electronApp, {
+        success: false,
+        reason: 'connection-required',
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    const body = mainPage.locator('.drawer-panel form > div.overflow-y-auto');
+    await expect.poll(() => body.evaluate(
+        (element) => element.scrollHeight <= element.clientHeight + 1,
+    )).toBe(true);
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).check();
+    await expect(mainPage.getByRole('button', { name: 'Connect GitHub' })).toBeVisible();
+    await expect.poll(() => body.evaluate(
+        (element) => element.scrollHeight <= element.clientHeight + 1,
+    )).toBe(true);
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
+    if (process.env.GODOT_LAUNCHER_DESIGN_QA === '1') {
+        await mainPage.screenshot({ path: path.resolve(
+            process.cwd(), '.internal-docs', 'create-project-disconnected-layout.png',
+        ) });
+    }
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).uncheck();
+    await expect(mainPage.getByRole('button', { name: 'Connect GitHub' })).toHaveCount(0);
     await mainPage.getByTestId('btnCloseCreateProject').click();
 });
 

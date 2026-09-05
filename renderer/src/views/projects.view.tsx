@@ -2,16 +2,14 @@ import type {
     CodeEditorId,
     InstalledRelease,
     ProjectDetails,
+    ReleaseSummary,
 } from '@shared/contracts';
-import { FolderPlus, HardDriveDownload, TriangleAlert } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
 } from '../components/ui/actionMenu.component';
-import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
 import { useAlerts } from '../hooks/useAlerts';
 import { useAppNavigation } from '../hooks/useAppNavigation';
@@ -19,10 +17,10 @@ import { usePreferences } from '../hooks/usePreferences';
 import { useProjects } from '../hooks/useProjects';
 import { useRelease } from '../hooks/useRelease';
 import { useToolIntegrations } from '../hooks/useToolIntegrations';
-import { appRoutePaths } from '../routes.ts';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
 import { ProjectFoldersMenu } from './projects/components/projectFoldersMenu.component';
+import { ProjectsWelcome } from './projects/components/projects-welcome.component';
 import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
 import { ProjectsHeader } from './projects/components/projectsHeader.component';
 import { ProjectsList } from './projects/components/projectsList.component';
@@ -33,6 +31,7 @@ import {
 import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
 import { useProjectActions } from './projects/hooks/useProjectActions';
 import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
+import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
 import {
     getInvalidProjectMessageKey,
     getProjectSections,
@@ -72,7 +71,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         'menus',
         'dialogs',
     ]);
-    const navigate = useNavigate();
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -99,6 +97,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         useState<GitAvailability>('loading');
 
     const [busyProjects, setBusyProjects] = useState<string[]>([]);
+    const [projectEditorInstallTargets, setProjectEditorInstallTargets] =
+        useState<string[]>([]);
+    const projectEditorInstallTargetRef = useRef(new Set<string>());
     const [highlightedPinnedProjectPath, setHighlightedPinnedProjectPath] =
         useState<string | null>(null);
     const clearPinnedHighlight = useCallback(
@@ -117,8 +118,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         downloadingReleases,
         installRelease,
         isInstalledRelease,
-        loading: releasesLoading,
-        initialized: releasesInitialized,
         checkAllReleasesValid,
     } = useRelease();
     const {
@@ -147,7 +146,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         refreshProjects,
         loading,
     } = useProjects();
-    const { openExternalLink, setCurrentView } = useAppNavigation();
+    const { openExternalLink } = useAppNavigation();
     const {
         projectActionsMenu,
         setProjectActionsMenu,
@@ -224,12 +223,79 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         handleAddProjectResult,
     });
 
+    /**
+     * Checks whether the editor configured for a project is downloading.
+     *
+     * @param project - The project whose editor state is checked.
+     * @returns Whether its editor is currently downloading.
+     */
     const isProjectEditorDownloading = (project: ProjectDetails): boolean =>
+        projectEditorInstallTargets.includes(
+            `${project.release.version}:${project.release.mono}`,
+        ) ||
+        projectEditorInstallTargetRef.current.has(
+            `${project.release.version}:${project.release.mono}`,
+        ) ||
         downloadingReleases.some(
             (release) =>
                 release.version === project.release.version &&
                 release.mono === project.release.mono,
         );
+
+    /**
+     * Starts one exact official editor install and repairs every project
+     * currently waiting for that editor.
+     *
+     * @param project - Project whose missing editor the user chose to install.
+     * @param release - Exact catalogue release to install.
+     */
+    const onInstallRequiredProjectEditor = async (
+        project: ProjectDetails,
+        release: ReleaseSummary,
+    ): Promise<void> => {
+        const target = `${project.release.version}:${project.release.mono}`;
+        if (
+            projectEditorInstallTargetRef.current.has(target) ||
+            downloadingReleases.some(
+                (downloadingRelease) =>
+                    downloadingRelease.version === project.release.version &&
+                    downloadingRelease.mono === project.release.mono,
+            )
+        ) {
+            return;
+        }
+
+        projectEditorInstallTargetRef.current.add(target);
+        setProjectEditorInstallTargets((current) => [...current, target]);
+        try {
+            await queueProjectEditorRepairs([
+                {
+                    release,
+                    mono: project.release.mono,
+                    projects: projects.filter(
+                        (candidate) =>
+                            candidate.invalid_reason === 'missing_editor' &&
+                            candidate.release.source !== 'custom' &&
+                            candidate.release.version ===
+                                project.release.version &&
+                            candidate.release.mono === project.release.mono,
+                    ),
+                },
+            ]);
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                error instanceof Error
+                    ? error.message
+                    : t('messages.addProjectError'),
+            );
+        } finally {
+            projectEditorInstallTargetRef.current.delete(target);
+            setProjectEditorInstallTargets((current) =>
+                current.filter((candidate) => candidate !== target),
+            );
+        }
+    };
 
     const onSetProjectEditorFromSettings = async (
         project: ProjectDetails,
@@ -301,22 +367,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     };
 
     const projectSections = getProjectSections(projects, textSearch);
-    const validInstalledReleaseCount = installedReleases.filter(
-        (release) => release.valid !== false,
-    ).length;
     const viewState = getProjectsViewState({
         projectCount: projects.length,
-        installedReleaseCount: validInstalledReleaseCount,
-        downloadingReleaseCount: downloadingReleases.length,
         textSearch,
         projectsLoading: loading,
-        releasesLoading,
-        releasesInitialized,
     });
-    const showEmptyState =
-        viewState === 'empty-without-editor' ||
-        viewState === 'empty-installing-editor' ||
-        viewState === 'empty-with-editor';
+    const showEmptyState = viewState === 'empty';
 
     return (
         <>
@@ -343,91 +399,32 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onDrop={handleDrop}
             >
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
-                <ProjectsHeader
-                    title={t('title')}
-                    projectsLocation={preferences?.projects_location}
-                    searchPlaceholder={t('search.placeholder')}
-                    searchValue={textSearch}
-                    onSearchChange={setTextSearch}
-                    onAddProject={openAddProjectSourceMenu}
-                    onCreateProject={() => setCreateOpen(true)}
-                    createDisabled={validInstalledReleaseCount < 1}
-                    addLabel={t('buttons.add')}
-                    createLabel={t('buttons.newProject')}
-                    copyPathLabel={t('common:buttons.copyPath')}
-                    copiedLabel={t('common:success')}
-                    showControls={!showEmptyState}
-                />
+                {!showEmptyState && (
+                    <ProjectsHeader
+                        title={t('title')}
+                        projectsLocation={preferences?.projects_location}
+                        searchPlaceholder={t('search.placeholder')}
+                        searchValue={textSearch}
+                        onSearchChange={setTextSearch}
+                        onAddProject={openAddProjectSourceMenu}
+                        onCreateProject={() => setCreateOpen(true)}
+                        createDisabled={false}
+                        addLabel={t('buttons.add')}
+                        createLabel={t('buttons.newProject')}
+                        copyPathLabel={t('common:buttons.copyPath')}
+                        copiedLabel={t('common:success')}
+                    />
+                )}
 
-                {viewState === 'list' &&
-                    projects.length > 0 &&
-                    validInstalledReleaseCount < 1 && (
-                        <div className="text-warning flex gap-2">
-                            <TriangleAlert className="stroke-warning" />
-                            <Trans
-                                ns="projects"
-                                i18nKey="messages.noReleasesCta"
-                                components={{
-                                    Link: (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setCurrentView('installs')
-                                            }
-                                            className="underline"
-                                        />
-                                    ),
-                                }}
-                            />
-                        </div>
-                    )}
-                {viewState === 'empty-without-editor' && (
-                    <EmptyState
-                        icon={HardDriveDownload}
-                        heading={t('emptyState.withoutEditor.heading')}
-                        description={t('emptyState.withoutEditor.description')}
-                        primaryActionLabel={t(
-                            'emptyState.withoutEditor.installEditor',
-                        )}
-                        secondaryActionLabel={t(
-                            'emptyState.addExistingProject',
-                        )}
-                        onPrimaryAction={() =>
-                            navigate(appRoutePaths.installEditor)
+                {viewState === 'empty' && (
+                    <ProjectsWelcome
+                        gitAvailable={gitAvailability === 'available'}
+                        t={t}
+                        onCreateProject={() => setCreateOpen(true)}
+                        onAddFromComputer={() => void onAddProject()}
+                        onAddFromGitHub={() =>
+                            openRemoteProjectSource('github')
                         }
-                        onSecondaryAction={openAddProjectSourceMenu}
-                    />
-                )}
-                {viewState === 'empty-with-editor' && (
-                    <EmptyState
-                        icon={FolderPlus}
-                        heading={t('emptyState.withEditor.heading')}
-                        description={t('emptyState.withEditor.description')}
-                        primaryActionLabel={t(
-                            'emptyState.withEditor.newProject',
-                        )}
-                        secondaryActionLabel={t(
-                            'emptyState.addExistingProject',
-                        )}
-                        onPrimaryAction={() => setCreateOpen(true)}
-                        onSecondaryAction={openAddProjectSourceMenu}
-                    />
-                )}
-                {viewState === 'empty-installing-editor' && (
-                    <EmptyState
-                        icon={HardDriveDownload}
-                        heading={t('emptyState.withoutEditor.heading')}
-                        description={t(
-                            'emptyState.withoutEditor.installingDescription',
-                        )}
-                        primaryActionLabel={t(
-                            'emptyState.withoutEditor.installingEditor',
-                        )}
-                        primaryActionPending
-                        secondaryActionLabel={t(
-                            'emptyState.addExistingProject',
-                        )}
-                        onSecondaryAction={openAddProjectSourceMenu}
                     />
                 )}
                 {!showEmptyState && (
@@ -464,6 +461,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             isInstalledRelease={isInstalledRelease}
                             isProjectEditorDownloading={
                                 isProjectEditorDownloading
+                            }
+                            getDownloadableProjectEditor={(project) =>
+                                findDownloadableMissingProjectEditor(
+                                    project,
+                                    availableReleases,
+                                    availablePrereleases,
+                                )
+                            }
+                            onInstallRequiredProjectEditor={(
+                                project,
+                                release,
+                            ) =>
+                                void onInstallRequiredProjectEditor(
+                                    project,
+                                    release,
+                                )
                             }
                             onLaunchProject={(project) =>
                                 void onLaunchProject(project)
@@ -529,7 +542,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onRemoveProject={handleRemoveProject}
             />
             <ProjectSettingsDrawer
-                project={editProjectFor}
+                project={
+                    projects.find(
+                        (candidate) => candidate.path === editProjectFor?.path,
+                    ) ?? editProjectFor
+                }
                 open={Boolean(editProjectFor)}
                 onOpenChange={(open) => {
                     if (!open) {

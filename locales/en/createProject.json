@@ -1,5 +1,19 @@
 {
     "title": "New Project",
+    "workflow": {
+        "title": "Setting up your project",
+        "installingEditor": "Install editor",
+        "creatingProject": "Create project",
+        "launchingEditor": "Launch editor",
+        "skipped": "Skipped",
+        "failed": "The project could not be created. Review the form and try again.",
+        "launchFailed": "The project was created, but the editor could not be launched."
+    },
+    "destination": {
+        "checking": "Checking project location...",
+        "available": "Project location available",
+        "checkFailed": "Could not check the project location. Check the path and try again."
+    },
     "project": {
         "title": "Project",
         "dotNetBadge": ".NET",
@@ -9,11 +23,37 @@
         "downloading": "Downloading...",
         "nameRequired": "Project name is required",
         "nameExists": "A project with this name already exists",
-        "overwritePath": "Overwrite Project Path",
+        "overwritePath": "Project location",
         "selectFolderDialogTitle": "Select Project Folder",
         "selectFolderTooltip": "Open a dialog to select the project folder",
-        "useDefaultPath": "Use default path",
-        "overwritePathRequired": "Path is required when overwrite path is enabled."
+        "useDefaultPath": "Use default location",
+        "overwritePathRequired": "Project location is required."
+    },
+    "editorPicker": {
+        "title": "Godot editor",
+        "installed": "Installed",
+        "browse": "Browse releases",
+        "search": "Search versions",
+        "clearSearch": "Clear version search",
+        "channel": "Release channel",
+        "stable": "Stable",
+        "prereleases": "Pre-releases",
+        "standard": "Standard",
+        "custom": "Custom",
+        "selected": "Selected",
+        "unavailable": "Unavailable",
+        "downloadRequired": "Download required",
+        "noInstalled": "No installed editors",
+        "notInstalled": "Not installed",
+        "noInstalledDescription": "Browse releases to choose an editor to install.",
+        "noneSelected": "Choose an editor",
+        "loading": "Loading releases...",
+        "noMatches": "No matching releases",
+        "loadFailed": "Couldn't load releases. Try again.",
+        "refreshFailed": "Couldn't refresh releases. Showing previously loaded releases.",
+        "retry": "Retry",
+        "retrying": "Retrying...",
+        "installFailed": "The editor could not be installed. Your project has not been created."
     },
     "renderer": {
         "title": "Renderer",
@@ -61,7 +101,7 @@
         "availabilityAvailable": "Name looks available",
         "availabilityUnavailable": "Name already in use",
         "availabilityUnknown": "Could not check this name",
-        "openConnections": "Open Connections",
+        "openConnections": "Connect GitHub",
         "leaveTitle": "Leave Create Project?",
         "leaveMessage": "Your unsaved project details will be cleared when you open Connections.",
         "successTitle": "Published to GitHub",
@@ -175,6 +215,8 @@
         "editNow": "Edit now",
         "create": "Create Project",
         "createAndPublish": "Create and publish to GitHub",
+        "installAndCreate": "Install and create project",
+        "installCreateAndPublish": "Install, create and publish",
         "creating": "Creating project...",
         "publishing": "Creating project and publishing to GitHub..."
     },
