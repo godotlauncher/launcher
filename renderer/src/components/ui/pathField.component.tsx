@@ -135,7 +135,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         type="button"
                         data-testid={browseTestId}
                         className={clsx(
-                            'btn btn-ghost border-0 text-base-content shadow-none btn-primary',
+                            'btn btn-ghost shrink-0 border-0 text-base-content shadow-none cursor-pointer transition-colors hover:bg-base-content/10 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary',
                             {
                                 'btn-sm h-6 px-2 m-1': compact,
                                 'btn-sm m-1 ': !compact,

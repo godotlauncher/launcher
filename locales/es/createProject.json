@@ -9,6 +9,11 @@
         "failed": "No se pudo crear el proyecto. Revisa el formulario e inténtalo de nuevo.",
         "launchFailed": "El proyecto se creó, pero no se pudo iniciar el editor."
     },
+    "destination": {
+        "checking": "Comprobando la ubicación del proyecto...",
+        "available": "Ubicación del proyecto disponible",
+        "checkFailed": "No se ha podido comprobar la ubicación del proyecto. Comprueba la ruta y vuelve a intentarlo."
+    },
     "project": {
         "title": "Proyecto",
         "dotNetBadge": ".NET",

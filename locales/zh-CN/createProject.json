@@ -9,6 +9,11 @@
         "failed": "无法创建项目。请检查表单后重试。",
         "launchFailed": "项目已创建，但无法启动编辑器。"
     },
+    "destination": {
+        "checking": "正在检查项目位置...",
+        "available": "项目位置可用",
+        "checkFailed": "无法检查项目位置。请检查路径后重试。"
+    },
     "project": {
         "title": "项目",
         "dotNetBadge": ".NET",

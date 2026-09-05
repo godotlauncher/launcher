@@ -46,11 +46,77 @@ test.beforeEach(async () => {
         installedReleases: [],
         toolIntegrations: TOOL_INTEGRATIONS_NO_GIT,
     });
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('projects.inspectCreateProjectDestination');
+        ipcMain.handle('projects.inspectCreateProjectDestination', async () => ({
+            success: true, data: { status: 'available' },
+        }));
+        ipcMain.removeHandler('projects.inspectCreateProjectRepository');
+        ipcMain.handle('projects.inspectCreateProjectRepository', async () => ({
+            success: true, data: { status: 'not-a-repository' },
+        }));
+    });
 });
 
 test.afterAll(async () => {
     await electronApp.close();
     await fs.rm(fixtureHome, { recursive: true, force: true });
+});
+
+test('keeps welcome actions in place when GitHub import becomes available', async () => {
+    await mainPage.getByTestId('btnProjects').click();
+    const heading = mainPage.getByRole('heading', { name: 'Add or create a project' });
+    const createButton = mainPage.getByTestId('btnWelcomeCreateProject');
+    await expect(createButton).toBeVisible();
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toHaveCount(0);
+    const headingBox = await heading.boundingBox();
+    const createBox = await createButton.boundingBox();
+
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        projects: [],
+        installedReleases: [],
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toBeVisible();
+    expect(await heading.boundingBox()).toEqual(headingBox);
+    expect(await createButton.boundingBox()).toEqual(createBox);
+});
+
+test('blocks an occupied destination before downstream operations and rechecks on submit', async () => {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & { __destinationChecks?: number; __downstreamCalls?: number };
+        state.__destinationChecks = 0;
+        state.__downstreamCalls = 0;
+        ipcMain.removeHandler('projects.inspectCreateProjectDestination');
+        ipcMain.handle('projects.inspectCreateProjectDestination', async (_event, name: string) => {
+            state.__destinationChecks = (state.__destinationChecks ?? 0) + 1;
+            return { success: true, data: name === 'Occupied' || (state.__destinationChecks ?? 0) >= 3
+                ? { status: 'blocked', error: 'Destination contains files' }
+                : { status: 'available' } };
+        });
+        for (const channel of ['projects.inspectCreateProjectRepository', 'editorInstalls.installEditor', 'projects.createProject']) {
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, async () => {
+                state.__downstreamCalls = (state.__downstreamCalls ?? 0) + 1;
+                throw new Error('Downstream operation must not run');
+            });
+        }
+    });
+    await openCreateProject();
+    const status = mainPage.getByTestId('createProjectDestinationStatus');
+    const idleStatusBox = await status.boundingBox();
+    await mainPage.getByTestId('inputProjectName').fill('Occupied');
+    await expect(status).toContainText('Destination contains files');
+    expect(await status.boundingBox()).toEqual(idleStatusBox);
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
+    await mainPage.getByTestId('inputProjectName').fill('Free');
+    await expect(status).toContainText('Project location available');
+    expect(await status.boundingBox()).toEqual(idleStatusBox);
+    await mainPage.getByTestId('btnCreateProject').click();
+    await expect(status).toContainText('Destination contains files');
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
+    expect(await electronApp.evaluate(() => (globalThis as typeof globalThis & { __downstreamCalls?: number }).__downstreamCalls)).toBe(0);
+    await mainPage.getByTestId('btnCloseCreateProject').click();
 });
 
 test('locks the drawer while installing, creating, and launching', async () => {
@@ -75,6 +141,9 @@ test('locks the drawer while installing, creating, and launching', async () => {
         'active',
     );
     await expect(mainPage.getByTestId('btnCloseCreateProject')).toBeDisabled();
+    const installDetails = mainPage.getByTestId('createProjectInstallDetails');
+    const initialDetailsBox = await installDetails.boundingBox();
+    const initialCreateStepBox = await overlay.locator('[data-step="creating"]').boundingBox();
 
     await publishInstallProgress({
         id: 'create-project-editor-install',
@@ -90,12 +159,17 @@ test('locks the drawer while installing, creating, and launching', async () => {
     });
     await expect(overlay).toContainText('42%');
     await expect(overlay).toContainText('42 MB / 100 MB');
+    expect(await installDetails.boundingBox()).toEqual(initialDetailsBox);
+    expect(await overlay.locator('[data-step="creating"]').boundingBox()).toEqual(initialCreateStepBox);
 
     await completePendingEditorInstall();
     await expect(overlay.locator('[data-step="creating"]')).toHaveAttribute(
         'data-step-state',
         'active',
     );
+    await expect(installDetails).toContainText('100%');
+    expect(await installDetails.boundingBox()).toEqual(initialDetailsBox);
+    expect(await overlay.locator('[data-step="creating"]').boundingBox()).toEqual(initialCreateStepBox);
     await expect
         .poll(async () =>
             (await readSubmittedProjectPath())?.replaceAll('\\', '/'),

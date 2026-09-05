@@ -9,6 +9,11 @@
         "failed": "The project could not be created. Review the form and try again.",
         "launchFailed": "The project was created, but the editor could not be launched."
     },
+    "destination": {
+        "checking": "Checking project location...",
+        "available": "Project location available",
+        "checkFailed": "Could not check the project location. Check the path and try again."
+    },
     "project": {
         "title": "Project",
         "dotNetBadge": ".NET",

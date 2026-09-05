@@ -9,6 +9,11 @@
         "failed": "無法建立專案。請檢查表單後再試一次。",
         "launchFailed": "專案已建立，但無法啟動編輯器。"
     },
+    "destination": {
+        "checking": "正在檢查專案位置...",
+        "available": "專案位置可用",
+        "checkFailed": "無法檢查專案位置。請檢查路徑後再試一次。"
+    },
     "project": {
         "title": "專案",
         "dotNetBadge": ".NET",

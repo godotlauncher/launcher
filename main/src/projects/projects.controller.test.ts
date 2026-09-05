@@ -62,6 +62,10 @@ describe('ProjectsController', () => {
         await controller.inspectPublicGitSource('https://example.com/game.git');
         await controller.listConnectedRepositories('github', 'cursor');
         await controller.getProjectsDetails();
+        await controller.inspectCreateProjectDestination(
+            'Game',
+            '/projects/game',
+        );
         await controller.inspectCreateProjectRepository(
             'Game',
             '/projects/game',
@@ -119,6 +123,10 @@ describe('ProjectsController', () => {
             'cursor',
         );
         expect(service.getProjectsDetails).toHaveBeenCalledOnce();
+        expect(service.inspectCreateProjectDestination).toHaveBeenCalledWith(
+            'Game',
+            '/projects/game',
+        );
         expect(service.inspectCreateProjectRepository).toHaveBeenCalledWith(
             'Game',
             '/projects/game',
@@ -212,6 +220,9 @@ function createServiceMock(): ProjectsService {
             reason: 'session-expired',
         })),
         getProjectsDetails: vi.fn(async () => []),
+        inspectCreateProjectDestination: vi.fn(async () => ({
+            status: 'available',
+        })),
         inspectCreateProjectRepository: vi.fn(async () => ({
             status: 'not-a-repository',
         })),

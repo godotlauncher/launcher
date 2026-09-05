@@ -9,6 +9,11 @@
         "failed": "Le projet n'a pas pu être créé. Vérifiez le formulaire et réessayez.",
         "launchFailed": "Le projet a été créé, mais l'éditeur n'a pas pu être lancé."
     },
+    "destination": {
+        "checking": "Vérification de l'emplacement du projet...",
+        "available": "Emplacement du projet disponible",
+        "checkFailed": "Impossible de vérifier l'emplacement du projet. Vérifiez le chemin et réessayez."
+    },
     "project": {
         "title": "Projet",
         "dotNetBadge": ".NET",

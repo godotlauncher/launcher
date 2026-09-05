@@ -2,6 +2,7 @@ import type { ReleaseInstallProgress } from '@shared/contracts';
 import clsx from 'clsx';
 import { Check, Circle, LoaderCircle, Minus } from 'lucide-react';
 import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ReleaseInstallProgressIndicator } from '../../../../components/releaseInstallProgress.component';
 
 export type CreateProjectProgressPhase =
@@ -97,6 +98,21 @@ export const CreateProjectProgressOverlay: React.FC<
     installProgress,
     className,
 }) => {
+    const [reserveInstallProgress] = useState(() => !editorInstalled);
+    const lastInstallProgress = useRef(installProgress);
+    useEffect(() => {
+        if (installProgress) lastInstallProgress.current = installProgress;
+    }, [installProgress]);
+    const retainedProgress = installProgress ?? lastInstallProgress.current;
+    const displayedProgress =
+        retainedProgress && (editorInstalled || phase !== 'installing')
+            ? {
+                  ...retainedProgress,
+                  stage: 'complete' as const,
+                  percent: 100,
+                  canCancel: false,
+              }
+            : retainedProgress;
     const steps: Array<{
         id: CreateProjectProgressStepId;
         label: string;
@@ -185,12 +201,17 @@ export const CreateProjectProgressOverlay: React.FC<
                                     )}
                                 </div>
                                 {step.id === 'installing' &&
-                                    step.state === 'active' &&
-                                    installProgress && (
-                                        <ReleaseInstallProgressIndicator
-                                            progress={installProgress}
-                                            className="mt-2"
-                                        />
+                                    reserveInstallProgress && (
+                                        <div
+                                            className="mt-2 min-h-11"
+                                            data-testid="createProjectInstallDetails"
+                                        >
+                                            {displayedProgress && (
+                                                <ReleaseInstallProgressIndicator
+                                                    progress={displayedProgress}
+                                                />
+                                            )}
+                                        </div>
                                     )}
                             </div>
                         </li>

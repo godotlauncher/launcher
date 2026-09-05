@@ -28,6 +28,7 @@ type RepositoryCreationFieldsProps = {
     availability: RepositoryNameAvailabilityState;
     repositoryNameError?: string;
     layout?: 'columns' | 'stacked';
+    availabilityBelow?: boolean;
     disabled?: boolean;
     locked?: boolean;
     repositoryNameInputRef?: React.Ref<HTMLInputElement>;
@@ -134,6 +135,7 @@ export const RepositoryCreationFields: React.FC<
     availability,
     repositoryNameError,
     layout = 'columns',
+    availabilityBelow = false,
     disabled = false,
     locked = false,
     repositoryNameInputRef,
@@ -148,7 +150,7 @@ export const RepositoryCreationFields: React.FC<
     return (
         <div
             className={clsx(
-                'grid grid-cols-1 gap-4',
+                'grid grid-cols-1 gap-x-6 gap-y-4',
                 layout === 'columns' && 'md:grid-cols-2',
             )}
         >
@@ -165,22 +167,32 @@ export const RepositoryCreationFields: React.FC<
                 compact
                 regularText
             />
-            <TextField
-                id={repositoryNameId}
-                testId={repositoryNameId}
-                inputRef={repositoryNameInputRef}
-                label={t('publishToGitHub.repositoryName')}
-                labelAction={
+            <div className="flex min-w-0 flex-col gap-1">
+                <TextField
+                    id={repositoryNameId}
+                    testId={repositoryNameId}
+                    inputRef={repositoryNameInputRef}
+                    label={t('publishToGitHub.repositoryName')}
+                    labelAction={
+                        !availabilityBelow && (
+                            <RepositoryAvailability
+                                t={t}
+                                availability={availability}
+                            />
+                        )
+                    }
+                    help={t('publishToGitHub.repositoryNameHelp')}
+                    value={repositoryName}
+                    onChange={onRepositoryNameChange}
+                    error={repositoryNameError ?? unavailableError}
+                    disabled={disabled || locked}
+                    compact
+                    regularText
+                />
+                {availabilityBelow && (
                     <RepositoryAvailability t={t} availability={availability} />
-                }
-                help={t('publishToGitHub.repositoryNameHelp')}
-                value={repositoryName}
-                onChange={onRepositoryNameChange}
-                error={repositoryNameError ?? unavailableError}
-                disabled={disabled || locked}
-                compact
-                regularText
-            />
+                )}
+            </div>
         </div>
     );
 };

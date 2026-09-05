@@ -9,6 +9,11 @@
         "failed": "Il-proġett ma setax jinħoloq. Irrevedi l-formola u erġa' pprova.",
         "launchFailed": "Il-proġett inħoloq, iżda l-editur ma setax jitnieda."
     },
+    "destination": {
+        "checking": "Qed jiġi ċċekkjat il-post tal-proġett...",
+        "available": "Il-post tal-proġett huwa disponibbli",
+        "checkFailed": "Ma setax jiġi ċċekkjat il-post tal-proġett. Iċċekkja l-mogħdija u erġa' pprova."
+    },
     "project": {
         "title": "Proġett",
         "dotNetBadge": ".NET",

@@ -9,6 +9,11 @@
         "failed": "Proje oluşturulamadı. Formu gözden geçirip tekrar deneyin.",
         "launchFailed": "Proje oluşturuldu ancak düzenleyici başlatılamadı."
     },
+    "destination": {
+        "checking": "Proje konumu kontrol ediliyor...",
+        "available": "Proje konumu kullanılabilir",
+        "checkFailed": "Proje konumu kontrol edilemedi. Yolu kontrol edip tekrar deneyin."
+    },
     "project": {
         "title": "Proje",
         "dotNetBadge": ".NET",

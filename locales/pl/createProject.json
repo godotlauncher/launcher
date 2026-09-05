@@ -9,6 +9,11 @@
         "failed": "Nie udało się utworzyć projektu. Sprawdź formularz i spróbuj ponownie.",
         "launchFailed": "Projekt został utworzony, ale nie udało się uruchomić edytora."
     },
+    "destination": {
+        "checking": "Sprawdzanie lokalizacji projektu...",
+        "available": "Lokalizacja projektu jest dostępna",
+        "checkFailed": "Nie można sprawdzić lokalizacji projektu. Sprawdź ścieżkę i spróbuj ponownie."
+    },
     "project": {
         "title": "Projekt",
         "dotNetBadge": ".NET",

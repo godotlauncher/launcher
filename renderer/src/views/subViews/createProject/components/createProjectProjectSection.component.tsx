@@ -11,6 +11,7 @@ type CreateProjectProjectSectionProps = {
     t: Translate;
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     editorPicker: React.ReactNode;
+    destinationStatus?: React.ReactNode;
     projectName: string;
     projectNameError?: string;
     overwriteBasePath: string;
@@ -37,6 +38,7 @@ export const CreateProjectProjectSection: React.FC<
     t,
     inputNameRef,
     editorPicker,
+    destinationStatus,
     projectName,
     projectNameError,
     overwriteBasePath,
@@ -52,14 +54,14 @@ export const CreateProjectProjectSection: React.FC<
 }) => {
     return (
         <div className="flex flex-col gap-2">
-            <h2 className="text-md">{t('project.title')}</h2>
             <div className="flex flex-col gap-3">
-                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="grid min-w-0 grid-cols-1 items-start gap-6 sm:grid-cols-2">
                     <div className="min-w-0 flex-1">
                         <TextField
                             inputRef={inputNameRef}
                             id="inputProjectName"
                             testId="inputProjectName"
+                            label={t('project.nameplaceholder')}
                             ariaLabel={t('project.title')}
                             placeholder={t('project.nameplaceholder')}
                             value={projectName}
@@ -69,7 +71,10 @@ export const CreateProjectProjectSection: React.FC<
                             regularText
                         />
                     </div>
-                    <div className="min-w-0 sm:w-1/3 sm:shrink-0">
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                        <span className="font-semibold">
+                            {t('editorPicker.title')}
+                        </span>
                         {editorPicker}
                     </div>
                 </div>
@@ -92,13 +97,15 @@ export const CreateProjectProjectSection: React.FC<
                         />
                     </div>
                 </div>
-                {isOverwritePathEmpty && (
+                {isOverwritePathEmpty ? (
                     <p
                         data-testid="msgOverwritePathRequired"
-                        className="text-error text-xs sm:ml-[12.75rem]"
+                        className="min-h-8 text-error text-xs leading-4"
                     >
                         {t('project.overwritePathRequired')}
                     </p>
+                ) : (
+                    destinationStatus
                 )}
             </div>
         </div>

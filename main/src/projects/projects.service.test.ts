@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     getProjectGitIdentity: vi.fn(),
     getProjectGodotName: vi.fn(),
     getProjectsDetails: vi.fn(),
+    inspectCreateProjectDestination: vi.fn(),
     inspectCreateProjectRepository: vi.fn(),
     importProjectEditorSettings: vi.fn(),
     initializeProjectGit: vi.fn(),
@@ -113,6 +114,7 @@ describe('ProjectsService', () => {
     };
     const projectCreation = {
         createProject: mocks.createProject,
+        inspectCreateProjectDestination: mocks.inspectCreateProjectDestination,
         inspectCreateProjectRepository: mocks.inspectCreateProjectRepository,
     };
     const trayAvailability = { id: 'tray' };
@@ -237,6 +239,22 @@ describe('ProjectsService', () => {
             ),
         ).resolves.toEqual(inspection);
         expect(mocks.inspectCreateProjectRepository).toHaveBeenCalledWith(
+            'Game',
+            '/projects/parent/game',
+        );
+    });
+
+    it('delegates Create Project destination inspection', async () => {
+        const inspection = { status: 'available' as const };
+        mocks.inspectCreateProjectDestination.mockResolvedValueOnce(inspection);
+
+        await expect(
+            service.inspectCreateProjectDestination(
+                'Game',
+                '/projects/parent/game',
+            ),
+        ).resolves.toEqual(inspection);
+        expect(mocks.inspectCreateProjectDestination).toHaveBeenCalledWith(
             'Game',
             '/projects/parent/game',
         );

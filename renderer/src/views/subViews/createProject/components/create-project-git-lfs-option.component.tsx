@@ -23,7 +23,7 @@ type CreateProjectGitLfsOptionProps = {
 export const CreateProjectGitLfsOption: React.FC<
     CreateProjectGitLfsOptionProps
 > = ({ t, available, policy, selected, onSelectedChange }) => (
-    <div className="ml-6 flex items-center gap-2">
+    <div className="flex items-center gap-2">
         <label
             className={
                 available

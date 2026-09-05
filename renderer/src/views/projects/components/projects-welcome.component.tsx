@@ -61,17 +61,12 @@ export const ProjectsWelcome: React.FC<ProjectsWelcomeProps> = ({
                 )}
                 actionTestId="btnWelcomeAddFromComputer"
                 onAction={onAddFromComputer}
-                secondaryAction={
-                    gitAvailable
-                        ? {
-                              label: t(
-                                  'emptyState.welcome.existingProject.fromGitHub',
-                              ),
-                              testId: 'btnWelcomeAddFromGitHub',
-                              onAction: onAddFromGitHub,
-                          }
-                        : undefined
-                }
+                secondaryAction={{
+                    available: gitAvailable,
+                    label: t('emptyState.welcome.existingProject.fromGitHub'),
+                    testId: 'btnWelcomeAddFromGitHub',
+                    onAction: onAddFromGitHub,
+                }}
             />
         </div>
     </section>
@@ -85,6 +80,7 @@ type WelcomeChoiceProps = {
     actionTestId: string;
     onAction: () => void;
     secondaryAction?: {
+        available: boolean;
         label: string;
         testId: string;
         onAction: () => void;
@@ -128,22 +124,31 @@ const WelcomeChoice: React.FC<WelcomeChoiceProps> = ({
             >
                 {actionLabel}
             </button>
-            {secondaryAction && (
-                <button
-                    type="button"
-                    className="btn btn-neutral w-full"
-                    data-testid={secondaryAction.testId}
-                    onClick={secondaryAction.onAction}
-                >
-                    <img
-                        src={githubInvertocatWhite}
-                        alt=""
-                        className="size-5"
+            {secondaryAction &&
+                (secondaryAction.available ? (
+                    <button
+                        type="button"
+                        className="btn btn-neutral w-full"
+                        data-testid={secondaryAction.testId}
+                        onClick={secondaryAction.onAction}
+                    >
+                        <img
+                            src={githubInvertocatWhite}
+                            alt=""
+                            className="size-5"
+                            aria-hidden="true"
+                        />
+                        {secondaryAction.label}
+                    </button>
+                ) : (
+                    <div
+                        className="btn btn-neutral invisible w-full"
                         aria-hidden="true"
-                    />
-                    {secondaryAction.label}
-                </button>
-            )}
+                    >
+                        <span className="size-5 shrink-0" />
+                        {secondaryAction.label}
+                    </div>
+                ))}
         </div>
     </div>
 );

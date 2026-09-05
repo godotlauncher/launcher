@@ -120,7 +120,6 @@ export const CreateProjectEditorOption: React.FC<
                     version={props.release.version}
                     mono={props.mono}
                     prerelease={props.release.prerelease}
-                    compact
                     labels={props.labels}
                 />
                 <ReleaseInstallProgressIndicator
@@ -165,7 +164,6 @@ export const CreateProjectEditorOption: React.FC<
                 version={props.release.version}
                 mono={props.mono}
                 prerelease={props.release.prerelease}
-                compact
                 labels={props.labels}
             />
             <span className="ml-auto flex shrink-0 items-center gap-1 text-xs text-base-content/60">
@@ -184,7 +182,6 @@ type EditorOptionLabelProps = {
     mono: boolean;
     prerelease: boolean;
     custom?: boolean;
-    compact?: boolean;
     labels: EditorOptionLabels;
 };
 
@@ -200,7 +197,6 @@ const EditorOptionLabel: React.FC<EditorOptionLabelProps> = ({
     mono,
     prerelease,
     custom,
-    compact = false,
     labels,
 }) => (
     <span className="min-w-0 flex-1">
@@ -214,24 +210,17 @@ const EditorOptionLabel: React.FC<EditorOptionLabelProps> = ({
                     {labels.dotNet}
                 </span>
             )}
-            {compact && prerelease && (
+            {prerelease && (
                 <span className="inline-flex shrink-0 items-center gap-1 text-xs text-base-content/60">
                     <FlaskConical size={11} aria-hidden="true" />
                     {labels.prerelease}
                 </span>
             )}
+            {custom && (
+                <span className="shrink-0 text-xs text-base-content/60">
+                    {labels.custom}
+                </span>
+            )}
         </span>
-        {!compact && (
-            <span className="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
-                {!mono && <span>{labels.standard}</span>}
-                {prerelease && (
-                    <span className="inline-flex items-center gap-1">
-                        <FlaskConical size={11} aria-hidden="true" />
-                        {labels.prerelease}
-                    </span>
-                )}
-                {custom && <span>{labels.custom}</span>}
-            </span>
-        )}
     </span>
 );

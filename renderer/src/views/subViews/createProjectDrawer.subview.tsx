@@ -28,6 +28,7 @@ import { useProjects } from '../../hooks/useProjects';
 import { useRelease } from '../../hooks/useRelease';
 import { useToolIntegrations } from '../../hooks/useToolIntegrations';
 import { appRoutePaths } from '../../routes';
+import { CreateProjectDestinationStatus } from './createProject/components/create-project-destination-status.component';
 import { CreateProjectEditorPicker } from './createProject/components/create-project-editor-picker.component';
 import {
     CreateProjectExistingRepositoryDialog,
@@ -83,6 +84,7 @@ import {
     shouldShowCreateProjectPublishedAlert,
     toCreateProjectPublicationOptions,
 } from './createProject/createProject.model';
+import { useCreateProjectDestination } from './createProject/use-create-project-destination.hook';
 
 /**
  * Renders the Create Project workflow.
@@ -394,6 +396,12 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
     const showFolderCreateIcon =
         !checkingOverwriteBasePath && overwriteBasePathMissing;
     const isOverwritePathEmpty = overwriteBasePath.trim().length === 0;
+    const destinationCheck = useCreateProjectDestination(
+        open && !isOverwritePathEmpty,
+        projectName,
+        overwriteSubmitPath,
+        t('destination.checkFailed'),
+    );
     const isOverwritePathChangedFromDefault =
         normalizeBasePathForJoin(overwriteBasePath, pathSeparator) !==
         normalizeBasePathForJoin(defaultOverwriteBasePath, pathSeparator);
@@ -953,6 +961,8 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
             return;
         }
 
+        if (!(await destinationCheck.checkNow())) return;
+
         const publicationTarget = publicationTargets.find(
             (target) =>
                 getPublicationTargetValue(target) === selectedPublicationTarget,
@@ -1358,6 +1368,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
     }, [open]);
 
     const closeDisabled =
+        destinationCheck.checkingNow ||
         creating ||
         checkingGitIdentity ||
         checkingProjectRepository ||
@@ -1418,7 +1429,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                     />
                 </Drawer.Header>
                 <form className="flex min-h-0 flex-1 flex-col">
-                    <Drawer.Body className="flex flex-col gap-5 pt-2">
+                    <Drawer.Body className="flex flex-col gap-4 pt-2">
                         {error && (
                             <div
                                 className="alert alert-error alert-soft"
@@ -1469,84 +1480,89 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                             onSelectProjectFolder={() =>
                                 void handleSelectProjectFolder()
                             }
+                            destinationStatus={
+                                <CreateProjectDestinationStatus
+                                    status={destinationCheck.status}
+                                    error={destinationCheck.error}
+                                    checkingLabel={t('destination.checking')}
+                                    availableLabel={t('destination.available')}
+                                />
+                            }
                         />
                         <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                            <div className="flex flex-col gap-5">
-                                <CreateProjectRendererSection
-                                    t={t}
-                                    renderer={renderer}
-                                    versionNumber={
-                                        editorSelection?.release
-                                            .version_number || 0
-                                    }
-                                    onRendererChange={setRenderer}
-                                />
-                                <CreateProjectToolOptionsSection
-                                    t={t}
-                                    loadingCodeEditors={loadingCodeEditors}
-                                    codeEditorLoadFailed={codeEditorLoadFailed}
-                                    codeEditorSettings={codeEditorSettings}
-                                    codeEditorId={codeEditorId}
-                                    onCodeEditorIdChange={setCodeEditorId}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-5">
-                                <CreateProjectSourceControlSection
-                                    t={t}
-                                    loading={
-                                        loadingTools || loadingGitLfsPolicy
-                                    }
-                                    gitAvailable={gitAvailable}
-                                    gitLfsAvailable={gitLfsAvailable}
-                                    gitLfsPolicy={gitLfsPolicy}
-                                    withGit={withGit}
-                                    withGitLfs={withGitLfs}
-                                    publishToGitHub={publishToGitHub}
-                                    publishingLocked={
-                                        publicationFailure !== null
-                                    }
-                                    onWithGitChange={setWithGit}
-                                    onWithGitLfsChange={setWithGitLfs}
-                                    onPublishToGitHubChange={
-                                        handlePublishToGitHubChange
-                                    }
-                                />
-                            </div>
+                            <CreateProjectRendererSection
+                                t={t}
+                                renderer={renderer}
+                                versionNumber={
+                                    editorSelection?.release.version_number || 0
+                                }
+                                onRendererChange={setRenderer}
+                            />
+                            <CreateProjectToolOptionsSection
+                                t={t}
+                                loadingCodeEditors={loadingCodeEditors}
+                                codeEditorLoadFailed={codeEditorLoadFailed}
+                                codeEditorSettings={codeEditorSettings}
+                                codeEditorId={codeEditorId}
+                                onCodeEditorIdChange={setCodeEditorId}
+                            />
                         </div>
-                        <CreateProjectGitHubPublishingSection
-                            t={t}
-                            enabled={publishToGitHub}
-                            loading={publicationTargetsLoading}
-                            targets={publicationTargets}
-                            targetFailure={publicationTargetFailure}
-                            selectedTargetValue={selectedPublicationTarget}
-                            repositoryName={repositoryName}
-                            availability={repositoryNameAvailability}
-                            repositoryNameError={
-                                publishToGitHub &&
-                                repositoryName.length > 0 &&
-                                !isGitHubRepositoryNameValid(repositoryName)
-                                    ? t('publishToGitHub.repositoryNameInvalid')
-                                    : undefined
-                            }
-                            disabled={!withGit || !gitAvailable}
-                            onTargetChange={setSelectedPublicationTarget}
-                            onRepositoryNameChange={(name) => {
-                                setRepositoryNameEdited(true);
-                                setRepositoryName(name);
-                            }}
-                            onOpenConnections={handleOpenConnections}
-                        />
+                        <div className="flex flex-col gap-3 border-t border-base-300 pt-3">
+                            <CreateProjectSourceControlSection
+                                t={t}
+                                loading={loadingTools || loadingGitLfsPolicy}
+                                gitAvailable={gitAvailable}
+                                gitLfsAvailable={gitLfsAvailable}
+                                gitLfsPolicy={gitLfsPolicy}
+                                withGit={withGit}
+                                withGitLfs={withGitLfs}
+                                publishToGitHub={publishToGitHub}
+                                publishingLocked={publicationFailure !== null}
+                                onWithGitChange={setWithGit}
+                                onWithGitLfsChange={setWithGitLfs}
+                                onPublishToGitHubChange={
+                                    handlePublishToGitHubChange
+                                }
+                            />
+                            <CreateProjectGitHubPublishingSection
+                                t={t}
+                                enabled={publishToGitHub}
+                                loading={publicationTargetsLoading}
+                                targets={publicationTargets}
+                                targetFailure={publicationTargetFailure}
+                                selectedTargetValue={selectedPublicationTarget}
+                                repositoryName={repositoryName}
+                                availability={repositoryNameAvailability}
+                                repositoryNameError={
+                                    publishToGitHub &&
+                                    repositoryName.length > 0 &&
+                                    !isGitHubRepositoryNameValid(repositoryName)
+                                        ? t(
+                                              'publishToGitHub.repositoryNameInvalid',
+                                          )
+                                        : undefined
+                                }
+                                disabled={!withGit || !gitAvailable}
+                                onTargetChange={setSelectedPublicationTarget}
+                                onRepositoryNameChange={(name) => {
+                                    setRepositoryNameEdited(true);
+                                    setRepositoryName(name);
+                                }}
+                                onOpenConnections={handleOpenConnections}
+                            />
+                        </div>
                     </Drawer.Body>
                     <Drawer.Footer className="justify-between">
                         <CreateProjectActions
                             editNow={editNow}
                             creating={
+                                destinationCheck.checkingNow ||
                                 creating ||
                                 checkingGitIdentity ||
                                 checkingProjectRepository
                             }
                             createDisabled={
+                                destinationCheck.status !== 'available' ||
                                 loadingTools ||
                                 loadingGitLfsPolicy ||
                                 editorSelection === null ||

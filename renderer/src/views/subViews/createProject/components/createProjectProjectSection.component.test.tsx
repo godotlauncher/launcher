@@ -35,7 +35,7 @@ describe('CreateProjectProjectSection', () => {
         );
 
         expect(html).toContain('data-testid="editor-picker"');
-        expect(html).toContain('sm:w-1/3');
+        expect(html).toContain('sm:grid-cols-2');
         expect(html.indexOf('inputProjectName')).toBeLessThan(
             html.indexOf('data-testid="editor-picker"'),
         );

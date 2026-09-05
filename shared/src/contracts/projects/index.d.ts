@@ -99,6 +99,10 @@ export type CreateProjectParentRepositoryConsent = {
     root: string;
 };
 
+export type CreateProjectDestinationInspection =
+    | { status: 'available' }
+    | { status: 'blocked'; error: string };
+
 export type CreateProjectPublicationTarget = {
     providerId: string;
     connectionId: string;

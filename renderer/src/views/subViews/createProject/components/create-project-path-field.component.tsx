@@ -28,7 +28,6 @@ export const CreateProjectPathField: React.FC<CreateProjectPathFieldProps> = ({
     overwriteDisplayPath,
     overwritePathSuffixDisplay,
     showUseDefaultPathAction,
-    showFolderCreateIcon,
     onOverwriteBasePathChange,
     onUseDefaultPath,
     onSelectProjectFolder,
@@ -37,6 +36,7 @@ export const CreateProjectPathField: React.FC<CreateProjectPathFieldProps> = ({
         <PathField
             id="inputProjectPath"
             testId="inputProjectPath"
+            label={t('project.overwritePath')}
             ariaLabel={t('project.overwritePath')}
             value={overwriteBasePath}
             title={overwriteDisplayPath}
@@ -45,16 +45,7 @@ export const CreateProjectPathField: React.FC<CreateProjectPathFieldProps> = ({
             onSelect={onSelectProjectFolder}
             browseKind="directory"
             browseTestId="btnSelectProjectFolder"
-            browseIcon={
-                <Folder
-                    className={
-                        showFolderCreateIcon
-                            ? 'size-4 stroke-primary'
-                            : 'size-4'
-                    }
-                    aria-hidden="true"
-                />
-            }
+            browseIcon={<Folder className="size-4" aria-hidden="true" />}
             browseLabel={t('project.selectFolderTooltip')}
             inputAction={
                 showUseDefaultPathAction ? (

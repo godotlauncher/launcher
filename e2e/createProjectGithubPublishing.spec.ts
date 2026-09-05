@@ -164,26 +164,11 @@ test('reveals connected private repository fields and preserves a manual name', 
         await fs.mkdir(path.dirname(output), { recursive: true });
         await mainPage.screenshot({ path: output });
 
-        await mainPage
-            .getByTestId('checkboxOverwriteProjectPath')
-            .check();
         await expect(
             mainPage.getByTestId('btnSelectProjectFolder'),
         ).toBeVisible();
-        const pathInputShell = mainPage
-            .getByTestId('inputProjectPath')
-            .locator('..');
         const browseButton = mainPage.getByTestId(
             'btnSelectProjectFolder',
-        );
-        expect(
-            await browseButton.evaluate(
-                (element) => getComputedStyle(element).borderColor,
-            ),
-        ).toBe(
-            await pathInputShell.evaluate(
-                (element) => getComputedStyle(element).borderColor,
-            ),
         );
         await mainPage.screenshot({
             path: path.resolve(
@@ -200,9 +185,6 @@ test('reveals connected private repository fields and preserves a manual name', 
                 'create-project-path-field-hover.png',
             ),
         });
-        await mainPage
-            .getByTestId('checkboxOverwriteProjectPath')
-            .uncheck();
     }
 
     await repositoryName.fill('hand-picked-name');
@@ -245,6 +227,33 @@ test('reveals connected private repository fields and preserves a manual name', 
         ),
     ).toBe('DIALOG');
     await mainPage.keyboard.press('Escape');
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
+test('keeps local and disconnected publishing layouts within the drawer', async () => {
+    await stubCreateProjectPublicationTargets(electronApp, {
+        success: false,
+        reason: 'connection-required',
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('btnProjectCreate').click();
+    const body = mainPage.locator('.drawer-panel form > div.overflow-y-auto');
+    await expect.poll(() => body.evaluate(
+        (element) => element.scrollHeight <= element.clientHeight + 1,
+    )).toBe(true);
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).check();
+    await expect(mainPage.getByRole('button', { name: 'Open Connections' })).toBeVisible();
+    await expect.poll(() => body.evaluate(
+        (element) => element.scrollHeight <= element.clientHeight + 1,
+    )).toBe(true);
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
+    if (process.env.GODOT_LAUNCHER_DESIGN_QA === '1') {
+        await mainPage.screenshot({ path: path.resolve(
+            process.cwd(), '.internal-docs', 'create-project-disconnected-layout.png',
+        ) });
+    }
+    await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).uncheck();
+    await expect(mainPage.getByRole('button', { name: 'Open Connections' })).toHaveCount(0);
     await mainPage.getByTestId('btnCloseCreateProject').click();
 });
 

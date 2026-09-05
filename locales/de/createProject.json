@@ -9,6 +9,11 @@
         "failed": "Das Projekt konnte nicht erstellt werden. Überprüfen Sie das Formular und versuchen Sie es erneut.",
         "launchFailed": "Das Projekt wurde erstellt, aber der Editor konnte nicht gestartet werden."
     },
+    "destination": {
+        "checking": "Projektstandort wird geprüft...",
+        "available": "Projektstandort verfügbar",
+        "checkFailed": "Der Projektstandort konnte nicht geprüft werden. Überprüfen Sie den Pfad und versuchen Sie es erneut."
+    },
     "project": {
         "title": "Projekt",
         "dotNetBadge": ".NET",
