@@ -29,7 +29,7 @@ import type { useCreateProjectIntegrations } from './use-create-project-integrat
 import { useCreateProjectPublication } from './use-create-project-publication.hook';
 
 /**
- * Coordinates one captured Create Project submission and its recovery paths.
+ * Coordinates creation and recovery, retaining successful progress through drawer closing.
  *
  * @param open - Whether the drawer session is open.
  * @param onOpenChange - Requests a change in drawer visibility.
@@ -255,10 +255,9 @@ export function useCreateProjectWorkflow(
                     );
                     return;
                 }
-            } else {
-                setProgressPhase('complete');
             }
-            finishCreateProjectProgress();
+            // Keep the form covered during the closing transition; opening resets it.
+            setProgressPhase('complete');
             onOpenChange(false);
             if (
                 result.publication?.status === 'published' &&
