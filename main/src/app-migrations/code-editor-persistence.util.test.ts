@@ -37,14 +37,12 @@ describe('code editor persistence migrations', () => {
         vi.clearAllMocks();
     });
 
-    it('canonicalizes missing project selections and retains the mirror', () => {
+    it('canonicalises missing project selections without the mirror', () => {
         expect(migrateStoredProjectRecord({ withVSCode: true })).toEqual({
             codeEditorId: 'vscode',
-            withVSCode: true,
         });
         expect(migrateStoredProjectRecord({ withVSCode: false })).toEqual({
             codeEditorId: null,
-            withVSCode: false,
         });
     });
 
@@ -54,7 +52,7 @@ describe('code editor persistence migrations', () => {
                 codeEditorId: null,
                 withVSCode: true,
             }),
-        ).toEqual({ codeEditorId: null, withVSCode: false });
+        ).toEqual({ codeEditorId: null });
     });
 
     it('copies a pre-v4 legacy path and removes the old field', () => {
@@ -92,7 +90,7 @@ describe('code editor persistence migrations', () => {
         });
     });
 
-    it('migrates project files and keeps legacy fields on disk', async () => {
+    it('migrates project files and removes legacy fields from disk', async () => {
         writeFileSync(
             projectsPath,
             JSON.stringify([{ path: '/project', withVSCode: true }]),
@@ -104,7 +102,6 @@ describe('code editor persistence migrations', () => {
             {
                 path: '/project',
                 codeEditorId: 'vscode',
-                withVSCode: true,
             },
         ]);
     });
@@ -116,6 +113,54 @@ describe('code editor persistence migrations', () => {
         await expect(migrateCodeEditorProjects()).rejects.toThrow();
         expect(readFileSync(projectsPath, 'utf-8')).toBe(malformed);
     });
+
+    it('preserves selections, unrelated fields and order across repeated runs', async () => {
+        const records = [
+            { path: '/z', codeEditorId: 'vscodium', withVSCode: true },
+            { path: '/a', codeEditorId: 'vscode', withVSCode: false },
+            { path: '/b', codeEditorId: null, withVSCode: true },
+            { path: '/c', withVSCode: false },
+            {
+                path: '/d',
+                last_opened: '2026-09-01T10:00:00.000Z',
+                extra: { keep: true },
+            },
+        ];
+        writeFileSync(projectsPath, JSON.stringify(records));
+
+        await migrateCodeEditorProjects();
+        const first = readFileSync(projectsPath, 'utf-8');
+        await migrateCodeEditorProjects();
+
+        expect(readFileSync(projectsPath, 'utf-8')).toBe(first);
+        expect(JSON.parse(first)).toEqual([
+            { path: '/z', codeEditorId: 'vscodium' },
+            { path: '/a', codeEditorId: 'vscode' },
+            { path: '/b', codeEditorId: null },
+            { path: '/c', codeEditorId: null },
+            {
+                path: '/d',
+                codeEditorId: null,
+                last_opened: '2026-09-01T10:00:00.000Z',
+                extra: { keep: true },
+            },
+        ]);
+    });
+
+    it('leaves a missing project file absent', async () => {
+        await expect(migrateCodeEditorProjects()).resolves.toBeUndefined();
+        expect(() => readFileSync(projectsPath)).toThrow();
+    });
+
+    it.each([{}, [null], [{ withVSCode: true }, 42]])(
+        'rejects an invalid project list without a partial rewrite: %j',
+        async (value) => {
+            const original = JSON.stringify(value);
+            writeFileSync(projectsPath, original);
+            await expect(migrateCodeEditorProjects()).rejects.toThrow();
+            expect(readFileSync(projectsPath, 'utf-8')).toBe(original);
+        },
+    );
 
     it('migrates preferences independently from project data', async () => {
         writeFileSync(

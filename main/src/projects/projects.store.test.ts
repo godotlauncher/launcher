@@ -73,6 +73,56 @@ describe('ProjectsStore', () => {
         expect(projects[1].last_opened).toBeInstanceOf(Date);
     });
 
+    it.each(['vscode', 'vscodium', null] as const)(
+        'preserves canonical %s through legacy reads and subsequent writes',
+        async (codeEditorId) => {
+            await fs.writeFile(
+                projectsPath,
+                JSON.stringify([
+                    {
+                        ...createProject('/projects/game', null),
+                        codeEditorId,
+                        withVSCode: codeEditorId !== 'vscode',
+                    },
+                ]),
+            );
+
+            const [project] = await store.list();
+            expect(project.codeEditorId).toBe(codeEditorId);
+            await store.put(project);
+
+            const [stored] = JSON.parse(
+                await fs.readFile(projectsPath, 'utf-8'),
+            );
+            expect(stored.codeEditorId).toBe(codeEditorId);
+            expect(stored).not.toHaveProperty('withVSCode');
+        },
+    );
+
+    it.each([true, false, undefined])(
+        'rewrites legacy %s without the flag',
+        async (withVSCode) => {
+            await fs.writeFile(
+                projectsPath,
+                JSON.stringify([
+                    {
+                        ...createProject('/projects/legacy', null),
+                        codeEditorId: undefined,
+                        withVSCode,
+                    },
+                ]),
+            );
+
+            await store.replace(await store.list());
+
+            const [stored] = JSON.parse(
+                await fs.readFile(projectsPath, 'utf-8'),
+            );
+            expect(stored.codeEditorId).toBe(withVSCode ? 'vscode' : null);
+            expect(stored).not.toHaveProperty('withVSCode');
+        },
+    );
+
     it('replaces duplicate paths and removes exact paths', async () => {
         await store.put(createProject('/projects/game', null));
         await store.put({

@@ -37,18 +37,24 @@ async function writeJsonIfChanged(
     await fs.writeFile(filePath, JSON.stringify(migrated, null, 4), 'utf-8');
 }
 
+/**
+ * Converts legacy editor input to the canonical selection without its mirror.
+ *
+ * @param project - Stored project record to migrate.
+ * @returns The canonical record with unrelated fields preserved.
+ */
 export function migrateStoredProjectRecord(project: JsonRecord): JsonRecord {
+    const { withVSCode, ...canonicalProject } = project;
     const codeEditorId =
         project.codeEditorId !== undefined
             ? project.codeEditorId
-            : project.withVSCode === true
+            : withVSCode === true
               ? 'vscode'
               : null;
 
     return {
-        ...project,
+        ...canonicalProject,
         codeEditorId,
-        withVSCode: codeEditorId === 'vscode',
     };
 }
 

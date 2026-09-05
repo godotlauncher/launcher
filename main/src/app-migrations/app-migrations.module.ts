@@ -5,6 +5,7 @@ import { ClearReleaseCacheMigration } from './migrations/clear-release-cache.mig
 import { MigrateCodeEditorPreferencesMigration } from './migrations/code-editor-preferences.migration.js';
 import { MigrateCodeEditorProjectsMigration } from './migrations/code-editor-projects.migration.js';
 import { RemoveLegacyInstalledToolsPreferenceMigration } from './migrations/remove-legacy-installed-tools-preference.migration.js';
+import { RemoveLegacyVSCodeFlagMigration } from './migrations/remove-legacy-vscode-flag.migration.js';
 import { RemoveWindowsSymlinkNoticePreferenceMigration } from './migrations/remove-windows-symlink-notice-preference.migration.js';
 
 @Module({
@@ -19,6 +20,7 @@ import { RemoveWindowsSymlinkNoticePreferenceMigration } from './migrations/remo
         MigrateCodeEditorProjectsMigration,
         RemoveLegacyInstalledToolsPreferenceMigration,
         RemoveWindowsSymlinkNoticePreferenceMigration,
+        RemoveLegacyVSCodeFlagMigration,
     ],
 })
 export class AppMigrationsModule {}

@@ -4,7 +4,7 @@ import { JsonFileStore } from '../json-store/json-file.store.js';
 import type { JsonStoreWriteOptions } from '../json-store/json-store.types.js';
 import type { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
 
-/** Describes the on-disk project shape retained for compatibility. */
+/** Describes stored projects, including input from older profiles. */
 export type StoredProjectDetails = Omit<
     ProjectDetails,
     'added_at' | 'codeEditorId' | 'last_opened'
@@ -50,10 +50,10 @@ export function fromStoredProject(
 }
 
 /**
- * Converts one project into the existing on-disk shape.
+ * Converts one project into the canonical on-disk shape.
  *
  * @param project - Application project to convert.
- * @returns The compatible stored project.
+ * @returns The canonical stored project.
  */
 export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
     return {
@@ -61,7 +61,6 @@ export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
         pinned_order: project.pinned
             ? normalizePinnedOrder(project.pinned_order)
             : undefined,
-        withVSCode: project.codeEditorId === 'vscode',
     };
 }
 
