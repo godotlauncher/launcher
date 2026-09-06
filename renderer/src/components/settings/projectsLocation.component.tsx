@@ -1,74 +1,23 @@
-import { Folder } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { appBridge } from '../../bridge.ts';
-import { usePreferences } from '../../hooks/usePreferences';
-import { WaitingForDialogOverlay } from '../waitingForDialogOverlay.component';
+import { SettingsLocationSelector } from './settings-location-selector.component';
 
+/** Renders the projects location preference. */
 export const ProjectsLocation: React.FC = () => {
     const { t } = useTranslation('settings');
-    const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-    const { preferences, savePreferences } = usePreferences();
-
-    const selectProjectDir = async (currentPath: string) => {
-        setDialogOpen(true);
-        const result = await appBridge.openDirectoryDialog(
-            currentPath,
-            'Select Project Directory',
-        );
-        if (!result.canceled) {
-            if (preferences) {
-                await savePreferences({
-                    ...preferences,
-                    projects_location: result.filePaths[0],
-                });
-            }
-        }
-        setDialogOpen(false);
-    };
 
     return (
-        <>
-            {dialogOpen && (
-                <WaitingForDialogOverlay
-                    message={t('behavior.projectsLocation.waitingForDialog')}
-                />
-            )}
-            <div className="flex flex-col gap-4 ">
-                <div className="flex flex-col">
-                    <h1
-                        data-testid="projectLocationHeader"
-                        className="font-bold"
-                    >
-                        {t('behavior.projectsLocation.title')}
-                    </h1>
-                    <p
-                        data-testid="projectLocationSubHeader"
-                        className="text-sm"
-                    >
-                        {t('behavior.projectsLocation.description')}
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    data-testid="btnSelectProjectDir"
-                    className="flex flex-row p-2 gap-2 bg-base-content/10 rounded-md items-center"
-                    onClick={() =>
-                        selectProjectDir(preferences?.projects_location || '')
-                    }
-                >
-                    <div className="flex flex-col flex-1 items-start">
-                        <div className="flex flex-row  items-center gap-2 text-sm text-base-content/50">
-                            <Folder className="fill-base-content/50 self-start stroke-none" />
-                            {t('behavior.projectsLocation.defaultLocation')}
-                        </div>
-                        <div className="pl-0">
-                            {' '}
-                            {preferences?.projects_location}{' '}
-                        </div>
-                    </div>
-                </button>
-            </div>
-        </>
+        <SettingsLocationSelector
+            preferenceKey="projects_location"
+            title={t('behavior.projectsLocation.title')}
+            description={t('behavior.projectsLocation.description')}
+            fieldLabel={t('behavior.projectsLocation.defaultLocation')}
+            browseLabel={t('codeEditors.drawer.path.browse')}
+            waitingMessage={t('behavior.projectsLocation.waitingForDialog')}
+            dialogTitle="Select Project Directory"
+            headerTestId="projectLocationHeader"
+            descriptionTestId="projectLocationSubHeader"
+            pathTestId="projectLocationPath"
+            browseTestId="btnSelectProjectDir"
+        />
     );
 };

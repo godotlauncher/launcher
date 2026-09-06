@@ -77,6 +77,24 @@ export function configuration(
         isPackaged: options.isPackaged ?? false,
         appPath: options.appPath ?? process.cwd(),
     });
+    const e2eFixtures =
+        isDev && (envConfig.GODOT_LAUNCHER_E2E_FIXTURES ?? false);
+    const e2eHomeDir = envConfig.GODOT_LAUNCHER_E2E_HOME_DIR?.trim();
+
+    if (e2eFixtures && !e2eHomeDir) {
+        throw new Error(
+            'GODOT_LAUNCHER_E2E_HOME_DIR is required when E2E fixtures are enabled.',
+        );
+    }
+    const appPathModule =
+        (options.platform ?? os.platform()) === 'win32'
+            ? path.win32
+            : path.posix;
+    if (e2eFixtures && !appPathModule.isAbsolute(e2eHomeDir ?? '')) {
+        throw new Error(
+            'GODOT_LAUNCHER_E2E_HOME_DIR must be an absolute path.',
+        );
+    }
 
     return AppConfigSchema.parse({
         appName: 'Godot Launcher',
@@ -90,13 +108,13 @@ export function configuration(
             (cliConfig.disableDevMenu ?? false),
         startHidden: cliConfig.startHidden ?? false,
         // Fixture behaviour is only available to unpackaged development runs.
-        e2eFixtures: isDev && (envConfig.GODOT_LAUNCHER_E2E_FIXTURES ?? false),
+        e2eFixtures,
         useLocalGitHubBroker:
             isDev &&
             (envConfig.GODOT_LAUNCHER_USE_LOCAL_GITHUB_BROKER ?? false),
         paths: resolveAppPaths({
             platform: options.platform,
-            homedir: options.homedir,
+            homedir: e2eFixtures ? e2eHomeDir : options.homedir,
         }),
     });
 }

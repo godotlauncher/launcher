@@ -28,7 +28,7 @@ test.describe.configure({ mode: 'serial' });
 test.beforeAll(async () => {
     fixtureHome = await createFixtureHome();
     electronApp = await _electron.launch({
-        args: ['.'],
+        args: ['.', `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`],
         env: createIsolatedLaunchEnvironment(fixtureHome),
     });
     mainPage = await getMainWindow(electronApp);
@@ -492,14 +492,6 @@ async function readCreateProjectCalls(): Promise<unknown[][]> {
 function createIsolatedLaunchEnvironment(
     homeDir: string,
 ): Record<string, string> {
-    const overrideHomeScript = path.resolve(
-        process.cwd(),
-        'e2e',
-        'support',
-        'overrideHome.cjs',
-    );
-    const existingNodeOptions = process.env.NODE_OPTIONS?.trim();
-    const requireOverrideOption = `--require "${overrideHomeScript}"`;
     const environment: Record<string, string> = {
         ...Object.fromEntries(
             Object.entries(process.env).filter(
@@ -508,12 +500,15 @@ function createIsolatedLaunchEnvironment(
             ),
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
+        HOME: homeDir,
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
+        USERPROFILE: homeDir,
+        XDG_CACHE_HOME: path.join(homeDir, '.cache'),
+        XDG_CONFIG_HOME: path.join(homeDir, '.config'),
+        XDG_DATA_HOME: path.join(homeDir, '.local', 'share'),
+        XDG_STATE_HOME: path.join(homeDir, '.local', 'state'),
         GODOT_LAUNCHER_E2E_FIXTURES: '1',
         GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
-        NODE_OPTIONS: existingNodeOptions
-            ? `${existingNodeOptions} ${requireOverrideOption}`
-            : requireOverrideOption,
     };
     delete environment.ELECTRON_RUN_AS_NODE;
     return environment;

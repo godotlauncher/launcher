@@ -64,4 +64,25 @@ describe('shellFolders dialog helpers', () => {
             properties: ['openDirectory', 'createDirectory', 'promptToCreate'],
         });
     });
+
+    it('falls back to an existing parent when the preferred folder cannot be created', async () => {
+        const preferredPath = path.resolve('/Users/docs/Godot/Projects');
+        const fallbackPath = path.resolve('/Users');
+        fsMocks.existsSync.mockImplementation(
+            (candidate) => candidate === fallbackPath,
+        );
+        fsMocks.mkdir.mockRejectedValueOnce(new Error('permission denied'));
+
+        await openDirectoryDialog(preferredPath, 'Select Folder');
+
+        expect(fsMocks.mkdir).toHaveBeenCalledWith(preferredPath, {
+            recursive: true,
+        });
+        expect(dialog.showOpenDialog).toHaveBeenCalledWith(mainWindowMock, {
+            defaultPath: fallbackPath,
+            filters: [],
+            title: 'Select Folder',
+            properties: ['openDirectory', 'createDirectory', 'promptToCreate'],
+        });
+    });
 });

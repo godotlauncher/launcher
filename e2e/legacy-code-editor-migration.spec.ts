@@ -35,7 +35,13 @@ test('upgrades a legacy VS Code selection without retaining its flag', async () 
     const env = {
         ...process.env,
         APPDATA: path.join(fixtureHome, 'AppData', 'Roaming'),
+        HOME: fixtureHome,
         LOCALAPPDATA: path.join(fixtureHome, 'AppData', 'Local'),
+        USERPROFILE: fixtureHome,
+        XDG_CACHE_HOME: path.join(fixtureHome, '.cache'),
+        XDG_CONFIG_HOME: path.join(fixtureHome, '.config'),
+        XDG_DATA_HOME: path.join(fixtureHome, '.local', 'share'),
+        XDG_STATE_HOME: path.join(fixtureHome, '.local', 'state'),
         GODOT_LAUNCHER_E2E_FIXTURES: '1',
         GODOT_LAUNCHER_E2E_HOME_DIR: fixtureHome,
     };

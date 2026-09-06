@@ -13,7 +13,10 @@ test.describe.configure({ mode: 'serial' });
 
 test.beforeAll(async () => {
     fixtureHome = await createFixtureHome();
-    electronApp = await _electron.launch({ args: ['.'], env: createIsolatedLaunchEnvironment(fixtureHome) });
+    electronApp = await _electron.launch({
+        args: ['.', `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`],
+        env: createIsolatedLaunchEnvironment(fixtureHome),
+    });
     mainPage = await getMainWindow(electronApp);
     await setAppLanguage(mainPage, 'English');
     await capturePreferences();
@@ -84,7 +87,10 @@ test('switches accessibly, preserves search, and remembers the view after restar
     await expect(list).toHaveAttribute('aria-selected', 'true');
 
     await electronApp.close();
-    electronApp = await _electron.launch({ args: ['.'], env: createIsolatedLaunchEnvironment(fixtureHome) });
+    electronApp = await _electron.launch({
+        args: ['.', `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`],
+        env: createIsolatedLaunchEnvironment(fixtureHome),
+    });
     mainPage = await getMainWindow(electronApp);
     await capturePreferences();
     await prepareAppWithStubbedData(mainPage, electronApp);
@@ -290,14 +296,6 @@ async function readLaunches() {
  * @param homeDir - Temporary home for this test.
  */
 function createIsolatedLaunchEnvironment(homeDir: string) {
-    const overrideHomeScript = path.resolve(
-        process.cwd(),
-        'e2e',
-        'support',
-        'overrideHome.cjs',
-    );
-    const existingNodeOptions = process.env.NODE_OPTIONS?.trim();
-    const requireOverrideOption = `--require "${overrideHomeScript}"`;
     const launchEnv: Record<string, string> = {
         ...Object.fromEntries(
             Object.entries(process.env).filter(
@@ -306,12 +304,15 @@ function createIsolatedLaunchEnvironment(homeDir: string) {
             ),
         ),
         APPDATA: path.join(homeDir, 'AppData', 'Roaming'),
+        HOME: homeDir,
         LOCALAPPDATA: path.join(homeDir, 'AppData', 'Local'),
+        USERPROFILE: homeDir,
+        XDG_CACHE_HOME: path.join(homeDir, '.cache'),
+        XDG_CONFIG_HOME: path.join(homeDir, '.config'),
+        XDG_DATA_HOME: path.join(homeDir, '.local', 'share'),
+        XDG_STATE_HOME: path.join(homeDir, '.local', 'state'),
         GODOT_LAUNCHER_E2E_FIXTURES: '1',
         GODOT_LAUNCHER_E2E_HOME_DIR: homeDir,
-        NODE_OPTIONS: existingNodeOptions
-            ? `${existingNodeOptions} ${requireOverrideOption}`
-            : requireOverrideOption,
     };
     delete launchEnv.ELECTRON_RUN_AS_NODE;
     return launchEnv;
