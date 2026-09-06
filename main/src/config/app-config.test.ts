@@ -18,6 +18,7 @@ describe('configuration', () => {
             ),
             env: {
                 GODOT_LAUNCHER_E2E_FIXTURES: '1',
+                GODOT_LAUNCHER_E2E_HOME_DIR: '/tmp/launcher-e2e',
             },
             isPackaged: false,
             appPath: '/workspace/launcher',
@@ -60,19 +61,115 @@ describe('configuration', () => {
     it('ignores E2E fixtures in a packaged runtime', () => {
         const development = configuration({
             args: argv(),
-            env: { GODOT_LAUNCHER_E2E_FIXTURES: '1' },
+            env: {
+                GODOT_LAUNCHER_E2E_FIXTURES: '1',
+                GODOT_LAUNCHER_E2E_HOME_DIR: '/tmp/launcher-e2e',
+            },
             isPackaged: false,
             appPath: '/workspace/launcher',
         });
         const packaged = configuration({
             args: argv(),
-            env: { GODOT_LAUNCHER_E2E_FIXTURES: '1' },
+            env: {
+                GODOT_LAUNCHER_E2E_FIXTURES: '1',
+                GODOT_LAUNCHER_E2E_HOME_DIR: '/tmp/launcher-e2e',
+            },
             isPackaged: true,
             appPath: '/opt/launcher/app.asar',
         });
 
         expect(development.e2eFixtures).toBe(true);
         expect(packaged.e2eFixtures).toBe(false);
+    });
+
+    it('isolates all development E2E paths under the fixture home', () => {
+        const fixtureHome = '/tmp/gd-launcher-e2e-run';
+        const config = configuration({
+            args: argv(),
+            env: {
+                GODOT_LAUNCHER_E2E_FIXTURES: '1',
+                GODOT_LAUNCHER_E2E_HOME_DIR: fixtureHome,
+            },
+            isPackaged: false,
+            appPath: '/workspace/launcher',
+            platform: 'linux',
+            homedir: '/home/real-user',
+        });
+
+        expect(config.paths).toEqual(
+            resolveAppPaths({
+                platform: 'linux',
+                homedir: fixtureHome,
+            }),
+        );
+    });
+
+    it('fails closed when development E2E fixtures have no isolated home', () => {
+        expect(() =>
+            configuration({
+                args: argv(),
+                env: { GODOT_LAUNCHER_E2E_FIXTURES: '1' },
+                isPackaged: false,
+                appPath: '/workspace/launcher',
+            }),
+        ).toThrow('GODOT_LAUNCHER_E2E_HOME_DIR is required');
+    });
+
+    it('fails closed when the development E2E home is relative', () => {
+        expect(() =>
+            configuration({
+                args: argv(),
+                env: {
+                    GODOT_LAUNCHER_E2E_FIXTURES: '1',
+                    GODOT_LAUNCHER_E2E_HOME_DIR: '.debug/e2e/run',
+                },
+                isPackaged: false,
+                appPath: '/workspace/launcher',
+                platform: 'linux',
+            }),
+        ).toThrow('GODOT_LAUNCHER_E2E_HOME_DIR must be an absolute path');
+    });
+
+    it('ignores the E2E home outside fixture mode', () => {
+        const config = configuration({
+            args: argv(),
+            env: {
+                GODOT_LAUNCHER_E2E_HOME_DIR: '/tmp/launcher-e2e',
+            },
+            isPackaged: false,
+            appPath: '/workspace/launcher',
+            platform: 'linux',
+            homedir: '/home/real-user',
+        });
+
+        expect(config.paths).toEqual(
+            resolveAppPaths({
+                platform: 'linux',
+                homedir: '/home/real-user',
+            }),
+        );
+    });
+
+    it('ignores an invalid E2E home in packaged mode', () => {
+        const config = configuration({
+            args: argv(),
+            env: {
+                GODOT_LAUNCHER_E2E_FIXTURES: '1',
+                GODOT_LAUNCHER_E2E_HOME_DIR: '   ',
+            },
+            isPackaged: true,
+            appPath: '/opt/launcher/app.asar',
+            platform: 'linux',
+            homedir: '/home/real-user',
+        });
+
+        expect(config.e2eFixtures).toBe(false);
+        expect(config.paths).toEqual(
+            resolveAppPaths({
+                platform: 'linux',
+                homedir: '/home/real-user',
+            }),
+        );
     });
 
     it('keeps cli true when env explicitly parses false', () => {

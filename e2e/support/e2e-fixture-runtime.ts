@@ -27,6 +27,7 @@ import type {
     UserPreferences,
 } from '@shared/contracts';
 import {
+    createFilesystemPreferences,
     createPreferences,
     DEFAULT_TOOL_INTEGRATIONS,
     SAMPLE_AVAILABLE_PRERELEASES,
@@ -296,7 +297,10 @@ export async function seedLauncherData(homeDir: string): Promise<void> {
             SAMPLE_AVAILABLE_PRERELEASES,
         ),
     );
-    await writeJson(path.join(configDir, 'prefs.json'), SAMPLE_PREFS);
+    await writeJson(
+        path.join(configDir, 'prefs.json'),
+        createFilesystemPreferences(homeDir),
+    );
 }
 
 /**

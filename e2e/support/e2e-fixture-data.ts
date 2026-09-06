@@ -1,4 +1,5 @@
 // Shared deterministic data for ordinary Electron E2E fixtures.
+import path from 'node:path';
 import type {
     CodeEditorIntegrationSettings,
     GitLfsTrackingPolicyDescriptor,
@@ -257,6 +258,7 @@ export const SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE: ReleaseSummary = {
 export const SAMPLE_AVAILABLE_RELEASES_WITH_EDITOR_RESOLUTION: ReleaseSummary[] =
     [SAMPLE_EDITOR_RESOLUTION_AVAILABLE_RELEASE, ...SAMPLE_AVAILABLE_RELEASES];
 
+/** Realistic fictional preferences for in-memory presentation fixtures. */
 export const SAMPLE_PREFS: UserPreferences = {
     prefs_version: 3,
     install_location: '/Users/docs/Godot/Editors',
@@ -272,6 +274,23 @@ export const SAMPLE_PREFS: UserPreferences = {
     windows_enable_symlinks: true,
     language: 'system',
 };
+
+/**
+ * Creates preferences whose filesystem locations stay inside one E2E home.
+ *
+ * @param homeDir - Isolated home directory used by the Electron test run.
+ * @returns Preferences suitable for tests that exercise real filesystem handlers.
+ */
+export function createFilesystemPreferences(
+    homeDir: string,
+): UserPreferences {
+    return {
+        ...SAMPLE_PREFS,
+        install_location: path.join(homeDir, 'Godot', 'Editors'),
+        config_location: path.join(homeDir, '.gd-launcher'),
+        projects_location: path.join(homeDir, 'Godot', 'Projects'),
+    };
+}
 
 /**
  * Creates user preferences by applying fixture overrides to the defaults.

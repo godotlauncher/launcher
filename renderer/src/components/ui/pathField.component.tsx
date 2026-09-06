@@ -26,6 +26,7 @@ export type PathFieldProps = {
     placeholder?: string;
     error?: string;
     disabled?: boolean;
+    readOnly?: boolean;
     browseDisabled?: boolean;
     compact?: boolean;
     regularText?: boolean;
@@ -62,6 +63,7 @@ export const PathField: React.FC<PathFieldProps> = ({
     placeholder,
     error,
     disabled = false,
+    readOnly = false,
     browseDisabled = false,
     compact = false,
     regularText = false,
@@ -109,6 +111,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         aria-label={ariaLabel}
                         title={title}
                         disabled={disabled}
+                        readOnly={readOnly}
                     />
                     {suffix && (
                         <span

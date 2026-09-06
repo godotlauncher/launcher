@@ -50,7 +50,19 @@ export async function openDirectoryDialog(
     defaultPath = path.resolve(defaultPath + path.sep);
 
     if (!fs.existsSync(defaultPath)) {
-        await fs.promises.mkdir(defaultPath, { recursive: true });
+        try {
+            await fs.promises.mkdir(defaultPath, { recursive: true });
+        } catch {
+            let existingParent = path.dirname(defaultPath);
+            while (!fs.existsSync(existingParent)) {
+                const parentPath = path.dirname(existingParent);
+                if (parentPath === existingParent) {
+                    break;
+                }
+                existingParent = parentPath;
+            }
+            defaultPath = existingParent;
+        }
     }
 
     return await dialog.showOpenDialog(getMainWindow(), {

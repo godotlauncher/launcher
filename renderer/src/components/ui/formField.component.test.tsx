@@ -149,6 +149,22 @@ describe('UI form primitives', () => {
         expect(html.match(/disabled=""/g)).toHaveLength(1);
     });
 
+    it('keeps a read-only path focusable and selectable', () => {
+        const html = renderToStaticMarkup(
+            <PathField
+                id="savedPath"
+                label="Saved path"
+                value="/projects"
+                onChange={vi.fn()}
+                onSelect={vi.fn()}
+                readOnly
+            />,
+        );
+
+        expect(html).toContain('readOnly=""');
+        expect(html).not.toContain('disabled=""');
+    });
+
     it('renders search field with an internal clear action', () => {
         const html = renderToStaticMarkup(
             <SearchField
