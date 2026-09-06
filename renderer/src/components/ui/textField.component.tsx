@@ -14,13 +14,21 @@ export type TextFieldProps = {
     value: string;
     onChange: (value: string) => void;
     onBlur?: () => void;
+    onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
     placeholder?: string;
     error?: string;
     disabled?: boolean;
+    type?: 'text' | 'url';
     compact?: boolean;
     regularText?: boolean;
 };
 
+/**
+ * Renders a controlled text-like input using the shared field presentation.
+ *
+ * @param props - Input content, state, interaction callbacks, and presentation.
+ * @returns A reusable text or URL form field.
+ */
 export const TextField: React.FC<TextFieldProps> = ({
     id,
     label,
@@ -33,11 +41,13 @@ export const TextField: React.FC<TextFieldProps> = ({
     value,
     onChange,
     onBlur,
+    onKeyDown,
     placeholder,
     error,
     disabled = false,
-    compact = false,
-    regularText = false,
+    type = 'text',
+    compact = true,
+    regularText = true,
 }) => (
     <FormField
         id={id}
@@ -52,7 +62,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             ref={inputRef}
             id={id}
             data-testid={testId}
-            type="text"
+            type={type}
             className={clsx('input input-bordered w-full pr-8', {
                 'input-sm': compact,
                 'text-sm': regularText,
@@ -61,6 +71,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             value={value}
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
+            onKeyDown={onKeyDown}
             placeholder={placeholder}
             aria-label={ariaLabel}
             title={title}

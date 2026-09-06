@@ -217,6 +217,86 @@ test('Installs custom editor actions share the accessible action menu contract',
     }
 });
 
+test('Custom editor manifest controls remain usable at supported desktop sizes', async () => {
+    for (const viewport of [
+        { width: 1440, height: 900 },
+        { width: 1024, height: 600 },
+    ]) {
+        await prepareEmptyApp([]);
+        await electronApp.evaluate(({ BrowserWindow }, size) => {
+            const window = BrowserWindow.getAllWindows().find(
+                (candidate) => !candidate.isDestroyed(),
+            );
+            window?.setSize(size.width, size.height);
+        }, viewport);
+        await mainPage.setViewportSize(viewport);
+        await mainPage.getByTestId('btnInstalls').click();
+        await mainPage.getByTestId('btnEmptyStateSecondary').click();
+        await mainPage
+            .getByTestId('btnEmptyStateCreateCustomEditorManifest')
+            .click();
+
+        const drawer = mainPage.getByRole('dialog', {
+            name: 'Create Custom Editor Manifest',
+            exact: true,
+        });
+        const outputDirectory = drawer.locator(
+            '#customEditorOutputDirectory',
+        );
+        const browseButton = drawer.getByRole('button', {
+            name: 'Select output folder',
+        });
+        await expect(outputDirectory).toBeVisible();
+        await expect(browseButton).toBeEnabled();
+        expect(
+            (await browseButton.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(24);
+
+        await outputDirectory.focus();
+        await drawer.locator('#customEditorName').focus();
+        await expect(
+            drawer.getByRole('img', {
+                name: 'Output folder is required.',
+            }),
+        ).toBeVisible();
+
+        const architecture = drawer.locator('#customEditorwindowsArch');
+        await architecture.focus();
+        await architecture.press('Space');
+        await expect(architecture).toHaveAttribute('aria-expanded', 'true');
+        await expect(
+            drawer.getByRole('option', { name: 'x64', exact: true }),
+        ).toBeFocused();
+        await mainPage.keyboard.press('Escape');
+        await expect(architecture).toHaveAttribute('aria-expanded', 'false');
+        await expect(architecture).toBeFocused();
+
+        await expect
+            .poll(async () => {
+                const drawerBounds = await drawer.boundingBox();
+                const viewportWidth = await mainPage.evaluate(
+                    () => window.innerWidth,
+                );
+                return Boolean(
+                    drawerBounds &&
+                        drawerBounds.x >= 0 &&
+                        drawerBounds.x + drawerBounds.width <= viewportWidth,
+                );
+            })
+            .toBe(true);
+        await expect
+            .poll(() =>
+                drawer.evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+            )
+            .toBe(true);
+
+        await drawer.getByRole('button', { name: 'Close drawer' }).click();
+        await expect(drawer).not.toBeVisible();
+    }
+});
+
 test('Projects welcome supports creation and local import without an installed editor', async () => {
     await prepareEmptyApp([]);
     await stubOpenFileDialog();
