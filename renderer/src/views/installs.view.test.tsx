@@ -143,8 +143,10 @@ describe('InstallsView', () => {
         expect(html).toContain('Remove');
         expect(html).toContain('Custom Editor');
         expect(html).toContain('/Users/test/GodotEditors');
-        expect(html).toContain('Select manifest file');
-        expect(html).toContain('Create custom editor manifest');
+        expect(html).toContain('aria-haspopup="dialog"');
+        expect(html).toContain('aria-expanded="false"');
+        expect(html).not.toContain('Select manifest file');
+        expect(html).not.toContain('Create custom editor manifest');
     });
 
     it('renders the guided empty state without duplicate list controls', () => {
