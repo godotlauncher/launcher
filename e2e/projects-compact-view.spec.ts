@@ -259,6 +259,28 @@ test('previews cards with all badges and long version labels', async () => {
     }
 });
 
+test('keeps extreme custom version text within the card badge', async () => {
+    const version = `4.7.0-custom-${'rendering-preview-with-experimental-optimisations-'.repeat(4)}2026.09`;
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'cards' },
+        projects: [{ ...SAMPLE_PROJECTS[0], version, open_windowed: true, withGit: true }],
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.setViewportSize({ width: 1024, height: 600 });
+    const badge = mainPage.getByTestId('projectBadges').locator('.badge').first();
+    const versionText = badge.locator('span').last();
+    await expect(versionText).toHaveText(version);
+    const badgeBounds = await badge.boundingBox();
+    const textBounds = await versionText.boundingBox();
+    expect(badgeBounds).not.toBeNull();
+    expect(textBounds).not.toBeNull();
+    expect(textBounds!.y).toBeGreaterThanOrEqual(badgeBounds!.y);
+    expect(textBounds!.y + textBounds!.height).toBeLessThanOrEqual(badgeBounds!.y + badgeBounds!.height);
+    expect(textBounds!.x + textBounds!.width).toBeLessThanOrEqual(badgeBounds!.x + badgeBounds!.width);
+    await versionText.hover();
+    await expect(mainPage.getByRole('tooltip').filter({ hasText: version })).toBeVisible();
+});
+
 /** Returns launches recorded by the test's project handler. */
 async function readLaunches() {
     return electronApp.evaluate(({ ipcMain }) => (ipcMain as typeof ipcMain & { compactLaunches: string[] }).compactLaunches);

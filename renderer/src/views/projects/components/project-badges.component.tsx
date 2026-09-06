@@ -61,9 +61,10 @@ export function ProjectBadges({
                             : t('table.invalidReasons.missingEditor')
                     }
                     tone={releaseInstalled ? 'default' : 'warning'}
+                    className="min-w-0 max-w-full"
                 >
                     <span
-                        className={`${compact ? 'inline-flex items-center gap-1' : 'badge badge-outline h-7 gap-1.5 px-2 text-xs'} ${releaseInstalled ? 'border-base-content/25' : 'border-warning/60 text-warning'}`}
+                        className={`${compact ? 'inline-flex items-center gap-1' : 'badge badge-outline h-7 max-w-full gap-1.5 px-2 text-xs'} ${releaseInstalled ? 'border-base-content/25' : 'border-warning/60 text-warning'}`}
                     >
                         {editorDownloading ? (
                             <span className="loading loading-spinner loading-xs" />
@@ -72,7 +73,11 @@ export function ProjectBadges({
                         ) : (
                             <TriangleAlert size={compact ? 16 : 13} />
                         )}
-                        {!compact && <span>{versionLabel}</span>}
+                        {!compact && (
+                            <span className="min-w-0 truncate">
+                                {versionLabel}
+                            </span>
+                        )}
                         {project.release.prerelease && (
                             <FlaskConical
                                 size={compact ? 16 : 12}
