@@ -65,8 +65,8 @@ export const PathField: React.FC<PathFieldProps> = ({
     disabled = false,
     readOnly = false,
     browseDisabled = false,
-    compact = false,
-    regularText = false,
+    compact = true,
+    regularText = true,
     browseKind = 'file',
     browseIcon,
     browseTestId,
@@ -89,7 +89,7 @@ export const PathField: React.FC<PathFieldProps> = ({
             <div className="join w-full">
                 <label
                     className={clsx(
-                        'relative join-item min-w-0 flex-1 input input-bordered gap-2 outline-0 p-0',
+                        'relative join-item flex min-w-0 flex-1 items-center input input-bordered gap-2 p-0 outline-0',
                         {
                             'input-sm': compact,
                             'text-sm': regularText,
@@ -102,7 +102,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         id={id}
                         data-testid={testId}
                         type="text"
-                        className="input min-w-0 flex-1 text-sm"
+                        className="path-field-input h-full min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
                         onBlur={onBlur}
@@ -127,7 +127,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                             tip={error}
                             placement="right"
                             tone="error"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-error"
+                            className="shrink-0 text-error"
                             role="img"
                             ariaLabel={error}
                         >
@@ -140,7 +140,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         className={clsx(
                             'btn btn-ghost shrink-0 border-0 text-base-content shadow-none cursor-pointer transition-colors hover:bg-base-content/10 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary',
                             {
-                                'btn-sm h-6 px-2 m-1': compact,
+                                'btn-sm m-0.5 h-7 min-h-7 px-2': compact,
                                 'btn-sm m-1 ': !compact,
                                 'text-sm': regularText,
                             },

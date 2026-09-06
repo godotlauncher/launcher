@@ -70,6 +70,12 @@ export function getEnabledOptionEdgeIndex(
     return -1;
 }
 
+/**
+ * Renders a controlled select trigger with an anchored keyboard-accessible list.
+ *
+ * @param props - Selection state, options, callbacks, and field presentation.
+ * @returns A reusable select form field.
+ */
 export const SelectField: React.FC<SelectFieldProps> = ({
     id,
     label,
@@ -80,8 +86,8 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     onBlur,
     options,
     error,
-    compact = false,
-    regularText = false,
+    compact = true,
+    regularText = true,
     disabled = false,
     testId,
     showSelectedCheck = false,

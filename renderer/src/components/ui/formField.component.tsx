@@ -16,6 +16,12 @@ export type FormFieldProps = {
     errorIconClassName?: string;
 };
 
+/**
+ * Renders the shared label, help, spacing, and error presentation for a field.
+ *
+ * @param props - Field content and presentation options.
+ * @returns A consistently sized form field wrapper.
+ */
 export const FormField: React.FC<FormFieldProps> = ({
     id,
     labelAction,
@@ -23,8 +29,8 @@ export const FormField: React.FC<FormFieldProps> = ({
     help,
     error,
     children,
-    compact = false,
-    regularText = false,
+    compact = true,
+    regularText = true,
     errorIconClassName = 'right-2',
 }) => (
     <div className={clsx('flex flex-col', compact ? 'gap-0.5' : 'gap-1')}>

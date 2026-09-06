@@ -1,7 +1,11 @@
 import type { TFunction } from 'i18next';
+import { createRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { RemoteProjectRepositorySource } from './remote-project-source.component';
+import {
+    RemoteProjectPublicSource,
+    RemoteProjectRepositorySource,
+} from './remote-project-source.component';
 
 const translate = ((key: string) => key) as TFunction;
 
@@ -36,5 +40,25 @@ describe('RemoteProjectRepositorySource', () => {
         );
         expect(html).toContain('addProject.remote.github.openConnections');
         expect(html).not.toContain('role="alert"');
+    });
+});
+
+describe('RemoteProjectPublicSource', () => {
+    it('renders a URL field while preserving the error alert', () => {
+        const html = renderToStaticMarkup(
+            <RemoteProjectPublicSource
+                url="https://example.com/team/game.git"
+                error="invalid-url"
+                inspecting={false}
+                inputRef={createRef<HTMLInputElement>()}
+                t={translate}
+                onUrlChange={vi.fn()}
+                onContinue={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('type="url"');
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('addProject.remote.public.errors.invalid');
     });
 });

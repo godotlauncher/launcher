@@ -82,6 +82,20 @@ test('keeps welcome actions in place when GitHub import becomes available', asyn
     expect(await createButton.boundingBox()).toEqual(createBox);
 });
 
+test('keeps the compact path Browse action at a practical target size', async () => {
+    await openCreateProject();
+    const browseButton = mainPage.getByRole('button', {
+        name: 'Open a dialog to select the project folder',
+        exact: true,
+    });
+    const browseButtonBox = await browseButton.boundingBox();
+
+    expect(browseButtonBox).not.toBeNull();
+    expect(browseButtonBox?.height ?? 0).toBeGreaterThanOrEqual(24);
+
+    await mainPage.getByTestId('btnCloseCreateProject').click();
+});
+
 test('blocks an occupied destination before downstream operations and rechecks on submit', async () => {
     await electronApp.evaluate(({ ipcMain }) => {
         const state = globalThis as typeof globalThis & { __destinationChecks?: number; __downstreamCalls?: number };

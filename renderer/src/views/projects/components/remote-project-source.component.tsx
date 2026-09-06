@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { Check, TriangleAlert } from 'lucide-react';
 import type { RefObject } from 'react';
 import { SearchField } from '../../../components/ui/searchField.component';
+import { TextField } from '../../../components/ui/textField.component';
 import {
     getRemoteProjectPublicSourceFailureKey,
     getRemoteProjectRepositoryFailureKey,
@@ -36,31 +37,27 @@ export function RemoteProjectPublicSource({
     return (
         <div className="flex flex-col gap-4">
             <p>{t('addProject.remote.public.description')}</p>
-            <label className="form-control gap-2">
-                <span className="font-medium">
-                    {t('addProject.remote.public.urlLabel')}
-                </span>
-                <input
-                    ref={inputRef}
-                    type="url"
-                    data-testid="inputPublicGitRepositoryUrl"
-                    className="input input-bordered w-full"
-                    value={url}
-                    placeholder={t('addProject.remote.public.urlPlaceholder')}
-                    onChange={(event) => onUrlChange(event.target.value)}
-                    onKeyDown={(event) => {
-                        if (
-                            event.key !== 'Enter' ||
-                            event.repeat ||
-                            event.nativeEvent.isComposing
-                        )
-                            return;
-                        event.preventDefault();
-                        if (!url.trim() || inspecting) return;
-                        onContinue();
-                    }}
-                />
-            </label>
+            <TextField
+                inputRef={inputRef}
+                id="inputPublicGitRepositoryUrl"
+                testId="inputPublicGitRepositoryUrl"
+                type="url"
+                label={t('addProject.remote.public.urlLabel')}
+                value={url}
+                placeholder={t('addProject.remote.public.urlPlaceholder')}
+                onChange={onUrlChange}
+                onKeyDown={(event) => {
+                    if (
+                        event.key !== 'Enter' ||
+                        event.repeat ||
+                        event.nativeEvent.isComposing
+                    )
+                        return;
+                    event.preventDefault();
+                    if (!url.trim() || inspecting) return;
+                    onContinue();
+                }}
+            />
             {error && (
                 <div className="alert alert-error alert-soft" role="alert">
                     <TriangleAlert aria-hidden="true" size={18} />
