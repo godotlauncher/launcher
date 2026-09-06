@@ -8,10 +8,6 @@ import { TriangleAlertIcon } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { appBridge } from '../../../bridge.ts';
-import {
-    type ActionMenuAnchorRect,
-    getActionMenuAnchorRect,
-} from '../../../components/ui/actionMenu.component';
 import { getReleaseActionKey, type ReleaseAction } from '../installsView.model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -67,10 +63,6 @@ export function useReleaseActions({
     removeRelease,
     getProjectUsageCount,
 }: UseReleaseActionsArgs) {
-    const [releaseActionsMenu, setReleaseActionsMenu] = useState<{
-        release: InstalledRelease;
-        anchorRect: ActionMenuAnchorRect;
-    } | null>(null);
     const [busyAction, setBusyAction] = useState<{
         releaseKey: string;
         action: ReleaseAction;
@@ -98,17 +90,6 @@ export function useReleaseActions({
         }
 
         return action ? busyAction.action === action : true;
-    };
-
-    const onOpenReleaseMoreOptions = (
-        e: React.MouseEvent,
-        release: InstalledRelease,
-    ) => {
-        e.stopPropagation();
-        setReleaseActionsMenu({
-            release,
-            anchorRect: getActionMenuAnchorRect(e.currentTarget),
-        });
     };
 
     const showReleaseActionError = (error: unknown) => {
@@ -318,10 +299,7 @@ export function useReleaseActions({
     };
 
     return {
-        releaseActionsMenu,
-        setReleaseActionsMenu,
         isReleaseActionBusy,
-        onOpenReleaseMoreOptions,
         runReleaseAction,
         handleRemoveReleaseFromMenu,
         handleRetry,

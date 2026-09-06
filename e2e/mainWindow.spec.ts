@@ -49,6 +49,33 @@ test('Can navigate the main window', async () => {
     });
 
     await test.step('Opens installs', async () => {
+        await mainPage.setViewportSize({ width: 1024, height: 600 });
+        await electronApp.evaluate(({ ipcMain }) => {
+            const state = globalThis as typeof globalThis & {
+                __installedEditorActionCalls?: {
+                    openedFolder: string | null;
+                    startedVersion: string | null;
+                };
+            };
+            state.__installedEditorActionCalls = {
+                openedFolder: null,
+                startedVersion: null,
+            };
+            ipcMain.removeHandler('app.openShellFolder');
+            ipcMain.handle('app.openShellFolder', async (_event, folderPath) => {
+                state.__installedEditorActionCalls!.openedFolder = folderPath;
+                return { success: true, data: undefined };
+            });
+            ipcMain.removeHandler('editorInstalls.openProjectManager');
+            ipcMain.handle(
+                'editorInstalls.openProjectManager',
+                async (_event, release) => {
+                    state.__installedEditorActionCalls!.startedVersion =
+                        release.version;
+                    return { success: true, data: undefined };
+                },
+            );
+        });
         await mainPage.getByTestId('btnInstalls').click();
         await expect(mainPage.getByTestId('installsTitle')).toBeVisible();
         await expect(mainPage.getByTestId('inputInstallSearch')).toBeEnabled();
@@ -57,6 +84,47 @@ test('Can navigate the main window', async () => {
         );
         await expect(installedReleaseList).toBeVisible();
 
+        const openFolder = installedReleaseList.getByRole('button', {
+            name: 'Open Installed Folder',
+        });
+        const startProjectManager = installedReleaseList.getByRole('button', {
+            name: 'Start the Project Manager',
+        });
+        const removeRelease = installedReleaseList.getByRole('button', {
+            name: 'Delete Release from This Device',
+        });
+        await expect(openFolder.first()).toBeVisible();
+        await expect(startProjectManager.first()).toBeVisible();
+        await expect(removeRelease.first()).toBeVisible();
+
+        await openFolder.first().click();
+        await startProjectManager.first().click();
+        await expect
+            .poll(async () =>
+                electronApp.evaluate(() => {
+                    const state = globalThis as typeof globalThis & {
+                        __installedEditorActionCalls?: {
+                            openedFolder: string | null;
+                            startedVersion: string | null;
+                        };
+                    };
+                    return state.__installedEditorActionCalls;
+                }),
+            )
+            .toEqual({
+                openedFolder: '/Applications/Godot_4.7',
+                startedVersion: '4.7-stable',
+            });
+
+        await removeRelease.first().click();
+        const removeDialog = mainPage.getByRole('dialog', {
+            name: 'Remove Release',
+        });
+        await expect(removeDialog).toContainText(
+            'Are you sure you want to delete release "4.7-stable"?',
+        );
+        await mainPage.keyboard.press('Escape');
+        await expect(removeDialog).not.toBeVisible();
     });
 
     await test.step('Opens the install editor drawer', async () => {

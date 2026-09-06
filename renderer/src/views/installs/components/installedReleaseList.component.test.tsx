@@ -71,11 +71,55 @@ describe('InstalledReleaseList', () => {
         expect(html).toContain('55 MB / 100 MB');
     });
 
+    it('exposes every valid official editor action directly', () => {
+        const html = renderList([createInstalledRelease('4.7-stable')]);
+
+        expect(html).toContain('aria-label="Open Installed Folder"');
+        expect(html).toContain('aria-label="Start the Project Manager"');
+        expect(html).toContain('aria-label="Delete Release from This Device"');
+        expect(html).not.toContain('btnReleaseMoreOptions');
+    });
+
+    it('uses the custom-editor removal action for valid custom rows', () => {
+        const html = renderList([
+            createInstalledRelease('studio-build', {
+                name: 'Studio Editor',
+                source: 'custom',
+            }),
+        ]);
+
+        expect(html).toContain('aria-label="Remove Custom Editor"');
+        expect(html).not.toContain(
+            'aria-label="Delete Release from This Device"',
+        );
+    });
+
+    it('keeps recovery actions for invalid official and custom rows', () => {
+        const html = renderList([
+            createInstalledRelease('4.7-stable', { valid: false }),
+            createInstalledRelease('studio-build', {
+                name: 'Studio Editor',
+                source: 'custom',
+                valid: false,
+            }),
+        ]);
+
+        expect(html).toContain('Editor unavailable.');
+        expect(html).toContain('Custom editor unavailable.');
+        expect(html.match(/>Retry<\/button>/g)).toHaveLength(2);
+        expect(html.match(/>Reinstall<\/button>/g)).toHaveLength(1);
+        expect(html.match(/>Remove<\/button>/g)).toHaveLength(2);
+        expect(html).not.toContain('btnOpenReleaseFolder');
+        expect(html).not.toContain('btnStartProjectManager');
+    });
+
     it('marks the whole editor row busy while removal is running', () => {
         const html = renderList([createInstalledRelease('4.7-stable')], true);
 
         expect(html).toContain('aria-busy="true"');
-        expect(html).not.toContain('btnReleaseMoreOptions');
+        expect(html).not.toContain('btnOpenReleaseFolder');
+        expect(html).not.toContain('btnStartProjectManager');
+        expect(html).not.toContain('btnRemoveRelease_4.7-stable_standard');
     });
 });
 
@@ -98,6 +142,10 @@ function renderList(rows: InstalledRelease[], removing = false): string {
         'common:buttons.retry': 'Retry',
         'common:buttons.reinstall': 'Reinstall',
         'common:buttons.remove': 'Remove',
+        'menus:release.openInstalledFolder': 'Open Installed Folder',
+        'menus:release.startProjectManager': 'Start the Project Manager',
+        'menus:release.deleteRelease': 'Delete Release from This Device',
+        'dialogs:removeCustomEditor.menuLabel': 'Remove Custom Editor',
     };
 
     return renderToStaticMarkup(
@@ -112,7 +160,8 @@ function renderList(rows: InstalledRelease[], removing = false): string {
             onRetry={vi.fn()}
             onReinstall={vi.fn()}
             onRemove={vi.fn()}
-            onOpenReleaseMoreOptions={vi.fn()}
+            onOpenInstalledFolder={vi.fn()}
+            onStartProjectManager={vi.fn()}
         />,
     );
 }
