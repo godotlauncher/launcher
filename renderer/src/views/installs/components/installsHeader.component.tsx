@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import type React from 'react';
+import type { MouseEventHandler } from 'react';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { SearchField } from '../../../components/ui/searchField.component';
 
@@ -10,14 +11,12 @@ type InstallsHeaderProps = {
     searchValue: string;
     onSearchChange: (value: string) => void;
     addCustomEditorLabel: string;
-    selectManifestLabel: string;
-    createManifestLabel: string;
+    customEditorMenuOpen: boolean;
     installLabel: string;
     copyPathLabel: string;
     copiedLabel: string;
     showControls?: boolean;
-    onSelectManifest: () => void;
-    onCreateManifest: () => void;
+    onOpenCustomEditorMenu: MouseEventHandler<HTMLButtonElement>;
     onInstall: () => void;
 };
 
@@ -34,14 +33,12 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
     searchValue,
     onSearchChange,
     addCustomEditorLabel,
-    selectManifestLabel,
-    createManifestLabel,
+    customEditorMenuOpen,
     installLabel,
     copyPathLabel,
     copiedLabel,
     showControls = true,
-    onSelectManifest,
-    onCreateManifest,
+    onOpenCustomEditorMenu,
     onInstall,
 }) => (
     <div className="flex flex-col gap-2 w-full">
@@ -61,37 +58,17 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
             </div>
             {showControls && (
                 <div className="flex gap-2">
-                    <div className="dropdown dropdown-end">
-                        <button
-                            type="button"
-                            tabIndex={0}
-                            data-testid="btnAddCustomEngineMenu"
-                            className="btn btn-neutral"
-                        >
-                            {addCustomEditorLabel}
-                            <ChevronDown size={14} aria-hidden="true" />
-                        </button>
-                        <ul className="dropdown-content menu bg-base-300 rounded-box z-1 min-w-64 p-1 shadow-sm border border-base-100">
-                            <li>
-                                <button
-                                    type="button"
-                                    data-testid="btnAddCustomEngine"
-                                    onClick={onSelectManifest}
-                                >
-                                    {selectManifestLabel}
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    type="button"
-                                    data-testid="btnCreateCustomEditorManifest"
-                                    onClick={onCreateManifest}
-                                >
-                                    {createManifestLabel}
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+                    <button
+                        type="button"
+                        data-testid="btnAddCustomEngineMenu"
+                        className="btn btn-neutral"
+                        aria-haspopup="dialog"
+                        aria-expanded={customEditorMenuOpen}
+                        onClick={onOpenCustomEditorMenu}
+                    >
+                        {addCustomEditorLabel}
+                        <ChevronDown size={14} aria-hidden="true" />
+                    </button>
                     <button
                         type="button"
                         data-testid="btnInstallEditor"

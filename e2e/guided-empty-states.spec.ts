@@ -53,7 +53,7 @@ test.afterAll(async () => {
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
-test('Installs empty actions open the editor drawer and both custom editor workflows', async () => {
+test('Installs empty primary action opens and closes the editor drawer', async () => {
     await prepareEmptyApp([]);
     await mainPage.getByTestId('btnInstalls').click();
 
@@ -78,32 +78,143 @@ test('Installs empty actions open the editor drawer and both custom editor workf
     await installDrawer.getByTestId('btnCloseInstallEditor').click();
     await expect(mainPage).toHaveURL(/#\/installs$/);
     await expect(installDrawer).not.toBeVisible();
+});
 
-    await mainPage.getByTestId('btnEmptyStateSecondary').click();
-    const customEditorMenu = mainPage.getByRole('dialog', {
-        name: 'Custom Editor',
-    });
-    await expect(customEditorMenu).toBeVisible();
-    await customEditorMenu
-        .getByTestId('btnEmptyStateCreateCustomEditorManifest')
-        .click();
+test('Installs custom editor actions share the accessible action menu contract', async () => {
+    for (const scenario of [
+        {
+            name: 'the populated state at the standard desktop size',
+            installedReleases: SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+            triggerTestId: 'btnAddCustomEngineMenu',
+            selectManifestTestId: 'btnAddCustomEngine',
+            createManifestTestId: 'btnCreateCustomEditorManifest',
+            exposesExpandedState: true,
+            viewport: { width: 1440, height: 900 },
+        },
+        {
+            name: 'the populated state at the narrow desktop size',
+            installedReleases: SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+            triggerTestId: 'btnAddCustomEngineMenu',
+            selectManifestTestId: 'btnAddCustomEngine',
+            createManifestTestId: 'btnCreateCustomEditorManifest',
+            exposesExpandedState: true,
+            viewport: { width: 1024, height: 600 },
+        },
+        {
+            name: 'the empty state at the standard desktop size',
+            installedReleases: [],
+            triggerTestId: 'btnEmptyStateSecondary',
+            selectManifestTestId: 'btnEmptyStateSelectCustomEditorManifest',
+            createManifestTestId: 'btnEmptyStateCreateCustomEditorManifest',
+            exposesExpandedState: false,
+            viewport: { width: 1440, height: 900 },
+        },
+        {
+            name: 'the empty state at the narrow desktop size',
+            installedReleases: [],
+            triggerTestId: 'btnEmptyStateSecondary',
+            selectManifestTestId: 'btnEmptyStateSelectCustomEditorManifest',
+            createManifestTestId: 'btnEmptyStateCreateCustomEditorManifest',
+            exposesExpandedState: false,
+            viewport: { width: 1024, height: 600 },
+        },
+    ]) {
+        await test.step(scenario.name, async () => {
+            await prepareEmptyApp(scenario.installedReleases);
+            await mainPage.getByTestId('btnInstalls').click();
+            await mainPage.setViewportSize(scenario.viewport);
 
-    const customEditorDrawer = mainPage.getByRole('dialog', {
-        name: 'Create Custom Editor Manifest',
-    });
-    await expect(customEditorDrawer).toBeVisible();
-    await expect(mainPage).toHaveURL(/#\/installs$/);
-    await customEditorDrawer
-        .getByRole('button', { name: 'Close drawer' })
-        .click();
-    await expect(customEditorDrawer).not.toBeVisible();
+            const trigger = mainPage.getByTestId(scenario.triggerTestId);
+            const customEditorMenu = mainPage.getByRole('dialog', {
+                name: 'Custom Editor',
+                exact: true,
+            });
+            const selectManifest = customEditorMenu.getByTestId(
+                scenario.selectManifestTestId,
+            );
+            const createManifest = customEditorMenu.getByTestId(
+                scenario.createManifestTestId,
+            );
 
-    await stubOpenFileDialog();
-    await mainPage.getByTestId('btnEmptyStateSecondary').click();
-    await mainPage
-        .getByTestId('btnEmptyStateSelectCustomEditorManifest')
-        .click();
-    await expect.poll(readOpenFileDialogCallCount).toBe(1);
+            await trigger.focus();
+            if (scenario.exposesExpandedState) {
+                await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+            }
+            await trigger.press('Enter');
+            await expect(customEditorMenu).toBeVisible();
+            if (scenario.exposesExpandedState) {
+                await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+            }
+            await expect(selectManifest).toHaveAccessibleName(
+                'Select manifest file',
+            );
+            await expect(createManifest).toHaveAccessibleName(
+                'Create custom editor manifest',
+            );
+            await expect(selectManifest).toBeFocused();
+
+            await mainPage.keyboard.press('Tab');
+            await expect(createManifest).toBeFocused();
+            await mainPage.keyboard.press('Tab');
+            await expect(selectManifest).toBeFocused();
+            await mainPage.keyboard.press('Shift+Tab');
+            await expect(createManifest).toBeFocused();
+
+            const menuBounds = await customEditorMenu.boundingBox();
+            expect(menuBounds).not.toBeNull();
+            expect(menuBounds!.x).toBeGreaterThanOrEqual(8);
+            expect(menuBounds!.y).toBeGreaterThanOrEqual(8);
+            expect(menuBounds!.x + menuBounds!.width).toBeLessThanOrEqual(
+                scenario.viewport.width - 8,
+            );
+            expect(menuBounds!.y + menuBounds!.height).toBeLessThanOrEqual(
+                scenario.viewport.height - 8,
+            );
+
+            await mainPage.keyboard.press('Escape');
+            await expect(customEditorMenu).not.toBeVisible();
+            await expect(trigger).toBeFocused();
+            if (scenario.exposesExpandedState) {
+                await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+            }
+
+            await trigger.press('Enter');
+            await expect(customEditorMenu).toBeVisible();
+            await mainPage.getByRole('button', { name: 'Close menu' }).click();
+            await expect(customEditorMenu).not.toBeVisible();
+            await expect(trigger).toBeFocused();
+
+            await trigger.press('Enter');
+            await expect(customEditorMenu).toBeVisible();
+            await createManifest.click();
+            await expect(customEditorMenu).not.toBeVisible();
+
+            const customEditorDrawer = mainPage.getByRole('dialog', {
+                name: 'Create Custom Editor Manifest',
+                exact: true,
+            });
+            await expect(customEditorDrawer).toBeVisible();
+            await expect(customEditorDrawer.locator(':focus')).toHaveCount(1);
+            await customEditorDrawer
+                .getByRole('button', { name: 'Close drawer' })
+                .click();
+            await expect(customEditorDrawer).not.toBeVisible();
+            await expect(trigger).toBeFocused();
+
+            await stubOpenFileDialog();
+            await trigger.press('Enter');
+            await expect(customEditorMenu).toBeVisible();
+            await selectManifest.click();
+            await expect(customEditorMenu).not.toBeVisible();
+            await expect.poll(readOpenFileDialogCallCount).toBe(1);
+            await expect(trigger).toBeFocused();
+
+            await trigger.press('Enter');
+            await expect(customEditorMenu).toBeVisible();
+            await mainPage.keyboard.press('Escape');
+            await expect(customEditorMenu).not.toBeVisible();
+        });
+    }
 });
 
 test('Projects welcome supports creation and local import without an installed editor', async () => {

@@ -38,6 +38,11 @@ type InstallsViewProps = {
     onInstallOpenChange?: (open: boolean) => void;
 };
 
+type CustomEditorMenuState = {
+    anchorRect: ActionMenuAnchorRect;
+    source: 'header' | 'empty';
+};
+
 /**
  * Renders installed editors and the editor catalog drawer.
  *
@@ -71,8 +76,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         useState<boolean>(false);
     const [customEditorManifestDrawerOpen, setCustomEditorManifestDrawerOpen] =
         useState<boolean>(false);
-    const [customEditorMenuAnchorRect, setCustomEditorMenuAnchorRect] =
-        useState<ActionMenuAnchorRect | null>(null);
+    const [customEditorMenu, setCustomEditorMenu] =
+        useState<CustomEditorMenuState | null>(null);
 
     const { addAlert, addConfirm } = useAlerts();
     const { preferences } = usePreferences();
@@ -165,19 +170,18 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     searchValue={textSearch}
                     onSearchChange={setTextSearch}
                     addCustomEditorLabel={t('buttons.addCustomEditor')}
-                    selectManifestLabel={t(
-                        'buttons.selectCustomEditorManifest',
-                    )}
-                    createManifestLabel={t(
-                        'buttons.createCustomEditorManifest',
-                    )}
+                    customEditorMenuOpen={customEditorMenu?.source === 'header'}
                     installLabel={t('buttons.install')}
                     copyPathLabel={t('common:buttons.copyPath')}
                     copiedLabel={t('common:success')}
                     showControls={viewState !== 'empty'}
-                    onSelectManifest={() => void handleAddCustomEngine()}
-                    onCreateManifest={() =>
-                        setCustomEditorManifestDrawerOpen(true)
+                    onOpenCustomEditorMenu={(event) =>
+                        setCustomEditorMenu({
+                            anchorRect: getActionMenuAnchorRect(
+                                event.currentTarget,
+                            ),
+                            source: 'header',
+                        })
                     }
                     onInstall={() => setInstallOpen(true)}
                 />
@@ -190,9 +194,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         secondaryActionLabel={t('emptyState.addCustomEditor')}
                         onPrimaryAction={() => setInstallOpen(true)}
                         onSecondaryAction={(event) =>
-                            setCustomEditorMenuAnchorRect(
-                                getActionMenuAnchorRect(event.currentTarget),
-                            )
+                            setCustomEditorMenu({
+                                anchorRect: getActionMenuAnchorRect(
+                                    event.currentTarget,
+                                ),
+                                source: 'empty',
+                            })
                         }
                     />
                 ) : (
@@ -230,24 +237,30 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 onRemoveRelease={handleRemoveReleaseFromMenu}
             />
             <ActionMenu
-                open={customEditorMenuAnchorRect !== null}
-                anchorRect={customEditorMenuAnchorRect}
+                open={customEditorMenu !== null}
+                anchorRect={customEditorMenu?.anchorRect ?? null}
                 ariaLabel={t('buttons.addCustomEditor')}
                 items={[
                     {
                         key: 'select-manifest',
                         label: t('buttons.selectCustomEditorManifest'),
-                        testId: 'btnEmptyStateSelectCustomEditorManifest',
+                        testId:
+                            customEditorMenu?.source === 'header'
+                                ? 'btnAddCustomEngine'
+                                : 'btnEmptyStateSelectCustomEditorManifest',
                         onSelect: handleAddCustomEngine,
                     },
                     {
                         key: 'create-manifest',
                         label: t('buttons.createCustomEditorManifest'),
-                        testId: 'btnEmptyStateCreateCustomEditorManifest',
+                        testId:
+                            customEditorMenu?.source === 'header'
+                                ? 'btnCreateCustomEditorManifest'
+                                : 'btnEmptyStateCreateCustomEditorManifest',
                         onSelect: () => setCustomEditorManifestDrawerOpen(true),
                     },
                 ]}
-                onClose={() => setCustomEditorMenuAnchorRect(null)}
+                onClose={() => setCustomEditorMenu(null)}
             />
             <InstallEditorDrawer
                 open={installOpen}
