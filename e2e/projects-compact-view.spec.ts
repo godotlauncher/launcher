@@ -226,6 +226,39 @@ test('places the missing-editor warning beside the version without duplicate tit
     await mainPage.screenshot({ path: '.internal-docs/projects-compact-view/list-missing-editor.png' });
 });
 
+test('previews cards with all badges and long version labels', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'cards' },
+        projects: SAMPLE_PROJECTS.map((project, index) => ({
+            ...project,
+            version: index === 0 ? '4.7-stable' : '4.7.0-custom-studio-rendering-preview.2026.09',
+            open_windowed: true,
+            withGit: true,
+            release: { ...project.release, prerelease: true },
+        })),
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    for (const language of ['English', 'Deutsch']) {
+        await setAppLanguage(mainPage, language);
+        for (const width of [1024, 1440]) {
+            await mainPage.setViewportSize({ width, height: 900 });
+            await expect(mainPage.getByTestId('tabProjectCards')).toHaveAttribute('aria-selected', 'true');
+            await expect(mainPage.getByTestId('projectBadges').first().locator(':scope > *')).toHaveCount(4);
+            const badgeLayout = await mainPage.getByTestId('projectBadges').evaluateAll(groups => groups.map(group => {
+                const bounds = group.getBoundingClientRect();
+                const boxes = [...group.children].map(child => child.getBoundingClientRect());
+                return {
+                    rows: new Set(boxes.map(box => box.top)).size,
+                    fits: boxes.every(box => box.left >= bounds.left && box.right <= bounds.right + 1),
+                };
+            }));
+            expect(badgeLayout.every(layout => layout.fits)).toBe(true);
+            expect(badgeLayout.map(layout => layout.rows)).toEqual(width === 1024 ? [2, 1, 2] : [1, 1, 1]);
+            await mainPage.screenshot({ path: `.internal-docs/projects-compact-view/cards-all-badges-${language}-${width}.png` });
+        }
+    }
+});
+
 /** Returns launches recorded by the test's project handler. */
 async function readLaunches() {
     return electronApp.evaluate(({ ipcMain }) => (ipcMain as typeof ipcMain & { compactLaunches: string[] }).compactLaunches);
