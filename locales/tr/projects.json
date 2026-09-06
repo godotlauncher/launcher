@@ -1,4 +1,10 @@
 {
+    "view": {
+        "cards": "Kart görünümü",
+        "list": "Liste görünümü",
+        "openProject": "{{project}} projesini Godot ile aç",
+        "saveFailed": "Proje görünümü kaydedilemedi. Lütfen tekrar deneyin."
+    },
     "title": "Projeler",
     "emptyState": {
         "welcome": {

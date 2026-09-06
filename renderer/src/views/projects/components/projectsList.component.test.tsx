@@ -75,6 +75,7 @@ const downloadableRelease: ReleaseSummary = {
 };
 
 type RenderOptions = {
+    viewMode?: 'cards' | 'list';
     isInstalledRelease?: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading?: (project: ProjectDetails) => boolean;
     getDownloadableProjectEditor?: (
@@ -82,6 +83,16 @@ type RenderOptions = {
     ) => ReleaseSummary | undefined;
 };
 
+/**
+ * Renders a project collection with controlled status callbacks.
+ * @param sections - Project groups to render.
+ * @param codeEditorSettings - Available code editor settings.
+ * @param locale - Relative-time locale.
+ * @param pinnedReorderingDisabled - Whether search disables reordering.
+ * @param projectGitHubUrls - Cached repository URLs.
+ * @param translate - Translation stub.
+ * @param options - View and editor status overrides.
+ */
 function renderProjectsList(
     sections: Partial<ProjectSections>,
     codeEditorSettings: CodeEditorIntegrationSettings[] = [
@@ -106,6 +117,7 @@ function renderProjectsList(
 ): string {
     return renderToStaticMarkup(
         <ProjectsList
+            viewMode={options.viewMode}
             sections={{
                 newProjects: [],
                 pinnedProjects: [],
@@ -140,6 +152,99 @@ function renderProjectsList(
 }
 
 describe('ProjectsList', () => {
+    it('keeps compact identity launch separate from path and action controls', () => {
+        const html = renderProjectsList(
+            { newProjects: [baseProject] },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { viewMode: 'list' },
+        );
+        expect(html).toContain('data-project-view="list"');
+        expect(html).toContain('btnLaunchCompactProject');
+        expect(html).not.toContain('btnEditProjectInGodot');
+        expect(html).toContain('btnCopyProjectPath_new_');
+        expect(html).toContain('btnProjectSettings');
+        expect(html).toContain('btnProjectFolders');
+        expect(html).toContain('card.notOpened');
+        const launchButton = html.match(
+            /<button[^>]*data-testid="btnLaunchCompactProject"[^>]*>[\s\S]*?<\/button>/,
+        )?.[0];
+        expect(launchButton).toContain('Sample Project');
+        expect(launchButton).not.toContain('/projects/sample');
+    });
+
+    it('keeps missing-editor recovery and disabled launch in List view', () => {
+        const html = renderProjectsList(
+            { newProjects: [baseProject] },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                viewMode: 'list',
+                isInstalledRelease: () => false,
+                getDownloadableProjectEditor: () => downloadableRelease,
+            },
+        );
+        expect(html).toMatch(
+            /data-testid="btnLaunchCompactProject"[^>]*disabled/,
+        );
+        expect(html).toContain('btnInstallRequiredProjectEditor');
+        expect(html).toContain('table.invalidReasons.missingEditor');
+    });
+
+    it('shows one missing-editor warning beside the compact version', () => {
+        const html = renderProjectsList(
+            {
+                newProjects: [
+                    {
+                        ...baseProject,
+                        valid: false,
+                        invalid_reason: 'missing_editor',
+                    },
+                ],
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { viewMode: 'list', isInstalledRelease: () => false },
+        );
+        expect(html.match(/lucide-triangle-alert/g)).toHaveLength(1);
+        expect(html).toMatch(
+            /data-testid="compactProjectEditorVersion"[^>]*text-warning/,
+        );
+        expect(html).toContain('4.3-stable');
+    });
+
+    it('retains a distinct missing-project warning when the editor is also absent', () => {
+        const html = renderProjectsList(
+            {
+                newProjects: [
+                    {
+                        ...baseProject,
+                        valid: false,
+                        invalid_reason: 'missing_project_file',
+                    },
+                ],
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { viewMode: 'list', isInstalledRelease: () => false },
+        );
+        expect(html.match(/lucide-triangle-alert/g)).toHaveLength(2);
+        expect(html).toContain('table.invalidReasons.missingProjectFile');
+        expect(html).toContain('table.invalidReasons.missingEditor');
+    });
+
     it('renders project sections as lists', () => {
         const pinnedProject = { ...baseProject, pinned: true };
         const newProject = {

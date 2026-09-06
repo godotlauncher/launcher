@@ -35,7 +35,8 @@ test.afterAll(async () => {
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
-test('reorders pinned projects with the keyboard and keeps the order after reload', async () => {
+for (const mode of ['cards', 'list'] as const) {
+test(`reorders pinned projects in ${mode} view and keeps the order after reload`, async () => {
     const pinnedProjects: ProjectDetails[] = [
         { ...SAMPLE_PROJECTS[0], pinned: true, pinned_order: 0 },
         SAMPLE_PROJECTS[1],
@@ -46,6 +47,7 @@ test('reorders pinned projects with the keyboard and keeps the order after reloa
     });
     await installStatefulPinnedOrderHandlers(electronApp, pinnedProjects);
     await mainPage.getByTestId('btnProjects').click();
+    if (mode === 'list') await mainPage.getByTestId('tabProjectList').click();
 
     const newProjectCard = mainPage
         .locator('[data-project-section="new"]')
@@ -57,7 +59,7 @@ test('reorders pinned projects with the keyboard and keeps the order after reloa
     const pinnedSection = mainPage.locator(
         'section[aria-labelledby="pinned-projects-heading"]',
     );
-    const projectNames = pinnedSection.locator('[data-project-path] h3');
+    const projectNames = pinnedSection.locator(mode === 'cards' ? '[data-project-path] h3' : '[data-testid=btnLaunchCompactProject] > span:last-child');
     await expect(projectNames).toHaveText(['My Prototype', 'My Awesome Game']);
 
     const firstHandle = pinnedSection
@@ -92,6 +94,8 @@ test('reorders pinned projects with the keyboard and keeps the order after reloa
         mainPage.getByTestId('btnReorderPinnedProject'),
     ).toBeDisabled();
 });
+
+}
 
 /**
  * Installs project handlers that preserve pin and ordering changes across reloads.

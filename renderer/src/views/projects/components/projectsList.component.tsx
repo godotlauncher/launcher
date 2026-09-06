@@ -7,444 +7,20 @@ import {
     type DragStartEvent,
 } from '@dnd-kit/react';
 import { isSortable, useSortable } from '@dnd-kit/react/sortable';
-import type {
-    CodeEditorIntegrationSettings,
-    ProjectDetails,
-    ReleaseSummary,
-} from '@shared/contracts';
-import {
-    Download,
-    EllipsisVertical,
-    FlaskConical,
-    FolderOpen,
-    GripVertical,
-    ImageOff,
-    PanelTop,
-    Pin,
-    Play,
-    Settings,
-    Tag,
-    TriangleAlert,
-} from 'lucide-react';
+import type { ProjectDetails } from '@shared/contracts';
+import { GripVertical } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import gitIconColor from '../../../assets/icons/git_icon_color.svg';
 import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black.svg';
 import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
-import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
-import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { useTheme } from '../../../hooks/useTheme';
-import { formatRelativeTime } from '../../../i18n/relativeTime';
-import {
-    getInvalidProjectTableKey,
-    type ProjectSections,
-} from '../projectsView.model';
-
-type ProjectSectionKey = 'new' | 'pinned' | 'recents';
-
-type ProjectsListProps = {
-    sections: ProjectSections;
-    projectGitHubUrls: ReadonlyMap<string, string>;
-    loading: boolean;
-    locale: string;
-    busyProjects: string[];
-    codeEditorSettings: CodeEditorIntegrationSettings[];
-    highlightedPinnedProjectPath: string | null;
-    pinnedReorderingDisabled: boolean;
-    onPinnedHighlightComplete: () => void;
-    onReorderPinnedProjects: (orderedProjectPaths: string[]) => Promise<void>;
-    isInstalledRelease: (version: string, mono: boolean) => boolean;
-    isProjectEditorDownloading: (project: ProjectDetails) => boolean;
-    getDownloadableProjectEditor: (
-        project: ProjectDetails,
-    ) => ReleaseSummary | undefined;
-    onInstallRequiredProjectEditor: (
-        project: ProjectDetails,
-        release: ReleaseSummary,
-    ) => void;
-    onLaunchProject: (project: ProjectDetails) => void;
-    onProjectFoldersOptions: (
-        event: React.MouseEvent,
-        project: ProjectDetails,
-    ) => void;
-    onTogglePinned: (project: ProjectDetails) => void;
-    onProjectSettings: (project: ProjectDetails) => void;
-    onProjectMoreOptions: (
-        event: React.MouseEvent,
-        project: ProjectDetails,
-    ) => void;
-    t: (key: string, options?: Record<string, unknown>) => string;
-};
-
-type ProjectListItemProps = Omit<
+import type {
+    ProjectListItemProps,
+    ProjectSectionKey,
     ProjectsListProps,
-    | 'sections'
-    | 'loading'
-    | 'highlightedPinnedProjectPath'
-    | 'pinnedReorderingDisabled'
-    | 'onPinnedHighlightComplete'
-    | 'onReorderPinnedProjects'
-> & {
-    project: ProjectDetails;
-    githubIconSrc: string;
-    sectionKey: ProjectSectionKey;
-    highlighted: boolean;
-    pinnedItemRef?: (element: HTMLLIElement | null) => void;
-    reorderHandle?: React.ReactNode;
-    reorderStateClassName?: string;
-};
-
-/** Renders one project row with its cached repository-provider badge. */
-const ProjectListItem: React.FC<ProjectListItemProps> = ({
-    project,
-    sectionKey,
-    highlighted,
-    pinnedItemRef,
-    reorderHandle,
-    reorderStateClassName = '',
-    locale,
-    busyProjects,
-    codeEditorSettings,
-    projectGitHubUrls,
-    githubIconSrc,
-    isInstalledRelease,
-    isProjectEditorDownloading,
-    getDownloadableProjectEditor,
-    onInstallRequiredProjectEditor,
-    onLaunchProject,
-    onProjectFoldersOptions,
-    onTogglePinned,
-    onProjectSettings,
-    onProjectMoreOptions,
-    t,
-}) => {
-    const editorDownloading = isProjectEditorDownloading(project);
-    const releaseInstalled = isInstalledRelease(
-        project.release.version,
-        project.release.mono,
-    );
-    const downloadableProjectEditor = getDownloadableProjectEditor(project);
-    const selectedCodeEditor = project.codeEditorId
-        ? codeEditorSettings.find(
-              (settings) => settings.integration.id === project.codeEditorId,
-          )
-        : undefined;
-    const codeEditorUnavailable = Boolean(
-        selectedCodeEditor && !selectedCodeEditor.installation,
-    );
-    const codeEditorName =
-        selectedCodeEditor?.integration.displayName ?? project.codeEditorId;
-    const codeEditorTooltip = project.codeEditorId
-        ? t(
-              codeEditorUnavailable
-                  ? 'table.codeEditorUnavailable'
-                  : 'table.codeEditorProject',
-              { editor: codeEditorName },
-          )
-        : '';
-    const hasWarning =
-        !project.valid || !releaseInstalled || codeEditorUnavailable;
-    const launchDisabled =
-        !project.valid || !releaseInstalled || editorDownloading;
-    const versionLabel = `${project.version}${project.release.mono ? ' (.NET)' : ''}`;
-    const isGitHubProject = projectGitHubUrls.has(project.path);
-
-    return (
-        <li
-            ref={pinnedItemRef}
-            tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`relative overflow-hidden rounded-lg border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm transition-colors motion-reduce:transition-none hover:border-base-content/20 hover:bg-base-200/55 ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
-            data-project-path={project.path}
-            data-project-section={sectionKey}
-        >
-            <div
-                className={`absolute inset-y-3 left-3 w-1 rounded-full ${hasWarning ? 'bg-warning' : 'bg-base-content/15'}`}
-                aria-hidden="true"
-            />
-            {busyProjects.includes(project.path) && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/55">
-                    <div className="loading loading-bars" />
-                </div>
-            )}
-
-            <div className="flex min-w-0 flex-col gap-4 pl-2">
-                <div className="grid min-w-0 grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-base-content/8">
-                        {project.icon_path ? (
-                            <img
-                                src={project.icon_path}
-                                className="h-full w-full object-contain"
-                                alt=""
-                            />
-                        ) : (
-                            <ImageOff className="h-6 w-6 stroke-base-content/30" />
-                        )}
-                    </div>
-
-                    <div className="flex min-w-0 flex-col gap-1">
-                        <div className="flex min-w-0 items-center gap-2">
-                            {!project.valid && (
-                                <Tooltip
-                                    placement="top"
-                                    tip={t(getInvalidProjectTableKey(project))}
-                                    tone="warning"
-                                >
-                                    <TriangleAlert className="size-5 shrink-0 stroke-warning" />
-                                </Tooltip>
-                            )}
-                            <h3 className="truncate text-xl font-semibold leading-tight text-base-content">
-                                {project.name}
-                            </h3>
-                        </div>
-                        <CopyBadge
-                            value={project.path}
-                            label={t('common:buttons.copyPath')}
-                            copiedLabel={t('common:success')}
-                            className="max-w-full self-start rounded-md bg-transparent px-0 text-base-content/55"
-                            data-testid={`btnCopyProjectPath_${sectionKey}_${project.path}`}
-                        />
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2 self-start">
-                        {reorderHandle}
-                        {downloadableProjectEditor && !releaseInstalled && (
-                            <Tooltip
-                                placement="top"
-                                tip={t('card.installRequiredEditor')}
-                            >
-                                <button
-                                    type="button"
-                                    data-testid="btnInstallRequiredProjectEditor"
-                                    disabled={editorDownloading}
-                                    className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-warning/60 bg-base-100/20 text-warning"
-                                    aria-label={t('card.installRequiredEditor')}
-                                    onClick={() =>
-                                        onInstallRequiredProjectEditor(
-                                            project,
-                                            downloadableProjectEditor,
-                                        )
-                                    }
-                                >
-                                    {editorDownloading ? (
-                                        <span className="loading loading-spinner loading-xs" />
-                                    ) : (
-                                        <Download size={15} />
-                                    )}
-                                </button>
-                            </Tooltip>
-                        )}
-                        <Tooltip
-                            placement="top"
-                            tip={t(
-                                project.pinned
-                                    ? 'project.unpinProject'
-                                    : 'project.pinProject',
-                                { ns: 'menus' },
-                            )}
-                        >
-                            <button
-                                type="button"
-                                data-testid="btnToggleProjectPinned"
-                                className={`btn btn-ghost btn-square h-7 min-h-7 w-7 border bg-base-100/20 ${project.pinned ? 'border-primary/50 text-primary' : 'border-base-300'}`}
-                                aria-label={t(
-                                    project.pinned
-                                        ? 'project.unpinProject'
-                                        : 'project.pinProject',
-                                    { ns: 'menus' },
-                                )}
-                                onClick={() => onTogglePinned(project)}
-                            >
-                                <Pin size={16} />
-                            </button>
-                        </Tooltip>
-                        <Tooltip placement="top" tip={t('card.openFolders')}>
-                            <button
-                                type="button"
-                                data-testid="btnProjectFolders"
-                                className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-base-300 bg-base-100/20"
-                                aria-label={t('card.openFolders')}
-                                onClick={(event) =>
-                                    onProjectFoldersOptions(event, project)
-                                }
-                            >
-                                <FolderOpen size={16} />
-                            </button>
-                        </Tooltip>
-                        <Tooltip
-                            placement="top"
-                            tip={t('card.projectSettings')}
-                        >
-                            <button
-                                type="button"
-                                data-testid="btnProjectSettings"
-                                className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-base-300 bg-base-100/20"
-                                aria-label={t('card.projectSettings')}
-                                onClick={() => onProjectSettings(project)}
-                            >
-                                <Settings size={16} />
-                            </button>
-                        </Tooltip>
-                        <button
-                            type="button"
-                            data-testid="btnProjectMoreOptions"
-                            onClick={(event) =>
-                                onProjectMoreOptions(event, project)
-                            }
-                            className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-base-300 bg-base-100/20"
-                            aria-label={t('table.moreOptions', {
-                                project: project.name,
-                            })}
-                        >
-                            <EllipsisVertical size={17} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-6">
-                    <div
-                        data-testid="projectBadges"
-                        className="flex min-w-0 flex-wrap content-start items-start gap-1.5"
-                    >
-                        <Tooltip
-                            placement="top"
-                            tip={
-                                releaseInstalled
-                                    ? t('card.godotVersion', {
-                                          version: versionLabel,
-                                      })
-                                    : t('table.invalidReasons.missingEditor')
-                            }
-                            tone={releaseInstalled ? 'default' : 'warning'}
-                        >
-                            <span
-                                className={`badge badge-outline h-7 gap-1.5 px-2 text-xs ${releaseInstalled ? 'border-base-content/25' : 'border-warning/60 text-warning'}`}
-                            >
-                                {editorDownloading ? (
-                                    <span className="loading loading-spinner loading-xs" />
-                                ) : releaseInstalled ? (
-                                    <Tag size={13} />
-                                ) : (
-                                    <TriangleAlert size={13} />
-                                )}
-                                {versionLabel}
-                                {project.release.prerelease && (
-                                    <FlaskConical
-                                        size={12}
-                                        className="text-secondary"
-                                    />
-                                )}
-                            </span>
-                        </Tooltip>
-
-                        {project.codeEditorId && (
-                            <Tooltip
-                                placement="top"
-                                tip={codeEditorTooltip}
-                                tone={
-                                    codeEditorUnavailable
-                                        ? 'warning'
-                                        : 'default'
-                                }
-                            >
-                                <span
-                                    className={`badge badge-outline h-7 gap-1.5 px-2 text-xs ${codeEditorUnavailable ? 'border-warning/60 text-warning' : 'border-base-content/25'}`}
-                                >
-                                    {codeEditorUnavailable ? (
-                                        <TriangleAlert
-                                            size={13}
-                                            className="stroke-warning"
-                                        />
-                                    ) : (
-                                        <CodeEditorIntegrationIcon
-                                            integrationId={project.codeEditorId}
-                                            className="size-3.5"
-                                        />
-                                    )}
-                                    <span className="max-w-48 truncate">
-                                        {codeEditorName}
-                                    </span>
-                                </span>
-                            </Tooltip>
-                        )}
-
-                        {project.withGit && (
-                            <Tooltip
-                                placement="top"
-                                tip={t(
-                                    isGitHubProject
-                                        ? 'table.githubProject'
-                                        : 'table.gitProject',
-                                )}
-                                tone="default"
-                            >
-                                <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
-                                    {isGitHubProject ? (
-                                        <img
-                                            src={githubIconSrc}
-                                            className="h-3.5 w-3.5"
-                                            alt=""
-                                            aria-hidden="true"
-                                            data-testid="githubProjectIcon"
-                                        />
-                                    ) : (
-                                        <img
-                                            src={gitIconColor}
-                                            className="h-3.5 w-3.5"
-                                            alt=""
-                                            data-testid="gitProjectIcon"
-                                        />
-                                    )}
-                                    {isGitHubProject ? 'GitHub' : 'Git'}
-                                </span>
-                            </Tooltip>
-                        )}
-
-                        {project.open_windowed && (
-                            <Tooltip
-                                placement="top"
-                                tip={t('table.windowedMode')}
-                                tone="default"
-                            >
-                                <span className="badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs">
-                                    <PanelTop size={13} />
-                                    {t('card.windowed')}
-                                </span>
-                            </Tooltip>
-                        )}
-                    </div>
-
-                    <div
-                        data-testid="projectLaunchActions"
-                        className="flex min-w-36 shrink-0 flex-col items-end gap-2"
-                    >
-                        <button
-                            type="button"
-                            data-testid="btnEditProjectInGodot"
-                            disabled={launchDisabled}
-                            onClick={() => onLaunchProject(project)}
-                            className="btn btn-primary btn-sm min-w-32 gap-2 rounded-md"
-                        >
-                            <Play size={16} />
-                            {t('card.editInGodot')}
-                        </button>
-
-                        <p className="whitespace-nowrap text-sm text-base-content/55">
-                            {project.last_opened
-                                ? t('card.opened', {
-                                      age: formatRelativeTime(
-                                          project.last_opened,
-                                          locale,
-                                      ),
-                                  })
-                                : t('card.notOpened')}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </li>
-    );
-};
+} from './project-list.types';
+import { ProjectListItem } from './project-list-item.component';
 
 type SortablePinnedProjectItemProps = Omit<
     ProjectListItemProps,
@@ -511,7 +87,10 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
     );
 };
 
-/** Renders the grouped project list and its reorderable pinned section. */
+/**
+ * Renders grouped projects and the reorderable pinned section.
+ * @param props - Project sections, selected presentation and project actions.
+ */
 export const ProjectsList: React.FC<ProjectsListProps> = ({
     sections,
     loading,
@@ -712,7 +291,13 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                             }
                             onDragEnd={handlePinnedDragEnd}
                         >
-                            <ul className="flex flex-col gap-3">
+                            <ul
+                                className={
+                                    itemProps.viewMode === 'list'
+                                        ? 'flex flex-col'
+                                        : 'flex flex-col gap-3'
+                                }
+                            >
                                 {section.projects.map((project, index) => (
                                     <SortablePinnedProjectItem
                                         key={`${section.key}_${project.path}`}
@@ -745,7 +330,13 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                             </ul>
                         </DragDropProvider>
                     ) : (
-                        <ul className="flex flex-col gap-3">
+                        <ul
+                            className={
+                                itemProps.viewMode === 'list'
+                                    ? 'flex flex-col'
+                                    : 'flex flex-col gap-3'
+                            }
+                        >
                             {section.projects.map((project) => (
                                 <ProjectListItem
                                     key={`${section.key}_${project.path}`}

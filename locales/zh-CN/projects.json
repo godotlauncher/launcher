@@ -1,4 +1,10 @@
 {
+    "view": {
+        "cards": "卡片视图",
+        "list": "列表视图",
+        "openProject": "在 Godot 中打开 {{project}}",
+        "saveFailed": "无法保存项目视图，请重试。"
+    },
     "title": "项目",
     "emptyState": {
         "welcome": {

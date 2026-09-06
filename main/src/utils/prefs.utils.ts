@@ -48,6 +48,11 @@ function clonePrefs<T>(prefs: T): T {
     return JSON.parse(JSON.stringify(prefs));
 }
 
+/**
+ * Merges saved preferences and normalises the optional project presentation.
+ * @param defaultPrefs - Defaults for missing preferences.
+ * @param prefs - Saved preference values.
+ */
 function mergeWithDefaults(
     defaultPrefs: UserPreferences,
     prefs: StoredUserPreferences,
@@ -58,6 +63,8 @@ function mergeWithDefaults(
     return {
         ...clonePrefs(defaultPrefs),
         ...runtimePrefs,
+        projects_view_mode:
+            runtimePrefs.projects_view_mode === 'list' ? 'list' : 'cards',
     };
 }
 
@@ -124,6 +131,7 @@ export async function getConfigDir(): Promise<string> {
     return defaultPaths.configDir;
 }
 
+/** Returns defaults for a new preferences file. */
 export async function getDefaultPrefs(): Promise<UserPreferences> {
     const defaultPrefs = getDefaultDirs();
     const platform = os.platform();
@@ -131,6 +139,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
 
     return {
         prefs_version: 4,
+        projects_view_mode: 'cards',
         install_location: pathModule.resolve(defaultPrefs.dataDir),
         config_location: pathModule.resolve(defaultPrefs.configDir),
         projects_location: pathModule.resolve(defaultPrefs.projectDir),

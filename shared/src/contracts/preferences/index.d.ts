@@ -18,6 +18,8 @@ export type CodeEditorIntegrationPreferences = {
 };
 
 export type UserPreferences = {
+    /** Preferred Projects presentation; older preferences default to Cards. */
+    projects_view_mode?: 'cards' | 'list';
     prefs_version: number;
     install_location: string;
     config_location: string;
