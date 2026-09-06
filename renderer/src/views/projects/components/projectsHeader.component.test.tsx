@@ -6,6 +6,10 @@ describe('ProjectsHeader', () => {
     it('keeps the title and location while hiding list controls', () => {
         const html = renderToStaticMarkup(
             <ProjectsHeader
+                viewMode="cards"
+                onViewModeChange={vi.fn()}
+                cardsViewLabel="Cards view"
+                listViewLabel="List view"
                 title="Projects"
                 projectsLocation="/Projects"
                 searchPlaceholder="Search"
@@ -24,6 +28,7 @@ describe('ProjectsHeader', () => {
 
         expect(html).toContain('Projects');
         expect(html).toContain('/Projects');
+        expect(html).not.toContain('tabProjectList');
         expect(html).not.toContain('>Add<');
         expect(html).not.toContain('>New Project<');
         expect(html).not.toContain('placeholder="Search"');

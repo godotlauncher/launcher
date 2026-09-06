@@ -32,6 +32,7 @@ import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
 import { useProjectActions } from './projects/hooks/useProjectActions';
 import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
+import type { ProjectViewMode } from './projects/project-view.types';
 import {
     getInvalidProjectMessageKey,
     getProjectSections,
@@ -71,6 +72,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         'menus',
         'dialogs',
     ]);
+    const [savingViewMode, setSavingViewMode] = useState(false);
+    const savingViewModeRef = useRef(false);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -110,6 +113,30 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const { addAlert, addCustomConfirm } = useAlerts();
 
     const { preferences, updatePreferences } = usePreferences();
+    const projectViewMode: ProjectViewMode =
+        preferences?.projects_view_mode === 'list' ? 'list' : 'cards';
+    /**
+     * Saves the presentation before changing it, retaining the old view on failure.
+     * @param mode - The requested project presentation.
+     */
+    const setProjectViewMode = async (mode: ProjectViewMode) => {
+        if (
+            !preferences ||
+            savingViewModeRef.current ||
+            mode === projectViewMode
+        )
+            return;
+        savingViewModeRef.current = true;
+        setSavingViewMode(true);
+        try {
+            await updatePreferences({ projects_view_mode: mode });
+        } catch {
+            addAlert(t('common:error'), t('view.saveFailed'));
+        } finally {
+            savingViewModeRef.current = false;
+            setSavingViewMode(false);
+        }
+    };
     const { listIntegrations: listToolIntegrations } = useToolIntegrations();
     const {
         installedReleases,
@@ -401,6 +428,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
                 {!showEmptyState && (
                     <ProjectsHeader
+                        viewMode={projectViewMode}
+                        onViewModeChange={(mode) =>
+                            void setProjectViewMode(mode)
+                        }
+                        viewModeDisabled={savingViewMode || !preferences}
+                        cardsViewLabel={t('view.cards')}
+                        listViewLabel={t('view.list')}
                         title={t('title')}
                         projectsLocation={preferences?.projects_location}
                         searchPlaceholder={t('search.placeholder')}
@@ -431,6 +465,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     <>
                         <div className="divider m-0"></div>
                         <ProjectsList
+                            viewMode={projectViewMode}
                             sections={projectSections}
                             projectGitHubUrls={projectGitHubUrls}
                             loading={loading}

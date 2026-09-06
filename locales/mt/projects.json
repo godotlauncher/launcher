@@ -1,4 +1,10 @@
 {
+    "view": {
+        "cards": "Dehra bil-karti",
+        "list": "Dehra bil-lista",
+        "openProject": "Iftaħ {{project}} f’Godot",
+        "saveFailed": "Ma setgħetx tiġi ssejvjata d-dehra tal-proġetti. Erġa’ pprova."
+    },
     "title": "Proġetti",
     "emptyState": {
         "welcome": {

@@ -1,4 +1,10 @@
 {
+    "view": {
+        "cards": "Cards view",
+        "list": "List view",
+        "openProject": "Open {{project}} in Godot",
+        "saveFailed": "Could not save the project view. Please try again."
+    },
     "title": "Projects",
     "emptyState": {
         "welcome": {

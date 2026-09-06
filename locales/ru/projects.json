@@ -1,4 +1,10 @@
 {
+    "view": {
+        "cards": "Вид карточками",
+        "list": "Вид списком",
+        "openProject": "Открыть {{project}} в Godot",
+        "saveFailed": "Не удалось сохранить вид проектов. Попробуйте ещё раз."
+    },
     "title": "Проекты",
     "emptyState": {
         "welcome": {

@@ -211,6 +211,7 @@ suite('prefs.util', (_test) => {
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
                 prefs_version: 4,
+                projects_view_mode: 'cards',
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -255,6 +256,7 @@ suite('prefs.util', (_test) => {
             const prefs = await getDefaultPrefs();
             expect(prefs).toEqual({
                 prefs_version: 4,
+                projects_view_mode: 'cards',
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -272,13 +274,38 @@ suite('prefs.util', (_test) => {
         });
     });
 
+    it.each([
+        [undefined, 'cards'],
+        ['cards', 'cards'],
+        ['list', 'list'],
+        ['invalid', 'cards'],
+        [null, 'cards'],
+    ])(
+        'normalises saved project view %s to %s',
+        async (storedMode, expected) => {
+            fsMock.existsSync.mockReturnValueOnce(true);
+            fsPromisesMock.readFile.mockResolvedValueOnce(
+                JSON.stringify({
+                    projects_view_mode: storedMode,
+                    language: 'it',
+                }),
+            );
+            const prefs = await readPrefsFromDisk(
+                '/home/user/.godot/prefs.json',
+                await getDefaultPrefs(),
+            );
+            expect(prefs.projects_view_mode).toBe(expected);
+            expect(prefs.language).toBe('it');
+        },
+    );
+
     it('should read prefs from disk', async () => {
         fsMock.existsSync.mockReturnValueOnce(true);
         fsPromisesMock.readFile.mockResolvedValueOnce(JSON.stringify({ a: 1 }));
 
         const prefsPath = '/home/user/.godot/prefs.json';
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
-        expect(prefs).toEqual({ a: 1 });
+        expect(prefs).toEqual({ a: 1, projects_view_mode: 'cards' });
     });
 
     it('should expose stored prefs separately from default-merged prefs', async () => {
@@ -309,7 +336,7 @@ suite('prefs.util', (_test) => {
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
 
         expect(fsMock.existsSync).toBeCalledWith(prefsPath);
-        expect(prefs).toEqual({ a: 1 });
+        expect(prefs).toEqual({ a: 1, projects_view_mode: 'cards' });
     });
 
     it('should read default prefs from an empty file without a parse error dialog', async () => {
@@ -320,7 +347,7 @@ suite('prefs.util', (_test) => {
             a: 1,
         });
 
-        expect(prefs).toEqual({ a: 1 });
+        expect(prefs).toEqual({ a: 1, projects_view_mode: 'cards' });
         expect(dialog.showMessageBox).not.toHaveBeenCalled();
     });
 
@@ -341,6 +368,7 @@ suite('prefs.util', (_test) => {
         fsPromisesMock.readFile.mockResolvedValueOnce(
             JSON.stringify({
                 prefs_version: 4,
+                projects_view_mode: 'cards',
                 vs_code_path: '/legacy/code',
                 installed_tools: {
                     last_scan: 1,

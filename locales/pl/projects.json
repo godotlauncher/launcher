@@ -1,4 +1,10 @@
 {
+    "view": {
+        "cards": "Widok kart",
+        "list": "Widok listy",
+        "openProject": "Otwórz {{project}} w Godot",
+        "saveFailed": "Nie udało się zapisać widoku projektów. Spróbuj ponownie."
+    },
     "title": "Projekty",
     "emptyState": {
         "welcome": {

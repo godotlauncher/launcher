@@ -3,7 +3,15 @@ import type React from 'react';
 import { CopyBadge } from '../../../components/ui/copyBadge.component';
 import { SearchField } from '../../../components/ui/searchField.component';
 
+import type { ProjectViewMode } from '../project-view.types';
+import { ProjectViewToggle } from './project-view-toggle.component';
+
 type ProjectsHeaderProps = {
+    viewMode: ProjectViewMode;
+    viewModeDisabled?: boolean;
+    onViewModeChange: (mode: ProjectViewMode) => void;
+    cardsViewLabel: string;
+    listViewLabel: string;
     title: string;
     projectsLocation?: string;
     searchPlaceholder: string;
@@ -26,6 +34,11 @@ type ProjectsHeaderProps = {
  * @returns The projects header.
  */
 export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
+    viewMode,
+    viewModeDisabled,
+    onViewModeChange,
+    cardsViewLabel,
+    listViewLabel,
     title,
     projectsLocation,
     searchPlaceholder,
@@ -83,7 +96,14 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
             )}
         </div>
         {showControls && (
-            <div className="flex flex-row justify-end my-2 items-center">
+            <div className="flex flex-row justify-between gap-4 mt-2 items-center">
+                <ProjectViewToggle
+                    disabled={viewModeDisabled}
+                    mode={viewMode}
+                    onChange={onViewModeChange}
+                    cardsLabel={cardsViewLabel}
+                    listLabel={listViewLabel}
+                />
                 <SearchField
                     placeholder={searchPlaceholder}
                     value={searchValue}
