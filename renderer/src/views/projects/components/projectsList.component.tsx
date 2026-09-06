@@ -609,19 +609,8 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
 
                         <div
                             data-testid="projectLaunchActions"
-                            className="flex min-w-36 shrink-0 flex-col items-end gap-2"
+                            className="flex min-w-36 shrink-0 items-center gap-2"
                         >
-                            <button
-                                type="button"
-                                data-testid="btnEditProjectInGodot"
-                                disabled={launchDisabled}
-                                onClick={() => onLaunchProject(project)}
-                                className="btn btn-primary btn-sm min-w-32 gap-2 rounded-md"
-                            >
-                                <Play size={16} />
-                                {t('card.editInGodot')}
-                            </button>
-
                             <p className="whitespace-nowrap text-sm text-base-content/55">
                                 {project.last_opened
                                     ? t('card.opened', {
@@ -632,6 +621,17 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
                                       })
                                     : t('card.notOpened')}
                             </p>
+
+                            <button
+                                type="button"
+                                data-testid="btnEditProjectInGodot"
+                                disabled={launchDisabled}
+                                onClick={() => onLaunchProject(project)}
+                                className="btn btn-primary btn-sm min-w-32 gap-2 rounded-md"
+                            >
+                                <Play size={16} />
+                                {t('card.editInGodot')}
+                            </button>
                         </div>
                     </div>
                 </div>
