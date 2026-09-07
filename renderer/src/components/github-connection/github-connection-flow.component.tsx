@@ -4,7 +4,13 @@ import type {
     AppIntegrationConnectionOption,
     AppIntegrationSummary,
 } from '@shared/contracts';
-import { Building2, Plus, UserRound } from 'lucide-react';
+import {
+    Building2,
+    ExternalLink,
+    Plus,
+    ShieldCheck,
+    UserRound,
+} from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -195,7 +201,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
             action: () => Promise<AppIntegrationActionResult>,
             pendingState: Extract<
                 GitHubConnectionFlowState,
-                'authorising' | 'installing'
+                'authorising' | 'installing' | 'saving'
             >,
         ): Promise<void> => {
             if (operationBusyRef.current) return;
@@ -263,7 +269,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         if (selectedOptionIds.length === 0) return;
         void runAction(
             () => finishConnections('github', selectedOptionIds),
-            'authorising',
+            'saving',
         );
     }, [finishConnections, runAction, selectedOptionIds]);
 
@@ -348,6 +354,9 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                               ? 'connections.flow.addAccount'
                               : 'connections.flow.continueInBrowser',
                     )}
+                    {!showAccessManagement && (
+                        <ExternalLink size={16} aria-hidden="true" />
+                    )}
                 </button>
             )}
             {state === 'intro' && showAccessManagement && (
@@ -393,12 +402,29 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
             {state === 'intro' && (
                 <>
-                    <p>
+                    <p className="text-sm font-medium text-base-content">
                         {showAccessManagement
                             ? t('connections.flow.accessDescription')
                             : (description ??
-                              t('connections.flow.description'))}
+                              t('connections.github.description'))}
                     </p>
+                    {!showAccessManagement && (
+                        <>
+                            <p className="text-sm text-base-content/70">
+                                {t('connections.flow.browserDescription')}
+                            </p>
+                            <div className="flex items-center gap-3 text-sm text-base-content/65">
+                                <ShieldCheck
+                                    className="shrink-0"
+                                    size={18}
+                                    aria-hidden="true"
+                                />
+                                <span>
+                                    {t('connections.github.accessNote')}
+                                </span>
+                            </div>
+                        </>
+                    )}
                     {accessFailure && (
                         <p className="text-sm text-error" role="alert">
                             {t('connections.errors.generic')}
@@ -496,6 +522,13 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
             )}
 
             {state === 'authorising' && <WaitingState t={t} />}
+
+            {state === 'saving' && (
+                <div className="flex items-center gap-3" role="status">
+                    <span className="loading loading-spinner loading-sm" />
+                    <span>{t('connections.status.connecting')}</span>
+                </div>
+            )}
 
             {state === 'choosing' && integration && (
                 <ConnectionChooser
@@ -606,7 +639,7 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
                     {t(errorTranslationKey(failure))}
                 </p>
             )}
-            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-base-300 border-t pt-4">
                 {options.length > 0 && (
                     <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
                         <input
@@ -629,7 +662,7 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
                 )}
                 <button
                     type="button"
-                    className="btn btn-ghost btn-sm ml-auto"
+                    className="btn btn-outline btn-sm ml-auto"
                     disabled={busy}
                     onClick={onInstall}
                 >
@@ -686,19 +719,29 @@ const ConnectionOption: React.FC<ConnectionOptionProps> = ({
     onCheckedChange,
 }) => (
     <label
-        className={`flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-box border p-3 ${checked ? 'border-primary bg-primary/5' : 'border-base-300'}`}
+        className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-box border p-3 ${checked ? 'border-primary bg-primary/5' : 'border-base-300'}`}
     >
+        <input
+            type="checkbox"
+            className="checkbox checkbox-sm shrink-0"
+            aria-label={t('connections.actions.selectInstallation', {
+                connection: option.login,
+            })}
+            checked={checked}
+            disabled={disabled}
+            onChange={(event) => onCheckedChange(event.target.checked)}
+        />
         <span className="flex min-w-0 items-center gap-3">
             {option.type === 'organization' ? (
                 <Building2 size={18} aria-hidden="true" />
             ) : (
                 <UserRound size={18} aria-hidden="true" />
             )}
-            <span className="min-w-0">
-                <span className="block truncate text-sm font-medium">
+            <span className="flex min-w-0 items-baseline gap-3">
+                <span className="truncate text-sm font-medium">
                     {option.login}
                 </span>
-                <span className="block text-xs text-base-content/60">
+                <span className="shrink-0 text-xs text-base-content/60">
                     {t(
                         option.type === 'organization'
                             ? 'connections.drawer.organization'
@@ -707,16 +750,6 @@ const ConnectionOption: React.FC<ConnectionOptionProps> = ({
                 </span>
             </span>
         </span>
-        <input
-            type="checkbox"
-            className="checkbox checkbox-sm"
-            aria-label={t('connections.actions.selectInstallation', {
-                connection: option.login,
-            })}
-            checked={checked}
-            disabled={disabled}
-            onChange={(event) => onCheckedChange(event.target.checked)}
-        />
     </label>
 );
 

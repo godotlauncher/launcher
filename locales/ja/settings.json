@@ -233,10 +233,11 @@
         "genericDescription": "このサービスを接続して Godot Launcher で使用します。",
         "flow": {
             "importDescription": "GitHub に接続してリポジトリを参照・インポートします。",
-            "addAccount": "別のアカウントを追加",
+            "addAccount": "アカウントまたは組織を追加",
             "title": "GitHub に接続",
             "reconnect": "GitHub に再接続",
             "description": "続行するには GitHub に接続してください。現在の作業は保持されます。",
+            "browserDescription": "ブラウザーでアクセスを承認してから、ここに戻ってください。",
             "continueInBrowser": "ブラウザーで続行",
             "waiting": "ブラウザーで接続を完了してから、ここに戻ってください。",
             "refreshRepositories": "リポジトリを更新",

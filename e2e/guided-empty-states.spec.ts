@@ -928,7 +928,9 @@ test('GitHub import connects in the existing modal and refreshes repositories', 
     const list = modal.getByTestId('github-connection-options');
     await expect(list).toBeVisible();
     const footer = modal.locator('footer');
-    const toolbar = modal.getByRole('button', { name: 'Add another account' });
+    const toolbar = modal.getByRole('button', {
+        name: 'Add account or organisation',
+    });
     const footerBefore = await footer.boundingBox();
     const toolbarBefore = await toolbar.boundingBox();
     await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });

@@ -3,12 +3,20 @@ import type {
     AppIntegrationConnectionSummary,
     AppIntegrationSummary,
 } from '@shared/contracts';
-import { Building2, Plug, Plus, Settings2, UserRound } from 'lucide-react';
+import {
+    Building2,
+    Plug,
+    Plus,
+    Settings2,
+    Unplug,
+    UserRound,
+} from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black.svg';
 import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 import { Drawer } from '../../../components/ui/drawer/drawer.component';
+import { Tooltip } from '../../../components/ui/tooltip.component';
 import { useTheme } from '../../../hooks/useTheme';
 import { SettingsPanelSection } from './settingsPanelSection.component';
 
@@ -329,6 +337,12 @@ export const GitHubConnectionsDrawer: React.FC<
 }) => {
     const storageUnavailable =
         integration?.state === 'secure-storage-unavailable';
+    const { theme, systemTheme } = useTheme();
+    const effectiveTheme = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
+    const githubIconSrc =
+        effectiveTheme === 'dark'
+            ? githubInvertocatWhite
+            : githubInvertocatBlack;
 
     return (
         <Drawer
@@ -343,11 +357,21 @@ export const GitHubConnectionsDrawer: React.FC<
             panelClassName="max-w-[100vw]"
         >
             <Drawer.Header>
-                <div className="min-w-0">
-                    <Drawer.Title>{t('connections.drawer.title')}</Drawer.Title>
-                    <p className="mt-1 text-sm text-base-content/65">
-                        {t('connections.drawer.description')}
-                    </p>
+                <div className="flex min-w-0 items-center gap-3">
+                    <img
+                        src={githubIconSrc}
+                        className="size-6 shrink-0"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <div className="min-w-0">
+                        <Drawer.Title>
+                            {t('connections.drawer.title')}
+                        </Drawer.Title>
+                        <p className="mt-1 text-sm text-base-content/65">
+                            {t('connections.drawer.description')}
+                        </p>
+                    </div>
                 </div>
                 <Drawer.CloseButton />
             </Drawer.Header>
@@ -373,16 +397,23 @@ export const GitHubConnectionsDrawer: React.FC<
                         className="rounded-box border border-base-300 bg-base-200/35 p-4"
                     >
                         <div className="flex items-center justify-between gap-3">
-                            <div className="min-w-0">
-                                <h4 className="truncate font-semibold">
-                                    {connection.accountDisplayName ??
-                                        connection.accountLogin}
-                                </h4>
-                                {connection.accountDisplayName && (
-                                    <p className="truncate text-xs text-base-content/60">
-                                        @{connection.accountLogin}
-                                    </p>
-                                )}
+                            <div className="flex min-w-0 items-center gap-3">
+                                <UserRound
+                                    className="shrink-0"
+                                    size={18}
+                                    aria-hidden="true"
+                                />
+                                <div className="min-w-0">
+                                    <h4 className="truncate font-semibold">
+                                        {connection.accountDisplayName ??
+                                            connection.accountLogin}
+                                    </h4>
+                                    {connection.accountDisplayName && (
+                                        <p className="truncate text-xs text-base-content/60">
+                                            @{connection.accountLogin}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                             {connection.state !== 'connected' && (
                                 <button
@@ -409,41 +440,66 @@ export const GitHubConnectionsDrawer: React.FC<
                                         availability={target.availability}
                                         t={t}
                                         action={
-                                            <div className="flex shrink-0 flex-wrap justify-end gap-2">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-xs btn-outline"
-                                                    disabled={
-                                                        target.availability ===
-                                                        'unavailable'
-                                                    }
-                                                    onClick={() =>
-                                                        onManageAccess(
-                                                            integration.id,
-                                                            connection.id,
-                                                            target.id,
-                                                        )
-                                                    }
-                                                >
-                                                    {t(
+                                            <div className="flex shrink-0 justify-end gap-2">
+                                                <Tooltip
+                                                    tip={t(
                                                         'connections.actions.manageAccess',
                                                     )}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-xs btn-ghost text-error"
-                                                    onClick={() =>
-                                                        onDisconnect(
-                                                            integration,
-                                                            connection,
-                                                            target,
-                                                        )
-                                                    }
+                                                    placement="top"
+                                                    delay={0}
                                                 >
-                                                    {t(
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-base-300 bg-base-100/20"
+                                                        aria-label={t(
+                                                            'connections.actions.manageAccess',
+                                                        )}
+                                                        disabled={
+                                                            target.availability ===
+                                                            'unavailable'
+                                                        }
+                                                        onClick={() =>
+                                                            onManageAccess(
+                                                                integration.id,
+                                                                connection.id,
+                                                                target.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Settings2
+                                                            size={16}
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+                                                </Tooltip>
+                                                <Tooltip
+                                                    tip={t(
                                                         'connections.actions.disconnect',
                                                     )}
-                                                </button>
+                                                    placement="top"
+                                                    tone="error"
+                                                    delay={0}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-ghost btn-square h-7 min-h-7 w-7 border border-base-300 bg-base-100/20 text-error hover:bg-error/10"
+                                                        aria-label={t(
+                                                            'connections.actions.disconnect',
+                                                        )}
+                                                        onClick={() =>
+                                                            onDisconnect(
+                                                                integration,
+                                                                connection,
+                                                                target,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Unplug
+                                                            size={16}
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+                                                </Tooltip>
                                             </div>
                                         }
                                     />
@@ -485,20 +541,13 @@ const ConnectionTargetRow: React.FC<ConnectionTargetRowProps> = ({
             ) : (
                 <UserRound className="shrink-0" size={18} aria-hidden="true" />
             )}
-            <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
                 <p className="truncate text-sm font-medium">{login}</p>
-                <p className="text-xs text-base-content/60">
-                    {t(
-                        type === 'organization'
-                            ? 'connections.drawer.organization'
-                            : 'connections.drawer.personalAccount',
-                    )}
-                </p>
-                <p
-                    className={`text-xs ${
+                <span
+                    className={`badge badge-sm shrink-0 ${
                         availability === 'unavailable'
-                            ? 'text-warning'
-                            : 'text-success'
+                            ? 'badge-warning'
+                            : 'badge-success'
                     }`}
                 >
                     {t(
@@ -506,7 +555,7 @@ const ConnectionTargetRow: React.FC<ConnectionTargetRowProps> = ({
                             ? 'connections.status.unavailable'
                             : 'connections.status.connected',
                     )}
-                </p>
+                </span>
             </div>
         </div>
         {action}

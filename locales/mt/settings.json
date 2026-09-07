@@ -233,10 +233,11 @@
         "genericDescription": "Qabbad dan is-servizz biex tużah f'Godot Launcher.",
         "flow": {
             "importDescription": "Qabbad GitHub biex tfittex u timporta r-repożitorji tiegħek.",
-            "addAccount": "Żid kont ieħor",
+            "addAccount": "Żid kont jew organizzazzjoni",
             "title": "Qabbad GitHub",
             "reconnect": "Erġa' qabbad GitHub",
             "description": "Qabbad GitHub biex tkompli. Ix-xogħol attwali tiegħek se jinżamm.",
+            "browserDescription": "Kompli fil-browser biex tawtorizza l-aċċess, imbagħad erġa' lura hawn.",
             "continueInBrowser": "Kompli fil-browser",
             "waiting": "Imla l-konnessjoni fil-browser, imbagħad erġa' lura hawn.",
             "refreshRepositories": "Aġġorna r-repożitorji",

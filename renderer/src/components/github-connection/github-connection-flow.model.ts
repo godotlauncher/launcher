@@ -6,6 +6,7 @@ import type {
 export type GitHubConnectionFlowState =
     | 'intro'
     | 'authorising'
+    | 'saving'
     | 'choosing'
     | 'installing'
     | 'error';

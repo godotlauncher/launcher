@@ -233,10 +233,11 @@
         "genericDescription": "連接此服務，以便在 Godot Launcher 中使用。",
         "flow": {
             "importDescription": "連接 GitHub 以瀏覽及匯入你的儲存庫。",
-            "addAccount": "新增其他帳號",
+            "addAccount": "新增帳號或組織",
             "title": "連接 GitHub",
             "reconnect": "重新連接 GitHub",
             "description": "連接 GitHub 以繼續。你目前的工作將會保留。",
+            "browserDescription": "在瀏覽器中繼續以授權存取，然後返回此處。",
             "continueInBrowser": "在瀏覽器中繼續",
             "waiting": "在瀏覽器中完成連線，然後返回此處。",
             "refreshRepositories": "重新整理儲存庫",
