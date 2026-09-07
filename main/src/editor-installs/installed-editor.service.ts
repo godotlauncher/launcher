@@ -12,11 +12,13 @@ import type {
 } from '@shared/contracts';
 import logger from 'electron-log';
 import type { AppConfig } from '../config/index.js';
+import { t } from '../i18n/index.js';
 import { parseCustomEngineManifest } from '../utils/customEngineManifest.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { EditorProjectRepairAdapter } from './editor-project-repair.adapter.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import {
+    getInstalledEditorIdentity,
     hasSameInstalledEditorIdentity,
     InstalledEditorStore,
 } from './installed-editor.store.js';
@@ -26,6 +28,22 @@ const VALIDATION_PATH_CHECK_TIMEOUT_MS = 1500;
 /** Owns registered editor persistence and lifecycle operations. */
 @Injectable()
 export class InstalledEditorService {
+    private readonly activeOfficialInstalls = new Set<string>();
+
+    /**
+     * Reserves an editor identity until an official install has finished.
+     *
+     * @param release - Version and flavour being installed.
+     * @returns A callback that releases the reservation after cleanup.
+     */
+    reserveOfficialInstall(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+    ): () => void {
+        const identity = getInstalledEditorIdentity(release);
+        this.activeOfficialInstalls.add(identity);
+        return () => this.activeOfficialInstalls.delete(identity);
+    }
+
     /**
      * Creates the installed-editor service.
      *
@@ -104,6 +122,16 @@ export class InstalledEditorService {
                 };
             }
 
+            if (
+                this.activeOfficialInstalls.has(
+                    getInstalledEditorIdentity(release),
+                )
+            ) {
+                return {
+                    success: false,
+                    error: t('installs:customEditor.duplicate.message'),
+                };
+            }
             const releases = await this.store.put(release);
             await this.projectRepair.revalidateProjects();
             return { success: true, release, releases };

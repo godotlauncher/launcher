@@ -99,7 +99,7 @@
         "godotProject": "Proġett Godot",
         "editorResolution": {
             "title": "Verżjoni tal-editur meħtieġa",
-            "message": "Dan il-proġett jeħtieġ editur li mhuwiex installat.",
+            "message": "Agħżel l-editur ta' Godot li għandu jintuża għal dan il-proġett.",
             "version": "Verżjoni",
             "channel": "Kanal",
             "flavor": "Varjant",

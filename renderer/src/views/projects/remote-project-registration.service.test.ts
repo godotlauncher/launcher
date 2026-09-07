@@ -161,4 +161,51 @@ describe('remote project registration service', () => {
             resolution: 'add_missing',
         });
     });
+
+    it('reuses an installed main-process choice without queueing a repair', async () => {
+        const project = createDiscoveredProject('Game', '/repo/game');
+        const choice = {
+            id: 'installed:official:4.4.3-stable:standard',
+            version: '4.4.3-stable',
+            source: 'official' as const,
+            flavor: 'gdscript' as const,
+            prerelease: false,
+            installed: true,
+            recommended: true,
+        };
+        const plan: RemoteProjectEditorPlanGroup[] = [
+            {
+                key: '4.4',
+                version: '4.4.3-stable',
+                mono: false,
+                candidates: [
+                    {
+                        project,
+                        result: { success: false },
+                        options: {},
+                    },
+                ],
+                choices: [choice],
+                choice: choice.id,
+            },
+        ];
+        const addProject = vi.fn().mockResolvedValue({
+            success: true,
+            newProject: { name: 'Game', path: '/repo/game' },
+        });
+
+        const result = await applyRemoteProjectEditorPlan({
+            plan,
+            addProject,
+            handleAddProjectResult: vi.fn().mockResolvedValue(true),
+            t: (key) => key,
+            onProgress: vi.fn(),
+        });
+
+        expect(addProject).toHaveBeenCalledWith(project.projectFilePath, {
+            resolution: 'use_selected',
+            editorChoiceId: choice.id,
+        });
+        expect(result.repairRequests).toEqual([]);
+    });
 });

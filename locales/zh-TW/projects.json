@@ -99,7 +99,7 @@
         "godotProject": "Godot 專案",
         "editorResolution": {
             "title": "需要編輯器版本",
-            "message": "此專案要求的編輯器尚未安裝。",
+            "message": "選擇要用於此專案的 Godot 編輯器。",
             "version": "版本",
             "channel": "管道",
             "flavor": "類型",

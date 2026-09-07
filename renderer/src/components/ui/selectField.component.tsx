@@ -8,6 +8,7 @@ export type SelectFieldOption = {
     value: string;
     label: string;
     disabled?: boolean;
+    separatorBefore?: boolean;
 };
 
 export type SelectFieldProps = {
@@ -319,7 +320,13 @@ export const SelectField: React.FC<SelectFieldProps> = ({
             >
                 <ul className="menu w-full p-1">
                     {options.map((option, index) => (
-                        <li key={option.value}>
+                        <li
+                            key={option.value}
+                            className={clsx(
+                                option.separatorBefore &&
+                                    'mt-1 border-t border-base-content/20 pt-1',
+                            )}
+                        >
                             <button
                                 ref={(element) => {
                                     optionRefs.current[index] = element;

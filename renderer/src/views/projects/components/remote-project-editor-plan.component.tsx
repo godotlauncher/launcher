@@ -35,6 +35,38 @@ export function RemoteProjectEditorPlan({
                     ? t('installEditor:table.dotnet')
                     : t('installEditor:table.gdscript');
                 const choiceOptions = [
+                    ...(group.choices ?? []).map(
+                        (choice, choiceIndex, choices) => {
+                            const name = choice.name?.trim();
+                            const editorLabel =
+                                choice.source === 'custom' &&
+                                name &&
+                                name !== choice.version
+                                    ? `${name} (${choice.version})`
+                                    : choice.version;
+                            const version = `${editorLabel}${choice.recommended ? ` - ${t('welcome:onboarding.setup.recommended')}` : ''}`;
+                            return {
+                                value: choice.id,
+                                label: choice.installed
+                                    ? t(
+                                          'addProject.editorResolution.useFallback',
+                                          {
+                                              version,
+                                          },
+                                      )
+                                    : t(
+                                          'addProject.editorResolution.download',
+                                          {
+                                              version,
+                                          },
+                                      ),
+                                separatorBefore:
+                                    choice.source === 'custom' &&
+                                    choices[choiceIndex - 1]?.source !==
+                                        'custom',
+                            };
+                        },
+                    ),
                     ...(group.downloadableRelease
                         ? [
                               {

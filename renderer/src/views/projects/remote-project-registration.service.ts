@@ -189,19 +189,31 @@ export async function applyRemoteProjectEditorPlan({
     const repairRequests: ProjectEditorRepairRequest[] = [];
 
     for (const group of plan) {
+        const selectedChoice = group.choices?.find(
+            (choice) => choice.id === group.choice,
+        );
         const registeredProjects: ProjectEditorRepairRequest['projects'] = [];
         for (const candidate of group.candidates) {
             const resolutionOptions: AddProjectOptions =
-                group.choice === 'use-fallback' && group.fallback
+                selectedChoice?.installed
                     ? {
                           ...candidate.options,
-                          resolution: 'use_fallback',
-                          release: group.fallback,
+                          resolution: 'use_selected',
+                          editorChoiceId: selectedChoice.id,
                       }
-                    : {
-                          ...candidate.options,
-                          resolution: 'add_missing',
-                      };
+                    : group.choice === 'use-fallback' && group.fallback
+                      ? {
+                            ...candidate.options,
+                            resolution: 'use_fallback',
+                            release: group.fallback,
+                        }
+                      : {
+                            ...candidate.options,
+                            resolution: 'add_missing',
+                            ...(selectedChoice?.release
+                                ? { editorChoiceId: selectedChoice.id }
+                                : {}),
+                        };
             try {
                 const result = await addProject(
                     candidate.project.projectFilePath,
@@ -238,13 +250,14 @@ export async function applyRemoteProjectEditorPlan({
             onProgress(processedProjects, projectCount);
         }
 
-        if (
-            group.choice === 'download' &&
-            group.downloadableRelease &&
-            registeredProjects.length > 0
-        ) {
+        const repairRelease =
+            selectedChoice?.release ??
+            (group.choice === 'download'
+                ? group.downloadableRelease
+                : undefined);
+        if (repairRelease && registeredProjects.length > 0) {
             repairRequests.push({
-                release: group.downloadableRelease,
+                release: repairRelease,
                 mono: group.mono,
                 projects: registeredProjects,
             });

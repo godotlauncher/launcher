@@ -99,7 +99,7 @@
         "godotProject": "Godot Projesi",
         "editorResolution": {
             "title": "Editör sürümü gerekli",
-            "message": "Bu proje yüklü olmayan bir editör istiyor.",
+            "message": "Bu proje için kullanılacak Godot editörünü seçin.",
             "version": "Sürüm",
             "channel": "Kanal",
             "flavor": "Varyant",

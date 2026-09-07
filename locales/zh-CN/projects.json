@@ -99,7 +99,7 @@
         "godotProject": "Godot 项目",
         "editorResolution": {
             "title": "需要编辑器版本",
-            "message": "此项目请求的编辑器尚未安装。",
+            "message": "选择要用于此项目的 Godot 编辑器。",
             "version": "版本",
             "channel": "渠道",
             "flavor": "类型",

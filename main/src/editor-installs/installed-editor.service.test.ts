@@ -46,6 +46,7 @@ const manifestMocks = vi.hoisted(() => ({
     parseCustomEngineManifest: vi.fn(),
 }));
 vi.mock('../utils/customEngineManifest.utils.js', () => manifestMocks);
+vi.mock('../i18n/index.js', () => ({ t: (key: string) => key }));
 
 describe('InstalledEditorService', () => {
     const store = {
@@ -139,6 +140,28 @@ describe('InstalledEditorService', () => {
         ).resolves.toMatchObject({ success: true, release: custom });
         expect(store.put).toHaveBeenCalledWith(custom);
         expect(projectRepair.revalidateProjects).toHaveBeenCalledOnce();
+    });
+
+    it('rejects custom registration during an official install and permits it after cleanup', async () => {
+        const custom = createRelease('4.4-stable', { source: 'custom' });
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(custom);
+        const service = createService();
+        const releaseReservation = service.reserveOfficialInstall(custom);
+
+        await expect(
+            service.registerCustomEditor('/editor/manifest.json', {
+                replaceExisting: true,
+            }),
+        ).resolves.toMatchObject({
+            success: false,
+            error: 'installs:customEditor.duplicate.message',
+        });
+        expect(store.put).not.toHaveBeenCalled();
+
+        releaseReservation();
+        await expect(
+            service.registerCustomEditor('/editor/manifest.json'),
+        ).resolves.toMatchObject({ success: true });
     });
 
     it('deletes only launcher-managed editor files during removal', async () => {

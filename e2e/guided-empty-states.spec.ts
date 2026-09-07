@@ -26,6 +26,7 @@ import {
     SAMPLE_AVAILABLE_PRERELEASES,
     SAMPLE_AVAILABLE_RELEASES,
     SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM,
+    SAMPLE_PROJECT_WITH_MISSING_EDITOR,
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
     TOOL_INTEGRATIONS_NO_GIT,
@@ -430,9 +431,81 @@ test('Native import offers the newest stable patch for an inferred Godot branch'
     await expect(dialog.getByText('4.4', { exact: true })).toBeVisible();
     await dialog.getByRole('button', { name: 'Options' }).click();
     await expect(
-        dialog.getByRole('button', { name: 'Download 4.4.3-stable' }),
+        dialog.getByRole('button', {
+            name: 'Download 4.4.3-stable - Recommended',
+        }),
     ).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Use 4.4.1-stable' }),
+    ).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Use Team build (4.4-custom.1)' }),
+    ).toBeVisible();
+    const recommended = dialog.getByRole('button', {
+        name: 'Download 4.4.3-stable - Recommended',
+        exact: true,
+    });
+    const labelLayout = await recommended.evaluate((button) => {
+        const range = document.createRange();
+        range.selectNodeContents(button.querySelector('span') ?? button);
+        return {
+            lines: range.getClientRects().length,
+            fits: button.scrollWidth <= button.clientWidth,
+        };
+    });
+    expect(labelLayout).toEqual({ lines: 1, fits: true });
     await dialog.getByRole('button', { name: 'Cancel' }).click();
+});
+
+test('Dropped project finishes adding while its selected editor downloads', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await stubInferredEditorResolution();
+    await stubPendingRemoteEditorInstallation();
+    await mainPage.getByTestId('btnProjects').click();
+    const projectFile = path.join(fixtureHome, 'project.godot');
+    await fs.writeFile(projectFile, 'config_version=5\n');
+    await mainPage.getByTestId('btnProjectAdd').evaluate((button) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.id = 'dropProjectFixture';
+        button.parentElement?.append(input);
+    });
+    const input = mainPage.locator('#dropProjectFixture');
+    await input.setInputFiles(projectFile);
+    await input.evaluate((element: HTMLInputElement) => {
+        const transfer = new DataTransfer();
+        if (element.files?.[0]) transfer.items.add(element.files[0]);
+        element.dispatchEvent(new DragEvent('drop', {
+            bubbles: true,
+            dataTransfer: transfer,
+        }));
+        element.remove();
+    });
+
+    const dialog = mainPage.getByRole('dialog', { name: 'Editor version required' });
+    await dialog.getByRole('button', { name: 'Options' }).click();
+    await dialog.getByRole('button', { name: 'Download 4.4.3-stable - Recommended', exact: true }).click();
+
+    try {
+        await expect(mainPage.getByText('Adding projects: 1/1', { exact: true })).not.toBeVisible();
+        await expect(mainPage.getByText('Downloaded Editor Project', { exact: true })).toBeVisible();
+        await mainPage.getByTestId('btnInstalls').click();
+        await publishReleaseInstallProgress({
+            id: 'drop-editor-install',
+            version: '4.4.3-stable',
+            mono: false,
+            prerelease: false,
+            published_at: null,
+            stage: 'downloading',
+            canCancel: false,
+            percent: 42,
+            receivedBytes: 42 * 1024 * 1024,
+            totalBytes: 100 * 1024 * 1024,
+        });
+        await expect(mainPage.getByTestId('installedReleaseList')).toContainText('42%');
+    } finally {
+        await completePendingRemoteEditorInstallation();
+    }
 });
 
 test('Remote repository discovery lets users exclude projects before adding', async () => {
@@ -1173,7 +1246,7 @@ test('Preserved clone recovery remains contained with a long locale', async () =
 test('Remote registration collects editor resolution inside the import modal', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp);
     await stubRemoteProjectDiscovery();
-    await requireNestedRemoteEditorResolution();
+    await stubInferredEditorResolution();
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectAdd').click();
     await mainPage.getByTestId('btnAddProjectPublicGit').click();
@@ -1197,6 +1270,28 @@ test('Remote registration collects editor resolution inside the import modal', a
     await expect(
         importModal.getByTestId('remoteProjectEditorPlan'),
     ).toContainText('Example Fixture');
+    await importModal
+        .getByTestId('selectRemoteProjectEditorResolution-0')
+        .click();
+    await expect(
+        mainPage.getByRole('option', {
+            name: 'Download 4.4.3-stable - Recommended',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await expect(
+        mainPage.getByRole('option', {
+            name: 'Download 4.4.3-stable',
+            exact: true,
+        }),
+    ).toHaveCount(0);
+    await expect(
+        mainPage.getByRole('option', {
+            name: 'Use Team build (4.4-custom.1)',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await mainPage.keyboard.press('Escape');
     await importModal
         .getByRole('button', { name: 'Finish without remaining projects' })
         .click();
@@ -1560,7 +1655,7 @@ async function stubGitHubImportConnection(): Promise<void> {
 
 /** Installs a native Add Project result for an inferred stable branch. */
 async function stubInferredEditorResolution(): Promise<void> {
-    await electronApp.evaluate(({ ipcMain }) => {
+    await electronApp.evaluate(({ ipcMain }, projectFixture) => {
         ipcMain.removeHandler('app.openFileDialog');
         ipcMain.handle('app.openFileDialog', async () => ({
             success: true,
@@ -1572,7 +1667,22 @@ async function stubInferredEditorResolution(): Promise<void> {
             },
         }));
         ipcMain.removeHandler('projects.addProject');
-        ipcMain.handle('projects.addProject', async () => ({
+        ipcMain.handle('projects.addProject', async (_event, projectFilePath: string, options: AddProjectOptions = {}) => {
+            if (options.resolution === 'add_missing') {
+                const newProject = {
+                    ...projectFixture,
+                    name: 'Downloaded Editor Project',
+                    path: projectFilePath.replace(/[/\\]project.godot$/, ''),
+                    version: '4.4.3-stable',
+                    release: {
+                        ...projectFixture.release,
+                        version: '4.4.3-stable',
+                        mono: false,
+                    },
+                };
+                return { success: true, data: { success: true, newProject, projects: [newProject] } };
+            }
+            return ({
             success: true,
             data: {
                 success: false,
@@ -1583,6 +1693,46 @@ async function stubInferredEditorResolution(): Promise<void> {
                         flavor: 'gdscript',
                         base_version: '4.4',
                     },
+                    choices: [
+                        {
+                            id: 'catalog:official-stable:4.4.3:gdscript',
+                            version: '4.4.3-stable',
+                            name: '4.4.3-stable',
+                            source: 'official',
+                            flavor: 'gdscript',
+                            prerelease: false,
+                            installed: false,
+                            recommended: true,
+                            release: {
+                                version: '4.4.3-stable',
+                                version_number: 4.4,
+                                name: '4.4.3-stable',
+                                published_at: null,
+                                draft: false,
+                                prerelease: false,
+                                assets: [],
+                            },
+                        },
+                        {
+                            id: 'installed:official:4.4.1-stable:standard',
+                            version: '4.4.1-stable',
+                            source: 'official',
+                            flavor: 'gdscript',
+                            prerelease: false,
+                            installed: true,
+                            recommended: false,
+                        },
+                        {
+                            id: 'installed:custom:4.4-custom.1:standard',
+                            version: '4.4-custom.1',
+                            name: 'Team build',
+                            source: 'custom',
+                            flavor: 'gdscript',
+                            prerelease: true,
+                            installed: true,
+                            recommended: false,
+                        },
+                    ],
                     downloadable: {
                         match: 'stable-base',
                         base_version: '4.4',
@@ -1590,8 +1740,9 @@ async function stubInferredEditorResolution(): Promise<void> {
                     },
                 },
             },
-        }));
-    });
+        });
+        });
+    }, SAMPLE_PROJECT_WITH_MISSING_EDITOR);
 }
 
 /**

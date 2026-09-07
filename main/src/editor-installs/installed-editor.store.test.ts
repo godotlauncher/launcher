@@ -5,7 +5,10 @@ import type { InstalledRelease } from '@shared/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AtomicJsonFileAdapter } from '../json-store/atomic-json-file.adapter.js';
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
-import { InstalledEditorStore } from './installed-editor.store.js';
+import {
+    InstalledEditorCollisionError,
+    InstalledEditorStore,
+} from './installed-editor.store.js';
 
 const temporaryDirectories: string[] = [];
 
@@ -20,6 +23,25 @@ afterEach(async () => {
 });
 
 describe('InstalledEditorStore', () => {
+    it('preserves a custom editor registered after an official install preflight', async () => {
+        const directory = await createTemporaryDirectory();
+        const store = createStore(
+            path.join(directory, 'installed-releases.json'),
+        );
+        const custom = createRelease('4.4-stable', {
+            source: 'custom',
+            editor_path: path.join(directory, 'custom', 'Godot'),
+        });
+
+        await expect(store.list()).resolves.toEqual([]);
+        await store.put(custom);
+        await expect(store.put(createRelease('4.4-stable'))).rejects.toThrow(
+            InstalledEditorCollisionError,
+        );
+        await expect(store.list()).resolves.toEqual([
+            expect.objectContaining(custom),
+        ]);
+    });
     it('returns an empty list for missing, empty, or malformed storage', async () => {
         const directory = await createTemporaryDirectory();
 

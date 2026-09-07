@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import type { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
+import type { ProjectEditorChoiceService } from './project-editor-choice.service.js';
 import { ProjectImportService } from './project-import.service.js';
 import type { ProjectsStore } from './projects.store.js';
 
@@ -162,6 +163,10 @@ const projectsStore = {
     list: getProjectsDetails,
     put: addProjectToList,
 } as unknown as ProjectsStore;
+const projectEditorChoiceService = {
+    getChoices: vi.fn().mockResolvedValue([]),
+    resolveInstalledChoice: vi.fn(),
+} as unknown as ProjectEditorChoiceService;
 const codeEditorIntegrationService = {
     findConfiguredIntegrations: vi.fn(),
     resolveConfiguredIntegration: vi.fn(),
@@ -203,6 +208,7 @@ function addProject(
     return new ProjectImportService(
         integrationService,
         installedEditorService,
+        projectEditorChoiceService,
         gitService,
         projectsStore,
     ).addProject(projectPath, options);
@@ -224,6 +230,10 @@ describe('addProject', () => {
         getProjectConfigVersionFromParsed.mockResolvedValue(5);
         getProjectGodotVersionFromParsed.mockReturnValue(null);
         getProjectIconUrlFromParsed.mockReturnValue(undefined);
+        vi.mocked(projectEditorChoiceService.getChoices).mockResolvedValue([]);
+        vi.mocked(
+            projectEditorChoiceService.resolveInstalledChoice,
+        ).mockReturnValue(undefined);
 
         getDefaultDirs.mockReturnValue({
             configDir: '/config',
@@ -321,7 +331,7 @@ describe('addProject', () => {
         );
     });
 
-    it('selects the newest installed stable editor for the project Godot branch', async () => {
+    it('requires an explicit editor choice even when a matching stable is installed', async () => {
         getProjectGodotVersionFromParsed.mockReturnValue('4.4');
         getInstalledReleases.mockResolvedValue([
             {
@@ -370,8 +380,55 @@ describe('addProject', () => {
             codeEditorIntegrationService,
         );
 
+        expect(result.success).toBe(false);
+        expect(result.editorResolution?.requested).toMatchObject({
+            kind: 'stable-base',
+            base_version: '4.4',
+        });
+        expect(projectEditorChoiceService.getChoices).toHaveBeenCalled();
+    });
+
+    it('uses the exact installed editor selected for a metadata-free import', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        const selectedRelease = {
+            version: '4.4.3-stable',
+            base_version: '4.4',
+            version_number: 4.4,
+            install_path: '/install/4.4.3',
+            editor_path: '/install/4.4.3/Godot',
+            platform: process.platform,
+            arch: process.arch,
+            mono: false,
+            prerelease: false,
+            config_version: 5 as const,
+            published_at: null,
+            valid: true,
+            source: 'official' as const,
+        };
+        getInstalledReleases.mockResolvedValue([selectedRelease]);
+        vi.mocked(
+            projectEditorChoiceService.resolveInstalledChoice,
+        ).mockReturnValue(selectedRelease);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            {
+                resolution: 'use_selected',
+                editorChoiceId: 'installed:official:4.4.3-stable:standard',
+            },
+        );
+
         expect(result.success).toBe(true);
         expect(result.newProject?.release.version).toBe('4.4.3-stable');
+        expect(
+            projectEditorChoiceService.resolveInstalledChoice,
+        ).toHaveBeenCalledWith(
+            'installed:official:4.4.3-stable:standard',
+            expect.objectContaining({ base_version: '4.4' }),
+            5,
+            [selectedRelease],
+        );
     });
 
     it('requests the inferred stable branch instead of using a newer minor', async () => {
@@ -451,6 +508,50 @@ describe('addProject', () => {
                 version: '4.4-stable',
                 base_version: '4.4',
                 source: 'official',
+                valid: false,
+            },
+        });
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it('retains an exact downloadable choice when installation is pending', async () => {
+        getProjectGodotVersionFromParsed.mockReturnValue('4.4');
+        const choice = {
+            id: 'catalog:official-stable:4.4.4:gdscript',
+            version: '4.4.4-stable',
+            source: 'official' as const,
+            flavor: 'gdscript' as const,
+            prerelease: false,
+            installed: false,
+            recommended: true,
+            release: {
+                version: '4.4.4-stable',
+                version_number: 4.4,
+                name: 'Godot 4.4.4',
+                published_at: null,
+                draft: false,
+                prerelease: false,
+                assets: [],
+            },
+        };
+        vi.mocked(projectEditorChoiceService.getChoices).mockResolvedValue([
+            choice,
+        ]);
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            {
+                resolution: 'add_missing',
+                editorChoiceId: choice.id,
+            },
+        );
+
+        expect(result.newProject).toMatchObject({
+            invalid_reason: 'missing_editor',
+            release: {
+                version: '4.4.4-stable',
+                base_version: '4.4',
                 valid: false,
             },
         });
@@ -841,6 +942,7 @@ describe('addProject', () => {
             published_at: null,
             valid: true,
         };
+        getInstalledReleases.mockResolvedValue([fallbackRelease]);
         readProjectLauncherConfig.mockResolvedValue({
             config: { version: 1 },
             launcher: { version: '1.9.0' },
@@ -857,12 +959,20 @@ describe('addProject', () => {
             codeEditorIntegrationService,
             {
                 resolution: 'use_fallback',
-                release: fallbackRelease,
+                release: {
+                    ...fallbackRelease,
+                    editor_path: '/untrusted/Godot',
+                    install_path: '/untrusted',
+                },
             },
         );
 
         expect(result.success).toBe(true);
         expect(result.newProject?.release.version).toBe('4.3-stable');
+        expect(setProjectEditorRelease).toHaveBeenCalledWith(
+            expect.any(String),
+            fallbackRelease,
+        );
         expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
             '/fake/project',
             expect.objectContaining({
@@ -870,6 +980,36 @@ describe('addProject', () => {
                 launcherVersion: '1.0.0',
             }),
         );
+    });
+
+    it('returns refreshed choices when a metadata fallback is no longer registered', async () => {
+        const [staleRelease] = await getInstalledReleases();
+        getInstalledReleases.mockResolvedValue([]);
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.9.0' },
+            editor: {
+                channel: 'official',
+                flavor: 'dotnet',
+                base_version: '4.3',
+                version: '4.3-beta1',
+            },
+        });
+
+        const result = await addProject(
+            '/fake/project/project.godot',
+            codeEditorIntegrationService,
+            { resolution: 'use_fallback', release: staleRelease },
+        );
+
+        expect(result.success).toBe(false);
+        expect(result.editorResolution?.requested).toMatchObject({
+            version: '4.3-beta1',
+        });
+        expect(result.editorResolution?.fallback).toBeUndefined();
+        expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(addProjectToList).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 
     it('considers compatible custom engines when importing a project', async () => {

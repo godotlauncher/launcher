@@ -6,6 +6,9 @@ import { getReleaseBaseVersion } from '../utils/projectLauncherConfig.utils.js';
 
 type InstalledEditorIdentity = Pick<InstalledRelease, 'version' | 'mono'>;
 
+/** Reports an official install colliding with a registered custom editor. */
+export class InstalledEditorCollisionError extends Error {}
+
 /**
  * Returns the stable identity used for installed editors and install jobs.
  *
@@ -104,19 +107,34 @@ export class InstalledEditorStore extends JsonFileStore<InstalledRelease[]> {
     }
 
     /**
-     * Adds or replaces one installed editor by identity.
+     * Adds or replaces one installed editor without overwriting a custom editor
+     * with an official install.
      *
      * @param release - Installed editor to persist.
      */
     async put(release: InstalledRelease): Promise<InstalledRelease[]> {
         return (
-            await this.updateValue((current) => [
-                ...current.filter(
-                    (candidate) =>
-                        !hasSameInstalledEditorIdentity(candidate, release),
-                ),
-                release,
-            ])
+            await this.updateValue((current) => {
+                if (
+                    release.source !== 'custom' &&
+                    current.some(
+                        (candidate) =>
+                            candidate.source === 'custom' &&
+                            hasSameInstalledEditorIdentity(candidate, release),
+                    )
+                ) {
+                    throw new InstalledEditorCollisionError(
+                        'An official install cannot replace a registered custom editor.',
+                    );
+                }
+                return [
+                    ...current.filter(
+                        (candidate) =>
+                            !hasSameInstalledEditorIdentity(candidate, release),
+                    ),
+                    release,
+                ];
+            })
         ).value;
     }
 
