@@ -16,7 +16,6 @@ import { useRelease } from '../hooks/useRelease';
 import { CustomEditorManifestDropOverlay } from './installs/components/customEditorManifestDropOverlay.component';
 import { InstalledReleaseList } from './installs/components/installedReleaseList.component';
 import { InstallsHeader } from './installs/components/installsHeader.component';
-import { ReleaseActionsMenu } from './installs/components/releaseActionsMenu.component';
 import { useCustomEditorManifestDrop } from './installs/hooks/useCustomEditorManifestDrop';
 import { useCustomEditorManifestWorkflow } from './installs/hooks/useCustomEditorManifestWorkflow';
 import {
@@ -93,10 +92,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         hasError,
     } = useRelease();
     const {
-        releaseActionsMenu,
-        setReleaseActionsMenu,
         isReleaseActionBusy,
-        onOpenReleaseMoreOptions,
         runReleaseAction,
         handleRemoveReleaseFromMenu,
         handleRetry,
@@ -214,28 +210,24 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                                 void handleReinstall(release)
                             }
                             onRemove={handleRemoveReleaseFromMenu}
-                            onOpenReleaseMoreOptions={onOpenReleaseMoreOptions}
+                            onOpenInstalledFolder={(release) =>
+                                runReleaseAction(() =>
+                                    appBridge.openShellFolder(
+                                        release.install_path,
+                                    ),
+                                )
+                            }
+                            onStartProjectManager={(release) =>
+                                runReleaseAction(() =>
+                                    editorInstallsBridge.openProjectManager(
+                                        release,
+                                    ),
+                                )
+                            }
                         />
                     </>
                 )}
             </section>
-            <ReleaseActionsMenu
-                release={releaseActionsMenu?.release ?? null}
-                anchorRect={releaseActionsMenu?.anchorRect ?? null}
-                t={t}
-                onClose={() => setReleaseActionsMenu(null)}
-                onOpenInstalledFolder={(release) =>
-                    runReleaseAction(() =>
-                        appBridge.openShellFolder(release.install_path),
-                    )
-                }
-                onStartProjectManager={(release) =>
-                    runReleaseAction(() =>
-                        editorInstallsBridge.openProjectManager(release),
-                    )
-                }
-                onRemoveRelease={handleRemoveReleaseFromMenu}
-            />
             <ActionMenu
                 open={customEditorMenu !== null}
                 anchorRect={customEditorMenu?.anchorRect ?? null}
