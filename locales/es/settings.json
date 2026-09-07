@@ -233,10 +233,11 @@
         "genericDescription": "Conecta este servicio para usarlo en Godot Launcher.",
         "flow": {
             "importDescription": "Conecta GitHub para explorar e importar tus repositorios.",
-            "addAccount": "Añadir otra cuenta",
+            "addAccount": "Añadir cuenta u organización",
             "title": "Conectar GitHub",
             "reconnect": "Volver a conectar GitHub",
             "description": "Conecta GitHub para continuar. Tu trabajo actual se conservará.",
+            "browserDescription": "Continúa en el navegador para autorizar el acceso y vuelve aquí.",
             "continueInBrowser": "Continuar en el navegador",
             "waiting": "Completa la conexión en el navegador y vuelve aquí.",
             "refreshRepositories": "Actualizar repositorios",

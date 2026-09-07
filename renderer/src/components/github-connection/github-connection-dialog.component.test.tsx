@@ -9,7 +9,9 @@ describe('GitHubConnectionDialog', () => {
         );
 
         expect(html).toContain('<dialog');
-        expect(html).toContain('connections.flow.description');
+        expect(html).toContain('connections.github.description');
+        expect(html).toContain('connections.flow.browserDescription');
+        expect(html).toContain('connections.github.accessNote');
         expect(html).toContain('connections.flow.continueInBrowser');
         expect(html).not.toContain('connections.flow.waiting');
     });

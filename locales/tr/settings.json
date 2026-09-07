@@ -233,10 +233,11 @@
         "genericDescription": "Bu hizmeti Godot Launcher'da kullanmak için bağlayın.",
         "flow": {
             "importDescription": "Depolarınıza göz atmak ve içe aktarmak için GitHub’a bağlanın.",
-            "addAccount": "Başka hesap ekle",
+            "addAccount": "Hesap veya kuruluş ekle",
             "title": "GitHub'ı bağla",
             "reconnect": "GitHub'ı yeniden bağla",
             "description": "Devam etmek için GitHub'ı bağlayın. Mevcut çalışmanız korunacak.",
+            "browserDescription": "Erişimi yetkilendirmek için tarayıcıda devam edin, ardından buraya dönün.",
             "continueInBrowser": "Tarayıcıda devam et",
             "waiting": "Bağlantıyı tarayıcınızda tamamlayıp buraya dönün.",
             "refreshRepositories": "Depoları yenile",

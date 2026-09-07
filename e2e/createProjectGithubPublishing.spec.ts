@@ -251,7 +251,9 @@ test('connects GitHub in place and preserves the project form after cancellation
     const list = dialog.getByTestId('github-connection-options');
     const footer = dialog.locator('footer');
     await expect(footer.getByRole('button', { name: /Connect selected/i })).toBeVisible();
-    const addAccount = dialog.getByRole('button', { name: 'Add another account' });
+    const addAccount = dialog.getByRole('button', {
+        name: 'Add account or organisation',
+    });
     const toolbarBefore = await addAccount.boundingBox();
     const footerBefore = await footer.boundingBox();
     await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
@@ -317,7 +319,7 @@ test('repairs an expired account within Create Project', async () => {
 });
 
 test('uses the shared connection dialog from Settings', async () => {
-    await stubSharedConnection();
+    await stubSharedConnection(false, false, 1, true);
     const card = mainPage.getByTestId('app-integration-github');
     const dialog = mainPage.getByRole('dialog', { name: 'Connect GitHub', exact: true });
     const outputDirectory = path.resolve(process.cwd(), '.internal-docs', 'shared-github-connection');
@@ -332,15 +334,70 @@ test('uses the shared connection dialog from Settings', async () => {
         await mainPage.keyboard.press('Escape');
         await expect(dialog).not.toBeVisible();
     }
+    for (const theme of THEMES) {
+        await applyTheme(mainPage, theme);
+        await mainPage.getByTestId('btnConnections').click();
+        await card
+            .getByRole('button', { name: 'Connect GitHub', exact: true })
+            .click();
+        await dialog
+            .getByRole('button', { name: 'Continue in browser' })
+            .click();
+        await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+        await mainPage.screenshot({
+            animations: 'disabled',
+            path: path.join(
+                outputDirectory,
+                `connection-selection-${theme.name}.png`,
+            ),
+        });
+        await mainPage.keyboard.press('Escape');
+        await expect(dialog).not.toBeVisible();
+    }
     await card.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
     await dialog.getByRole('button', { name: 'Continue in browser' }).click();
     await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
     await dialog.getByRole('button', { name: /Connect selected/i }).click();
+    await expect(dialog.getByRole('status')).toHaveText('Connecting...');
+    await expect(dialog.getByText('Complete the connection in your browser, then return here.')).toHaveCount(0);
+    await electronApp.evaluate(() => {
+        (globalThis as typeof globalThis & { __releaseSelectionSave?: () => void }).__releaseSelectionSave?.();
+    });
     await expect(dialog).not.toBeVisible();
     await expect(mainPage).toHaveURL(/settings\/connections$/);
     await expect(card.getByRole('button', { name: 'Add connection', exact: true })).toBeVisible();
     await card.getByRole('button', { name: 'Manage GitHub connections' }).click();
     const management = mainPage.getByRole('dialog', { name: 'GitHub connections', exact: true });
+    await management.evaluate(async (element) => {
+        await Promise.all(
+            element.getAnimations().map((animation) => animation.finished),
+        );
+    });
+    const manageAccess = management.getByRole('button', {
+        name: 'Manage repository access',
+    });
+    await manageAccess.focus();
+    await expect(
+        mainPage.getByRole('tooltip', { name: 'Manage repository access' }),
+    ).toBeVisible();
+    await mainPage.screenshot({
+        path: path.join(outputDirectory, 'connections-drawer-light-tooltip.png'),
+    });
+    await mainPage.keyboard.press('Escape');
+    await expect(management).toBeVisible();
+    await mainPage.keyboard.press('Escape');
+    await expect(management).not.toBeVisible();
+    await applyTheme(mainPage, THEMES[0]);
+    await mainPage.getByTestId('btnConnections').click();
+    await card.getByRole('button', { name: 'Manage GitHub connections' }).click();
+    await management.evaluate(async (element) => {
+        await Promise.all(
+            element.getAnimations().map((animation) => animation.finished),
+        );
+    });
+    await mainPage.screenshot({
+        path: path.join(outputDirectory, 'connections-drawer-dark.png'),
+    });
     await management.getByRole('button', { name: 'Add connection', exact: true }).click();
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: 'Continue in browser' }).focus();
@@ -358,9 +415,10 @@ test('uses the shared connection dialog from Settings', async () => {
  * @param deferConnection - Whether authorisation waits for an explicit test response.
  * @param expiredConnection - Whether an existing account needs reauthorisation.
  * @param optionCount - Number of accounts available for the chooser.
+ * @param deferFinish - Whether saving waits for an explicit test response.
  */
-async function stubSharedConnection(deferConnection = false, expiredConnection = false, optionCount = 1): Promise<void> {
-    await electronApp.evaluate(({ ipcMain }, { deferConnection, expiredConnection, optionCount }) => {
+async function stubSharedConnection(deferConnection = false, expiredConnection = false, optionCount = 1, deferFinish = false): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }, { deferConnection, expiredConnection, optionCount, deferFinish }) => {
         let connected = false;
         const target = {
             id: 'fixture-target', login: 'fixture-user', type: 'user',
@@ -403,7 +461,12 @@ async function stubSharedConnection(deferConnection = false, expiredConnection =
             return { success: true, data: { ok: true, integration: summary } };
         });
         ipcMain.removeHandler('appIntegrations.finishConnections');
-        ipcMain.handle('appIntegrations.finishConnections', () => {
+        ipcMain.handle('appIntegrations.finishConnections', async () => {
+            if (deferFinish) {
+                await new Promise<void>((resolve) => {
+                    (globalThis as typeof globalThis & { __releaseSelectionSave?: () => void }).__releaseSelectionSave = resolve;
+                });
+            }
             connected = true;
             summary.state = 'connected';
             summary.connectionStage = null;
@@ -429,7 +492,7 @@ async function stubSharedConnection(deferConnection = false, expiredConnection =
                 ownerLogin: 'fixture-user', ownerType: 'user', accountLogin: 'fixture-user',
             }] } : { success: false, reason: 'connection-required' },
         }));
-    }, { deferConnection, expiredConnection, optionCount });
+    }, { deferConnection, expiredConnection, optionCount, deferFinish });
 }
 
 test('keeps local and disconnected publishing layouts within the drawer', async () => {

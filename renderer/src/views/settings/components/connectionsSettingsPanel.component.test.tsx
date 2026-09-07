@@ -184,10 +184,9 @@ describe('ConnectionsSettingsPanel', () => {
         expect(html).toContain('The Octocat');
         expect(html).toContain('@octocat');
         expect(html).toContain('connections.status.unavailable');
-        expect(html).toContain('connections.drawer.organization');
-        expect(html).toContain('connections.actions.manageAccess');
+        expect(html).toContain('aria-label="connections.actions.manageAccess"');
         expect(html).toContain('connections.actions.reconnect');
-        expect(html).toContain('connections.actions.disconnect');
+        expect(html).toContain('aria-label="connections.actions.disconnect"');
         expect(html).not.toContain('connections.actions.addInstallation');
     });
 });

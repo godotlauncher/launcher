@@ -233,10 +233,11 @@
         "genericDescription": "连接此服务，以便在 Godot Launcher 中使用。",
         "flow": {
             "importDescription": "连接 GitHub 以浏览和导入你的仓库。",
-            "addAccount": "添加其他账户",
+            "addAccount": "添加账户或组织",
             "title": "连接 GitHub",
             "reconnect": "重新连接 GitHub",
             "description": "连接 GitHub 以继续。当前工作将会保留。",
+            "browserDescription": "在浏览器中继续以授权访问，然后返回此处。",
             "continueInBrowser": "在浏览器中继续",
             "waiting": "在浏览器中完成连接，然后返回此处。",
             "refreshRepositories": "刷新仓库",

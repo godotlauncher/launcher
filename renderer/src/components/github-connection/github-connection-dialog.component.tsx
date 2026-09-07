@@ -1,5 +1,8 @@
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
+import githubInvertocatBlack from '../../assets/icons/github-invertocat-black.svg';
+import githubInvertocatWhite from '../../assets/icons/github-invertocat-white.svg';
+import { useTheme } from '../../hooks/useTheme';
 import { Dialog } from '../dialog.component';
 import {
     GitHubConnectionFlow,
@@ -23,6 +26,8 @@ export const GitHubConnectionDialog: React.FC<GitHubConnectionDialogProps> = ({
     returnFocusRef,
 }) => {
     const { t } = useTranslation(['settings', 'common']);
+    const { theme, systemTheme } = useTheme();
+    const effectiveTheme = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
 
     return (
         <GitHubConnectionFlow
@@ -31,9 +36,22 @@ export const GitHubConnectionDialog: React.FC<GitHubConnectionDialogProps> = ({
             connectionId={connectionId}
             renderLayout={(content, footer) => (
                 <Dialog
+                    icon={
+                        <img
+                            src={
+                                effectiveTheme === 'dark'
+                                    ? githubInvertocatWhite
+                                    : githubInvertocatBlack
+                            }
+                            className="size-6"
+                            alt=""
+                            aria-hidden="true"
+                        />
+                    }
                     title={t('connections.flow.title')}
                     returnFocusRef={returnFocusRef}
                     onRequestClose={onCancel}
+                    panelClassName="max-w-2xl"
                     bodyClassName="flex flex-col overflow-hidden"
                     footer={footer}
                 >
