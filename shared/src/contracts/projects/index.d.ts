@@ -280,15 +280,33 @@ export type AddProjectOptions = {
       }
     | {
           resolution: 'add_missing';
+          editorChoiceId?: string;
       }
     | {
           resolution: 'use_fallback';
           release: InstalledRelease;
       }
+    | {
+          resolution: 'use_selected';
+          editorChoiceId: string;
+      }
 );
+
+export type ProjectEditorChoice = {
+    id: string;
+    version: string;
+    name?: string;
+    source: 'official' | 'custom';
+    flavor: EditorFlavor;
+    prerelease: boolean;
+    installed: boolean;
+    recommended: boolean;
+    release?: ReleaseSummary;
+};
 
 export type AddProjectEditorResolution = {
     requested: ProjectEditorRequest;
+    choices?: ProjectEditorChoice[];
     fallback?: InstalledRelease;
     downloadable?:
         | {

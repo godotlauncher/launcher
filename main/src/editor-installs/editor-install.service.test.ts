@@ -1,6 +1,7 @@
 import type { ReleaseInstallProgress, ReleaseSummary } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EditorInstallService } from './editor-install.service.js';
+import { InstalledEditorCollisionError } from './installed-editor.store.js';
 
 const fsMocks = vi.hoisted(() => ({
     promises: {
@@ -57,6 +58,8 @@ vi.mock('../i18n/index.js', () => ({ t: (key: string) => key }));
 
 describe('EditorInstallService', () => {
     const installedEditors = {
+        reserveOfficialInstall: vi.fn(),
+        getInstalledEditors: vi.fn(),
         addInstalledEditor: vi.fn(),
         revalidateInstalledEditors: vi.fn(),
     };
@@ -69,6 +72,7 @@ describe('EditorInstallService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        installedEditors.reserveOfficialInstall.mockReturnValue(vi.fn());
         fsMocks.promises.mkdir.mockResolvedValue(undefined);
         fsMocks.promises.rm.mockResolvedValue(undefined);
         integrityMocks.resolveArchiveIntegrity.mockResolvedValue({
@@ -81,6 +85,7 @@ describe('EditorInstallService', () => {
             install_location: '/installs',
         });
         releasesMocks.downloadReleaseAsset.mockResolvedValue(undefined);
+        installedEditors.getInstalledEditors.mockResolvedValue([]);
         installedEditors.addInstalledEditor.mockResolvedValue([]);
         projectRepair.revalidateProjects.mockResolvedValue(undefined);
     });
@@ -113,6 +118,78 @@ describe('EditorInstallService', () => {
             error: 'network failure',
         });
         expect(releasesMocks.downloadReleaseAsset).toHaveBeenCalledTimes(2);
+    });
+
+    it('holds the identity reservation throughout download failure and cleanup', async () => {
+        const download = deferred<void>();
+        const releaseReservation = vi.fn();
+        installedEditors.reserveOfficialInstall.mockReturnValue(
+            releaseReservation,
+        );
+        releasesMocks.downloadReleaseAsset.mockReturnValueOnce(
+            download.promise,
+        );
+        const result = createService().installEditor(
+            createRelease('4.4-stable'),
+            false,
+            'project',
+        );
+        await waitFor(
+            () => releasesMocks.downloadReleaseAsset.mock.calls.length === 1,
+        );
+
+        expect(installedEditors.reserveOfficialInstall).toHaveBeenCalledWith({
+            version: '4.4-stable',
+            mono: false,
+        });
+        expect(releaseReservation).not.toHaveBeenCalled();
+        expect(extractionMocks.extractEditorArchive).not.toHaveBeenCalled();
+
+        download.reject(new Error('download failed'));
+        await expect(result).resolves.toMatchObject({ success: false });
+        expect(releaseReservation).toHaveBeenCalledOnce();
+        expect(fsMocks.promises.rm).toHaveBeenCalled();
+        expect(releaseReservation.mock.invocationCallOrder[0]).toBeGreaterThan(
+            fsMocks.promises.rm.mock.invocationCallOrder.at(-1) ?? 0,
+        );
+    });
+
+    it('reports a collision at registration and does not repair projects against the rejected editor', async () => {
+        installedEditors.addInstalledEditor.mockRejectedValueOnce(
+            new InstalledEditorCollisionError('collision'),
+        );
+        const result = await createService().installEditor(
+            createRelease('4.4.4-stable'),
+            false,
+            'project',
+        );
+
+        expect(result).toMatchObject({
+            success: false,
+            error: 'installs:customEditor.duplicate.message',
+        });
+        expect(projectRepair.revalidateProjects).not.toHaveBeenCalled();
+    });
+
+    it('does not overwrite a custom editor with the same registry identity', async () => {
+        installedEditors.getInstalledEditors.mockResolvedValue([
+            {
+                version: '4.4.4-stable',
+                mono: false,
+                source: 'custom',
+            },
+        ]);
+        const service = createService();
+
+        const result = await service.installEditor(
+            createRelease('4.4.4-stable'),
+            false,
+            'project',
+        );
+
+        expect(result).toMatchObject({ success: false });
+        expect(releasesMocks.downloadReleaseAsset).not.toHaveBeenCalled();
+        expect(installedEditors.addInstalledEditor).not.toHaveBeenCalled();
     });
 
     it('deduplicates matching requests and disables cancellation when a project joins', async () => {

@@ -99,7 +99,7 @@
         "godotProject": "Godotプロジェクト",
         "editorResolution": {
             "title": "エディターのバージョンが必要です",
-            "message": "このプロジェクトは、インストールされていないエディターを要求しています。",
+            "message": "このプロジェクトで使用する Godot エディターを選択してください。",
             "version": "バージョン",
             "channel": "チャンネル",
             "flavor": "フレーバー",

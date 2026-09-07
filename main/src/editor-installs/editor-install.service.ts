@@ -45,6 +45,7 @@ import { InstalledEditorService } from './installed-editor.service.js';
 import {
     getInstalledEditorIdentity,
     hasSameInstalledEditorIdentity,
+    InstalledEditorCollisionError,
 } from './installed-editor.store.js';
 
 const DOWNLOAD_IDLE_TIMEOUT_MS = 120_000;
@@ -334,11 +335,34 @@ export class EditorInstallService {
         job: InstallJob,
     ): Promise<InstallReleaseResult> {
         const { release, mono } = job;
+        const releaseReservation = this.installedEditors.reserveOfficialInstall(
+            {
+                version: release.version,
+                mono,
+            },
+        );
         let rootReleasePath: string | undefined;
         let downloadPath: string | undefined;
         let rootTouched = false;
 
         try {
+            const registeredEditors =
+                await this.installedEditors.getInstalledEditors();
+            const customCollision = registeredEditors.find(
+                (candidate) =>
+                    candidate.source === 'custom' &&
+                    hasSameInstalledEditorIdentity(candidate, {
+                        version: release.version,
+                        mono,
+                    }),
+            );
+            if (customCollision) {
+                return {
+                    success: false,
+                    version: release.version,
+                    error: t('installs:customEditor.duplicate.message'),
+                };
+            }
             this.publish(job, 'preparing', { percent: 0 });
             if (!isSafePathSegment(release.version)) {
                 throw new Error(t('installEditor:errors.unsafeArchive'));
@@ -502,9 +526,14 @@ export class EditorInstallService {
                 ? this.cancelledResult(job)
                 : {
                       success: false,
-                      error: (error as Error).message,
+                      error:
+                          error instanceof InstalledEditorCollisionError
+                              ? t('installs:customEditor.duplicate.message')
+                              : (error as Error).message,
                       version: release.version,
                   };
+        } finally {
+            releaseReservation();
         }
     }
 

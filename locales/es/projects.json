@@ -99,7 +99,7 @@
         "godotProject": "Proyecto Godot",
         "editorResolution": {
             "title": "Se requiere una versión del editor",
-            "message": "Este proyecto solicita un editor que no está instalado.",
+            "message": "Elige el editor de Godot que se usará para este proyecto.",
             "version": "Versión",
             "channel": "Canal",
             "flavor": "Variante",

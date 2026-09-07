@@ -71,6 +71,59 @@ function createStableResolution(
 }
 
 describe('remote project editor plan', () => {
+    it('shares main-process choices across projects and selects the recommendation', () => {
+        const choice = {
+            id: 'catalog:official-stable:4.4.4:gdscript',
+            version: '4.4.4-stable',
+            source: 'official' as const,
+            flavor: 'gdscript' as const,
+            prerelease: false,
+            installed: false,
+            recommended: true,
+            release: createRelease('4.4.4-stable'),
+        };
+        const resolution = createStableResolution('4.4');
+        if (resolution.editorResolution) {
+            resolution.editorResolution.choices = [choice];
+        }
+
+        const plan = createRemoteProjectEditorPlan(
+            [
+                createCandidate('Client', resolution),
+                createCandidate('Server', resolution),
+            ],
+            [choice.release],
+            [],
+        );
+
+        expect(plan).toHaveLength(1);
+        expect(plan[0]).toMatchObject({
+            choice: choice.id,
+            choices: [choice],
+            downloadableRelease: undefined,
+            fallback: undefined,
+        });
+    });
+
+    it('does not revive legacy downloads when the main process returns no eligible choices', () => {
+        const resolution = createStableResolution('4.4');
+        if (resolution.editorResolution) {
+            resolution.editorResolution.choices = [];
+        }
+
+        const [group] = createRemoteProjectEditorPlan(
+            [createCandidate('Client', resolution)],
+            [createRelease('4.4.3-stable')],
+            [],
+        );
+
+        expect(group).toMatchObject({
+            choice: 'add-missing',
+            choices: [],
+            downloadableRelease: undefined,
+        });
+    });
+
     it('groups projects that resolve to the same editor version and flavour', () => {
         const release = createRelease('4.4.3-stable');
         const plan = createRemoteProjectEditorPlan(

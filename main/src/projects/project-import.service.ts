@@ -8,6 +8,7 @@ import type {
     InstalledRelease,
     ProjectConfig,
     ProjectDetails,
+    ProjectEditorChoice,
     ProjectInferredEditorRequest,
 } from '@shared/contracts';
 import { app } from 'electron';
@@ -48,6 +49,8 @@ import {
     writeProjectLauncherConfig,
 } from '../utils/projectLauncherConfig.utils.js';
 import { sortReleases } from '../utils/releaseSorting.utils.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectEditorChoiceService } from './project-editor-choice.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
@@ -140,42 +143,17 @@ function createEditorResolution(
  */
 function createInferredEditorResolution(
     request: ProjectInferredEditorRequest,
+    choices: ProjectEditorChoice[],
 ): AddProjectEditorResolution {
     return {
         requested: request,
+        choices,
         downloadable: {
             match: 'stable-base',
             base_version: request.base_version,
             flavor: request.flavor,
         },
     };
-}
-
-/**
- * Selects the newest installed official stable editor for an inferred request.
- *
- * @param releases - Installed editor releases.
- * @param request - Inferred official stable editor request.
- * @param configVersion - Project file format version that must be supported.
- * @returns The newest compatible installed release, when present.
- */
-function findInferredStableRelease(
-    releases: InstalledRelease[],
-    request: ProjectInferredEditorRequest,
-    configVersion: number,
-): InstalledRelease | undefined {
-    return releases
-        .filter(
-            (release) =>
-                release.valid &&
-                release.config_version >= configVersion &&
-                release.source !== 'custom' &&
-                !release.prerelease &&
-                release.version.toLowerCase().includes('stable') &&
-                getReleaseBaseVersion(release) === request.base_version &&
-                getReleaseFlavor(release) === request.flavor,
-        )
-        .sort(sortReleases)[0];
 }
 
 function getRequestedVersionNumber(
@@ -240,6 +218,38 @@ function buildMissingInferredRelease(
     };
 }
 
+/**
+ * Builds a missing release for an exact downloadable choice.
+ *
+ * @param choice - Revalidated official catalogue choice.
+ * @param configVersion - Project file format version.
+ * @returns An invalid release that retains the selected download target.
+ */
+function buildMissingSelectedRelease(
+    choice: ProjectEditorChoice,
+    configVersion: number,
+): InstalledRelease {
+    const versionNumber = Number.parseFloat(choice.version);
+    return {
+        version: choice.version,
+        base_version: choice.release
+            ? choice.release.version.match(/^v?(\d+\.\d+)/)?.[1]
+            : undefined,
+        flavor: choice.flavor,
+        version_number: Number.isNaN(versionNumber) ? 0 : versionNumber,
+        install_path: '',
+        editor_path: '',
+        platform: process.platform,
+        arch: process.arch,
+        mono: choice.flavor === 'dotnet',
+        prerelease: choice.prerelease,
+        config_version: configVersion as 5,
+        published_at: choice.release?.published_at ?? null,
+        valid: false,
+        source: 'official',
+    };
+}
+
 /** Owns the transactional Add Project workflow. */
 @Injectable()
 export class ProjectImportService {
@@ -248,12 +258,14 @@ export class ProjectImportService {
      *
      * @param codeEditors - Code editor integration facade.
      * @param installedEditors - Installed Godot editor facade.
+     * @param editorChoices - Safe editor-choice resolver.
      * @param git - Guarded Git command service.
      * @param store - Canonical project persistence store.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
         private readonly installedEditors: InstalledEditorService,
+        private readonly editorChoices: ProjectEditorChoiceService,
         private readonly git: GitService,
         private readonly store: ProjectsStore,
     ) {}
@@ -422,7 +434,30 @@ export class ProjectImportService {
 
         if (projectLauncherConfig) {
             if (options.resolution === 'use_fallback') {
-                release = options.release;
+                release = findProjectLauncherFallbackRelease(
+                    installedReleases.filter(
+                        (candidate) =>
+                            candidate.version === options.release.version &&
+                            candidate.mono === options.release.mono &&
+                            (candidate.source ?? 'official') ===
+                                (options.release.source ?? 'official'),
+                    ),
+                    projectLauncherConfig,
+                    configVersion,
+                );
+                if (!release) {
+                    return {
+                        success: false,
+                        editorResolution: createEditorResolution(
+                            projectLauncherConfig,
+                            findProjectLauncherFallbackRelease(
+                                installedReleases,
+                                projectLauncherConfig,
+                                configVersion,
+                            ),
+                        ),
+                    };
+                }
             } else if (options.resolution === 'add_missing') {
                 release = buildMissingRelease(
                     projectLauncherConfig,
@@ -453,27 +488,74 @@ export class ProjectImportService {
             }
         } else if (inferredEditorRequest) {
             if (options.resolution === 'add_missing') {
-                release = buildMissingInferredRelease(
-                    inferredEditorRequest,
-                    configVersion,
-                );
+                if (options.editorChoiceId) {
+                    const choices = await this.editorChoices.getChoices(
+                        inferredEditorRequest,
+                        configVersion,
+                        installedReleases,
+                    );
+                    const selectedChoice = choices.find(
+                        (choice) =>
+                            choice.id === options.editorChoiceId &&
+                            !choice.installed &&
+                            Boolean(choice.release),
+                    );
+                    if (!selectedChoice) {
+                        return {
+                            success: false,
+                            error: t(
+                                'projects:addProject.errors.noCompatibleRelease',
+                                {
+                                    version: inferredEditorRequest.base_version,
+                                    configVersion,
+                                },
+                            ),
+                        };
+                    }
+                    release = buildMissingSelectedRelease(
+                        selectedChoice,
+                        configVersion,
+                    );
+                } else {
+                    release = buildMissingInferredRelease(
+                        inferredEditorRequest,
+                        configVersion,
+                    );
+                }
                 addAsMissingEditor = true;
                 shouldWriteProjectLauncherConfig = false;
-            } else {
-                release = findInferredStableRelease(
-                    installedReleases,
+            } else if (options.resolution === 'use_selected') {
+                release = this.editorChoices.resolveInstalledChoice(
+                    options.editorChoiceId,
                     inferredEditorRequest,
                     configVersion,
+                    installedReleases,
                 );
-
                 if (!release) {
                     return {
                         success: false,
-                        editorResolution: createInferredEditorResolution(
-                            inferredEditorRequest,
+                        error: t(
+                            'projects:addProject.errors.noCompatibleRelease',
+                            {
+                                version: inferredEditorRequest.base_version,
+                                configVersion,
+                            },
                         ),
                     };
                 }
+            } else {
+                const choices = await this.editorChoices.getChoices(
+                    inferredEditorRequest,
+                    configVersion,
+                    installedReleases,
+                );
+                return {
+                    success: false,
+                    editorResolution: createInferredEditorResolution(
+                        inferredEditorRequest,
+                        choices,
+                    ),
+                };
             }
         }
 

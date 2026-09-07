@@ -2,15 +2,13 @@ import type {
     AddProjectOptions,
     AddProjectToListResult,
     InstalledRelease,
+    ProjectEditorChoice,
     ReleaseSummary,
     RemoteDiscoveredProject,
 } from '@shared/contracts';
 import { findDownloadableProjectEditor } from './project-editor-resolution.model';
 
-export type RemoteProjectEditorChoice =
-    | 'download'
-    | 'use-fallback'
-    | 'add-missing';
+export type RemoteProjectEditorChoice = string;
 
 export type RemoteProjectEditorCandidate = {
     project: RemoteDiscoveredProject;
@@ -23,6 +21,7 @@ export type RemoteProjectEditorPlanGroup = {
     version: string;
     mono: boolean;
     candidates: RemoteProjectEditorCandidate[];
+    choices?: ProjectEditorChoice[];
     downloadableRelease?: ReleaseSummary;
     fallback?: InstalledRelease;
     choice: RemoteProjectEditorChoice;
@@ -41,6 +40,14 @@ function getEditorPlanKey(
 ): string {
     const requested = candidate.result.editorResolution?.requested;
     if (!requested) return candidate.project.projectFilePath;
+
+    if (candidate.result.editorResolution?.choices !== undefined) {
+        const requestedVersion =
+            requested.kind === 'exact'
+                ? requested.version
+                : requested.base_version;
+        return `choices:${requested.kind}:${requested.channel}:${requestedVersion}:${requested.flavor}`;
+    }
 
     if (downloadableRelease) {
         return `download:${downloadableRelease.version}:${requested.flavor}`;
@@ -112,6 +119,11 @@ export function createRemoteProjectEditorPlan(
 
         if (current) {
             current.candidates.push(candidate);
+            current.choices = current.choices?.filter((choice) =>
+                resolution.choices?.some(
+                    (candidateChoice) => candidateChoice.id === choice.id,
+                ),
+            );
             continue;
         }
 
@@ -124,20 +136,26 @@ export function createRemoteProjectEditorPlan(
                     : `${resolution.requested.base_version} stable`),
             mono: resolution.requested.flavor === 'dotnet',
             candidates: [candidate],
+            choices: resolution.choices,
             downloadableRelease: resolvedRelease,
         });
     }
 
     return [...groups.values()].map((group) => {
-        const fallback = getCommonFallback(group.candidates);
+        const fallback =
+            group.choices === undefined
+                ? getCommonFallback(group.candidates)
+                : undefined;
         return {
             ...group,
             fallback,
-            choice: group.downloadableRelease
-                ? 'download'
-                : fallback
-                  ? 'use-fallback'
-                  : 'add-missing',
+            choice:
+                group.choices?.find((choice) => choice.recommended)?.id ??
+                (group.downloadableRelease
+                    ? 'download'
+                    : fallback
+                      ? 'use-fallback'
+                      : 'add-missing'),
         };
     });
 }

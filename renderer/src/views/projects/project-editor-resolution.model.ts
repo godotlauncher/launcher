@@ -85,7 +85,7 @@ export function findDownloadableProjectEditor(
     availablePrereleases: ReleaseSummary[],
 ): ReleaseSummary | undefined {
     const downloadable = resolution.downloadable;
-    if (!downloadable) {
+    if (resolution.choices !== undefined || !downloadable) {
         return undefined;
     }
 

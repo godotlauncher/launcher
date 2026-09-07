@@ -9,7 +9,7 @@ import type {
     ReleaseSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
-import { ChevronDown, TriangleAlert } from 'lucide-react';
+import { Check, ChevronDown, Download, TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { appBridge } from '../../../bridge.ts';
@@ -102,11 +102,13 @@ export function useAddProjectWorkflow({
     };
 
     /**
-     * Adds the project as missing, installs its editor, and repairs the project.
+     * Adds the project as missing and starts editor installation and repair
+     * in the background so registration can finish immediately.
      *
      * @param projectPath - Project file path being registered.
      * @param result - Initial result containing the editor requirement.
      * @param release - Editor release selected for installation.
+     * @param editorChoiceId - Revalidated catalogue choice to retain while missing.
      * @param projectOptions - Registration choices to preserve while adding.
      * @returns Whether the project was added before installation and repair.
      */
@@ -114,12 +116,14 @@ export function useAddProjectWorkflow({
         projectPath: string,
         result: AddProjectToListResult,
         release: ReleaseSummary,
+        editorChoiceId: string | undefined,
         projectOptions: AddProjectOptions,
     ): Promise<boolean> => {
         const mono = getRequestedMono(result);
         const addMissingResult = await addProject(projectPath, {
             ...projectOptions,
             resolution: 'add_missing',
+            ...(editorChoiceId ? { editorChoiceId } : {}),
         });
 
         if (!addMissingResult.success || !addMissingResult.newProject) {
@@ -127,6 +131,7 @@ export function useAddProjectWorkflow({
             return false;
         }
 
+        const addedProject = addMissingResult.newProject;
         const installTarget = {
             projectPath,
             version: release.version,
@@ -137,36 +142,46 @@ export function useAddProjectWorkflow({
             installTarget,
         ]);
 
-        try {
-            const installResult = await installRelease(
-                release,
-                mono,
-                'project',
-            );
-
-            if (!installResult.success || !installResult.release) {
-                addAlert(
-                    t('common:error'),
-                    installResult.error || t('messages.addProjectError'),
-                    <TriangleAlert className="stroke-error" />,
+        /** Repairs the registered project after its background editor download. */
+        const installAndRepair = async (): Promise<void> => {
+            try {
+                const installResult = await installRelease(
+                    release,
+                    mono,
+                    'project',
                 );
-                return true;
-            }
 
-            const changeResult = await setProjectEditor(
-                addMissingResult.newProject,
-                installResult.release,
-            );
+                if (!installResult.success || !installResult.release) {
+                    addAlert(
+                        t('common:error'),
+                        installResult.error || t('messages.addProjectError'),
+                        <TriangleAlert className="stroke-error" />,
+                    );
+                    return;
+                }
 
-            if (!changeResult.success) {
-                showAddProjectError(changeResult.error);
+                const changeResult = await setProjectEditor(
+                    addedProject,
+                    installResult.release,
+                );
+
+                if (!changeResult.success) {
+                    showAddProjectError(changeResult.error);
+                }
+            } catch (error) {
+                showAddProjectError(
+                    error instanceof Error ? error.message : undefined,
+                );
+            } finally {
+                setProjectEditorInstallTargets((current) =>
+                    current.filter(
+                        (target) => target.projectPath !== projectPath,
+                    ),
+                );
             }
-            return true;
-        } finally {
-            setProjectEditorInstallTargets((current) =>
-                current.filter((target) => target.projectPath !== projectPath),
-            );
-        }
+        };
+        void installAndRepair();
+        return true;
     };
 
     /**
@@ -198,39 +213,92 @@ export function useAddProjectWorkflow({
                     resolution.requested.flavor === 'dotnet'),
         );
         const fallback = resolution.fallback;
-        const editorActions = [
-            ...(canDownload && downloadableRelease
-                ? [
-                      {
-                          label: t('addProject.editorResolution.download', {
-                              version: downloadableRelease.version,
-                          }),
+        const editorActions =
+            resolution.choices !== undefined
+                ? resolution.choices.map((choice) => {
+                      const name = choice.name?.trim();
+                      const editorLabel =
+                          choice.source === 'custom' &&
+                          name &&
+                          name !== choice.version
+                              ? `${name} (${choice.version})`
+                              : choice.version;
+                      const version = `${editorLabel}${choice.recommended ? ` - ${t('welcome:onboarding.setup.recommended')}` : ''}`;
+                      return {
+                          label: choice.installed
+                              ? t('addProject.editorResolution.useFallback', {
+                                    version,
+                                })
+                              : t('addProject.editorResolution.download', {
+                                    version,
+                                }),
+                          source: choice.source,
+                          installed: choice.installed,
                           run: () =>
-                              downloadEditorAndAddProject(
-                                  projectPath,
-                                  result,
-                                  downloadableRelease,
-                                  projectOptions,
-                              ),
-                      },
-                  ]
-                : []),
-            ...(fallback
-                ? [
-                      {
-                          label: t('addProject.editorResolution.useFallback', {
-                              version: fallback.version,
-                          }),
-                          run: () =>
-                              retryAddProject(projectPath, {
-                                  ...projectOptions,
-                                  resolution: 'use_fallback',
-                                  release: fallback,
-                              }),
-                      },
-                  ]
-                : []),
-        ];
+                              choice.installed
+                                  ? retryAddProject(projectPath, {
+                                        ...projectOptions,
+                                        resolution: 'use_selected',
+                                        editorChoiceId: choice.id,
+                                    })
+                                  : choice.release
+                                    ? downloadEditorAndAddProject(
+                                          projectPath,
+                                          result,
+                                          choice.release,
+                                          choice.id,
+                                          projectOptions,
+                                      )
+                                    : Promise.resolve(false),
+                      };
+                  })
+                : [
+                      ...(canDownload && downloadableRelease
+                          ? [
+                                {
+                                    label: t(
+                                        'addProject.editorResolution.download',
+                                        {
+                                            version:
+                                                downloadableRelease.version,
+                                        },
+                                    ),
+                                    source: 'official' as const,
+                                    installed: false,
+                                    run: () =>
+                                        downloadEditorAndAddProject(
+                                            projectPath,
+                                            result,
+                                            downloadableRelease,
+                                            undefined,
+                                            projectOptions,
+                                        ),
+                                },
+                            ]
+                          : []),
+                      ...(fallback
+                          ? [
+                                {
+                                    label: t(
+                                        'addProject.editorResolution.useFallback',
+                                        {
+                                            version: fallback.version,
+                                        },
+                                    ),
+                                    source:
+                                        fallback.source ??
+                                        ('official' as const),
+                                    installed: true,
+                                    run: () =>
+                                        retryAddProject(projectPath, {
+                                            ...projectOptions,
+                                            resolution: 'use_fallback',
+                                            release: fallback,
+                                        }),
+                                },
+                            ]
+                          : []),
+                  ];
 
         return new Promise<boolean>((resolve) => {
             addCustomConfirm(
@@ -293,24 +361,54 @@ export function useAddProjectWorkflow({
                                                   aria-hidden="true"
                                               />
                                           </button>
-                                          <ul className="dropdown-content menu bg-base-300 rounded-box z-1 min-w-60 p-1 shadow-sm border border-base-100">
-                                              {editorActions.map((action) => (
-                                                  <li key={action.label}>
-                                                      <button
-                                                          type="button"
-                                                          onClick={() => {
-                                                              close();
-                                                              void action
-                                                                  .run()
-                                                                  .then(
-                                                                      resolve,
-                                                                  );
-                                                          }}
+                                          <ul className="dropdown-content menu bg-base-300 rounded-box z-1 w-max min-w-60 max-w-[calc(100vw-4rem)] overflow-x-auto p-1 shadow-sm border border-base-100">
+                                              {editorActions.map(
+                                                  (action, index) => (
+                                                      <li
+                                                          key={action.label}
+                                                          className={
+                                                              action.source ===
+                                                                  'custom' &&
+                                                              editorActions[
+                                                                  index - 1
+                                                              ]?.source !==
+                                                                  'custom'
+                                                                  ? 'border-t border-base-content/20 mt-1 pt-1'
+                                                                  : undefined
+                                                          }
                                                       >
-                                                          {action.label}
-                                                      </button>
-                                                  </li>
-                                              ))}
+                                                          <button
+                                                              type="button"
+                                                              className="whitespace-nowrap"
+                                                              onClick={() => {
+                                                                  close();
+                                                                  void action
+                                                                      .run()
+                                                                      .then(
+                                                                          resolve,
+                                                                      );
+                                                              }}
+                                                          >
+                                                              {action.installed ? (
+                                                                  <Check
+                                                                      size={16}
+                                                                      className="shrink-0"
+                                                                      aria-hidden="true"
+                                                                  />
+                                                              ) : (
+                                                                  <Download
+                                                                      size={16}
+                                                                      className="shrink-0"
+                                                                      aria-hidden="true"
+                                                                  />
+                                                              )}
+                                                              <span>
+                                                                  {action.label}
+                                                              </span>
+                                                          </button>
+                                                      </li>
+                                                  ),
+                                              )}
                                           </ul>
                                       </div>
                                   ),

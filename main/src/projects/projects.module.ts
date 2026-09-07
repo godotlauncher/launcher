@@ -1,12 +1,14 @@
 import { Module } from '@mariodebono/di';
 import { AppIntegrationsModule } from '../app-integrations/app-integrations.module.js';
 import { CodeEditorIntegrationModule } from '../codeEditorIntegration/codeEditorIntegration.module.js';
+import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js';
 import { EditorInstallsModule } from '../editor-installs/editor-installs.module.js';
 import { TrayAvailabilityModule } from '../services/tray-availability.module.js';
 import { GitModule } from '../tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from '../tool-integration/integrations/git-lfs/git-lfs.module.js';
 import { ProjectCreationService } from './project-creation.service.js';
 import { ProjectDiscoveryService } from './project-discovery.service.js';
+import { ProjectEditorChoiceService } from './project-editor-choice.service.js';
 import { ProjectImportService } from './project-import.service.js';
 import { ProjectPublicationService } from './project-publication.service.js';
 import { ProjectRemoteImportService } from './project-remote-import.service.js';
@@ -24,6 +26,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
         AppIntegrationsModule,
         CodeEditorIntegrationModule,
         EditorInstallsModule,
+        EditorCatalogModule,
         GitModule,
         GitLfsModule,
         TrayAvailabilityModule,
@@ -32,6 +35,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
         ProjectCreationService,
         ProjectDiscoveryService,
         ProjectImportService,
+        ProjectEditorChoiceService,
         ProjectPublicationService,
         ProjectRepositoryOriginIndexService,
         ProjectRemoteSourceService,
