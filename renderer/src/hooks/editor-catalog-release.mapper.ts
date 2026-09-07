@@ -50,7 +50,9 @@ export function mapEditorCatalogRelease(
 export function mapEditorCatalogResult(
     result: EditorCatalogResult,
 ): LegacyEditorCatalog {
-    const releases = result.releases.map(mapEditorCatalogRelease);
+    const releases = deduplicateEditorCatalogReleases(result.releases).map(
+        mapEditorCatalogRelease,
+    );
 
     return {
         availableReleases: releases.filter((release) => !release.prerelease),
@@ -58,4 +60,42 @@ export function mapEditorCatalogResult(
         refreshError: result.providers.find((provider) => provider.refreshError)
             ?.refreshError,
     };
+}
+
+/**
+ * Keeps one coherent catalog release for each exact version.
+ *
+ * @param releases - Catalog releases in provider order.
+ * @returns Unique releases in the order their versions first appeared.
+ */
+function deduplicateEditorCatalogReleases(
+    releases: EditorCatalogRelease[],
+): EditorCatalogRelease[] {
+    const releasesByVersion = new Map<string, EditorCatalogRelease>();
+
+    for (const release of releases) {
+        const existingRelease = releasesByVersion.get(release.version);
+
+        if (
+            !existingRelease ||
+            (!isPreferredProvider(existingRelease) &&
+                isPreferredProvider(release))
+        ) {
+            releasesByVersion.set(release.version, release);
+        }
+    }
+
+    return [...releasesByVersion.values()];
+}
+
+/**
+ * Checks whether a release comes from the provider responsible for its channel.
+ *
+ * @param release - The release whose provider should be checked.
+ * @returns Whether the provider is preferred for the release channel.
+ */
+function isPreferredProvider(release: EditorCatalogRelease): boolean {
+    return release.versionParts.channel === 'stable'
+        ? release.providerId === 'official-stable'
+        : release.providerId === 'official-prerelease';
 }

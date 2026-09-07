@@ -219,6 +219,25 @@ test('Can navigate the main window', async () => {
         await expect(
             allReleaseList.getByTestId('inputInstallSearch'),
         ).toHaveCount(0);
+        const exactStableRelease = drawer.getByText('4.7.1-stable', {
+            exact: true,
+        });
+        const exactPrerelease = drawer.getByText('4.7.1-rc2', {
+            exact: true,
+        });
+        await expect(exactStableRelease).toHaveCount(1);
+
+        for (let switchIndex = 0; switchIndex < 2; switchIndex += 1) {
+            await drawer.getByTestId('tabInstallsPrerelease').click();
+            await expect(exactStableRelease).toHaveCount(0);
+            await expect(exactPrerelease).toHaveCount(1);
+            await drawer.getByTestId('tabInstallsRelease').click();
+            await expect(exactStableRelease).toHaveCount(1);
+            await expect(exactPrerelease).toHaveCount(0);
+        }
+
+        await reloadButton.click();
+        await expect(exactStableRelease).toHaveCount(1);
         await drawerSearch.fill('4.5');
         await drawer.getByTestId('tabInstallsPrerelease').click();
         await expect(
@@ -246,6 +265,9 @@ test('Can navigate the main window', async () => {
         await drawer.getByTestId('tabInstallsAll').click();
         await expect(drawer.getByTestId('inputInstallSearch')).toBeFocused();
         await expect(drawer.getByTestId('inputInstallSearch')).toHaveValue('');
+        await expect(
+            drawer.getByText('4.7.1-stable', { exact: true }),
+        ).toHaveCount(1);
         await drawer.getByTestId('btnCloseInstallEditor').click();
     });
 
