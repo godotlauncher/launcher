@@ -39,22 +39,68 @@ describe('editor catalog release mapper', () => {
         ]);
     });
 
-    it('splits channels and keeps provider refresh errors', () => {
+    it('deduplicates stable versions using the stable provider release', () => {
         const mapped = mapEditorCatalogResult({
             releases: [
-                createRelease('official-stable', false),
-                createRelease('official-prerelease', true),
                 {
                     ...createRelease('official-prerelease', false),
-                    prerelease: true,
+                    variants: createRelease(
+                        'official-prerelease',
+                        false,
+                    ).variants.map((variant) => ({
+                        ...variant,
+                        assets: variant.assets.map((asset) => ({
+                            ...asset,
+                            downloadUrl: `https://fallback.example/${asset.name}`,
+                        })),
+                    })),
                 },
+                createRelease('official-stable', false),
+            ],
+            providers: [],
+        });
+
+        expect(mapped.availableReleases).toHaveLength(1);
+        expect(mapped.availableReleases[0]?.assets[0]?.download_url).toBe(
+            'https://example.com/godot-windows.zip',
+        );
+    });
+
+    it('deduplicates prereleases using the prerelease provider release', () => {
+        const mapped = mapEditorCatalogResult({
+            releases: [
+                createRelease('official-stable', true),
+                createRelease('official-prerelease', true),
+            ],
+            providers: [],
+        });
+
+        expect(mapped.availablePrereleases).toHaveLength(1);
+        expect(mapped.availablePrereleases[0]?.tag).toBe('4.6-beta1');
+        expect(mapped.availablePrereleases[0]?.name).toBe(
+            'official-prerelease 4.6-beta1',
+        );
+    });
+
+    it('keeps fallback providers and distinct exact versions', () => {
+        const fallbackStable = createRelease('official-prerelease', false);
+        const patchRelease = {
+            ...createRelease('official-stable', false),
+            id: 'official-stable:4.5.1-stable',
+            tag: '4.5.1-stable',
+            version: '4.5.1-stable',
+            versionParts: {
+                ...createRelease('official-stable', false).versionParts,
+                patch: 1,
+            },
+        };
+        const mapped = mapEditorCatalogResult({
+            releases: [
+                fallbackStable,
+                patchRelease,
+                createRelease('official-stable', true),
             ],
             providers: [
-                {
-                    id: 'official-stable',
-                    lastFetchedAt: 1,
-                    isStale: false,
-                },
                 {
                     id: 'official-prerelease',
                     lastFetchedAt: 1,
@@ -64,7 +110,9 @@ describe('editor catalog release mapper', () => {
             ],
         });
 
-        expect(mapped.availableReleases).toHaveLength(2);
+        expect(
+            mapped.availableReleases.map((release) => release.version),
+        ).toEqual(['4.5-stable', '4.5.1-stable']);
         expect(mapped.availablePrereleases).toHaveLength(1);
         expect(mapped.refreshError).toBe('Builds are unavailable');
     });
@@ -90,7 +138,7 @@ function createRelease(
         tag: version,
         version,
         baseVersion: prerelease ? '4.6' : '4.5',
-        name: `Godot ${version}`,
+        name: `${providerId} ${version}`,
         publishedAt: '2026-01-01T00:00:00.000Z',
         prerelease,
         versionParts: {
