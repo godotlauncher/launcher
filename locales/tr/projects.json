@@ -239,6 +239,8 @@
                 "editorsQueued": "Seçilen düzenleyici indirmeleri Kurulumlar'a eklendi. Düzenleyicileri hazır olduğunda projeler otomatik olarak güncellenir.",
                 "adding": "Projeler ekleniyor: {{current}}/{{total}}",
                 "complete": "Proje içe aktarma tamamlandı",
+                "renamed": "Yeniden adlandırıldı",
+                "renamedFromTo": "{{original}} adı {{final}} olarak değiştirildi",
                 "added": "Eklendi",
                 "skipped": "Atlandı",
                 "failed": "Başarısız",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "Klon içe aktarıldıktan sonra değiştirildi veya yenisiyle değiştirildi, bu nedenle silinmedi.",
                 "cloneCleanupFailed": "Klon silinemedi. Korundu."
             }
+        },
+        "conflicts": {
+            "title": "Proje içe aktarımlarını incele",
+            "description": "Bir Launcher adı seçin veya projeyi atlayın. Godot proje adları ve klasörler değişmez.",
+            "label": "Launcher adı",
+            "name": "Bu ad veya ayar klasörü zaten kullanılıyor. Başka bir ad seçin veya atlayın.",
+            "folder": "Bu klasör zaten kayıtlı veya seçili. Bu girdiyi atlayın.",
+            "invalid": "Geçerli bir ad girin. Okunamayan proje dosyalarını atlayın.",
+            "skip": "Bu projeyi atla",
+            "continue": "Projeleri ekle",
+            "edit": "Adı düzenle",
+            "include": "Projeyi dahil et",
+            "badges": {
+                "ready": "Hazır",
+                "skipped": "Atlandı",
+                "name": "Ad çakışması",
+                "folder": "Zaten eklendi",
+                "invalid": "Geçersiz"
+            }
+        },
+        "editorReview": {
+            "description": "Projelerinizi eklemeden önce adları ve editörleri seçin.",
+            "requested": "İstenen",
+            "exact": "Tam sürüm",
+            "details": "Gerekli editör ayrıntıları",
+            "summary": "{{count}} seçili · {{downloads}} indirme",
+            "download": "İndirme",
+            "missing": "Editör eksik"
         }
     },
     "messages": {

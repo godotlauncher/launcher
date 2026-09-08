@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { FormField } from './formField.component';
@@ -7,6 +7,7 @@ import { FormField } from './formField.component';
 export type SelectFieldOption = {
     value: string;
     label: string;
+    selectedLabel?: string;
     disabled?: boolean;
     separatorBefore?: boolean;
 };
@@ -26,6 +27,9 @@ export type SelectFieldProps = {
     disabled?: boolean;
     testId?: string;
     showSelectedCheck?: boolean;
+    fitOptionContent?: boolean;
+    appearance?: 'field' | 'chip';
+    startIcon?: React.ReactNode;
 };
 
 export function getEnabledOptionIndex(
@@ -92,6 +96,9 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     disabled = false,
     testId,
     showSelectedCheck = false,
+    fitOptionContent = false,
+    appearance = 'field',
+    startIcon,
 }) => {
     const reactId = useId().replace(/[^a-zA-Z0-9_-]/g, '');
     const popoverId = `${id}-${reactId}-popover`;
@@ -107,18 +114,22 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     const [activeIndex, setActiveIndex] = useState(
         selectedIndex >= 0 ? selectedIndex : firstEnabledIndex,
     );
+    const selectedOption = options.find((option) => option.value === value);
     const selectedLabel =
-        options.find((option) => option.value === value)?.label ?? value;
+        selectedOption?.selectedLabel ?? selectedOption?.label ?? value;
+    const selectedAccessibleLabel = selectedOption?.label ?? value;
     const accessibleLabel = ariaLabel ?? label;
     const triggerAriaLabel = accessibleLabel
-        ? `${accessibleLabel}: ${selectedLabel}`
+        ? `${accessibleLabel}: ${selectedAccessibleLabel}`
         : undefined;
     const triggerStyle = {
         anchorName,
     } as React.CSSProperties;
     const popoverStyle = {
         positionAnchor: anchorName,
-        width: 'anchor-size(width)',
+        width: fitOptionContent ? 'max-content' : 'anchor-size(width)',
+        minWidth: fitOptionContent ? 'anchor-size(width)' : undefined,
+        maxWidth: fitOptionContent ? 'calc(100vw - 1rem)' : undefined,
     } as React.CSSProperties;
 
     const focusOption = useCallback((index: number) => {
@@ -294,16 +305,23 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 aria-expanded={isOpen}
                 aria-controls={popoverId}
                 className={clsx(
-                    'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left',
+                    appearance === 'chip'
+                        ? 'btn btn-ghost btn-sm h-8 min-h-8 w-auto rounded-full border border-base-300 bg-base-100 px-3 text-left font-normal shadow-none hover:border-base-content/25 hover:bg-base-200 hover:shadow-none'
+                        : 'select select-bordered flex w-full items-center justify-between gap-2 bg-[var(--select-field-background)] text-left',
                     {
-                        'select-sm': compact,
-                        'text-sm': regularText,
-                        'select-error': Boolean(error),
+                        'select-sm': compact && appearance === 'field',
+                        'text-base': regularText,
+                        'select-error': Boolean(error) && appearance === 'field',
+                        'border-error': Boolean(error) && appearance === 'chip',
                     },
                 )}
                 style={triggerStyle}
             >
+                {startIcon}
                 <span className="min-w-0 flex-1 truncate">{selectedLabel}</span>
+                {appearance === 'chip' && (
+                    <ChevronDown size={14} aria-hidden="true" />
+                )}
             </button>
             <div
                 ref={popoverRef}
@@ -314,11 +332,13 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 onKeyDown={handleListKeyDown}
                 className={clsx(
                     'dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-box border border-base-300 bg-[var(--select-field-background)] shadow-sm',
-                    regularText && 'text-sm',
+                    regularText && 'text-base',
                 )}
                 style={popoverStyle}
             >
-                <ul className="menu w-full p-1">
+                <ul
+                    className={clsx('menu w-full p-1', regularText && 'text-base')}
+                >
                     {options.map((option, index) => (
                         <li
                             key={option.value}
@@ -355,7 +375,12 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                                         )}
                                     </span>
                                 )}
-                                <span className="min-w-0 flex-1">
+                                <span
+                                    className={clsx(
+                                        'min-w-0 flex-1',
+                                        fitOptionContent && 'whitespace-nowrap',
+                                    )}
+                                >
                                     {option.label}
                                 </span>
                             </button>

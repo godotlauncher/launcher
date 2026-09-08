@@ -527,6 +527,7 @@ describe('createProject', () => {
             projectLauncherConfigMocks.writeProjectLauncherConfig,
         ).toHaveBeenCalledWith(projectPath, {
             release,
+            projectName: 'Git Project',
             launcherVersion: '1.0.0',
         });
 

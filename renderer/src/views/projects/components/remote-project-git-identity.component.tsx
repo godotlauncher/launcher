@@ -70,9 +70,9 @@ export const RemoteProjectGitIdentity: React.FC<
         return (
             <div className="flex flex-col gap-4">
                 <div>
-                    <p className="font-medium">
+                    <h2 className="text-base font-semibold">
                         {t('addProject.remote.gitIdentity.title')}
-                    </p>
+                    </h2>
                     <p className="text-sm text-base-content/70">
                         {t('addProject.remote.gitIdentity.message')}
                     </p>
@@ -102,9 +102,9 @@ export const RemoteProjectGitIdentity: React.FC<
         return (
             <div className="flex flex-col gap-4">
                 <div>
-                    <p className="font-medium">
+                    <h2 className="text-base font-semibold">
                         {t('createProject:gitIdentity.presetTitle')}
-                    </p>
+                    </h2>
                     <p className="text-sm text-base-content/70">
                         {t('addProject.remote.gitIdentity.presetMessage')}
                     </p>
@@ -172,9 +172,9 @@ export const RemoteProjectGitIdentity: React.FC<
     return (
         <div className="flex flex-col gap-4">
             <div>
-                <p className="font-medium">
+                <h2 className="text-base font-semibold">
                     {t('createProject:gitIdentity.formTitle')}
-                </p>
+                </h2>
                 <p className="text-sm text-base-content/70">
                     {t('addProject.remote.gitIdentity.formMessage')}
                 </p>

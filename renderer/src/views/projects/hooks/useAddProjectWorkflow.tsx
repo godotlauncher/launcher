@@ -12,9 +12,15 @@ import logger from 'electron-log';
 import { Check, ChevronDown, Download, TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { appBridge } from '../../../bridge.ts';
+import { appBridge, projectsBridge } from '../../../bridge.ts';
 import type { ConfirmButton } from '../../../components/confirm.component';
+import { ProjectImportReview } from '../components/project-import-review.component';
+import {
+    type LocalImportRow,
+    prepareLocalImportRow,
+} from '../local-import-editor.model';
 import { findDownloadableProjectEditor } from '../project-editor-resolution.model.ts';
+import { getImportConflicts } from '../project-import-conflict.model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -72,6 +78,12 @@ export function useAddProjectWorkflow({
     setProjectEditor,
     showRecoveredCodeEditorConfigWarning,
 }: AddProjectWorkflowArgs) {
+    const [localReview, setLocalReview] = useState<{
+        rows: LocalImportRow[];
+        existing: ProjectDetails[];
+        platform: string;
+        resolve: (selected: LocalImportRow[]) => void;
+    } | null>(null);
     const [projectEditorInstallTargets, setProjectEditorInstallTargets] =
         useState<ProjectEditorInstallTarget[]>([]);
     const getRequestedMono = (result: AddProjectToListResult): boolean =>
@@ -110,6 +122,7 @@ export function useAddProjectWorkflow({
      * @param release - Editor release selected for installation.
      * @param editorChoiceId - Revalidated catalogue choice to retain while missing.
      * @param projectOptions - Registration choices to preserve while adding.
+     * @param onResolution - Reopens local review when the selected action is stale.
      * @returns Whether the project was added before installation and repair.
      */
     const downloadEditorAndAddProject = async (
@@ -118,6 +131,7 @@ export function useAddProjectWorkflow({
         release: ReleaseSummary,
         editorChoiceId: string | undefined,
         projectOptions: AddProjectOptions,
+        onResolution?: (result: AddProjectToListResult) => Promise<boolean>,
     ): Promise<boolean> => {
         const mono = getRequestedMono(result);
         const addMissingResult = await addProject(projectPath, {
@@ -126,6 +140,13 @@ export function useAddProjectWorkflow({
             ...(editorChoiceId ? { editorChoiceId } : {}),
         });
 
+        if (
+            onResolution &&
+            (addMissingResult.importConflict ||
+                addMissingResult.editorResolution)
+        ) {
+            return onResolution(addMissingResult);
+        }
         if (!addMissingResult.success || !addMissingResult.newProject) {
             showAddProjectError(addMissingResult.error);
             return false;
@@ -456,6 +477,19 @@ export function useAddProjectWorkflow({
         result: AddProjectToListResult,
         projectOptions: AddProjectOptions = {},
     ): Promise<boolean> => {
+        if (result.importConflict) {
+            const selected = await reviewLocalProjects(
+                [projectPath],
+                projectOptions.name === undefined
+                    ? {}
+                    : { [projectPath]: projectOptions.name },
+            );
+            if (!selected.length) return false;
+            return retryAddProject(projectPath, {
+                ...projectOptions,
+                name: selected[0].name,
+            });
+        }
         if (result.editorResolution) {
             return showEditorResolutionDialog(
                 projectPath,
@@ -475,27 +509,166 @@ export function useAddProjectWorkflow({
         return true;
     };
 
+    /**
+     * Reviews explicitly selected local files before any registration.
+     * @param paths - Selected local project files.
+     * @param chosenNames - Names retained after a stale registration conflict.
+     * @param refreshedResult - Current requirement returned by a rejected registration.
+     * @param previousEditorId - Preserve a prior editor action when still eligible.
+     */
+    const reviewLocalProjects = async (
+        paths: string[],
+        chosenNames: Record<string, string> = {},
+        refreshedResult?: AddProjectToListResult,
+        previousEditorId?: string,
+    ): Promise<LocalImportRow[]> => {
+        const inspected = await projectsBridge.inspectProjectImports(paths);
+        const rows = inspected.map((row) =>
+            prepareLocalImportRow(
+                {
+                    ...row,
+                    ...(refreshedResult?.editorResolution
+                        ? {
+                              editorResolution:
+                                  refreshedResult.editorResolution,
+                              editorRequest:
+                                  refreshedResult.editorResolution.requested,
+                          }
+                        : {}),
+                    name: chosenNames[row.projectFilePath] ?? row.name,
+                },
+                availableReleases,
+                availablePrereleases,
+            ),
+        );
+        for (const row of rows) {
+            if (
+                previousEditorId &&
+                row.editorActions.some(
+                    (action) => action.id === previousEditorId,
+                )
+            )
+                row.editorActionId = previousEditorId;
+        }
+        const existing = await projectsBridge.getProjectsDetails();
+        const platform = await appBridge.getPlatform();
+        if (
+            !getImportConflicts(rows, existing, platform).some(Boolean) &&
+            !rows.some((row) => row.editorResolution) &&
+            !refreshedResult
+        )
+            return rows;
+        return new Promise((resolve) =>
+            setLocalReview({ rows, existing, platform, resolve }),
+        );
+    };
+
+    /** Registers one reviewed item, reopening the combined review if its choices became stale.
+     * @param row - Confirmed name and editor action.
+     */
+    const registerLocalRow = async (row: LocalImportRow): Promise<boolean> => {
+        const action = row.editorActions.find(
+            (candidate) => candidate.id === row.editorActionId,
+        );
+        if (!action) return false;
+        const options = { ...action.options, name: row.name };
+        /** Rechecks the affected item while retaining still-valid choices. */
+        const reviewChanged = async (
+            result: AddProjectToListResult,
+        ): Promise<boolean> => {
+            const selected = await reviewLocalProjects(
+                [row.projectFilePath],
+                { [row.projectFilePath]: row.name },
+                result,
+                row.editorActionId,
+            );
+            return selected.length ? registerLocalRow(selected[0]) : false;
+        };
+        if (action.download && row.editorResolution) {
+            return downloadEditorAndAddProject(
+                row.projectFilePath,
+                { success: false, editorResolution: row.editorResolution },
+                action.download,
+                'editorChoiceId' in action.options
+                    ? action.options.editorChoiceId
+                    : undefined,
+                options,
+                reviewChanged,
+            );
+        }
+        const result = await addProject(row.projectFilePath, options);
+        if (result.importConflict || result.editorResolution) {
+            return reviewChanged(result);
+        }
+        return handleAddProjectResult(row.projectFilePath, result, options);
+    };
+
+    /**
+     * Reviews and registers a batch while preserving its chosen names on retry.
+     * @param paths - Explicitly selected project files.
+     * @param onProgress - Reports processed items after the review selection.
+     */
+    const importLocalProjects = async (
+        paths: string[],
+        onProgress?: (current: number, total: number) => void,
+    ) => {
+        try {
+            const selected = await reviewLocalProjects(paths);
+            onProgress?.(0, selected.length);
+            for (const [index, row] of selected.entries()) {
+                try {
+                    await registerLocalRow(row);
+                } catch (error) {
+                    showAddProjectError(
+                        error instanceof Error ? error.message : undefined,
+                    );
+                } finally {
+                    onProgress?.(index + 1, selected.length);
+                }
+            }
+        } catch (error) {
+            showAddProjectError(
+                error instanceof Error ? error.message : undefined,
+            );
+        }
+    };
+
+    /** Opens the file picker and reviews the selected project before registration. */
     const onAddProject = async () => {
         if (addingProject) return;
         setAddingProject(true);
-        const result = await appBridge.openFileDialog(
-            projectsLocation ?? '',
-            t('addProject.selectFile'),
-            [{ name: t('addProject.godotProject'), extensions: ['godot'] }],
-        );
-        setAddingProject(false);
-
-        if (!result.canceled) {
-            const projectPath = result.filePaths[0];
-
-            const addResult = await addProject(projectPath);
-            logger.info(addResult);
-            await handleAddProjectResult(projectPath, addResult);
+        try {
+            const result = await appBridge.openFileDialog(
+                projectsLocation ?? '',
+                t('addProject.selectFile'),
+                [{ name: t('addProject.godotProject'), extensions: ['godot'] }],
+            );
+            if (!result.canceled)
+                await importLocalProjects([result.filePaths[0]]);
+        } finally {
+            setAddingProject(false);
         }
     };
 
     return {
+        localImportDialog: localReview ? (
+            <ProjectImportReview
+                rows={localReview.rows}
+                existing={localReview.existing}
+                platform={localReview.platform}
+                t={t}
+                onConfirm={(selected) => {
+                    setLocalReview(null);
+                    localReview.resolve(selected);
+                }}
+                onCancel={() => {
+                    setLocalReview(null);
+                    localReview.resolve([]);
+                }}
+            />
+        ) : null,
         handleAddProjectResult,
+        importLocalProjects,
         onAddProject,
         projectEditorInstallTargets,
     };

@@ -65,7 +65,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             type={type}
             className={clsx('input input-bordered w-full pr-8', {
                 'input-sm': compact,
-                'text-sm': regularText,
+                'text-base': regularText,
                 'input-error': Boolean(error),
             })}
             value={value}

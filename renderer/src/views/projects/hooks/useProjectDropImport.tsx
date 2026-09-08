@@ -1,7 +1,3 @@
-import type {
-    AddProjectOptions,
-    AddProjectToListResult,
-} from '@shared/contracts';
 import logger from 'electron-log';
 import { TriangleAlert } from 'lucide-react';
 import type React from 'react';
@@ -23,22 +19,17 @@ type UseProjectDropImportArgs = {
         icon?: React.ReactNode,
     ) => void;
     setAddingProject: (addingProject: boolean) => void;
-    addProject: (
-        projectPath: string,
-        options?: AddProjectOptions,
-    ) => Promise<AddProjectToListResult>;
-    handleAddProjectResult: (
-        projectPath: string,
-        result: AddProjectToListResult,
-    ) => Promise<boolean>;
+    importLocalProjects: (
+        paths: string[],
+        onProgress?: (current: number, total: number) => void,
+    ) => Promise<void>;
 };
 
 export function useProjectDropImport({
     t,
     addAlert,
     setAddingProject,
-    addProject,
-    handleAddProjectResult,
+    importLocalProjects,
 }: UseProjectDropImportArgs) {
     const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
     const [loadingProgress, setLoadingProgress] =
@@ -68,6 +59,10 @@ export function useProjectDropImport({
         }
     };
 
+    /**
+     * Reviews the explicitly dropped project files before importing the batch.
+     * @param e - Native file drop event from the Electron renderer.
+     */
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
@@ -107,45 +102,9 @@ export function useProjectDropImport({
         setLoadingProgress({ current: 0, total: godotFiles.length });
 
         try {
-            logger.info(`Starting to add ${godotFiles.length} projects`);
-            for (let i = 0; i < godotFiles.length; i++) {
-                const projectPath = godotFiles[i];
-                setLoadingProgress({
-                    current: i + 1,
-                    total: godotFiles.length,
-                });
-                logger.info(
-                    `[${i + 1}/${godotFiles.length}] Adding project from:`,
-                    projectPath,
-                );
-                try {
-                    const addResult = await addProject(projectPath);
-                    await handleAddProjectResult(projectPath, addResult);
-
-                    if (addResult.success) {
-                        logger.info(
-                            `[${i + 1}/${godotFiles.length}] Successfully added project:`,
-                            addResult.newProject?.name,
-                        );
-                    }
-                } catch (error) {
-                    logger.error(
-                        `[${i + 1}/${godotFiles.length}] Exception while adding project:`,
-                        error,
-                    );
-                    addAlert(
-                        t('common:error'),
-                        t('messages.failedAddProject', {
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        }),
-                        <TriangleAlert className="stroke-error" />,
-                    );
-                }
-            }
-            logger.info('Finished adding all projects');
+            await importLocalProjects(godotFiles, (current, total) =>
+                setLoadingProgress({ current, total }),
+            );
         } finally {
             setAddingProject(false);
             setLoadingProgress(null);

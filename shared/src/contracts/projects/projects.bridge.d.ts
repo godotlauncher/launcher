@@ -22,6 +22,7 @@ import type {
     ProjectDetails,
     ProjectGitHubLink,
     ProjectGitIdentityResult,
+    ProjectImportInspection,
     ProjectPublicationRecoveryAction,
     PublicGitSourceInspectionResult,
     RemoteProjectImportRequest,
@@ -138,7 +139,15 @@ export type ProjectsBridge = {
     /** Reads the project name stored in project.godot. */
     getProjectGodotName(project: ProjectDetails): Promise<string | null>;
 
-    /** Adds an existing project to Launcher. */
+    /** Reads selected project files without registration.
+     * @param paths - Up to 100 absolute project file paths.
+     */
+    inspectProjectImports(paths: string[]): Promise<ProjectImportInspection[]>;
+
+    /** Adds an existing project to Launcher.
+     * @param path - Selected project file path.
+     * @param options - Launcher name, code editor and Godot editor choices.
+     */
     addProject(
         path: string,
         options?: AddProjectOptions,

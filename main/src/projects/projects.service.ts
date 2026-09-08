@@ -370,23 +370,11 @@ export class ProjectsService {
     }
 
     /**
-     * Removes one project from Launcher without deleting its directory.
+     * Removes one project from Launcher without changing its launcher metadata or deleting its directory.
      *
      * @param project - Project to remove.
      */
     async removeProject(project: ProjectDetails) {
-        try {
-            await writeProjectLauncherConfig(project.path, {
-                release: project.release,
-                launcherVersion: app.getVersion(),
-            });
-        } catch (error) {
-            logger.warn(
-                `Failed to write project launcher config for '${project.name}' before removing it`,
-                error,
-            );
-        }
-
         await removeProjectEditor(project);
         const projects = await this.store.remove(project.path);
         this.publishProjects(projects);
@@ -503,6 +491,14 @@ export class ProjectsService {
      */
     getProjectGodotName(project: ProjectDetails) {
         return readGodotProjectName(project.path);
+    }
+
+    /**
+     * Reads the names of explicitly selected project files without registering them.
+     * @param paths - Bounded list of selected project files.
+     */
+    inspectProjectImports(paths: string[]) {
+        return this.projectImport.inspectProjectImports(paths);
     }
 
     /**
@@ -651,6 +647,7 @@ export class ProjectsService {
             };
             await writeProjectLauncherConfig(updatedProject.path, {
                 release: updatedProject.release,
+                projectName: updatedProject.name,
                 launcherVersion: app.getVersion(),
             });
 
@@ -1051,6 +1048,7 @@ export class ProjectsService {
             try {
                 await writeProjectLauncherConfig(launchedProject.path, {
                     release: launchedProject.release,
+                    projectName: launchedProject.name,
                     launcherVersion: app.getVersion(),
                 });
             } catch (error) {

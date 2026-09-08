@@ -128,7 +128,7 @@ export function RemoteProjectRepositorySource({
                     <div>
                         <button
                             type="button"
-                            className="btn btn-primary btn-sm"
+                            className="btn btn-primary"
                             onClick={onOpenConnections}
                         >
                             {t('addProject.remote.github.openConnections')}
@@ -149,7 +149,7 @@ export function RemoteProjectRepositorySource({
                         {showConnectionsAction && (
                             <button
                                 type="button"
-                                className="btn btn-primary btn-sm"
+                                className="btn btn-primary"
                                 onClick={onOpenConnections}
                             >
                                 {t('addProject.remote.github.openConnections')}
@@ -157,7 +157,7 @@ export function RemoteProjectRepositorySource({
                         )}
                         <button
                             type="button"
-                            className="btn btn-neutral btn-sm"
+                            className="btn btn-neutral"
                             onClick={onRetry}
                         >
                             {t('common:buttons.retry')}
@@ -172,6 +172,7 @@ export function RemoteProjectRepositorySource({
                         )}
                         value={search}
                         onChange={onSearchChange}
+                        compact
                         focusOnMount
                         data-testid="inputGitHubRepositorySearch"
                     />
@@ -234,7 +235,7 @@ export function RemoteProjectRepositorySource({
                     {cursor && (
                         <button
                             type="button"
-                            className="btn btn-neutral btn-sm self-start"
+                            className="btn btn-neutral self-start"
                             disabled={loadingMore}
                             onClick={() => onLoadMore(cursor)}
                         >
@@ -250,7 +251,7 @@ export function RemoteProjectRepositorySource({
                 <span>{t('addProject.remote.github.missingRepository')}</span>
                 <button
                     type="button"
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-ghost"
                     disabled={loading || loadingMore}
                     onClick={onOpenConnections}
                 >

@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import type { AddProjectOptions } from '@shared/contracts';
+import type { AddProjectOptions, ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import type { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
@@ -12,16 +12,19 @@ const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
     readdirSync: vi.fn(),
     readFile: vi.fn(),
+    stat: vi.fn(),
+    realpathSync: vi.fn((value) => value),
 }));
 
 vi.mock('node:fs', () => ({
     existsSync: fsMocks.existsSync,
+    realpathSync: fsMocks.realpathSync,
     readdirSync: fsMocks.readdirSync,
-    promises: { readFile: fsMocks.readFile },
+    promises: { readFile: fsMocks.readFile, stat: fsMocks.stat },
     default: {
         existsSync: fsMocks.existsSync,
         readdirSync: fsMocks.readdirSync,
-        promises: { readFile: fsMocks.readFile },
+        promises: { readFile: fsMocks.readFile, stat: fsMocks.stat },
     },
 }));
 
@@ -161,7 +164,15 @@ const defaultGitService = {
 } as unknown as GitService;
 const projectsStore = {
     list: getProjectsDetails,
-    put: addProjectToList,
+    update: async (
+        mutator: (projects: ProjectDetails[]) => Promise<ProjectDetails[]>,
+    ) => {
+        const current = await getProjectsDetails();
+        const result = await mutator(current);
+        if (result.length > current.length)
+            await addProjectToList(result[result.length - 1]);
+        return result;
+    },
 } as unknown as ProjectsStore;
 const projectEditorChoiceService = {
     getChoices: vi.fn().mockResolvedValue([]),
@@ -224,6 +235,7 @@ describe('addProject', () => {
         );
         readdirSync.mockReturnValue(['project.godot']);
         readFile.mockResolvedValue('dummy');
+        fsMocks.stat.mockResolvedValue({ isFile: () => true, size: 100 });
         parseGodotProjectFile.mockReturnValue(new Map());
         getProjectNameFromParsed.mockResolvedValue('Sample Project');
         getProjectRendererFromParsed.mockResolvedValue('FORWARD_PLUS');
@@ -307,6 +319,232 @@ describe('addProject', () => {
         readProjectLauncherConfig.mockResolvedValue(null);
         writeProjectLauncherConfig.mockResolvedValue(undefined);
     });
+
+    it('inspects only selected files without registration or settings writes', async () => {
+        const service = new ProjectImportService(
+            codeEditorIntegrationService,
+            installedEditorService,
+            projectEditorChoiceService,
+            defaultGitService,
+            projectsStore,
+        );
+        const selected = path.resolve('fixture/project.godot');
+        expect(await service.inspectProjectImports([selected])).toMatchObject([
+            {
+                projectFilePath: selected,
+                directory: path.dirname(selected),
+                registered: false,
+                name: 'Sample Project',
+            },
+        ]);
+        expect(addProjectToList).not.toHaveBeenCalled();
+        expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it.each(['Sample Project', 'x'.repeat(256)])(
+        'inspects editor choices for a conflicting or editable invalid name without writes: %s',
+        async (projectName) => {
+            getProjectNameFromParsed.mockResolvedValue(projectName);
+            getProjectGodotVersionFromParsed.mockReturnValue('4.8');
+            getProjectsDetails.mockResolvedValue([
+                { name: 'Sample Project', path: '/other' },
+            ]);
+            const choice = {
+                id: 'beta',
+                version: '4.8-beta2',
+                source: 'official' as const,
+                flavor: 'gdscript',
+                installed: false,
+                prerelease: true,
+                recommended: true,
+            };
+            vi.mocked(projectEditorChoiceService.getChoices).mockResolvedValue([
+                choice,
+            ]);
+            const service = new ProjectImportService(
+                codeEditorIntegrationService,
+                installedEditorService,
+                projectEditorChoiceService,
+                defaultGitService,
+                projectsStore,
+            );
+            const rows = await service.inspectProjectImports([
+                path.resolve('fixture/project.godot'),
+            ]);
+            expect(rows[0].editorRequest).toMatchObject({
+                kind: 'stable-base',
+                base_version: '4.8',
+            });
+            expect(rows[0].editorResolution?.choices).toEqual([choice]);
+            expect(rows[0].error).toBeUndefined();
+            expect(addProjectToList).not.toHaveBeenCalled();
+            expect(setProjectEditorRelease).not.toHaveBeenCalled();
+            expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        },
+    );
+
+    it('bounds inspection and rejects directories and oversized project files', async () => {
+        const service = new ProjectImportService(
+            codeEditorIntegrationService,
+            installedEditorService,
+            projectEditorChoiceService,
+            defaultGitService,
+            projectsStore,
+        );
+        await expect(
+            service.inspectProjectImports(Array(101).fill('project.godot')),
+        ).rejects.toThrow();
+        fsMocks.stat.mockResolvedValue({
+            isFile: () => true,
+            size: 1024 * 1024 + 1,
+        });
+        const result = await service.inspectProjectImports([
+            path.resolve('fixture/project.godot'),
+        ]);
+        expect(result[0].error).toBeDefined();
+        expect(readFile).not.toHaveBeenCalled();
+    });
+
+    it('restores a saved Launcher name on reimport and lets an explicit choice override it', async () => {
+        readProjectLauncherConfig.mockResolvedValue({
+            config: { version: 1 },
+            launcher: { version: '1.11.1', project_name: 'Saved name' },
+            editor: {
+                channel: 'official',
+                flavor: 'dotnet',
+                base_version: '4.3',
+                version: '4.3-stable',
+            },
+        });
+        const restored = await addProject(
+            path.resolve('fixture/project.godot'),
+            codeEditorIntegrationService,
+        );
+        expect(restored.newProject?.name).toBe('Saved name');
+        const chosen = await addProject(
+            path.resolve('fixture/project.godot'),
+            codeEditorIntegrationService,
+            { name: 'Chosen name' },
+        );
+        expect(chosen.newProject?.name).toBe('Chosen name');
+        expect(writeProjectLauncherConfig).toHaveBeenLastCalledWith(
+            path.resolve('fixture'),
+            expect.objectContaining({ projectName: 'Chosen name' }),
+        );
+    });
+
+    it('stores the chosen Launcher name and uses it for settings without changing the parsed name', async () => {
+        const result = await addProject(
+            path.resolve('fixture/project.godot'),
+            codeEditorIntegrationService,
+            { name: 'Imported copy' },
+        );
+        expect(result.newProject?.name).toBe('Imported copy');
+        expect(setProjectEditorRelease).toHaveBeenCalledWith(
+            path.resolve('/install', '.editor_config', 'Imported copy'),
+            expect.anything(),
+        );
+        expect(getProjectNameFromParsed).not.toHaveBeenCalled();
+    });
+
+    it('serialises competing imports so only one performs side effects', async () => {
+        let stored: ProjectDetails[] = [];
+        let queue = Promise.resolve();
+        const update = vi
+            .spyOn(projectsStore, 'update')
+            .mockImplementation((mutator) => {
+                const result = queue.then(async () => {
+                    stored = await mutator(stored);
+                    return stored;
+                });
+                queue = result.then(
+                    () => {},
+                    () => {},
+                );
+                return result;
+            });
+        try {
+            const results = await Promise.all([
+                addProject(
+                    path.resolve('one/project.godot'),
+                    codeEditorIntegrationService,
+                    { name: 'Same name' },
+                ),
+                addProject(
+                    path.resolve('two/project.godot'),
+                    codeEditorIntegrationService,
+                    { name: 'Same name' },
+                ),
+            ]);
+            expect(results.filter((result) => result.success)).toHaveLength(1);
+            expect(
+                results.filter((result) => result.importConflict === 'name'),
+            ).toHaveLength(1);
+            expect(stored).toHaveLength(1);
+            expect(setProjectEditorRelease).toHaveBeenCalledOnce();
+            expect(writeProjectLauncherConfig).toHaveBeenCalledOnce();
+        } finally {
+            update.mockRestore();
+        }
+    });
+
+    it('rejects a stale name conflict before side effects and preserves the existing project', async () => {
+        const existing = { name: 'Imported copy', path: path.resolve('other') };
+        getProjectsDetails
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([existing]);
+        const result = await addProject(
+            path.resolve('fixture/project.godot'),
+            codeEditorIntegrationService,
+            { name: 'Imported copy' },
+        );
+        expect(result.importConflict).toBe('name');
+        expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(addProjectToList).not.toHaveBeenCalled();
+    });
+
+    it('rejects a stale duplicate folder before side effects', async () => {
+        getProjectsDetails
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([
+                { name: 'Other', path: path.resolve('fixture') },
+            ]);
+        const result = await addProject(
+            path.resolve('fixture/project.godot'),
+            codeEditorIntegrationService,
+        );
+        expect(result.importConflict).toBe('folder');
+        expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(addProjectToList).not.toHaveBeenCalled();
+    });
+
+    it('rejects sanitised settings-folder collisions', async () => {
+        getProjectsDetails.mockResolvedValue([
+            { name: 'Demo- One', path: path.resolve('other') },
+        ]);
+        const result = await addProject(
+            path.resolve('fixture/project.godot'),
+            codeEditorIntegrationService,
+            { name: 'Demo: One' },
+        );
+        expect(result.importConflict).toBe('name');
+        expect(setProjectEditorRelease).not.toHaveBeenCalled();
+    });
+
+    it.each(['', '  ', 'Bad\nName', 'x'.repeat(256)])(
+        'rejects invalid chosen names before reading project data',
+        async (name) => {
+            const result = await addProject(
+                path.resolve('fixture/project.godot'),
+                codeEditorIntegrationService,
+                { name },
+            );
+            expect(result.importConflict).toBe('name');
+            expect(readFile).not.toHaveBeenCalled();
+        },
+    );
 
     it('falls back to an installed mono editor when no flavor-specific match is found', async () => {
         const result = await addProject(
@@ -431,6 +669,29 @@ describe('addProject', () => {
         );
     });
 
+    it.each(['use_selected', 'add_missing'] as const)(
+        'returns fresh choices for a stale %s editor selection without writing',
+        async (resolution) => {
+            getProjectGodotVersionFromParsed.mockReturnValue('4.8');
+            const result = await addProject(
+                '/fake/project/project.godot',
+                codeEditorIntegrationService,
+                {
+                    resolution,
+                    editorChoiceId: 'removed',
+                    name: 'Retained name',
+                },
+            );
+            expect(result.success).toBe(false);
+            expect(result.editorResolution).toMatchObject({
+                requested: { base_version: '4.8' },
+                choices: [],
+            });
+            expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+            expect(setProjectEditorRelease).not.toHaveBeenCalled();
+        },
+    );
+
     it('requests the inferred stable branch instead of using a newer minor', async () => {
         getProjectGodotVersionFromParsed.mockReturnValue('4.4');
         getInstalledReleases.mockResolvedValue([
@@ -505,14 +766,73 @@ describe('addProject', () => {
             valid: false,
             invalid_reason: 'missing_editor',
             release: {
-                version: '4.4-stable',
+                version: '4.4',
                 base_version: '4.4',
                 source: 'official',
                 valid: false,
             },
         });
-        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            {
+                release: result.newProject?.release,
+                projectName: result.newProject?.name,
+                launcherVersion: '1.0.0',
+            },
+        );
     });
+
+    it.each(['4.8-stable', '4.8'])(
+        'restores prerelease choices for unresolved saved %s metadata',
+        async (version) => {
+            getProjectGodotVersionFromParsed.mockReturnValue('4.8');
+            getInstalledReleases.mockResolvedValue([]);
+            readProjectLauncherConfig.mockResolvedValue({
+                config: { version: 1 },
+                launcher: { version: '1.11.1', project_name: 'Saved name' },
+                editor: {
+                    channel: 'official',
+                    flavor: 'gdscript',
+                    base_version: '4.8',
+                    version,
+                },
+            });
+            const choice = {
+                id: 'catalog:4.8-beta2',
+                version: '4.8-beta2',
+                source: 'official' as const,
+                flavor: 'gdscript',
+                prerelease: true,
+                installed: false,
+                recommended: true,
+            };
+            vi.mocked(projectEditorChoiceService.getChoices).mockResolvedValue([
+                choice,
+            ]);
+            const result = await addProject(
+                '/fake/project/project.godot',
+                codeEditorIntegrationService,
+                { name: 'Chosen name' },
+            );
+            expect(result.editorResolution?.requested.kind).toBe('stable-base');
+            expect(result.editorResolution?.choices).toEqual([choice]);
+            expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+            const added = await addProject(
+                '/fake/project/project.godot',
+                codeEditorIntegrationService,
+                { name: 'Chosen name', resolution: 'add_missing' },
+            );
+            expect(added.newProject?.name).toBe('Chosen name');
+            expect(added.newProject?.release.version).toBe('4.8');
+            expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+                '/fake/project',
+                expect.objectContaining({
+                    projectName: 'Chosen name',
+                    release: expect.objectContaining({ version: '4.8' }),
+                }),
+            );
+        },
+    );
 
     it('retains an exact downloadable choice when installation is pending', async () => {
         getProjectGodotVersionFromParsed.mockReturnValue('4.4');
@@ -555,7 +875,14 @@ describe('addProject', () => {
                 valid: false,
             },
         });
-        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            {
+                release: result.newProject?.release,
+                projectName: result.newProject?.name,
+                launcherVersion: '1.0.0',
+            },
+        );
     });
 
     it('marks an imported project as covered by an enclosing repository', async () => {
@@ -924,7 +1251,14 @@ describe('addProject', () => {
         });
         expect(setProjectEditorRelease).not.toHaveBeenCalled();
         expect(integrationMocks.applyToProject).not.toHaveBeenCalled();
-        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            '/fake/project',
+            {
+                release: result.newProject?.release,
+                projectName: result.newProject?.name,
+                launcherVersion: '1.0.0',
+            },
+        );
     });
 
     it('uses an explicit fallback and writes .godotlauncher with the selected editor', async () => {

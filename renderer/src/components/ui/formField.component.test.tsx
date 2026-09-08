@@ -191,14 +191,22 @@ describe('UI form primitives', () => {
                 onChange={vi.fn()}
                 options={[
                     { value: 'universal', label: 'Universal' },
-                    { value: 'x64', label: 'x64' },
+                    {
+                        value: 'x64',
+                        label: 'x64 - Recommended',
+                        selectedLabel: 'x64',
+                    },
                     { value: 'arm64', label: 'ARM64' },
                 ]}
+                fitOptionContent
             />,
         );
 
         expect(html).toContain('aria-expanded="false"');
-        expect(html).toContain('aria-label="Architecture: x64"');
+        expect(html).toContain('aria-label="Architecture: x64 - Recommended"');
+        expect(html).toContain('>x64</span>');
+        expect(html).toContain('width:max-content');
+        expect(html).toContain('whitespace-nowrap');
         expect(html).toContain('aria-controls=');
         expect(html).toContain('popover="auto"');
         expect(html).toContain('role="listbox"');

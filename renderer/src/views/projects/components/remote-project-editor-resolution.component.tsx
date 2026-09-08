@@ -33,9 +33,9 @@ export function RemoteProjectEditorResolution({
     return (
         <div className="flex h-full min-h-0 flex-col gap-4">
             <div>
-                <p className="font-medium">
+                <h2 className="text-base font-semibold">
                     {t('addProject.remote.editorBatch.title')}
-                </p>
+                </h2>
                 <p className="text-sm text-base-content/70">
                     {t('addProject.remote.editorBatch.description', {
                         count: projectCount,

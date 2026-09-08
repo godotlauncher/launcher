@@ -44,10 +44,10 @@ export function RemoteProjectDestination({
                     {t('addProject.remote.destination.repository')}
                 </span>
                 <span
-                    className="min-h-12 truncate rounded-box border border-base-300 bg-base-200 px-4 py-3 font-medium text-base-content"
+                    className="flex h-8 min-h-8 items-center truncate rounded-box border border-base-300 bg-base-200 px-3 font-medium text-base text-base-content"
                     title={repositoryDisplay}
                 >
-                    {repositoryDisplay}
+                    <span className="min-w-0 truncate">{repositoryDisplay}</span>
                 </span>
             </div>
             <PathField

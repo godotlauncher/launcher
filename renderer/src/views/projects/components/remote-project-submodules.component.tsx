@@ -26,7 +26,7 @@ export function RemoteProjectSubmodules({
     return (
         <div className="flex h-full min-h-0 flex-col gap-4">
             <div className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-base font-semibold">
                     {t('addProject.remote.submodules.title')}
                 </h2>
                 <p className="max-w-4xl text-sm text-base-content/70">

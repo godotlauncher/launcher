@@ -239,6 +239,8 @@
                 "editorsQueued": "Wybrane edytory dodano do kolejki w sekcji Instalacje. Projekty zostaną automatycznie zaktualizowane, gdy edytory będą gotowe.",
                 "adding": "Dodawanie projektów: {{current}}/{{total}}",
                 "complete": "Import projektów zakończony",
+                "renamed": "Zmieniono nazwę",
+                "renamedFromTo": "Zmieniono nazwę z {{original}} na {{final}}",
                 "added": "Dodano",
                 "skipped": "Pominięto",
                 "failed": "Niepowodzenie",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "Klon został zmieniony lub zastąpiony po imporcie, dlatego nie został usunięty.",
                 "cloneCleanupFailed": "Nie można było usunąć klonu. Został zachowany."
             }
+        },
+        "conflicts": {
+            "title": "Sprawdź import projektów",
+            "description": "Wybierz nazwę w Launcherze lub pomiń projekt. Nazwy Godot i foldery pozostaną bez zmian.",
+            "label": "Nazwa w Launcherze",
+            "name": "Ta nazwa lub jej folder ustawień jest już używany. Wybierz inną nazwę lub pomiń projekt.",
+            "folder": "Ten folder jest już zarejestrowany lub wybrany. Pomiń ten wpis.",
+            "invalid": "Wpisz poprawną nazwę. Pomiń nieczytelne pliki projektów.",
+            "skip": "Pomiń ten projekt",
+            "continue": "Dodaj projekty",
+            "edit": "Edytuj nazwę",
+            "include": "Uwzględnij projekt",
+            "badges": {
+                "ready": "Gotowy",
+                "skipped": "Pominięty",
+                "name": "Konflikt nazw",
+                "folder": "Już dodany",
+                "invalid": "Nieprawidłowy"
+            }
+        },
+        "editorReview": {
+            "description": "Wybierz nazwy i edytory przed dodaniem projektów.",
+            "requested": "Wymagany",
+            "exact": "Dokładny",
+            "details": "Szczegóły wymaganego edytora",
+            "summary": "Wybrano: {{count}} · Pobrania: {{downloads}}",
+            "download": "Pobieranie",
+            "missing": "Brak edytora"
         }
     },
     "messages": {

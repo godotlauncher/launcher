@@ -628,7 +628,7 @@ describe('ProjectsService', () => {
         expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
     });
 
-    it('removes project-owned editor files before persistence', async () => {
+    it('removes project-owned editor files without writing launcher metadata', async () => {
         const project = {
             path: '/projects/game',
             name: 'Game',
@@ -637,7 +637,7 @@ describe('ProjectsService', () => {
 
         await service.removeProject(project);
 
-        expect(mocks.writeProjectLauncherConfig).toHaveBeenCalled();
+        expect(mocks.writeProjectLauncherConfig).not.toHaveBeenCalled();
         expect(mocks.removeProjectEditor).toHaveBeenCalledWith(project);
         expect(store.remove).toHaveBeenCalledWith(project.path);
         expect(mocks.ipcWebContentsSend).toHaveBeenCalledOnce();

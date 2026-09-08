@@ -239,6 +239,8 @@
                 "editorsQueued": "It-tniżżil tal-edituri magħżula żdied ma' Installazzjonijiet. Il-proġetti jaġġornaw awtomatikament meta l-edituri jkunu lesti.",
                 "adding": "Qed jiżdiedu l-proġetti: {{current}}/{{total}}",
                 "complete": "L-importazzjoni tal-proġetti tlestiet",
+                "renamed": "Isem mibdul",
+                "renamedFromTo": "Isem mibdul minn {{original}} għal {{final}}",
                 "added": "Miżjud",
                 "skipped": "Maqbuż",
                 "failed": "Falla",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "Il-klonu nbidel jew ġie sostitwit wara l-importazzjoni, għalhekk ma tħassarx.",
                 "cloneCleanupFailed": "Il-klonu ma setax jitħassar. Inżamm."
             }
+        },
+        "conflicts": {
+            "title": "Irrevedi l-importazzjonijiet",
+            "description": "Agħżel isem f’Launcher jew aqbeż il-proġett. L-ismijiet ta’ Godot u l-fowlders jibqgħu l-istess.",
+            "label": "Isem f’Launcher",
+            "name": "Dan l-isem jew il-fowlder tas-settings tiegħu diġà qed jintuża. Agħżel isem ieħor jew aqbeż.",
+            "folder": "Dan il-fowlder diġà huwa rreġistrat jew magħżul. Aqbeż din l-entrata.",
+            "invalid": "Daħħal isem validu. Aqbeż fajls tal-proġett li ma jistgħux jinqraw.",
+            "skip": "Aqbeż dan il-proġett",
+            "continue": "Żid il-proġetti",
+            "edit": "Editja l-isem",
+            "include": "Inkludi l-proġett",
+            "badges": {
+                "ready": "Lest",
+                "skipped": "Maqbuż",
+                "name": "Kunflitt fl-isem",
+                "folder": "Diġà miżjud",
+                "invalid": "Invalidu"
+            }
+        },
+        "editorReview": {
+            "description": "Agħżel l-ismijiet u l-edituri qabel iżżid il-proġetti tiegħek.",
+            "requested": "Mitlub",
+            "exact": "Eżatt",
+            "details": "Dettalji tal-editur meħtieġ",
+            "summary": "{{count}} magħżula · {{downloads}} downloads",
+            "download": "Niżżel",
+            "missing": "Editur nieqes"
         }
     },
     "messages": {

@@ -239,6 +239,8 @@
                 "editorsQueued": "Las descargas de editores seleccionadas se añadieron a Instalaciones. Los proyectos se actualizan automáticamente cuando sus editores están listos.",
                 "adding": "Añadiendo proyectos: {{current}}/{{total}}",
                 "complete": "Importación de proyectos completada",
+                "renamed": "Renombrado",
+                "renamedFromTo": "Renombrado de {{original}} a {{final}}",
                 "added": "Añadido",
                 "skipped": "Omitido",
                 "failed": "Fallido",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "El clon se modificó o reemplazó después de la importación, por lo que no se eliminó.",
                 "cloneCleanupFailed": "No se pudo eliminar el clon. Se ha conservado."
             }
+        },
+        "conflicts": {
+            "title": "Revisar importaciones",
+            "description": "Elige un nombre en Launcher u omite el proyecto. Los nombres de Godot y las carpetas no cambian.",
+            "label": "Nombre en Launcher",
+            "name": "Este nombre o su carpeta de ajustes ya está en uso. Elige otro nombre u omite el proyecto.",
+            "folder": "Esta carpeta ya está registrada o seleccionada. Omite esta entrada.",
+            "invalid": "Introduce un nombre válido. Omite los archivos de proyecto que no se puedan leer.",
+            "skip": "Omitir este proyecto",
+            "continue": "Añadir proyectos",
+            "edit": "Editar nombre",
+            "include": "Incluir proyecto",
+            "badges": {
+                "ready": "Listo",
+                "skipped": "Omitido",
+                "name": "Conflicto de nombre",
+                "folder": "Ya añadido",
+                "invalid": "No válido"
+            }
+        },
+        "editorReview": {
+            "description": "Elige nombres y editores antes de añadir tus proyectos.",
+            "requested": "Solicitado",
+            "exact": "Exacto",
+            "details": "Detalles del editor requerido",
+            "summary": "{{count}} seleccionados · {{downloads}} descargas",
+            "download": "Descarga",
+            "missing": "Falta el editor"
         }
     },
     "messages": {

@@ -64,7 +64,9 @@ describe('remote project registration service', () => {
             'added',
         ]);
         expect(addProject).toHaveBeenCalledOnce();
-        expect(addProject).toHaveBeenCalledWith(added.projectFilePath, {});
+        expect(addProject).toHaveBeenCalledWith(added.projectFilePath, {
+            name: added.name,
+        });
         expect(handleAddProjectResult).toHaveBeenCalledOnce();
         expect(onProgress).toHaveBeenNthCalledWith(1, 1, 2);
         expect(onProgress).toHaveBeenNthCalledWith(2, 2, 2);
@@ -106,6 +108,7 @@ describe('remote project registration service', () => {
         expect(result.editorCandidates).toHaveLength(1);
         expect(result.editorCandidates[0].options).toEqual({
             codeEditorId: 'vscode',
+            name: 'Game',
         });
     });
 
@@ -148,7 +151,14 @@ describe('remote project registration service', () => {
             onProgress: vi.fn(),
         });
 
-        expect(result.outcomes).toEqual([{ project, status: 'added' }]);
+        expect(result.outcomes).toEqual([
+            {
+                project,
+                originalName: 'Game',
+                launcherName: 'Game',
+                status: 'added',
+            },
+        ]);
         expect(result.repairRequests).toEqual([
             {
                 release,

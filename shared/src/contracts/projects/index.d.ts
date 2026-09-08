@@ -272,7 +272,20 @@ export type ProjectEditorRequest =
     | ProjectLauncherEditorRequest
     | ProjectInferredEditorRequest;
 
+export type ProjectImportInspection = {
+    editorResolution?: AddProjectEditorResolution;
+    editorRequest?: ProjectEditorRequest;
+    editor?: InstalledRelease;
+    directory?: string;
+    registered?: boolean;
+    projectFilePath: string;
+    name: string;
+    godotName?: string;
+    error?: string;
+};
+
 export type AddProjectOptions = {
+    name?: string;
     codeEditorId?: CodeEditorId | null;
 } & (
     | {
@@ -325,6 +338,7 @@ export type AddProjectEditorResolution = {
 export type AddProjectToListResult = BackendResult & {
     projects?: ProjectDetails[];
     newProject?: ProjectDetails;
+    importConflict?: 'name' | 'folder';
     editorResolution?: AddProjectEditorResolution;
     recoveredCodeEditorConfigFiles?: string[];
 };

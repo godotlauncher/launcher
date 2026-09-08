@@ -41,7 +41,9 @@ export const FormField: React.FC<FormFieldProps> = ({
                         htmlFor={id}
                         className={clsx(
                             'flex items-center gap-1.5 font-semibold',
-                            compact && !regularText ? 'text-xs' : 'gap-2',
+                            compact && !regularText
+                                ? 'text-xs'
+                                : 'gap-2 text-base',
                         )}
                     >
                         {label}

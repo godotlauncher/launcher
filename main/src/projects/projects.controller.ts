@@ -282,6 +282,15 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Reads the names of explicitly selected project files without registering them.
+     * @param paths - Bounded list of selected project files.
+     */
+    @ProjectsHandler('inspectProjectImports')
+    inspectProjectImports(paths: string[]) {
+        return this.projects.inspectProjectImports(paths);
+    }
+
+    /**
      * Adds an existing project to Launcher.
      *
      * @param projectPath - Selected project file or directory path.

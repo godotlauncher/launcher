@@ -239,6 +239,8 @@
                 "editorsQueued": "Les téléchargements d'éditeurs sélectionnés ont été ajoutés aux installations. Les projets se mettent à jour automatiquement lorsque leurs éditeurs sont prêts.",
                 "adding": "Ajout des projets : {{current}}/{{total}}",
                 "complete": "Importation des projets terminée",
+                "renamed": "Renommé",
+                "renamedFromTo": "Renommé de {{original}} en {{final}}",
                 "added": "Ajouté",
                 "skipped": "Ignoré",
                 "failed": "Échec",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "Le clone a été modifié ou remplacé depuis l'importation, il n'a donc pas été supprimé.",
                 "cloneCleanupFailed": "Le clone n'a pas pu être supprimé. Il a été conservé."
             }
+        },
+        "conflicts": {
+            "title": "Vérifier les imports",
+            "description": "Choisissez un nom dans Launcher ou ignorez le projet. Les noms Godot et les dossiers restent inchangés.",
+            "label": "Nom dans Launcher",
+            "name": "Ce nom ou son dossier de paramètres est déjà utilisé. Choisissez un autre nom ou ignorez le projet.",
+            "folder": "Ce dossier est déjà enregistré ou sélectionné. Ignorez cette entrée.",
+            "invalid": "Saisissez un nom valide. Ignorez les fichiers de projet illisibles.",
+            "skip": "Ignorer ce projet",
+            "continue": "Ajouter les projets",
+            "edit": "Modifier le nom",
+            "include": "Inclure le projet",
+            "badges": {
+                "ready": "Prêt",
+                "skipped": "Ignoré",
+                "name": "Conflit de nom",
+                "folder": "Déjà ajouté",
+                "invalid": "Invalide"
+            }
+        },
+        "editorReview": {
+            "description": "Choisissez les noms et les éditeurs avant d’ajouter vos projets.",
+            "requested": "Demandé",
+            "exact": "Exact",
+            "details": "Détails de l’éditeur requis",
+            "summary": "{{count}} sélectionnés · {{downloads}} téléchargements",
+            "download": "Téléchargement",
+            "missing": "Éditeur manquant"
         }
     },
     "messages": {

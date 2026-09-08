@@ -239,6 +239,8 @@
                 "editorsQueued": "Ausgewählte Editor-Downloads wurden zu Installationen hinzugefügt. Projekte werden automatisch aktualisiert, sobald ihre Editoren bereit sind.",
                 "adding": "Projekte werden hinzugefügt: {{current}}/{{total}}",
                 "complete": "Projektimport abgeschlossen",
+                "renamed": "Umbenannt",
+                "renamedFromTo": "Von {{original}} in {{final}} umbenannt",
                 "added": "Hinzugefügt",
                 "skipped": "Übersprungen",
                 "failed": "Fehlgeschlagen",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "Der Klon wurde seit dem Import geändert oder ersetzt und daher nicht gelöscht.",
                 "cloneCleanupFailed": "Der Klon konnte nicht gelöscht werden. Er wurde beibehalten."
             }
+        },
+        "conflicts": {
+            "title": "Projektimporte prüfen",
+            "description": "Wähle einen Launcher-Namen oder überspringe ein Projekt. Godot-Projektnamen und Ordner bleiben unverändert.",
+            "label": "Launcher-Name",
+            "name": "Dieser Name oder sein Einstellungsordner wird bereits verwendet. Wähle einen anderen Namen oder überspringe das Projekt.",
+            "folder": "Dieser Ordner ist bereits registriert oder ausgewählt. Überspringe diesen Eintrag.",
+            "invalid": "Gib einen gültigen Namen ein. Nicht lesbare Projektdateien müssen übersprungen werden.",
+            "skip": "Dieses Projekt überspringen",
+            "continue": "Projekte hinzufügen",
+            "edit": "Namen bearbeiten",
+            "include": "Projekt hinzufügen",
+            "badges": {
+                "ready": "Bereit",
+                "skipped": "Übersprungen",
+                "name": "Namenskonflikt",
+                "folder": "Bereits hinzugefügt",
+                "invalid": "Ungültig"
+            }
+        },
+        "editorReview": {
+            "description": "Wähle Namen und Editoren, bevor du deine Projekte hinzufügst.",
+            "requested": "Angefordert",
+            "exact": "Exakt",
+            "details": "Details zur Editoranforderung",
+            "summary": "{{count}} ausgewählt · {{downloads}} Downloads",
+            "download": "Download",
+            "missing": "Editor fehlt"
         }
     },
     "setCodeEditor": {

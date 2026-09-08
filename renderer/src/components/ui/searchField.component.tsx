@@ -52,8 +52,8 @@ export const SearchField: React.FC<SearchFieldProps> = ({
                 type="text"
                 placeholder={placeholder}
                 className={clsx(
-                    'input input-bordered w-full pr-8',
-                    compact && 'input-sm text-sm',
+                    'input input-bordered w-full pr-8 text-base',
+                    compact && 'input-sm',
                     inputClassName,
                 )}
                 onChange={(event) => onChange(event.target.value)}

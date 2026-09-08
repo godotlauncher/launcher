@@ -97,7 +97,7 @@ export const Dialog: React.FC<DialogProps> = ({
             aria-labelledby={titleId}
             className="fixed z-60 inset-0 m-0 h-full w-full max-h-none max-w-none select-none overflow-hidden border-0 bg-transparent p-0 text-inherit backdrop:bg-transparent"
         >
-            <div className="h-full w-full bg-black/80 flex items-center justify-center p-4">
+            <div className="h-full w-full bg-black/55 flex items-center justify-center p-4">
                 <section
                     className={`bg-base-100 border border-base-300 rounded-lg shadow-2xl w-full max-h-[85vh] flex flex-col overflow-hidden ${widthClassName} ${panelClassName}`}
                 >
@@ -111,7 +111,7 @@ export const Dialog: React.FC<DialogProps> = ({
                             ref={titleRef}
                             id={titleId}
                             tabIndex={-1}
-                            className="text-base-content font-bold text-lg leading-tight pt-1 outline-none"
+                            className="dialog-title text-base-content font-bold text-lg leading-tight pt-1"
                         >
                             {title}
                         </h1>

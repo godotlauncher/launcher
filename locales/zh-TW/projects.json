@@ -239,6 +239,8 @@
                 "editorsQueued": "所選編輯器下載已加入安裝佇列。編輯器準備就緒後，專案會自動更新。",
                 "adding": "正在新增專案：{{current}}/{{total}}",
                 "complete": "專案匯入完成",
+                "renamed": "已重新命名",
+                "renamedFromTo": "已從 {{original}} 重新命名為 {{final}}",
                 "added": "已新增",
                 "skipped": "已略過",
                 "failed": "失敗",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "匯入後克隆已被變更或取代，因此未將其刪除。",
                 "cloneCleanupFailed": "無法刪除克隆。克隆已保留。"
             }
+        },
+        "conflicts": {
+            "title": "檢查專案匯入",
+            "description": "選擇 Launcher 中的名稱或略過專案。Godot 專案名稱和資料夾保持不變。",
+            "label": "Launcher 名稱",
+            "name": "此名稱或其設定資料夾已被使用。請選擇其他名稱或略過。",
+            "folder": "此資料夾已註冊或已選取。請略過此項。",
+            "invalid": "請輸入有效名稱。無法讀取的專案檔案必須略過。",
+            "skip": "略過此專案",
+            "continue": "新增專案",
+            "edit": "編輯名稱",
+            "include": "包含專案",
+            "badges": {
+                "ready": "就緒",
+                "skipped": "已略過",
+                "name": "名稱衝突",
+                "folder": "已新增",
+                "invalid": "無效"
+            }
+        },
+        "editorReview": {
+            "description": "新增專案前請選擇名稱和編輯器。",
+            "requested": "要求",
+            "exact": "確切版本",
+            "details": "所需編輯器詳細資訊",
+            "summary": "已選 {{count}} 項 · {{downloads}} 項下載",
+            "download": "下載",
+            "missing": "缺少編輯器"
         }
     },
     "messages": {

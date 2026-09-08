@@ -30,7 +30,11 @@ import { useRelease } from '../../../hooks/useRelease';
 import { getProjectPathSuffixDisplay } from '../../subViews/createProject/createProject.model';
 import { useRemoteProjectGitIdentity } from '../hooks/remote-project-git-identity.hook';
 import {
-    createRemoteProjectEditorPlan,
+    type LocalImportRow,
+    prepareLocalImportRow,
+} from '../local-import-editor.model';
+import { getImportConflicts } from '../project-import-conflict.model';
+import {
     type RemoteProjectEditorChoice,
     type RemoteProjectEditorPlanGroup,
 } from '../remote-project-editor-plan.model';
@@ -38,7 +42,6 @@ import { getRemoteProjectProgressKey } from '../remote-project-import.messages';
 import {
     appendRemoteRepositories,
     filterRemoteRepositories,
-    filterSelectedDiscoveredProjects,
     getRemoteCodeEditorOptions,
     getRemoteImportFailureKey,
     getRemoteProjectDestinationDisplay,
@@ -56,7 +59,7 @@ import type {
 } from '../remote-project-import.types';
 import {
     applyRemoteProjectEditorPlan,
-    registerRemoteProjectBatch,
+    registerResolvedRemoteProjectBatch,
 } from '../remote-project-registration.service';
 
 import {
@@ -172,6 +175,12 @@ export const RemoteProjectImportModal: React.FC<
     const [selectedProjectPaths, setSelectedProjectPaths] = useState<
         Set<string>
     >(new Set());
+    const [importNames, setImportNames] = useState<Record<string, string>>({});
+    const [reviewRows, setReviewRows] = useState<LocalImportRow[]>([]);
+    const [editorActionIds, setEditorActionIds] = useState<
+        Record<string, string>
+    >({});
+    const [reviewEditing, setReviewEditing] = useState(false);
     const [codeEditorChoices, setCodeEditorChoices] = useState<
         Record<string, RemoteProjectCodeEditorChoice>
     >({});
@@ -391,6 +400,10 @@ export const RemoteProjectImportModal: React.FC<
         setDiscoveredProjects([]);
         setSelectedProjectPaths(new Set());
         setCodeEditorChoices({});
+        setImportNames({});
+        setReviewRows([]);
+        setEditorActionIds({});
+        setReviewEditing(false);
         setRegistrationOutcomes([]);
         setEditorPlan([]);
         setEditorDownloadsQueued(false);
@@ -530,6 +543,74 @@ export const RemoteProjectImportModal: React.FC<
         }
     };
 
+    /** Inspects cloned projects and prepares the shared compact review rows.
+     * @param discovered - Remote projects in repository discovery order.
+     * @param preserveChoices - Whether still-valid names and editor choices remain selected.
+     * @param refreshedResults - Current stale results to prefer over inspection metadata.
+     */
+    const prepareRemoteReviewRows = async (
+        discovered: RemoteDiscoveredProject[],
+        preserveChoices: boolean,
+        refreshedResults: ReadonlyMap<string, AddProjectToListResult> = new Map(),
+    ): Promise<boolean> => {
+        try {
+            const inspected = await projectsBridge.inspectProjectImports(
+                discovered.map((project) => project.projectFilePath),
+            );
+            const nextRows = inspected.map((inspection) => {
+                const refreshed = refreshedResults.get(
+                    inspection.projectFilePath,
+                );
+                return prepareLocalImportRow(
+                    {
+                        ...inspection,
+                        ...(refreshed?.editorResolution
+                            ? {
+                                  editorResolution:
+                                      refreshed.editorResolution,
+                                  editorRequest:
+                                      refreshed.editorResolution.requested,
+                              }
+                            : {}),
+                        name: preserveChoices
+                            ? (importNames[inspection.projectFilePath] ??
+                              inspection.name)
+                            : inspection.name,
+                    },
+                    availableReleases,
+                    availablePrereleases,
+                );
+            });
+            setReviewRows(nextRows);
+            setImportNames(
+                Object.fromEntries(
+                    nextRows.map((row) => [row.projectFilePath, row.name]),
+                ),
+            );
+            setEditorActionIds(
+                Object.fromEntries(
+                    nextRows.map((row) => {
+                        const previous = preserveChoices
+                            ? editorActionIds[row.projectFilePath]
+                            : undefined;
+                        return [
+                            row.projectFilePath,
+                            previous &&
+                            row.editorActions.some(
+                                (action) => action.id === previous,
+                            )
+                                ? previous
+                                : row.editorActionId,
+                        ];
+                    }),
+                ),
+            );
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
     const startImport = async () => {
         if (!source || !parentDirectory.trim() || !directoryName.trim()) return;
         const request: RemoteProjectImportRequest =
@@ -577,6 +658,18 @@ export const RemoteProjectImportModal: React.FC<
                 selectAllDiscoveredProjects(result.projects),
             );
             setCodeEditorChoices({});
+            setImportNames({});
+            setReviewRows([]);
+            setEditorActionIds({});
+            setReviewEditing(false);
+            if (!(await prepareRemoteReviewRows(result.projects, false))) {
+                setImportFailure(
+                    'addProject.remote.errors.temporarilyUnavailable',
+                );
+                setClonePreservedPath(result.repositoryPath);
+                setStep('import-failed');
+                return;
+            }
             await gitIdentity.prepare(
                 result.jobId,
                 result.hasSubmodules ? 'submodules' : 'review',
@@ -625,6 +718,15 @@ export const RemoteProjectImportModal: React.FC<
                 selectAllDiscoveredProjects(result.projects),
             );
             setCodeEditorChoices({});
+            setImportNames({});
+            setReviewRows([]);
+            setEditorActionIds({});
+            setReviewEditing(false);
+            if (!(await prepareRemoteReviewRows(result.projects, false))) {
+                setSubmoduleFailure('submodule-unavailable');
+                setStep('submodules');
+                return;
+            }
             setStep('review');
         } catch {
             setSubmoduleFailure('submodule-unavailable');
@@ -729,40 +831,105 @@ export const RemoteProjectImportModal: React.FC<
      *
      * @returns A promise that ends when the modal advances to its next step.
      */
+    const selectedImportRows = reviewRows
+        .filter((row) => selectedProjectPaths.has(row.projectFilePath))
+        .map((row) => ({
+            ...row,
+            name: importNames[row.projectFilePath] ?? row.name,
+            editorActionId:
+                editorActionIds[row.projectFilePath] ?? row.editorActionId,
+        }));
+    const importConflicts = getImportConflicts(
+        selectedImportRows,
+        projects,
+        platform,
+    );
+    const selectedDownloadCount = new Set(
+        selectedImportRows.flatMap((row) => {
+            const action = row.editorActions.find(
+                (candidate) => candidate.id === row.editorActionId,
+            );
+            return action?.download
+                ? [
+                      `${action.download.version}:${row.editorRequest?.flavor ?? row.editorResolution?.requested.flavor}`,
+                  ]
+                : [];
+        }),
+    ).size;
+
     const registerSelectedProjects = async () => {
-        const selected = filterSelectedDiscoveredProjects(
-            discoveredProjects,
-            selectedProjectPaths,
-        );
+        const selected = selectedImportRows.map((project) => ({
+            ...project,
+            name: project.name.trim(),
+        }));
+        if (importConflicts.some(Boolean)) return;
         if (selected.length === 0) return;
-        setStep('checking-projects');
-        setRegistrationOutcomes([]);
+        setStep('registering-projects');
+        const previousSuccesses = registrationOutcomes.filter(
+            (outcome) => outcome.status === 'added',
+        );
+        setRegistrationOutcomes(previousSuccesses);
         setEditorPlan([]);
         setRegistrationProgress({ current: 0, total: selected.length });
-        const result = await registerRemoteProjectBatch({
-            selectedProjects: selected,
-            existingProjects: projects,
+        const result = await registerResolvedRemoteProjectBatch({
+            rows: selected,
+            projects: discoveredProjects,
             codeEditorChoices,
-            platform,
             addProject,
             handleAddProjectResult,
             t,
             onProgress: (current, total) =>
                 setRegistrationProgress({ current, total }),
-            onOutcomesChange: setRegistrationOutcomes,
+            onOutcomesChange: (outcomes) =>
+                setRegistrationOutcomes([...previousSuccesses, ...outcomes]),
         });
 
         if (result.outcomes.some((outcome) => outcome.status === 'added')) {
             preserveRegisteredClone();
         }
-
-        const plan = createRemoteProjectEditorPlan(
-            result.editorCandidates,
-            availableReleases,
-            availablePrereleases,
-        );
-        setEditorPlan(plan);
-        setStep(plan.length > 0 ? 'editors-required' : 'registration-complete');
+        queueProjectEditorRepairs(result.repairRequests);
+        setEditorDownloadsQueued(result.repairRequests.length > 0);
+        if (result.staleResults.size > 0) {
+            const refreshed = await prepareRemoteReviewRows(
+                discoveredProjects,
+                true,
+                result.staleResults,
+            );
+            if (!refreshed) {
+                setRegistrationOutcomes((current) => [
+                    ...current,
+                    ...discoveredProjects
+                        .filter((project) =>
+                            result.staleResults.has(project.projectFilePath),
+                        )
+                        .map((project) => ({
+                            project,
+                            originalName:
+                                reviewRows.find(
+                                    (row) =>
+                                        row.projectFilePath ===
+                                        project.projectFilePath,
+                                )?.godotName ?? project.name,
+                            launcherName:
+                                reviewRows.find(
+                                    (row) =>
+                                        row.projectFilePath ===
+                                        project.projectFilePath,
+                                )?.name ?? project.name,
+                            status: 'failed' as const,
+                            error: t(
+                                'addProject.remote.errors.registration-failed',
+                            ),
+                        })),
+                ]);
+                setStep('registration-complete');
+                return;
+            }
+            setSelectedProjectPaths(new Set(result.staleResults.keys()));
+            setStep('review');
+            return;
+        }
+        setStep('registration-complete');
     };
 
     /**
@@ -789,6 +956,8 @@ export const RemoteProjectImportModal: React.FC<
             ...editorPlan.flatMap((group) =>
                 group.candidates.map(({ project }) => ({
                     project,
+                    originalName: project.name,
+                    launcherName: project.name,
                     status: 'skipped' as const,
                     error: t('addProject.remote.registration.notAdded'),
                 })),
@@ -1067,6 +1236,25 @@ export const RemoteProjectImportModal: React.FC<
             <RemoteProjectReview
                 repositoryPath={repositoryPath}
                 projects={discoveredProjects}
+                rows={reviewRows}
+                importNames={importNames}
+                editorActionIds={editorActionIds}
+                conflicts={Object.fromEntries(
+                    selectedImportRows.map((p, i) => [
+                        p.projectFilePath,
+                        importConflicts[i],
+                    ]),
+                )}
+                onNameChange={(file, name) =>
+                    setImportNames((current) => ({ ...current, [file]: name }))
+                }
+                onEditingChange={setReviewEditing}
+                onGodotEditorChange={(file, editorActionId) =>
+                    setEditorActionIds((current) => ({
+                        ...current,
+                        [file]: editorActionId,
+                    }))
+                }
                 selectedPaths={selectedProjectPaths}
                 allSelected={allProjectsSelected}
                 codeEditorChoices={codeEditorChoices}
@@ -1094,6 +1282,12 @@ export const RemoteProjectImportModal: React.FC<
                 </div>
             ) : (
                 <>
+                    <span className="mr-auto self-center text-sm text-base-content/60">
+                        {t('addProject.editorReview.summary', {
+                            count: selectedCount,
+                            downloads: selectedDownloadCount,
+                        })}
+                    </span>
                     <button
                         type="button"
                         data-testid="btnCancelRemoteProjectImport"
@@ -1107,7 +1301,11 @@ export const RemoteProjectImportModal: React.FC<
                         type="button"
                         data-testid="btnAddDiscoveredProjects"
                         className="btn btn-primary"
-                        disabled={selectedCount === 0}
+                        disabled={
+                            reviewEditing ||
+                            selectedCount === 0 ||
+                            importConflicts.some(Boolean)
+                        }
                         onClick={() => void registerSelectedProjects()}
                     >
                         {t('addProject.remote.actions.addProjects', {
@@ -1120,7 +1318,7 @@ export const RemoteProjectImportModal: React.FC<
         body = (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                    <h2 className="text-lg font-semibold">
+                    <h2 className="text-base font-semibold">
                         {t('addProject.remote.review.cancelTitle')}
                     </h2>
                     <p className="text-sm text-base-content/70">
@@ -1247,6 +1445,32 @@ export const RemoteProjectImportModal: React.FC<
         footer = (
             <div className="flex w-full items-center justify-between gap-4">
                 {preservedCloneActions}
+                {registrationOutcomes.some(
+                    (outcome) => outcome.status === 'failed',
+                ) && (
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => {
+                            setSelectedProjectPaths(
+                                new Set(
+                                    registrationOutcomes
+                                        .filter(
+                                            (outcome) =>
+                                                outcome.status === 'failed',
+                                        )
+                                        .map(
+                                            (outcome) =>
+                                                outcome.project.projectFilePath,
+                                        ),
+                                ),
+                            );
+                            setStep('review');
+                        }}
+                    >
+                        {t('addProject.remote.actions.reviewAndRetry')}
+                    </button>
+                )}
                 <button
                     ref={completionDoneButtonRef}
                     type="button"
@@ -1326,7 +1550,11 @@ export const RemoteProjectImportModal: React.FC<
             onRequestClose={
                 step === 'connection' ? cancelConnection : undefined
             }
-            panelClassName="h-[85vh] max-w-5xl"
+            panelClassName={
+                step === 'registration-complete'
+                    ? 'max-w-5xl'
+                    : 'h-[85vh] max-w-5xl'
+            }
             bodyClassName={
                 step === 'connection'
                     ? 'flex flex-col overflow-hidden'

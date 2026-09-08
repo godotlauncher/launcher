@@ -239,6 +239,8 @@
                 "editorsQueued": "Os downloads dos editores selecionados foram adicionados a Instalações. Os projetos são atualizados automaticamente quando seus editores estão prontos.",
                 "adding": "Adicionando projetos: {{current}}/{{total}}",
                 "complete": "Importação de projetos concluída",
+                "renamed": "Renomeado",
+                "renamedFromTo": "Renomeado de {{original}} para {{final}}",
                 "added": "Adicionado",
                 "skipped": "Ignorado",
                 "failed": "Falhou",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "O clone foi alterado ou substituído após a importação, por isso não foi excluído.",
                 "cloneCleanupFailed": "Não foi possível excluir o clone. Ele foi mantido."
             }
+        },
+        "conflicts": {
+            "title": "Revisar importações",
+            "description": "Escolha um nome no Launcher ou pule o projeto. Os nomes do Godot e as pastas permanecem inalterados.",
+            "label": "Nome no Launcher",
+            "name": "Este nome ou sua pasta de configurações já está em uso. Escolha outro nome ou pule o projeto.",
+            "folder": "Esta pasta já está registrada ou selecionada. Pule esta entrada.",
+            "invalid": "Digite um nome válido. Pule arquivos de projeto ilegíveis.",
+            "skip": "Pular este projeto",
+            "continue": "Adicionar projetos",
+            "edit": "Editar nome",
+            "include": "Incluir projeto",
+            "badges": {
+                "ready": "Pronto",
+                "skipped": "Ignorado",
+                "name": "Conflito de nome",
+                "folder": "Já adicionado",
+                "invalid": "Inválido"
+            }
+        },
+        "editorReview": {
+            "description": "Escolha nomes e editores antes de adicionar seus projetos.",
+            "requested": "Solicitado",
+            "exact": "Exato",
+            "details": "Detalhes do editor necessário",
+            "summary": "{{count}} selecionados · {{downloads}} downloads",
+            "download": "Download",
+            "missing": "Editor ausente"
         }
     },
     "messages": {

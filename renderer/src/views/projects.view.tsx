@@ -195,7 +195,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         importProjectEditorSettings,
         removeProject,
     });
-    const { handleAddProjectResult, onAddProject } = useAddProjectWorkflow({
+    const {
+        handleAddProjectResult,
+        onAddProject,
+        importLocalProjects,
+        localImportDialog,
+    } = useAddProjectWorkflow({
         t,
         addingProject,
         projectsLocation: preferences?.projects_location,
@@ -246,8 +251,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         t,
         addAlert,
         setAddingProject,
-        addProject,
-        handleAddProjectResult,
+        importLocalProjects,
     });
 
     /**
@@ -603,6 +607,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 open={createOpen}
                 onOpenChange={setCreateOpen}
             />
+            {localImportDialog}
             <RemoteProjectImportModal
                 source={remoteProjectSource}
                 onOpenChange={(open) => {

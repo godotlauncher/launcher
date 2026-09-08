@@ -12,6 +12,7 @@ export type ProjectLauncherConfig = {
         version: 1;
     };
     launcher: {
+        project_name?: string;
         version: string;
     };
     editor: {
@@ -25,6 +26,7 @@ export type ProjectLauncherConfig = {
 export type ProjectLauncherConfigInput = {
     release: InstalledRelease;
     launcherVersion: string;
+    projectName?: string;
 };
 
 type IniDocument = Record<string, Record<string, string>>;
@@ -103,6 +105,9 @@ export function getReleaseBaseVersion(
     return release.version_number.toFixed(1);
 }
 
+/** Creates portable editor and Launcher metadata.
+ * @param input - Selected editor, Launcher version and optional display name.
+ */
 export function createProjectLauncherConfig(
     input: ProjectLauncherConfigInput,
 ): ProjectLauncherConfig {
@@ -114,6 +119,9 @@ export function createProjectLauncherConfig(
         },
         launcher: {
             version: launcherVersion,
+            ...(validLauncherProjectName(input.projectName)
+                ? { project_name: input.projectName.trim() }
+                : {}),
         },
         editor: {
             channel: getReleaseChannel(release),
@@ -124,6 +132,9 @@ export function createProjectLauncherConfig(
     };
 }
 
+/** Serialises metadata with safely quoted project names.
+ * @param config - Validated Launcher metadata.
+ */
 export function serializeProjectLauncherConfig(
     config: ProjectLauncherConfig,
 ): string {
@@ -133,6 +144,9 @@ export function serializeProjectLauncherConfig(
         '',
         '[launcher]',
         `version=${config.launcher.version}`,
+        ...(config.launcher.project_name === undefined
+            ? []
+            : [`project_name=${JSON.stringify(config.launcher.project_name)}`]),
         '',
         '[editor]',
         `channel=${config.editor.channel}`,
@@ -143,6 +157,9 @@ export function serializeProjectLauncherConfig(
     ].join('\n');
 }
 
+/** Reads backwards-compatible v1 metadata, ignoring invalid optional names.
+ * @param content - INI metadata file contents.
+ */
 export function parseProjectLauncherConfig(
     content: string,
 ): ProjectLauncherConfig | null {
@@ -168,12 +185,14 @@ export function parseProjectLauncherConfig(
         return null;
     }
 
+    const projectName = parseLauncherProjectName(ini.launcher?.project_name);
     return {
         config: {
             version: 1,
         },
         launcher: {
             version: launcherVersion,
+            ...(projectName ? { project_name: projectName } : {}),
         },
         editor: {
             channel,
@@ -205,9 +224,13 @@ export async function readProjectLauncherConfig(
     }
 }
 
+/** Writes the current project name and editor metadata.
+ * @param projectDir - Existing project directory.
+ * @param input - Current editor, Launcher version and required display name.
+ */
 export async function writeProjectLauncherConfig(
     projectDir: string,
-    input: ProjectLauncherConfigInput,
+    input: ProjectLauncherConfigInput & { projectName: string },
 ): Promise<void> {
     const config = createProjectLauncherConfig(input);
     await fs.promises.writeFile(
@@ -215,4 +238,34 @@ export async function writeProjectLauncherConfig(
         serializeProjectLauncherConfig(config),
         'utf-8',
     );
+}
+
+/** Checks a name before storing or reusing it.
+ * @param value - Untrusted optional name.
+ */
+function validLauncherProjectName(value: unknown): value is string {
+    return (
+        typeof value === 'string' &&
+        value.trim().length > 0 &&
+        value.length <= 255 &&
+        !Array.from(value).some(
+            (c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127,
+        )
+    );
+}
+
+/** Reads quoted names and compatible plain INI values.
+ * @param value - Optional raw INI value.
+ */
+function parseLauncherProjectName(
+    value: string | undefined,
+): string | undefined {
+    try {
+        const name: unknown = value?.startsWith('"')
+            ? JSON.parse(value)
+            : value;
+        return validLauncherProjectName(name) ? name.trim() : undefined;
+    } catch {
+        return undefined;
+    }
 }

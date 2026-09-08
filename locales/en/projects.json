@@ -239,6 +239,8 @@
                 "editorsQueued": "Selected editor downloads were added to Installs. Projects update automatically when their editors are ready.",
                 "adding": "Adding projects: {{current}}/{{total}}",
                 "complete": "Project import complete",
+                "renamed": "Renamed",
+                "renamedFromTo": "Renamed from {{original}} to {{final}}",
                 "added": "Added",
                 "skipped": "Skipped",
                 "failed": "Failed",
@@ -279,6 +281,34 @@
                 "cloneCleanupChanged": "The clone has changed or been replaced since the import, so it was not deleted.",
                 "cloneCleanupFailed": "The clone could not be deleted. It has been kept."
             }
+        },
+        "conflicts": {
+            "title": "Review project imports",
+            "description": "Choose a Launcher name or skip a project. Godot project names and folders stay unchanged.",
+            "label": "Launcher name",
+            "name": "This name or its settings folder is already in use. Choose another name or skip.",
+            "folder": "This folder is already registered or selected. Skip this entry.",
+            "invalid": "Enter a valid name. Unreadable project files must be skipped.",
+            "skip": "Skip this project",
+            "continue": "Add projects",
+            "edit": "Edit name",
+            "include": "Include project",
+            "badges": {
+                "ready": "Ready",
+                "skipped": "Skipped",
+                "name": "Name conflict",
+                "folder": "Already added",
+                "invalid": "Invalid"
+            }
+        },
+        "editorReview": {
+            "description": "Choose names and editors before adding your projects.",
+            "requested": "Requested",
+            "exact": "Exact",
+            "details": "Editor requirement details",
+            "summary": "{{count}} selected · Downloads: {{downloads}}",
+            "download": "Download",
+            "missing": "Missing editor"
         }
     },
     "messages": {

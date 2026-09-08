@@ -92,7 +92,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         'relative join-item flex min-w-0 flex-1 items-center input input-bordered gap-2 p-0 outline-0',
                         {
                             'input-sm': compact,
-                            'text-sm': regularText,
+                            'text-base': regularText,
                             'input-error': Boolean(error),
                         },
                     )}
@@ -102,7 +102,7 @@ export const PathField: React.FC<PathFieldProps> = ({
                         id={id}
                         data-testid={testId}
                         type="text"
-                        className="path-field-input h-full min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
+                        className="path-field-input h-full min-w-0 flex-1 bg-transparent px-3 text-[length:inherit] outline-none"
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
                         onBlur={onBlur}

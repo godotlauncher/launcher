@@ -402,7 +402,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
             {state === 'intro' && (
                 <>
-                    <p className="text-sm font-medium text-base-content">
+                    <p className="text-base font-medium text-base-content">
                         {showAccessManagement
                             ? t('connections.flow.accessDescription')
                             : (description ??
@@ -449,7 +449,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                                         </span>
                                         <button
                                             type="button"
-                                            className="btn btn-outline btn-sm"
+                                            className="btn btn-outline"
                                             disabled={
                                                 busy ||
                                                 target.availability ===
@@ -624,7 +624,7 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
     return (
         <>
             <div>
-                <h2 className="font-semibold">
+                <h2 className="text-base font-semibold">
                     {t('connections.drawer.chooseConnection')}
                 </h2>
                 <p className="mt-1 text-sm text-base-content/65">
@@ -641,7 +641,7 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
             )}
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-base-300 border-t pt-4">
                 {options.length > 0 && (
-                    <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <label className="flex cursor-pointer items-center gap-2 text-base font-medium">
                         <input
                             type="checkbox"
                             className="checkbox checkbox-sm"
@@ -662,7 +662,7 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
                 )}
                 <button
                     type="button"
-                    className="btn btn-outline btn-sm ml-auto"
+                    className="btn btn-outline ml-auto"
                     disabled={busy}
                     onClick={onInstall}
                 >
@@ -738,7 +738,7 @@ const ConnectionOption: React.FC<ConnectionOptionProps> = ({
                 <UserRound size={18} aria-hidden="true" />
             )}
             <span className="flex min-w-0 items-baseline gap-3">
-                <span className="truncate text-sm font-medium">
+                <span className="truncate text-base font-medium">
                     {option.login}
                 </span>
                 <span className="shrink-0 text-xs text-base-content/60">
