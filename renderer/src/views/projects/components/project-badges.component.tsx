@@ -7,7 +7,7 @@ import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { ProjectListItemProps } from './project-list.types';
 
 /**
- * Keeps compact icons at their original size and fits 14px icons inside card badges.
+ * Fits 14px card icons inside pill badges with balanced padding and spacing.
  * @param props - Presentation mode, warning state and badge content.
  */
 function ProjectBadge({
@@ -28,7 +28,7 @@ function ProjectBadge({
     ) : (
         <StatusBadge
             tone={warning ? 'warning' : 'neutral'}
-            className="max-w-full gap-2 [&>svg]:size-[14px] [&>img]:size-[14px]"
+            className="h-[22px] max-w-full gap-[4px] rounded-full px-[6px] [&>svg]:size-[14px] [&>img]:size-[14px]"
         >
             {children}
         </StatusBadge>
