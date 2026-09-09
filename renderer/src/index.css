@@ -79,6 +79,19 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+@media (forced-colors: none) {
+    :focus-visible,
+    .btn:has(:focus-visible),
+    label:has(:focus-visible) {
+        outline-width: 1px;
+        outline-color: color-mix(
+            in oklch,
+            var(--color-base-content) 20%,
+            transparent
+        );
+    }
+}
+
 @keyframes reveal-after-delay {
     from {
         visibility: hidden;
