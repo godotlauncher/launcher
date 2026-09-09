@@ -45,7 +45,7 @@ export function ProjectViewToggle({
         <div
             role="tablist"
             aria-label={`${listLabel} / ${cardsLabel}`}
-            className="tabs tabs-box tabs-sm bg-base-300 h-[28px] shrink-0 p-[2px]"
+            className="tabs tabs-box tabs-sm shrink-0"
         >
             <button
                 ref={listRef}
@@ -56,7 +56,7 @@ export function ProjectViewToggle({
                 aria-selected={mode === 'list'}
                 aria-disabled={disabled}
                 tabIndex={mode === 'list' ? 0 : -1}
-                className={`tab h-[24px] min-h-[24px] w-[24px] p-0 ${mode === 'list' ? 'tab-active bg-base-200' : ''}`}
+                className={`tab ${mode === 'list' ? 'tab-active' : ''}`}
                 onKeyDown={handleKeyDown}
                 onClick={() => {
                     if (!disabled) onChange('list');
@@ -79,7 +79,7 @@ export function ProjectViewToggle({
                 aria-selected={mode === 'cards'}
                 aria-disabled={disabled}
                 tabIndex={mode === 'cards' ? 0 : -1}
-                className={`tab h-[24px] min-h-[24px] w-[24px] p-0 ${mode === 'cards' ? 'tab-active bg-base-200' : ''}`}
+                className={`tab ${mode === 'cards' ? 'tab-active' : ''}`}
                 onKeyDown={handleKeyDown}
                 onClick={() => {
                     if (!disabled) onChange('cards');

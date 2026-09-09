@@ -50,7 +50,7 @@ test.afterAll(async () => {
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
-test('resets form values and restores first focus for every new drawer session', async () => {
+test('resets form values and focuses the drawer title for every new session', async () => {
     await openCreateProject();
     const projectName = mainPage.getByTestId('inputProjectName');
     const projectPath = mainPage.getByTestId('inputProjectPath');
@@ -73,7 +73,9 @@ test('resets form values and restores first focus for every new drawer session',
     await expect(projectName).toHaveValue('');
     await expect(projectPath).toHaveValue(SAMPLE_PREFS.projects_location);
     await expect(renderer).toHaveText('Forward Plus');
-    await expect(projectName).toBeFocused();
+    await expect(
+        mainPage.getByRole('heading', { name: 'New Project', exact: true }),
+    ).toBeFocused();
 });
 
 test('does not enable Create from an outdated destination result after rapid name edits', async () => {
@@ -343,7 +345,9 @@ test('contains the creation form at the minimum viewport in both themes', async 
                 ),
             )
             .toBe(true);
-        await expect(mainPage.getByTestId('inputProjectName')).toBeFocused();
+        await expect(
+            mainPage.getByRole('heading', { name: 'New Project', exact: true }),
+        ).toBeFocused();
         await expect(mainPage.getByTestId('btnCreateProject')).toBeInViewport();
         await expect
             .poll(() =>

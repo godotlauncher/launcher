@@ -4,7 +4,6 @@ import type {
     ProjectGitIdentityPreset,
 } from '@shared/contracts';
 import { useCallback, useState } from 'react';
-import { projectsBridge } from '../../../bridge';
 import {
     type GitIdentitySaveChoice,
     isGitIdentityComplete,
@@ -12,6 +11,7 @@ import {
     resolveGitIdentitySave,
 } from '../../../git-identity.model';
 import type { GitHook } from '../../../hooks/git.hook';
+import { projectsBridge } from '../../../renderer.bridge';
 import type { RemoteProjectGitIdentityPage } from '../components/remote-project-git-identity.component';
 import type {
     RemoteProjectGitIdentityWarning,
@@ -40,7 +40,7 @@ export function useRemoteProjectGitIdentity({
     saveProjectIdentityPreset,
     onStepChange,
 }: UseRemoteProjectGitIdentityArgs) {
-    const [page, setPage] = useState<RemoteProjectGitIdentityPage>('warning');
+    const [page, setPage] = useState<RemoteProjectGitIdentityPage>('identity');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [scope, setScope] = useState<GitIdentityScope>('repository');
@@ -59,7 +59,7 @@ export function useRemoteProjectGitIdentity({
 
     /** Resets identity state for a newly opened remote import. */
     const reset = useCallback(() => {
-        setPage('warning');
+        setPage('identity');
         setName('');
         setEmail('');
         setScope('repository');
@@ -155,12 +155,12 @@ export function useRemoteProjectGitIdentity({
             setPreset(null);
             setName(decision.globalIdentity.name);
             setEmail(decision.globalIdentity.email);
-            setPage('warning');
+            setPage('identity');
         }
         onStepChange('git-identity');
     };
 
-    /** Opens the editable identity form from the missing-identity warning. */
+    /** Resets the editable identity form to the inherited identity. */
     const addIdentity = () => {
         setName(globalIdentity.name);
         setEmail(globalIdentity.email);
@@ -248,10 +248,10 @@ export function useRemoteProjectGitIdentity({
         continueAfterIdentity();
     };
 
-    /** Returns the editable form to its warning or preset choice. */
+    /** Returns the editable form to its preset choice when available. */
     const returnFromForm = () => {
         setShowValidation(false);
-        setPage(preset ? 'preset' : 'warning');
+        setPage(preset ? 'preset' : 'identity');
     };
 
     return {

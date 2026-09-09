@@ -1,6 +1,6 @@
 import type { GitLfsTrackingPolicyDescriptor } from '@shared/contracts';
 import { useCallback } from 'react';
-import { gitLfsBridge } from '../bridge.ts';
+import { gitLfsBridge } from '../renderer.bridge.ts';
 
 export type GitLfsHook = {
     getTrackingPolicy: () => Promise<GitLfsTrackingPolicyDescriptor>;

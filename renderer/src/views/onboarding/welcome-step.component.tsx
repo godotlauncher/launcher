@@ -1,6 +1,7 @@
 import { Code2, Download, FolderCog } from 'lucide-react';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
+import { OverlayTitle } from '../../components/ui/overlay-title.component';
 
 export const WelcomeStep: React.FC = () => {
     const { t } = useTranslation('welcome');
@@ -23,17 +24,17 @@ export const WelcomeStep: React.FC = () => {
     return (
         <div className="flex max-w-3xl flex-col gap-7">
             <div className="flex flex-col gap-3">
-                <h1
+                <OverlayTitle
+                    as="h1"
                     data-testid="onboarding-step-heading"
-                    tabIndex={-1}
-                    className="text-4xl font-bold tracking-tight text-base-content outline-none"
+                    className="text-[20px] font-semibold"
                 >
                     {t('onboarding.welcome.title')}
-                </h1>
-                <p className="max-w-2xl text-lg leading-relaxed text-base-content/80">
+                </OverlayTitle>
+                <p className="max-w-2xl text-base-content/75">
                     {t('onboarding.welcome.description')}
                 </p>
-                <p className="max-w-2xl leading-relaxed text-base-content/65">
+                <p className="max-w-2xl">
                     {t('onboarding.welcome.expectation')}
                 </p>
             </div>
@@ -44,12 +45,10 @@ export const WelcomeStep: React.FC = () => {
             >
                 {benefits.map(({ icon: Icon, text }) => (
                     <li key={text} className="flex items-center gap-4">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-box bg-primary/10 text-primary">
-                            <Icon size={22} aria-hidden="true" />
+                        <span className="flex size-10 shrink-0 items-center justify-center">
+                            <Icon size={20} aria-hidden="true" />
                         </span>
-                        <span className="text-base leading-relaxed">
-                            {text}
-                        </span>
+                        <span>{text}</span>
                     </li>
                 ))}
             </ul>

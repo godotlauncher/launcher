@@ -8,11 +8,11 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { appBridge } from '../bridge';
-import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
-import { usePreferences } from '../hooks/usePreferences';
-import { useTheme } from '../hooks/useTheme';
-import { useTrayAvailability } from '../hooks/useTrayAvailability';
+import { useCodeEditorIntegrations } from '../hooks/code-editor-integrations.hook';
+import { usePreferences } from '../hooks/preferences.hook';
+import { useTheme } from '../hooks/theme.hook';
+import { useTrayAvailability } from '../hooks/tray-availability.hook';
+import { appBridge } from '../renderer.bridge';
 import { AppearanceStep } from './onboarding/appearance-step.component';
 import {
     applyOnboardingRecommendedLocations,
@@ -302,7 +302,7 @@ export const OnboardingView: React.FC = () => {
               : t('welcome:onboarding.navigation.finishProjects');
 
     return (
-        <div className="flex h-full min-h-0 w-full bg-base-100 text-base-content">
+        <div className="flex h-full min-h-0 w-full bg-base-100 text-base">
             <OnboardingProgress
                 currentStep={step}
                 labels={labels}
@@ -420,7 +420,7 @@ export const OnboardingView: React.FC = () => {
                 {operationError && (
                     <div className="px-10 pb-3">
                         <div
-                            className="alert alert-error py-3 text-sm"
+                            className="alert alert-error alert-soft text-base text-error-content dark:text-error py-3"
                             role="alert"
                         >
                             <CircleX className="size-5" aria-hidden="true" />
@@ -429,13 +429,13 @@ export const OnboardingView: React.FC = () => {
                     </div>
                 )}
 
-                <footer className="flex min-h-20 items-center justify-between border-t border-base-300 px-10 py-4">
+                <footer className="flex min-h-20 items-center justify-between px-10 py-4">
                     {step === 'welcome' ? (
                         <span aria-hidden="true" />
                     ) : (
                         <button
                             type="button"
-                            className="btn btn-outline min-w-24"
+                            className="btn btn-ghost text-base min-w-24"
                             onClick={() =>
                                 setStep(getPreviousOnboardingStep(step))
                             }
@@ -446,7 +446,7 @@ export const OnboardingView: React.FC = () => {
                     )}
                     <button
                         type="button"
-                        className="btn btn-primary min-w-28"
+                        className="btn btn-primary text-base min-w-28"
                         onClick={continueStep}
                         disabled={pending}
                     >

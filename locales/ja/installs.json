@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "カスタムエディタマニフェストを作成"
     },
     "search": {
+        "noResults": "一致するエディターがありません",
+        "noResultsHint": "「{{query}}」に一致するインストール済みエディターはありません。別のバージョンを検索するか、検索をクリアしてください。",
+        "clear": "検索をクリア",
         "placeholder": "検索"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Godot Launcher エディタマニフェスト",
         "waitingForDialog": "ダイアログを待機中...",
         "replace": {
+            "action": "置き換える",
             "title": "カスタムエディタを置き換えますか？",
             "message": "このバージョンのカスタムエディタは既に登録されています。",
             "versionLabel": "バージョン",
-            "detail": "置き換えると、選択したマニフェストを使うようにランチャーの記録が更新されます。エディタファイルは削除されません。"
+            "detail": "置き換えると、選択したマニフェストを使うようにGodot Launcherの記録が更新されます。エディタファイルは削除されません。"
         },
         "drop": {
             "title": "マニフェストをドロップしてカスタムエディタを追加",

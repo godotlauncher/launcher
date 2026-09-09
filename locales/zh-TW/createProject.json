@@ -112,12 +112,12 @@
         "retry": "重試發佈",
         "checkAndRetry": "檢查並重試",
         "useRepository": "使用此儲存庫",
-        "recoveryRepositoryFound": "GitHub 中有這個完全相符的空儲存庫。請確認要讓 Launcher 使用它。",
+        "recoveryRepositoryFound": "GitHub 中有這個完全相符的空儲存庫。請確認要讓 Godot Launcher 使用它。",
         "retryFailed": "無法重試發佈。本機專案仍然安全。",
         "continueLocally": "繼續使用本機專案",
         "openGitHub": "開啟 GitHub",
         "localTitle": "專案已保留在本機",
-        "localMessage": "專案仍保留在此電腦和 Launcher 資料庫中。",
+        "localMessage": "專案仍保留在此電腦和 Godot Launcher 資料庫中。",
         "requiresInitialCommit": "發佈需要一個包含初始提交的新 Git 儲存庫。",
         "publicationFailed": "專案已在本機建立，但 GitHub 發佈未完成。",
         "attemptExpired": "此發佈嘗試已過期。本機專案仍然安全。",
@@ -136,19 +136,19 @@
             "repository-name-unavailable-or-policy-rejected": "GitHub 無法使用此名稱。名稱可能已存在或被組織政策禁止。",
             "rate-limited": "GitHub 暫時限制請求。請稍後重試。",
             "network-unavailable": "發佈時網路連線失敗。",
-            "remote-creation-uncertain": "Launcher 無法確認 GitHub 是否已建立儲存庫。請恢復網路連線，然後檢查並重試。",
-            "recovered-repository-not-empty": "GitHub 中有此儲存庫，但它不是空的。Launcher 不會發佈至此儲存庫。",
-            "remote-created-origin-failed": "私人儲存庫已建立，但 Launcher 無法將它連接到本機專案。",
+            "remote-creation-uncertain": "Godot Launcher 無法確認 GitHub 是否已建立儲存庫。請恢復網路連線，然後檢查並重試。",
+            "recovered-repository-not-empty": "GitHub 中有此儲存庫，但它不是空的。Godot Launcher 不會發佈至此儲存庫。",
+            "remote-created-origin-failed": "私人儲存庫已建立，但 Godot Launcher 無法將它連接到本機專案。",
             "remote-created-push-failed": "私人儲存庫已建立，但無法推送專案。",
-            "remote-created-verification-failed": "專案可能已推送，但 Launcher 無法驗證。",
-            "local-repository-changed": "本機 Git 儲存庫已變更，因此 Launcher 停止重試。",
+            "remote-created-verification-failed": "專案可能已推送，但 Godot Launcher 無法驗證。",
+            "local-repository-changed": "本機 Git 儲存庫已變更，因此 Godot Launcher 停止重試。",
             "provider-unavailable": "GitHub 無法完成請求。"
         }
     },
     "existingRepository": {
         "confirmationTitle": "此專案將位於另一個 Git 儲存庫中",
         "warningMessage": "你選擇的資料夾位於 {{root}} 的 Git 儲存庫中。",
-        "gitSkipped": "Launcher 不會建立獨立的 Git 儲存庫或初始提交。",
+        "gitSkipped": "Godot Launcher 不會建立獨立的 Git 儲存庫或初始提交。",
         "gitLfsSkipped": "不會設定 Git LFS。",
         "githubSkipped": "不會將專案發佈到 GitHub。",
         "question": "是否繼續？",
@@ -238,6 +238,6 @@
         "failedGitLfsInstall": "無法為新的儲存庫安裝 Git LFS",
         "failedGitLfsTrack": "無法新增 Git LFS 追蹤規則",
         "failedGitLfsVerify": "無法驗證 Git LFS 設定",
-        "failedProjectRecovery": "Git LFS 設定失敗，Launcher 無法還原專案資料夾。請先檢查 '{{path}}'，然後再試一次"
+        "failedProjectRecovery": "Git LFS 設定失敗，Godot Launcher 無法還原專案資料夾。請先檢查 '{{path}}'，然後再試一次"
     }
 }

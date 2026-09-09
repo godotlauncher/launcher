@@ -6,15 +6,15 @@ import type {
 } from '@shared/contracts';
 import {
     Building2,
+    Check,
     ExternalLink,
-    Plus,
     ShieldCheck,
     UserRound,
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppIntegrations } from '../../hooks/useAppIntegrations';
+import { useAppIntegrations } from '../../hooks/app-integrations.hook';
 import {
     GitHubConnectionFlowSessionGuard,
     type GitHubConnectionFlowState,
@@ -27,9 +27,14 @@ export type GitHubConnectionFlowProps = {
     connectionId?: string;
     description?: string;
     showAccessManagement?: boolean;
+    /** Starts a new connection directly when invoked from an explicit Add action. */
+    autoStart?: boolean;
+    /** Lets a toned dialog present the error without a second coloured panel. */
+    plainError?: boolean;
     renderLayout?: (
         content: React.ReactNode,
         footer: React.ReactNode,
+        state: GitHubConnectionFlowState,
     ) => React.ReactNode;
 };
 
@@ -46,6 +51,8 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
     renderLayout,
     description,
     showAccessManagement = false,
+    autoStart = false,
+    plainError = false,
 }) => {
     const { t } = useTranslation(['settings', 'common']);
     const {
@@ -71,6 +78,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         connectionId ?? '',
     );
     const [loadingInitialState, setLoadingInitialState] = useState(true);
+    const autoStartedRef = useRef(false);
     const [initialLoadFailed, setInitialLoadFailed] = useState(false);
     const [initialLoadVersion, setInitialLoadVersion] = useState(0);
     const [busy, setBusy] = useState(false);
@@ -254,6 +262,18 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         selectedReconnectId,
     ]);
 
+    useEffect(() => {
+        if (
+            !autoStart ||
+            loadingInitialState ||
+            initialLoadFailed ||
+            autoStartedRef.current
+        )
+            return;
+        autoStartedRef.current = true;
+        handleStart();
+    }, [autoStart, loadingInitialState, initialLoadFailed, handleStart]);
+
     /** Retries the failed initial load or browser authorisation. */
     const handleRetry = useCallback(() => {
         if (initialLoadFailed) {
@@ -327,11 +347,19 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         }
     };
 
+    const showReconnectChoices = !connectionId && reconnectChoices.length > 0;
+
+    /** Starts a separate account connection without reusing the selected account. */
+    const handleConnectAnother = () => {
+        setSelectedReconnectId('');
+        void runAction(() => connect('github'), 'authorising');
+    };
+
     const footer = (
         <>
             <button
                 type="button"
-                className="btn btn-ghost"
+                className="btn btn-ghost text-base"
                 onClick={handleCancel}
             >
                 {t('common:buttons.cancel')}
@@ -341,28 +369,33 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                     type="button"
                     className={
                         showAccessManagement
-                            ? 'btn btn-neutral'
-                            : 'btn btn-primary'
+                            ? 'btn btn-sm btn-ghost text-base'
+                            : 'btn btn-primary text-base'
                     }
-                    disabled={loadingInitialState || busy}
+                    disabled={
+                        loadingInitialState ||
+                        busy ||
+                        (showReconnectChoices && !selectedReconnectId)
+                    }
                     onClick={handleStart}
                 >
                     {t(
-                        selectedReconnectId
+                        selectedReconnectId || showReconnectChoices
                             ? 'connections.flow.reconnect'
                             : showAccessManagement
                               ? 'connections.flow.addAccount'
                               : 'connections.flow.continueInBrowser',
                     )}
-                    {!showAccessManagement && (
-                        <ExternalLink size={16} aria-hidden="true" />
-                    )}
+                    <ExternalLink
+                        className="size-3.5 shrink-0 opacity-45"
+                        aria-hidden="true"
+                    />
                 </button>
             )}
             {state === 'intro' && showAccessManagement && (
                 <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary text-base"
                     disabled={loadingInitialState || busy}
                     onClick={() =>
                         void runAccessAction(() => refresh('github'), true)
@@ -378,7 +411,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                 (integration?.connectionOptions.length ?? 0) > 0 && (
                     <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary text-base"
                         disabled={busy || selectedOptionIds.length === 0}
                         onClick={handleFinishConnections}
                     >
@@ -390,7 +423,7 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
             {state === 'error' && (
                 <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary text-base"
                     onClick={handleRetry}
                 >
                     {t('common:buttons.retry')}
@@ -399,21 +432,23 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         </>
     );
     const content = (
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-hidden text-base">
             {state === 'intro' && (
                 <>
-                    <p className="text-base font-medium text-base-content">
-                        {showAccessManagement
-                            ? t('connections.flow.accessDescription')
-                            : (description ??
-                              t('connections.github.description'))}
+                    <p>
+                        {showReconnectChoices
+                            ? t('connections.flow.reauthoriseDescription')
+                            : showAccessManagement
+                              ? t('connections.flow.accessDescription')
+                              : (description ??
+                                t('connections.github.description'))}
                     </p>
-                    {!showAccessManagement && (
+                    {!showAccessManagement && !showReconnectChoices && (
                         <>
-                            <p className="text-sm text-base-content/70">
+                            <p className="text-base-content/75">
                                 {t('connections.flow.browserDescription')}
                             </p>
-                            <div className="flex items-center gap-3 text-sm text-base-content/65">
+                            <div className="flex items-start gap-2 text-base-content/75">
                                 <ShieldCheck
                                     className="shrink-0"
                                     size={18}
@@ -426,7 +461,10 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                         </>
                     )}
                     {accessFailure && (
-                        <p className="text-sm text-error" role="alert">
+                        <p
+                            className="alert alert-error alert-soft text-base text-error-content dark:text-error"
+                            role="alert"
+                        >
                             {t('connections.errors.generic')}
                         </p>
                     )}
@@ -442,14 +480,14 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                                 connection.accessTargets.map((target) => (
                                     <div
                                         key={`${connection.id}:${target.id}`}
-                                        className="flex shrink-0 items-center justify-between gap-3 rounded-box border border-base-300 p-3"
+                                        className="flex shrink-0 items-center justify-between gap-3 p-3"
                                     >
-                                        <span className="min-w-0 truncate">
+                                        <span className="min-w-0 truncate font-semibold">
                                             {target.login}
                                         </span>
                                         <button
                                             type="button"
-                                            className="btn btn-outline"
+                                            className="btn btn-sm btn-ghost text-base"
                                             disabled={
                                                 busy ||
                                                 target.availability ===
@@ -468,55 +506,90 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
                                             {t(
                                                 'connections.actions.manageAccess',
                                             )}
+                                            <ExternalLink
+                                                className="size-3.5 shrink-0 opacity-45"
+                                                aria-hidden="true"
+                                            />
                                         </button>
                                     </div>
                                 )),
                             )}
                         </div>
                     )}
-                    {!connectionId && reconnectChoices.length > 0 && (
-                        <div className="flex flex-col gap-2">
-                            <p className="text-sm font-medium">
-                                {t('connections.flow.reconnect')}
-                            </p>
-                            <label className="flex cursor-pointer items-center gap-3 rounded-box border border-base-300 p-3">
-                                <input
-                                    type="radio"
-                                    name="github-reconnect-connection"
-                                    className="radio radio-sm"
-                                    checked={!selectedReconnectId}
-                                    onChange={() => setSelectedReconnectId('')}
-                                />
-                                <span>
-                                    {t('connections.actions.addConnection')}
-                                </span>
-                            </label>
-                            {reconnectChoices.map((connection) => (
-                                <label
-                                    key={connection.id}
-                                    className="flex cursor-pointer items-center gap-3 rounded-box border border-base-300 p-3"
+                    {showReconnectChoices && (
+                        <>
+                            <div className="flex shrink-0 justify-end">
+                                <button
+                                    type="button"
+                                    className="btn btn-link h-auto min-h-0 p-0 text-base font-normal"
+                                    disabled={busy || loadingInitialState}
+                                    onClick={handleConnectAnother}
                                 >
-                                    <input
-                                        type="radio"
-                                        name="github-reconnect-connection"
-                                        className="radio radio-sm"
-                                        checked={
-                                            selectedReconnectId ===
-                                            connection.id
-                                        }
-                                        onChange={() =>
-                                            setSelectedReconnectId(
-                                                connection.id,
-                                            )
-                                        }
+                                    {t(
+                                        'connections.flow.connectAnotherAccount',
+                                    )}
+                                    <ExternalLink
+                                        size={16}
+                                        className="shrink-0 opacity-45"
+                                        aria-hidden="true"
                                     />
-                                    <span>
-                                        {connection.accountDisplayName ??
-                                            connection.accountLogin}
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
+                                </button>
+                            </div>
+                            <div
+                                role="radiogroup"
+                                aria-label={t('connections.flow.reconnect')}
+                                className="flex min-h-0 flex-col gap-2 overflow-y-auto p-1 pr-[16px] [scrollbar-gutter:stable]"
+                            >
+                                {reconnectChoices.map((connection) => (
+                                    <label
+                                        key={connection.id}
+                                        className="relative flex shrink-0 items-center gap-3 rounded-md bg-base-content/2 p-3 hover:bg-base-content/5 has-[:checked]:bg-primary/10 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="github-reconnect-connection"
+                                            className="peer sr-only"
+                                            checked={
+                                                selectedReconnectId ===
+                                                connection.id
+                                            }
+                                            disabled={busy}
+                                            onChange={() =>
+                                                setSelectedReconnectId(
+                                                    connection.id,
+                                                )
+                                            }
+                                        />
+                                        <UserRound
+                                            size={18}
+                                            className="shrink-0 text-base-content/75"
+                                            aria-hidden="true"
+                                        />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block break-words font-semibold">
+                                                {connection.accountDisplayName ||
+                                                    connection.accountLogin}
+                                            </span>
+                                            {connection.accountDisplayName &&
+                                                connection.accountDisplayName !==
+                                                    connection.accountLogin && (
+                                                    <span className="block break-all text-sm text-base-content/60">
+                                                        @
+                                                        {
+                                                            connection.accountLogin
+                                                        }
+                                                    </span>
+                                                )}
+                                        </span>
+                                        <Check
+                                            size={18}
+                                            className="invisible shrink-0 text-primary peer-checked:visible"
+                                            aria-hidden="true"
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </>
             )}
@@ -546,7 +619,11 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
 
             {state === 'error' && (
                 <p
-                    className="rounded-box bg-error/10 p-3 text-sm text-error"
+                    className={
+                        plainError
+                            ? 'text-base'
+                            : 'alert alert-error alert-soft text-base text-error-content dark:text-error'
+                    }
                     role="alert"
                 >
                     {t(errorTranslationKey(failure ?? 'unknown'))}
@@ -555,11 +632,11 @@ export const GitHubConnectionFlow: React.FC<GitHubConnectionFlowProps> = ({
         </div>
     );
     return renderLayout ? (
-        renderLayout(content, footer)
+        renderLayout(content, footer, state)
     ) : (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {content}
-            <footer className="mt-4 flex shrink-0 flex-wrap justify-end gap-2 border-t border-base-300 pt-4">
+            <footer className="mt-[12px] flex shrink-0 flex-wrap justify-end gap-2">
                 {footer}
             </footer>
         </div>
@@ -623,25 +700,43 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
 
     return (
         <>
-            <div>
-                <h2 className="text-base font-semibold">
+            <div className="flex flex-col gap-[4px]">
+                <h2 className="font-semibold">
                     {t('connections.drawer.chooseConnection')}
                 </h2>
-                <p className="mt-1 text-sm text-base-content/65">
+                <p className="text-base-content/75">
                     {t('connections.drawer.chooseConnectionDescription')}
                 </p>
             </div>
             {failure && (
                 <p
-                    className="rounded-box bg-error/10 p-3 text-sm text-error"
+                    className="alert alert-error alert-soft text-base text-error-content dark:text-error"
                     role="alert"
                 >
                     {t(errorTranslationKey(failure))}
                 </p>
             )}
-            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-base-300 border-t pt-4">
+            <div className="flex shrink-0 flex-col items-end gap-1 text-right">
+                <p className="text-base-content/75">
+                    {t('connections.flow.missingAccount')}
+                </p>
+                <button
+                    type="button"
+                    data-external-link=""
+                    className="btn btn-link h-auto min-h-0 p-0 text-base font-normal"
+                    disabled={busy}
+                    onClick={onInstall}
+                >
+                    {t('connections.flow.manageGitHubAccess')}
+                    <ExternalLink
+                        className="size-3.5 shrink-0 opacity-45"
+                        aria-hidden="true"
+                    />
+                </button>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
                 {options.length > 0 && (
-                    <label className="flex cursor-pointer items-center gap-2 text-base font-medium">
+                    <label className="flex min-h-8 items-center gap-2">
                         <input
                             type="checkbox"
                             className="checkbox checkbox-sm"
@@ -660,18 +755,9 @@ const ConnectionChooser: React.FC<ConnectionChooserProps> = ({
                         {t('connections.actions.selectAll')}
                     </label>
                 )}
-                <button
-                    type="button"
-                    className="btn btn-outline ml-auto"
-                    disabled={busy}
-                    onClick={onInstall}
-                >
-                    <Plus size={15} aria-hidden="true" />
-                    {t('connections.flow.addAccount')}
-                </button>
             </div>
             <div
-                className="flex min-h-0 flex-col gap-2 overflow-y-auto pr-[16px] [scrollbar-gutter:stable]"
+                className="flex min-h-0 flex-col gap-2 overflow-y-auto p-1 pr-[16px] [scrollbar-gutter:stable]"
                 data-testid="github-connection-options"
             >
                 {options.map((option) => (
@@ -718,12 +804,10 @@ const ConnectionOption: React.FC<ConnectionOptionProps> = ({
     t,
     onCheckedChange,
 }) => (
-    <label
-        className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-box border p-3 ${checked ? 'border-primary bg-primary/5' : 'border-base-300'}`}
-    >
+    <label className="relative flex shrink-0 items-center gap-3 rounded-md bg-base-content/2 p-3 hover:bg-base-content/5 has-[:checked]:bg-primary/10 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary">
         <input
             type="checkbox"
-            className="checkbox checkbox-sm shrink-0"
+            className="peer sr-only"
             aria-label={t('connections.actions.selectInstallation', {
                 connection: option.login,
             })}
@@ -731,17 +815,17 @@ const ConnectionOption: React.FC<ConnectionOptionProps> = ({
             disabled={disabled}
             onChange={(event) => onCheckedChange(event.target.checked)}
         />
-        <span className="flex min-w-0 items-center gap-3">
+        <span className="flex min-w-0 flex-1 items-center gap-3">
             {option.type === 'organization' ? (
-                <Building2 size={18} aria-hidden="true" />
+                <Building2 size={18} className="shrink-0" aria-hidden="true" />
             ) : (
-                <UserRound size={18} aria-hidden="true" />
+                <UserRound size={18} className="shrink-0" aria-hidden="true" />
             )}
-            <span className="flex min-w-0 items-baseline gap-3">
-                <span className="truncate text-base font-medium">
+            <span className="min-w-0 flex-1">
+                <span className="block break-all font-semibold">
                     {option.login}
                 </span>
-                <span className="shrink-0 text-xs text-base-content/60">
+                <span className="block text-sm text-base-content/60">
                     {t(
                         option.type === 'organization'
                             ? 'connections.drawer.organization'
@@ -750,6 +834,11 @@ const ConnectionOption: React.FC<ConnectionOptionProps> = ({
                 </span>
             </span>
         </span>
+        <Check
+            size={18}
+            className="invisible shrink-0 text-primary peer-checked:visible"
+            aria-hidden="true"
+        />
     </label>
 );
 

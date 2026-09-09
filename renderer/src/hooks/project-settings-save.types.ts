@@ -1,5 +1,5 @@
 import type { CodeEditorId, ProjectDetails } from '@shared/contracts';
-import type { CreateProjectEditorSelection } from '../views/subViews/createProject/createProject.model';
+import type { CreateProjectEditorSelection } from '../views/sub-views/create-project/create-project.model';
 
 export type ProjectSettingsDraft = {
     name: string;

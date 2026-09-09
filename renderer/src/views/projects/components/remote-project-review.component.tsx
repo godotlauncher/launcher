@@ -1,12 +1,12 @@
 import type { RemoteDiscoveredProject } from '@shared/contracts';
 import type { TFunction } from 'i18next';
-import { Code2 } from 'lucide-react';
+import { Code2, FolderSearch } from 'lucide-react';
 import { type RefObject, useEffect, useState } from 'react';
-import { CopyBadge } from '../../../components/ui/copyBadge.component';
+import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import {
     SelectField,
     type SelectFieldOption,
-} from '../../../components/ui/selectField.component';
+} from '../../../components/ui/select-field.component';
 import type { LocalImportRow } from '../local-import-editor.model';
 import type { RemoteProjectCodeEditorChoice } from '../remote-project-import.model';
 import {
@@ -93,10 +93,8 @@ export function RemoteProjectReview({
                     <SelectField
                         id={`selectRemoteProjectCodeEditor-${project.projectFilePath.replace(/[^a-zA-Z0-9_-]/g, '-')}`}
                         testId={`selectRemoteProjectCodeEditor-${projects.indexOf(project)}`}
-                        appearance="chip"
-                        startIcon={<Code2 size={14} aria-hidden="true" />}
-                        compact
-                        regularText
+                        appearance="ghost"
+                        startIcon={<Code2 size={16} aria-hidden="true" />}
                         fitOptionContent
                         showSelectedCheck
                         disabled={!selected}
@@ -124,7 +122,7 @@ export function RemoteProjectReview({
                 <h2 className="text-base font-semibold">
                     {t('addProject.remote.review.title')}
                 </h2>
-                <p className="text-sm text-base-content/70">
+                <p className="text-base text-base-content/75">
                     {t('addProject.editorReview.description')}
                 </p>
             </div>
@@ -132,12 +130,22 @@ export function RemoteProjectReview({
                 value={repositoryPath}
                 label={t('common:buttons.copyPath')}
                 copiedLabel={t('common:success')}
-                className="self-start bg-base-200/70 hover:bg-base-200"
+                className="self-start"
             />
             {projects.length === 0 ? (
-                <p role="status">{t('addProject.remote.review.empty')}</p>
+                <div
+                    role="status"
+                    className="flex flex-col items-center gap-3 rounded-md bg-base-content/2 px-4 py-8 text-center text-base text-base-content/75"
+                >
+                    <FolderSearch
+                        size={24}
+                        className="text-base-content/60"
+                        aria-hidden="true"
+                    />
+                    <p>{t('addProject.remote.review.empty')}</p>
+                </div>
             ) : (
-                <div className="min-h-0 overflow-auto">
+                <div className="min-h-0 flex-1 overflow-auto pr-3 [scrollbar-gutter:stable]">
                     <ProjectImportReviewList
                         items={items}
                         editingId={editingId}

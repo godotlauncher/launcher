@@ -2,10 +2,10 @@
     "title": "說明",
     "thirdPartyNotices": "第三方公告",
     "launcher": {
-        "title": "Godot 啟動器",
+        "title": "Godot Launcher",
         "changelog": "變更記錄",
         "homePage": "首頁",
-        "docs": "啟動器文件"
+        "docs": "Godot Launcher 文件"
     },
     "godot": {
         "title": "Godot 引擎",

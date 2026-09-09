@@ -40,7 +40,7 @@
     "removeCustomEditor": {
         "menuLabel": "Remove Custom Editor",
         "title": "Remove Custom Editor",
-        "message": "Remove custom editor \"{{name}}\" from the launcher?",
+        "message": "Remove custom editor \"{{name}}\" from Godot Launcher?",
         "detail": "This will unregister the custom editor. It will not delete the editor files on your device."
     }
 }

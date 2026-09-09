@@ -1,8 +1,39 @@
 import { FlaskConical, PanelTop, Tag, TriangleAlert } from 'lucide-react';
-import gitIconColor from '../../../assets/icons/git_icon_color.svg';
-import { CodeEditorIntegrationIcon } from '../../../components/codeEditorIntegrationIcon.component';
+import type { ReactNode } from 'react';
+import gitIconColor from '../../../assets/icons/git-icon-color.svg';
+import { CodeEditorIntegrationIcon } from '../../../components/code-editor-integration-icon.component';
+import { StatusBadge } from '../../../components/ui/status-badge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { ProjectListItemProps } from './project-list.types';
+
+/**
+ * Keeps compact icons and labelled card badges visually consistent.
+ * @param props - Presentation mode, warning state and badge content.
+ */
+function ProjectBadge({
+    compact,
+    warning = false,
+    children,
+}: {
+    compact: boolean;
+    warning?: boolean;
+    children: ReactNode;
+}) {
+    return compact ? (
+        <span
+            className={`inline-flex items-center gap-1 ${warning ? 'text-warning' : ''}`}
+        >
+            {children}
+        </span>
+    ) : (
+        <StatusBadge
+            tone={warning ? 'warning' : 'neutral'}
+            className="max-w-full gap-2"
+        >
+            {children}
+        </StatusBadge>
+    );
+}
 
 type ProjectBadgesProps = Pick<
     ProjectListItemProps,
@@ -40,8 +71,8 @@ export function ProjectBadges({
             data-testid="projectBadges"
             className={
                 compact
-                    ? 'flex shrink-0 items-center gap-1.5'
-                    : 'flex min-w-0 flex-wrap content-start items-start gap-1.5'
+                    ? 'flex shrink-0 items-center gap-2'
+                    : 'flex min-w-0 flex-wrap content-start items-start gap-2'
             }
         >
             {!compact && (
@@ -63,15 +94,17 @@ export function ProjectBadges({
                     tone={releaseInstalled ? 'default' : 'warning'}
                     className="min-w-0 max-w-full"
                 >
-                    <span
-                        className={`${compact ? 'inline-flex items-center gap-1' : 'badge badge-outline h-7 max-w-full gap-1.5 px-2 text-xs'} ${releaseInstalled ? 'border-base-content/25' : 'border-warning/60 text-warning'}`}
-                    >
+                    <ProjectBadge compact={false} warning={!releaseInstalled}>
                         {editorDownloading ? (
                             <span className="loading loading-spinner loading-xs" />
                         ) : releaseInstalled ? (
-                            !compact && <Tag size={13} />
+                            !compact && <Tag size={16} aria-hidden="true" />
                         ) : (
-                            <TriangleAlert size={compact ? 16 : 13} />
+                            <TriangleAlert
+                                size={16}
+                                className="text-warning"
+                                aria-hidden="true"
+                            />
                         )}
                         {!compact && (
                             <span className="min-w-0 truncate">
@@ -80,11 +113,12 @@ export function ProjectBadges({
                         )}
                         {project.release.prerelease && (
                             <FlaskConical
-                                size={compact ? 16 : 12}
-                                className="text-secondary"
+                                size={14}
+                                className="text-purple-500"
+                                aria-hidden="true"
                             />
                         )}
-                    </span>
+                    </ProjectBadge>
                 </Tooltip>
             )}
 
@@ -96,18 +130,20 @@ export function ProjectBadges({
                     tip={codeEditorTooltip}
                     tone={codeEditorUnavailable ? 'warning' : 'default'}
                 >
-                    <span
-                        className={`${compact ? 'inline-flex items-center gap-1' : 'badge badge-outline h-7 gap-1.5 px-2 text-xs'} ${codeEditorUnavailable ? 'border-warning/60 text-warning' : 'border-base-content/25'}`}
+                    <ProjectBadge
+                        compact={compact}
+                        warning={codeEditorUnavailable}
                     >
                         {codeEditorUnavailable ? (
                             <TriangleAlert
-                                size={compact ? 16 : 13}
-                                className="stroke-warning"
+                                size={16}
+                                className="text-warning"
+                                aria-hidden="true"
                             />
                         ) : (
                             <CodeEditorIntegrationIcon
                                 integrationId={project.codeEditorId}
-                                className={compact ? 'size-[16px]' : 'size-3.5'}
+                                className="size-[16px]"
                             />
                         )}
                         <span
@@ -117,7 +153,7 @@ export function ProjectBadges({
                         >
                             {codeEditorName}
                         </span>
-                    </span>
+                    </ProjectBadge>
                 </Tooltip>
             )}
 
@@ -131,19 +167,11 @@ export function ProjectBadges({
                     )}
                     tone="default"
                 >
-                    <span
-                        className={
-                            compact
-                                ? 'inline-flex items-center'
-                                : 'badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs'
-                        }
-                    >
+                    <ProjectBadge compact={compact}>
                         {isGitHubProject ? (
                             <img
                                 src={githubIconSrc}
-                                className={
-                                    compact ? 'size-[16px]' : 'h-3.5 w-3.5'
-                                }
+                                className="size-[16px]"
                                 alt=""
                                 aria-hidden="true"
                                 data-testid="githubProjectIcon"
@@ -151,9 +179,7 @@ export function ProjectBadges({
                         ) : (
                             <img
                                 src={gitIconColor}
-                                className={
-                                    compact ? 'size-[16px]' : 'h-3.5 w-3.5'
-                                }
+                                className="size-[16px]"
                                 alt=""
                                 data-testid="gitProjectIcon"
                             />
@@ -161,7 +187,7 @@ export function ProjectBadges({
                         <span className={compact ? 'sr-only' : undefined}>
                             {isGitHubProject ? 'GitHub' : 'Git'}
                         </span>
-                    </span>
+                    </ProjectBadge>
                 </Tooltip>
             )}
 
@@ -171,18 +197,12 @@ export function ProjectBadges({
                     tip={t('table.windowedMode')}
                     tone="default"
                 >
-                    <span
-                        className={
-                            compact
-                                ? 'inline-flex items-center'
-                                : 'badge badge-outline h-7 gap-1.5 border-base-content/25 px-2 text-xs'
-                        }
-                    >
-                        <PanelTop size={compact ? 16 : 13} />
+                    <ProjectBadge compact={compact}>
+                        <PanelTop size={16} aria-hidden="true" />
                         <span className={compact ? 'sr-only' : undefined}>
                             {t('card.windowed')}
                         </span>
-                    </span>
+                    </ProjectBadge>
                 </Tooltip>
             )}
         </div>

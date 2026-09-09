@@ -15,7 +15,6 @@ export type EditableTextFieldProps = {
     disabled?: boolean;
     invalid?: boolean;
     className?: string;
-    valueClassName?: string;
     onEdit: () => void;
     onDraftChange: (value: string) => void;
     onSave: () => void;
@@ -23,7 +22,7 @@ export type EditableTextFieldProps = {
 };
 
 /**
- * Renders a controlled text value with compact inline edit, save and cancel actions.
+ * Renders a controlled text value with inline edit, save and cancel actions.
  *
  * @param props - Display value, edit state, accessible labels and change callbacks.
  * @returns The display value or its active inline editor.
@@ -41,7 +40,6 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
     disabled = false,
     invalid = false,
     className,
-    valueClassName,
     onEdit,
     onDraftChange,
     onSave,
@@ -74,7 +72,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                 />
                 <button
                     type="button"
-                    className="btn btn-ghost btn-sm btn-square size-8 min-h-8 border-0 text-success shadow-none hover:text-success hover:shadow-none"
+                    className="btn btn-sm btn-ghost btn-square text-success hover:bg-success/10"
                     aria-label={saveLabel}
                     onClick={onSave}
                 >
@@ -82,7 +80,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                 </button>
                 <button
                     type="button"
-                    className="btn btn-ghost btn-sm btn-square size-8 min-h-8 border-0 text-error shadow-none hover:text-error hover:shadow-none"
+                    className="btn btn-sm btn-ghost btn-square text-error hover:bg-error/10"
                     aria-label={cancelLabel}
                     onClick={onCancel}
                 >
@@ -92,22 +90,22 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
         ) : (
             <>
                 <span
-                    className={clsx(
-                        'truncate text-base font-semibold leading-5',
-                        valueClassName,
-                    )}
+                    className={clsx('truncate text-base font-semibold', {
+                        'text-error': invalid,
+                        'opacity-50': disabled,
+                    })}
                     title={value}
                 >
                     {value || placeholder}
                 </span>
                 <button
                     type="button"
-                    className="btn btn-ghost btn-xs btn-square shrink-0"
+                    className="btn btn-sm btn-ghost btn-square shrink-0"
                     disabled={disabled}
                     aria-label={editLabel}
                     onClick={onEdit}
                 >
-                    <Pencil size={13} aria-hidden="true" />
+                    <Pencil size={16} aria-hidden="true" />
                 </button>
             </>
         )}

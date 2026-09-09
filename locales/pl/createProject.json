@@ -112,7 +112,7 @@
         "retry": "Ponów publikowanie",
         "checkAndRetry": "Sprawdź i ponów",
         "useRepository": "Użyj tego repozytorium",
-        "recoveryRepositoryFound": "W serwisie GitHub znajduje się dokładnie to puste repozytorium. Potwierdź, że Launcher ma go użyć.",
+        "recoveryRepositoryFound": "W serwisie GitHub znajduje się dokładnie to puste repozytorium. Potwierdź, że Godot Launcher ma go użyć.",
         "retryFailed": "Nie udało się ponowić publikowania. Projekt lokalny jest nadal bezpieczny.",
         "continueLocally": "Kontynuuj lokalnie",
         "openGitHub": "Otwórz GitHub",
@@ -136,19 +136,19 @@
             "repository-name-unavailable-or-policy-rejected": "GitHub nie może użyć tej nazwy. Może już istnieć lub być zablokowana przez zasady organizacji.",
             "rate-limited": "GitHub tymczasowo ogranicza żądania. Spróbuj później.",
             "network-unavailable": "Połączenie sieciowe nie powiodło się podczas publikowania.",
-            "remote-creation-uncertain": "Launcher nie potwierdził utworzenia repozytorium przez GitHub. Przywróć połączenie, a następnie sprawdź i ponów próbę.",
-            "recovered-repository-not-empty": "W serwisie GitHub znajduje się to repozytorium, ale nie jest puste. Launcher nie opublikuje w nim projektu.",
+            "remote-creation-uncertain": "Godot Launcher nie potwierdził utworzenia repozytorium przez GitHub. Przywróć połączenie, a następnie sprawdź i ponów próbę.",
+            "recovered-repository-not-empty": "W serwisie GitHub znajduje się to repozytorium, ale nie jest puste. Godot Launcher nie opublikuje w nim projektu.",
             "remote-created-origin-failed": "Prywatne repozytorium utworzono, ale nie udało się połączyć go z projektem lokalnym.",
             "remote-created-push-failed": "Prywatne repozytorium utworzono, ale nie udało się wysłać projektu.",
-            "remote-created-verification-failed": "Projekt mógł zostać wysłany, ale Launcher nie mógł tego zweryfikować.",
-            "local-repository-changed": "Lokalne repozytorium Git zmieniło się, więc Launcher zatrzymał ponowną próbę.",
+            "remote-created-verification-failed": "Projekt mógł zostać wysłany, ale Godot Launcher nie mógł tego zweryfikować.",
+            "local-repository-changed": "Lokalne repozytorium Git zmieniło się, więc Godot Launcher zatrzymał ponowną próbę.",
             "provider-unavailable": "GitHub nie mógł wykonać żądania."
         }
     },
     "existingRepository": {
         "confirmationTitle": "Ten projekt znajdzie się w innym repozytorium Git",
         "warningMessage": "Wybrany folder znajduje się w repozytorium Git w lokalizacji {{root}}.",
-        "gitSkipped": "Launcher nie utworzy oddzielnego repozytorium Git ani początkowego commita.",
+        "gitSkipped": "Godot Launcher nie utworzy oddzielnego repozytorium Git ani początkowego commita.",
         "gitLfsSkipped": "Git LFS nie zostanie skonfigurowany.",
         "githubSkipped": "Projekt nie zostanie opublikowany w serwisie GitHub.",
         "question": "Czy chcesz kontynuować?",
@@ -238,6 +238,6 @@
         "failedGitLfsInstall": "Nie udało się zainstalować Git LFS w nowym repozytorium",
         "failedGitLfsTrack": "Nie udało się dodać reguł śledzenia Git LFS",
         "failedGitLfsVerify": "Nie udało się zweryfikować konfiguracji Git LFS",
-        "failedProjectRecovery": "Konfiguracja Git LFS nie powiodła się, a Launcher nie mógł przywrócić folderu projektu. Sprawdź '{{path}}' przed ponowną próbą"
+        "failedProjectRecovery": "Konfiguracja Git LFS nie powiodła się, a Godot Launcher nie mógł przywrócić folderu projektu. Sprawdź '{{path}}' przed ponowną próbą"
     }
 }

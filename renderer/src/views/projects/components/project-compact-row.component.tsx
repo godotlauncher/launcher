@@ -1,7 +1,7 @@
 import { Clock, FlaskConical, ImageOff, TriangleAlert } from 'lucide-react';
-import { CopyBadge } from '../../../components/ui/copyBadge.component';
+import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
-import { getInvalidProjectTableKey } from '../projectsView.model';
+import { getInvalidProjectTableKey } from '../projects-view.model';
 import type { ProjectPresentationProps } from './project-list.types';
 
 type ProjectCompactRowProps = ProjectPresentationProps & {
@@ -32,13 +32,24 @@ export function ProjectCompactRow({
             type="button"
             data-testid="btnLaunchCompactProject"
             disabled={launchDisabled}
-            aria-label={t('view.openProject', {
-                project: project.name,
-            })}
+            aria-label={t('view.openProject', { project: project.name })}
             onClick={() => onLaunchProject(project)}
-            className="group flex h-[24px] min-w-0 items-center gap-2 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            className="group flex min-h-8 min-w-0 items-center gap-2 text-left text-base font-semibold disabled:opacity-45"
         >
-            <span className="absolute left-0 top-1/2 flex size-[48px] -translate-y-1/2 items-center justify-center overflow-hidden rounded bg-base-content/8 group-focus-visible:outline-2 group-focus-visible:outline-primary">
+            <span className="truncate">{project.name}</span>
+        </button>
+    );
+
+    return (
+        <div className="grid w-full min-w-0 grid-cols-[48px_minmax(0,1fr)] items-center gap-3">
+            <button
+                type="button"
+                tabIndex={-1}
+                disabled={launchDisabled}
+                aria-label={t('view.openProject', { project: project.name })}
+                onClick={() => onLaunchProject(project)}
+                className="flex size-[48px] items-center justify-center overflow-hidden disabled:opacity-45"
+            >
                 {project.icon_path ? (
                     <img
                         src={project.icon_path}
@@ -46,20 +57,12 @@ export function ProjectCompactRow({
                         alt=""
                     />
                 ) : (
-                    <ImageOff className="size-5 stroke-base-content/30" />
+                    <ImageOff className="size-5" />
                 )}
-            </span>
-            <span className="truncate text-[16px] font-semibold underline-offset-2 group-hover:underline">
-                {project.name}
-            </span>
-        </button>
-    );
-
-    return (
-        <div className="flex w-full min-w-0 items-center gap-2 pl-2">
-            <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(12rem,auto)] items-stretch gap-4">
-                <div className="relative flex min-h-[48px] min-w-0 flex-col justify-center pl-[60px]">
-                    <div className="flex min-w-0 items-center gap-2">
+            </button>
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-stretch gap-4">
+                <div className="flex min-w-0 flex-col justify-between gap-1">
+                    <div className="flex min-h-10 min-w-0 items-center gap-2 pl-3">
                         {launchDisabled ? (
                             compactLaunchButton
                         ) : (
@@ -82,7 +85,7 @@ export function ProjectCompactRow({
                                     )}
                                     tone="warning"
                                 >
-                                    <TriangleAlert className="size-[16px] shrink-0 text-warning" />
+                                    <TriangleAlert className="size-5 shrink-0 text-warning" />
                                 </Tooltip>
                             )}
                         {badges}
@@ -91,13 +94,13 @@ export function ProjectCompactRow({
                         value={project.path}
                         label={t('common:buttons.copyPath')}
                         copiedLabel={t('common:success')}
-                        className="self-start hover:bg-base-100"
+                        className="self-start hover:bg-base-100! focus-within:bg-base-100!"
                         data-testid={`btnCopyProjectPath_${sectionKey}_${project.path}`}
                     />
                 </div>
-                <div className="flex min-h-[48px] min-w-0 max-w-80 flex-col items-end self-stretch justify-between gap-1">
+                <div className="flex min-w-0 max-w-80 flex-col items-end self-stretch justify-between gap-1">
                     {actions}
-                    <div className="flex w-full min-w-0 items-center justify-end gap-2 text-xs text-base-content/55">
+                    <div className="flex min-h-7 w-full min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1 text-sm text-base-content/60">
                         <Tooltip
                             tip={
                                 editorMissing
@@ -117,8 +120,7 @@ export function ProjectCompactRow({
                                 {editorMissing && (
                                     <>
                                         <TriangleAlert
-                                            size={16}
-                                            className="shrink-0"
+                                            className="size-5 shrink-0"
                                             aria-hidden="true"
                                         />
                                         <span className="sr-only">
@@ -133,8 +135,8 @@ export function ProjectCompactRow({
                                 )}
                                 {project.release.prerelease && (
                                     <FlaskConical
-                                        size={16}
-                                        className="shrink-0 text-secondary"
+                                        size={14}
+                                        className="shrink-0 text-purple-500"
                                     />
                                 )}
                                 <span className="min-w-0 truncate">
@@ -142,16 +144,16 @@ export function ProjectCompactRow({
                                 </span>
                             </span>
                         </Tooltip>
-                        <span
-                            aria-hidden="true"
-                            className="h-3 border-l border-base-300"
-                        />
-                        <Clock
-                            size={12}
-                            className="shrink-0"
-                            aria-hidden="true"
-                        />
-                        <span className="min-w-0 truncate">{lastOpened}</span>
+                        <span className="inline-flex min-w-0 items-center gap-1">
+                            <Clock
+                                size={12}
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span className="min-w-0 truncate">
+                                {lastOpened}
+                            </span>
+                        </span>
                     </div>
                 </div>
             </div>

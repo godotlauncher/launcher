@@ -1,5 +1,6 @@
 {
     "buttons": {
+        "copy": "コピー",
         "ok": "OK",
         "cancel": "キャンセル",
         "continue": "続ける",

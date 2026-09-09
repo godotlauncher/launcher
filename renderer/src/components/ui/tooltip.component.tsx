@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import {
     type AriaRole,
-    type CSSProperties,
     cloneElement,
     type FC,
     isValidElement,
@@ -19,9 +18,9 @@ import {
     calculateTooltipPosition,
     type TooltipPlacement,
     type TooltipPosition,
-} from './tooltipPosition.model';
+} from './tooltip-position.model';
 
-export type { TooltipPlacement } from './tooltipPosition.model';
+export type { TooltipPlacement } from './tooltip-position.model';
 export type TooltipTone =
     | 'default'
     | 'primary'
@@ -44,45 +43,16 @@ type TooltipProps = {
 const defaultDelay = 500;
 
 const tooltipToneClassNames: Record<TooltipTone, string> = {
-    default: 'bg-neutral text-neutral-content',
-    primary: 'bg-primary text-primary-content',
-    secondary: 'bg-secondary text-secondary-content',
-    error: 'bg-error text-error-content',
-    warning: 'bg-warning text-warning-content',
-    info: 'bg-info text-info-content',
+    default: '',
+    primary: 'tooltip-primary',
+    secondary: 'tooltip-secondary',
+    error: 'tooltip-error',
+    warning: 'tooltip-warning',
+    info: 'tooltip-info',
 };
 
 const useClientLayoutEffect =
     typeof window === 'undefined' ? useEffect : useLayoutEffect;
-
-const getArrowStyle = (position: TooltipPosition): CSSProperties => {
-    switch (position.side) {
-        case 'top':
-            return {
-                bottom: '-0.25rem',
-                left: position.arrowX,
-                transform: 'translateX(-50%) rotate(45deg)',
-            };
-        case 'right':
-            return {
-                left: '-0.25rem',
-                top: position.arrowY,
-                transform: 'translateY(-50%) rotate(45deg)',
-            };
-        case 'bottom':
-            return {
-                left: position.arrowX,
-                top: '-0.25rem',
-                transform: 'translateX(-50%) rotate(45deg)',
-            };
-        case 'left':
-            return {
-                right: '-0.25rem',
-                top: position.arrowY,
-                transform: 'translateY(-50%) rotate(45deg)',
-            };
-    }
-};
 
 /**
  * Renders accessible text or rich help content on pointer hover and focus.
@@ -285,9 +255,26 @@ export const Tooltip: FC<TooltipProps> = ({
                         closeTooltip();
                     }
                 }}
-                onFocusCapture={() => {
-                    focusInsideRef.current = true;
-                    requestOpen();
+                onFocusCapture={(event) => {
+                    if (
+                        event.target instanceof HTMLElement &&
+                        event.target.hasAttribute('data-suppress-tooltip-focus')
+                    ) {
+                        focusInsideRef.current = false;
+                        if (!pointerInsideRef.current) {
+                            closeTooltip();
+                        }
+                        return;
+                    }
+                    const focusVisible =
+                        event.target instanceof HTMLElement &&
+                        event.target.matches(':focus-visible');
+                    focusInsideRef.current = focusVisible;
+                    if (focusVisible) {
+                        requestOpen();
+                    } else if (!pointerInsideRef.current) {
+                        closeTooltip();
+                    }
                 }}
                 onBlurCapture={(event) => {
                     if (
@@ -320,7 +307,7 @@ export const Tooltip: FC<TooltipProps> = ({
                         role="tooltip"
                         data-side={position?.side ?? placement}
                         className={clsx(
-                            'pointer-events-none fixed z-70 w-max whitespace-normal rounded-field px-2 py-1 text-center text-sm leading-tight shadow-sm shadow-black/40',
+                            'tooltip tooltip-open pointer-events-none fixed z-70 w-max after:hidden',
                             tooltipToneClassNames[tone],
                         )}
                         style={{
@@ -330,12 +317,28 @@ export const Tooltip: FC<TooltipProps> = ({
                             visibility: position ? 'visible' : 'hidden',
                         }}
                     >
-                        {tip}
+                        <div className="tooltip-content relative inset-auto max-w-full transform-none text-base leading-normal">
+                            {tip}
+                        </div>
                         {position && (
                             <span
                                 aria-hidden="true"
-                                className="absolute size-2 bg-inherit"
-                                style={getArrowStyle(position)}
+                                className="absolute size-2 rotate-45 bg-[var(--tt-bg)]"
+                                style={{
+                                    left:
+                                        position.side === 'left'
+                                            ? '100%'
+                                            : position.side === 'right'
+                                              ? 0
+                                              : position.arrowX,
+                                    top:
+                                        position.side === 'top'
+                                            ? '100%'
+                                            : position.side === 'bottom'
+                                              ? 0
+                                              : position.arrowY,
+                                    translate: '-50% -50%',
+                                }}
                             />
                         )}
                     </div>,

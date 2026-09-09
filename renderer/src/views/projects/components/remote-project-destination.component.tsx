@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { RefObject } from 'react';
-import { PathField } from '../../../components/ui/pathField.component';
+import { PathField } from '../../../components/ui/path-field.component';
 
 type RemoteProjectDestinationProps = {
     repositoryDisplay: string;
@@ -40,14 +40,14 @@ export function RemoteProjectDestination({
     return (
         <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-                <span className="font-medium">
-                    {t('addProject.remote.destination.repository')}
-                </span>
+                <span>{t('addProject.remote.destination.repository')}</span>
                 <span
-                    className="flex h-8 min-h-8 items-center truncate rounded-box border border-base-300 bg-base-200 px-3 font-medium text-base text-base-content"
+                    className="flex items-center rounded-box bg-base-200/60 p-3 text-base"
                     title={repositoryDisplay}
                 >
-                    <span className="min-w-0 truncate">{repositoryDisplay}</span>
+                    <span className="min-w-0 break-all">
+                        {repositoryDisplay}
+                    </span>
                 </span>
             </div>
             <PathField
@@ -58,7 +58,7 @@ export function RemoteProjectDestination({
                         <button
                             type="button"
                             data-testid="btnUseDefaultRemoteProjectPath"
-                            className="btn btn-ghost btn-xs h-6 min-h-6 px-2 text-xs text-primary"
+                            className="btn btn-sm btn-ghost text-base"
                             onClick={() =>
                                 onParentDirectoryChange(defaultParentDirectory)
                             }
@@ -117,14 +117,18 @@ export function RemoteProjectDestinationFooter({
 }: RemoteProjectDestinationFooterProps) {
     return (
         <div className="flex w-full items-center justify-between gap-4">
-            <button type="button" className="btn btn-ghost" onClick={onBack}>
+            <button
+                type="button"
+                className="btn btn-ghost text-base"
+                onClick={onBack}
+            >
                 {t('common:buttons.back')}
             </button>
             <div className="flex items-center gap-3">
                 <button
                     type="button"
                     data-testid="btnCancelRemoteProjectImport"
-                    className="btn btn-ghost"
+                    className="btn btn-ghost text-base"
                     onClick={onCancel}
                 >
                     {t('common:buttons.cancel')}
@@ -132,7 +136,7 @@ export function RemoteProjectDestinationFooter({
                 <button
                     type="button"
                     data-testid="btnCloneRemoteProjectRepository"
-                    className="btn btn-primary"
+                    className="btn btn-primary text-base"
                     disabled={!canStart}
                     onClick={onStartImport}
                 >

@@ -22,7 +22,7 @@
     "behavior": {
         "trayAvailability": {
             "warning": "Nie udało się potwierdzić obsługi zasobnika systemowego w tej sesji. Godot Launcher pozostanie widoczny lub zakończy działanie zamiast się ukryć.",
-            "closeFallback": "Zamknięcie do zasobnika systemowego pozostawi launcher widoczny."
+            "closeFallback": "Zamknięcie do zasobnika systemowego pozostawi Godot Launcher widoczny."
         },
         "projects": {
             "title": "Projekty",
@@ -136,14 +136,14 @@
         },
         "disableConfirm": {
             "title": "Wyłączyć {{editor}}?",
-            "usage": "Skonfigurowane projekty: {{count}}. Projekty .NET: {{dotnetCount}}.",
+            "usage": "<Projects>Skonfigurowane projekty: <Count>{{count}}</Count></Projects><Dotnet>Projekty .NET: <Count>{{dotnetCount}}</Count></Dotnet>",
             "existingProjects": "Istniejące projekty zachowają ten edytor i bieżące ustawienia edytora Godot. Mogą nadal go używać, dopóki pozostaje zainstalowany.",
             "newProjects": "Edytor nie będzie dostępny dla nowych wyborów ani automatycznego wykrywania projektów.",
             "disable": "Wyłącz"
         }
     },
     "tools": {
-        "overview": "Launcher szybko sprawdza pamiętane ścieżki narzędzi, gdy ta karta otrzymuje fokus. Wykonaj pełne ponowne skanowanie, jeśli zmieniłeś instalacje na tym systemie.",
+        "overview": "Godot Launcher szybko sprawdza pamiętane ścieżki narzędzi, gdy ta karta otrzymuje fokus. Wykonaj pełne ponowne skanowanie, jeśli zmieniłeś instalacje na tym systemie.",
         "actions": {
             "refresh": "Ponownie przeskanuj narzędzia",
             "scanning": "Ponowne skanowanie...",
@@ -232,8 +232,12 @@
         "loadError": "Nie udało się wczytać połączeń.",
         "genericDescription": "Połącz tę usługę, aby używać jej w Godot Launcher.",
         "flow": {
+            "reauthoriseDescription": "Wybierz konto do ponownej autoryzacji, a następnie kontynuuj w przeglądarce, aby przywrócić jego połączenie z GitHub.",
+            "connectAnotherAccount": "Połącz inne konto",
             "importDescription": "Połącz GitHub, aby przeglądać i importować swoje repozytoria.",
             "addAccount": "Dodaj konto lub organizację",
+            "missingAccount": "Nie widzisz potrzebnego konta lub organizacji?",
+            "manageGitHubAccess": "Zarządzaj dostępem na GitHub",
             "title": "Połącz GitHub",
             "reconnect": "Połącz GitHub ponownie",
             "description": "Połącz GitHub, aby kontynuować. Twoja bieżąca praca zostanie zachowana.",
@@ -286,7 +290,7 @@
             "chooseConnection": "Wybierz połączenia",
             "chooseConnectionDescription": "Wybierz co najmniej jedną istniejącą instalację GitHub App lub zainstaluj aplikację w nowym miejscu.",
             "finishSetup": "Dokończ konfigurację w GitHub",
-            "finishSetupDescription": "Dokończ instalację w przeglądarce. Możesz tu wrócić, gdy Launcher nadal czeka.",
+            "finishSetupDescription": "Dokończ instalację w przeglądarce. Możesz tu wrócić, gdy Godot Launcher nadal czeka.",
             "installations": "Instalacje aplikacji",
             "noInstallations": "To połączenie nie ma jeszcze dostępnych instalacji aplikacji.",
             "organization": "Organizacja",

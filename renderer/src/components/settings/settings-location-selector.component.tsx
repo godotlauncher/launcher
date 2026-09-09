@@ -1,9 +1,10 @@
 import type { UserPreferences } from '@shared/contracts';
 import { useState } from 'react';
-import { appBridge } from '../../bridge.ts';
-import { usePreferences } from '../../hooks/usePreferences';
-import { PathField } from '../ui/pathField.component';
-import { WaitingForDialogOverlay } from '../waitingForDialogOverlay.component';
+import { usePreferences } from '../../hooks/preferences.hook';
+import { appBridge } from '../../renderer.bridge.ts';
+import { PathField } from '../ui/path-field.component';
+import { WaitingForDialogOverlay } from '../waiting-for-dialog-overlay.component';
+import { SettingsSection } from './settings-section.component';
 
 type LocationPreferenceKey = 'projects_location' | 'install_location';
 
@@ -97,15 +98,12 @@ export const SettingsLocationSelector: React.FC<
     return (
         <>
             {dialogOpen && <WaitingForDialogOverlay message={waitingMessage} />}
-            <div className="flex min-w-0 flex-col gap-4">
-                <div className="flex flex-col">
-                    <h1 data-testid={headerTestId} className="font-bold">
-                        {title}
-                    </h1>
-                    <p data-testid={descriptionTestId} className="text-sm">
-                        {description}
-                    </p>
-                </div>
+            <SettingsSection
+                title={title}
+                description={description}
+                titleTestId={headerTestId}
+                descriptionTestId={descriptionTestId}
+            >
                 <div className="min-w-0 max-w-full">
                     <PathField
                         id={pathTestId}
@@ -120,10 +118,9 @@ export const SettingsLocationSelector: React.FC<
                         browseTestId={browseTestId}
                         browseLabel={browseLabel}
                         browseText={browseLabel}
-                        regularText
                     />
                 </div>
-            </div>
+            </SettingsSection>
         </>
     );
 };

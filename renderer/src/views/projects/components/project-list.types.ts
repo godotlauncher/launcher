@@ -5,7 +5,7 @@ import type {
 } from '@shared/contracts';
 import type React from 'react';
 import type { ProjectViewMode } from '../project-view.types';
-import type { ProjectSections } from '../projectsView.model';
+import type { ProjectSections } from '../projects-view.model';
 
 export type ProjectSectionKey = 'new' | 'pinned' | 'recents';
 
@@ -14,6 +14,8 @@ export type ProjectsListProps = {
     sections: ProjectSections;
     projectGitHubUrls: ReadonlyMap<string, string>;
     loading: boolean;
+    searchQuery?: string;
+    onClearSearch?: () => void;
     locale: string;
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];

@@ -12,14 +12,15 @@
             "description": "Przenieś istniejącą pracę do Launchera lub zacznij coś nowego.",
             "newProject": {
                 "heading": "Nowy projekt",
-                "description": "Wybierz wersję Godot.\nLauncher pobierze ją, jeśli będzie potrzebna.",
+                "description": "Wybierz wersję Godot.\nGodot Launcher pobierze ją, jeśli będzie potrzebna.",
                 "action": "Utwórz projekt"
             },
             "existingProject": {
                 "heading": "Istniejący projekt",
-                "description": "Launcher znajduje wersję Godot\npotrzebną dla każdego projektu.",
+                "description": "Godot Launcher znajduje wersję Godot\npotrzebną dla każdego projektu.",
                 "fromComputer": "Z tego komputera",
                 "fromGitHub": "Z GitHub",
+                "fromPublicGit": "Z publicznego adresu URL Git",
                 "gitRequired": "Git jest wymagany, aby importować z GitHub"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "Wybierz plik projektu",
         "godotProject": "Projekt Godot",
         "editorResolution": {
+            "official": "Oficjalny",
             "title": "Wymagana wersja edytora",
             "message": "Wybierz edytor Godot, którego chcesz użyć w tym projekcie.",
             "version": "Wersja",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "To repozytorium używa podmodułów Git",
-                "description": "Launcher może zainicjalizować anonimowe publiczne podmoduły HTTPS przed ponownym skanowaniem. Operacja zatrzyma się, jeśli podmoduł jest prywatny lub używa nieobsługiwanego adresu URL.",
+                "description": "Godot Launcher może zainicjalizować anonimowe publiczne podmoduły HTTPS przed ponownym skanowaniem. Operacja zatrzyma się, jeśli podmoduł jest prywatny lub używa nieobsługiwanego adresu URL.",
                 "preparing": "Przygotowywanie inicjalizacji podmodułów...",
                 "initialise": "Zainicjalizuj podmoduły",
                 "continueWithoutSubmodules": "Kontynuuj bez podmodułów",
@@ -236,6 +238,7 @@
             },
             "registration": {
                 "preserved": "Repozytorium zostało pomyślnie sklonowane i zostało przechowywane w tej lokalizacji.",
+                "cloneKeptAt": "Klon zachowany w",
                 "editorsQueued": "Wybrane edytory dodano do kolejki w sekcji Instalacje. Projekty zostaną automatycznie zaktualizowane, gdy edytory będą gotowe.",
                 "adding": "Dodawanie projektów: {{current}}/{{total}}",
                 "complete": "Import projektów zakończony",

@@ -18,8 +18,6 @@ export type RemoteProjectImportStep =
     | 'initialising-submodules'
     | 'review'
     | 'cancel-review'
-    | 'checking-projects'
-    | 'editors-required'
     | 'registering-projects'
     | 'registration-complete';
 

@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "创建自定义编辑器清单"
     },
     "search": {
+        "noResults": "没有匹配的编辑器",
+        "noResultsHint": "没有已安装的编辑器与“{{query}}”匹配。请尝试其他版本或清除搜索。",
+        "clear": "清除搜索",
         "placeholder": "搜索"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Godot Launcher 编辑器清单",
         "waitingForDialog": "正在等待对话框...",
         "replace": {
+            "action": "替换",
             "title": "替换自定义编辑器？",
             "message": "已注册此版本的自定义编辑器。",
             "versionLabel": "版本",
-            "detail": "替换后，启动器记录将更新为使用所选清单。不会删除你的编辑器文件。"
+            "detail": "替换后，Godot Launcher 记录将更新为使用所选清单。不会删除你的编辑器文件。"
         },
         "drop": {
             "title": "拖放清单以添加自定义编辑器",

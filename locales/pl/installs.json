@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "Utwórz manifest edytora niestandardowego"
     },
     "search": {
+        "noResults": "Brak pasujących edytorów",
+        "noResultsHint": "Żaden zainstalowany edytor nie pasuje do „{{query}}”. Spróbuj innej wersji lub wyczyść wyszukiwanie.",
+        "clear": "Wyczyść wyszukiwanie",
         "placeholder": "Szukaj"
     },
     "table": {
@@ -48,6 +51,7 @@
         "manifestFilterName": "Manifest edytora Godot Launcher",
         "waitingForDialog": "Oczekiwanie na okno dialogowe...",
         "replace": {
+            "action": "Zastąp",
             "title": "Zastąpić edytor niestandardowy?",
             "message": "Edytor niestandardowy z tą wersją jest już zarejestrowany.",
             "versionLabel": "Wersja",

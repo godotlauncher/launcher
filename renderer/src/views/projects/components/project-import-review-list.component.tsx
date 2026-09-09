@@ -8,9 +8,9 @@ import {
     TriangleAlert,
 } from 'lucide-react';
 import type { ReactNode, RefObject } from 'react';
-import { CopyBadge } from '../../../components/ui/copyBadge.component';
+import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import { EditableTextField } from '../../../components/ui/editable-text-field.component';
-import { SelectField } from '../../../components/ui/selectField.component';
+import { SelectField } from '../../../components/ui/select-field.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { TooltipIconButton } from '../../../components/ui/tooltip-icon-button.component';
 import type { LocalImportRow } from '../local-import-editor.model';
@@ -64,14 +64,14 @@ export function ProjectImportReviewList({
     onEditorChange,
 }: ProjectImportReviewListProps) {
     return (
-        <ul className="overflow-hidden rounded-lg border border-base-300">
+        <ul className="flex flex-col gap-2 p-1 text-base">
             {selectAll && (
-                <li className="border-b border-base-300 bg-base-200/70 px-4 py-3">
-                    <label className="flex items-center gap-4 text-base">
+                <li className="rounded-md bg-base-200/70 px-3 py-3">
+                    <label className="flex items-center gap-4">
                         <input
                             ref={selectAll.inputRef}
                             type="checkbox"
-                            className="checkbox checkbox-primary checkbox-sm"
+                            className="checkbox checkbox-sm"
                             checked={selectAll.checked}
                             onChange={(event) =>
                                 selectAll.onChange(event.target.checked)
@@ -113,28 +113,22 @@ export function ProjectImportReviewList({
                               : status === 'invalid'
                                 ? CircleX
                                 : TriangleAlert;
-                const statusTone =
-                    item.conflict || status === 'missing'
-                        ? 'warning'
-                        : status === 'download'
-                          ? 'info'
-                          : 'default';
 
                 return (
                     <li
                         key={item.id}
-                        className="grid min-h-[88px] grid-cols-[1.25rem_minmax(0,1fr)] items-start gap-x-4 gap-y-2 border-b border-base-300 px-4 py-3 last:border-b-0 hover:bg-base-content/[0.03] md:grid-cols-[1.25rem_minmax(14rem,1fr)_max-content_minmax(13rem,16rem)_1.5rem]"
+                        className="grid min-h-[88px] grid-cols-[1.25rem_minmax(0,1fr)] items-start gap-x-4 gap-y-2 rounded-md bg-base-content/2 px-3 py-3 hover:bg-base-content/5 md:grid-cols-[1.25rem_minmax(10rem,1fr)_minmax(12rem,20rem)_1.5rem]"
                     >
                         <input
                             type="checkbox"
-                            className="checkbox checkbox-primary checkbox-sm col-start-1 row-start-1 mt-0.5 shrink-0"
+                            className="checkbox checkbox-sm col-start-1 row-start-1 mt-1 shrink-0"
                             checked={item.selected}
                             aria-label={`${t('addProject.conflicts.include')}: ${item.name || row.projectFilePath}`}
                             onChange={(event) =>
                                 onToggle(item.id, event.target.checked)
                             }
                         />
-                        <div className="col-start-2 row-start-1 min-w-0">
+                        <div className="col-start-2 row-start-1 flex min-w-0 flex-col items-start gap-2">
                             <EditableTextField
                                 value={item.name}
                                 draft={draft}
@@ -151,83 +145,91 @@ export function ProjectImportReviewList({
                                     !!row.error
                                 }
                                 invalid={item.conflict === 'name'}
-                                className="pl-2"
-                                valueClassName={
-                                    !item.selected
-                                        ? 'text-base-content/45'
-                                        : item.conflict === 'name'
-                                          ? 'text-error'
-                                          : undefined
-                                }
+                                className="pl-3"
                                 onEdit={() => onEdit(item.id)}
                                 onDraftChange={onDraftChange}
                                 onSave={() => onSave(item.id)}
                                 onCancel={onCancel}
                             />
+                            <CopyBadge
+                                value={item.path}
+                                label={t('common:buttons.copyPath')}
+                                copiedLabel={t('common:success')}
+                                className={
+                                    !item.selected ? 'opacity-45' : undefined
+                                }
+                            />
                         </div>
-                        {request && (
-                            <div className="col-start-2 row-start-2 flex min-w-0 items-center text-sm text-base-content/50 md:col-start-3 md:row-start-1 md:pt-2">
-                                <span className="whitespace-nowrap">
-                                    {t(
-                                        request.kind === 'exact'
-                                            ? 'addProject.editorReview.exact'
-                                            : 'addProject.editorReview.requested',
-                                    )}
-                                    :{' '}
-                                    {request.kind === 'exact'
-                                        ? request.version
-                                        : request.base_version}
-                                </span>
-                                <TooltipIconButton
-                                    label={`${t('addProject.editorReview.details')}: ${item.name}`}
-                                    placement="top"
-                                    className="border-0 text-base-content/50 hover:border-transparent hover:text-base-content/70"
-                                    tip={
-                                        <div className="text-left">
-                                            <p className="font-medium">
-                                                {t(
-                                                    'addProject.editorReview.details',
-                                                )}
-                                            </p>
-                                            {request.kind === 'exact' && (
+                        <div className="col-start-2 row-start-2 flex min-w-0 flex-col gap-1 md:col-start-3 md:row-start-1">
+                            {request && (
+                                <div className="flex min-w-0 items-center text-sm text-base-content/60">
+                                    <span className="min-w-0 break-words">
+                                        {t(
+                                            request.kind === 'exact'
+                                                ? 'addProject.editorReview.exact'
+                                                : 'addProject.editorReview.requested',
+                                        )}
+                                        :{' '}
+                                        {request.kind === 'exact'
+                                            ? request.version
+                                            : request.base_version}
+                                        <span>
+                                            {' · '}
+                                            {t(
+                                                `installEditor:table.${request.flavor}`,
+                                            )}
+                                        </span>
+                                    </span>
+                                    <TooltipIconButton
+                                        label={`${t('addProject.editorReview.details')}: ${item.name}`}
+                                        placement="top"
+                                        tip={
+                                            <div className="text-left">
                                                 <p>
                                                     {t(
-                                                        'addProject.editorResolution.version',
+                                                        'addProject.editorReview.details',
                                                     )}
-                                                    : {request.version}
                                                 </p>
-                                            )}
-                                            <p>
-                                                {t(
-                                                    'addProject.editorResolution.channel',
+                                                {request.kind === 'exact' && (
+                                                    <p>
+                                                        {t(
+                                                            'addProject.editorResolution.version',
+                                                        )}
+                                                        : {request.version}
+                                                    </p>
                                                 )}
-                                                : {request.channel}
-                                            </p>
-                                            <p>
-                                                {t(
-                                                    'addProject.editorResolution.flavor',
-                                                )}
-                                                : {request.flavor}
-                                            </p>
-                                            <p>
-                                                {t(
-                                                    'addProject.editorResolution.baseVersion',
-                                                )}
-                                                : {request.base_version}
-                                            </p>
-                                        </div>
-                                    }
-                                >
-                                    <CircleHelp size={13} aria-hidden="true" />
-                                </TooltipIconButton>
-                            </div>
-                        )}
-                        <div className="col-start-2 row-start-3 min-w-0 md:col-start-4 md:row-start-1">
+                                                <p>
+                                                    {t(
+                                                        'addProject.editorResolution.channel',
+                                                    )}
+                                                    : {request.channel}
+                                                </p>
+                                                <p>
+                                                    {t(
+                                                        'addProject.editorResolution.flavor',
+                                                    )}
+                                                    : {request.flavor}
+                                                </p>
+                                                <p>
+                                                    {t(
+                                                        'addProject.editorResolution.baseVersion',
+                                                    )}
+                                                    : {request.base_version}
+                                                </p>
+                                            </div>
+                                        }
+                                    >
+                                        <CircleHelp
+                                            size={13}
+                                            aria-hidden="true"
+                                        />
+                                    </TooltipIconButton>
+                                </div>
+                            )}
                             <SelectField
+                                size="sm"
                                 id={`import-editor-${item.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`}
                                 ariaLabel={`${t('editProject.godotEditor.title')}: ${item.name}`}
-                                compact
-                                regularText
                                 fitOptionContent
                                 disabled={
                                     !item.selected ||
@@ -241,7 +243,9 @@ export function ProjectImportReviewList({
                                 }
                                 options={row.editorActions.map((candidate) => ({
                                     value: candidate.id,
-                                    selectedLabel: candidate.version,
+                                    selectedLabel: candidate.version
+                                        ? `${candidate.version}${candidate.flavor ? ` · ${t(`installEditor:table.${candidate.flavor}`)}` : ''}`
+                                        : undefined,
                                     label:
                                         candidate.kind === 'missing'
                                             ? t(
@@ -252,38 +256,26 @@ export function ProjectImportReviewList({
                                                       ? 'addProject.editorResolution.download'
                                                       : 'addProject.editorResolution.useFallback',
                                                   {
-                                                      version: `${candidate.name && candidate.name !== candidate.version ? `${candidate.name} (${candidate.version})` : (candidate.version ?? '')}${candidate.recommended ? ` - ${t('welcome:onboarding.setup.recommended')}` : ''}`,
+                                                      version: `${candidate.name && candidate.name !== candidate.version ? `${candidate.name} (${candidate.version})` : (candidate.version ?? '')}${candidate.flavor ? ` · ${t(`installEditor:table.${candidate.flavor}`)}` : ''}${candidate.recommended ? ` - ${t('welcome:onboarding.setup.recommended')}` : ''}`,
                                                   },
                                               ),
                                 }))}
                             />
+                            {item.secondaryControl}
                         </div>
                         <Tooltip
                             tip={statusLabel}
                             placement="top"
-                            tone={statusTone}
+                            tone="default"
                             role="img"
                             ariaLabel={statusLabel}
-                            className={`col-start-1 row-start-2 size-6 items-center justify-center rounded-full md:col-start-5 md:row-start-1 md:mt-1.5 ${item.conflict || status === 'missing' ? 'text-warning' : !item.selected ? 'text-base-content/45' : status === 'download' ? 'text-info' : 'text-success'}`}
+                            className={`col-start-1 row-start-2 size-6 items-center justify-center md:col-start-4 md:row-start-1 md:self-center ${!item.selected ? 'text-base-content/60' : item.conflict || status === 'missing' ? 'text-warning' : status === 'download' ? 'text-info' : 'text-success'}`}
                         >
-                            <StatusIcon
-                                size={18}
-                                strokeWidth={2.2}
-                                aria-hidden="true"
-                            />
+                            <StatusIcon size={18} aria-hidden="true" />
                         </Tooltip>
                         <span role="status" className="sr-only">
                             {statusLabel}
                         </span>
-                        <div className="col-start-2 row-start-4 flex min-w-0 flex-wrap items-center gap-2 md:col-end-5 md:row-start-2">
-                            <CopyBadge
-                                value={item.path}
-                                label={t('common:buttons.copyPath')}
-                                copiedLabel={t('common:success')}
-                                className={`self-start bg-base-200/70 hover:bg-base-200 ${!item.selected ? 'opacity-45' : ''}`}
-                            />
-                            {item.secondaryControl}
-                        </div>
                     </li>
                 );
             })}

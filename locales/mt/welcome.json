@@ -43,8 +43,8 @@
     },
     "customizeBehavior": {
         "trayAvailabilityWarning": "L-appoġġ għat-trej tas-sistema ma setax jiġi kkonfermat għal din is-sessjoni. Godot Launcher se jibqa' viżibbli jew jagħlaq minflok jinħeba.",
-        "trayCloseFallback": "L-għeluq fit-trej tas-sistema se jħalli l-launcher viżibbli.",
-        "trayStartFallback": "Il-bidu fit-trej se jiftaħ il-launcher b'mod normali.",
+        "trayCloseFallback": "L-għeluq fit-trej tas-sistema se jħalli Godot Launcher viżibbli.",
+        "trayStartFallback": "Il-bidu fit-trej se jiftaħ Godot Launcher b'mod normali.",
         "afterLaunching": "Wara li Tibda Proġett",
         "nothing": "Xejn",
         "minimize": "Imminimizza",
@@ -82,7 +82,7 @@
     "windowsStep": {
         "title": "Nota Windows",
         "intro": "Minn verżjoni 1.4.0, Godot Launcher jista' joħloq <code>symlinks</code> għall-editur għal kull proġett. Biex inżommu s-setup sempliċi, issa awtomatikament nużaw kopji lokali. Tista' tippermetti symlinks kull meta trid minn <strong>Settings → Behavior → Editor symlinks</strong> meta trid użu iktar baxx tad-disk.",
-        "change1": "Il-ħolqien ta' symbolic links fuq Windows jeħtieġ privileġġi ta' amministratur u eżekuzzjoni ta' kmandi elevati. Il-launcher issa jelevah il-permessi biss meta joħloq symlinks.",
+        "change1": "Il-ħolqien ta' symbolic links fuq Windows jeħtieġ privileġġi ta' amministratur u eżekuzzjoni ta' kmandi elevati. Godot Launcher issa jelevah il-permessi biss meta joħloq symlinks.",
         "change2": "Tara prompt UAC biss jekk m'intix <code>Amministratur</code> fuq il-PC tiegħek u jekk <code>Developer Mode</code> mhuwiex attivat.",
         "change3": "Lest biex tipprova symlinks? Aktiva <strong>Editor symlinks</strong> fis-Settings meta tkun lest għall-prompts ta' elevazzjoni okkażjonali.",
         "dotnetNote": "NOTA: Jekk qed tuża edituri bbażati fuq .NET, jeħtieġ tinstalla l-.NET SDK minn <ButtonLink>Microsoft .NET website</ButtonLink> <Icon />"
@@ -96,72 +96,72 @@
     },
     "onboarding": {
         "steps": {
-            "welcome": "Welcome",
-            "appearance": "Appearance",
-            "setup": "Setup",
-            "preferences": "Preferences"
+            "welcome": "Merħba",
+            "appearance": "Dehra",
+            "setup": "Konfigurazzjoni",
+            "preferences": "Preferenzi"
         },
-        "progressLabel": "Onboarding progress",
-        "reassurance": "You can change these options later in Settings.",
+        "progressLabel": "Progress tal-konfigurazzjoni inizjali",
+        "reassurance": "Tista' tibdel dawn l-għażliet aktar tard fis-Settings.",
         "welcome": {
-            "title": "Welcome",
-            "description": "Set up the launcher for the way you work.",
-            "expectation": "In a few short steps, choose where projects and editors are stored, connect a code editor, and set the launch behavior you prefer.",
-            "benefitsLabel": "What the launcher helps you do",
-            "officialAndCustomEditors": "Install and manage official or custom Godot editors.",
-            "projectSettings": "Keep editor choices and settings separate for each project.",
-            "codeEditorIntegration": "Open project files in a detected code editor."
+            "title": "Merħba",
+            "description": "Ikkonfigura Godot Launcher skont kif taħdem.",
+            "expectation": "Fi ftit passi qosra, agħżel fejn jinħażnu l-proġetti u l-edituri, qabbad editur tal-kodiċi, u agħżel l-imġiba li tippreferi meta tiftaħ proġett.",
+            "benefitsLabel": "Kif jgħinek Godot Launcher",
+            "officialAndCustomEditors": "Installa u mmaniġġja edituri uffiċjali jew personalizzati ta' Godot.",
+            "projectSettings": "Żomm l-għażla tal-editur u s-settings separati għal kull proġett.",
+            "codeEditorIntegration": "Iftaħ il-fajls tal-proġett f'editur tal-kodiċi identifikat."
         },
         "appearance": {
-            "title": "Choose your appearance",
-            "description": "Choose how the launcher looks. Your selection is applied immediately.",
-            "preview": "You can change the appearance later in Settings."
+            "title": "Agħżel id-dehra",
+            "description": "Agħżel kif jidher Godot Launcher. L-għażla tiegħek tiġi applikata minnufih.",
+            "preview": "Tista' tibdel id-dehra aktar tard fis-Settings."
         },
         "setup": {
-            "title": "Choose your setup",
-            "description": "Confirm the default locations and optionally choose a detected code editor.",
-            "recommended": "Recommended",
-            "selectProjectsLocation": "Choose the projects location",
-            "selectEditorLocation": "Choose the editors location",
-            "browseProjectsLocation": "Browse for a projects location",
-            "browseEditorLocation": "Browse for an editors location",
-            "codeEditor": "Default code editor",
-            "codeEditorHelp": "Used when opening scripts and files from the launcher. You can change this later.",
-            "noCodeEditor": "None",
-            "detectingCodeEditors": "Detecting installed code editors...",
-            "codeEditorDetectionFailed": "Code editors could not be detected. You can configure one later in Settings.",
-            "detected": "Detected",
-            "advancedOptions": "Advanced options",
+            "title": "Agħżel il-konfigurazzjoni",
+            "description": "Ikkonferma l-postijiet predefiniti u, jekk trid, agħżel editur tal-kodiċi identifikat.",
+            "recommended": "Rakkomandat",
+            "selectProjectsLocation": "Agħżel il-post tal-proġetti",
+            "selectEditorLocation": "Agħżel il-post tal-edituri",
+            "browseProjectsLocation": "Fittex post għall-proġetti",
+            "browseEditorLocation": "Fittex post għall-edituri",
+            "codeEditor": "Editur tal-kodiċi predefinit",
+            "codeEditorHelp": "Jintuża meta tiftaħ skripts u fajls minn Godot Launcher. Tista' tibdlu aktar tard.",
+            "noCodeEditor": "Xejn",
+            "detectingCodeEditors": "Qed jiġu identifikati l-edituri tal-kodiċi installati...",
+            "codeEditorDetectionFailed": "L-edituri tal-kodiċi ma setgħux jiġu identifikati. Tista' tikkonfigura wieħed aktar tard fis-Settings.",
+            "detected": "Identifikat",
+            "advancedOptions": "Għażliet avvanzati",
             "platformNotice": {
-                "windows": "By default, Windows keeps a local editor copy for each project. Advanced options can enable editor symlinks to reduce disk use.",
-                "macos": "macOS keeps a local editor copy for each project because launching editors through symlinks can be unreliable.",
-                "linux": "Linux uses editor symlinks for projects to reduce disk use while keeping project settings separate."
+                "windows": "B'mod predefinit, Windows iżomm kopja lokali tal-editur għal kull proġett. Fl-għażliet avvanzati tista' tattiva links simboliċi għall-edituri biex tnaqqas l-użu tad-diska.",
+                "macos": "macOS iżomm kopja lokali tal-editur għal kull proġett għax il-ftuħ tal-edituri permezz ta' links simboliċi jista' ma jkunx affidabbli.",
+                "linux": "Linux juża links simboliċi għall-edituri tal-proġetti biex inaqqas l-użu tad-diska filwaqt li jżomm is-settings tal-proġetti separati."
             }
         },
         "preferences": {
-            "title": "Choose your preferences",
-            "description": "Set what the launcher does after opening a project and when your computer starts.",
-            "afterLaunching": "After launching a project",
-            "keepOpen": "Keep the launcher open",
-            "keepOpenHelp": "Leave the launcher window visible.",
-            "minimizeHelp": "Minimize the launcher window.",
-            "closeToTrayHelp": "Hide the launcher window and keep it available from the system tray.",
-            "closeToTrayFallback": "If a system tray is unavailable, the launcher stays open.",
-            "trayUnavailable": "System tray support could not be confirmed. Tray actions will safely fall back to keeping the launcher window open.",
-            "startupTitle": "Startup",
-            "startWithComputer": "Start the launcher when the computer starts",
-            "startInTray": "Start in the system tray",
-            "startInTrayFallback": "Falls back to a normal window if the tray is unavailable."
+            "title": "Agħżel il-preferenzi",
+            "description": "Agħżel x'jagħmel Godot Launcher wara li jiftaħ proġett u meta jinxtegħel il-kompjuter.",
+            "afterLaunching": "Wara li jinfetaħ proġett",
+            "keepOpen": "Żomm Godot Launcher miftuħ",
+            "keepOpenHelp": "Ħalli t-tieqa ta' Godot Launcher viżibbli.",
+            "minimizeHelp": "Imminimizza t-tieqa ta' Godot Launcher.",
+            "closeToTrayHelp": "Aħbi t-tieqa ta' Godot Launcher u żommu aċċessibbli mit-trej tas-sistema.",
+            "closeToTrayFallback": "Jekk it-trej tas-sistema ma jkunx disponibbli, Godot Launcher jibqa' miftuħ.",
+            "trayUnavailable": "L-appoġġ għat-trej tas-sistema ma setax jiġi kkonfermat. Minflok l-azzjonijiet tat-trej, it-tieqa ta' Godot Launcher tibqa' miftuħa.",
+            "startupTitle": "Meta jinxtegħel il-kompjuter",
+            "startWithComputer": "Iftaħ Godot Launcher meta jinxtegħel il-kompjuter",
+            "startInTray": "Ibda fit-trej tas-sistema",
+            "startInTrayFallback": "Jiftaħ f'tieqa normali jekk it-trej ma jkunx disponibbli."
         },
         "navigation": {
-            "finishInstall": "Finish and install an editor",
-            "finishProjects": "Finish and view projects"
+            "finishInstall": "Lesti u installa editur",
+            "finishProjects": "Lesti u ara l-proġetti"
         },
         "errors": {
-            "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
-            "absolutePath": "Enter an absolute folder path.",
-            "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
-            "finish": "Onboarding could not be completed. Review your choices and try again."
+            "directoryPicker": "L-għażla tal-folder ma setgħetx tinfetaħ. Daħħal mogħdija assoluta minflok.",
+            "absolutePath": "Daħħal mogħdija assoluta għal folder.",
+            "saveSetup": "Il-konfigurazzjoni ma setgħetx tiġi salvata. Il-preferenzi preċedenti tiegħek ma nbidlux.",
+            "finish": "Il-konfigurazzjoni inizjali ma setgħetx titlesta. Iċċekkja l-għażliet tiegħek u erġa' pprova."
         }
     }
 }

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { formatRelativeTime } from '../../../i18n/relativeTime';
+import { formatRelativeTime } from '../../../i18n/relative-time.util';
 import { ProjectActions } from './project-actions.component';
 import { ProjectBadges } from './project-badges.component';
 import { ProjectCard } from './project-card.component';
@@ -61,8 +61,6 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     const editorMissing =
         !releaseInstalled ||
         (!project.valid && project.invalid_reason === 'missing_editor');
-    const hasWarning =
-        !project.valid || !releaseInstalled || codeEditorUnavailable;
     const launchDisabled =
         !project.valid || !releaseInstalled || editorDownloading;
     const versionLabel = `${project.version}${project.release.mono ? ' (.NET)' : ''}`;
@@ -121,17 +119,13 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`relative overflow-hidden ${compact ? 'flex min-h-[68px] items-center border-b border-base-300 px-3 py-1.5 pl-5 hover:bg-base-content/[0.03]' : 'rounded-lg border border-base-300 bg-base-200/35 p-4 pl-5 shadow-sm hover:bg-base-200/55'} transition-colors motion-reduce:transition-none hover:border-base-content/20 ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
+            className={`relative overflow-hidden rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
             data-project-view={viewMode}
             data-project-path={project.path}
             data-project-section={sectionKey}
         >
-            <div
-                className={`absolute inset-y-3 left-3 w-1 rounded-full ${hasWarning ? 'bg-warning' : 'bg-base-content/15'}`}
-                aria-hidden="true"
-            />
             {busyProjects.includes(project.path) && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/55">
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-base-100">
                     <div className="loading loading-bars" />
                 </div>
             )}

@@ -10,14 +10,14 @@ vi.mock('react-router', () => ({
     useNavigate: () => vi.fn(),
 }));
 
-vi.mock('../../../hooks/usePreferences', () => ({
+vi.mock('../../../hooks/preferences.hook', () => ({
     usePreferences: () => ({
         platform: 'linux',
         preferences: { projects_location: '/projects' },
     }),
 }));
 
-vi.mock('../../../hooks/useProjects', () => ({
+vi.mock('../../../hooks/projects.hook', () => ({
     useProjects: () => ({
         addProject: vi.fn(),
         codeEditorSettings: [],
@@ -25,11 +25,11 @@ vi.mock('../../../hooks/useProjects', () => ({
     }),
 }));
 
-vi.mock('../../../hooks/useRelease', () => ({
+vi.mock('../../../hooks/release.hook', () => ({
     useRelease: () => ({ getReleaseInstallProgress: vi.fn() }),
 }));
 
-vi.mock('../../../bridge', () => ({
+vi.mock('../../../renderer.bridge', () => ({
     appBridge: { openDirectoryDialog: vi.fn() },
     projectsBridge: {
         cancelRemoteProjectImport: vi.fn(),

@@ -1,9 +1,9 @@
 import type { RemoteRepositorySummary } from '@shared/contracts';
 import type { TFunction } from 'i18next';
-import { Check, TriangleAlert } from 'lucide-react';
+import { Check, FolderGit2, SearchX, TriangleAlert } from 'lucide-react';
 import type { RefObject } from 'react';
-import { SearchField } from '../../../components/ui/searchField.component';
-import { TextField } from '../../../components/ui/textField.component';
+import { SearchField } from '../../../components/ui/search-field.component';
+import { TextField } from '../../../components/ui/text-field.component';
 import {
     getRemoteProjectPublicSourceFailureKey,
     getRemoteProjectRepositoryFailureKey,
@@ -13,6 +13,7 @@ import type {
     RemoteProjectPublicSourceFailure,
     RemoteProjectRepositoryFailure,
 } from '../remote-project-import.types';
+import { RemoteProjectAccessMenu } from './remote-project-access-menu.component';
 
 type RemoteProjectPublicSourceProps = {
     url: string;
@@ -36,7 +37,9 @@ export function RemoteProjectPublicSource({
 }: RemoteProjectPublicSourceProps) {
     return (
         <div className="flex flex-col gap-4">
-            <p>{t('addProject.remote.public.description')}</p>
+            <p className="text-base text-base-content/75">
+                {t('addProject.remote.public.description')}
+            </p>
             <TextField
                 inputRef={inputRef}
                 id="inputPublicGitRepositoryUrl"
@@ -59,7 +62,10 @@ export function RemoteProjectPublicSource({
                 }}
             />
             {error && (
-                <div className="alert alert-error alert-soft" role="alert">
+                <div
+                    className="alert alert-error alert-soft text-base"
+                    role="alert"
+                >
                     <TriangleAlert aria-hidden="true" size={18} />
                     <span>
                         {t(
@@ -88,6 +94,7 @@ type RemoteProjectRepositorySourceProps = {
     onRetry: () => void;
     onLoadMore: (cursor: string) => void;
     onOpenConnections: () => void;
+    onRefreshRepositories: () => Promise<void>;
 };
 
 /** Renders connected GitHub repository selection. */
@@ -107,12 +114,23 @@ export function RemoteProjectRepositorySource({
     onRetry,
     onLoadMore,
     onOpenConnections,
+    onRefreshRepositories,
 }: RemoteProjectRepositorySourceProps) {
     const connectionRequired = error === 'no-usable-connection';
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-4">
-            <p>{t('addProject.remote.github.description')}</p>
+            <p className="text-base text-base-content/75">
+                {t('addProject.remote.github.description')}
+            </p>
+            <div className="flex shrink-0 flex-wrap items-center gap-2 text-base text-base-content/75">
+                <span>{t('addProject.remote.github.missingRepository')}</span>
+                <RemoteProjectAccessMenu
+                    onAdd={onOpenConnections}
+                    onRefresh={onRefreshRepositories}
+                />
+            </div>
+
             {loading ? (
                 <div className="flex items-center gap-2" role="status">
                     <span className="loading loading-spinner loading-sm" />
@@ -128,7 +146,7 @@ export function RemoteProjectRepositorySource({
                     <div>
                         <button
                             type="button"
-                            className="btn btn-primary"
+                            className="btn btn-primary text-base"
                             onClick={onOpenConnections}
                         >
                             {t('addProject.remote.github.openConnections')}
@@ -137,7 +155,10 @@ export function RemoteProjectRepositorySource({
                 </div>
             ) : error ? (
                 <div className="flex flex-col gap-3">
-                    <div className="alert alert-error alert-soft" role="alert">
+                    <div
+                        className="alert alert-error alert-soft text-base"
+                        role="alert"
+                    >
                         <TriangleAlert aria-hidden="true" size={18} />
                         <span>
                             {t(
@@ -149,7 +170,7 @@ export function RemoteProjectRepositorySource({
                         {showConnectionsAction && (
                             <button
                                 type="button"
-                                className="btn btn-primary"
+                                className="btn btn-primary text-base"
                                 onClick={onOpenConnections}
                             >
                                 {t('addProject.remote.github.openConnections')}
@@ -157,7 +178,7 @@ export function RemoteProjectRepositorySource({
                         )}
                         <button
                             type="button"
-                            className="btn btn-neutral"
+                            className="btn btn-ghost text-base"
                             onClick={onRetry}
                         >
                             {t('common:buttons.retry')}
@@ -172,18 +193,18 @@ export function RemoteProjectRepositorySource({
                         )}
                         value={search}
                         onChange={onSearchChange}
-                        compact
                         focusOnMount
                         data-testid="inputGitHubRepositorySearch"
                     />
                     {cursor && (
-                        <p className="text-xs text-base-content/60">
+                        <p className="text-sm text-base-content/60">
                             {t('addProject.remote.github.loadedSearchOnly')}
                         </p>
                     )}
-                    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2 overflow-auto">
+                    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-1 pr-3 [scrollbar-gutter:stable]">
                         {repositories.length === 0 ? (
-                            <p>
+                            <p className="flex flex-col items-center gap-3 rounded-md bg-base-content/2 px-4 py-8 text-base text-base-content/60">
+                                <SearchX size={24} aria-hidden="true" />
                                 {t(
                                     search.trim()
                                         ? 'addProject.remote.github.empty'
@@ -218,14 +239,26 @@ export function RemoteProjectRepositorySource({
                                         onContinue(repository);
                                     }}
                                 >
-                                    <span className="min-w-0 flex-1 truncate font-medium">
+                                    <FolderGit2
+                                        size={20}
+                                        aria-hidden="true"
+                                        className="shrink-0 text-base-content/60"
+                                    />
+                                    <span className="min-w-0 flex-1 break-all">
                                         {repository.owner}/{repository.name}
                                     </span>
+                                    {repository.alreadyImported && (
+                                        <span className="text-sm text-base-content/60">
+                                            {t(
+                                                'addProject.remote.github.alreadyAdded',
+                                            )}
+                                        </span>
+                                    )}
                                     {selectedRepository?.repositoryRef ===
                                         repository.repositoryRef && (
                                         <Check
                                             aria-hidden="true"
-                                            className="h-5 w-5 shrink-0 stroke-primary"
+                                            className="h-5 w-5 shrink-0"
                                         />
                                     )}
                                 </button>
@@ -235,7 +268,7 @@ export function RemoteProjectRepositorySource({
                     {cursor && (
                         <button
                             type="button"
-                            className="btn btn-neutral self-start"
+                            className="btn btn-ghost text-base self-start"
                             disabled={loadingMore}
                             onClick={() => onLoadMore(cursor)}
                         >
@@ -247,17 +280,6 @@ export function RemoteProjectRepositorySource({
                     )}
                 </>
             )}
-            <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-base-300 pt-3 text-sm">
-                <span>{t('addProject.remote.github.missingRepository')}</span>
-                <button
-                    type="button"
-                    className="btn btn-ghost"
-                    disabled={loading || loadingMore}
-                    onClick={onOpenConnections}
-                >
-                    {t('addProject.remote.github.manageConnections')}
-                </button>
-            </div>
         </div>
     );
 }

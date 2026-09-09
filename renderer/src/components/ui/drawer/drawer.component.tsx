@@ -20,6 +20,7 @@ import {
     useState,
 } from 'react';
 import './drawer.component.css';
+import { OverlayTitle } from '../overlay-title.component';
 
 export type DrawerSide = 'left' | 'right' | 'top' | 'bottom';
 
@@ -91,19 +92,19 @@ const drawerSideClassNames: Record<
 > = {
     left: {
         container: 'items-stretch justify-start',
-        panel: 'h-full w-full max-w-md border-r border-base-300',
+        panel: 'h-full w-full max-w-md',
     },
     right: {
         container: 'items-stretch justify-end',
-        panel: 'h-full w-full max-w-md border-l border-base-300',
+        panel: 'h-full w-full max-w-md',
     },
     top: {
         container: 'items-start justify-stretch',
-        panel: 'w-full max-h-[85vh] border-b border-base-300',
+        panel: 'w-full max-h-[85vh]',
     },
     bottom: {
         container: 'items-end justify-stretch',
-        panel: 'w-full max-h-[85vh] border-t border-base-300',
+        panel: 'w-full max-h-[85vh]',
     },
 };
 
@@ -218,6 +219,11 @@ function focusFirstDrawerElement(panel: HTMLElement): void {
     focusDrawerElement(firstFocusableElement ?? panel);
 }
 
+/**
+ * Keeps Tab navigation inside the drawer, including from its static heading.
+ * @param event - Keyboard navigation event.
+ * @param panel - Open drawer panel.
+ */
 function trapFocusInDrawer(
     event: KeyboardEvent,
     panel: HTMLElement | null,
@@ -238,6 +244,14 @@ function trapFocusInDrawer(
     const lastFocusableElement =
         focusableElements[focusableElements.length - 1];
 
+    if (!focusableElements.includes(document.activeElement as HTMLElement)) {
+        event.preventDefault();
+        focusDrawerElement(
+            event.shiftKey ? lastFocusableElement : firstFocusableElement,
+        );
+        return;
+    }
+
     if (event.shiftKey && document.activeElement === firstFocusableElement) {
         event.preventDefault();
         lastFocusableElement.focus();
@@ -253,7 +267,7 @@ function trapFocusInDrawer(
 const DrawerHeader: React.FC<DrawerSlotProps> = ({ children, className }) => (
     <header
         className={clsx(
-            'flex shrink-0 items-start justify-between gap-3 border-b border-base-300 bg-base-200/60 px-5 py-4',
+            'flex shrink-0 items-start justify-between gap-3 bg-base-200/60 px-5 py-4',
             className,
         )}
     >
@@ -261,19 +275,17 @@ const DrawerHeader: React.FC<DrawerSlotProps> = ({ children, className }) => (
     </header>
 );
 
+/**
+ * Renders the shared outline-free initial focus target for a drawer.
+ * @param props - Drawer heading content and presentation.
+ */
 const DrawerTitle: React.FC<DrawerSlotProps> = ({ children, className }) => {
     const { titleId } = useDrawerContext('Drawer.Title');
 
     return (
-        <h2
-            id={titleId}
-            className={clsx(
-                'text-lg font-bold leading-tight text-base-content',
-                className,
-            )}
-        >
+        <OverlayTitle id={titleId} className={className}>
             {children}
-        </h2>
+        </OverlayTitle>
     );
 };
 
@@ -284,7 +296,7 @@ const DrawerBody: React.FC<DrawerBodyProps> = ({
 }) => (
     <div
         className={clsx(
-            'px-5 py-4 text-sm leading-6 text-base-content/80',
+            'px-5 py-4',
             scrollable ? 'min-h-0 flex-1 overflow-y-auto' : 'flex-1',
             className,
         )}
@@ -296,7 +308,7 @@ const DrawerBody: React.FC<DrawerBodyProps> = ({
 const DrawerFooter: React.FC<DrawerSlotProps> = ({ children, className }) => (
     <footer
         className={clsx(
-            'flex shrink-0 justify-end gap-2 border-t border-base-300 bg-base-200/40 px-5 py-4',
+            'flex shrink-0 justify-end gap-2 bg-base-200/40 px-5 py-4',
             className,
         )}
     >
@@ -319,7 +331,7 @@ const DrawerCloseButton: React.FC<DrawerCloseButtonProps> = ({
             type="button"
             aria-label={ariaLabel}
             onClick={createDrawerCloseButtonClickHandler(close, onClick)}
-            className={clsx('btn btn-ghost btn-square btn-sm', className)}
+            className={clsx('btn btn-ghost btn-square ', className)}
         >
             {children ?? <X aria-hidden="true" size={18} />}
         </button>
@@ -432,8 +444,11 @@ const DrawerRoot: React.FC<DrawerProps> = ({
         }
 
         return () => {
-            if (previouslyFocusedElementRef.current) {
-                focusDrawerElement(previouslyFocusedElementRef.current);
+            const focusTarget = previouslyFocusedElementRef.current;
+            if (focusTarget) {
+                focusTarget.setAttribute('data-suppress-tooltip-focus', '');
+                focusDrawerElement(focusTarget);
+                focusTarget.removeAttribute('data-suppress-tooltip-focus');
             }
             previouslyFocusedElementRef.current = null;
         };
@@ -454,7 +469,12 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 ) {
                     focusDrawerElement(initialFocusTarget);
                 } else {
-                    focusFirstDrawerElement(panelRef.current);
+                    const title = document.getElementById(titleId);
+                    if (title && panelRef.current.contains(title)) {
+                        focusDrawerElement(title);
+                    } else {
+                        focusFirstDrawerElement(panelRef.current);
+                    }
                 }
             }
         });
@@ -462,7 +482,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
         return () => {
             window.cancelAnimationFrame(animationFrameId);
         };
-    }, [initialFocusRef, open, shouldRender]);
+    }, [initialFocusRef, open, shouldRender, titleId]);
 
     useEffect(() => {
         if (!open || typeof window === 'undefined') {
@@ -518,7 +538,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
     return (
         <div
             className={clsx(
-                'fixed inset-0 z-50 flex overflow-hidden',
+                'modal modal-open fixed inset-0 z-50 flex overflow-hidden',
                 sideClassNames.container,
                 className,
             )}
@@ -528,7 +548,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 aria-label="Close drawer"
                 tabIndex={-1}
                 className={clsx(
-                    'drawer-backdrop absolute inset-0 border-0 bg-black/80 p-0',
+                    'drawer-backdrop absolute inset-0 p-0',
                     backdropClassName,
                 )}
                 data-state={drawerState}
@@ -544,7 +564,7 @@ const DrawerRoot: React.FC<DrawerProps> = ({
                 aria-label={ariaLabel ?? (hasTitle ? undefined : 'Drawer')}
                 aria-labelledby={!ariaLabel && hasTitle ? titleId : undefined}
                 className={clsx(
-                    'drawer-panel relative z-10 flex flex-col overflow-hidden bg-base-100 text-base-content shadow-2xl outline-none',
+                    'drawer-panel relative z-10 flex flex-col overflow-hidden bg-base-100',
                     sideClassNames.panel,
                     panelClassName,
                 )}

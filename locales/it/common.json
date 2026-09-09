@@ -1,5 +1,6 @@
 {
     "buttons": {
+        "copy": "Copia",
         "ok": "OK",
         "cancel": "Annulla",
         "continue": "Continua",

@@ -9,32 +9,31 @@ import type {
     ToolIntegrationSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
-import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import type { SettingsTab } from '../app.routes';
 import { GitHubConnectionDialog } from '../components/github-connection/github-connection-dialog.component';
-import { useAlerts } from '../hooks/useAlerts';
-import { useAppIntegrations } from '../hooks/useAppIntegrations';
-import { useCodeEditorIntegrations } from '../hooks/useCodeEditorIntegrations';
-import { usePreferences } from '../hooks/usePreferences';
-import { useProjects } from '../hooks/useProjects';
-import { useTheme } from '../hooks/useTheme';
-import { useToolIntegrations } from '../hooks/useToolIntegrations';
-import type { SettingsTab } from '../routes';
-import { getCodeEditorProjectUsage } from './projects/projectCodeEditorHealth.model';
+import { useAlerts } from '../hooks/alerts.hook';
+import { useAppIntegrations } from '../hooks/app-integrations.hook';
+import { useCodeEditorIntegrations } from '../hooks/code-editor-integrations.hook';
+import { usePreferences } from '../hooks/preferences.hook';
+import { useProjects } from '../hooks/projects.hook';
+import { useTheme } from '../hooks/theme.hook';
+import { useToolIntegrations } from '../hooks/tool-integrations.hook';
+import { getCodeEditorProjectUsage } from './projects/project-code-editor-health.model';
 import { AppIntegrationDisconnectConfirm } from './settings/components/app-integration-disconnect-confirm.component';
-import { AppearanceSettingsPanel } from './settings/components/appearanceSettingsPanel.component';
-import { BehaviorSettingsPanel } from './settings/components/behaviorSettingsPanel.component';
-import { CodeEditorSettingsPanel } from './settings/components/codeEditorSettingsPanel.component';
-import { ConnectionsSettingsPanel } from './settings/components/connectionsSettingsPanel.component';
-import { InstallsSettingsPanel } from './settings/components/installsSettingsPanel.component';
-import { ProjectsSettingsPanel } from './settings/components/projectsSettingsPanel.component';
-import { SettingsTabs } from './settings/components/settingsTabs.component';
-import { ToolsSettingsPanel } from './settings/components/toolsSettingsPanel.component';
-import { UpdatesSettingsPanel } from './settings/components/updatesSettingsPanel.component';
-import { CodeEditorSettingsDrawer } from './subViews/codeEditorSettingsDrawer.subview';
-import { GitToolSettingsDrawer } from './subViews/git-tool-settings-drawer.subview';
-import { ToolInstallationSettingsDrawer } from './subViews/tool-installation-settings-drawer.subview';
+import { AppearanceSettingsPanel } from './settings/components/appearance-settings-panel.component';
+import { BehaviorSettingsPanel } from './settings/components/behavior-settings-panel.component';
+import { CodeEditorSettingsPanel } from './settings/components/code-editor-settings-panel.component';
+import { ConnectionsSettingsPanel } from './settings/components/connections-settings-panel.component';
+import { InstallsSettingsPanel } from './settings/components/installs-settings-panel.component';
+import { ProjectsSettingsPanel } from './settings/components/projects-settings-panel.component';
+import { SettingsTabs } from './settings/components/settings-tabs.component';
+import { ToolsSettingsPanel } from './settings/components/tools-settings-panel.component';
+import { UpdatesSettingsPanel } from './settings/components/updates-settings-panel.component';
+import { CodeEditorSettingsDrawer } from './sub-views/code-editor-settings-drawer.subview';
+import { GitToolSettingsDrawer } from './sub-views/git-tool-settings-drawer.subview';
+import { ToolInstallationSettingsDrawer } from './sub-views/tool-installation-settings-drawer.subview';
 
 type SettingsViewProps = {
     activeTab?: SettingsTab;
@@ -217,42 +216,40 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     t('connections.disconnectConfirm.title', {
                         connection: accessTarget.login,
                     }),
-                    <p>
-                        {t('connections.disconnectConfirm.finalDescription')}
-                    </p>,
-                    [
-                        {
-                            key: 'github-final-disconnect',
-                            render: (close) => (
-                                <AppIntegrationDisconnectConfirm
-                                    close={close}
-                                    copy={{
-                                        checkbox: t(
-                                            'connections.disconnectConfirm.revokeAllDevices',
-                                        ),
-                                        checkedDetail: t(
-                                            'connections.disconnectConfirm.revokeDetail',
-                                        ),
-                                        checkedAction: t(
-                                            'connections.disconnectConfirm.revokeAction',
-                                        ),
-                                        uncheckedDetail: t(
-                                            'connections.disconnectConfirm.localOnlyWarning',
-                                        ),
-                                        uncheckedAction: t(
-                                            'connections.disconnectConfirm.localOnlyAction',
-                                        ),
-                                        failureDetail: t(
-                                            'connections.disconnectConfirm.failureDetail',
-                                        ),
-                                        cancel: t('common:buttons.cancel'),
-                                    }}
-                                    onConfirm={disconnect}
-                                />
-                            ),
-                        },
-                    ],
-                    <TriangleAlert className="stroke-warning" />,
+                    (renderLayout, close) => (
+                        <AppIntegrationDisconnectConfirm
+                            renderLayout={renderLayout}
+                            description={t(
+                                'connections.disconnectConfirm.finalDescription',
+                            )}
+                            close={close}
+                            copy={{
+                                checkbox: t(
+                                    'connections.disconnectConfirm.revokeAllDevices',
+                                ),
+                                checkedDetail: t(
+                                    'connections.disconnectConfirm.revokeDetail',
+                                ),
+                                checkedAction: t(
+                                    'connections.disconnectConfirm.revokeAction',
+                                ),
+                                uncheckedDetail: t(
+                                    'connections.disconnectConfirm.localOnlyWarning',
+                                ),
+                                uncheckedAction: t(
+                                    'connections.disconnectConfirm.localOnlyAction',
+                                ),
+                                failureDetail: t(
+                                    'connections.disconnectConfirm.failureDetail',
+                                ),
+                                cancel: t('common:buttons.cancel'),
+                            }}
+                            onConfirm={disconnect}
+                        />
+                    ),
+                    [],
+                    undefined,
+                    'warning',
                 );
                 return;
             }
@@ -264,17 +261,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <p>{t('connections.disconnectConfirm.description')}</p>,
                 [
                     {
-                        typeClass: 'btn-error',
-                        text: t('connections.actions.disconnect'),
-                        onClick: () => disconnect(false),
-                    },
-                    {
                         isCancel: true,
                         typeClass: 'btn-ghost',
                         text: t('common:buttons.cancel'),
                     },
+                    {
+                        typeClass: 'btn-error',
+                        text: t('connections.actions.disconnect'),
+                        onClick: () => disconnect(false),
+                    },
                 ],
-                <TriangleAlert className="stroke-warning" />,
+                undefined,
+                'warning',
             );
         },
         [
@@ -593,29 +591,49 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             t('codeEditors.disableConfirm.title', {
                 editor: currentSettings.integration.displayName,
             }),
-            <div className="flex flex-col gap-2">
-                <p>
-                    {t('codeEditors.disableConfirm.usage', {
-                        count: usage.count,
-                        dotnetCount: usage.dotnetCount,
-                    })}
-                </p>
-                <p>{t('codeEditors.disableConfirm.existingProjects')}</p>
+            <div className="flex flex-col gap-[12px]">
+                <div className="alert alert-warning alert-soft text-warning-content dark:text-warning">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        <Trans
+                            ns="settings"
+                            i18nKey="codeEditors.disableConfirm.usage"
+                            values={{
+                                count: usage.count,
+                                dotnetCount: usage.dotnetCount,
+                            }}
+                            components={{
+                                Projects: (
+                                    <span className="inline-flex items-center gap-2" />
+                                ),
+                                Dotnet: (
+                                    <span className="inline-flex items-center gap-2" />
+                                ),
+                                Count: (
+                                    <span className="badge badge-sm badge-warning font-semibold text-warning-content" />
+                                ),
+                            }}
+                        />
+                    </div>
+                </div>
                 <p>{t('codeEditors.disableConfirm.newProjects')}</p>
+                <p className="text-base-content/75">
+                    {t('codeEditors.disableConfirm.existingProjects')}
+                </p>
             </div>,
             [
-                {
-                    typeClass: 'btn-warning',
-                    text: t('codeEditors.disableConfirm.disable'),
-                    onClick: onConfirm,
-                },
                 {
                     isCancel: true,
                     typeClass: 'btn-ghost',
                     text: t('common:buttons.cancel'),
                 },
+                {
+                    typeClass: 'btn-warning',
+                    text: t('codeEditors.disableConfirm.disable'),
+                    onClick: onConfirm,
+                },
             ],
-            <TriangleAlert className="stroke-warning" />,
+            undefined,
+            'warning',
         );
 
         return true;
@@ -703,18 +721,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     );
 
     return (
-        <div className="flex flex-col h-full w-full p-1">
-            <div className="flex flex-col gap-2 w-full">
-                <div className="flex flex-row justify-between">
-                    <h1 data-testid="settingsTitle" className="text-2xl">
-                        {t('title')}
-                    </h1>
-                    <div className="flex gap-2"></div>
-                </div>
-            </div>
-            <div className="divider m-0 my-2"></div>
+        <div className="flex h-full min-h-0 w-full flex-col gap-[16px] p-1">
+            <h1
+                data-testid="settingsTitle"
+                className="shrink-0 pl-3 text-[20px] font-semibold"
+            >
+                {t('title')}
+            </h1>
 
-            <div className="flex flex-col gap-0 flex-1">
+            <div className="flex min-h-0 flex-1 flex-col">
                 <SettingsTabs
                     activeTab={activeTab}
                     t={t}
@@ -722,10 +737,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 />
 
                 <div
-                    className="flex flex-col py-6 flex-1 max-h-full border border-base-300 border-t-0 bg-base-100 rounded-box rounded-t-none overflow-hidden"
+                    className="flex min-h-0 flex-1 flex-col overflow-hidden bg-base-100"
                     data-testid="settingsPanelContainer"
                 >
-                    <div className="flex-1 overflow-y-auto px-6">
+                    <div className="min-h-0 flex-1 overflow-y-auto p-[24px]">
                         <ProjectsSettingsPanel
                             active={activeTab === 'projects'}
                         />

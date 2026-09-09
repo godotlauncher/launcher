@@ -42,7 +42,7 @@ vi.mock('@mariodebono/di-electron-i18n/renderer', () => ({
     }),
 }));
 
-vi.mock('../bridge.ts', () => ({
+vi.mock('../renderer.bridge.ts', () => ({
     appBridge: { changeLanguage: mocks.changeLanguage },
 }));
 

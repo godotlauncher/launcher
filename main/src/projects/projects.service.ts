@@ -387,7 +387,7 @@ export class ProjectsService {
     }
 
     /**
-     * Renames a project and optionally its Godot project name.
+     * Renames a project, saves its import name, and optionally renames its Godot project.
      *
      * @param project - Project to rename.
      * @param options - New name and Godot project update choice.
@@ -475,6 +475,18 @@ export class ProjectsService {
             projects.find((candidate) => candidate.path === project.path) ??
             updatedProject;
         project.name = latestProject.name;
+        try {
+            await writeProjectLauncherConfig(latestProject.path, {
+                release: latestProject.release,
+                projectName: latestProject.name,
+                launcherVersion: app.getVersion(),
+            });
+        } catch (error) {
+            logger.warn(
+                `Failed to save renamed project metadata for '${latestProject.name}'`,
+                error,
+            );
+        }
         this.publishProjects(projects);
 
         return {

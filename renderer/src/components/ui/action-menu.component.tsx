@@ -1,0 +1,360 @@
+import clsx from 'clsx';
+import { Check } from 'lucide-react';
+import type React from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { MenuDivider } from './menu-divider.component';
+
+export type ActionMenuAnchorRect = Pick<
+    DOMRect,
+    'top' | 'right' | 'bottom' | 'left' | 'width' | 'height'
+>;
+
+export type ActionMenuActionItem = {
+    type?: 'item';
+    key: string;
+    label: ReactNode;
+    icon?: ReactNode;
+    trailingIcon?: ReactNode;
+    checked?: boolean;
+    disabled?: boolean;
+    destructive?: boolean;
+    testId?: string;
+    onSelect: () => void | Promise<void>;
+};
+
+export type ActionMenuSeparatorItem = {
+    type: 'separator';
+    key: string;
+};
+
+export type ActionMenuItem = ActionMenuActionItem | ActionMenuSeparatorItem;
+
+type ActionMenuProps = {
+    open: boolean;
+    anchorRect: ActionMenuAnchorRect | null;
+    ariaLabel: string;
+    title?: ReactNode;
+    items: ActionMenuItem[];
+    onClose: () => void;
+    className?: string;
+};
+
+type MenuPosition = {
+    top: number;
+    left: number;
+    maxHeight: number;
+};
+
+const viewportMargin = 8;
+const triggerGap = 6;
+const focusableSelector = [
+    'a[href]',
+    'button:not([disabled])',
+    'textarea:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
+}
+
+export function getActionMenuAnchorRect(
+    element: Element,
+): ActionMenuAnchorRect {
+    const rect = element.getBoundingClientRect();
+    return {
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+    };
+}
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+    return Array.from(
+        container.querySelectorAll<HTMLElement>(focusableSelector),
+    )
+        .filter((element) => element.offsetParent !== null)
+        .filter((element) => !element.hasAttribute('disabled'));
+}
+
+function trapFocusInMenu(
+    event: KeyboardEvent,
+    menuPanel: HTMLElement | null,
+): void {
+    if (event.key !== 'Tab' || event.defaultPrevented || !menuPanel) {
+        return;
+    }
+
+    const focusableElements = getFocusableElements(menuPanel);
+    if (focusableElements.length === 0) {
+        event.preventDefault();
+        menuPanel.focus();
+        return;
+    }
+
+    const firstFocusableElement = focusableElements[0];
+    const lastFocusableElement =
+        focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey && document.activeElement === firstFocusableElement) {
+        event.preventDefault();
+        lastFocusableElement.focus();
+        return;
+    }
+
+    if (!event.shiftKey && document.activeElement === lastFocusableElement) {
+        event.preventDefault();
+        firstFocusableElement.focus();
+    }
+}
+
+function calculatePosition(
+    panel: HTMLElement,
+    anchorRect: ActionMenuAnchorRect,
+): MenuPosition {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const maxPanelHeight = viewportHeight - viewportMargin * 2;
+    const panelWidth = Math.min(
+        panel.offsetWidth,
+        viewportWidth - viewportMargin * 2,
+    );
+    const panelHeight = Math.min(panel.offsetHeight, maxPanelHeight);
+    const roomBelow = viewportHeight - anchorRect.bottom - viewportMargin;
+    const roomAbove = anchorRect.top - viewportMargin;
+    const shouldOpenBelow = roomBelow >= panelHeight || roomBelow >= roomAbove;
+
+    const preferredTop = shouldOpenBelow
+        ? anchorRect.bottom + triggerGap
+        : anchorRect.top - panelHeight - triggerGap;
+    const top = clamp(
+        preferredTop,
+        viewportMargin,
+        viewportHeight - panelHeight - viewportMargin,
+    );
+    const preferredLeft = anchorRect.right - panelWidth;
+    const left = clamp(
+        preferredLeft,
+        viewportMargin,
+        viewportWidth - panelWidth - viewportMargin,
+    );
+
+    return {
+        top,
+        left,
+        maxHeight: viewportHeight - top - viewportMargin,
+    };
+}
+
+/**
+ * Renders and positions a modal action menu against its trigger.
+ * @param props - Menu content, anchor, state and layout options.
+ */
+export const ActionMenu: React.FC<ActionMenuProps> = ({
+    open,
+    anchorRect,
+    ariaLabel,
+    title,
+    items,
+    onClose,
+    className,
+}) => {
+    const panelRef = useRef<HTMLElement | null>(null);
+    const portalAnchorRef = useRef<HTMLSpanElement | null>(null);
+    const [portalTarget, setPortalTarget] = useState<Element | null>(null);
+    const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+    const [position, setPosition] = useState<MenuPosition | null>(null);
+
+    useLayoutEffect(() => {
+        if (!open) return;
+        // Stay in the native dialog's top layer, outside its transformed modal-box.
+        setPortalTarget(
+            portalAnchorRef.current?.closest('dialog') ?? document.body,
+        );
+    }, [open]);
+
+    useEffect(() => {
+        if (!open || typeof document === 'undefined') {
+            return;
+        }
+
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLElement) {
+            previouslyFocusedElementRef.current = activeElement;
+        }
+
+        const animationFrameId = window.requestAnimationFrame(() => {
+            const firstFocusableElement = panelRef.current
+                ? getFocusableElements(panelRef.current)[0]
+                : null;
+            (firstFocusableElement ?? panelRef.current)?.focus();
+        });
+
+        return () => {
+            window.cancelAnimationFrame(animationFrameId);
+            previouslyFocusedElementRef.current?.focus();
+            previouslyFocusedElementRef.current = null;
+        };
+    }, [open]);
+
+    useLayoutEffect(() => {
+        if (
+            !open ||
+            !anchorRect ||
+            !portalTarget ||
+            typeof window === 'undefined'
+        ) {
+            setPosition(null);
+            return;
+        }
+
+        const updatePosition = () => {
+            if (panelRef.current) {
+                setPosition(calculatePosition(panelRef.current, anchorRect));
+            }
+        };
+
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        return () => window.removeEventListener('resize', updatePosition);
+    }, [anchorRect, open, portalTarget]);
+
+    useEffect(() => {
+        if (!open || typeof window === 'undefined') {
+            return;
+        }
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.defaultPrevented) {
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+                return;
+            }
+
+            trapFocusInMenu(event, panelRef.current);
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose, open]);
+
+    if (!open) {
+        return <span ref={portalAnchorRef} hidden />;
+    }
+
+    const panelStyle: CSSProperties = position
+        ? {
+              top: position.top,
+              left: position.left,
+              maxHeight: position.maxHeight,
+          }
+        : {
+              top: 0,
+              left: 0,
+              visibility: 'hidden',
+          };
+
+    const menu = (
+        <div className="modal modal-open fixed inset-0 z-50">
+            <button
+                type="button"
+                aria-label="Close menu"
+                className="absolute inset-0 p-0"
+                onClick={onClose}
+            />
+            <section
+                ref={panelRef}
+                tabIndex={-1}
+                role="dialog"
+                aria-modal="true"
+                aria-label={ariaLabel}
+                className={clsx(
+                    'fixed z-10 min-w-72 max-w-[calc(100vw-1rem)] overflow-auto rounded-md bg-base-300 p-1',
+                    className,
+                )}
+                style={panelStyle}
+            >
+                <ul className="menu w-full bg-base-300 p-0 text-base">
+                    {title && (
+                        <li className="menu-title max-w-72 menu-disabled">
+                            <span className="truncate">{title}</span>
+                        </li>
+                    )}
+                    {items.map((item) => {
+                        if (item.type === 'separator') {
+                            return (
+                                <li key={item.key} aria-hidden="true">
+                                    <MenuDivider />
+                                </li>
+                            );
+                        }
+
+                        return (
+                            <li key={item.key}>
+                                <button
+                                    type="button"
+                                    aria-pressed={
+                                        item.checked === undefined
+                                            ? undefined
+                                            : item.checked
+                                    }
+                                    disabled={item.disabled}
+                                    data-testid={item.testId}
+                                    className={clsx(
+                                        'w-full',
+                                        item.destructive &&
+                                            'text-error/80 hover:text-error hover:bg-error/20',
+                                    )}
+                                    onClick={() => {
+                                        if (item.disabled) {
+                                            return;
+                                        }
+
+                                        onClose();
+                                        void item.onSelect();
+                                    }}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className="flex h-5 w-5 items-center justify-center"
+                                    >
+                                        {item.icon}
+                                    </span>
+                                    <span className="min-w-0 whitespace-normal wrap-break-word">
+                                        {item.label}
+                                    </span>
+                                    <span
+                                        aria-hidden="true"
+                                        className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center"
+                                    >
+                                        {item.trailingIcon}
+                                        {item.checked && (
+                                            <Check className="h-4 w-4" />
+                                        )}
+                                    </span>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </section>
+        </div>
+    );
+    return (
+        <>
+            <span ref={portalAnchorRef} hidden />
+            {portalTarget && createPortal(menu, portalTarget)}
+        </>
+    );
+};

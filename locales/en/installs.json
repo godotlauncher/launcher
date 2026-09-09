@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "Create custom editor manifest"
     },
     "search": {
+        "noResults": "No matching editors",
+        "noResultsHint": "No installed editor matches \"{{query}}\". Try a different version or clear your search.",
+        "clear": "Clear search",
         "placeholder": "Search"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Godot Launcher Editor Manifest",
         "waitingForDialog": "Waiting for dialog...",
         "replace": {
+            "action": "Replace",
             "title": "Replace custom editor?",
             "message": "A custom editor with this version is already registered.",
             "versionLabel": "Version",
-            "detail": "Replacing it will update the launcher record to use the selected manifest. Your editor files will not be deleted."
+            "detail": "Replacing it will update the editor record in Godot Launcher to use the selected manifest. Your editor files will not be deleted."
         },
         "drop": {
             "title": "Drop manifest to add custom editor",

@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "Özel editör manifesti oluştur"
     },
     "search": {
+        "noResults": "Eşleşen düzenleyici yok",
+        "noResultsHint": "Yüklü düzenleyiciler arasında \"{{query}}\" ile eşleşen yok. Başka bir sürüm deneyin veya aramayı temizleyin.",
+        "clear": "Aramayı temizle",
         "placeholder": "Ara"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Godot Launcher editör manifesti",
         "waitingForDialog": "İletişim kutusu bekleniyor...",
         "replace": {
+            "action": "Değiştir",
             "title": "Özel editör değiştirilsin mi?",
             "message": "Bu sürüme sahip bir özel editör zaten kayıtlı.",
             "versionLabel": "Sürüm",
-            "detail": "Değiştirme, launcher kaydını seçilen manifesti kullanacak şekilde günceller. Editör dosyalarınız silinmez."
+            "detail": "Değiştirme, Godot Launcher kaydını seçilen manifesti kullanacak şekilde günceller. Editör dosyalarınız silinmez."
         },
         "drop": {
             "title": "Özel editör eklemek için manifesti bırakın",

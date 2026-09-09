@@ -112,12 +112,12 @@
         "retry": "Yayımlamayı yeniden dene",
         "checkAndRetry": "Kontrol et ve yeniden dene",
         "useRepository": "Bu depoyu kullan",
-        "recoveryRepositoryFound": "GitHub'da tam olarak bu boş depo var. Launcher'ın kullanmasını onaylayın.",
+        "recoveryRepositoryFound": "GitHub'da tam olarak bu boş depo var. Godot Launcher'ın kullanmasını onaylayın.",
         "retryFailed": "Yayımlama yeniden denenemedi. Yerel proje güvende.",
         "continueLocally": "Yerel olarak devam et",
         "openGitHub": "GitHub'ı aç",
         "localTitle": "Proje yerelde tutuldu",
-        "localMessage": "Proje bu bilgisayarda ve Launcher kitaplığında kalır.",
+        "localMessage": "Proje bu bilgisayarda ve Godot Launcher kitaplığında kalır.",
         "requiresInitialCommit": "Yayımlama, ilk commit'e sahip yeni bir Git deposu gerektirir.",
         "publicationFailed": "Proje yerel olarak oluşturuldu ancak GitHub yayımlaması tamamlanmadı.",
         "attemptExpired": "Bu yayımlama denemesi sona erdi. Yerel proje güvende.",
@@ -136,19 +136,19 @@
             "repository-name-unavailable-or-policy-rejected": "GitHub bu adı kullanamadı. Ad zaten var olabilir veya kuruluş ilkesi tarafından engellenmiş olabilir.",
             "rate-limited": "GitHub istekleri geçici olarak sınırlıyor. Daha sonra yeniden deneyin.",
             "network-unavailable": "Yayımlama sırasında ağ bağlantısı başarısız oldu.",
-            "remote-creation-uncertain": "Launcher, GitHub'ın depoyu oluşturup oluşturmadığını doğrulayamadı. Bağlantıyı yeniden kurup kontrol edin.",
-            "recovered-repository-not-empty": "GitHub'da bu depo var ancak boş değil. Launcher bu depoda yayımlama yapmayacak.",
-            "remote-created-origin-failed": "Özel depo oluşturuldu ancak Launcher yerel projeye bağlayamadı.",
+            "remote-creation-uncertain": "Godot Launcher, GitHub'ın depoyu oluşturup oluşturmadığını doğrulayamadı. Bağlantıyı yeniden kurup kontrol edin.",
+            "recovered-repository-not-empty": "GitHub'da bu depo var ancak boş değil. Godot Launcher bu depoda yayımlama yapmayacak.",
+            "remote-created-origin-failed": "Özel depo oluşturuldu ancak Godot Launcher yerel projeye bağlayamadı.",
             "remote-created-push-failed": "Özel depo oluşturuldu ancak proje gönderilemedi.",
-            "remote-created-verification-failed": "Proje gönderilmiş olabilir ancak Launcher doğrulayamadı.",
-            "local-repository-changed": "Yerel Git deposu değiştiği için Launcher yeniden denemeyi durdurdu.",
+            "remote-created-verification-failed": "Proje gönderilmiş olabilir ancak Godot Launcher doğrulayamadı.",
+            "local-repository-changed": "Yerel Git deposu değiştiği için Godot Launcher yeniden denemeyi durdurdu.",
             "provider-unavailable": "GitHub isteği tamamlayamadı."
         }
     },
     "existingRepository": {
         "confirmationTitle": "Bu proje başka bir Git deposunun içinde olacak",
         "warningMessage": "Seçtiğiniz klasör {{root}} konumundaki Git deposunun içindedir.",
-        "gitSkipped": "Launcher ayrı bir Git deposu veya ilk commit oluşturmayacak.",
+        "gitSkipped": "Godot Launcher ayrı bir Git deposu veya ilk commit oluşturmayacak.",
         "gitLfsSkipped": "Git LFS ayarlanmayacak.",
         "githubSkipped": "Proje GitHub'da yayımlanmayacak.",
         "question": "Devam etmek istiyor musunuz?",
@@ -238,6 +238,6 @@
         "failedGitLfsInstall": "Yeni depo için Git LFS yüklenemedi",
         "failedGitLfsTrack": "Git LFS izleme kuralları eklenemedi",
         "failedGitLfsVerify": "Git LFS yapılandırması doğrulanamadı",
-        "failedProjectRecovery": "Git LFS kurulumu başarısız oldu ve Launcher proje klasörünü geri yükleyemedi. Tekrar denemeden önce '{{path}}' yolunu inceleyin"
+        "failedProjectRecovery": "Git LFS kurulumu başarısız oldu ve Godot Launcher proje klasörünü geri yükleyemedi. Tekrar denemeden önce '{{path}}' yolunu inceleyin"
     }
 }

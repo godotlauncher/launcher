@@ -1,5 +1,6 @@
 import type {
     AddProjectOptions,
+    EditorFlavor,
     ProjectImportInspection,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -9,6 +10,7 @@ export type LocalImportEditorAction = {
     id: string;
     version?: string;
     name?: string;
+    flavor?: EditorFlavor;
     kind: 'use' | 'download' | 'missing';
     recommended?: boolean;
     options: AddProjectOptions;
@@ -38,6 +40,7 @@ export function prepareLocalImportRow(
                 id: choice.id,
                 version: choice.version,
                 name: choice.name,
+                flavor: choice.flavor,
                 kind: choice.installed ? 'use' : 'download',
                 recommended: choice.recommended,
                 options: choice.installed
@@ -56,6 +59,9 @@ export function prepareLocalImportRow(
             actions.push({
                 id: 'download',
                 version: download.version,
+                flavor:
+                    resolution.downloadable?.flavor ??
+                    resolution.requested.flavor,
                 kind: 'download',
                 options: { resolution: 'add_missing' },
                 download,
@@ -64,6 +70,7 @@ export function prepareLocalImportRow(
             actions.push({
                 id: 'fallback',
                 version: resolution.fallback.version,
+                flavor: resolution.fallback.mono ? 'dotnet' : 'gdscript',
                 kind: 'use',
                 options: {
                     resolution: 'use_fallback',
@@ -74,6 +81,11 @@ export function prepareLocalImportRow(
         actions.push({
             id: 'automatic',
             version: row.editor?.version,
+            flavor: row.editor
+                ? row.editor.mono
+                    ? 'dotnet'
+                    : 'gdscript'
+                : undefined,
             kind: 'use',
             options: {},
         });

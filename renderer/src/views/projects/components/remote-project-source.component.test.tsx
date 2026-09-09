@@ -24,6 +24,7 @@ const defaultProps = {
     onRetry: vi.fn(),
     onLoadMore: vi.fn(),
     onOpenConnections: vi.fn(),
+    onRefreshRepositories: vi.fn(async () => undefined),
 };
 
 describe('RemoteProjectRepositorySource', () => {

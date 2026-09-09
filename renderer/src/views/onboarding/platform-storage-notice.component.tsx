@@ -18,7 +18,7 @@ export const PlatformStorageNotice: React.FC<PlatformStorageNoticeProps> = ({
               : 'windows';
 
     return (
-        <div className="flex items-start gap-2 rounded-box bg-info/10 px-3 py-2 text-sm text-base-content/75">
+        <div className="flex items-start gap-2 px-3 py-2">
             <Info
                 size={17}
                 className="mt-0.5 shrink-0 text-info"

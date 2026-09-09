@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "Créer un manifeste d’éditeur personnalisé"
     },
     "search": {
+        "noResults": "Aucun éditeur correspondant",
+        "noResultsHint": "Aucun éditeur installé ne correspond à « {{query}} ». Essayez une autre version ou effacez la recherche.",
+        "clear": "Effacer la recherche",
         "placeholder": "Rechercher"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Manifeste d’éditeur Godot Launcher",
         "waitingForDialog": "En attente de la boîte de dialogue...",
         "replace": {
+            "action": "Remplacer",
             "title": "Remplacer l’éditeur personnalisé ?",
             "message": "Un éditeur personnalisé avec cette version est déjà enregistré.",
             "versionLabel": "Version",
-            "detail": "Le remplacement mettra à jour l’enregistrement du launcher pour utiliser le manifeste sélectionné. Vos fichiers d’éditeur ne seront pas supprimés."
+            "detail": "Le remplacement mettra à jour l’enregistrement de Godot Launcher pour utiliser le manifeste sélectionné. Vos fichiers d’éditeur ne seront pas supprimés."
         },
         "drop": {
             "title": "Déposez le manifeste pour ajouter l’éditeur personnalisé",

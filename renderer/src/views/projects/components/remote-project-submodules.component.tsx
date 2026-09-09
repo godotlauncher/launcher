@@ -29,12 +29,15 @@ export function RemoteProjectSubmodules({
                 <h2 className="text-base font-semibold">
                     {t('addProject.remote.submodules.title')}
                 </h2>
-                <p className="max-w-4xl text-sm text-base-content/70">
+                <p className="max-w-4xl text-base text-base-content/75">
                     {t('addProject.remote.submodules.description')}
                 </p>
             </div>
             {failure && (
-                <div className="alert alert-error alert-soft" role="alert">
+                <div
+                    className="alert alert-error alert-soft text-base"
+                    role="alert"
+                >
                     <TriangleAlert aria-hidden="true" size={18} />
                     <span>{t('addProject.remote.submodules.failure')}</span>
                 </div>
@@ -47,11 +50,9 @@ export function RemoteProjectSubmodules({
             )}
             {activities.length > 0 && (
                 <div className="flex min-h-0 flex-col gap-2">
-                    <p className="font-medium">
-                        {t('addProject.remote.submodules.activityTitle')}
-                    </p>
+                    <p>{t('addProject.remote.submodules.activityTitle')}</p>
                     <ol
-                        className="max-h-64 space-y-2 overflow-auto rounded-box border border-base-300 bg-base-200 p-3 text-sm"
+                        className="max-h-64 space-y-2 overflow-auto rounded-box bg-base-200/60 p-3 pr-4 text-sm [scrollbar-gutter:stable]"
                         aria-live="polite"
                         aria-label={t(
                             'addProject.remote.submodules.activityAriaLabel',
@@ -99,18 +100,22 @@ export function RemoteProjectSubmodulesFooter({
 }: RemoteProjectSubmodulesFooterProps) {
     if (initialising) {
         return canCancel ? (
-            <button type="button" className="btn btn-ghost" onClick={onCancel}>
+            <button
+                type="button"
+                className="btn btn-ghost text-base"
+                onClick={onCancel}
+            >
                 {t('addProject.remote.actions.cancelImport')}
             </button>
         ) : null;
     }
 
     return (
-        <div className="flex w-full items-center justify-between gap-4">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2">
             <button
                 type="button"
                 data-testid="btnContinueWithoutSubmodules"
-                className="btn btn-ghost"
+                className="btn btn-ghost text-base"
                 onClick={onContinueWithoutSubmodules}
             >
                 {t('addProject.remote.submodules.continueWithoutSubmodules')}
@@ -119,7 +124,7 @@ export function RemoteProjectSubmodulesFooter({
                 ref={initialiseButtonRef}
                 type="button"
                 data-testid="btnInitialiseSubmodules"
-                className="btn btn-primary"
+                className="btn btn-primary text-base"
                 onClick={onInitialise}
             >
                 {t('addProject.remote.submodules.initialise')}

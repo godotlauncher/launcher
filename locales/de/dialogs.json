@@ -40,7 +40,7 @@
     "removeCustomEditor": {
         "menuLabel": "Benutzerdefinierten Editor entfernen",
         "title": "Benutzerdefinierten Editor entfernen",
-        "message": "Benutzerdefinierten Editor \"{{name}}\" aus dem Launcher entfernen?",
+        "message": "Benutzerdefinierten Editor \"{{name}}\" aus dem Godot Launcher entfernen?",
         "detail": "Dadurch wird der benutzerdefinierte Editor abgemeldet. Die Editor-Dateien auf deinem Gerät werden nicht gelöscht."
     }
 }

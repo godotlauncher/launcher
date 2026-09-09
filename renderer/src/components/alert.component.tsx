@@ -1,13 +1,14 @@
 import { ExternalLink } from 'lucide-react';
 import { type ReactNode, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GITHUB_STATUS_URL } from '../constants';
-import { useAppNavigation } from '../hooks/useAppNavigation';
-import { Dialog } from './dialog.component';
+import { GITHUB_STATUS_URL } from '../app.constants';
+import { useAppNavigation } from '../hooks/app-navigation.hook';
+import { Dialog, type DialogTone } from './dialog.component';
 
 const GITHUB_STATUS_HOST = 'githubstatus.com';
 
 interface AlertProps {
+    tone?: DialogTone;
     icon?: React.ReactNode;
     title: string;
     message: string | ReactNode;
@@ -46,13 +47,20 @@ function renderAlertLine(
  * @param props - Alert message, presentation, and dismissal callback.
  * @returns The alert dialog.
  */
-export const Alert: React.FC<AlertProps> = ({ message, onOk, title, icon }) => {
+export const Alert: React.FC<AlertProps> = ({
+    message,
+    onOk,
+    title,
+    icon,
+    tone,
+}) => {
     const { t } = useTranslation('common');
     const { openExternalLink } = useAppNavigation();
     const okButtonRef = useRef<HTMLButtonElement>(null);
 
     return (
         <Dialog
+            tone={tone}
             icon={icon}
             title={title}
             initialFocusRef={okButtonRef}
@@ -63,7 +71,7 @@ export const Alert: React.FC<AlertProps> = ({ message, onOk, title, icon }) => {
                     type="button"
                     data-testid="btnAlertOk"
                     onClick={onOk}
-                    className="btn btn-primary"
+                    className="btn btn-primary text-base"
                 >
                     {t('buttons.ok')}
                 </button>

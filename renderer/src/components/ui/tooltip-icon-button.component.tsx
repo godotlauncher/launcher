@@ -17,10 +17,10 @@ export type TooltipIconButtonProps = {
 };
 
 /**
- * Renders a keyboard-accessible icon button with a tooltip and no hover surface.
+ * Renders a keyboard-accessible ghost icon button with a tooltip.
  *
  * @param props - Accessible label, tooltip content, icon, and presentation options.
- * @returns A compact tooltip trigger for an icon.
+ * @returns A tooltip trigger for an icon.
  */
 export const TooltipIconButton: React.FC<TooltipIconButtonProps> = ({
     label,
@@ -34,10 +34,7 @@ export const TooltipIconButton: React.FC<TooltipIconButtonProps> = ({
     <Tooltip tip={tip} placement={placement} tone={tone} delay={delay}>
         <button
             type="button"
-            className={clsx(
-                'btn btn-circle btn-ghost btn-xs size-6 min-h-6 bg-transparent p-0 shadow-none transition-colors hover:bg-transparent hover:shadow-none',
-                className,
-            )}
+            className={clsx('btn btn-circle btn-ghost ', className)}
             aria-label={label}
         >
             {children}

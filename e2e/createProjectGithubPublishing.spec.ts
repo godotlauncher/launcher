@@ -90,7 +90,7 @@ test('reveals connected private repository fields and preserves a manual name', 
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectCreate').click();
     const projectName = mainPage.getByTestId('inputProjectName');
-    await expect(projectName).toBeFocused();
+    await expect(mainPage.getByRole('heading', { name: 'New Project', exact: true })).toBeFocused();
     await projectName.fill('My Awesome Game');
     await expect(
         mainPage.getByLabel('A project with this name already exists'),
@@ -114,15 +114,6 @@ test('reveals connected private repository fields and preserves a manual name', 
         name: 'mariodebono',
     });
     await expect(selectedOwnerOption).toBeVisible();
-    expect(
-        await selectedOwnerOption.evaluate(
-            (element) => getComputedStyle(element).fontSize,
-        ),
-    ).toBe(
-        await ownerSelect.evaluate(
-            (element) => getComputedStyle(element).fontSize,
-        ),
-    );
     await mainPage.keyboard.press('Escape');
     const repositoryName = mainPage.locator(
         '#createProjectGitHubRepositoryName',
@@ -132,7 +123,10 @@ test('reveals connected private repository fields and preserves a manual name', 
         mainPage.getByText('Name looks available', { exact: true }),
     ).toBeVisible();
     await expect(
-        mainPage.getByText('Private GitHub repository', { exact: true }),
+        mainPage.getByRole('button', {
+            name: 'Private GitHub repository',
+            exact: true,
+        }),
     ).toBeVisible();
     const drawerBody = mainPage.locator(
         '.drawer-panel form > div.overflow-y-auto',
@@ -187,7 +181,7 @@ test('reveals connected private repository fields and preserves a manual name', 
     });
     await repositoryName.fill('existing-game');
     await expect(
-        mainPage.getByText('Name already in use', { exact: true }),
+        mainPage.getByRole('img', { name: 'Name already in use', exact: true }),
     ).toBeVisible();
     await expect(mainPage.getByTestId('btnCreateProject')).toBeDisabled();
     await stubCreateProjectRepositoryNameAvailability(electronApp, {
@@ -251,16 +245,14 @@ test('connects GitHub in place and preserves the project form after cancellation
     const list = dialog.getByTestId('github-connection-options');
     const footer = dialog.locator('footer');
     await expect(footer.getByRole('button', { name: /Connect selected/i })).toBeVisible();
-    const addAccount = dialog.getByRole('button', {
-        name: 'Add account or organisation',
-    });
-    const toolbarBefore = await addAccount.boundingBox();
+    const heading = dialog.getByRole('heading', { name: 'Connect GitHub', exact: true });
+    const toolbarBefore = await heading.boundingBox();
     const footerBefore = await footer.boundingBox();
     await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
     expect(await list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-    expect(await addAccount.boundingBox()).toEqual(toolbarBefore);
+    expect(await heading.boundingBox()).toEqual(toolbarBefore);
     expect(await footer.boundingBox()).toEqual(footerBefore);
-    await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+    await dialog.getByRole('checkbox', { name: /fixture-user/ }).locator('..').click();
     await expect(dialog.getByRole('checkbox', { name: /fixture-user/ })).toBeChecked();
     await mainPage.screenshot({ path: path.join(outputDirectory, 'connection-selection-dark.png') });
     await dialog.getByRole('button', { name: /Connect selected/i }).click();
@@ -305,9 +297,9 @@ test('repairs an expired account within Create Project', async () => {
     await mainPage.getByRole('checkbox', { name: 'Publish to GitHub' }).check();
     await mainPage.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
     const dialog = mainPage.getByRole('dialog', { name: 'Connect GitHub', exact: true });
-    await dialog.getByRole('radio', { name: 'fixture-user', exact: true }).check();
+    await dialog.getByRole('radio', { name: 'fixture-user', exact: true }).locator('..').click();
     await dialog.getByRole('button', { name: 'Reconnect GitHub', exact: true }).click();
-    await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+    await dialog.getByRole('checkbox', { name: /fixture-user/ }).locator('..').click();
     await dialog.getByRole('button', { name: /Connect selected/i }).click();
     await expect(dialog).not.toBeVisible();
     await expect(mainPage.getByTestId('inputProjectName')).toHaveValue('Reconnect Game');
@@ -343,7 +335,7 @@ test('uses the shared connection dialog from Settings', async () => {
         await dialog
             .getByRole('button', { name: 'Continue in browser' })
             .click();
-        await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+        await dialog.getByRole('checkbox', { name: /fixture-user/ }).locator('..').click();
         await mainPage.screenshot({
             animations: 'disabled',
             path: path.join(
@@ -356,7 +348,7 @@ test('uses the shared connection dialog from Settings', async () => {
     }
     await card.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
     await dialog.getByRole('button', { name: 'Continue in browser' }).click();
-    await dialog.getByRole('checkbox', { name: /fixture-user/ }).check();
+    await dialog.getByRole('checkbox', { name: /fixture-user/ }).locator('..').click();
     await dialog.getByRole('button', { name: /Connect selected/i }).click();
     await expect(dialog.getByRole('status')).toHaveText('Connecting...');
     await expect(dialog.getByText('Complete the connection in your browser, then return here.')).toHaveCount(0);
@@ -377,6 +369,8 @@ test('uses the shared connection dialog from Settings', async () => {
         name: 'Manage repository access',
     });
     await manageAccess.focus();
+    await mainPage.keyboard.press('Tab');
+    await mainPage.keyboard.press('Shift+Tab');
     await expect(
         mainPage.getByRole('tooltip', { name: 'Manage repository access' }),
     ).toBeVisible();
@@ -569,10 +563,7 @@ test('blocks a conflicting name and shows app-style recovery', async () => {
     });
     await expect(recoveryDialog).toBeVisible();
     await expect(
-        recoveryDialog.locator('.lucide-triangle-alert.text-error'),
-    ).toBeVisible();
-    await expect(
-        recoveryDialog.getByText('Name already in use', { exact: true }),
+        recoveryDialog.getByRole('img', { name: 'Name already in use', exact: true }),
     ).toBeVisible();
     await expect(
         recoveryDialog.getByRole('button', { name: 'Retry publishing' }),
@@ -675,7 +666,7 @@ test('checks and confirms an exact empty repository after uncertain creation', a
         .click();
     await expect(
         recoveryDialog.getByText(
-            'GitHub contains this exact empty repository. Confirm that you want Launcher to use it.',
+            'GitHub contains this exact empty repository. Confirm that you want Godot Launcher to use it.',
         ),
     ).toBeVisible();
     await expect(

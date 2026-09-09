@@ -22,7 +22,7 @@
     "behavior": {
         "trayAvailability": {
             "warning": "No se pudo confirmar la compatibilidad con la bandeja del sistema para esta sesión. Godot Launcher permanecerá visible o se cerrará en lugar de ocultarse.",
-            "closeFallback": "Cerrar en la bandeja del sistema dejará el lanzador visible."
+            "closeFallback": "Cerrar en la bandeja del sistema dejará Godot Launcher visible."
         },
         "projects": {
             "title": "Proyectos",
@@ -136,14 +136,14 @@
         },
         "disableConfirm": {
             "title": "¿Desactivar {{editor}}?",
-            "usage": "Proyectos configurados: {{count}}. Proyectos .NET: {{dotnetCount}}.",
+            "usage": "<Projects>Proyectos configurados: <Count>{{count}}</Count></Projects><Dotnet>Proyectos .NET: <Count>{{dotnetCount}}</Count></Dotnet>",
             "existingProjects": "Los proyectos existentes conservarán este editor y su configuración actual de Godot. Podrán seguir usándolo mientras permanezca instalado.",
             "newProjects": "El editor no estará disponible para nuevas selecciones ni para la detección automática de proyectos.",
             "disable": "Desactivar"
         }
     },
     "tools": {
-        "overview": "El lanzador valida rápidamente las rutas de herramientas en caché cuando esta pestaña recibe el foco. Ejecuta un reescaneo completo si cambiaste instalaciones en este sistema.",
+        "overview": "Godot Launcher valida rápidamente las rutas de herramientas en caché cuando esta pestaña recibe el foco. Ejecuta un reescaneo completo si cambiaste instalaciones en este sistema.",
         "actions": {
             "refresh": "Volver a escanear herramientas",
             "scanning": "Reescanear...",
@@ -232,8 +232,12 @@
         "loadError": "No se pudieron cargar las conexiones.",
         "genericDescription": "Conecta este servicio para usarlo en Godot Launcher.",
         "flow": {
+            "reauthoriseDescription": "Elige una cuenta para volver a autorizarla y continúa en el navegador para restablecer su conexión con GitHub.",
+            "connectAnotherAccount": "Conectar otra cuenta",
             "importDescription": "Conecta GitHub para explorar e importar tus repositorios.",
             "addAccount": "Añadir cuenta u organización",
+            "missingAccount": "¿No ves la cuenta u organización que necesitas?",
+            "manageGitHubAccess": "Gestionar el acceso en GitHub",
             "title": "Conectar GitHub",
             "reconnect": "Volver a conectar GitHub",
             "description": "Conecta GitHub para continuar. Tu trabajo actual se conservará.",
@@ -286,7 +290,7 @@
             "chooseConnection": "Elige conexiones",
             "chooseConnectionDescription": "Elige una o más instalaciones existentes de GitHub App o instala la aplicación en otro lugar.",
             "finishSetup": "Finaliza la configuración en GitHub",
-            "finishSetupDescription": "Completa la instalación en el navegador. Puedes volver aquí mientras Launcher sigue esperando.",
+            "finishSetupDescription": "Completa la instalación en el navegador. Puedes volver aquí mientras Godot Launcher sigue esperando.",
             "installations": "Instalaciones de la aplicación",
             "noInstallations": "Esta conexión aún no tiene instalaciones accesibles de la aplicación.",
             "organization": "Organización",
@@ -296,8 +300,8 @@
             "title": "¿Desconectar {{connection}}?",
             "description": "Esto elimina la conexión de Godot Launcher. No desinstala la aplicación de GitHub ni cambia los remotos de los proyectos.",
             "finalDescription": "Esto elimina la conexión de este dispositivo. No desinstala la aplicación de GitHub ni cambia el acceso a los repositorios o los remotos de los proyectos.",
-            "revokeAllDevices": "Revocar también esta autorización de GitHub en todos los dispositivos con Launcher.",
-            "revokeDetail": "Los demás dispositivos con Launcher conectados a esta cuenta de GitHub deberán volver a conectarse.",
+            "revokeAllDevices": "Revocar también esta autorización de GitHub en todos los dispositivos con Godot Launcher.",
+            "revokeDetail": "Los demás dispositivos con Godot Launcher conectados a esta cuenta de GitHub deberán volver a conectarse.",
             "localOnlyWarning": "El acceso a GitHub seguirá activo en otros dispositivos y los tokens copiados seguirán siendo válidos hasta que caduquen o se revoquen.",
             "failureDetail": "No se pudo eliminar la conexión. La credencial local se ha conservado. Inténtalo de nuevo.",
             "revokeAction": "Revocar y desconectar",

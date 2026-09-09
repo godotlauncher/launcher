@@ -17,21 +17,28 @@ const copy: AppIntegrationDisconnectConfirmCopy = {
 };
 
 describe('AppIntegrationDisconnectConfirm', () => {
-    it('starts with remote revocation selected', () => {
+    it('starts with remote revocation unselected', () => {
         const html = renderToStaticMarkup(
             <AppIntegrationDisconnectConfirm
                 close={vi.fn()}
+                description="Disconnect this connection"
+                renderLayout={(body, footer) => (
+                    <>
+                        {body}
+                        {footer}
+                    </>
+                )}
                 copy={copy}
                 onConfirm={vi.fn(async () => true)}
             />,
         );
 
         expect(html).toContain('type="checkbox"');
-        expect(html).toContain('checked=""');
+        expect(html).not.toContain('checked=""');
         expect(html).toContain(copy.checkbox);
-        expect(html).toContain(copy.checkedDetail);
-        expect(html).toContain(copy.checkedAction);
-        expect(html).not.toContain(copy.uncheckedDetail);
+        expect(html).toContain(copy.uncheckedDetail);
+        expect(html).toContain(copy.uncheckedAction);
+        expect(html).not.toContain(copy.checkedDetail);
         expect(html).not.toContain(copy.failureDetail);
     });
 

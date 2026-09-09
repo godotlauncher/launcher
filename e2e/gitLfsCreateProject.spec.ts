@@ -60,7 +60,9 @@ test('Git LFS help is keyboard accessible and depends on Git', async () => {
     await expect(gitLfs).toBeEnabled();
     await expect(gitLfs).not.toBeChecked();
 
-    await help.focus();
+    await gitLfs.focus();
+    await mainPage.keyboard.press('Tab');
+    await expect(help).toBeFocused();
     const tooltip = mainPage.getByRole('tooltip');
     await expect(tooltip).toBeVisible();
     await expect(tooltip).toContainText('3D models');

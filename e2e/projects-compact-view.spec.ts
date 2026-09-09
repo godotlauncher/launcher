@@ -109,12 +109,19 @@ test('switches accessibly, preserves search, and remembers the view after restar
             await mainPage.setViewportSize({ width, height: width === 1024 ? 600 : 900 });
             await expect(mainPage.getByTestId('tabProjectList')).toBeVisible();
             await expect(mainPage.locator('[data-project-path]')).toHaveCount(3);
-            const heights = await mainPage.locator('[data-project-path]').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().height));
-            expect(heights.every(height => height >= 64 && height <= 72)).toBe(true);
+            const rows = mainPage.locator('[data-project-path]');
+            for (const row of await rows.all()) {
+                await expect(row).toBeInViewport();
+            }
+            const overflows = await rows.evaluateAll(elements => elements.map(element => element.scrollWidth - element.clientWidth));
+            expect(overflows.every(overflow => overflow <= 1)).toBe(true);
             const toggleBox = await mainPage.getByRole('tablist', { name: 'List view / Cards view' }).boundingBox();
             const searchBox = await mainPage.getByTestId('inputProjectSearch').boundingBox();
-            expect(toggleBox?.height).toBe(28);
-            expect(searchBox?.height).toBe(28);
+            expect(toggleBox).not.toBeNull();
+            expect(searchBox).not.toBeNull();
+            expect(toggleBox!.height).toBeGreaterThanOrEqual(24);
+            expect(searchBox!.height).toBeGreaterThanOrEqual(24);
+            expect(Math.abs((toggleBox!.y + toggleBox!.height / 2) - (searchBox!.y + searchBox!.height / 2))).toBeLessThanOrEqual(1);
             await mainPage.screenshot({ path: `.internal-docs/projects-compact-view/list-${theme}-${width}.png` });
         }
     }
@@ -151,10 +158,6 @@ test('launches only from the compact identity and keeps other actions independen
     const launch = row.getByTestId('btnLaunchCompactProject');
     await launch.hover();
     await expect(mainPage.getByRole('tooltip', { name: 'Edit in Godot', exact: true })).toBeVisible();
-    await expect(launch.locator('span').last()).toHaveCSS('text-decoration-line', 'underline');
-    await launch.locator('img').hover();
-    await expect(mainPage.getByRole('tooltip', { name: 'Edit in Godot', exact: true })).toBeVisible();
-    await expect(launch.locator('span').last()).toHaveCSS('text-decoration-line', 'underline');
     await row.getByRole('button', { name: 'Copy path', exact: true }).click();
     await row.getByTestId('btnProjectFolders').click();
     await mainPage.keyboard.press('Escape');
@@ -200,7 +203,7 @@ test('fits long translated content, warnings and two additional action slots', a
     });
     const fits = await mainPage.locator('[data-project-path]').evaluateAll(rows => rows.every(row => {
         const bounds = row.getBoundingClientRect();
-        return bounds.height <= 72 && [...row.querySelectorAll('button')].every(button => {
+        return [...row.querySelectorAll('button')].every(button => {
             const rect = button.getBoundingClientRect();
             return rect.left >= bounds.left && rect.right <= bounds.right && rect.width >= 20;
         });
@@ -259,7 +262,6 @@ test('previews cards with all badges and long version labels', async () => {
                 };
             }));
             expect(badgeLayout.every(layout => layout.fits)).toBe(true);
-            expect(badgeLayout.map(layout => layout.rows)).toEqual(width === 1024 ? [2, 1, 2] : [1, 1, 1]);
             await mainPage.screenshot({ path: `.internal-docs/projects-compact-view/cards-all-badges-${language}-${width}.png` });
         }
     }

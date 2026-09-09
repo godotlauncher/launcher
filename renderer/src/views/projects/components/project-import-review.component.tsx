@@ -80,6 +80,7 @@ export function ProjectImportReview({
         <Dialog
             title={t('addProject.conflicts.title')}
             panelClassName="max-w-5xl"
+            bodyClassName="overflow-y-auto pr-6"
             onRequestClose={onCancel}
             footer={
                 <>
@@ -103,14 +104,14 @@ export function ProjectImportReview({
                     </span>
                     <button
                         type="button"
-                        className="btn btn-neutral"
+                        className="btn btn-ghost text-base"
                         onClick={onCancel}
                     >
                         {t('common:buttons.cancel')}
                     </button>
                     <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary text-base"
                         disabled={
                             editing !== null ||
                             selected.length === 0 ||
@@ -123,7 +124,7 @@ export function ProjectImportReview({
                 </>
             }
         >
-            <p className="mb-3 text-sm text-base-content/70">
+            <p className="mb-4 text-base text-base-content/75">
                 {t('addProject.editorReview.description')}
             </p>
             <ProjectImportReviewList

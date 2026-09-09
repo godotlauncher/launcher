@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "Oħloq manifest tal-editur personalizzat"
     },
     "search": {
+        "noResults": "Ebda editur ma jaqbel",
+        "noResultsHint": "Ebda editur installat ma jaqbel ma' \"{{query}}\". Ipprova verżjoni oħra jew ħassar it-tfittxija.",
+        "clear": "Ħassar it-tfittxija",
         "placeholder": "Fittex"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Manifest tal-editur ta’ Godot Launcher",
         "waitingForDialog": "Qed nistennew id-djalogu...",
         "replace": {
+            "action": "Ibdel",
             "title": "Tissostitwixxi l-editur personalizzat?",
             "message": "Editur personalizzat b’din il-verżjoni diġà huwa rreġistrat.",
             "versionLabel": "Verżjoni",
-            "detail": "Is-sostituzzjoni taġġorna r-rekord fil-launcher biex juża l-manifest magħżul. Il-fajls tal-editur tiegħek ma jitħassrux."
+            "detail": "Is-sostituzzjoni taġġorna r-rekord f'Godot Launcher biex juża l-manifest magħżul. Il-fajls tal-editur tiegħek ma jitħassrux."
         },
         "drop": {
             "title": "Waqqa’ l-manifest biex iżżid editur personalizzat",

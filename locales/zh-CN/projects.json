@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "添加或创建项目",
-            "description": "将现有工作添加到 Launcher，或开始新项目。",
+            "description": "将现有工作添加到 Godot Launcher，或开始新项目。",
             "newProject": {
                 "heading": "新建项目",
-                "description": "选择 Godot 版本。\n如有需要，Launcher 会下载它。",
+                "description": "选择 Godot 版本。\n如有需要，Godot Launcher 会下载它。",
                 "action": "创建项目"
             },
             "existingProject": {
                 "heading": "现有项目",
-                "description": "Launcher 会找到每个项目\n所需的 Godot 版本。",
+                "description": "Godot Launcher 会找到每个项目\n所需的 Godot 版本。",
                 "fromComputer": "从此电脑",
                 "fromGitHub": "从 GitHub",
+                "fromPublicGit": "从公共 Git URL",
                 "gitRequired": "从 GitHub 导入需要 Git"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "选择项目文件",
         "godotProject": "Godot 项目",
         "editorResolution": {
+            "official": "官方",
             "title": "需要编辑器版本",
             "message": "选择要用于此项目的 Godot 编辑器。",
             "version": "版本",
@@ -193,7 +195,7 @@
                 "addProjects": "添加所选项目（{{count}}）",
                 "cloneAndAdd": "克隆并添加项目",
                 "cancelImport": "取消导入",
-                "retryRegistration": "重试添加到启动器",
+                "retryRegistration": "重试添加到 Godot Launcher",
                 "reviewAndRetry": "检查并重试",
                 "close": "关闭",
                 "done": "完成",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "此仓库使用 Git 子模块",
-                "description": "Launcher 可以在重新扫描前初始化可匿名访问的公共 HTTPS 子模块。如果子模块为私有仓库或使用不受支持的 URL，操作将停止。",
+                "description": "Godot Launcher 可以在重新扫描前初始化可匿名访问的公共 HTTPS 子模块。如果子模块为私有仓库或使用不受支持的 URL，操作将停止。",
                 "preparing": "正在准备初始化子模块...",
                 "initialise": "初始化子模块",
                 "continueWithoutSubmodules": "不初始化子模块并继续",
@@ -236,6 +238,7 @@
             },
             "registration": {
                 "preserved": "存储库已成功克隆并已保存在此位置。",
+                "cloneKeptAt": "克隆保留位置",
                 "editorsQueued": "所选编辑器下载已添加到安装队列。编辑器准备就绪后，项目会自动更新。",
                 "adding": "正在添加项目：{{current}}/{{total}}",
                 "complete": "项目导入完成",
@@ -244,7 +247,7 @@
                 "added": "已添加",
                 "skipped": "已跳过",
                 "failed": "失败",
-                "alreadyAdded": "Launcher 中已有相同名称或路径的项目。",
+                "alreadyAdded": "Godot Launcher 中已有相同名称或路径的项目。",
                 "notAdded": "未添加该项目。"
             },
             "editorBatch": {
@@ -276,7 +279,7 @@
                 "discoveryLimitExceeded": "存储库已克隆，但规模过大或嵌套过深，无法安全扫描。",
                 "finaliseFailed": "已完成的克隆无法移动到其目的地。",
                 "cancelled": "进口被取消。",
-                "registration-failed": "存储库已克隆，但无法添加到启动器。",
+                "registration-failed": "存储库已克隆，但无法添加到 Godot Launcher。",
                 "cloneFolderOpenFailed": "无法打开克隆文件夹。",
                 "cloneCleanupChanged": "导入后克隆已被更改或替换，因此未将其删除。",
                 "cloneCleanupFailed": "无法删除克隆。克隆已保留。"
@@ -284,8 +287,8 @@
         },
         "conflicts": {
             "title": "检查项目导入",
-            "description": "选择 Launcher 中的名称或跳过项目。Godot 项目名称和文件夹保持不变。",
-            "label": "Launcher 名称",
+            "description": "选择 Godot Launcher 中的名称或跳过项目。Godot 项目名称和文件夹保持不变。",
+            "label": "Godot Launcher 名称",
             "name": "此名称或其设置文件夹已被使用。请选择其他名称或跳过。",
             "folder": "此文件夹已注册或已选择。请跳过此项。",
             "invalid": "请输入有效名称。无法读取的项目文件必须跳过。",
@@ -325,7 +328,7 @@
         "failedAddProject": "添加项目失败：{{error}}",
         "dropProjectFilesHere": "将 Godot 项目文件拖放到此处",
         "dropProjectFilesHelpPrefix": "拖放一个或多个",
-        "dropProjectFilesHelpSuffix": "文件以将其添加到启动器。",
+        "dropProjectFilesHelpSuffix": "文件以将其添加到 Godot Launcher。",
         "invalidReasons": {
             "missingProjectFile": "未找到项目文件。请检查项目位置，或移除后重新添加项目。",
             "missingEditor": "所选编辑器不可用。请挂载驱动器或选择其他编辑器。"
@@ -446,7 +449,7 @@
             "renameLabel": "同时重命名 Godot 项目",
             "loading": "正在检查 Godot 项目...",
             "currentName": "当前 Godot 项目名称：{{name}}",
-            "unavailable": "project.godot 不可用。只能更改启动器中的名称。"
+            "unavailable": "project.godot 不可用。只能更改 Godot Launcher 中的名称。"
         },
         "actions": {
             "installAndSave": "安装并保存",
